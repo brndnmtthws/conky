@@ -326,7 +326,7 @@ struct text_object *construct_text_object(char *s, const char *arg,
 #endif /* !__OpenBSD__ */
 	END OBJ(freq, 0)
 		get_cpu_count();
-		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
+		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 3 || atoi(&arg[0]) == 0
 				|| atoi(&arg[0]) > info.cpu_count) {
 			obj->data.i = 1;
 			/* NORM_ERR("freq: Invalid CPU number or you don't have that many CPUs! "
@@ -337,7 +337,7 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		obj->callbacks.print = &print_freq;
 	END OBJ(freq_g, 0)
 		get_cpu_count();
-		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
+		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 3 || atoi(&arg[0]) == 0
 				|| atoi(&arg[0]) > info.cpu_count) {
 			obj->data.i = 1;
 			/* NORM_ERR("freq_g: Invalid CPU number or you don't have that many "
@@ -361,7 +361,7 @@ struct text_object *construct_text_object(char *s, const char *arg,
 #if defined(__linux__)
 	END OBJ(voltage_mv, 0)
 		get_cpu_count();
-		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
+		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 3 || atoi(&arg[0]) == 0
 				|| atoi(&arg[0]) > info.cpu_count) {
 			obj->data.i = 1;
 			/* NORM_ERR("voltage_mv: Invalid CPU number or you don't have that many "
@@ -372,7 +372,7 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		obj->callbacks.print = &print_voltage_mv;
 	END OBJ(voltage_v, 0)
 		get_cpu_count();
-		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
+		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 3 || atoi(&arg[0]) == 0
 				|| atoi(&arg[0]) > info.cpu_count) {
 			obj->data.i = 1;
 			/* NORM_ERR("voltage_v: Invalid CPU number or you don't have that many "
