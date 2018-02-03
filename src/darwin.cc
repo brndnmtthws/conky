@@ -725,11 +725,47 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 {
     printf( "get_acpi_fan: STUB\n" );
 }
+
 /* void */
 char get_freq(char *p_client_buffer, size_t client_buffer_size, const char *p_format,
               int divisor, unsigned int cpu)
 {
-    printf( "get_freq: STUB!\n" );
+    /*
+     * For now, we get the factory cpu frequency, not **current** cpu frequency
+     * (Also, it is always the same for every core, so ignore |cpu| argument)
+     */
+    
+    // XXX Probably find a way to get **current** cpu frequency
+    
+    int mib[2];
+    unsigned int freq;
+    size_t len;
+    
+    if (!p_client_buffer || client_buffer_size <= 0 || !p_format
+        || divisor <= 0) {
+        return 0;
+    }
+    
+    mib[0] = CTL_HW;
+    mib[1] = HW_CPU_FREQ;
+    len = sizeof(freq);
+    
+    if (sysctl(mib, 2, &freq, &len, NULL, 0) == 0)
+    {
+        /*
+         * convert to MHz
+         */
+        divisor *= 1000000;
+
+        snprintf(p_client_buffer, client_buffer_size, p_format,
+                 (float) freq / divisor);
+    }
+    else
+    {
+        snprintf(p_client_buffer, client_buffer_size, p_format, 0.0f);
+        return 0;
+    }
+    
     return 1;
 }
 
