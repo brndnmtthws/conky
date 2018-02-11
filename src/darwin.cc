@@ -403,6 +403,115 @@ int check_mount(struct text_object *obj)
     return 0;
 }
 
+struct libtop_tsamp_t
+{
+    uint64_t pages_stolen;
+    uint64_t pagesize;
+};
+
+// COMPLETELY stolen from top (apple)
+/* This is for <rdar://problem/6410098>. */
+static uint64_t
+round_down_wired(uint64_t value) {
+    return (value & ~((128 * 1024 * 1024ULL) - 1));
+}
+
+/*
+ * stolen from top (apple)
+ */
+/*
+ * uses:
+ * 1. libtop_tsamp_t
+ * 2. round_down_wired()
+ */
+static void
+update_pages_stolen(struct libtop_tsamp_t *tsamp) {
+    static int mib_reserved[CTL_MAXNAME];
+    static int mib_unusable[CTL_MAXNAME];
+    static int mib_other[CTL_MAXNAME];
+    static size_t mib_reserved_len = 0;
+    static size_t mib_unusable_len = 0;
+    static size_t mib_other_len = 0;
+    int r;
+    
+    tsamp->pages_stolen = 0;
+    
+    /* This can be used for testing: */
+    tsamp->pages_stolen = (256 * 1024 * 1024ULL) / tsamp->pagesize;
+    
+    if(0 == mib_reserved_len) {
+        mib_reserved_len = CTL_MAXNAME;
+        
+        r = sysctlnametomib("machdep.memmap.Reserved", mib_reserved,
+                            &mib_reserved_len);
+        
+        if(-1 == r) {
+            mib_reserved_len = 0;
+            return;
+        }
+        
+        mib_unusable_len = CTL_MAXNAME;
+        
+        r = sysctlnametomib("machdep.memmap.Unusable", mib_unusable,
+                            &mib_unusable_len);
+        
+        if(-1 == r) {
+            mib_reserved_len = 0;
+            return;
+        }
+        
+        
+        mib_other_len = CTL_MAXNAME;
+        
+        r = sysctlnametomib("machdep.memmap.Other", mib_other,
+                            &mib_other_len);
+        
+        if(-1 == r) {
+            mib_reserved_len = 0;
+            return;
+        }
+    }
+    
+    if(mib_reserved_len > 0 && mib_unusable_len > 0 && mib_other_len > 0) {
+        uint64_t reserved = 0, unusable = 0, other = 0;
+        size_t reserved_len;
+        size_t unusable_len;
+        size_t other_len;
+        
+        reserved_len = sizeof(reserved);
+        unusable_len = sizeof(unusable);
+        other_len = sizeof(other);
+        
+        /* These are all declared as QUAD/uint64_t sysctls in the kernel. */
+        
+        if(-1 == sysctl(mib_reserved, mib_reserved_len, &reserved,
+                        &reserved_len, NULL, 0)) {
+            return;
+        }
+        
+        if(-1 == sysctl(mib_unusable, mib_unusable_len, &unusable,
+                        &unusable_len, NULL, 0)) {
+            return;
+        }
+        
+        if(-1 == sysctl(mib_other, mib_other_len, &other,
+                        &other_len, NULL, 0)) {
+            return;
+        }
+        
+        if(reserved_len == sizeof(reserved)
+           && unusable_len == sizeof(unusable)
+           && other_len == sizeof(other)) {
+            uint64_t stolen = reserved + unusable + other;
+            uint64_t mb128 = 128 * 1024 * 1024ULL;
+            
+            if(stolen >= mb128) {
+                tsamp->pages_stolen = round_down_wired(stolen) / tsamp->pagesize;
+            }
+        }
+    }
+}
+
 int update_meminfo(void)
 {
     //
@@ -421,6 +530,20 @@ int update_meminfo(void)
     vm_statistics64_data_t  vm_stats;
     
     unsigned long           swap_avail, swap_free;
+    
+    // XXX avoid copyright strikes, please
+    /* get stolen pages as is done in apple's top */
+    struct libtop_tsamp_t * tsamp = nullptr;
+    if (!tsamp)
+    {
+        tsamp = new libtop_tsamp_t;
+        memset(tsamp, 0, sizeof(libtop_tsamp_t));
+        
+        tsamp->pagesize = getpagesize();
+    }
+    
+    update_pages_stolen(tsamp);
+    printf("bytes stolen = %llu\n", tsamp->pages_stolen*getpagesize());
     
     //
     //  get machine's memory
@@ -457,6 +580,7 @@ int update_meminfo(void)
     info.memwithbuffers = info.mem;
     info.memeasyfree = info.memfree = info.memmax - info.mem;
     
+    // xxx this is just fine! do not bother with this
     if ((swapmode(&swap_avail, &swap_free)) >= 0) {
         info.swapmax = swap_avail;
         info.swap = (swap_avail - swap_free);
@@ -482,8 +606,56 @@ int update_threads(void)
     return 0;
 }
 
+/*
+ * XXX This seems to be wrong... We must first find the threads (using thread_info() )
+ *
+ * Get list of all processes.
+ * Foreach process check its state.
+ * If it is RUNNING it means that it actually has some threads
+ *  that are in TH_STATE_RUNNING.
+ * Foreach pid and foreach pid's threads check their state and increment
+ *  the run_threads counter acordingly.
+ */
 int update_running_threads(void)
 {
+    struct kinfo_proc *p = NULL;
+    int proc_count = 0;
+    int run_threads = 0;
+    
+    proc_count = helper_get_proc_list(&p);
+    
+    if (proc_count == -1)
+        return 0;
+    
+    for (int i = 0; i < proc_count; i++)
+        if (p[i].kp_proc.p_stat & SRUN)
+        {
+            pid_t pid = 0;
+            struct proc_taskinfo pti;
+            struct proc_threadinfo pthi;
+            int num_threads = 0;
+            
+            pid = p[i].kp_proc.p_pid;
+            
+            /* get total number of threads this pid has */
+            if (sizeof(pti) == proc_pidinfo(pid, PROC_PIDTASKINFO, 0, &pti, sizeof(pti)))
+            {
+                num_threads = pti.pti_threadnum;
+            }
+            else continue;
+            
+            /* foreach thread check its state */
+            for (int i = 0; i < num_threads; i++)
+                if (sizeof(pthi) == proc_pidinfo(pid, PROC_PIDTHREADINFO, i, &pthi, sizeof(pthi)))
+                {
+                    if (pthi.pth_run_state == TH_STATE_RUNNING)
+                        run_threads++;
+                }
+                else continue;
+        }
+    
+    free(p);
+    info.run_threads = run_threads;
     return 0;
 }
 
@@ -538,14 +710,16 @@ int update_running_processes(void)
     if (proc_count == -1)
         return 0;
     
-    for (int i = 0; i < proc_count; i++) {
-        if (p[i].kp_proc.p_stat == SRUN)
+    for (int i = 0; i < proc_count; i++)
+    {
+        int state = p[i].kp_proc.p_stat;
+        
+        if (state == SRUN)       // XXX this check needs to be fixed...
             run_procs++;
     }
     
-    info.run_procs = run_procs;
-    
     free(p);
+    info.run_procs = run_procs;
     return 0;
 }
 
@@ -585,13 +759,16 @@ void get_cpu_count(void)
      *  ATLEAST this is the case on macOS, don't know if it is in the Linux, too!
      *
      */
+    
+    // XXX this can be moved to update_cpu_usage() but keep here to follow linux implementation
     if (!info.cpu_usage)
     {
         /*
          * Allocate ncpus+1 slots because cpu_usage[0] is overall usage.
          */
         info.cpu_usage = (float *) malloc((info.cpu_count + 1) * sizeof(float));
-        if (info.cpu_usage == NULL) {
+        if (info.cpu_usage == NULL)
+        {
             CRIT_ERR(NULL, NULL, "malloc");
         }
     }
@@ -787,17 +964,14 @@ void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
     printf( "get_battery_short_status: STUB\n" );
 }
 
-
 int get_entropy_avail(unsigned int * val)
 {
     (void)val;
-    printf( "get_entropy_avail: STUB\n!" );
     return 1;
 }
 int get_entropy_poolsize(unsigned int * val)
 {
     (void)val;
-    printf( "get_entropy_poolsize: STUB\n!" );
     return 1;
 }
 
