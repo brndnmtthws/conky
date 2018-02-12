@@ -403,6 +403,11 @@ int check_mount(struct text_object *obj)
     return 0;
 }
 
+/*
+ * required by update_pages_stolen().
+ * Taken from apple's top.
+ * The code is intact.
+ */
 /* This is for <rdar://problem/6410098>. */
 static uint64_t
 round_down_wired(uint64_t value) {
@@ -410,11 +415,10 @@ round_down_wired(uint64_t value) {
 }
 
 /*
- * Completely the same as apple's
- *
- * uses:
- * 1. libtop_tsamp_t
- * 2. round_down_wired()
+ * must be called before libtop_tsamp_update_vm_stats()
+ *  to calculate the pages_stolen variable.
+ * Taken from apple's top.
+ * The code is intact.
  */
 /* This is for <rdar://problem/6410098>. */
 static void
@@ -505,24 +509,23 @@ update_pages_stolen(libtop_tsamp_t *tsamp) {
     }
 }
 
-
+/**
+ * libtop_tsamp_update_vm_stats
+ *
+ *
+ * taken from apple's top (libtop.c)
+ * Changes for conky:
+ *  - remove references to p_* and b_* named variables
+ *  - remove reference to seq variable
+ *  - libtop_port replaced with mach_host_self()
+ */
 static int
 libtop_tsamp_update_vm_stats(libtop_tsamp_t* tsamp) {
     kern_return_t kr;
     //tsamp->p_vm_stat = tsamp->vm_stat;
     
-
-    
-    
-    // XXX npyl
-    mach_port_t libtop_port = mach_host_self();
-    
-    
-    
-
-    
     mach_msg_type_number_t count = sizeof(tsamp->vm_stat) / sizeof(natural_t);
-    kr = host_statistics64(libtop_port, HOST_VM_INFO64, (host_info64_t)&tsamp->vm_stat, &count);
+    kr = host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&tsamp->vm_stat, &count);
     if (kr != KERN_SUCCESS) {
         return kr;
     }
@@ -546,6 +549,9 @@ libtop_tsamp_update_vm_stats(libtop_tsamp_t* tsamp) {
     return kr;
 }
 
+/*
+ * helper function for update_meminfo()
+ */
 uint64_t get_physical_memory(void)
 {
     int mib[2] = { CTL_HW, HW_MEMSIZE };
@@ -553,9 +559,10 @@ uint64_t get_physical_memory(void)
     int64_t physical_memory = 0;
     size_t length = sizeof(int64_t);
     
-    sysctl(mib, 2, &physical_memory, &length, NULL, 0);
-    
-    // XXX error handling
+    if (sysctl(mib, 2, &physical_memory, &length, NULL, 0) == -1)
+    {
+        physical_memory = 0;
+    }
     
     return physical_memory;
 }
@@ -589,9 +596,8 @@ int update_meminfo(void)
         tsamp->pagesize = getpagesize();
     }
     
-    uint64_t physical_memory = get_physical_memory();
-    
     /* get physical memory */
+    uint64_t physical_memory = get_physical_memory();
     info.memmax = (physical_memory / 1024);
     
     /*
@@ -601,9 +607,29 @@ int update_meminfo(void)
     update_pages_stolen(tsamp);
     libtop_tsamp_update_vm_stats(tsamp);
     
+    eprintf("stolen pages %lu  stolen mem %lu\n", tsamp->pages_stolen, tsamp->pages_stolen*page_size/1024);
     eprintf("wired %lu, inactive %lu active %lu\n\n", tsamp->vm_stat.wire_count*page_size/1024, tsamp->vm_stat.inactive_count*page_size/1024, tsamp->vm_stat.active_count*page_size/1024);
     
-    uint64_t used = (physical_memory / 1024) - (tsamp->vm_stat.free_count*page_size / 1024);
+    /*
+     * This is actually a tricky part.
+     * MenuMeters, Activity Monitor and top show different values.
+     * (We are gonna stick with top's implementation)
+     * THUS, the sum active + inactive + wired doesn't give us the desired value.
+     
+     
+     
+     * (  XXX remove the guess
+     *      I guess "used memory" is considered as the sum of active + inactive + wired + speculative...
+     *      This is stated in mach/vm_statistics.h
+     *  )
+     *
+     
+     
+     * XXX Is this the case? I think this is speculative!
+     *  Also, apple doesn't provide a way to know the "cached memory".  So, just say used = physical - vm_stats.free
+     * This way were are safe.  (Also, check this link: https://stackoverflow.com/questions/14789672/why-does-host-statistics64-return-inconsistent-results)
+     */
+    uint64_t used = (physical_memory / 1024) - (tsamp->vm_stat.free_count * page_size / 1024);
     
     // convert to kilobites
     used /= 1024;
