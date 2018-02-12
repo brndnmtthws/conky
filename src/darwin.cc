@@ -551,6 +551,7 @@ libtop_tsamp_update_vm_stats(libtop_tsamp_t* tsamp) {
 
 /*
  * helper function for update_meminfo()
+ * return physical memory in bytes
  */
 uint64_t get_physical_memory(void)
 {
@@ -583,6 +584,8 @@ int update_meminfo(void)
     ///  than what Activity Monitor says.
     ///
     
+    // XXX conky breaks the values ... :( probably some rounding problem...
+    
     vm_size_t               page_size = getpagesize();  // get pagesize in bytes
     unsigned long           swap_avail, swap_free;
     
@@ -597,8 +600,8 @@ int update_meminfo(void)
     }
     
     /* get physical memory */
-    uint64_t physical_memory = get_physical_memory();
-    info.memmax = (physical_memory / 1024);
+    uint64_t physical_memory = get_physical_memory() / 1024;
+    info.memmax = physical_memory;
     
     /*
      *  get general memory stats
@@ -629,16 +632,14 @@ int update_meminfo(void)
      *  Also, apple doesn't provide a way to know the "cached memory".  So, just say used = physical - vm_stats.free
      * This way were are safe.  (Also, check this link: https://stackoverflow.com/questions/14789672/why-does-host-statistics64-return-inconsistent-results)
      */
-    uint64_t used = (physical_memory / 1024) - (tsamp->vm_stat.free_count * page_size / 1024);
+    uint64_t used = physical_memory - (tsamp->vm_stat.free_count * page_size / 1024);
     info.mem = used;
     
+    // XXX these variables need to be fixed?
     info.memwithbuffers = info.mem;
     info.memeasyfree = info.memfree = info.memmax - info.mem;
     
     eprintf("USED MEMORY %llu\n\n\n", used);
-    
-    // XXX rest memory related conky variables
-    // XXX this is probably for another time...
     
     if ((swapmode(&swap_avail, &swap_free)) >= 0)
     {
