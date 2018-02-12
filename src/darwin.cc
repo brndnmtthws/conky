@@ -403,65 +403,251 @@ int check_mount(struct text_object *obj)
     return 0;
 }
 
+/*
+ * required by update_pages_stolen().
+ * Taken from apple's top.
+ * The code is intact.
+ */
+/* This is for <rdar://problem/6410098>. */
+static uint64_t
+round_down_wired(uint64_t value) {
+    return (value & ~((128 * 1024 * 1024ULL) - 1));
+}
+
+/*
+ * must be called before libtop_tsamp_update_vm_stats()
+ *  to calculate the pages_stolen variable.
+ * Taken from apple's top.
+ * The code is intact.
+ */
+/* This is for <rdar://problem/6410098>. */
+static void
+update_pages_stolen(libtop_tsamp_t *tsamp) {
+    static int mib_reserved[CTL_MAXNAME];
+    static int mib_unusable[CTL_MAXNAME];
+    static int mib_other[CTL_MAXNAME];
+    static size_t mib_reserved_len = 0;
+    static size_t mib_unusable_len = 0;
+    static size_t mib_other_len = 0;
+    int r;
+    
+    tsamp->pages_stolen = 0;
+    
+    /* This can be used for testing: */
+    //tsamp->pages_stolen = (256 * 1024 * 1024ULL) / tsamp->pagesize;
+    
+    if(0 == mib_reserved_len) {
+        mib_reserved_len = CTL_MAXNAME;
+        
+        r = sysctlnametomib("machdep.memmap.Reserved", mib_reserved,
+                            &mib_reserved_len);
+        
+        if(-1 == r) {
+            mib_reserved_len = 0;
+            return;
+        }
+        
+        mib_unusable_len = CTL_MAXNAME;
+        
+        r = sysctlnametomib("machdep.memmap.Unusable", mib_unusable,
+                            &mib_unusable_len);
+        
+        if(-1 == r) {
+            mib_reserved_len = 0;
+            return;
+        }
+        
+        
+        mib_other_len = CTL_MAXNAME;
+        
+        r = sysctlnametomib("machdep.memmap.Other", mib_other,
+                            &mib_other_len);
+        
+        if(-1 == r) {
+            mib_reserved_len = 0;
+            return;
+        }
+    }
+    
+    if(mib_reserved_len > 0 && mib_unusable_len > 0 && mib_other_len > 0) {
+        uint64_t reserved = 0, unusable = 0, other = 0;
+        size_t reserved_len;
+        size_t unusable_len;
+        size_t other_len;
+        
+        reserved_len = sizeof(reserved);
+        unusable_len = sizeof(unusable);
+        other_len = sizeof(other);
+        
+        /* These are all declared as QUAD/uint64_t sysctls in the kernel. */
+        
+        if(-1 == sysctl(mib_reserved, mib_reserved_len, &reserved,
+                        &reserved_len, NULL, 0)) {
+            return;
+        }
+        
+        if(-1 == sysctl(mib_unusable, mib_unusable_len, &unusable,
+                        &unusable_len, NULL, 0)) {
+            return;
+        }
+        
+        if(-1 == sysctl(mib_other, mib_other_len, &other,
+                        &other_len, NULL, 0)) {
+            return;
+        }
+        
+        if(reserved_len == sizeof(reserved)
+           && unusable_len == sizeof(unusable)
+           && other_len == sizeof(other)) {
+            uint64_t stolen = reserved + unusable + other;
+            uint64_t mb128 = 128 * 1024 * 1024ULL;
+            
+            if(stolen >= mb128) {
+                tsamp->pages_stolen = round_down_wired(stolen) / tsamp->pagesize;
+            }
+        }
+    }
+}
+
+/**
+ * libtop_tsamp_update_vm_stats
+ *
+ *
+ * taken from apple's top (libtop.c)
+ * Changes for conky:
+ *  - remove references to p_* and b_* named variables
+ *  - remove reference to seq variable
+ *  - libtop_port replaced with mach_host_self()
+ */
+static int
+libtop_tsamp_update_vm_stats(libtop_tsamp_t* tsamp) {
+    kern_return_t kr;
+    //tsamp->p_vm_stat = tsamp->vm_stat;
+    
+    mach_msg_type_number_t count = sizeof(tsamp->vm_stat) / sizeof(natural_t);
+    kr = host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&tsamp->vm_stat, &count);
+    if (kr != KERN_SUCCESS) {
+        return kr;
+    }
+    
+    if (tsamp->pages_stolen > 0) {
+        tsamp->vm_stat.wire_count += tsamp->pages_stolen;
+    }
+    
+    // Check whether we got purgeable memory statistics
+    tsamp->purgeable_is_valid = (count == (sizeof(tsamp->vm_stat)/sizeof(natural_t)));
+    if (!tsamp->purgeable_is_valid) {
+        tsamp->vm_stat.purgeable_count = 0;
+        tsamp->vm_stat.purges = 0;
+    }
+    
+    //if (tsamp->seq == 1) {
+    //    tsamp->p_vm_stat = tsamp->vm_stat;
+    //    tsamp->b_vm_stat = tsamp->vm_stat;
+    //}
+    
+    return kr;
+}
+
+/*
+ * helper function for update_meminfo()
+ */
+uint64_t get_physical_memory(void)
+{
+    int mib[2] = { CTL_HW, HW_MEMSIZE };
+    
+    int64_t physical_memory = 0;
+    size_t length = sizeof(int64_t);
+    
+    if (sysctl(mib, 2, &physical_memory, &length, NULL, 0) == -1)
+    {
+        physical_memory = 0;
+    }
+    
+    return physical_memory;
+}
+
 int update_meminfo(void)
 {
     //
     //  This is awesome:
     //  https://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
     //
-    //  it helped me with update_meminfo() and swapmode()
+    //  it helped me with update_meminfo() and swapmode().
+    //  Also, apple's top has been unbelievably helpful.
     //
     
-    int                     mib[2] = { CTL_HW, HW_MEMSIZE };
-    size_t                  length = sizeof( int64_t );
+    ///
+    /// Please note that the implementation of this function
+    ///  tries to follow apple's top! This is why for example we find different memory used
+    ///  than what Activity Monitor says.
+    ///
     
-    vm_size_t               page_size;
-    mach_port_t             mach_port;
-    mach_msg_type_number_t  count;
-    vm_statistics64_data_t  vm_stats;
-    
+    vm_size_t               page_size = getpagesize();  // get pagesize in bytes
     unsigned long           swap_avail, swap_free;
     
-    //
-    //  get machine's memory
-    //
-    
-    if( sysctl( mib, 2, &info.memmax, &length, NULL, 0 ) == 0 )
+    static
+    libtop_tsamp_t * tsamp = nullptr;
+    if (!tsamp)
     {
-        info.memmax /= 1024;         // make it GiB
-    }
-    else {
-        info.memmax = 0;
-        perror("sysctl");
-    }
-    
-    //
-    //  get used memory
-    //
-    
-    mach_port = mach_host_self();
-    count = sizeof(vm_stats) / sizeof(natural_t);
-    if (KERN_SUCCESS == host_page_size(mach_port, &page_size) &&
-        KERN_SUCCESS == host_statistics64(mach_port, HOST_VM_INFO,
-                                          (host_info64_t)&vm_stats, &count))
-    {
-        info.mem = ((int64_t)vm_stats.active_count +
-                    (int64_t)vm_stats.inactive_count +
-                    (int64_t)vm_stats.wire_count) *  (int64_t)page_size;
+        tsamp = new libtop_tsamp_t;
+        memset(tsamp, 0, sizeof(libtop_tsamp_t));
         
-        info.mem /= 1024;        // make it GiB
-    } else {
-        info.mem = 0;  // this is to indicate error getting the free mem.
+        tsamp->pagesize = getpagesize();
     }
     
-    info.memwithbuffers = info.mem;
-    info.memeasyfree = info.memfree = info.memmax - info.mem;
+    /* get physical memory */
+    uint64_t physical_memory = get_physical_memory();
+    info.memmax = (physical_memory / 1024);
     
-    if ((swapmode(&swap_avail, &swap_free)) >= 0) {
+    /*
+     *  get general memory stats
+     *  but first update pages stolen count
+     */
+    update_pages_stolen(tsamp);
+    libtop_tsamp_update_vm_stats(tsamp);
+    
+    eprintf("stolen pages %lu  stolen mem %lu\n", tsamp->pages_stolen, tsamp->pages_stolen*page_size/1024);
+    eprintf("wired %lu, inactive %lu active %lu\n\n", tsamp->vm_stat.wire_count*page_size/1024, tsamp->vm_stat.inactive_count*page_size/1024, tsamp->vm_stat.active_count*page_size/1024);
+    
+    /*
+     * This is actually a tricky part.
+     * MenuMeters, Activity Monitor and top show different values.
+     * (We are gonna stick with top's implementation)
+     * THUS, the sum active + inactive + wired doesn't give us the desired value.
+     
+     
+     
+     * (  XXX remove the guess
+     *      I guess "used memory" is considered as the sum of active + inactive + wired + speculative...
+     *      This is stated in mach/vm_statistics.h
+     *  )
+     *
+     
+     
+     * XXX Is this the case? I think this is speculative!
+     *  Also, apple doesn't provide a way to know the "cached memory".  So, just say used = physical - vm_stats.free
+     * This way were are safe.  (Also, check this link: https://stackoverflow.com/questions/14789672/why-does-host-statistics64-return-inconsistent-results)
+     */
+    uint64_t used = (physical_memory / 1024) - (tsamp->vm_stat.free_count * page_size / 1024);
+    
+    // convert to kilobites
+    used /= 1024;
+    info.mem = used;
+    
+    eprintf("USED MEMORY %llu\n\n\n", used);
+    
+    // XXX rest memory related conky variables
+    // XXX this is probably for another time...
+    
+    if ((swapmode(&swap_avail, &swap_free)) >= 0)
+    {
         info.swapmax = swap_avail;
         info.swap = (swap_avail - swap_free);
         info.swapfree = swap_free;
-    } else {
+    }
+    else
+    {
         info.swapmax = 0;
         info.swap = 0;
         info.swapfree = 0;
@@ -482,8 +668,56 @@ int update_threads(void)
     return 0;
 }
 
+/*
+ * XXX This seems to be wrong... We must first find the threads (using thread_info() )
+ *
+ * Get list of all processes.
+ * Foreach process check its state.
+ * If it is RUNNING it means that it actually has some threads
+ *  that are in TH_STATE_RUNNING.
+ * Foreach pid and foreach pid's threads check their state and increment
+ *  the run_threads counter acordingly.
+ */
 int update_running_threads(void)
 {
+    struct kinfo_proc *p = NULL;
+    int proc_count = 0;
+    int run_threads = 0;
+    
+    proc_count = helper_get_proc_list(&p);
+    
+    if (proc_count == -1)
+        return 0;
+    
+    for (int i = 0; i < proc_count; i++)
+        if (p[i].kp_proc.p_stat & SRUN)
+        {
+            pid_t pid = 0;
+            struct proc_taskinfo pti;
+            struct proc_threadinfo pthi;
+            int num_threads = 0;
+            
+            pid = p[i].kp_proc.p_pid;
+            
+            /* get total number of threads this pid has */
+            if (sizeof(pti) == proc_pidinfo(pid, PROC_PIDTASKINFO, 0, &pti, sizeof(pti)))
+            {
+                num_threads = pti.pti_threadnum;
+            }
+            else continue;
+            
+            /* foreach thread check its state */
+            for (int i = 0; i < num_threads; i++)
+                if (sizeof(pthi) == proc_pidinfo(pid, PROC_PIDTHREADINFO, i, &pthi, sizeof(pthi)))
+                {
+                    if (pthi.pth_run_state == TH_STATE_RUNNING)
+                        run_threads++;
+                }
+                else continue;
+        }
+    
+    free(p);
+    info.run_threads = run_threads;
     return 0;
 }
 
@@ -538,14 +772,16 @@ int update_running_processes(void)
     if (proc_count == -1)
         return 0;
     
-    for (int i = 0; i < proc_count; i++) {
-        if (p[i].kp_proc.p_stat == SRUN)
+    for (int i = 0; i < proc_count; i++)
+    {
+        int state = p[i].kp_proc.p_stat;
+        
+        if (state == SRUN)       // XXX this check needs to be fixed...
             run_procs++;
     }
     
-    info.run_procs = run_procs;
-    
     free(p);
+    info.run_procs = run_procs;
     return 0;
 }
 
@@ -585,13 +821,16 @@ void get_cpu_count(void)
      *  ATLEAST this is the case on macOS, don't know if it is in the Linux, too!
      *
      */
+    
+    // XXX this can be moved to update_cpu_usage() but keep here to follow linux implementation
     if (!info.cpu_usage)
     {
         /*
          * Allocate ncpus+1 slots because cpu_usage[0] is overall usage.
          */
         info.cpu_usage = (float *) malloc((info.cpu_count + 1) * sizeof(float));
-        if (info.cpu_usage == NULL) {
+        if (info.cpu_usage == NULL)
+        {
             CRIT_ERR(NULL, NULL, "malloc");
         }
     }
@@ -787,17 +1026,14 @@ void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
     printf( "get_battery_short_status: STUB\n" );
 }
 
-
 int get_entropy_avail(unsigned int * val)
 {
     (void)val;
-    printf( "get_entropy_avail: STUB\n!" );
     return 1;
 }
 int get_entropy_poolsize(unsigned int * val)
 {
     (void)val;
-    printf( "get_entropy_poolsize: STUB\n!" );
     return 1;
 }
 
