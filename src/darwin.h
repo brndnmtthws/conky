@@ -27,6 +27,40 @@
 #include <strings.h>
 #include <stdio.h>
 
+
+#include <mach/vm_statistics.h>
+#include <sys/sysctl.h>
+/*
+ * General sample information.
+ *
+ * Fields prefix meanings:
+ *
+ *   b_ : Value for first sample.
+ *   p_ : Value for previous sample (same as b_ if p_seq is 0).
+ */
+typedef struct {
+    /*
+     * Sample sequence number, incremented for every sample.  The first
+     * sample has a sequence number of 1.
+     */
+    //uint32_t        seq;
+    
+    /* VM page size. */
+    vm_size_t       pagesize;
+    
+    /* Physical memory size. */
+    uint64_t        memsize;
+    
+    /* VM statistics. */
+    vm_statistics64_data_t    vm_stat;
+    //vm_statistics64_data_t    b_vm_stat;
+    //vm_statistics64_data_t    p_vm_stat;
+    
+    boolean_t       purgeable_is_valid;
+    
+    uint64_t        pages_stolen;
+} libtop_tsamp_t;
+
 /*
  *  on versions prior to Sierra clock_gettime is not implemented.
  */

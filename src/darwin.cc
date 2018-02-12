@@ -403,13 +403,6 @@ int check_mount(struct text_object *obj)
     return 0;
 }
 
-struct libtop_tsamp_t
-{
-    uint64_t pages_stolen;
-    uint64_t pagesize;
-};
-
-// COMPLETELY stolen from top (apple)
 /* This is for <rdar://problem/6410098>. */
 static uint64_t
 round_down_wired(uint64_t value) {
@@ -417,15 +410,15 @@ round_down_wired(uint64_t value) {
 }
 
 /*
- * stolen from top (apple)
- */
-/*
+ * Completely the same as apple's
+ *
  * uses:
  * 1. libtop_tsamp_t
  * 2. round_down_wired()
  */
+/* This is for <rdar://problem/6410098>. */
 static void
-update_pages_stolen(struct libtop_tsamp_t *tsamp) {
+update_pages_stolen(libtop_tsamp_t *tsamp) {
     static int mib_reserved[CTL_MAXNAME];
     static int mib_unusable[CTL_MAXNAME];
     static int mib_other[CTL_MAXNAME];
@@ -437,7 +430,7 @@ update_pages_stolen(struct libtop_tsamp_t *tsamp) {
     tsamp->pages_stolen = 0;
     
     /* This can be used for testing: */
-    tsamp->pages_stolen = (256 * 1024 * 1024ULL) / tsamp->pagesize;
+    //tsamp->pages_stolen = (256 * 1024 * 1024ULL) / tsamp->pagesize;
     
     if(0 == mib_reserved_len) {
         mib_reserved_len = CTL_MAXNAME;
@@ -512,28 +505,82 @@ update_pages_stolen(struct libtop_tsamp_t *tsamp) {
     }
 }
 
+
+static int
+libtop_tsamp_update_vm_stats(libtop_tsamp_t* tsamp) {
+    kern_return_t kr;
+    //tsamp->p_vm_stat = tsamp->vm_stat;
+    
+
+    
+    
+    // XXX npyl
+    mach_port_t libtop_port = mach_host_self();
+    
+    
+    
+
+    
+    mach_msg_type_number_t count = sizeof(tsamp->vm_stat) / sizeof(natural_t);
+    kr = host_statistics64(libtop_port, HOST_VM_INFO64, (host_info64_t)&tsamp->vm_stat, &count);
+    if (kr != KERN_SUCCESS) {
+        return kr;
+    }
+    
+    if (tsamp->pages_stolen > 0) {
+        tsamp->vm_stat.wire_count += tsamp->pages_stolen;
+    }
+    
+    // Check whether we got purgeable memory statistics
+    tsamp->purgeable_is_valid = (count == (sizeof(tsamp->vm_stat)/sizeof(natural_t)));
+    if (!tsamp->purgeable_is_valid) {
+        tsamp->vm_stat.purgeable_count = 0;
+        tsamp->vm_stat.purges = 0;
+    }
+    
+    //if (tsamp->seq == 1) {
+    //    tsamp->p_vm_stat = tsamp->vm_stat;
+    //    tsamp->b_vm_stat = tsamp->vm_stat;
+    //}
+    
+    return kr;
+}
+
+uint64_t get_physical_memory(void)
+{
+    int mib[2] = { CTL_HW, HW_MEMSIZE };
+    
+    int64_t physical_memory = 0;
+    size_t length = sizeof(int64_t);
+    
+    sysctl(mib, 2, &physical_memory, &length, NULL, 0);
+    
+    // XXX error handling
+    
+    return physical_memory;
+}
+
 int update_meminfo(void)
 {
     //
     //  This is awesome:
     //  https://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
     //
-    //  it helped me with update_meminfo() and swapmode()
+    //  it helped me with update_meminfo() and swapmode().
+    //  Also, apple's top has been unbelievably helpful.
     //
     
-    int                     mib[2] = { CTL_HW, HW_MEMSIZE };
-    size_t                  length = sizeof( int64_t );
+    ///
+    /// Please note that the implementation of this function
+    ///  tries to follow apple's top! This is why for example we find different memory used
+    ///  than what Activity Monitor says.
+    ///
     
-    vm_size_t               page_size;
-    mach_port_t             mach_port;
-    mach_msg_type_number_t  count;
-    vm_statistics64_data_t  vm_stats;
-    
+    vm_size_t               page_size = getpagesize();  // get pagesize in bytes
     unsigned long           swap_avail, swap_free;
     
-    // XXX avoid copyright strikes, please
-    /* get stolen pages as is done in apple's top */
-    struct libtop_tsamp_t * tsamp = nullptr;
+    static
+    libtop_tsamp_t * tsamp = nullptr;
     if (!tsamp)
     {
         tsamp = new libtop_tsamp_t;
@@ -542,50 +589,39 @@ int update_meminfo(void)
         tsamp->pagesize = getpagesize();
     }
     
+    uint64_t physical_memory = get_physical_memory();
+    
+    /* get physical memory */
+    info.memmax = (physical_memory / 1024);
+    
+    /*
+     *  get general memory stats
+     *  but first update pages stolen count
+     */
     update_pages_stolen(tsamp);
-    printf("bytes stolen = %llu\n", tsamp->pages_stolen*getpagesize());
+    libtop_tsamp_update_vm_stats(tsamp);
     
-    //
-    //  get machine's memory
-    //
+    eprintf("wired %lu, inactive %lu active %lu\n\n", tsamp->vm_stat.wire_count*page_size/1024, tsamp->vm_stat.inactive_count*page_size/1024, tsamp->vm_stat.active_count*page_size/1024);
     
-    if( sysctl( mib, 2, &info.memmax, &length, NULL, 0 ) == 0 )
+    uint64_t used = (physical_memory / 1024) - (tsamp->vm_stat.free_count*page_size / 1024);
+    
+    // convert to kilobites
+    used /= 1024;
+    info.mem = used;
+    
+    eprintf("USED MEMORY %llu\n\n\n", used);
+    
+    // XXX rest memory related conky variables
+    // XXX this is probably for another time...
+    
+    if ((swapmode(&swap_avail, &swap_free)) >= 0)
     {
-        info.memmax /= 1024;         // make it GiB
-    }
-    else {
-        info.memmax = 0;
-        perror("sysctl");
-    }
-    
-    //
-    //  get used memory
-    //
-    
-    mach_port = mach_host_self();
-    count = sizeof(vm_stats) / sizeof(natural_t);
-    if (KERN_SUCCESS == host_page_size(mach_port, &page_size) &&
-        KERN_SUCCESS == host_statistics64(mach_port, HOST_VM_INFO,
-                                          (host_info64_t)&vm_stats, &count))
-    {
-        info.mem = ((int64_t)vm_stats.active_count +
-                    (int64_t)vm_stats.inactive_count +
-                    (int64_t)vm_stats.wire_count) *  (int64_t)page_size;
-        
-        info.mem /= 1024;        // make it GiB
-    } else {
-        info.mem = 0;  // this is to indicate error getting the free mem.
-    }
-    
-    info.memwithbuffers = info.mem;
-    info.memeasyfree = info.memfree = info.memmax - info.mem;
-    
-    // xxx this is just fine! do not bother with this
-    if ((swapmode(&swap_avail, &swap_free)) >= 0) {
         info.swapmax = swap_avail;
         info.swap = (swap_avail - swap_free);
         info.swapfree = swap_free;
-    } else {
+    }
+    else
+    {
         info.swapmax = 0;
         info.swap = 0;
         info.swapfree = 0;
