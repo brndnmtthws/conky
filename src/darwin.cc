@@ -630,10 +630,10 @@ int update_meminfo(void)
      * This way were are safe.  (Also, check this link: https://stackoverflow.com/questions/14789672/why-does-host-statistics64-return-inconsistent-results)
      */
     uint64_t used = (physical_memory / 1024) - (tsamp->vm_stat.free_count * page_size / 1024);
-    
-    // convert to kilobites
-    used /= 1024;
     info.mem = used;
+    
+    info.memwithbuffers = info.mem;
+    info.memeasyfree = info.memfree = info.memmax - info.mem;
     
     eprintf("USED MEMORY %llu\n\n\n", used);
     
