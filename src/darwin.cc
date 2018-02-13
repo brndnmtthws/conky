@@ -198,6 +198,17 @@ struct cpusample
 };
 
 /*
+ * Memory sample
+ */
+typedef struct memorysample
+{
+    vm_statistics64_data_t vm_stat;             /* general VM information */
+    uint64_t        pages_stolen;               /* # of stolen pages */
+    vm_size_t       pagesize;                   /* pagesize (in bytes) */
+    boolean_t       purgeable_is_valid;         /* check if we have data for purgeable memory */
+} libtop_tsamp_t;
+
+/*
  * get_cpu_sample()
  *
  * Gets systemTime, userTime and idleTime for CPU
@@ -570,6 +581,8 @@ uint64_t get_physical_memory(void)
 
 int update_meminfo(void)
 {
+    /* XXX implement remaining memory-related variables (see ) */
+    
     //
     //  This is awesome:
     //  https://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
@@ -596,7 +609,7 @@ int update_meminfo(void)
         tsamp = new libtop_tsamp_t;
         memset(tsamp, 0, sizeof(libtop_tsamp_t));
         
-        tsamp->pagesize = getpagesize();
+        tsamp->pagesize = page_size;
     }
     
     /* get physical memory */
@@ -634,10 +647,6 @@ int update_meminfo(void)
      */
     uint64_t used = physical_memory - (tsamp->vm_stat.free_count * page_size / 1024);
     info.mem = used;
-    
-    // XXX these variables need to be fixed?
-    info.memwithbuffers = info.mem;
-    info.memeasyfree = info.memfree = info.memmax - info.mem;
     
     eprintf("USED MEMORY %llu\n\n\n", used);
     
@@ -926,30 +935,30 @@ int update_load_average(void)
 
 double get_acpi_temperature(int fd)
 {
-    printf( "get_acpi_temperature: STUB\n" );
+    printf("get_acpi_temperature: STUB\n");
     return 0.0;
 }
 
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 {
-    printf( "get_battery_stuff: STUB\n" );
+    printf("get_battery_stuff: STUB\n");
 }
 
 int get_battery_perct(const char *bat)
 {
-    printf( "get_battery_perct: STUB\n" );
+    printf("get_battery_perct: STUB\n");
     return 1;
 }
 
 double get_battery_perct_bar(struct text_object *obj)
 {
-    printf( "get_battery_perct_bar: STUB\n" );
+    printf("get_battery_perct_bar: STUB\n");
     return 0.0;
 }
 
 int open_acpi_temperature(const char *name)
 {
-    printf( "open_acpi_temperature: STUB\n" );
+    printf("open_acpi_temperature: STUB\n");
     
     (void)name;
     /* Not applicable for FreeBSD. */
@@ -958,12 +967,12 @@ int open_acpi_temperature(const char *name)
 
 void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size, const char *adapter)
 {
-    printf( "get_acpi_ac_adapter: STUB\n" );
+    printf("get_acpi_ac_adapter: STUB\n");
 }
 
 void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 {
-    printf( "get_acpi_fan: STUB\n" );
+    printf("get_acpi_fan: STUB\n");
 }
 
 /* void */
@@ -1012,19 +1021,19 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size, const char *p_fo
 #if 0
 void update_wifi_stats(void)
 {
-    printf( "update_wifi_stats: STUB but also in #if 0\n" );
+    printf("update_wifi_stats: STUB but also in #if 0\n");
 }
 #endif
 
 int update_diskio(void)
 {
-    printf( "update_diskio: STUB\n" );
+    printf("update_diskio: STUB\n");
     return 0;
 }
 
 void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
 {
-    printf( "get_battery_short_status: STUB\n" );
+    printf("get_battery_short_status: STUB\n");
 }
 
 int get_entropy_avail(unsigned int * val)
