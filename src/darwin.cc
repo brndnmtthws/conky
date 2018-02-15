@@ -607,9 +607,6 @@ int update_meminfo(void)
     update_pages_stolen(tsamp);
     libtop_tsamp_update_vm_stats(tsamp);
     
-    eprintf("stolen pages %lu  stolen mem %lu\n", tsamp->pages_stolen, tsamp->pages_stolen*page_size/1024);
-    eprintf("wired %lu, inactive %lu active %lu\n\n", tsamp->vm_stat.wire_count*page_size/1024, tsamp->vm_stat.inactive_count*page_size/1024, tsamp->vm_stat.active_count*page_size/1024);
-    
     /*
      * This is actually a tricky part.
      *
@@ -630,10 +627,13 @@ int update_meminfo(void)
      *  summing up wired, active and inactive is what we should do BUT, based on top, this is incorrect.
      * Seems like apple keeps some info "secret"!
      */
-    uint64_t used = physical_memory - (tsamp->vm_stat.free_count * page_size / 1024);
-    info.mem = used;
+    info.mem = physical_memory - (tsamp->vm_stat.free_count * page_size / 1024);
 
-    eprintf("USED MEMORY %llu\n\n\n", used);
+    /* rest memory related variables */
+    info.memwithbuffers = info.mem;
+    info.memeasyfree = info.memfree = info.memmax - info.mem;
+    
+    // XXX finish the buffers, membuf, caches
     
     if ((swapmode(&swap_avail, &swap_free)) >= 0)
     {
