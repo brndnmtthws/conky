@@ -533,7 +533,6 @@ update_pages_stolen(libtop_tsamp_t *tsamp) {
 static int
 libtop_tsamp_update_vm_stats(libtop_tsamp_t* tsamp) {
     kern_return_t kr;
-    //tsamp->p_vm_stat = tsamp->vm_stat;
     
     mach_msg_type_number_t count = sizeof(tsamp->vm_stat) / sizeof(natural_t);
     kr = host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&tsamp->vm_stat, &count);
@@ -551,11 +550,6 @@ libtop_tsamp_update_vm_stats(libtop_tsamp_t* tsamp) {
         tsamp->vm_stat.purgeable_count = 0;
         tsamp->vm_stat.purges = 0;
     }
-    
-    //if (tsamp->seq == 1) {
-    //    tsamp->p_vm_stat = tsamp->vm_stat;
-    //    tsamp->b_vm_stat = tsamp->vm_stat;
-    //}
     
     return kr;
 }
@@ -581,23 +575,11 @@ uint64_t get_physical_memory(void)
 
 int update_meminfo(void)
 {
-    /* XXX implement remaining memory-related variables (see ) */
-    
-    //
-    //  This is awesome:
-    //  https://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
-    //
-    //  it helped me with update_meminfo() and swapmode().
-    //  Also, apple's top has been unbelievably helpful.
-    //
-    
-    ///
-    /// Please note that the implementation of this function
-    ///  tries to follow apple's top! This is why for example we find different memory used
-    ///  than what Activity Monitor says.
-    ///
-    
-    // XXX conky breaks the values ... :( probably some rounding problem...
+    /* implement remaining memory-related variables (see conky.h) */
+    /* check if p_vm_stat, seq and others were actually needed for the algorithm to work correct */
+    /* conky breaks the values ... :( probably some rounding problem...
+        Though we get the right values (based on top) */
+    /* probably investigate the "probably apple keeps some info secret" */
     
     vm_size_t               page_size = getpagesize();  // get pagesize in bytes
     unsigned long           swap_avail, swap_free;
@@ -607,8 +589,10 @@ int update_meminfo(void)
     if (!tsamp)
     {
         tsamp = new libtop_tsamp_t;
-        memset(tsamp, 0, sizeof(libtop_tsamp_t));
+        if (!tsamp)
+            return 0;
         
+        memset(tsamp, 0, sizeof(libtop_tsamp_t));
         tsamp->pagesize = page_size;
     }
     
@@ -628,26 +612,27 @@ int update_meminfo(void)
     
     /*
      * This is actually a tricky part.
-     * MenuMeters, Activity Monitor and top show different values.
-     * (We are gonna stick with top's implementation)
-     * THUS, the sum active + inactive + wired doesn't give us the desired value.
-     
-     
-     
-     * (  XXX remove the guess
-     *      I guess "used memory" is considered as the sum of active + inactive + wired + speculative...
-     *      This is stated in mach/vm_statistics.h
-     *  )
      *
-     
-     
-     * XXX Is this the case? I think this is speculative!
-     *  Also, apple doesn't provide a way to know the "cached memory".  So, just say used = physical - vm_stats.free
-     * This way were are safe.  (Also, check this link: https://stackoverflow.com/questions/14789672/why-does-host-statistics64-return-inconsistent-results)
+     * MenuMeters, Activity Monitor and top show different values.
+     * Our code uses top's implementation because:
+     *  - it is apple's tool
+     *  - professional projects such as osquery follow it
+     *  - Activity Monitor seems to be hiding the whole truth (e.g. for being user friendly)
+     *
+     * STEPS:
+     * - get stolen pages count
+     * Occassionaly host_statistics64 doesn't return correct values (see https://stackoverflow.com/questions/14789672/why-does-host-statistics64-return-inconsistent-results)
+     * We need to get the count of stolen pages and add it to wired pages count.
+     * This is a known bug and apple has implemented the function update_pages_stolen().
+     *
+     * - use vm_stat.free_count instead of the sum of wired, active and inactive
+     * Based on https://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
+     *  summing up wired, active and inactive is what we should do BUT, based on top, this is incorrect.
+     * Seems like apple keeps some info "secret"!
      */
     uint64_t used = physical_memory - (tsamp->vm_stat.free_count * page_size / 1024);
     info.mem = used;
-    
+
     eprintf("USED MEMORY %llu\n\n\n", used);
     
     if ((swapmode(&swap_avail, &swap_free)) >= 0)
