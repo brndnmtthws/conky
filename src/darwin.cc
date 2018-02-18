@@ -523,7 +523,6 @@ update_pages_stolen(libtop_tsamp_t *tsamp) {
 /**
  * libtop_tsamp_update_vm_stats
  *
- *
  * taken from apple's top (libtop.c)
  * Changes for conky:
  *  - remove references to p_* and b_* named variables
@@ -605,7 +604,8 @@ int update_meminfo(void)
      *  but first update pages stolen count
      */
     update_pages_stolen(tsamp);
-    libtop_tsamp_update_vm_stats(tsamp);
+    if (libtop_tsamp_update_vm_stats(tsamp) == KERN_FAILURE)
+        return 0;
     
     /*
      * This is actually a tricky part.
