@@ -1,26 +1,30 @@
 == INSTALLATION OF THE IMAGE ==
 
 Build the image with:
- $ docker build --build-arg X11=no --tag=conky .
+ $ docker build --tag=conky .
 
-Although it will also build without "--build-arg X11=no" you'll need
-some experience with both docker and conky to run the X11 version.
-
+or if you want the commandline version:
+ $ docker build --build-arg X11=no --tag=conkycmd .
 
 == RUNNING OF THE CONTAINER ==
 
-After building the easiest way to ran the commandline version is:
- $ docker run --rm -ti conky
+After building you can run the graphical version with:
+ $ docker run --rm -ti --net=host -e DISPLAY -v ~/.Xauthority:/root/.Xauthority conky
+The commandline version is easier:
+ $ docker run --rm -ti conkycmd
 
-or if you want to pass some options to conky (e.g. "--version"):
- $ docker run --rm -ti conky conky --version
+If you want to pass some options to conky you can just add them if you mention
+'conky' twice. Once for the image and once for the command. For example:
+ $ docker run --rm -ti --net=host -e DISPLAY -v ~/.Xauthority:/root/.Xauthority conky conky --version
+will show you the version of conky. Since you don't need X for this you could also do:
+ $ docker run --rm -ti conkycmd conky --version
 
-or if you want to fiddle around a bit with the configuration you could do:
- $ docker run --name=conky -ti conky bash
+If you want to fiddle around a bit with the configuration first you could do:
+ $ docker run --rm -ti --net=host -e DISPLAY -v ~/.Xauthority:/root/.Xauthority conky bash
 <change things is in the configuration>
  $ conky -c configurationfile ; exit
 
-or ... (use the docker docs to see what is possible)
+See the docker docs to a lot of other ways to (ab)use this container
 
 
 == WHY ==
@@ -31,6 +35,7 @@ Disadvantages of using the docker:
 This can be done by following the instructions in
 https://docs.docker.com/install/ to install docker CE. But just using the
 packagemanager of your distro like you would do with other software will work.
+- A lot of info will be about the current container instead of the whole system
 - At the moment our docker image is still in development fase.
 
 
