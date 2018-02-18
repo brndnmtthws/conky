@@ -1,0 +1,47 @@
+== INSTALLATION OF THE IMAGE ==
+
+Build the image with:
+ $ docker build --build-arg X11=no --tag=conky .
+
+Although it will also build without "--build-arg X11=no" you'll need
+some experience with both docker and conky to run the X11 version.
+
+
+== RUNNING OF THE CONTAINER ==
+
+After building the easiest way to ran the commandline version is:
+ $ docker run --rm -ti conky
+
+or if you want to pass some options to conky (e.g. "--version"):
+ $ docker run --rm -ti conky conky --version
+
+or if you want to fiddle around a bit with the configuration you could do:
+ $ docker run --name=conky -ti conky bash
+<change things is in the configuration>
+ $ conky -c configurationfile ; exit
+
+or ... (use the docker docs to see what is possible)
+
+
+== WHY ==
+
+Disadvantages of using the docker:
+
+ - You'll have to install docker.
+This can be done by following the instructions in
+https://docs.docker.com/install/ to install docker CE. But just using the
+packagemanager of your distro like you would do with other software will work.
+- At the moment our docker image is still in development fase.
+
+
+Advantages of using docker:
+
+- During the installation you won't have to care about which compilers,
+libraries, ... are installed. Neither should you care about how to use them.
+- The containerization of conky will make it a lot harder to let problems with
+conky affect the rest of the system.
+- Your Conky will run in exactly the same environment as everyone else's, so
+if it works for someone it will work for everyone. No matter which distro you
+are using or how you configured that distro. (The conky configuration itself
+will matter and also the version of conky)
+- Problems will be easier to recreate by developers causing faster debugging.
