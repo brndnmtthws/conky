@@ -1936,10 +1936,9 @@ static void draw_text(void)
 
 static void draw_stuff(void)
 {
-#ifndef BUILD_X11
-	static int text_offset_x, text_offset_y; /* offset for start position */
-#endif
+#ifdef BUILD_X11
 	text_offset_x = text_offset_y = 0;
+#endif /* BUILD_X11 */
 #ifdef BUILD_IMLIB2
 	cimlib_render(text_start_x, text_start_y, window.width, window.height);
 #endif /* BUILD_IMLIB2 */
