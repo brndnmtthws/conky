@@ -1,17 +1,11 @@
-## Conky for macOS
+## Conky
 
-[![Build Status](https://travis-ci.org/npyl/conky-for-macOS.svg?branch=master)](https://travis-ci.org/npyl/conky-for-macOS)
+[![Build Status](https://travis-ci.org/brndnmtthws/conky.png)](https://travis-ci.org/brndnmtthws/conky)
 
 **Conky** is a free, light-weight system monitor for X, that displays
 any kind of information on your desktop.
 
-### About this fork
-
-This is a fork an almost up to date version of conky with patches for macOS support.
-
-You can check out how it operates in a video: [conky on macOS](https://www.youtube.com/watch?v=l3tIiDdnC68)
-
-**Not all features mentioned below work! But with your help we can make this a complete port! :)**
+Grab the [latest release from GitHub](https://github.com/brndnmtthws/conky/releases/latest).
 
 ### Features
 
@@ -41,82 +35,6 @@ bars and graph widgets, with different fonts and colours.
 
 See the [User Configs](https://github.com/brndnmtthws/conky/wiki/User-Configs) section of the wiki for more
 screenshots and their associated Conky config files.
-
-### Build on macOS
-
-#### What you need
-
-* Xcode command-line tools
-* Homebrew
-* Xquartz
-* freetype, gettext, lua
-
-Once you get these installed please run the following commands as you see them!
-**The last command MUST be run if you want gettext support!**
-
-```
-brew install cmake freetype gettext lua
-brew link --force gettext
-```
-
-#### Actual build process
-
-download/clone project and `cd` into project's directory,
-You can now choose if you want to use **Unix Makefiles** or **Xcode build system**.
-
-**PLEASE beware**: if you are using an old version of cmake, it may not be able to locate lua.
-To solve this, update your cmake. (version 3.10.0 works for me on High Sierra and Mavericks)
-
-You may find useful this doc: [lua-bindings](https://github.com/antonio-malcolm/conky-configs/wiki/How-To-Compile-Conky-And-Its-Lua-Bindings-From-Source)
-Especially the part that says `In the conky project source, we'll edit cmake/ConkyPlatformChecks.cmake, line 254, like so`.
-
-**Using Unix Makefiles**
-
-type the following:
-
-```
-mkdir build
-cd build
-ccmake ..
-```
-
-Press 'c', again 'c', then 'e' and finally 'g'...
-Continue by typing:
-
-```
-make
-make install  # optional
-```
-
-( If you hit `make install` you can run conky by typing `conky` on terminal )
-
-**USE XCODE FOR BUILDING / DEVELOPING**
-
-type the following to setup an Xcode project file inside folder called `build`:
-
-```
-mkdir build
-cd build
-cmake .. -G Xcode
-```
-
-Head into `build`, find the `conky.xcodeproj` file and open it...
-
-This should launch Xcode! Once that is ready, you should see your project called "conky" on the left.
-Make sure the scheme "ALL_BUILD" is selected on the upper left (scheme or target, however you like...)
-and click the `conky` xcode project icon to alter the `Build Settings`.  Make the following changes:
-
-```
-Under Search Paths->Library Search Paths-> add /usr/local/lib
-Under Search Paths->Header Search Paths-> add /usr/local/include
-```
-With the build target being "BUILD_ALL" press the Xcode build button.
-If it is successful go on and change build target to `conky`
-
-**( This order was important, please follow exactly! )**
-
-You are now ready to compile/work on conky as you wish using Xcode IDE!
-**Configuration is complete!**
 
 ### Documentation
 
