@@ -1,0 +1,52 @@
+== INSTALLATION OF THE IMAGE ==
+
+Build the image with:
+ $ docker build --tag=conky .
+
+or if you want the commandline version:
+ $ docker build --build-arg X11=no --tag=conkycmd .
+
+== RUNNING OF THE CONTAINER ==
+
+After building you can run the graphical version with:
+ $ docker run --rm -ti --net=host -e DISPLAY -v ~/.Xauthority:/root/.Xauthority conky
+The commandline version is easier:
+ $ docker run --rm -ti conkycmd
+
+If you want to pass some options to conky you can just add them if you mention
+'conky' twice. Once for the image and once for the command. For example:
+ $ docker run --rm -ti --net=host -e DISPLAY -v ~/.Xauthority:/root/.Xauthority conky conky --version
+will show you the version of conky. Since you don't need X for this you could also do:
+ $ docker run --rm -ti conkycmd conky --version
+
+If you want to fiddle around a bit with the configuration first you could do:
+ $ docker run --rm -ti --net=host -e DISPLAY -v ~/.Xauthority:/root/.Xauthority conky bash
+<change things is in the configuration>
+ $ conky -c configurationfile ; exit
+
+See the docker docs to a lot of other ways to (ab)use this container
+
+
+== WHY ==
+
+Disadvantages of using the docker:
+
+ - You'll have to install docker.
+This can be done by following the instructions in
+https://docs.docker.com/install/ to install docker CE. But just using the
+packagemanager of your distro like you would do with other software will work.
+- A lot of info will be about the current container instead of the whole system
+- At the moment our docker image is still in development fase.
+
+
+Advantages of using docker:
+
+- During the installation you won't have to care about which compilers,
+libraries, ... are installed. Neither should you care about how to use them.
+- The containerization of conky will make it a lot harder to let problems with
+conky affect the rest of the system.
+- Your Conky will run in exactly the same environment as everyone else's, so
+if it works for someone it will work for everyone. No matter which distro you
+are using or how you configured that distro. (The conky configuration itself
+will matter and also the version of conky)
+- Problems will be easier to recreate by developers causing faster debugging.
