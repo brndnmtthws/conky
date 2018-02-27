@@ -1,4 +1,3 @@
-
 # vim: ts=4 sw=4 noet ai cindent syntax=cmake
 #
 # Conky, a system monitor, based on torsmo
