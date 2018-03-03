@@ -1,0 +1,15 @@
+/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/install.dir
+/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/package.dir
+/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/ALL_BUILD.dir
+/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/ZERO_CHECK.dir
+/Users/np/ConkyX/conky-for-macOS/ConkyX/lua/CMakeFiles/install.dir
+/Users/np/ConkyX/conky-for-macOS/ConkyX/lua/CMakeFiles/package.dir
+/Users/np/ConkyX/conky-for-macOS/ConkyX/data/CMakeFiles/install.dir
+/Users/np/ConkyX/conky-for-macOS/ConkyX/data/CMakeFiles/package.dir
+/Users/np/ConkyX/conky-for-macOS/ConkyX/data/CMakeFiles/convertconf.dir
+/Users/np/ConkyX/conky-for-macOS/ConkyX/data/CMakeFiles/defconfig.dir
+/Users/np/ConkyX/conky-for-macOS/ConkyX/doc/CMakeFiles/install.dir
+/Users/np/ConkyX/conky-for-macOS/ConkyX/doc/CMakeFiles/package.dir
+/Users/np/ConkyX/conky-for-macOS/ConkyX/src/CMakeFiles/install.dir
+/Users/np/ConkyX/conky-for-macOS/ConkyX/src/CMakeFiles/package.dir
+/Users/np/ConkyX/conky-for-macOS/ConkyX/src/CMakeFiles/conky.dir

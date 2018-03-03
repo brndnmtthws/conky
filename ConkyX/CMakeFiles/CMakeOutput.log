@@ -1,0 +1,1254 @@
+The system is: Darwin - 17.4.0 - x86_64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler:  
+Build flags: 
+Id flags:  
+
+The output was:
+0
+=== BUILD TARGET CompilerIdC OF PROJECT CompilerIdC WITH THE DEFAULT CONFIGURATION (Debug) ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/Objects-normal/x86_64/CompilerIdC.LinkFileList
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/CompilerIdC-own-target-headers.hmap
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/CompilerIdC-project-headers.hmap
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/Script-2C8FEB8E15DC1A1A00E56A5D.sh
+chmod 0755 /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/Script-2C8FEB8E15DC1A1A00E56A5D.sh
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/CompilerIdC-generated-files.hmap
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/CompilerIdC-all-target-headers.hmap
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/CompilerIdC.hmap
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/CompilerIdC-all-non-framework-target-headers.hmap
+
+CompileC CompilerIdC.build/Debug/CompilerIdC.build/Objects-normal/x86_64/CMakeCCompilerId.o CMakeCCompilerId.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -Os -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -fvisibility=hidden -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/CompilerIdC.hmap -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/DerivedSources -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/Objects-normal/x86_64/CMakeCCompilerId.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/Objects-normal/x86_64/CMakeCCompilerId.dia -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CMakeCCompilerId.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/Objects-normal/x86_64/CMakeCCompilerId.o
+
+Ld CompilerIdC normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/Objects-normal/x86_64/CompilerIdC.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/Objects-normal/x86_64/CompilerIdC_lto.o -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/Objects-normal/x86_64/CompilerIdC_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC
+
+PhaseScriptExecution Run\ Script CompilerIdC.build/Debug/CompilerIdC.build/Script-2C8FEB8E15DC1A1A00E56A5D.sh
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC
+    /bin/sh -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC.build/Debug/CompilerIdC.build/Script-2C8FEB8E15DC1A1A00E56A5D.sh
+GCC_VERSION=com.apple.compilers.llvm.clang.1_0
+CURRENT_ARCH=x86_64
+
+** BUILD SUCCEEDED **
+
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC"
+
+The C compiler identification is AppleClang, found in "/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdC/CompilerIdC"
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler:  
+Build flags: 
+Id flags:  
+
+The output was:
+0
+=== BUILD TARGET CompilerIdCXX OF PROJECT CompilerIdCXX WITH THE DEFAULT CONFIGURATION (Debug) ===
+
+Check dependencies
+
+Write auxiliary files
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/CompilerIdCXX-all-target-headers.hmap
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/Objects-normal/x86_64/CompilerIdCXX.LinkFileList
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/CompilerIdCXX-own-target-headers.hmap
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/CompilerIdCXX.hmap
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/CompilerIdCXX-all-non-framework-target-headers.hmap
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/Script-2C8FEB8E15DC1A1A00E56A5D.sh
+chmod 0755 /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/Script-2C8FEB8E15DC1A1A00E56A5D.sh
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/CompilerIdCXX-generated-files.hmap
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/CompilerIdCXX-project-headers.hmap
+
+CompileC CompilerIdCXX.build/Debug/CompilerIdCXX.build/Objects-normal/x86_64/CMakeCXXCompilerId.o CMakeCXXCompilerId.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -Os -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wno-c++11-extensions -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.13 -g -fvisibility=hidden -fvisibility-inlines-hidden -Wno-sign-conversion -Wno-infinite-recursion -Wno-move -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -Wno-range-loop-analysis -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/CompilerIdCXX.hmap -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/DerivedSources -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/Objects-normal/x86_64/CMakeCXXCompilerId.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/Objects-normal/x86_64/CMakeCXXCompilerId.dia -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CMakeCXXCompilerId.cpp -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/Objects-normal/x86_64/CMakeCXXCompilerId.o
+
+Ld CompilerIdCXX normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/Objects-normal/x86_64/CompilerIdCXX.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/Objects-normal/x86_64/CompilerIdCXX_lto.o -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/Objects-normal/x86_64/CompilerIdCXX_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX
+
+PhaseScriptExecution Run\ Script CompilerIdCXX.build/Debug/CompilerIdCXX.build/Script-2C8FEB8E15DC1A1A00E56A5D.sh
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX
+    /bin/sh -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX.build/Debug/CompilerIdCXX.build/Script-2C8FEB8E15DC1A1A00E56A5D.sh
+GCC_VERSION=com.apple.compilers.llvm.clang.1_0
+CURRENT_ARCH=x86_64
+
+** BUILD SUCCEEDED **
+
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX"
+
+The CXX compiler identification is AppleClang, found in "/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CompilerIdCXX"
+
+Determining if the C compiler works passed with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_a5d27" "-configuration" "Debug"
+=== BUILD TARGET cmTC_a5d27 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_a5d27.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_a5d27.build/Objects-normal/x86_64/cmTC_a5d27.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_a5d27.build/Objects-normal/x86_64/testCCompiler.o testCCompiler.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_a5d27.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_a5d27.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_a5d27.build/Objects-normal/x86_64/testCCompiler.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_a5d27.build/Objects-normal/x86_64/testCCompiler.dia -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/testCCompiler.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_a5d27.build/Objects-normal/x86_64/testCCompiler.o
+
+Ld Debug/cmTC_a5d27 normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_a5d27.build/Objects-normal/x86_64/cmTC_a5d27.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_a5d27.build/Objects-normal/x86_64/cmTC_a5d27_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_a5d27.build/Objects-normal/x86_64/cmTC_a5d27_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_a5d27
+
+** BUILD SUCCEEDED **
+
+
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_fc094" "-configuration" "Debug"
+=== BUILD TARGET cmTC_fc094 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/CMakeCCompilerABI.o /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CMakeCCompilerABI.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/CMakeCCompilerABI.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/CMakeCCompilerABI.dia -c /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CMakeCCompilerABI.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/CMakeCCompilerABI.o
+
+Ld Debug/cmTC_fc094 normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094_lto.o -Xlinker -no_deduplicate -v -Wl,-v -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_fc094
+Apple LLVM version 9.0.0 (clang-900.0.39.2)
+Target: x86_64-apple-darwin17.4.0
+Thread model: posix
+InstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin
+ "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld" -demangle -lto_library /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libLTO.dylib -dynamic -arch x86_64 -macosx_version_min 10.13.0 -syslibroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_fc094 -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094.LinkFileList -object_path_lto /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094_lto.o -no_deduplicate -v -search_paths_first -headerpad_max_install_names -dependency_info /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094_dependency_info.dat -lSystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/lib/darwin/libclang_rt.osx.a -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug
+@(#)PROGRAM:ld  PROJECT:ld64-305
+configured to support archs: armv6 armv7 armv7s arm64 i386 x86_64 x86_64h armv6m armv7k armv7m armv7em (tvOS)
+Library search paths:
+	/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug
+	/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/lib
+Framework search paths:
+	/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug
+	/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/System/Library/Frameworks/
+
+** BUILD SUCCEEDED **
+
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_fc094" "-configuration" "Debug"]
+  ignore line: [=== BUILD TARGET cmTC_fc094 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===]
+  ignore line: []
+  ignore line: [Check dependencies]
+  ignore line: []
+  ignore line: [Write auxiliary files]
+  ignore line: [/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64]
+  ignore line: [write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094.LinkFileList]
+  ignore line: []
+  ignore line: [CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/CMakeCCompilerABI.o /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CMakeCCompilerABI.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler]
+  ignore line: [    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp]
+  ignore line: [    export LANG=en_US.US-ASCII]
+  ignore line: [    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/CMakeCCompilerABI.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/CMakeCCompilerABI.dia -c /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CMakeCCompilerABI.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/CMakeCCompilerABI.o]
+  ignore line: []
+  ignore line: [Ld Debug/cmTC_fc094 normal x86_64]
+  ignore line: [    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp]
+  ignore line: [    export MACOSX_DEPLOYMENT_TARGET=10.13]
+  ignore line: [    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094_lto.o -Xlinker -no_deduplicate -v -Wl,-v -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_fc094]
+  ignore line: [Apple LLVM version 9.0.0 (clang-900.0.39.2)]
+  ignore line: [Target: x86_64-apple-darwin17.4.0]
+  ignore line: [Thread model: posix]
+  ignore line: [InstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin]
+  reduced line: [ "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld" -demangle -lto_library /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libLTO.dylib -dynamic -arch x86_64 -macosx_version_min 10.13.0 -syslibroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_fc094 -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094.LinkFileList -object_path_lto /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094_lto.o -no_deduplicate -v -search_paths_first -headerpad_max_install_names -dependency_info /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094_dependency_info.dat -lSystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/lib/darwin/libclang_rt.osx.a -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug]
+            to: [ "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld" -demangle -lto_library /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libLTO.dylib -dynamic -arch x86_64 -macosx_version_min 10.13.0 -syslibroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_fc094 -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094.LinkFileList -object_path_lto /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094_lto.o -no_deduplicate -v -search_paths_first -headerpad_max_install_names -dependency_info /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094_dependency_info.dat -lSystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/lib/darwin/libclang_rt.osx.a ]
+  link line: [ "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld" -demangle -lto_library /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libLTO.dylib -dynamic -arch x86_64 -macosx_version_min 10.13.0 -syslibroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_fc094 -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094.LinkFileList -object_path_lto /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094_lto.o -no_deduplicate -v -search_paths_first -headerpad_max_install_names -dependency_info /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094_dependency_info.dat -lSystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/lib/darwin/libclang_rt.osx.a ]
+    arg [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld] ==> ignore
+    arg [-demangle] ==> ignore
+    arg [-lto_library] ==> ignore, skip following value
+    arg [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libLTO.dylib] ==> skip value of -lto_library
+    arg [-dynamic] ==> ignore
+    arg [-arch] ==> ignore
+    arg [x86_64] ==> ignore
+    arg [-macosx_version_min] ==> ignore
+    arg [10.13.0] ==> ignore
+    arg [-syslibroot] ==> ignore
+    arg [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk] ==> ignore
+    arg [-o] ==> ignore
+    arg [/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_fc094] ==> ignore
+    arg [-filelist] ==> ignore
+    arg [/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094.LinkFileList] ==> ignore
+    arg [-object_path_lto] ==> ignore
+    arg [/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094_lto.o] ==> ignore
+    arg [-no_deduplicate] ==> ignore
+    arg [-v] ==> ignore
+    arg [-search_paths_first] ==> ignore
+    arg [-headerpad_max_install_names] ==> ignore
+    arg [-dependency_info] ==> ignore
+    arg [/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_fc094.build/Objects-normal/x86_64/cmTC_fc094_dependency_info.dat] ==> ignore
+    arg [-lSystem] ==> lib [System]
+    arg [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/lib/darwin/libclang_rt.osx.a] ==> lib [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/lib/darwin/libclang_rt.osx.a]
+  Library search paths: [;/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug;/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/lib]
+  Framework search paths: [;/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug;/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/System/Library/Frameworks/]
+  remove lib [System]
+  remove lib [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/lib/darwin/libclang_rt.osx.a]
+  collapse library dir [/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug] ==> [/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug], skipping non-system directory
+  collapse library dir [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/lib] ==> [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/lib]
+  collapse framework dir [/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug] ==> [/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug], skipping non-system directory
+  collapse framework dir [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/System/Library/Frameworks/] ==> [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/System/Library/Frameworks]
+  implicit libs: []
+  implicit dirs: [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/lib]
+  implicit fwks: [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/System/Library/Frameworks]
+
+
+
+
+Detecting C [-std=c11] compiler features compiled with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_822d2" "-configuration" "Debug"
+=== BUILD TARGET cmTC_822d2 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_822d2.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_822d2.build/Objects-normal/x86_64/cmTC_822d2.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_822d2.build/Objects-normal/x86_64/feature_tests.o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/feature_tests.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_822d2.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_822d2.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c11 -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_822d2.build/Objects-normal/x86_64/feature_tests.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_822d2.build/Objects-normal/x86_64/feature_tests.dia -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/feature_tests.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_822d2.build/Objects-normal/x86_64/feature_tests.o
+
+Ld Debug/cmTC_822d2 normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_822d2.build/Objects-normal/x86_64/cmTC_822d2.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_822d2.build/Objects-normal/x86_64/cmTC_822d2_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_822d2.build/Objects-normal/x86_64/cmTC_822d2_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_822d2
+
+** BUILD SUCCEEDED **
+
+
+
+    Feature record: C_FEATURE:1c_function_prototypes
+    Feature record: C_FEATURE:1c_restrict
+    Feature record: C_FEATURE:1c_static_assert
+    Feature record: C_FEATURE:1c_variadic_macros
+
+
+Detecting C [-std=c99] compiler features compiled with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_8ea6e" "-configuration" "Debug"
+=== BUILD TARGET cmTC_8ea6e OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_8ea6e.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_8ea6e.build/Objects-normal/x86_64/cmTC_8ea6e.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_8ea6e.build/Objects-normal/x86_64/feature_tests.o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/feature_tests.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_8ea6e.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_8ea6e.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c99 -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_8ea6e.build/Objects-normal/x86_64/feature_tests.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_8ea6e.build/Objects-normal/x86_64/feature_tests.dia -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/feature_tests.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_8ea6e.build/Objects-normal/x86_64/feature_tests.o
+
+Ld Debug/cmTC_8ea6e normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_8ea6e.build/Objects-normal/x86_64/cmTC_8ea6e.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_8ea6e.build/Objects-normal/x86_64/cmTC_8ea6e_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_8ea6e.build/Objects-normal/x86_64/cmTC_8ea6e_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_8ea6e
+
+** BUILD SUCCEEDED **
+
+
+
+    Feature record: C_FEATURE:1c_function_prototypes
+    Feature record: C_FEATURE:1c_restrict
+    Feature record: C_FEATURE:0c_static_assert
+    Feature record: C_FEATURE:1c_variadic_macros
+
+
+Detecting C [-std=c90] compiler features compiled with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_810c0" "-configuration" "Debug"
+=== BUILD TARGET cmTC_810c0 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_810c0.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_810c0.build/Objects-normal/x86_64/cmTC_810c0.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_810c0.build/Objects-normal/x86_64/feature_tests.o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/feature_tests.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_810c0.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_810c0.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c90 -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_810c0.build/Objects-normal/x86_64/feature_tests.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_810c0.build/Objects-normal/x86_64/feature_tests.dia -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/feature_tests.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_810c0.build/Objects-normal/x86_64/feature_tests.o
+
+Ld Debug/cmTC_810c0 normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_810c0.build/Objects-normal/x86_64/cmTC_810c0.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_810c0.build/Objects-normal/x86_64/cmTC_810c0_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_810c0.build/Objects-normal/x86_64/cmTC_810c0_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_810c0
+
+** BUILD SUCCEEDED **
+
+
+
+    Feature record: C_FEATURE:1c_function_prototypes
+    Feature record: C_FEATURE:0c_restrict
+    Feature record: C_FEATURE:0c_static_assert
+    Feature record: C_FEATURE:0c_variadic_macros
+Determining if the CXX compiler works passed with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_02905" "-configuration" "Debug"
+=== BUILD TARGET cmTC_02905 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_02905.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_02905.build/Objects-normal/x86_64/cmTC_02905.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_02905.build/Objects-normal/x86_64/testCXXCompiler.o testCXXCompiler.cxx normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wno-c++11-extensions -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-move -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -Wno-range-loop-analysis -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_02905.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_02905.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_02905.build/Objects-normal/x86_64/testCXXCompiler.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_02905.build/Objects-normal/x86_64/testCXXCompiler.dia -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/testCXXCompiler.cxx -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_02905.build/Objects-normal/x86_64/testCXXCompiler.o
+
+Ld Debug/cmTC_02905 normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_02905.build/Objects-normal/x86_64/cmTC_02905.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_02905.build/Objects-normal/x86_64/cmTC_02905_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_02905.build/Objects-normal/x86_64/cmTC_02905_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_02905
+
+** BUILD SUCCEEDED **
+
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_1b422" "-configuration" "Debug"
+=== BUILD TARGET cmTC_1b422 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/CMakeCXXCompilerABI.o /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CMakeCXXCompilerABI.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wno-c++11-extensions -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-move -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -Wno-range-loop-analysis -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/CMakeCXXCompilerABI.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/CMakeCXXCompilerABI.dia -c /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CMakeCXXCompilerABI.cpp -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/CMakeCXXCompilerABI.o
+
+Ld Debug/cmTC_1b422 normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422_lto.o -Xlinker -no_deduplicate -v -Wl,-v -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_1b422
+Apple LLVM version 9.0.0 (clang-900.0.39.2)
+Target: x86_64-apple-darwin17.4.0
+Thread model: posix
+InstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin
+ "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld" -demangle -lto_library /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libLTO.dylib -dynamic -arch x86_64 -macosx_version_min 10.13.0 -syslibroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_1b422 -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422.LinkFileList -object_path_lto /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422_lto.o -no_deduplicate -v -search_paths_first -headerpad_max_install_names -dependency_info /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422_dependency_info.dat -lc++ -lSystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/lib/darwin/libclang_rt.osx.a -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug
+@(#)PROGRAM:ld  PROJECT:ld64-305
+configured to support archs: armv6 armv7 armv7s arm64 i386 x86_64 x86_64h armv6m armv7k armv7m armv7em (tvOS)
+Library search paths:
+	/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug
+	/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/lib
+Framework search paths:
+	/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug
+	/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/System/Library/Frameworks/
+
+** BUILD SUCCEEDED **
+
+
+
+Parsed CXX implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_1b422" "-configuration" "Debug"]
+  ignore line: [=== BUILD TARGET cmTC_1b422 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===]
+  ignore line: []
+  ignore line: [Check dependencies]
+  ignore line: []
+  ignore line: [Write auxiliary files]
+  ignore line: [/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64]
+  ignore line: [write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422.LinkFileList]
+  ignore line: []
+  ignore line: [CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/CMakeCXXCompilerABI.o /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CMakeCXXCompilerABI.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler]
+  ignore line: [    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp]
+  ignore line: [    export LANG=en_US.US-ASCII]
+  ignore line: [    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wno-c++11-extensions -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-move -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -Wno-range-loop-analysis -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/CMakeCXXCompilerABI.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/CMakeCXXCompilerABI.dia -c /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CMakeCXXCompilerABI.cpp -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/CMakeCXXCompilerABI.o]
+  ignore line: []
+  ignore line: [Ld Debug/cmTC_1b422 normal x86_64]
+  ignore line: [    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp]
+  ignore line: [    export MACOSX_DEPLOYMENT_TARGET=10.13]
+  ignore line: [    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422_lto.o -Xlinker -no_deduplicate -v -Wl,-v -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_1b422]
+  ignore line: [Apple LLVM version 9.0.0 (clang-900.0.39.2)]
+  ignore line: [Target: x86_64-apple-darwin17.4.0]
+  ignore line: [Thread model: posix]
+  ignore line: [InstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin]
+  reduced line: [ "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld" -demangle -lto_library /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libLTO.dylib -dynamic -arch x86_64 -macosx_version_min 10.13.0 -syslibroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_1b422 -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422.LinkFileList -object_path_lto /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422_lto.o -no_deduplicate -v -search_paths_first -headerpad_max_install_names -dependency_info /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422_dependency_info.dat -lc++ -lSystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/lib/darwin/libclang_rt.osx.a -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug]
+            to: [ "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld" -demangle -lto_library /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libLTO.dylib -dynamic -arch x86_64 -macosx_version_min 10.13.0 -syslibroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_1b422 -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422.LinkFileList -object_path_lto /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422_lto.o -no_deduplicate -v -search_paths_first -headerpad_max_install_names -dependency_info /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422_dependency_info.dat -lc++ -lSystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/lib/darwin/libclang_rt.osx.a ]
+  link line: [ "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld" -demangle -lto_library /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libLTO.dylib -dynamic -arch x86_64 -macosx_version_min 10.13.0 -syslibroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_1b422 -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422.LinkFileList -object_path_lto /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422_lto.o -no_deduplicate -v -search_paths_first -headerpad_max_install_names -dependency_info /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422_dependency_info.dat -lc++ -lSystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/lib/darwin/libclang_rt.osx.a ]
+    arg [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld] ==> ignore
+    arg [-demangle] ==> ignore
+    arg [-lto_library] ==> ignore, skip following value
+    arg [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libLTO.dylib] ==> skip value of -lto_library
+    arg [-dynamic] ==> ignore
+    arg [-arch] ==> ignore
+    arg [x86_64] ==> ignore
+    arg [-macosx_version_min] ==> ignore
+    arg [10.13.0] ==> ignore
+    arg [-syslibroot] ==> ignore
+    arg [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk] ==> ignore
+    arg [-o] ==> ignore
+    arg [/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_1b422] ==> ignore
+    arg [-filelist] ==> ignore
+    arg [/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422.LinkFileList] ==> ignore
+    arg [-object_path_lto] ==> ignore
+    arg [/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422_lto.o] ==> ignore
+    arg [-no_deduplicate] ==> ignore
+    arg [-v] ==> ignore
+    arg [-search_paths_first] ==> ignore
+    arg [-headerpad_max_install_names] ==> ignore
+    arg [-dependency_info] ==> ignore
+    arg [/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1b422.build/Objects-normal/x86_64/cmTC_1b422_dependency_info.dat] ==> ignore
+    arg [-lc++] ==> lib [c++]
+    arg [-lSystem] ==> lib [System]
+    arg [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/lib/darwin/libclang_rt.osx.a] ==> lib [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/lib/darwin/libclang_rt.osx.a]
+  Library search paths: [;/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug;/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/lib]
+  Framework search paths: [;/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug;/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/System/Library/Frameworks/]
+  remove lib [System]
+  remove lib [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/lib/darwin/libclang_rt.osx.a]
+  collapse library dir [/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug] ==> [/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug], skipping non-system directory
+  collapse library dir [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/lib] ==> [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/lib]
+  collapse framework dir [/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug] ==> [/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug], skipping non-system directory
+  collapse framework dir [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/System/Library/Frameworks/] ==> [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/System/Library/Frameworks]
+  implicit libs: [c++]
+  implicit dirs: [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/lib]
+  implicit fwks: [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/System/Library/Frameworks]
+
+
+
+
+Detecting CXX [-std=c++1z] compiler features compiled with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_26323" "-configuration" "Debug"
+=== BUILD TARGET cmTC_26323 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_26323.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_26323.build/Objects-normal/x86_64/cmTC_26323.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_26323.build/Objects-normal/x86_64/feature_tests.o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/feature_tests.cxx normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wno-c++11-extensions -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-move -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -Wno-range-loop-analysis -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_26323.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_26323.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c++1z -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_26323.build/Objects-normal/x86_64/feature_tests.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_26323.build/Objects-normal/x86_64/feature_tests.dia -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/feature_tests.cxx -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_26323.build/Objects-normal/x86_64/feature_tests.o
+
+Ld Debug/cmTC_26323 normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_26323.build/Objects-normal/x86_64/cmTC_26323.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_26323.build/Objects-normal/x86_64/cmTC_26323_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_26323.build/Objects-normal/x86_64/cmTC_26323_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_26323
+
+** BUILD SUCCEEDED **
+
+
+
+    Feature record: CXX_FEATURE:1cxx_aggregate_default_initializers
+    Feature record: CXX_FEATURE:1cxx_alias_templates
+    Feature record: CXX_FEATURE:1cxx_alignas
+    Feature record: CXX_FEATURE:1cxx_alignof
+    Feature record: CXX_FEATURE:1cxx_attributes
+    Feature record: CXX_FEATURE:1cxx_attribute_deprecated
+    Feature record: CXX_FEATURE:1cxx_auto_type
+    Feature record: CXX_FEATURE:1cxx_binary_literals
+    Feature record: CXX_FEATURE:1cxx_constexpr
+    Feature record: CXX_FEATURE:1cxx_contextual_conversions
+    Feature record: CXX_FEATURE:1cxx_decltype
+    Feature record: CXX_FEATURE:1cxx_decltype_auto
+    Feature record: CXX_FEATURE:1cxx_decltype_incomplete_return_types
+    Feature record: CXX_FEATURE:1cxx_default_function_template_args
+    Feature record: CXX_FEATURE:1cxx_defaulted_functions
+    Feature record: CXX_FEATURE:1cxx_defaulted_move_initializers
+    Feature record: CXX_FEATURE:1cxx_delegating_constructors
+    Feature record: CXX_FEATURE:1cxx_deleted_functions
+    Feature record: CXX_FEATURE:1cxx_digit_separators
+    Feature record: CXX_FEATURE:1cxx_enum_forward_declarations
+    Feature record: CXX_FEATURE:1cxx_explicit_conversions
+    Feature record: CXX_FEATURE:1cxx_extended_friend_declarations
+    Feature record: CXX_FEATURE:1cxx_extern_templates
+    Feature record: CXX_FEATURE:1cxx_final
+    Feature record: CXX_FEATURE:1cxx_func_identifier
+    Feature record: CXX_FEATURE:1cxx_generalized_initializers
+    Feature record: CXX_FEATURE:1cxx_generic_lambdas
+    Feature record: CXX_FEATURE:1cxx_inheriting_constructors
+    Feature record: CXX_FEATURE:1cxx_inline_namespaces
+    Feature record: CXX_FEATURE:1cxx_lambdas
+    Feature record: CXX_FEATURE:1cxx_lambda_init_captures
+    Feature record: CXX_FEATURE:1cxx_local_type_template_args
+    Feature record: CXX_FEATURE:1cxx_long_long_type
+    Feature record: CXX_FEATURE:1cxx_noexcept
+    Feature record: CXX_FEATURE:1cxx_nonstatic_member_init
+    Feature record: CXX_FEATURE:1cxx_nullptr
+    Feature record: CXX_FEATURE:1cxx_override
+    Feature record: CXX_FEATURE:1cxx_range_for
+    Feature record: CXX_FEATURE:1cxx_raw_string_literals
+    Feature record: CXX_FEATURE:1cxx_reference_qualified_functions
+    Feature record: CXX_FEATURE:1cxx_relaxed_constexpr
+    Feature record: CXX_FEATURE:1cxx_return_type_deduction
+    Feature record: CXX_FEATURE:1cxx_right_angle_brackets
+    Feature record: CXX_FEATURE:1cxx_rvalue_references
+    Feature record: CXX_FEATURE:1cxx_sizeof_member
+    Feature record: CXX_FEATURE:1cxx_static_assert
+    Feature record: CXX_FEATURE:1cxx_strong_enums
+    Feature record: CXX_FEATURE:1cxx_template_template_parameters
+    Feature record: CXX_FEATURE:1cxx_thread_local
+    Feature record: CXX_FEATURE:1cxx_trailing_return_types
+    Feature record: CXX_FEATURE:1cxx_unicode_literals
+    Feature record: CXX_FEATURE:1cxx_uniform_initialization
+    Feature record: CXX_FEATURE:1cxx_unrestricted_unions
+    Feature record: CXX_FEATURE:1cxx_user_literals
+    Feature record: CXX_FEATURE:1cxx_variable_templates
+    Feature record: CXX_FEATURE:1cxx_variadic_macros
+    Feature record: CXX_FEATURE:1cxx_variadic_templates
+
+
+Detecting CXX [-std=c++14] compiler features compiled with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_bc6b2" "-configuration" "Debug"
+=== BUILD TARGET cmTC_bc6b2 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bc6b2.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bc6b2.build/Objects-normal/x86_64/cmTC_bc6b2.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_bc6b2.build/Objects-normal/x86_64/feature_tests.o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/feature_tests.cxx normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wno-c++11-extensions -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-move -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -Wno-range-loop-analysis -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bc6b2.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bc6b2.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c++14 -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bc6b2.build/Objects-normal/x86_64/feature_tests.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bc6b2.build/Objects-normal/x86_64/feature_tests.dia -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/feature_tests.cxx -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bc6b2.build/Objects-normal/x86_64/feature_tests.o
+
+Ld Debug/cmTC_bc6b2 normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bc6b2.build/Objects-normal/x86_64/cmTC_bc6b2.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bc6b2.build/Objects-normal/x86_64/cmTC_bc6b2_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bc6b2.build/Objects-normal/x86_64/cmTC_bc6b2_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_bc6b2
+
+** BUILD SUCCEEDED **
+
+
+
+    Feature record: CXX_FEATURE:1cxx_aggregate_default_initializers
+    Feature record: CXX_FEATURE:1cxx_alias_templates
+    Feature record: CXX_FEATURE:1cxx_alignas
+    Feature record: CXX_FEATURE:1cxx_alignof
+    Feature record: CXX_FEATURE:1cxx_attributes
+    Feature record: CXX_FEATURE:1cxx_attribute_deprecated
+    Feature record: CXX_FEATURE:1cxx_auto_type
+    Feature record: CXX_FEATURE:1cxx_binary_literals
+    Feature record: CXX_FEATURE:1cxx_constexpr
+    Feature record: CXX_FEATURE:1cxx_contextual_conversions
+    Feature record: CXX_FEATURE:1cxx_decltype
+    Feature record: CXX_FEATURE:1cxx_decltype_auto
+    Feature record: CXX_FEATURE:1cxx_decltype_incomplete_return_types
+    Feature record: CXX_FEATURE:1cxx_default_function_template_args
+    Feature record: CXX_FEATURE:1cxx_defaulted_functions
+    Feature record: CXX_FEATURE:1cxx_defaulted_move_initializers
+    Feature record: CXX_FEATURE:1cxx_delegating_constructors
+    Feature record: CXX_FEATURE:1cxx_deleted_functions
+    Feature record: CXX_FEATURE:1cxx_digit_separators
+    Feature record: CXX_FEATURE:1cxx_enum_forward_declarations
+    Feature record: CXX_FEATURE:1cxx_explicit_conversions
+    Feature record: CXX_FEATURE:1cxx_extended_friend_declarations
+    Feature record: CXX_FEATURE:1cxx_extern_templates
+    Feature record: CXX_FEATURE:1cxx_final
+    Feature record: CXX_FEATURE:1cxx_func_identifier
+    Feature record: CXX_FEATURE:1cxx_generalized_initializers
+    Feature record: CXX_FEATURE:1cxx_generic_lambdas
+    Feature record: CXX_FEATURE:1cxx_inheriting_constructors
+    Feature record: CXX_FEATURE:1cxx_inline_namespaces
+    Feature record: CXX_FEATURE:1cxx_lambdas
+    Feature record: CXX_FEATURE:1cxx_lambda_init_captures
+    Feature record: CXX_FEATURE:1cxx_local_type_template_args
+    Feature record: CXX_FEATURE:1cxx_long_long_type
+    Feature record: CXX_FEATURE:1cxx_noexcept
+    Feature record: CXX_FEATURE:1cxx_nonstatic_member_init
+    Feature record: CXX_FEATURE:1cxx_nullptr
+    Feature record: CXX_FEATURE:1cxx_override
+    Feature record: CXX_FEATURE:1cxx_range_for
+    Feature record: CXX_FEATURE:1cxx_raw_string_literals
+    Feature record: CXX_FEATURE:1cxx_reference_qualified_functions
+    Feature record: CXX_FEATURE:1cxx_relaxed_constexpr
+    Feature record: CXX_FEATURE:1cxx_return_type_deduction
+    Feature record: CXX_FEATURE:1cxx_right_angle_brackets
+    Feature record: CXX_FEATURE:1cxx_rvalue_references
+    Feature record: CXX_FEATURE:1cxx_sizeof_member
+    Feature record: CXX_FEATURE:1cxx_static_assert
+    Feature record: CXX_FEATURE:1cxx_strong_enums
+    Feature record: CXX_FEATURE:1cxx_template_template_parameters
+    Feature record: CXX_FEATURE:1cxx_thread_local
+    Feature record: CXX_FEATURE:1cxx_trailing_return_types
+    Feature record: CXX_FEATURE:1cxx_unicode_literals
+    Feature record: CXX_FEATURE:1cxx_uniform_initialization
+    Feature record: CXX_FEATURE:1cxx_unrestricted_unions
+    Feature record: CXX_FEATURE:1cxx_user_literals
+    Feature record: CXX_FEATURE:1cxx_variable_templates
+    Feature record: CXX_FEATURE:1cxx_variadic_macros
+    Feature record: CXX_FEATURE:1cxx_variadic_templates
+
+
+Detecting CXX [-std=c++11] compiler features compiled with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_27477" "-configuration" "Debug"
+=== BUILD TARGET cmTC_27477 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_27477.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_27477.build/Objects-normal/x86_64/cmTC_27477.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_27477.build/Objects-normal/x86_64/feature_tests.o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/feature_tests.cxx normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wno-c++11-extensions -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-move -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -Wno-range-loop-analysis -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_27477.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_27477.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c++11 -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_27477.build/Objects-normal/x86_64/feature_tests.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_27477.build/Objects-normal/x86_64/feature_tests.dia -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/feature_tests.cxx -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_27477.build/Objects-normal/x86_64/feature_tests.o
+
+Ld Debug/cmTC_27477 normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_27477.build/Objects-normal/x86_64/cmTC_27477.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_27477.build/Objects-normal/x86_64/cmTC_27477_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_27477.build/Objects-normal/x86_64/cmTC_27477_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_27477
+
+** BUILD SUCCEEDED **
+
+
+
+    Feature record: CXX_FEATURE:0cxx_aggregate_default_initializers
+    Feature record: CXX_FEATURE:1cxx_alias_templates
+    Feature record: CXX_FEATURE:1cxx_alignas
+    Feature record: CXX_FEATURE:1cxx_alignof
+    Feature record: CXX_FEATURE:1cxx_attributes
+    Feature record: CXX_FEATURE:0cxx_attribute_deprecated
+    Feature record: CXX_FEATURE:1cxx_auto_type
+    Feature record: CXX_FEATURE:0cxx_binary_literals
+    Feature record: CXX_FEATURE:1cxx_constexpr
+    Feature record: CXX_FEATURE:0cxx_contextual_conversions
+    Feature record: CXX_FEATURE:1cxx_decltype
+    Feature record: CXX_FEATURE:0cxx_decltype_auto
+    Feature record: CXX_FEATURE:1cxx_decltype_incomplete_return_types
+    Feature record: CXX_FEATURE:1cxx_default_function_template_args
+    Feature record: CXX_FEATURE:1cxx_defaulted_functions
+    Feature record: CXX_FEATURE:1cxx_defaulted_move_initializers
+    Feature record: CXX_FEATURE:1cxx_delegating_constructors
+    Feature record: CXX_FEATURE:1cxx_deleted_functions
+    Feature record: CXX_FEATURE:0cxx_digit_separators
+    Feature record: CXX_FEATURE:1cxx_enum_forward_declarations
+    Feature record: CXX_FEATURE:1cxx_explicit_conversions
+    Feature record: CXX_FEATURE:1cxx_extended_friend_declarations
+    Feature record: CXX_FEATURE:1cxx_extern_templates
+    Feature record: CXX_FEATURE:1cxx_final
+    Feature record: CXX_FEATURE:1cxx_func_identifier
+    Feature record: CXX_FEATURE:1cxx_generalized_initializers
+    Feature record: CXX_FEATURE:0cxx_generic_lambdas
+    Feature record: CXX_FEATURE:1cxx_inheriting_constructors
+    Feature record: CXX_FEATURE:1cxx_inline_namespaces
+    Feature record: CXX_FEATURE:1cxx_lambdas
+    Feature record: CXX_FEATURE:0cxx_lambda_init_captures
+    Feature record: CXX_FEATURE:1cxx_local_type_template_args
+    Feature record: CXX_FEATURE:1cxx_long_long_type
+    Feature record: CXX_FEATURE:1cxx_noexcept
+    Feature record: CXX_FEATURE:1cxx_nonstatic_member_init
+    Feature record: CXX_FEATURE:1cxx_nullptr
+    Feature record: CXX_FEATURE:1cxx_override
+    Feature record: CXX_FEATURE:1cxx_range_for
+    Feature record: CXX_FEATURE:1cxx_raw_string_literals
+    Feature record: CXX_FEATURE:1cxx_reference_qualified_functions
+    Feature record: CXX_FEATURE:0cxx_relaxed_constexpr
+    Feature record: CXX_FEATURE:0cxx_return_type_deduction
+    Feature record: CXX_FEATURE:1cxx_right_angle_brackets
+    Feature record: CXX_FEATURE:1cxx_rvalue_references
+    Feature record: CXX_FEATURE:1cxx_sizeof_member
+    Feature record: CXX_FEATURE:1cxx_static_assert
+    Feature record: CXX_FEATURE:1cxx_strong_enums
+    Feature record: CXX_FEATURE:1cxx_template_template_parameters
+    Feature record: CXX_FEATURE:1cxx_thread_local
+    Feature record: CXX_FEATURE:1cxx_trailing_return_types
+    Feature record: CXX_FEATURE:1cxx_unicode_literals
+    Feature record: CXX_FEATURE:1cxx_uniform_initialization
+    Feature record: CXX_FEATURE:1cxx_unrestricted_unions
+    Feature record: CXX_FEATURE:1cxx_user_literals
+    Feature record: CXX_FEATURE:0cxx_variable_templates
+    Feature record: CXX_FEATURE:1cxx_variadic_macros
+    Feature record: CXX_FEATURE:1cxx_variadic_templates
+
+
+Detecting CXX [-std=c++98] compiler features compiled with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_85b36" "-configuration" "Debug"
+=== BUILD TARGET cmTC_85b36 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_85b36.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_85b36.build/Objects-normal/x86_64/cmTC_85b36.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_85b36.build/Objects-normal/x86_64/feature_tests.o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/feature_tests.cxx normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c++ -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wno-c++11-extensions -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-move -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -Wno-range-loop-analysis -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_85b36.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_85b36.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c++98 -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_85b36.build/Objects-normal/x86_64/feature_tests.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_85b36.build/Objects-normal/x86_64/feature_tests.dia -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/feature_tests.cxx -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_85b36.build/Objects-normal/x86_64/feature_tests.o
+
+Ld Debug/cmTC_85b36 normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_85b36.build/Objects-normal/x86_64/cmTC_85b36.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_85b36.build/Objects-normal/x86_64/cmTC_85b36_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_85b36.build/Objects-normal/x86_64/cmTC_85b36_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_85b36
+
+** BUILD SUCCEEDED **
+
+
+
+    Feature record: CXX_FEATURE:0cxx_aggregate_default_initializers
+    Feature record: CXX_FEATURE:0cxx_alias_templates
+    Feature record: CXX_FEATURE:0cxx_alignas
+    Feature record: CXX_FEATURE:0cxx_alignof
+    Feature record: CXX_FEATURE:0cxx_attributes
+    Feature record: CXX_FEATURE:0cxx_attribute_deprecated
+    Feature record: CXX_FEATURE:0cxx_auto_type
+    Feature record: CXX_FEATURE:0cxx_binary_literals
+    Feature record: CXX_FEATURE:0cxx_constexpr
+    Feature record: CXX_FEATURE:0cxx_contextual_conversions
+    Feature record: CXX_FEATURE:0cxx_decltype
+    Feature record: CXX_FEATURE:0cxx_decltype_auto
+    Feature record: CXX_FEATURE:0cxx_decltype_incomplete_return_types
+    Feature record: CXX_FEATURE:0cxx_default_function_template_args
+    Feature record: CXX_FEATURE:0cxx_defaulted_functions
+    Feature record: CXX_FEATURE:0cxx_defaulted_move_initializers
+    Feature record: CXX_FEATURE:0cxx_delegating_constructors
+    Feature record: CXX_FEATURE:0cxx_deleted_functions
+    Feature record: CXX_FEATURE:0cxx_digit_separators
+    Feature record: CXX_FEATURE:0cxx_enum_forward_declarations
+    Feature record: CXX_FEATURE:0cxx_explicit_conversions
+    Feature record: CXX_FEATURE:0cxx_extended_friend_declarations
+    Feature record: CXX_FEATURE:0cxx_extern_templates
+    Feature record: CXX_FEATURE:0cxx_final
+    Feature record: CXX_FEATURE:0cxx_func_identifier
+    Feature record: CXX_FEATURE:0cxx_generalized_initializers
+    Feature record: CXX_FEATURE:0cxx_generic_lambdas
+    Feature record: CXX_FEATURE:0cxx_inheriting_constructors
+    Feature record: CXX_FEATURE:0cxx_inline_namespaces
+    Feature record: CXX_FEATURE:0cxx_lambdas
+    Feature record: CXX_FEATURE:0cxx_lambda_init_captures
+    Feature record: CXX_FEATURE:0cxx_local_type_template_args
+    Feature record: CXX_FEATURE:0cxx_long_long_type
+    Feature record: CXX_FEATURE:0cxx_noexcept
+    Feature record: CXX_FEATURE:0cxx_nonstatic_member_init
+    Feature record: CXX_FEATURE:0cxx_nullptr
+    Feature record: CXX_FEATURE:0cxx_override
+    Feature record: CXX_FEATURE:0cxx_range_for
+    Feature record: CXX_FEATURE:0cxx_raw_string_literals
+    Feature record: CXX_FEATURE:0cxx_reference_qualified_functions
+    Feature record: CXX_FEATURE:0cxx_relaxed_constexpr
+    Feature record: CXX_FEATURE:0cxx_return_type_deduction
+    Feature record: CXX_FEATURE:0cxx_right_angle_brackets
+    Feature record: CXX_FEATURE:0cxx_rvalue_references
+    Feature record: CXX_FEATURE:0cxx_sizeof_member
+    Feature record: CXX_FEATURE:0cxx_static_assert
+    Feature record: CXX_FEATURE:0cxx_strong_enums
+    Feature record: CXX_FEATURE:1cxx_template_template_parameters
+    Feature record: CXX_FEATURE:0cxx_thread_local
+    Feature record: CXX_FEATURE:0cxx_trailing_return_types
+    Feature record: CXX_FEATURE:0cxx_unicode_literals
+    Feature record: CXX_FEATURE:0cxx_uniform_initialization
+    Feature record: CXX_FEATURE:0cxx_unrestricted_unions
+    Feature record: CXX_FEATURE:0cxx_user_literals
+    Feature record: CXX_FEATURE:0cxx_variable_templates
+    Feature record: CXX_FEATURE:0cxx_variadic_macros
+    Feature record: CXX_FEATURE:0cxx_variadic_templates
+Determining if the include file pthread.h exists passed with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_bf7fd" "-configuration" "Debug"
+=== BUILD TARGET cmTC_bf7fd OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bf7fd.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bf7fd.build/Objects-normal/x86_64/cmTC_bf7fd.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_bf7fd.build/Objects-normal/x86_64/CheckIncludeFile.o CheckIncludeFile.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bf7fd.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bf7fd.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bf7fd.build/Objects-normal/x86_64/CheckIncludeFile.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bf7fd.build/Objects-normal/x86_64/CheckIncludeFile.dia -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CheckIncludeFile.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bf7fd.build/Objects-normal/x86_64/CheckIncludeFile.o
+
+Ld Debug/cmTC_bf7fd normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bf7fd.build/Objects-normal/x86_64/cmTC_bf7fd.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bf7fd.build/Objects-normal/x86_64/cmTC_bf7fd_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bf7fd.build/Objects-normal/x86_64/cmTC_bf7fd_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_bf7fd
+
+** BUILD SUCCEEDED **
+
+
+
+Determining if the pthread_create exist passed with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_1188e" "-configuration" "Debug"
+=== BUILD TARGET cmTC_1188e OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1188e.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1188e.build/Objects-normal/x86_64/cmTC_1188e.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_1188e.build/Objects-normal/x86_64/CheckSymbolExists.o CheckSymbolExists.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1188e.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1188e.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1188e.build/Objects-normal/x86_64/CheckSymbolExists.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1188e.build/Objects-normal/x86_64/CheckSymbolExists.dia -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CheckSymbolExists.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1188e.build/Objects-normal/x86_64/CheckSymbolExists.o
+
+Ld Debug/cmTC_1188e normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1188e.build/Objects-normal/x86_64/cmTC_1188e.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1188e.build/Objects-normal/x86_64/cmTC_1188e_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1188e.build/Objects-normal/x86_64/cmTC_1188e_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_1188e
+
+** BUILD SUCCEEDED **
+
+
+File /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the statfs64 exist passed with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_981df" "-configuration" "Debug"
+=== BUILD TARGET cmTC_981df OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_981df.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_981df.build/Objects-normal/x86_64/cmTC_981df.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_981df.build/Objects-normal/x86_64/CheckSymbolExists.o CheckSymbolExists.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_981df.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_981df.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c99 -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_981df.build/Objects-normal/x86_64/CheckSymbolExists.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_981df.build/Objects-normal/x86_64/CheckSymbolExists.dia -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CheckSymbolExists.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_981df.build/Objects-normal/x86_64/CheckSymbolExists.o
+/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: warning: 'statfs64' is deprecated: first deprecated in macOS 10.6 [-Wdeprecated-declarations]
+  return ((int*)(&statfs64))[argc];
+                  ^
+In file included from /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CheckSymbolExists.c:2:
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include/sys/mount.h:403:5: note: 'statfs64' has been explicitly marked deprecated here
+int     statfs64(const char *, struct statfs64 *) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_5,__MAC_10_6,__IPHONE_NA,__IPHONE_NA);
+        ^
+1 warning generated.
+
+Ld Debug/cmTC_981df normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_981df.build/Objects-normal/x86_64/cmTC_981df.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_981df.build/Objects-normal/x86_64/cmTC_981df_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_981df.build/Objects-normal/x86_64/cmTC_981df_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_981df
+
+** BUILD SUCCEEDED **
+
+
+File /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <sys/mount.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef statfs64
+  return ((int*)(&statfs64))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if files sys/param.h exist passed with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_7a1e7" "-configuration" "Debug"
+=== BUILD TARGET cmTC_7a1e7 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_7a1e7.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_7a1e7.build/Objects-normal/x86_64/cmTC_7a1e7.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_7a1e7.build/Objects-normal/x86_64/CheckIncludeFiles.o CheckIncludeFiles.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_7a1e7.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_7a1e7.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c99 -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_7a1e7.build/Objects-normal/x86_64/CheckIncludeFiles.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_7a1e7.build/Objects-normal/x86_64/CheckIncludeFiles.dia -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CheckIncludeFiles.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_7a1e7.build/Objects-normal/x86_64/CheckIncludeFiles.o
+
+Ld Debug/cmTC_7a1e7 normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_7a1e7.build/Objects-normal/x86_64/cmTC_7a1e7.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_7a1e7.build/Objects-normal/x86_64/cmTC_7a1e7_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_7a1e7.build/Objects-normal/x86_64/cmTC_7a1e7_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_7a1e7
+
+** BUILD SUCCEEDED **
+
+
+
+Determining if files dirent.h exist passed with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_1c703" "-configuration" "Debug"
+=== BUILD TARGET cmTC_1c703 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1c703.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1c703.build/Objects-normal/x86_64/cmTC_1c703.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_1c703.build/Objects-normal/x86_64/CheckIncludeFiles.o CheckIncludeFiles.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1c703.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1c703.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c99 -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1c703.build/Objects-normal/x86_64/CheckIncludeFiles.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1c703.build/Objects-normal/x86_64/CheckIncludeFiles.dia -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CheckIncludeFiles.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1c703.build/Objects-normal/x86_64/CheckIncludeFiles.o
+
+Ld Debug/cmTC_1c703 normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1c703.build/Objects-normal/x86_64/cmTC_1c703.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1c703.build/Objects-normal/x86_64/cmTC_1c703_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_1c703.build/Objects-normal/x86_64/cmTC_1c703_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_1c703
+
+** BUILD SUCCEEDED **
+
+
+
+Determining if the function strndup exists passed with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_31744" "-configuration" "Debug"
+=== BUILD TARGET cmTC_31744 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_31744.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_31744.build/Objects-normal/x86_64/cmTC_31744.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_31744.build/Objects-normal/x86_64/CheckFunctionExists.o /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CheckFunctionExists.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_31744.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_31744.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c99 -DCHECK_FUNCTION_EXISTS=strndup -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_31744.build/Objects-normal/x86_64/CheckFunctionExists.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_31744.build/Objects-normal/x86_64/CheckFunctionExists.dia -c /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CheckFunctionExists.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_31744.build/Objects-normal/x86_64/CheckFunctionExists.o
+
+Ld Debug/cmTC_31744 normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_31744.build/Objects-normal/x86_64/cmTC_31744.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_31744.build/Objects-normal/x86_64/cmTC_31744_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_31744.build/Objects-normal/x86_64/cmTC_31744_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_31744
+
+** BUILD SUCCEEDED **
+
+
+
+Determining if the O_CLOEXEC exist passed with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_0ff5c" "-configuration" "Debug"
+=== BUILD TARGET cmTC_0ff5c OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_0ff5c.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_0ff5c.build/Objects-normal/x86_64/cmTC_0ff5c.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_0ff5c.build/Objects-normal/x86_64/CheckSymbolExists.o CheckSymbolExists.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_0ff5c.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_0ff5c.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c99 -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_0ff5c.build/Objects-normal/x86_64/CheckSymbolExists.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_0ff5c.build/Objects-normal/x86_64/CheckSymbolExists.dia -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CheckSymbolExists.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_0ff5c.build/Objects-normal/x86_64/CheckSymbolExists.o
+
+Ld Debug/cmTC_0ff5c normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_0ff5c.build/Objects-normal/x86_64/cmTC_0ff5c.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_0ff5c.build/Objects-normal/x86_64/cmTC_0ff5c_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_0ff5c.build/Objects-normal/x86_64/cmTC_0ff5c_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_0ff5c
+
+** BUILD SUCCEEDED **
+
+
+File /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <fcntl.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef O_CLOEXEC
+  return ((int*)(&O_CLOEXEC))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the clock_gettime exist passed with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_538f1" "-configuration" "Debug"
+=== BUILD TARGET cmTC_538f1 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_538f1.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_538f1.build/Objects-normal/x86_64/cmTC_538f1.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_538f1.build/Objects-normal/x86_64/CheckSymbolExists.o CheckSymbolExists.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_538f1.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_538f1.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c99 -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_538f1.build/Objects-normal/x86_64/CheckSymbolExists.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_538f1.build/Objects-normal/x86_64/CheckSymbolExists.dia -c /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CheckSymbolExists.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_538f1.build/Objects-normal/x86_64/CheckSymbolExists.o
+
+Ld Debug/cmTC_538f1 normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_538f1.build/Objects-normal/x86_64/cmTC_538f1.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_538f1.build/Objects-normal/x86_64/cmTC_538f1_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_538f1.build/Objects-normal/x86_64/cmTC_538f1_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_538f1
+
+** BUILD SUCCEEDED **
+
+
+File /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <time.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef clock_gettime
+  return ((int*)(&clock_gettime))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function XOpenDisplay exists in the /usr/X11R6/lib/libX11.dylib;/usr/X11R6/lib/libXext.dylib passed with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_35141" "-configuration" "Debug"
+=== BUILD TARGET cmTC_35141 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_35141.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_35141.build/Objects-normal/x86_64/cmTC_35141.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_35141.build/Objects-normal/x86_64/CheckFunctionExists.o /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CheckFunctionExists.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_35141.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_35141.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c99 -DCHECK_FUNCTION_EXISTS=XOpenDisplay -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_35141.build/Objects-normal/x86_64/CheckFunctionExists.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_35141.build/Objects-normal/x86_64/CheckFunctionExists.dia -c /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CheckFunctionExists.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_35141.build/Objects-normal/x86_64/CheckFunctionExists.o
+
+Ld Debug/cmTC_35141 normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -L/usr/X11R6/lib/Debug -L/usr/X11R6/lib -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_35141.build/Objects-normal/x86_64/cmTC_35141.LinkFileList -Xlinker -rpath -Xlinker /usr/X11R6/lib -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_35141.build/Objects-normal/x86_64/cmTC_35141_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names /usr/X11R6/lib/libX11.dylib /usr/X11R6/lib/libXext.dylib -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_35141.build/Objects-normal/x86_64/cmTC_35141_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_35141
+ld: warning: directory not found for option '-L/usr/X11R6/lib/Debug'
+
+** BUILD SUCCEEDED **
+
+
+
+Determining if the function gethostbyname exists passed with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_297b4" "-configuration" "Debug"
+=== BUILD TARGET cmTC_297b4 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_297b4.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_297b4.build/Objects-normal/x86_64/cmTC_297b4.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_297b4.build/Objects-normal/x86_64/CheckFunctionExists.o /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CheckFunctionExists.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_297b4.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_297b4.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c99 -DCHECK_FUNCTION_EXISTS=gethostbyname -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_297b4.build/Objects-normal/x86_64/CheckFunctionExists.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_297b4.build/Objects-normal/x86_64/CheckFunctionExists.dia -c /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CheckFunctionExists.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_297b4.build/Objects-normal/x86_64/CheckFunctionExists.o
+
+Ld Debug/cmTC_297b4 normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_297b4.build/Objects-normal/x86_64/cmTC_297b4.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_297b4.build/Objects-normal/x86_64/cmTC_297b4_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_297b4.build/Objects-normal/x86_64/cmTC_297b4_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_297b4
+
+** BUILD SUCCEEDED **
+
+
+
+Determining if the function connect exists passed with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_ea686" "-configuration" "Debug"
+=== BUILD TARGET cmTC_ea686 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_ea686.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_ea686.build/Objects-normal/x86_64/cmTC_ea686.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_ea686.build/Objects-normal/x86_64/CheckFunctionExists.o /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CheckFunctionExists.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_ea686.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_ea686.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c99 -DCHECK_FUNCTION_EXISTS=connect -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_ea686.build/Objects-normal/x86_64/CheckFunctionExists.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_ea686.build/Objects-normal/x86_64/CheckFunctionExists.dia -c /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CheckFunctionExists.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_ea686.build/Objects-normal/x86_64/CheckFunctionExists.o
+
+Ld Debug/cmTC_ea686 normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_ea686.build/Objects-normal/x86_64/cmTC_ea686.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_ea686.build/Objects-normal/x86_64/cmTC_ea686_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_ea686.build/Objects-normal/x86_64/cmTC_ea686_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_ea686
+
+** BUILD SUCCEEDED **
+
+
+
+Determining if the function remove exists passed with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_3a3a8" "-configuration" "Debug"
+=== BUILD TARGET cmTC_3a3a8 OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_3a3a8.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_3a3a8.build/Objects-normal/x86_64/cmTC_3a3a8.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_3a3a8.build/Objects-normal/x86_64/CheckFunctionExists.o /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CheckFunctionExists.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_3a3a8.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_3a3a8.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c99 -DCHECK_FUNCTION_EXISTS=remove -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_3a3a8.build/Objects-normal/x86_64/CheckFunctionExists.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_3a3a8.build/Objects-normal/x86_64/CheckFunctionExists.dia -c /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CheckFunctionExists.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_3a3a8.build/Objects-normal/x86_64/CheckFunctionExists.o
+
+Ld Debug/cmTC_3a3a8 normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_3a3a8.build/Objects-normal/x86_64/cmTC_3a3a8.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_3a3a8.build/Objects-normal/x86_64/cmTC_3a3a8_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_3a3a8.build/Objects-normal/x86_64/cmTC_3a3a8_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_3a3a8
+
+** BUILD SUCCEEDED **
+
+
+
+Determining if the function shmat exists passed with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_df0ad" "-configuration" "Debug"
+=== BUILD TARGET cmTC_df0ad OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_df0ad.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_df0ad.build/Objects-normal/x86_64/cmTC_df0ad.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_df0ad.build/Objects-normal/x86_64/CheckFunctionExists.o /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CheckFunctionExists.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_df0ad.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_df0ad.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c99 -DCHECK_FUNCTION_EXISTS=shmat -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_df0ad.build/Objects-normal/x86_64/CheckFunctionExists.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_df0ad.build/Objects-normal/x86_64/CheckFunctionExists.dia -c /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CheckFunctionExists.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_df0ad.build/Objects-normal/x86_64/CheckFunctionExists.o
+
+Ld Debug/cmTC_df0ad normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_df0ad.build/Objects-normal/x86_64/cmTC_df0ad.LinkFileList -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_df0ad.build/Objects-normal/x86_64/cmTC_df0ad_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_df0ad.build/Objects-normal/x86_64/cmTC_df0ad_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_df0ad
+
+** BUILD SUCCEEDED **
+
+
+
+Determining if the function IceConnectionNumber exists in the ICE passed with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_dee2e" "-configuration" "Debug"
+=== BUILD TARGET cmTC_dee2e OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_dee2e.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_dee2e.build/Objects-normal/x86_64/cmTC_dee2e.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_dee2e.build/Objects-normal/x86_64/CheckFunctionExists.o /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CheckFunctionExists.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_dee2e.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_dee2e.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c99 -DCHECK_FUNCTION_EXISTS=IceConnectionNumber -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_dee2e.build/Objects-normal/x86_64/CheckFunctionExists.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_dee2e.build/Objects-normal/x86_64/CheckFunctionExists.dia -c /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CheckFunctionExists.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_dee2e.build/Objects-normal/x86_64/CheckFunctionExists.o
+
+Ld Debug/cmTC_dee2e normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -L/usr/X11R6/lib/Debug -L/usr/X11R6/lib -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_dee2e.build/Objects-normal/x86_64/cmTC_dee2e.LinkFileList -Xlinker -rpath -Xlinker /usr/X11R6/lib -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_dee2e.build/Objects-normal/x86_64/cmTC_dee2e_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names -lICE -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_dee2e.build/Objects-normal/x86_64/cmTC_dee2e_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_dee2e
+ld: warning: directory not found for option '-L/usr/X11R6/lib/Debug'
+
+** BUILD SUCCEEDED **
+
+
+
+Determining if the function XineramaQueryScreens exists in the /usr/X11R6/lib/libXinerama.dylib passed with the following output:
+Change Dir: /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/xcodebuild" "-project" "CMAKE_TRY_COMPILE.xcodeproj" "build" "-target" "cmTC_bb93c" "-configuration" "Debug"
+=== BUILD TARGET cmTC_bb93c OF PROJECT CMAKE_TRY_COMPILE WITH CONFIGURATION Debug ===
+
+Check dependencies
+
+Write auxiliary files
+/bin/mkdir -p /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bb93c.build/Objects-normal/x86_64
+write-file /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bb93c.build/Objects-normal/x86_64/cmTC_bb93c.LinkFileList
+
+CompileC CMAKE_TRY_COMPILE.build/Debug/cmTC_bb93c.build/Objects-normal/x86_64/CheckFunctionExists.o /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CheckFunctionExists.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export LANG=en_US.US-ASCII
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion -Wno-float-conversion -Wno-non-literal-null-conversion -Wno-objc-literal-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DCMAKE_INTDIR=\"Debug\" -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.13 -g -Wno-sign-conversion -Wno-infinite-recursion -Wno-comma -Wno-block-capture-autoreleasing -Wno-strict-prototypes -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/include -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bb93c.build/DerivedSources/x86_64 -I/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bb93c.build/DerivedSources -Wmost -Wno-four-char-constants -Wno-unknown-pragmas -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -std=c99 -DCHECK_FUNCTION_EXISTS=XineramaQueryScreens -MMD -MT dependencies -MF /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bb93c.build/Objects-normal/x86_64/CheckFunctionExists.d --serialize-diagnostics /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bb93c.build/Objects-normal/x86_64/CheckFunctionExists.dia -c /usr/local/Cellar/cmake/3.10.0/share/cmake/Modules/CheckFunctionExists.c -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bb93c.build/Objects-normal/x86_64/CheckFunctionExists.o
+
+Ld Debug/cmTC_bb93c normal x86_64
+    cd /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -L/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -L/usr/X11R6/lib/libXinerama.dylib/Debug -L/usr/X11R6/lib/libXinerama.dylib -F/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug -filelist /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bb93c.build/Objects-normal/x86_64/cmTC_bb93c.LinkFileList -Xlinker -rpath -Xlinker /usr/X11R6/lib/libXinerama.dylib -mmacosx-version-min=10.13 -Xlinker -object_path_lto -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bb93c.build/Objects-normal/x86_64/cmTC_bb93c_lto.o -Xlinker -no_deduplicate -Wl,-search_paths_first -Wl,-headerpad_max_install_names /usr/X11R6/lib/libXinerama.dylib -Xlinker -dependency_info -Xlinker /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/CMAKE_TRY_COMPILE.build/Debug/cmTC_bb93c.build/Objects-normal/x86_64/cmTC_bb93c_dependency_info.dat -o /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/CMakeTmp/Debug/cmTC_bb93c
+ld: warning: directory not found for option '-L/usr/X11R6/lib/libXinerama.dylib/Debug'
+ld: warning: -L path '/usr/X11R6/lib/libXinerama.dylib' is not a directory
+
+** BUILD SUCCEEDED **
+
+
+
