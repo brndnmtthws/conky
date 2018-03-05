@@ -49,13 +49,13 @@ struct ical_event *add_event(struct ical_event *listend, icalcomponent *new_ev) 
 	icaltimetype start;
 
 	start = icalcomponent_get_dtstart(new_ev);
-	if(icaltime_compare(start, icaltime_from_timet(time(NULL), 0)) <= 0) {
+	if(icaltime_compare(start, icaltime_from_timet_with_zone(time(NULL), 0, NULL)) <= 0) {
 		icalproperty *rrule = icalcomponent_get_first_property(new_ev, ICAL_RRULE_PROPERTY);
 		if(rrule) {
 			icalrecur_iterator* ritr = icalrecur_iterator_new(icalproperty_get_rrule(rrule), start);
 			icaltimetype nexttime = icalrecur_iterator_next(ritr);
 			while (!icaltime_is_null_time(nexttime)) {
-				if(icaltime_compare(nexttime, icaltime_from_timet(time(NULL), 0)) > 0) {
+				if(icaltime_compare(nexttime, icaltime_from_timet_with_zone(time(NULL), 0, NULL)) > 0) {
 					start = nexttime;
 					break;
 				}
