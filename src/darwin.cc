@@ -61,6 +61,9 @@
 #include <libproc.h>            // get_top_info
 #include "top.h"                // get_top_info
 
+#include <ifaddrs.h>            // update_net_stats
+#include "net_stats.h"          // update_net_stats
+
 #include "darwin_sip.h"         // sip status
 
 /* clock_gettime includes */
@@ -653,7 +656,89 @@ int update_meminfo(void)
 
 int update_net_stats(void)
 {
-    printf("update_net_stats: STUB\n");
+    struct net_stat *ns;
+    double delta;
+    long long r, t, last_recv, last_trans;
+    struct ifaddrs *ifap, *ifa;
+    struct if_data *ifd;
+    
+    /* get delta */
+    delta = current_update_time - last_update_time;
+    if (delta <= 0.0001) {
+        return 0;
+    }
+    
+    if (getifaddrs(&ifap) < 0)
+    {
+        return 0;
+    }
+    
+    for (ifa = ifap; ifa; ifa = ifa->ifa_next)
+    {
+        ns = get_net_stat((const char *) ifa->ifa_name, NULL, NULL);
+        
+        if (ifa->ifa_flags & IFF_UP)
+        {
+            struct ifaddrs *iftmp;
+            
+            ns->up = 1;
+            last_recv = ns->recv;
+            last_trans = ns->trans;
+            
+            if (ifa->ifa_addr->sa_family != AF_LINK)
+            {
+                continue;
+            }
+            
+            for (iftmp = ifa->ifa_next;
+                 iftmp != NULL && strcmp(ifa->ifa_name, iftmp->ifa_name) == 0;
+                 iftmp = iftmp->ifa_next)
+            {
+                if (iftmp->ifa_addr->sa_family == AF_INET)
+                {
+                    memcpy(&(ns->addr), iftmp->ifa_addr, iftmp->ifa_addr->sa_len);
+                }
+            }
+            
+            ifd = (struct if_data *) ifa->ifa_data;
+            r = ifd->ifi_ibytes;
+            t = ifd->ifi_obytes;
+            
+            if (r < ns->last_read_recv)
+            {
+                ns->recv += ((long long) 4294967295U -
+                             ns->last_read_recv) + r;
+            }
+            else
+            {
+                ns->recv += (r - ns->last_read_recv);
+            }
+            
+            ns->last_read_recv = r;
+            
+            if (t < ns->last_read_trans)
+            {
+                ns->trans += ((long long) 4294967295U -
+                              ns->last_read_trans) + t;
+            }
+            else
+            {
+                ns->trans += (t - ns->last_read_trans);
+            }
+            
+            ns->last_read_trans = t;
+            
+            /* calculate speeds */
+            ns->recv_speed = (ns->recv - last_recv) / delta;
+            ns->trans_speed = (ns->trans - last_trans) / delta;
+        }
+        else
+        {
+            ns->up = 0;
+        }
+    }
+    
+    freeifaddrs(ifap);
     return 0;
 }
 
