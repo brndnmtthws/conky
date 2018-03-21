@@ -97,6 +97,7 @@ struct process {
 	unsigned long previous_user_time;
 	unsigned long previous_kernel_time;
 	unsigned long total_cpu_time;
+    unsigned long previous_total_cpu_time; /* total CPU time ( NOT OF THE PROCESS ) of previous iteration */
 	unsigned long long vsize;
 	unsigned long long rss;
 #ifdef BUILD_IOSTATS
@@ -109,20 +110,6 @@ struct process {
 	unsigned int time_stamp;
 	unsigned int counted;
 	unsigned int changed;
-    
-#if (defined(__APPLE__) && defined(__MACH__))
-    /*
-     * Temporary solution for using a more optimised algorithm than that
-     *  of linux.cc for get_top_info().
-     * This is a patch that will be deleted when pull request that adds the following
-     *  variable is accepted to upstream.
-     *
-     * See #15 in GitHub repo for more info.
-     *
-     */
-    
-    unsigned long long previous_total_cpu_time; /* total CPU time ( NOT OF THE PROCESS ) of previous iteration */
-#endif
 };
 
 struct sorted_process {

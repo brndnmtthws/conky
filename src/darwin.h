@@ -1,23 +1,27 @@
 /*
- *  This file is part of conky.
+ * Conky, a system monitor, based on torsmo
  *
- *  conky is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * Any original torsmo code is licensed under the BSD license
  *
- *  conky is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * All code written since the fork of torsmo is licensed under the GPL
  *
- *  You should have received a copy of the GNU General Public License
- *  along with conky.  If not, see <http://www.gnu.org/licenses/>.
+ * Please see COPYING for details
+ *
+ * Copyright (c) 2018, npyl <n.pylarinos@hotmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-//  darwin.h
-//  Nickolas Pylarinos
 
 #ifndef DARWIN_H
 #define DARWIN_H

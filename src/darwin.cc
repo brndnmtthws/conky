@@ -1,18 +1,25 @@
 /*
- *  This file is part of conky.
+ * Conky, a system monitor, based on torsmo
  *
- *  conky is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * Any original torsmo code is licensed under the BSD license
  *
- *  conky is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * All code written since the fork of torsmo is licensed under the GPL
  *
- *  You should have received a copy of the GNU General Public License
- *  along with conky.  If not, see <http://www.gnu.org/licenses/>.
+ * Please see COPYING for details
+ *
+ * Copyright (c) 2018, npyl <n.pylarinos@hotmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -62,7 +69,7 @@
 #include "top.h"                // get_top_info
 
 #include <ifaddrs.h>            // update_net_stats
-#include "net_stats.h"          // update_net_stats
+#include "net_stat.h"           // update_net_stats
 
 #include "darwin_sip.h"         // sip status
 
@@ -577,11 +584,10 @@ uint64_t get_physical_memory(void)
 
 int update_meminfo(void)
 {
-    /* implement remaining memory-related variables (see conky.h) */
-    /* check if p_vm_stat, seq and others were actually needed for the algorithm to work correct */
-    /* conky breaks the values ... :( probably some rounding problem...
+    /* XXX implement remaining memory-related variables (see conky.h) */
+    /* XXX conky breaks the values ... :( probably some rounding problem...
         Though we get the right values (based on top) */
-    /* probably investigate the "probably apple keeps some info secret" */
+    /* XXX probably investigate the "probably apple keeps some info secret" */
     
     vm_size_t               page_size = getpagesize();  // get pagesize in bytes
     unsigned long           swap_avail, swap_free;
@@ -635,8 +641,6 @@ int update_meminfo(void)
     /* rest memory related variables */
     info.memwithbuffers = info.mem;
     info.memeasyfree = info.memfree = info.memmax - info.mem;
-    
-    // XXX finish the buffers, membuf, caches
     
     if ((swapmode(&swap_avail, &swap_free)) >= 0)
     {
@@ -882,27 +886,7 @@ void get_cpu_count(void)
         info.cpu_count = 0;
     }
     
-    /* XXX
-     * Probably move the info.cpu_usage allocation inside the update_cpu_usage() function...
-     * Why is it here ??
-     *
-     * Unless i find some reason for keeping it here it will be moved to update_cpu_usage()
-     *
-     * ΝΟΤΕ: In FreeBSD and Linux implementations info.cpu_usage is allocated everytime we get inside the
-     * get_cpu_count function (???).
-     * Probably there is some deallocation at other points but lets fix the memory leak for now... :D
-     *
-     * In macOS conky calls 4 times the get_cpu_count() function before it loads the config file.... Which means that
-     * info.cpu_usage gets allocated 4 times and deallocated only once!
-     *
-     * Then in the update_cpu_usage() the function checks if info.cpu_usage has been allocated and thus doesn't allocate it again....
-     * Though this doesn't fix the memory leak problem... (4 times allocated already!)
-     *
-     *  ATLEAST this is the case on macOS, don't know if it is in the Linux, too!
-     *
-     */
-    
-    // XXX this can be moved to update_cpu_usage() but keep here to follow linux implementation
+    /* XXX this can be moved to update_cpu_usage() but keep here to follow linux implementation */
     if (!info.cpu_usage)
     {
         /*
