@@ -220,27 +220,27 @@ struct information {
 	short kflags;	/* kernel settings, see enum KFLAG */
     
 #if defined(__APPLE__) && defined(__MACH__)
-    /* System Integrity Protection related */
-    struct csr_config_flags {
-        bool csr_allow_untrusted_kexts;
-        bool csr_allow_unrestricted_fs;
-        bool csr_allow_task_for_pid;
-        bool csr_allow_kernel_debugger;
-        bool csr_allow_apple_internal;
-        bool csr_allow_unrestricted_dtrace;
-        bool csr_allow_unrestricted_nvram;
-        bool csr_allow_device_configuration;
-        bool csr_allow_any_recovery_os;
-        bool csr_allow_user_approved_kexts;
-    };
+	/* System Integrity Protection related */
+    	struct csr_config_flags {
+        	bool csr_allow_untrusted_kexts;
+        	bool csr_allow_unrestricted_fs;
+        	bool csr_allow_task_for_pid;
+        	bool csr_allow_kernel_debugger;
+        	bool csr_allow_apple_internal;
+        	bool csr_allow_unrestricted_dtrace;
+        	bool csr_allow_unrestricted_nvram;
+        	bool csr_allow_device_configuration;
+        	bool csr_allow_any_recovery_os;
+        	bool csr_allow_user_approved_kexts;
+    	};
     
-    /* SIP typedefs */
-    typedef csr_config_flags csr_config_flags_t;
-    typedef uint32_t csr_config_t;
+    	/* SIP typedefs */
+    	typedef csr_config_flags csr_config_flags_t;
+    	typedef uint32_t csr_config_t;
     
-    /* SIP variables */
-    csr_config_t csr_config;
-    csr_config_flags_t csr_config_flags;
+    	/* SIP variables */
+    	csr_config_t csr_config;
+    	csr_config_flags_t csr_config_flags;
 #endif /* defined(__APPLE__) && defined(__MACH__) */
 };
 

@@ -28,10 +28,10 @@ include(CheckSymbolExists)
 # Check for some headers
 
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-    # On Darwin, the statfs64 structure relies in </sys/mount.h>
-    check_symbol_exists(statfs64 "sys/mount.h" HAVE_STATFS64)
+	# On Darwin, the statfs64 structure relies in </sys/mount.h>
+	check_symbol_exists(statfs64 "sys/mount.h" HAVE_STATFS64)
 else(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-    check_symbol_exists(statfs64 "sys/statfs.h" HAVE_STATFS64)
+    	check_symbol_exists(statfs64 "sys/statfs.h" HAVE_STATFS64)
 endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
 check_include_files(sys/param.h HAVE_SYS_PARAM_H)
@@ -116,11 +116,11 @@ if(BUILD_I18N AND OS_DRAGONFLY)
 endif(BUILD_I18N AND OS_DRAGONFLY)
 
 if(BUILD_I18N AND OS_DARWIN)
-    set(conky_libs ${conky_libs} -lintl)
+	set(conky_libs ${conky_libs} -lintl)
 endif(BUILD_I18N AND OS_DARWIN)
 
 if(BUILD_NCURSES AND OS_DARWIN)
-    set(conky_libs ${conky_libs} -lncurses)
+	set(conky_libs ${conky_libs} -lncurses)
 endif(BUILD_NCURSES AND OS_DARWIN)
 
 if(BUILD_MATH)
