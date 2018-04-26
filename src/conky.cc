@@ -210,6 +210,8 @@ conky::range_config_setting<double> update_interval("update_interval", 0.0,
 										std::numeric_limits<double>::infinity(), 3.0, true);
 conky::range_config_setting<double> update_interval_on_battery("update_interval_on_battery", 0.0,
 										std::numeric_limits<double>::infinity(), NOBATTERY, true);
+conky::simple_config_setting<std::string> detect_battery("detect_battery",
+										std::string("BAT0"), false);
 static bool on_battery = false;
 
 double active_update_interval()
@@ -2103,7 +2105,8 @@ static void main_loop(void)
 		if(update_interval_on_battery.get(*state) != NOBATTERY) {
 			char buf[64];
 
-			get_battery_short_status(buf, 64, "BAT0");
+			get_battery_short_status(buf, 64, detect_battery.get(*state).c_str());
+			fprintf(stderr, "DJP: battery is %c (%x)\n", buf[0], buf[0]);
 			on_battery = (buf[0] == 'D');
 		}
 		info.looped++;
