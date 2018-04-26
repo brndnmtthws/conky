@@ -120,6 +120,7 @@ double wireless_link_barval(struct text_object *);
 #endif /* BUILD_WLAN */
 
 void clear_net_stats(void);
+void clear_net_stats(net_stat*);
 
 void parse_if_up_arg(struct text_object *, const char *);
 int interface_up(struct text_object *);

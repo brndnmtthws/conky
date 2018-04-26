@@ -69,6 +69,7 @@ static conky::simple_config_setting<if_up_strictness_> if_up_strictness("if_up_s
  * global array of structs containing network statistics for each interface
  **/
 struct net_stat netstats[MAX_NET_INTERFACES];
+struct net_stat foo_netstats;
 
 /**
  * Returns pointer to specified interface in netstats array.
@@ -105,8 +106,13 @@ struct net_stat *get_net_stat(const char *dev, void *free_at_crash1, void *free_
 		}
 	}
 
-	CRIT_ERR(free_at_crash1, free_at_crash2, "too many interfaces used (limit is %d)", MAX_NET_INTERFACES);
-	return 0;
+	clear_net_stats(&foo_netstats);
+	foo_netstats.dev = strndup(dev, text_buffer_size.get(*state));
+	/* initialize last_read_recv and last_read_trans to -1 denoting
+	 * that they were never read before */
+	foo_netstats.last_read_recv = -1;
+	foo_netstats.last_read_trans = -1;
+	return &foo_netstats;
 }
 
 void parse_net_stat_arg(struct text_object *obj, const char *arg, void *free_at_crash)
@@ -475,6 +481,20 @@ void clear_net_stats(void)
 #endif /* BUILD_IPV6 */
 	}
 	memset(netstats, 0, sizeof(netstats));
+}
+
+void clear_net_stats(net_stat *in) {
+#ifdef BUILD_IPV6
+	struct v6addr *nextv6;
+#endif /* BUILD_IPV6 */
+	free_and_zero(in->dev);
+#ifdef BUILD_IPV6
+	while (in->v6addrs) {
+		nextv6 = in->v6addrs;
+		in->v6addrs = in->v6addrs->next;
+		free_and_zero(nextv6);
+	}
+#endif /* BUILD_IPV6 */
 }
 
 void parse_if_up_arg(struct text_object *obj, const char *arg)
