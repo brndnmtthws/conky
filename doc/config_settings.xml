@@ -1032,6 +1032,15 @@
     <varlistentry>
         <term>
             <command>
+                <option>detect_battery</option>
+            </command>
+        </term>
+        <listitem>One or more batteries to check in order to use update_interval_on_battery (comma separated, BAT0 default)
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>uppercase</option>
             </command>
         </term>
