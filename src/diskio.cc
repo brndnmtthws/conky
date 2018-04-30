@@ -123,44 +123,64 @@ void parse_diskio_arg(struct text_object *obj, const char *arg)
 	obj->data.opaque = prepare_diskio_stat(arg);
 }
 
-/* dir indicates the direction:
- * -1: read
- *  0: read + write
- *  1: write
- */
-static void print_diskio_dir(struct text_object *obj, int dir, char *p, int p_max_size)
+static void print_diskio_human_readable(double val, char *p, int p_max_size)
 {
-	struct diskio_stat *diskio = (struct diskio_stat *)obj->data.opaque;
-	double val;
-
-	if (!diskio)
-		return;
-
-	if (dir < 0)
-		val = diskio->current_read;
-	else if (dir == 0)
-		val = diskio->current;
-	else
-		val = diskio->current_write;
-
 	/* TODO: move this correction from kB to kB/s elsewhere
 	 * (or get rid of it??) */
 	human_readable((val / active_update_interval()) * 1024LL, p, p_max_size);
 }
 
+static void print_diskio_kib(double val, char *p, int p_max_size)
+{
+	spaced_print(p, p_max_size, "%.1f", 8, val / active_update_interval());
+}
+
 void print_diskio(struct text_object *obj, char *p, int p_max_size)
 {
-	print_diskio_dir(obj, 0, p, p_max_size);
+	struct diskio_stat *diskio = (struct diskio_stat *)obj->data.opaque;
+	if (!diskio)
+		return;
+	print_diskio_human_readable(diskio->current, p, p_max_size);
+}
+
+void print_diskiof(struct text_object *obj, char *p, int p_max_size)
+{
+	struct diskio_stat *diskio = (struct diskio_stat *)obj->data.opaque;
+	if (!diskio)
+		return;
+	print_diskio_kib(diskio->current, p, p_max_size);
 }
 
 void print_diskio_read(struct text_object *obj, char *p, int p_max_size)
 {
-	print_diskio_dir(obj, -1, p, p_max_size);
+	struct diskio_stat *diskio = (struct diskio_stat *)obj->data.opaque;
+	if (!diskio)
+		return;
+	print_diskio_human_readable(diskio->current_read, p, p_max_size);
+}
+
+void print_diskio_readf(struct text_object *obj, char *p, int p_max_size)
+{
+	struct diskio_stat *diskio = (struct diskio_stat *)obj->data.opaque;
+	if (!diskio)
+		return;
+	print_diskio_kib(diskio->current_read, p, p_max_size);
 }
 
 void print_diskio_write(struct text_object *obj, char *p, int p_max_size)
 {
-	print_diskio_dir(obj, 1, p, p_max_size);
+	struct diskio_stat *diskio = (struct diskio_stat *)obj->data.opaque;
+	if (!diskio)
+		return;
+	print_diskio_human_readable(diskio->current_write, p, p_max_size);
+}
+
+void print_diskio_writef(struct text_object *obj, char *p, int p_max_size)
+{
+	struct diskio_stat *diskio = (struct diskio_stat *)obj->data.opaque;
+	if (!diskio)
+		return;
+	print_diskio_kib(diskio->current_write, p, p_max_size);
 }
 
 #ifdef BUILD_X11
