@@ -210,6 +210,8 @@ conky::range_config_setting<double> update_interval("update_interval", 0.0,
 										std::numeric_limits<double>::infinity(), 3.0, true);
 conky::range_config_setting<double> update_interval_on_battery("update_interval_on_battery", 0.0,
 										std::numeric_limits<double>::infinity(), NOBATTERY, true);
+conky::simple_config_setting<std::string> detect_battery("detect_battery",
+										std::string("BAT0"), false);
 static bool on_battery = false;
 
 double active_update_interval()
@@ -2054,6 +2056,24 @@ static void update_text(void)
 int inotify_fd = -1;
 #endif
 
+bool is_on_battery() { //checks if at least one battery specified in "detect_battery" is discharging
+	char buf[64];
+	std::string detect_battery_str;
+	std::string str_buf={""};
+	detect_battery_str.assign(detect_battery.get(*state));
+	detect_battery_str+=',';
+
+	for(std::string::size_type i = 0; i < detect_battery_str.size(); i++){ //parse using ',' as delimiter
+		if( (detect_battery_str[i] != ',') && (detect_battery_str[i] != ' ') ) str_buf+=detect_battery_str[i];
+		if( (detect_battery_str[i] == ',') && !str_buf.empty() ){
+			get_battery_short_status(buf, 64, str_buf.c_str());
+			if(buf[0] == 'D') return true;
+			str_buf="";
+		}
+	}
+	return false;
+}
+
 static void main_loop(void)
 {
 	int terminate = 0;
@@ -2100,12 +2120,7 @@ static void main_loop(void)
 	info.looped = 0;
 	while (terminate == 0
 			&& (total_run_times.get(*state) == 0 || info.looped < total_run_times.get(*state))) {
-		if(update_interval_on_battery.get(*state) != NOBATTERY) {
-			char buf[64];
-
-			get_battery_short_status(buf, 64, "BAT0");
-			on_battery = (buf[0] == 'D');
-		}
+		if( (update_interval_on_battery.get(*state) != NOBATTERY)) on_battery = is_on_battery();
 		info.looped++;
 
 #ifdef SIGNAL_BLOCKING
