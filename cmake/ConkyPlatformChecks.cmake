@@ -36,7 +36,12 @@ check_function_exists(strndup HAVE_STRNDUP)
 
 check_symbol_exists(pipe2 "unistd.h" HAVE_PIPE2)
 check_symbol_exists(O_CLOEXEC "fcntl.h" HAVE_O_CLOEXEC)
-check_symbol_exists(statfs64 "sys/statfs.h" HAVE_STATFS64)
+
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+	check_symbol_exists(statfs64 "sys/mount.h" HAVE_STATFS64)
+else(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+	check_symbol_exists(statfs64 "sys/statfs.h" HAVE_STATFS64)
+endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
 AC_SEARCH_LIBS(clock_gettime "time.h" CLOCK_GETTIME_LIB "rt")
 if(NOT DEFINED CLOCK_GETTIME_LIB)
