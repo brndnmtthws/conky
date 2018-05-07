@@ -115,6 +115,8 @@
 #include "dragonfly.h"
 #elif defined(__OpenBSD__)
 #include "openbsd.h"
+#elif defined(__APPLE__) && defined(__MACH__)
+#include "darwin.h"
 #endif
 
 #include <string.h>
@@ -542,7 +544,7 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		}
 		obj->callbacks.print = get_powerbook_batt_info;
 #endif /* __linux__ */
-#if (defined(__FreeBSD__) || defined(__linux__) || defined(__DragonFly__))
+#if (defined(__FreeBSD__) || defined(__linux__) || defined(__DragonFly__) || (defined(__APPLE__) && defined(__MACH__)))
 	END OBJ_IF_ARG(if_up, 0, "if_up needs an argument")
 		parse_if_up_arg(obj, arg);
 		obj->callbacks.iftest = &interface_up;
@@ -954,6 +956,17 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.iftest = &if_running_iftest;
 		obj->callbacks.free = &gen_free_opaque;
+#elif defined(__APPLE__) && defined(__MACH__)
+    	END OBJ_IF_ARG(if_mounted, 0, "if_mounted needs an argument")
+    		obj->data.s = strndup(arg, text_buffer_size.get(*state));
+    		obj->callbacks.iftest = &check_mount;
+    		obj->callbacks.free = &gen_free_opaque;
+    
+    	/* System Integrity Protection */
+    	END OBJ(sip_status, &get_sip_status)
+        	obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+        	obj->callbacks.print = &print_sip_status;
+        	obj->callbacks.free = &gen_free_opaque;
 #else
 	END OBJ_IF_ARG(if_running, 0, "if_running needs an argument")
 		char buf[text_buffer_size.get(*state)];
@@ -1251,6 +1264,13 @@ struct text_object *construct_text_object(char *s, const char *arg,
 #if defined(__DragonFly__)
 	END OBJ(running_processes, &update_top)
 	obj->callbacks.print = &print_running_processes;
+#elif (defined(__APPLE__) && defined(__MACH__))
+   	END OBJ(running_processes, &update_running_processes)
+    	obj->callbacks.print = &print_running_processes;
+    	END OBJ(threads, &update_threads)
+    	obj->callbacks.print = &print_threads;
+    	END OBJ(running_threads, &update_running_threads)
+    	obj->callbacks.print = &print_running_threads;
 #else
 	END OBJ(running_processes, &update_running_processes)
 	obj->callbacks.print = &print_running_processes;

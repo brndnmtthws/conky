@@ -80,6 +80,11 @@ if(OS_HAIKU)
 	set(optional_sources ${optional_sources} ${haiku})
 endif(OS_HAIKU)
 
+if(OS_DARWIN)
+	set(darwin darwin.cc)
+	set(optional_sources ${optional_sources} ${darwin})
+endif(OS_DARWIN)
+
 # Optional sources
 if(HAVE_SOME_SOUNDCARD_H)
 	set(mixer mixer.cc)

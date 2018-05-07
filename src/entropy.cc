@@ -45,6 +45,8 @@
 #include "solaris.h"
 #elif defined(__HAIKU__)
 #include "haiku.h"
+#elif defined(__APPLE__) && defined(__MACH__)
+#include "darwin.h"
 #endif
 
 struct _entropy {

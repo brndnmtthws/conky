@@ -3747,6 +3747,41 @@
     <varlistentry>
         <term>
             <command>
+                <option>sip_status</option>
+            </command>
+            <option>(switch)</option>
+        </term>
+        <listitem>Prints info regarding System Integrity Protection (SIP) on macOS.
+            
+            Specifically, prints SIP status (enabled / disabled) if no switch is
+            provided OR status of specific SIP feature if a switch is provided.
+            Below are the allowed switches:     (each switch is a char)
+            SWITCH-----------------------RESULT-------------------------------
+            0                           allows apple-internal?          YES/NO
+            1                           allows untrusted-kexts?         YES/NO
+            2                           allows task-for-pid?            YES/NO
+            3                           allows unrestricted-fs?         YES/NO
+            4                           allows kernel-debugger?         YES/NO
+            5                           allows unrestricted-dtrace?     YES/NO
+            6                           allows unrestricted-nvram?      YES/NO
+            7                           allows device-configuration?    YES/NO
+            8                           allows any-recovery-os?         YES/NO
+            9                           allows user-approved-kexts?     YES/NO
+            a                           uses unsupported configuration?
+                                        If yes, prints "unsupported configuration, beware!"
+                                        Else, prints "configuration is ok".
+            ------------------------------------------------------------------
+            EXAMPLE:
+            conky -t '${sip_status}'    # print SIP status
+            conky -t '${sip_status 0}'  # print allows apple-internal? Yes or No?
+            
+            NOTES: exists only for macOS version of conky and works on any macOS
+            version (even the ones prior El Capitan where SIP was first introduced).
+            <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>shadecolor</option>
             </command>
             <option>(color)</option>

@@ -57,7 +57,13 @@ namespace lua {
 				lua_pushstring(l, e.what());
 			}
 			catch(...) {
-				lua_pushstring(l, ptr->__cxa_exception_type()->name());
+#if defined(__APPLE__) && defined(__MACH__)
+				//lua_pushstring(l, ptr->__cxa_exception_type()->name());
+               			printf("%s: FIXME: no member named '__cxa_exception_type' in 'std::exception_ptr' \n", __func__);
+                		lua_pushstring(l, "FIXME: in luamm.cc");
+#else 
+                		lua_pushstring(l, ptr->__cxa_exception_type()->name());
+#endif
 			}
 			return 1;
 		}

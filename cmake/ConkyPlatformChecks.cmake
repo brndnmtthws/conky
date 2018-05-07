@@ -36,11 +36,20 @@ check_function_exists(strndup HAVE_STRNDUP)
 
 check_symbol_exists(pipe2 "unistd.h" HAVE_PIPE2)
 check_symbol_exists(O_CLOEXEC "fcntl.h" HAVE_O_CLOEXEC)
-check_symbol_exists(statfs64 "sys/statfs.h" HAVE_STATFS64)
+
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+	check_symbol_exists(statfs64 "sys/mount.h" HAVE_STATFS64)
+else(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+	check_symbol_exists(statfs64 "sys/statfs.h" HAVE_STATFS64)
+endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
 AC_SEARCH_LIBS(clock_gettime "time.h" CLOCK_GETTIME_LIB "rt")
 if(NOT DEFINED CLOCK_GETTIME_LIB)
-	message(FATAL_ERROR "clock_gettime not found.")
+	if(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")	
+		message(FATAL_ERROR "clock_gettime not found.")
+	endif(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")
+else(NOT DEFINED CLOCK_GETTIME_LIB)
+	set(HAVE_CLOCK_GETTIME 1)	
 endif(NOT DEFINED CLOCK_GETTIME_LIB)
 set(conky_libs ${conky_libs} ${CLOCK_GETTIME_LIB})
 
@@ -80,11 +89,15 @@ if(CMAKE_SYSTEM_NAME MATCHES "Haiku")
 	set(conky_libs ${conky_libs} -lnetwork -lintl)
 endif(CMAKE_SYSTEM_NAME MATCHES "Haiku")
 
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+	set(OS_DARWIN true)
+endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+
 if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY 
-  AND NOT OS_SOLARIS AND NOT OS_HAIKU)
+  AND NOT OS_SOLARIS AND NOT OS_HAIKU AND NOT OS_DARWIN)
 	message(FATAL_ERROR "Your platform, '${CMAKE_SYSTEM_NAME}', is not currently supported.  Patches are welcome.")
 endif(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY
-  AND NOT OS_SOLARIS AND NOT OS_HAIKU)
+  AND NOT OS_SOLARIS AND NOT OS_HAIKU AND NOT OS_DARWIN)
 
 # Check for soundcard header
 if(OS_LINUX)
@@ -99,6 +112,14 @@ endif(OS_LINUX)
 if(BUILD_I18N AND OS_DRAGONFLY)
 	set(conky_libs ${conky_libs} -lintl)
 endif(BUILD_I18N AND OS_DRAGONFLY)
+
+if(BUILD_I18N AND OS_DARWIN)
+	set(conky_libs ${conky_libs} -lintl)
+endif(BUILD_I18N AND OS_DARWIN)
+
+if(BUILD_NCURSES AND OS_DARWIN)
+	set(conky_libs ${conky_libs} -lncurses)
+endif(BUILD_NCURSES AND OS_DARWIN)
 
 if(BUILD_MATH)
 	set(conky_libs ${conky_libs} -lm)

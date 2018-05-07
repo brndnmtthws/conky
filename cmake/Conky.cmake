@@ -51,11 +51,15 @@ if(CMAKE_SYSTEM_NAME MATCHES "Haiku")
 	set(OS_HAIKU true)
 endif(CMAKE_SYSTEM_NAME MATCHES "Haiku")
 
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+	set(OS_DARWIN true)
+endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+
 if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY
-  AND NOT OS_SOLARIS AND NOT OS_HAIKU)
+  AND NOT OS_SOLARIS AND NOT OS_HAIKU AND NOT OS_DARWIN)
 	message(FATAL_ERROR "Your platform, '${CMAKE_SYSTEM_NAME}', is not currently supported.  Patches are welcome.")
 endif(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY
-  AND NOT OS_SOLARIS AND NOT OS_HAIKU)
+  AND NOT OS_SOLARIS AND NOT OS_HAIKU AND NOT OS_DARWIN)
 
 include(FindThreads)
 find_package(Threads)
@@ -63,9 +67,15 @@ find_package(Threads)
 set(conky_libs ${CMAKE_THREAD_LIBS_INIT})
 set(conky_includes ${CMAKE_BINARY_DIR})
 
-add_definitions(-D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L) # Standard definitions
-set(CMAKE_REQUIRED_DEFINITIONS
-	"${CMAKE_REQUIRED_DEFINITIONS} -D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L")
+#
+# On Darwin _POSIX_C_SOURCE must be >= __DARWIN_C_FULL for asprintf to be enabled!
+# Thus disable this and _LARGEFILE64_SOURCE isnt needed, it is already used on macOS.
+#
+if(NOT OS_DARWIN)
+	add_definitions(-D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L) # Standard definitions
+    	set(CMAKE_REQUIRED_DEFINITIONS
+		"${CMAKE_REQUIRED_DEFINITIONS} -D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L")
+endif(NOT OS_DARWIN)
 
 if(OS_DRAGONFLY)
 set(conky_libs ${conky_libs} -L/usr/pkg/lib)
