@@ -330,6 +330,17 @@
     <varlistentry>
         <term>
             <command>
+                <option>graph_scale_keep_max</option>
+            </command>
+        </term>
+		<listitem>If true, graphs will always keep the scaling from the maximum
+			value over the entire history. Otherwise scaling is set according to
+			the maximum visible value. Default: false.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>hddtemp_host</option>
             </command>
         </term>
