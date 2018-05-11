@@ -61,7 +61,7 @@ void parse_combine_arg(struct text_object *obj, const char *arg) {
       }
       if (indenting == 0 &&
           arg[i + 1] < 48) {  //<48 has 0, $, and the most used chars not used
-                              //in varnames but not { or }
+                              // in varnames but not { or }
         endvar[j] = i + 1;
         j++;
       }

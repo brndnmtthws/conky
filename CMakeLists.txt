@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.5)
 
 project(conky)
 
@@ -38,6 +38,11 @@ include(ConkyPlatformChecks)
 
 # CPack module for installation tasks
 include(ConkyCPackSetup)
+
+# Set up clang-format
+set(CLANG_FORMAT_BIN_NAME clang-format-5.0)
+set(CLANG_FORMAT_EXCLUDE_PATTERNS  "build/" ${CMAKE_BINARY_DIR})
+find_package(ClangFormat)
 
 # setup our configuration headers
 configure_file(${CMAKE_MODULE_PATH}/config.h.in ${CMAKE_BINARY_DIR}/config.h)

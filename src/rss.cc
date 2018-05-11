@@ -120,7 +120,7 @@ static void rss_process_info(char *p, int p_max_size, const std::string &uri,
         int itmp;
         int show;
         //'tmpspaces' is a string with spaces too be placed in front of each
-        //title
+        // title
         char *tmpspaces = (char *)malloc(nrspaces + 1);
         memset(tmpspaces, ' ', nrspaces);
         tmpspaces[nrspaces] = 0;

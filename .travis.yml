@@ -1,29 +1,75 @@
 language: cpp
-compiler:
-  - gcc
-addons:
-  apt:
-    packages:
-    - cmake
-    - libxdamage-dev
-    - libx11-dev
-    - libxft-dev
-    - libxext-dev
-    - libglib2.0-dev
-    - libxml2-dev
-    - libcurl4-gnutls-dev
-    - liblua5.1-0-dev
-    - libtolua++5.1-dev
-    - libcairo2-dev
-    - libimlib2-dev
-    - libxinerama-dev
-    - gawk
+dist: trusty
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - g++-7
+            - cmake
+            - libxdamage-dev
+            - libx11-dev
+            - libxft-dev
+            - libxext-dev
+            - libglib2.0-dev
+            - libxml2-dev
+            - libcurl4-gnutls-dev
+            - liblua5.1-0-dev
+            - libtolua++5.1-dev
+            - libcairo2-dev
+            - libimlib2-dev
+            - libxinerama-dev
+            - gawk
+            - clang-5.0
+            - clang-format-5.0
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - cmake
+            - libxdamage-dev
+            - libx11-dev
+            - libxft-dev
+            - libxext-dev
+            - libglib2.0-dev
+            - libxml2-dev
+            - libcurl4-gnutls-dev
+            - liblua5.1-0-dev
+            - libtolua++5.1-dev
+            - libcairo2-dev
+            - libimlib2-dev
+            - libxinerama-dev
+            - gawk
+            - clang-5.0
+            - clang-format-5.0
+      env:
+        - MATRIX_EVAL="CC=clang && CXX=clang++"
+before_install:
+  - eval "${MATRIX_EVAL}"
 before_script:
-  - mkdir build && cd build && cmake .. && cd ..
-  - mkdir build-no-x11 && cd build-no-x11 && cmake -DBUILD_X11=OFF .. && cd ..
+  - mkdir build
+  - cd build
+  - scan-build --use-cc=$CC --use-c++=$CXX -o scanbuildout cmake ..
+  - travis_wait 30 make format-check
+  - cd ..
+  - mkdir build-no-x11
+  - cd build-no-x11
+  - scan-build --use-cc=$CC --use-c++=$CXX -o scanbuildout cmake -DBUILD_X11=OFF ..
+  - cd ..
 script:
-  - cd build && make -j4 && cd ..
-  - cd build-no-x11 && make -j4 && cd ..
+  - cd build
+  - scan-build --use-cc=$CC --use-c++=$CXX -o scanbuildout make -j4
+  - cd ../build-no-x11
+  - scan-build --use-cc=$CC --use-c++=$CXX -o scanbuildout make -j4
 branches:
   only:
     - master

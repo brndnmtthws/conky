@@ -107,29 +107,28 @@
 // Module arguments
 const char *translate_module_argument[] = {
     "temp",  // Temperatures
-    "gputemp",      "threshold",    "gputempthreshold", "ambient",
-    "ambienttemp",
+    "gputemp", "threshold", "gputempthreshold", "ambient", "ambienttemp",
 
     "gpufreq",  // GPU frequency
-    "gpufreqcur",   "gpufreqmin",   "gpufreqmax",
+    "gpufreqcur", "gpufreqmin", "gpufreqmax",
 
     "memfreq",  // Memory frequency
-    "memfreqcur",   "memfreqmin",   "memfreqmax",
+    "memfreqcur", "memfreqmin", "memfreqmax",
 
     "mtrfreq",  // Memory transfer rate frequency
-    "mtrfreqcur",   "mtrfreqmin",   "mtrfreqmax",
+    "mtrfreqcur", "mtrfreqmin", "mtrfreqmax",
 
     "perflevel",  // Performance levels
-    "perflevelcur", "perflevelmin", "perflevelmax",     "perfmode",
+    "perflevelcur", "perflevelmin", "perflevelmax", "perfmode",
 
     "gpuutil",    // Load/utilization
     "membwutil",  // NOTE: this is the memory _bandwidth_ utilization, not the
                   // percentage of used/available memory!
-    "videoutil",    "pcieutil",
+    "videoutil", "pcieutil",
 
     "mem",  // RAM statistics
-    "memused",      "memfree",      "memavail",         "memmax",
-    "memtotal",     "memutil",      "memperc",
+    "memused", "memfree", "memavail", "memmax", "memtotal", "memutil",
+    "memperc",
 
     "fanspeed",  // Fan/cooler
     "fanlevel",

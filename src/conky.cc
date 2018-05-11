@@ -2636,7 +2636,7 @@ void clean_up_without_threads(void *memtofree1, void *memtofree2) {
   else
     fonts.clear();  // in set_default_configurations a font is set but not
                     // loaded
-#endif /* BUILD_X11 */
+#endif              /* BUILD_X11 */
 
   if (info.first_process) {
     free_all_processes();
