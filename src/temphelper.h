@@ -25,10 +25,7 @@
 #ifndef TEMPHELPER_H
 #define TEMPHELPER_H
 
-enum TEMP_UNIT {
-	TEMP_CELSIUS,
-	TEMP_FAHRENHEIT
-};
+enum TEMP_UNIT { TEMP_CELSIUS, TEMP_FAHRENHEIT };
 
 int temp_print(char *, size_t, double, enum TEMP_UNIT);
 

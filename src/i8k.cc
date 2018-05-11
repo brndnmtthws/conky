@@ -38,117 +38,113 @@
 #include "text_object.h"
 
 struct _i8k {
-	char *version;
-	char *bios;
-	char *serial;
-	char *cpu_temp;
-	char *left_fan_status;
-	char *right_fan_status;
-	char *left_fan_rpm;
-	char *right_fan_rpm;
-	char *ac_status;
-	char *buttons_status;
+  char *version;
+  char *bios;
+  char *serial;
+  char *cpu_temp;
+  char *left_fan_status;
+  char *right_fan_status;
+  char *left_fan_rpm;
+  char *right_fan_rpm;
+  char *ac_status;
+  char *buttons_status;
 } i8k;
 
 /* FIXME: there should be an ioctl interface to request specific data */
 #define PROC_I8K "/proc/i8k"
 #define I8K_DELIM " "
 static char *i8k_procbuf = NULL;
-int update_i8k(void)
-{
-	FILE *fp;
+int update_i8k(void) {
+  FILE *fp;
 
-	if (!i8k_procbuf) {
-		i8k_procbuf = (char *) malloc(128 * sizeof(char));
-	}
-	if ((fp = fopen(PROC_I8K, "r")) == NULL) {
-		free_and_zero(i8k_procbuf);
-		/*THREAD_CRIT_ERR(NULL, NULL, "/proc/i8k doesn't exist! use insmod to make sure the kernel "
-			"driver is loaded...");*/
-		NORM_ERR("/proc/i8k doesn't exist! use insmod to make sure the kernel driver is loaded...");
-		clean_up_without_threads(NULL, NULL);
-		return 1;
-	}
+  if (!i8k_procbuf) {
+    i8k_procbuf = (char *)malloc(128 * sizeof(char));
+  }
+  if ((fp = fopen(PROC_I8K, "r")) == NULL) {
+    free_and_zero(i8k_procbuf);
+    /*THREAD_CRIT_ERR(NULL, NULL, "/proc/i8k doesn't exist! use insmod to make
+      sure the kernel " "driver is loaded...");*/
+    NORM_ERR(
+        "/proc/i8k doesn't exist! use insmod to make sure the kernel driver is "
+        "loaded...");
+    clean_up_without_threads(NULL, NULL);
+    return 1;
+  }
 
-	memset(&i8k_procbuf[0], 0, 128);
-	if (fread(&i8k_procbuf[0], sizeof(char), 128, fp) == 0) {
-		NORM_ERR("something wrong with /proc/i8k...");
-	}
+  memset(&i8k_procbuf[0], 0, 128);
+  if (fread(&i8k_procbuf[0], sizeof(char), 128, fp) == 0) {
+    NORM_ERR("something wrong with /proc/i8k...");
+  }
 
-	fclose(fp);
+  fclose(fp);
 
-	DBGP("read `%s' from /proc/i8k\n", i8k_procbuf);
+  DBGP("read `%s' from /proc/i8k\n", i8k_procbuf);
 
-	i8k.version = strtok(&i8k_procbuf[0], I8K_DELIM);
-	i8k.bios = strtok(NULL, I8K_DELIM);
-	i8k.serial = strtok(NULL, I8K_DELIM);
-	i8k.cpu_temp = strtok(NULL, I8K_DELIM);
-	i8k.left_fan_status = strtok(NULL, I8K_DELIM);
-	i8k.right_fan_status = strtok(NULL, I8K_DELIM);
-	i8k.left_fan_rpm = strtok(NULL, I8K_DELIM);
-	i8k.right_fan_rpm = strtok(NULL, I8K_DELIM);
-	i8k.ac_status = strtok(NULL, I8K_DELIM);
-	i8k.buttons_status = strtok(NULL, I8K_DELIM);
-	return 0;
+  i8k.version = strtok(&i8k_procbuf[0], I8K_DELIM);
+  i8k.bios = strtok(NULL, I8K_DELIM);
+  i8k.serial = strtok(NULL, I8K_DELIM);
+  i8k.cpu_temp = strtok(NULL, I8K_DELIM);
+  i8k.left_fan_status = strtok(NULL, I8K_DELIM);
+  i8k.right_fan_status = strtok(NULL, I8K_DELIM);
+  i8k.left_fan_rpm = strtok(NULL, I8K_DELIM);
+  i8k.right_fan_rpm = strtok(NULL, I8K_DELIM);
+  i8k.ac_status = strtok(NULL, I8K_DELIM);
+  i8k.buttons_status = strtok(NULL, I8K_DELIM);
+  return 0;
 }
 
-static void print_i8k_fan_status(char *p, int p_max_size, const char *status)
-{
-	static const char *status_arr[] = { "off", "low", "high", "error" };
+static void print_i8k_fan_status(char *p, int p_max_size, const char *status) {
+  static const char *status_arr[] = {"off", "low", "high", "error"};
 
-	int i = status ? atoi(status) : 3;
-	if(i < 0 || i > 3)
-		i = 3;
+  int i = status ? atoi(status) : 3;
+  if (i < 0 || i > 3) i = 3;
 
-	snprintf(p, p_max_size, "%s", status_arr[i]);
+  snprintf(p, p_max_size, "%s", status_arr[i]);
 }
 
-void print_i8k_left_fan_status(struct text_object *obj, char *p, int p_max_size)
-{
-	(void)obj;
-	print_i8k_fan_status(p, p_max_size, i8k.left_fan_status);
+void print_i8k_left_fan_status(struct text_object *obj, char *p,
+                               int p_max_size) {
+  (void)obj;
+  print_i8k_fan_status(p, p_max_size, i8k.left_fan_status);
 }
 
-void print_i8k_cpu_temp(struct text_object *obj, char *p, int p_max_size)
-{
-	int cpu_temp;
+void print_i8k_cpu_temp(struct text_object *obj, char *p, int p_max_size) {
+  int cpu_temp;
 
-	(void)obj;
+  (void)obj;
 
-	sscanf(i8k.cpu_temp, "%d", &cpu_temp);
-	temp_print(p, p_max_size, (double)cpu_temp, TEMP_CELSIUS);
+  sscanf(i8k.cpu_temp, "%d", &cpu_temp);
+  temp_print(p, p_max_size, (double)cpu_temp, TEMP_CELSIUS);
 }
 
-void print_i8k_right_fan_status(struct text_object *obj, char *p, int p_max_size)
-{
-	(void)obj;
-	print_i8k_fan_status(p, p_max_size, i8k.right_fan_status);
+void print_i8k_right_fan_status(struct text_object *obj, char *p,
+                                int p_max_size) {
+  (void)obj;
+  print_i8k_fan_status(p, p_max_size, i8k.right_fan_status);
 }
 
-void print_i8k_ac_status(struct text_object *obj, char *p, int p_max_size)
-{
-	int ac_status;
+void print_i8k_ac_status(struct text_object *obj, char *p, int p_max_size) {
+  int ac_status;
 
-	(void)obj;
+  (void)obj;
 
-	sscanf(i8k.ac_status, "%d", &ac_status);
-	if (ac_status == -1) {
-		snprintf(p, p_max_size, "disabled (read i8k docs)");
-	}
-	if (ac_status == 0) {
-		snprintf(p, p_max_size, "off");
-	}
-	if (ac_status == 1) {
-		snprintf(p, p_max_size, "on");
-	}
+  sscanf(i8k.ac_status, "%d", &ac_status);
+  if (ac_status == -1) {
+    snprintf(p, p_max_size, "disabled (read i8k docs)");
+  }
+  if (ac_status == 0) {
+    snprintf(p, p_max_size, "off");
+  }
+  if (ac_status == 1) {
+    snprintf(p, p_max_size, "on");
+  }
 }
 
-#define I8K_PRINT_GENERATOR(name) \
-void print_i8k_##name(struct text_object *obj, char *p, int p_max_size) \
-{ \
-	(void)obj; \
-	snprintf(p, p_max_size, "%s", i8k.name); \
-}
+#define I8K_PRINT_GENERATOR(name)                                           \
+  void print_i8k_##name(struct text_object *obj, char *p, int p_max_size) { \
+    (void)obj;                                                              \
+    snprintf(p, p_max_size, "%s", i8k.name);                                \
+  }
 
 I8K_PRINT_GENERATOR(version)
 I8K_PRINT_GENERATOR(bios)

@@ -32,7 +32,8 @@
 #define _READ_TCP_H
 
 void parse_read_tcpip_arg(struct text_object *, const char *, void *);
-void parse_tcp_ping_arg(struct text_object *obj, const char *arg, void *free_at_crash);
+void parse_tcp_ping_arg(struct text_object *obj, const char *arg,
+                        void *free_at_crash);
 void print_read_tcp(struct text_object *, char *, int);
 void print_read_udp(struct text_object *, char *, int);
 void print_tcp_ping(struct text_object *, char *, int);

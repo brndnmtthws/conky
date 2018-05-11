@@ -29,16 +29,16 @@
  *
  */
 
-#include "conky.h"
-#include "config.h"
 #include "ibm.h"
+#include <ctype.h>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "config.h"
+#include "conky.h"
 #include "logging.h"
 #include "temphelper.h"
-#include <ctype.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <stdlib.h>
 
 static int ibm_acpi_temps[8];
 
@@ -73,39 +73,40 @@ speed:          2944
 commands:       enable, disable
  * Peter Tarjan (ptarjan@citromail.hu) */
 
-void get_ibm_acpi_fan(struct text_object *obj, char *p, int p_max_size)
-{
-	FILE *fp;
-	unsigned int speed = 0;
-	char fan[128];
+void get_ibm_acpi_fan(struct text_object *obj, char *p, int p_max_size) {
+  FILE *fp;
+  unsigned int speed = 0;
+  char fan[128];
 
-	(void)obj;
+  (void)obj;
 
-	if (!p || p_max_size <= 0) {
-		return;
-	}
+  if (!p || p_max_size <= 0) {
+    return;
+  }
 
-	snprintf(fan, 127, "%s/fan", IBM_ACPI_DIR);
+  snprintf(fan, 127, "%s/fan", IBM_ACPI_DIR);
 
-	fp = fopen(fan, "r");
-	if (fp != NULL) {
-		while (!feof(fp)) {
-			char line[256];
+  fp = fopen(fan, "r");
+  if (fp != NULL) {
+    while (!feof(fp)) {
+      char line[256];
 
-			if (fgets(line, 255, fp) == NULL) {
-				break;
-			}
-			if (sscanf(line, "speed: %u", &speed)) {
-				break;
-			}
-		}
-	} else {
-		CRIT_ERR(NULL, NULL, "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
-			"ibm* from your " PACKAGE_NAME" config file.", fan, strerror(errno));
-	}
+      if (fgets(line, 255, fp) == NULL) {
+        break;
+      }
+      if (sscanf(line, "speed: %u", &speed)) {
+        break;
+      }
+    }
+  } else {
+    CRIT_ERR(NULL, NULL,
+             "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
+             "ibm* from your " PACKAGE_NAME " config file.",
+             fan, strerror(errno));
+  }
 
-	fclose(fp);
-	snprintf(p, p_max_size, "%d", speed);
+  fclose(fp);
+  snprintf(p, p_max_size, "%d", speed);
 }
 
 /* get the measured temperatures from the temperature sensors
@@ -129,36 +130,36 @@ void get_ibm_acpi_fan(struct text_object *obj, char *p, int p_max_size)
 temperatures:   41 43 31 46 33 -128 29 -128
  * Peter Tarjan (ptarjan@citromail.hu) */
 
-int get_ibm_acpi_temps(void)
-{
+int get_ibm_acpi_temps(void) {
+  FILE *fp;
+  char thermal[128];
 
-	FILE *fp;
-	char thermal[128];
+  snprintf(thermal, 127, "%s/thermal", IBM_ACPI_DIR);
+  fp = fopen(thermal, "r");
 
-	snprintf(thermal, 127, "%s/thermal", IBM_ACPI_DIR);
-	fp = fopen(thermal, "r");
+  if (fp != NULL) {
+    while (!feof(fp)) {
+      char line[256];
 
-	if (fp != NULL) {
-		while (!feof(fp)) {
-			char line[256];
+      if (fgets(line, 255, fp) == NULL) {
+        break;
+      }
+      if (sscanf(line, "temperatures: %d %d %d %d %d %d %d %d",
+                 &ibm_acpi_temps[0], &ibm_acpi_temps[1], &ibm_acpi_temps[2],
+                 &ibm_acpi_temps[3], &ibm_acpi_temps[4], &ibm_acpi_temps[5],
+                 &ibm_acpi_temps[6], &ibm_acpi_temps[7])) {
+        break;
+      }
+    }
+  } else {
+    CRIT_ERR(NULL, NULL,
+             "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
+             "ibm* from your " PACKAGE_NAME " config file.",
+             thermal, strerror(errno));
+  }
 
-			if (fgets(line, 255, fp) == NULL) {
-				break;
-			}
-			if (sscanf(line, "temperatures: %d %d %d %d %d %d %d %d",
-					&ibm_acpi_temps[0], &ibm_acpi_temps[1], &ibm_acpi_temps[2],
-					&ibm_acpi_temps[3], &ibm_acpi_temps[4], &ibm_acpi_temps[5],
-					&ibm_acpi_temps[6], &ibm_acpi_temps[7])) {
-				break;
-			}
-		}
-	} else {
-		CRIT_ERR(NULL, NULL, "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
-			"ibm* from your " PACKAGE_NAME" config file.", thermal, strerror(errno));
-	}
-
-	fclose(fp);
-	return 0;
+  fclose(fp);
+  return 0;
 }
 
 /* get volume (0-14) on IBM/Lenovo laptops running the ibm acpi.
@@ -171,49 +172,50 @@ commands:       up, down, mute
 commands:       level <level> (<level> is 0-15)
  * Peter Tarjan (ptarjan@citromail.hu) */
 
-void get_ibm_acpi_volume(struct text_object *obj, char *p, int p_max_size)
-{
-	FILE *fp;
-	char volume[128];
-	unsigned int vol = -1;
-	char mute[3] = "";
+void get_ibm_acpi_volume(struct text_object *obj, char *p, int p_max_size) {
+  FILE *fp;
+  char volume[128];
+  unsigned int vol = -1;
+  char mute[3] = "";
 
-	(void)obj;
+  (void)obj;
 
-	if (!p || p_max_size <= 0) {
-		return;
-	}
+  if (!p || p_max_size <= 0) {
+    return;
+  }
 
-	snprintf(volume, 127, "%s/volume", IBM_ACPI_DIR);
+  snprintf(volume, 127, "%s/volume", IBM_ACPI_DIR);
 
-	fp = fopen(volume, "r");
-	if (fp != NULL) {
-		while (!feof(fp)) {
-			char line[256];
-			unsigned int read_vol = -1;
+  fp = fopen(volume, "r");
+  if (fp != NULL) {
+    while (!feof(fp)) {
+      char line[256];
+      unsigned int read_vol = -1;
 
-			if (fgets(line, 255, fp) == NULL) {
-				break;
-			}
-			if (sscanf(line, "level: %u", &read_vol)) {
-				vol = read_vol;
-				continue;
-			}
-			if (sscanf(line, "mute: %s", mute)) {
-				break;
-			}
-		}
-	} else {
-		CRIT_ERR(NULL, NULL, "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
-			"ibm* from your " PACKAGE_NAME" config file.", volume, strerror(errno));
-	}
+      if (fgets(line, 255, fp) == NULL) {
+        break;
+      }
+      if (sscanf(line, "level: %u", &read_vol)) {
+        vol = read_vol;
+        continue;
+      }
+      if (sscanf(line, "mute: %s", mute)) {
+        break;
+      }
+    }
+  } else {
+    CRIT_ERR(NULL, NULL,
+             "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
+             "ibm* from your " PACKAGE_NAME " config file.",
+             volume, strerror(errno));
+  }
 
-	fclose(fp);
+  fclose(fp);
 
-	if (strcmp(mute, "on") == 0)
-		snprintf(p, p_max_size, "%s", "mute");
-	else
-		snprintf(p, p_max_size, "%d", vol);
+  if (strcmp(mute, "on") == 0)
+    snprintf(p, p_max_size, "%s", "mute");
+  else
+    snprintf(p, p_max_size, "%d", vol);
 }
 
 /* static FILE *fp = NULL; */
@@ -225,40 +227,41 @@ commands:       up, down
 commands:       level <level> (<level> is 0-7)
  * Peter Tarjan (ptarjan@citromail.hu) */
 
-void get_ibm_acpi_brightness(struct text_object *obj, char *p, int p_max_size)
-{
-	FILE *fp;
-	unsigned int brightness = 0;
-	char filename[128];
+void get_ibm_acpi_brightness(struct text_object *obj, char *p, int p_max_size) {
+  FILE *fp;
+  unsigned int brightness = 0;
+  char filename[128];
 
-	(void)obj;
+  (void)obj;
 
-	if (!p || p_max_size <= 0) {
-		return;
-	}
+  if (!p || p_max_size <= 0) {
+    return;
+  }
 
-	snprintf(filename, 127, "%s/brightness", IBM_ACPI_DIR);
+  snprintf(filename, 127, "%s/brightness", IBM_ACPI_DIR);
 
-	fp = fopen(filename, "r");
-	if (fp != NULL) {
-		while (!feof(fp)) {
-			char line[256];
+  fp = fopen(filename, "r");
+  if (fp != NULL) {
+    while (!feof(fp)) {
+      char line[256];
 
-			if (fgets(line, 255, fp) == NULL) {
-				break;
-			}
-			if (sscanf(line, "level: %u", &brightness)) {
-				break;
-			}
-		}
-	} else {
-		CRIT_ERR(NULL, NULL, "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
-			"ibm* from your " PACKAGE_NAME" config file.", filename, strerror(errno));
-	}
+      if (fgets(line, 255, fp) == NULL) {
+        break;
+      }
+      if (sscanf(line, "level: %u", &brightness)) {
+        break;
+      }
+    }
+  } else {
+    CRIT_ERR(NULL, NULL,
+             "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
+             "ibm* from your " PACKAGE_NAME " config file.",
+             filename, strerror(errno));
+  }
 
-	fclose(fp);
+  fclose(fp);
 
-	snprintf(p, p_max_size, "%d", brightness);
+  snprintf(p, p_max_size, "%d", brightness);
 }
 
 /* get ThinkLight status on IBM/Lenovo laptops running the ibm acpi.
@@ -269,53 +272,52 @@ commands:       on, off
  * get "unknown" for a few models that do not make the status available.
  * Lluis Esquerda (eskerda@gmail.com) */
 
-void get_ibm_acpi_thinklight(struct text_object *obj, char *p, int p_max_size)
-{
-	FILE *fp;
-	char thinklight[8];
-	char filename[128];
+void get_ibm_acpi_thinklight(struct text_object *obj, char *p, int p_max_size) {
+  FILE *fp;
+  char thinklight[8];
+  char filename[128];
 
-	(void)obj;
+  (void)obj;
 
-	if (!p || p_max_size <= 0) {
-		return;
-	}
+  if (!p || p_max_size <= 0) {
+    return;
+  }
 
-	snprintf(filename, 127, "%s/light", IBM_ACPI_DIR);
+  snprintf(filename, 127, "%s/light", IBM_ACPI_DIR);
 
-	fp = fopen(filename, "r");
-	if (fp != NULL) {
-		while (!feof(fp)) {
-			char line[256];
+  fp = fopen(filename, "r");
+  if (fp != NULL) {
+    while (!feof(fp)) {
+      char line[256];
 
-			if (fgets(line, 255, fp) == NULL) {
-				break;
-			}
-			if (sscanf(line, "status: %s", thinklight)) {
-				break;
-			}
-		}
-	} else {
-		CRIT_ERR(NULL, NULL, "can't open '%s': %s\nYou are not using the IBM "
-			"ACPI. Remove ibm* from your " PACKAGE_NAME" config file.",
-			filename, strerror(errno));
-	}
+      if (fgets(line, 255, fp) == NULL) {
+        break;
+      }
+      if (sscanf(line, "status: %s", thinklight)) {
+        break;
+      }
+    }
+  } else {
+    CRIT_ERR(NULL, NULL,
+             "can't open '%s': %s\nYou are not using the IBM "
+             "ACPI. Remove ibm* from your " PACKAGE_NAME " config file.",
+             filename, strerror(errno));
+  }
 
-	fclose(fp);
-	snprintf(p, p_max_size, "%s", thinklight);
+  fclose(fp);
+  snprintf(p, p_max_size, "%s", thinklight);
 }
 
-void parse_ibm_temps_arg(struct text_object *obj, const char *arg)
-{
-	if (!isdigit(arg[0]) || strlen(arg) > 1 || atoi(&arg[0]) >= 8) {
-		obj->data.l = 0;
-		NORM_ERR("Invalid temperature sensor! Sensor number must be 0 to 7. "
-				"Using 0 (CPU temp sensor).");
-	} else
-		obj->data.l = atoi(arg);
+void parse_ibm_temps_arg(struct text_object *obj, const char *arg) {
+  if (!isdigit(arg[0]) || strlen(arg) > 1 || atoi(&arg[0]) >= 8) {
+    obj->data.l = 0;
+    NORM_ERR(
+        "Invalid temperature sensor! Sensor number must be 0 to 7. "
+        "Using 0 (CPU temp sensor).");
+  } else
+    obj->data.l = atoi(arg);
 }
 
-void print_ibm_temps(struct text_object *obj, char *p, int p_max_size)
-{
-	temp_print(p, p_max_size, ibm_acpi_temps[obj->data.l], TEMP_CELSIUS);
+void print_ibm_temps(struct text_object *obj, char *p, int p_max_size) {
+  temp_print(p, p_max_size, ibm_acpi_temps[obj->data.l], TEMP_CELSIUS);
 }

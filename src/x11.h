@@ -27,8 +27,8 @@
 #ifndef X11_H_
 #define X11_H_
 
-#include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <X11/Xlib.h>
 
 #ifdef BUILD_XFT
 #include <X11/Xft/Xft.h>
@@ -38,54 +38,54 @@
 #include <X11/extensions/Xdbe.h>
 #endif
 
-#include "setting.hh"
 #include "colours.h"
+#include "setting.hh"
 
 #define ATOM(a) XInternAtom(display, #a, False)
 
 #ifdef OWN_WINDOW
 enum window_type {
-	TYPE_NORMAL = 0,
-	TYPE_DOCK,
-	TYPE_PANEL,
-	TYPE_DESKTOP,
-	TYPE_OVERRIDE
+  TYPE_NORMAL = 0,
+  TYPE_DOCK,
+  TYPE_PANEL,
+  TYPE_DESKTOP,
+  TYPE_OVERRIDE
 };
 
 enum window_hints {
-	HINT_UNDECORATED = 0,
-	HINT_BELOW,
-	HINT_ABOVE,
-	HINT_STICKY,
-	HINT_SKIP_TASKBAR,
-	HINT_SKIP_PAGER
+  HINT_UNDECORATED = 0,
+  HINT_BELOW,
+  HINT_ABOVE,
+  HINT_STICKY,
+  HINT_SKIP_TASKBAR,
+  HINT_SKIP_PAGER
 };
 
-#define SET_HINT(mask, hint)	(mask |= (1 << (hint)))
-#define TEST_HINT(mask, hint)	(mask & (1 << (hint)))
+#define SET_HINT(mask, hint) (mask |= (1 << (hint)))
+#define TEST_HINT(mask, hint) (mask & (1 << (hint)))
 #endif
 
 struct conky_window {
-	Window root, window, desktop;
-	Drawable drawable;
-	Visual *visual;
-	Colormap colourmap;
-	GC gc;
+  Window root, window, desktop;
+  Drawable drawable;
+  Visual *visual;
+  Colormap colourmap;
+  GC gc;
 
 #ifdef BUILD_XDBE
-	XdbeBackBuffer back_buffer;
+  XdbeBackBuffer back_buffer;
 #else
-	Pixmap back_buffer;
+  Pixmap back_buffer;
 #endif
 #ifdef BUILD_XFT
-	XftDraw *xftdraw;
+  XftDraw *xftdraw;
 #endif
 
-	int width;
-	int height;
+  int width;
+  int height;
 #ifdef OWN_WINDOW
-	int x;
-	int y;
+  int x;
+  int y;
 #endif
 };
 
@@ -124,137 +124,132 @@ void xpmdb_swap_buffers(void);
 
 /* alignments */
 enum alignment {
-	TOP_LEFT,
-	TOP_RIGHT,
-	TOP_MIDDLE,
-	BOTTOM_LEFT,
-	BOTTOM_RIGHT,
-	BOTTOM_MIDDLE,
-	MIDDLE_LEFT,
-	MIDDLE_MIDDLE,
-	MIDDLE_RIGHT,
-	NONE
+  TOP_LEFT,
+  TOP_RIGHT,
+  TOP_MIDDLE,
+  BOTTOM_LEFT,
+  BOTTOM_RIGHT,
+  BOTTOM_MIDDLE,
+  MIDDLE_LEFT,
+  MIDDLE_MIDDLE,
+  MIDDLE_RIGHT,
+  NONE
 };
 
-extern conky::simple_config_setting<alignment>   text_alignment;
+extern conky::simple_config_setting<alignment> text_alignment;
 
 namespace priv {
-	class out_to_x_setting: public conky::simple_config_setting<bool> {
-		typedef conky::simple_config_setting<bool> Base;
-	
-	protected:
-		virtual void lua_setter(lua::state &l, bool init);
-		virtual void cleanup(lua::state &l);
+class out_to_x_setting : public conky::simple_config_setting<bool> {
+  typedef conky::simple_config_setting<bool> Base;
 
-	public:
-		out_to_x_setting()
-			: Base("out_to_x", true, false)
-		{}
-	};
-	
-	class own_window_setting: public conky::simple_config_setting<bool> {
-		typedef conky::simple_config_setting<bool> Base;
-	
-	protected:
-		virtual void lua_setter(lua::state &l, bool init);
+ protected:
+  virtual void lua_setter(lua::state &l, bool init);
+  virtual void cleanup(lua::state &l);
 
-	public:
-		own_window_setting()
-			: Base("own_window", false, false)
-		{}
-	};
+ public:
+  out_to_x_setting() : Base("out_to_x", true, false) {}
+};
 
-	class use_xdbe_setting: public conky::simple_config_setting<bool> {
-		typedef conky::simple_config_setting<bool> Base;
-	
-		bool set_up(lua::state &l);
-	protected:
-		virtual void lua_setter(lua::state &l, bool init);
+class own_window_setting : public conky::simple_config_setting<bool> {
+  typedef conky::simple_config_setting<bool> Base;
 
-	public:
-		use_xdbe_setting()
-			: Base("double_buffer", false, false)
-		{}
-	};
+ protected:
+  virtual void lua_setter(lua::state &l, bool init);
 
-	class use_xpmdb_setting: public conky::simple_config_setting<bool> {
-		typedef conky::simple_config_setting<bool> Base;
-	
-		bool set_up(lua::state &l);
-	protected:
-		virtual void lua_setter(lua::state &l, bool init);
+ public:
+  own_window_setting() : Base("own_window", false, false) {}
+};
 
-	public:
-		use_xpmdb_setting()
-			: Base("double_buffer", false, false)
-		{}
-	};
+class use_xdbe_setting : public conky::simple_config_setting<bool> {
+  typedef conky::simple_config_setting<bool> Base;
 
-	
-	struct colour_traits {
-		static const lua::Type type = lua::TSTRING;
-		typedef unsigned long Type;
+  bool set_up(lua::state &l);
 
-		static inline std::pair<Type, bool>
-		convert(lua::state &l, int index, const std::string &)
-		{ return {get_x11_color(l.tostring(index)), true}; }
-	};
+ protected:
+  virtual void lua_setter(lua::state &l, bool init);
 
-	class colour_setting: public conky::simple_config_setting<unsigned long, colour_traits> {
-		typedef conky::simple_config_setting<unsigned long, colour_traits> Base;
-	
-	protected:
-		virtual void lua_setter(lua::state &l, bool init);
+ public:
+  use_xdbe_setting() : Base("double_buffer", false, false) {}
+};
 
-	public:
-		colour_setting(const std::string &name_, unsigned long default_value_ = 0)
-			: Base(name_, default_value_, true)
-		{}
-		
-	};
-}
+class use_xpmdb_setting : public conky::simple_config_setting<bool> {
+  typedef conky::simple_config_setting<bool> Base;
 
-extern priv::out_to_x_setting                    out_to_x;
+  bool set_up(lua::state &l);
+
+ protected:
+  virtual void lua_setter(lua::state &l, bool init);
+
+ public:
+  use_xpmdb_setting() : Base("double_buffer", false, false) {}
+};
+
+struct colour_traits {
+  static const lua::Type type = lua::TSTRING;
+  typedef unsigned long Type;
+
+  static inline std::pair<Type, bool> convert(lua::state &l, int index,
+                                              const std::string &) {
+    return {get_x11_color(l.tostring(index)), true};
+  }
+};
+
+class colour_setting
+    : public conky::simple_config_setting<unsigned long, colour_traits> {
+  typedef conky::simple_config_setting<unsigned long, colour_traits> Base;
+
+ protected:
+  virtual void lua_setter(lua::state &l, bool init);
+
+ public:
+  colour_setting(const std::string &name_, unsigned long default_value_ = 0)
+      : Base(name_, default_value_, true) {}
+};
+}  // namespace priv
+
+extern priv::out_to_x_setting out_to_x;
 extern conky::simple_config_setting<std::string> display_name;
-extern priv::colour_setting						 color[10];
-extern priv::colour_setting						 default_color;
-extern priv::colour_setting						 default_shade_color;
-extern priv::colour_setting						 default_outline_color;
+extern priv::colour_setting color[10];
+extern priv::colour_setting default_color;
+extern priv::colour_setting default_shade_color;
+extern priv::colour_setting default_outline_color;
 
-extern conky::range_config_setting<int>          border_inner_margin;
-extern conky::range_config_setting<int>          border_outer_margin;
-extern conky::range_config_setting<int>          border_width;
+extern conky::range_config_setting<int> border_inner_margin;
+extern conky::range_config_setting<int> border_outer_margin;
+extern conky::range_config_setting<int> border_width;
 
 #ifdef BUILD_XFT
-extern conky::simple_config_setting<bool>        use_xft;
+extern conky::simple_config_setting<bool> use_xft;
 #endif
 
 #ifdef OWN_WINDOW
-extern conky::simple_config_setting<bool>        set_transparent;
+extern conky::simple_config_setting<bool> set_transparent;
 extern conky::simple_config_setting<std::string> own_window_class;
 extern conky::simple_config_setting<std::string> own_window_title;
 extern conky::simple_config_setting<window_type> own_window_type;
 
 struct window_hints_traits {
-	static const lua::Type type = lua::TSTRING;
-	typedef uint16_t Type;
-	static std::pair<Type, bool> convert(lua::state &l, int index, const std::string &name);
+  static const lua::Type type = lua::TSTRING;
+  typedef uint16_t Type;
+  static std::pair<Type, bool> convert(lua::state &l, int index,
+                                       const std::string &name);
 };
-extern conky::simple_config_setting<uint16_t, window_hints_traits> own_window_hints;
+extern conky::simple_config_setting<uint16_t, window_hints_traits>
+    own_window_hints;
 
 #ifdef BUILD_ARGB
-extern conky::simple_config_setting<bool>        use_argb_visual;
+extern conky::simple_config_setting<bool> use_argb_visual;
 
 /* range of 0-255 for alpha */
-extern conky::range_config_setting<int>          own_window_argb_value;
+extern conky::range_config_setting<int> own_window_argb_value;
 #endif
 #endif /*OWN_WINDOW*/
-extern priv::own_window_setting					 own_window;
+extern priv::own_window_setting own_window;
 
 #ifdef BUILD_XDBE
-extern priv::use_xdbe_setting					 use_xdbe;
+extern priv::use_xdbe_setting use_xdbe;
 #else
-extern priv::use_xpmdb_setting					 use_xpmdb;
+extern priv::use_xpmdb_setting use_xpmdb;
 #endif
 
 #endif /*X11_H_*/

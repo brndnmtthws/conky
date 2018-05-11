@@ -26,8 +26,8 @@
 #define LUA_H_
 
 extern "C" {
-#include <lua.h>
 #include <lauxlib.h>
+#include <lua.h>
 #include <lualib.h>
 }
 
@@ -51,8 +51,10 @@ void llua_shutdown_hook(void);
 void llua_draw_pre_hook(void);
 void llua_draw_post_hook(void);
 
-void llua_setup_window_table(int text_start_x, int text_start_y, int text_width, int text_height);
-void llua_update_window_table(int text_start_x, int text_start_y, int text_width, int text_height);
+void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
+                             int text_height);
+void llua_update_window_table(int text_start_x, int text_start_y,
+                              int text_width, int text_height);
 #endif /* BUILD_X11 */
 
 void llua_setup_info(struct information *i, double u_interval);

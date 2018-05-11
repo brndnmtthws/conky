@@ -31,16 +31,16 @@
 #ifndef _FS_H
 #define _FS_H
 
-#include "conky.h"	/* DEFAULT_TEXT_BUFFER_SIZE */
+#include "conky.h" /* DEFAULT_TEXT_BUFFER_SIZE */
 
 /* needed here and by fs.c */
 struct fs_stat {
-	char path[DEFAULT_TEXT_BUFFER_SIZE];
-	char type[DEFAULT_TEXT_BUFFER_SIZE];
-	long long size;
-	long long avail;
-	long long free;
-	char set;
+  char path[DEFAULT_TEXT_BUFFER_SIZE];
+  char type[DEFAULT_TEXT_BUFFER_SIZE];
+  long long size;
+  long long avail;
+  long long free;
+  char set;
 };
 
 /* forward declare to make gcc happy (fs.h <-> text_object.h include) */

@@ -31,7 +31,7 @@
 void parse_local_mail_args(struct text_object *, const char *);
 
 #define PRINT_MAILS_PROTO_GENERATOR(x) \
-void print_##x##mails(struct text_object *, char *, int);
+  void print_##x##mails(struct text_object *, char *, int);
 
 PRINT_MAILS_PROTO_GENERATOR()
 PRINT_MAILS_PROTO_GENERATOR(new_)
@@ -60,18 +60,17 @@ void print_pop3_unseen(struct text_object *, char *, int);
 void print_pop3_used(struct text_object *, char *, int);
 
 namespace priv {
-	class current_mail_spool_setting: public conky::simple_config_setting<std::string> {
-		typedef conky::simple_config_setting<std::string> Base;
-		
-	protected:
-		virtual std::pair<std::string, bool> do_convert(lua::state &l, int index);
+class current_mail_spool_setting
+    : public conky::simple_config_setting<std::string> {
+  typedef conky::simple_config_setting<std::string> Base;
 
-	public:
-		current_mail_spool_setting()
-			: Base("current_mail_spool", "$MAIL", true)
-		{}
-	};
-}
+ protected:
+  virtual std::pair<std::string, bool> do_convert(lua::state &l, int index);
+
+ public:
+  current_mail_spool_setting() : Base("current_mail_spool", "$MAIL", true) {}
+};
+}  // namespace priv
 
 extern priv::current_mail_spool_setting current_mail_spool;
 

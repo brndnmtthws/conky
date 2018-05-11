@@ -28,7 +28,6 @@
  *
  */
 
-
 #ifndef NVIDIA_CONKY_H
 #define NVIDIA_CONKY_H
 

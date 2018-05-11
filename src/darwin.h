@@ -26,10 +26,10 @@
 #ifndef DARWIN_H
 #define DARWIN_H
 
-#include <sys/param.h>
-#include <sys/mount.h>
-#include <strings.h>
 #include <stdio.h>
+#include <strings.h>
+#include <sys/mount.h>
+#include <sys/param.h>
 
 /*
  *  on versions prior to Sierra clock_gettime is not implemented.
@@ -38,10 +38,10 @@
 
 /* only CLOCK_REALTIME and CLOCK_MONOTONIC are emulated */
 #ifndef CLOCK_REALTIME
-# define CLOCK_REALTIME 0
+#define CLOCK_REALTIME 0
 #endif
 #ifndef CLOCK_MONOTONIC
-# define CLOCK_MONOTONIC 1
+#define CLOCK_MONOTONIC 1
 #endif
 
 int clock_gettime(int clock_id, struct timespec *ts);

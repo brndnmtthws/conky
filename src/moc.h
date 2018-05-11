@@ -37,4 +37,3 @@ void print_moc_bitrate(struct text_object *, char *, int);
 void print_moc_rate(struct text_object *, char *, int);
 
 #endif /* MOC_H_ */
-

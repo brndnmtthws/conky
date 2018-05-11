@@ -23,100 +23,108 @@
  *
  */
 
-#include "conky.h"
-#include "logging.h"
+#include <libircclient.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
+#include "conky.h"
+#include "logging.h"
 #include "text_object.h"
-#include <libircclient.h>
 
 struct ll_text {
-	char *text;
-	struct ll_text *next;
+  char *text;
+  struct ll_text *next;
 };
 
 struct obj_irc {
-	pthread_t *thread;
-	irc_session_t *session;
-	char *arg;
+  pthread_t *thread;
+  irc_session_t *session;
+  char *arg;
 };
 
 struct ctx {
-	char *chan;
-	int max_msg_lines;
-	struct ll_text *messages;
+  char *chan;
+  int max_msg_lines;
+  struct ll_text *messages;
 };
 
-void ev_connected(irc_session_t *session, const char *event, const char *origin, const char **params, unsigned int count) {
-	struct ctx *ctxptr = (struct ctx *) irc_get_ctx(session);
-	if(irc_cmd_join(session, ctxptr->chan, NULL) != 0) {
-		NORM_ERR("irc: %s", irc_strerror(irc_errno(session)));
-	}
-	if(event || origin || params || count) {}	//fix gcc warnings
+void ev_connected(irc_session_t *session, const char *event, const char *origin,
+                  const char **params, unsigned int count) {
+  struct ctx *ctxptr = (struct ctx *)irc_get_ctx(session);
+  if (irc_cmd_join(session, ctxptr->chan, NULL) != 0) {
+    NORM_ERR("irc: %s", irc_strerror(irc_errno(session)));
+  }
+  if (event || origin || params || count) {
+  }  // fix gcc warnings
 }
 
 void addmessage(struct ctx *ctxptr, char *nick, const char *text) {
-	struct ll_text *lastmsg = ctxptr->messages;
-	struct ll_text *newmsg = (struct ll_text*) malloc(sizeof(struct ll_text));
-	newmsg->text = (char*) malloc(strlen(nick) + strlen(text) + 4);	//4 = ": \n"
-	sprintf(newmsg->text, "%s: %s\n", nick, text);
-	newmsg->next = NULL;
-	int msgcnt = 1;
-	if(!lastmsg) {
-		ctxptr->messages = newmsg;
-	} else {
-		msgcnt++;
-		while(lastmsg->next) {
-			lastmsg = lastmsg->next;
-			msgcnt++;
-			if(msgcnt<0) {
-				NORM_ERR("irc: too many messages, discarding the last one.");
-				free(newmsg->text);
-				free(newmsg);
-				return;
-			}
-		}
-		lastmsg->next = newmsg;
-	}
-	if(ctxptr->max_msg_lines>0) {
-		newmsg = ctxptr->messages;
-		msgcnt -= ctxptr->max_msg_lines;
-		while((msgcnt>0) && (ctxptr->messages)) {
-			msgcnt--;
-			newmsg = ctxptr->messages->next;
-			free(ctxptr->messages->text);
-			free(ctxptr->messages);
-			ctxptr->messages = newmsg;
-		}
-	}
+  struct ll_text *lastmsg = ctxptr->messages;
+  struct ll_text *newmsg = (struct ll_text *)malloc(sizeof(struct ll_text));
+  newmsg->text = (char *)malloc(strlen(nick) + strlen(text) + 4);  // 4 = ": \n"
+  sprintf(newmsg->text, "%s: %s\n", nick, text);
+  newmsg->next = NULL;
+  int msgcnt = 1;
+  if (!lastmsg) {
+    ctxptr->messages = newmsg;
+  } else {
+    msgcnt++;
+    while (lastmsg->next) {
+      lastmsg = lastmsg->next;
+      msgcnt++;
+      if (msgcnt < 0) {
+        NORM_ERR("irc: too many messages, discarding the last one.");
+        free(newmsg->text);
+        free(newmsg);
+        return;
+      }
+    }
+    lastmsg->next = newmsg;
+  }
+  if (ctxptr->max_msg_lines > 0) {
+    newmsg = ctxptr->messages;
+    msgcnt -= ctxptr->max_msg_lines;
+    while ((msgcnt > 0) && (ctxptr->messages)) {
+      msgcnt--;
+      newmsg = ctxptr->messages->next;
+      free(ctxptr->messages->text);
+      free(ctxptr->messages);
+      ctxptr->messages = newmsg;
+    }
+  }
 }
 
-void ev_talkinchan(irc_session_t *session, const char *event, const char *origin, const char **params, unsigned int count) {
-	char nickname[64];
-	struct ctx *ctxptr = (struct ctx *) irc_get_ctx(session);
+void ev_talkinchan(irc_session_t *session, const char *event,
+                   const char *origin, const char **params,
+                   unsigned int count) {
+  char nickname[64];
+  struct ctx *ctxptr = (struct ctx *)irc_get_ctx(session);
 
-	irc_target_get_nick(origin, nickname, sizeof(nickname));
-	addmessage(ctxptr, nickname, params[1]);
-	if(session || event || count) {}	//fix gcc warnings
+  irc_target_get_nick(origin, nickname, sizeof(nickname));
+  addmessage(ctxptr, nickname, params[1]);
+  if (session || event || count) {
+  }  // fix gcc warnings
 }
 
-void ev_num(irc_session_t *session, unsigned int event, const char *origin, const char **params, unsigned int count) {
-	char attachment[4]="_00";
+void ev_num(irc_session_t *session, unsigned int event, const char *origin,
+            const char **params, unsigned int count) {
+  char attachment[4] = "_00";
 
-	if(event == 433) {	//nick in use
-		char *newnick = (char*) malloc(strlen(params[1]) + 4);
-		strcpy(newnick, params[1]);
-		attachment[1] += rand() % 10;
-		attachment[2] += rand() % 10;
-		strcat(newnick, attachment);
-		irc_cmd_nick(session, newnick);
-		free(newnick);
-	}
-	if(origin || count) {}	//fix gcc warnings
+  if (event == 433) {  // nick in use
+    char *newnick = (char *)malloc(strlen(params[1]) + 4);
+    strcpy(newnick, params[1]);
+    attachment[1] += rand() % 10;
+    attachment[2] += rand() % 10;
+    strcat(newnick, attachment);
+    irc_cmd_nick(session, newnick);
+    free(newnick);
+  }
+  if (origin || count) {
+  }  // fix gcc warnings
 }
 
-#define IRCSYNTAX "The correct syntax is ${irc server(:port) #channel (max_msg_lines)}"
+#define IRCSYNTAX \
+  "The correct syntax is ${irc server(:port) #channel (max_msg_lines)}"
 #define IRCPORT 6667
 #define IRCNICK "conky"
 #define IRCSERVERPASS NULL
@@ -124,123 +132,124 @@ void ev_num(irc_session_t *session, unsigned int event, const char *origin, cons
 #define IRCREAL NULL
 
 void *ircclient(void *ptr) {
-	struct obj_irc *ircobj = (struct obj_irc *) ptr;
-	struct ctx *ctxptr = (struct ctx *) malloc(sizeof(struct ctx));
-	irc_callbacks_t callbacks;
-	char *server;
-	char *strport;
-	char *str_max_msg_lines;
-	unsigned int port;
+  struct obj_irc *ircobj = (struct obj_irc *)ptr;
+  struct ctx *ctxptr = (struct ctx *)malloc(sizeof(struct ctx));
+  irc_callbacks_t callbacks;
+  char *server;
+  char *strport;
+  char *str_max_msg_lines;
+  unsigned int port;
 
-	memset (&callbacks, 0, sizeof(callbacks));
-	callbacks.event_connect = ev_connected;
-	callbacks.event_channel = ev_talkinchan;
-	callbacks.event_numeric = ev_num;
-	ircobj->session = irc_create_session(&callbacks);
-	server = strtok(ircobj->arg , " ");
-	ctxptr->chan = strtok(NULL , " ");
-	if( ! ctxptr->chan) {
-		NORM_ERR("irc: %s", IRCSYNTAX);
-	}
-	str_max_msg_lines = strtok(NULL, " ");
-	if(str_max_msg_lines) {
-		ctxptr->max_msg_lines = strtol(str_max_msg_lines, NULL, 10);
-	}
-	ctxptr->messages = NULL;
-	irc_set_ctx(ircobj->session, ctxptr);
-	server = strtok(server, ":");
-	strport = strtok(NULL, ":");
-	if(strport) {
-		port = strtol(strport, NULL, 10);
-		if(port < 1 || port > 65535)
-			port = IRCPORT;
-	} else {
-		port = IRCPORT;
-	}
-	int err = irc_connect(ircobj->session, server, port, IRCSERVERPASS, IRCNICK, IRCUSER, IRCREAL);
-	if(err != 0) {
-		err = irc_errno(ircobj->session);
-	}
+  memset(&callbacks, 0, sizeof(callbacks));
+  callbacks.event_connect = ev_connected;
+  callbacks.event_channel = ev_talkinchan;
+  callbacks.event_numeric = ev_num;
+  ircobj->session = irc_create_session(&callbacks);
+  server = strtok(ircobj->arg, " ");
+  ctxptr->chan = strtok(NULL, " ");
+  if (!ctxptr->chan) {
+    NORM_ERR("irc: %s", IRCSYNTAX);
+  }
+  str_max_msg_lines = strtok(NULL, " ");
+  if (str_max_msg_lines) {
+    ctxptr->max_msg_lines = strtol(str_max_msg_lines, NULL, 10);
+  }
+  ctxptr->messages = NULL;
+  irc_set_ctx(ircobj->session, ctxptr);
+  server = strtok(server, ":");
+  strport = strtok(NULL, ":");
+  if (strport) {
+    port = strtol(strport, NULL, 10);
+    if (port < 1 || port > 65535) port = IRCPORT;
+  } else {
+    port = IRCPORT;
+  }
+  int err = irc_connect(ircobj->session, server, port, IRCSERVERPASS, IRCNICK,
+                        IRCUSER, IRCREAL);
+  if (err != 0) {
+    err = irc_errno(ircobj->session);
+  }
 #ifdef BUILD_IPV6
-	if(err == LIBIRC_ERR_RESOLV) {
-		err = irc_connect6(ircobj->session, server, port, IRCSERVERPASS, IRCNICK, IRCUSER, IRCREAL);
-		if(err != 0) {
-			err = irc_errno(ircobj->session);
-		}
-	}
+  if (err == LIBIRC_ERR_RESOLV) {
+    err = irc_connect6(ircobj->session, server, port, IRCSERVERPASS, IRCNICK,
+                       IRCUSER, IRCREAL);
+    if (err != 0) {
+      err = irc_errno(ircobj->session);
+    }
+  }
 #endif /* BUILD_IPV6 */
-	if(err != 0) {
-		NORM_ERR("irc: %s", irc_strerror(err));
-	}
-	if(irc_run(ircobj->session) != 0) {
-		int ircerror = irc_errno(ircobj->session);
-		if(irc_is_connected(ircobj->session)) {
-			NORM_ERR("irc: %s", irc_strerror(ircerror));
-		} else {
-			NORM_ERR("irc: disconnected");
-		}
-	}
-	free(ircobj->arg);
-	free(ctxptr);
-	return NULL;
+  if (err != 0) {
+    NORM_ERR("irc: %s", irc_strerror(err));
+  }
+  if (irc_run(ircobj->session) != 0) {
+    int ircerror = irc_errno(ircobj->session);
+    if (irc_is_connected(ircobj->session)) {
+      NORM_ERR("irc: %s", irc_strerror(ircerror));
+    } else {
+      NORM_ERR("irc: disconnected");
+    }
+  }
+  free(ircobj->arg);
+  free(ctxptr);
+  return NULL;
 }
 
-void parse_irc_args(struct text_object *obj, const char* arg) {
-	struct obj_irc* opaque = (struct obj_irc *) malloc(sizeof(struct obj_irc));
-	opaque->thread = (pthread_t *) malloc(sizeof(pthread_t));
-	srand(time(NULL));
-	opaque->session = NULL;
-	opaque->arg = strdup(arg);
-	pthread_create(opaque->thread, NULL, ircclient, opaque);
-	obj->data.opaque = opaque;
+void parse_irc_args(struct text_object *obj, const char *arg) {
+  struct obj_irc *opaque = (struct obj_irc *)malloc(sizeof(struct obj_irc));
+  opaque->thread = (pthread_t *)malloc(sizeof(pthread_t));
+  srand(time(NULL));
+  opaque->session = NULL;
+  opaque->arg = strdup(arg);
+  pthread_create(opaque->thread, NULL, ircclient, opaque);
+  obj->data.opaque = opaque;
 }
 
 void print_irc(struct text_object *obj, char *p, int p_max_size) {
-	struct obj_irc *ircobj = (struct obj_irc *) obj->data.opaque;
-	struct ctx *ctxptr;
-	struct ll_text *nextmsg, *curmsg;
+  struct obj_irc *ircobj = (struct obj_irc *)obj->data.opaque;
+  struct ctx *ctxptr;
+  struct ll_text *nextmsg, *curmsg;
 
-	if( ! ircobj->session) return;
-	if( ! irc_is_connected(ircobj->session)) return;
-	ctxptr = (struct ctx *) irc_get_ctx(ircobj->session);
-	curmsg = ctxptr->messages;
-	while(curmsg) {
-		nextmsg = curmsg->next;
-		strncat(p, curmsg->text, p_max_size - strlen(p) - 1);
-		if(!ctxptr->max_msg_lines) {
-			free(curmsg->text);
-			free(curmsg);
-		}
-		curmsg = nextmsg;
-	}
-	if(p[0] != 0) {
-		p[strlen(p) - 1] = 0;
-	}
-	if(!ctxptr->max_msg_lines) {
-		ctxptr->messages = NULL;
-	}
+  if (!ircobj->session) return;
+  if (!irc_is_connected(ircobj->session)) return;
+  ctxptr = (struct ctx *)irc_get_ctx(ircobj->session);
+  curmsg = ctxptr->messages;
+  while (curmsg) {
+    nextmsg = curmsg->next;
+    strncat(p, curmsg->text, p_max_size - strlen(p) - 1);
+    if (!ctxptr->max_msg_lines) {
+      free(curmsg->text);
+      free(curmsg);
+    }
+    curmsg = nextmsg;
+  }
+  if (p[0] != 0) {
+    p[strlen(p) - 1] = 0;
+  }
+  if (!ctxptr->max_msg_lines) {
+    ctxptr->messages = NULL;
+  }
 }
 
 void free_irc(struct text_object *obj) {
-	struct obj_irc *ircobj = (struct obj_irc *) obj->data.opaque;
-	struct ctx *ctxptr;
-	struct ll_text *nextmsg, *curmsg = NULL;
+  struct obj_irc *ircobj = (struct obj_irc *)obj->data.opaque;
+  struct ctx *ctxptr;
+  struct ll_text *nextmsg, *curmsg = NULL;
 
-	if(ircobj->session) {
-		if( irc_is_connected(ircobj->session)) {
-			ctxptr = (struct ctx *) irc_get_ctx(ircobj->session);
-			curmsg = ctxptr->messages;
-			irc_disconnect(ircobj->session);
-		}
-		pthread_join(*(ircobj->thread), NULL);
-		irc_destroy_session(ircobj->session);
-	}
-	free(ircobj->thread);
-	free(obj->data.opaque);
-	while(curmsg) {
-		nextmsg = curmsg->next;
-		free(curmsg->text);
-		free(curmsg);
-		curmsg = nextmsg;
-	}
+  if (ircobj->session) {
+    if (irc_is_connected(ircobj->session)) {
+      ctxptr = (struct ctx *)irc_get_ctx(ircobj->session);
+      curmsg = ctxptr->messages;
+      irc_disconnect(ircobj->session);
+    }
+    pthread_join(*(ircobj->thread), NULL);
+    irc_destroy_session(ircobj->session);
+  }
+  free(ircobj->thread);
+  free(obj->data.opaque);
+  while (curmsg) {
+    nextmsg = curmsg->next;
+    free(curmsg->text);
+    free(curmsg);
+    curmsg = nextmsg;
+  }
 }

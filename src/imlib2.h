@@ -35,18 +35,18 @@ void cimlib_cleanup(void);
 
 void print_image_callback(struct text_object *, char *, int);
 
-class imlib_cache_size_setting: public conky::range_config_setting<unsigned long> {
-	typedef conky::range_config_setting<unsigned long> Base;
+class imlib_cache_size_setting
+    : public conky::range_config_setting<unsigned long> {
+  typedef conky::range_config_setting<unsigned long> Base;
 
-protected:
-	virtual void lua_setter(lua::state &l, bool init);
-	virtual void cleanup(lua::state &l);
+ protected:
+  virtual void lua_setter(lua::state &l, bool init);
+  virtual void cleanup(lua::state &l);
 
-public:
-	imlib_cache_size_setting()
-		: Base("imlib_cache_size", 0,
-				std::numeric_limits<unsigned long>::max(), 4096*1024, true)
-	{}
+ public:
+  imlib_cache_size_setting()
+      : Base("imlib_cache_size", 0, std::numeric_limits<unsigned long>::max(),
+             4096 * 1024, true) {}
 };
 
 #endif /* _CONKY_IMBLI2_H_ */

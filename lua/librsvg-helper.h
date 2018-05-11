@@ -26,19 +26,15 @@
 #define _LIBRSVG_HELPER_H_
 
 #include <glib.h>
-#include <stdlib.h>
 #include <librsvg/rsvg.h>
+#include <stdlib.h>
 
-RsvgDimensionData *
-rsvgDimensionDataCreate(void)
-{
+RsvgDimensionData *rsvgDimensionDataCreate(void) {
   return (RsvgDimensionData *)calloc(1, sizeof(RsvgDimensionData));
 }
 
-void
-rsvgDimensionDataGet(RsvgDimensionData * dd,
-                     int * width, int * height, double * em, double * ex)
-{
+void rsvgDimensionDataGet(RsvgDimensionData *dd, int *width, int *height,
+                          double *em, double *ex) {
   if (dd) {
     *width = dd->width;
     *height = dd->height;
@@ -47,51 +43,40 @@ rsvgDimensionDataGet(RsvgDimensionData * dd,
   }
 }
 
-RsvgPositionData *
-rsvgPositionDataCreate(void)
-{
+RsvgPositionData *rsvgPositionDataCreate(void) {
   return (RsvgPositionData *)calloc(1, sizeof(RsvgPositionData));
 }
 
-void
-rsvgPositionDataGet(RsvgPositionData * pd, int * x, int * y)
-{
+void rsvgPositionDataGet(RsvgPositionData *pd, int *x, int *y) {
   if (pd) {
     *x = pd->x;
     *y = pd->y;
   }
 }
 
-RsvgHandle *
-rsvg_create_handle_from_file(const char * filename)
-{
-  GError * error = NULL;
-  RsvgHandle * handle = rsvg_handle_new_from_file(filename, &error);
+RsvgHandle *rsvg_create_handle_from_file(const char *filename) {
+  GError *error = NULL;
+  RsvgHandle *handle = rsvg_handle_new_from_file(filename, &error);
 
   if (error) {
     g_object_unref(error);
-    if (handle)
-      g_object_unref(handle);
+    if (handle) g_object_unref(handle);
     handle = NULL;
   }
 
   return handle;
 }
 
-int
-rsvg_destroy_handle(RsvgHandle * handle)
-{
+int rsvg_destroy_handle(RsvgHandle *handle) {
   int status = 0;
 
   if (handle) {
-    GError * error = NULL;
+    GError *error = NULL;
     status = rsvg_handle_close(handle, &error);
 
-    if (status)
-      g_object_unref(handle);
+    if (status) g_object_unref(handle);
 
-    if (error)
-      g_object_unref(error);
+    if (error) g_object_unref(error);
   }
 
   return status;

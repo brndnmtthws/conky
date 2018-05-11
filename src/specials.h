@@ -39,47 +39,48 @@
 #define TEMPGRAD "-t"
 
 enum special_types {
-	NONSPECIAL = 0,
-	HORIZONTAL_LINE = 1,
-	STIPPLED_HR,
-	BAR,
-	FG,
-	BG,
-	OUTLINE,
-	ALIGNR,
-	ALIGNC,
-	GAUGE,
-	GRAPH,
-	OFFSET,
-	VOFFSET,
-	FONT,
-	GOTO,
-	TAB
+  NONSPECIAL = 0,
+  HORIZONTAL_LINE = 1,
+  STIPPLED_HR,
+  BAR,
+  FG,
+  BG,
+  OUTLINE,
+  ALIGNR,
+  ALIGNC,
+  GAUGE,
+  GRAPH,
+  OFFSET,
+  VOFFSET,
+  FONT,
+  GOTO,
+  TAB
 };
 
 struct special_t {
-	int type;
-	short height;
-	short width;
-	double arg;
-	double *graph;
-	double scale;			/* maximum value */
-	short show_scale;
-	int graph_width;
-	int graph_allocated;
-	int scaled;			/* auto adjust maximum */
-	unsigned long first_colour;	// for graph gradient
-	unsigned long last_colour;
-	short font_added;
-	char tempgrad;
-	struct special_t *next;
+  int type;
+  short height;
+  short width;
+  double arg;
+  double *graph;
+  double scale; /* maximum value */
+  short show_scale;
+  int graph_width;
+  int graph_allocated;
+  int scaled;                  /* auto adjust maximum */
+  unsigned long first_colour;  // for graph gradient
+  unsigned long last_colour;
+  short font_added;
+  char tempgrad;
+  struct special_t *next;
 };
 
 /* direct access to the registered specials (FIXME: bad encapsulation) */
 extern struct special_t *specials;
 extern int special_count;
 
-/* forward declare to avoid mutual inclusion between specials.h and text_object.h */
+/* forward declare to avoid mutual inclusion between specials.h and
+ * text_object.h */
 struct text_object;
 
 /* scanning special arguments */
@@ -89,7 +90,7 @@ const char *scan_gauge(struct text_object *, const char *, double);
 void scan_font(struct text_object *, const char *);
 char *scan_graph(struct text_object *, const char *, double);
 void scan_tab(struct text_object *, const char *);
-void scan_stippled_hr(struct text_object *, const char*);
+void scan_stippled_hr(struct text_object *, const char *);
 
 /* printing specials */
 void new_font(struct text_object *, char *, int);

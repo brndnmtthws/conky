@@ -26,7 +26,7 @@
 #ifndef ICAL_H_
 #define ICAL_H_
 
-void parse_ical_args(struct text_object *, const char*, void*, void*);
+void parse_ical_args(struct text_object *, const char *, void *, void *);
 void print_ical(struct text_object *, char *, int);
 void free_ical(struct text_object *);
 

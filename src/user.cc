@@ -30,53 +30,53 @@
 
 #include <config.h>
 
-#include "logging.h"
-#include <pwd.h>
-#include <grp.h>
 #include <errno.h>
-#include "conky.h"
+#include <grp.h>
+#include <pwd.h>
 #include <memory>
+#include "conky.h"
+#include "logging.h"
 
 void print_uid_name(struct text_object *obj, char *p, int p_max_size) {
-	struct passwd *pw;
-	uid_t uid;
-	char* firstinvalid;
-	std::unique_ptr<char []> objbuf(new char[max_user_text.get(*state)]);
+  struct passwd *pw;
+  uid_t uid;
+  char *firstinvalid;
+  std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
 
-	generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
+  generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
 
-	errno = 0;
-	uid = strtol(objbuf.get(), &firstinvalid, 10);
-	if (errno == 0 && objbuf.get() != firstinvalid) {
-		pw = getpwuid(uid);
-		if(pw != NULL) {
-			snprintf(p, p_max_size, "%s", pw->pw_name);
-		} else {
-			NORM_ERR("The uid %d doesn't exist", uid);
-		}
-	} else {
-		NORM_ERR("$uid_name didn't receive a uid as argument");
-	}
+  errno = 0;
+  uid = strtol(objbuf.get(), &firstinvalid, 10);
+  if (errno == 0 && objbuf.get() != firstinvalid) {
+    pw = getpwuid(uid);
+    if (pw != NULL) {
+      snprintf(p, p_max_size, "%s", pw->pw_name);
+    } else {
+      NORM_ERR("The uid %d doesn't exist", uid);
+    }
+  } else {
+    NORM_ERR("$uid_name didn't receive a uid as argument");
+  }
 }
 
 void print_gid_name(struct text_object *obj, char *p, int p_max_size) {
-	struct group *grp;
-	gid_t gid;
-	char* firstinvalid;
-	std::unique_ptr<char []> objbuf(new char[max_user_text.get(*state)]);
+  struct group *grp;
+  gid_t gid;
+  char *firstinvalid;
+  std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
 
-	generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
+  generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
 
-	errno = 0;
-	gid = strtol(objbuf.get(), &firstinvalid, 10);
-	if (errno == 0 && objbuf.get() != firstinvalid) {
-		grp = getgrgid(gid);
-		if(grp != NULL) {
-			snprintf(p, p_max_size, "%s", grp->gr_name);
-		} else {
-			NORM_ERR("The gid %d doesn't exist", gid);
-		}
-	} else {
-		NORM_ERR("$gid_name didn't receive a gid as argument");
-	}
+  errno = 0;
+  gid = strtol(objbuf.get(), &firstinvalid, 10);
+  if (errno == 0 && objbuf.get() != firstinvalid) {
+    grp = getgrgid(gid);
+    if (grp != NULL) {
+      snprintf(p, p_max_size, "%s", grp->gr_name);
+    } else {
+      NORM_ERR("The gid %d doesn't exist", gid);
+    }
+  } else {
+    NORM_ERR("$gid_name didn't receive a gid as argument");
+  }
 }

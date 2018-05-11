@@ -29,54 +29,54 @@
  *   I mimicked the methods from ibm.c
  * Yeon-Hyeong Yang <lbird94@gmail.com> */
 
-#include "conky.h"
-#include "config.h"
 #include "sony.h"
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "config.h"
+#include "conky.h"
 #include "logging.h"
 #include "text_object.h"
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <stdlib.h>
 
 #define SONY_LAPTOP_DIR "/sys/devices/platform/sony-laptop"
 
 /* fanspeed in SONY_LAPTOP_DIR contains an integer value for fanspeed (0~255).
  * I don't know the exact measurement unit, though. I may assume that 0 for
  * 'fan stopped' and 255 for 'maximum fan speed'. */
-void get_sony_fanspeed(struct text_object *obj, char *p_client_buffer, int client_buffer_size)
-{
-	FILE *fp;
-	unsigned int speed = 0;
-	char fan[128];
+void get_sony_fanspeed(struct text_object *obj, char *p_client_buffer,
+                       int client_buffer_size) {
+  FILE *fp;
+  unsigned int speed = 0;
+  char fan[128];
 
-	(void)obj;
+  (void)obj;
 
-	if (!p_client_buffer || client_buffer_size <= 0) {
-		return;
-	}
+  if (!p_client_buffer || client_buffer_size <= 0) {
+    return;
+  }
 
-	snprintf(fan, 127, "%s/fanspeed", SONY_LAPTOP_DIR);
+  snprintf(fan, 127, "%s/fanspeed", SONY_LAPTOP_DIR);
 
-	fp = fopen(fan, "r");
-	if (fp != NULL) {
-		while (!feof(fp)) {
-			char line[256];
+  fp = fopen(fan, "r");
+  if (fp != NULL) {
+    while (!feof(fp)) {
+      char line[256];
 
-			if (fgets(line, 255, fp) == NULL) {
-				break;
-			}
-			if (sscanf(line, "%u", &speed)) {
-				break;
-			}
-		}
-	} else {
-		CRIT_ERR(NULL, NULL, "can't open '%s': %s\nEnable sony support or remove "
-			"sony* from your " PACKAGE_NAME" config file.",
-			fan, strerror(errno));
-	}
+      if (fgets(line, 255, fp) == NULL) {
+        break;
+      }
+      if (sscanf(line, "%u", &speed)) {
+        break;
+      }
+    }
+  } else {
+    CRIT_ERR(NULL, NULL,
+             "can't open '%s': %s\nEnable sony support or remove "
+             "sony* from your " PACKAGE_NAME " config file.",
+             fan, strerror(errno));
+  }
 
-	fclose(fp);
-	snprintf(p_client_buffer, client_buffer_size, "%d", speed);
+  fclose(fp);
+  snprintf(p_client_buffer, client_buffer_size, "%d", speed);
 }
-

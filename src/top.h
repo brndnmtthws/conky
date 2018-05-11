@@ -43,29 +43,28 @@
 
 #include "conky.h"
 #include "text_object.h"
-#define CPU_THRESHHOLD	0	/* threshhold for the cpu diff to appear */
-#include <time.h>
-#include <dirent.h>
-#include <string.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <math.h>
+#define CPU_THRESHHOLD 0 /* threshhold for the cpu diff to appear */
 #include <assert.h>
-#include <limits.h>
+#include <ctype.h>
+#include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <math.h>
 #include <signal.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
 
-#include <sys/wait.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/param.h>
+#include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
-#include <regex.h>
 #include <pwd.h>
-
+#include <regex.h>
 
 /******************************************
  * Defines								  *
@@ -75,47 +74,47 @@
  * and it'll take me a while to write a replacement. */
 #define BUFFER_LEN 1024
 
-#define MAX_SP 10	// number of elements to sort
+#define MAX_SP 10  // number of elements to sort
 
 /******************************************
  * Process class						  *
  ******************************************/
 
 struct process {
-	struct process *next;
-	struct process *previous;
+  struct process *next;
+  struct process *previous;
 
-	pid_t pid;
-	char *name;
-	char *basename;
-	uid_t uid;
-	float amount;
-	// User and kernel times are in hundredths of seconds
-	unsigned long user_time;
-	unsigned long total;
-	unsigned long kernel_time;
-	unsigned long previous_user_time;
-	unsigned long previous_kernel_time;
-	unsigned long total_cpu_time;
-	unsigned long previous_total_cpu_time;
-	unsigned long long vsize;
-	unsigned long long rss;
+  pid_t pid;
+  char *name;
+  char *basename;
+  uid_t uid;
+  float amount;
+  // User and kernel times are in hundredths of seconds
+  unsigned long user_time;
+  unsigned long total;
+  unsigned long kernel_time;
+  unsigned long previous_user_time;
+  unsigned long previous_kernel_time;
+  unsigned long total_cpu_time;
+  unsigned long previous_total_cpu_time;
+  unsigned long long vsize;
+  unsigned long long rss;
 #ifdef BUILD_IOSTATS
-	unsigned long long read_bytes;
-	unsigned long long previous_read_bytes;
-	unsigned long long write_bytes;
-	unsigned long long previous_write_bytes;
-	float io_perc;
+  unsigned long long read_bytes;
+  unsigned long long previous_read_bytes;
+  unsigned long long write_bytes;
+  unsigned long long previous_write_bytes;
+  float io_perc;
 #endif
-	unsigned int time_stamp;
-	unsigned int counted;
-	unsigned int changed;
+  unsigned int time_stamp;
+  unsigned int counted;
+  unsigned int changed;
 };
 
 struct sorted_process {
-	struct sorted_process *greater;
-	struct sorted_process *less;
-	struct process *proc;
+  struct sorted_process *greater;
+  struct sorted_process *less;
+  struct process *proc;
 };
 
 /* lookup a program by it's name */

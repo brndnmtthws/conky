@@ -34,30 +34,29 @@
 #include <limits.h>
 
 struct diskio_stat {
-	diskio_stat() :
-		next(NULL),
-		current(0),
-		current_read(0),
-		current_write(0),
-		last(UINT_MAX),
-		last_read(UINT_MAX),
-		last_write(UINT_MAX)
-	{
-		memset(sample, 0, sizeof(sample) / sizeof(sample[0]));
-		memset(sample_read, 0, sizeof(sample_read) / sizeof(sample_read[0]));
-		memset(sample_write, 0, sizeof(sample_write) / sizeof(sample_write[0]));
-	}
-	struct diskio_stat *next;
-	char *dev;
-	double sample[15];
-	double sample_read[15];
-	double sample_write[15];
-	double current;
-	double current_read;
-	double current_write;
-	double last;
-	double last_read;
-	double last_write;
+  diskio_stat()
+      : next(NULL),
+        current(0),
+        current_read(0),
+        current_write(0),
+        last(UINT_MAX),
+        last_read(UINT_MAX),
+        last_write(UINT_MAX) {
+    memset(sample, 0, sizeof(sample) / sizeof(sample[0]));
+    memset(sample_read, 0, sizeof(sample_read) / sizeof(sample_read[0]));
+    memset(sample_write, 0, sizeof(sample_write) / sizeof(sample_write[0]));
+  }
+  struct diskio_stat *next;
+  char *dev;
+  double sample[15];
+  double sample_read[15];
+  double sample_write[15];
+  double current;
+  double current_read;
+  double current_write;
+  double last;
+  double last_read;
+  double last_write;
 };
 
 extern struct diskio_stat stats;

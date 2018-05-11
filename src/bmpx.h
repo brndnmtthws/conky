@@ -28,12 +28,12 @@
 
 void update_bmpx(void);
 struct bmpx_s {
-	char *title;
-	char *artist;
-	char *album;
-	char *uri;
-	int bitrate;
-	int track;
+  char *title;
+  char *artist;
+  char *album;
+  char *uri;
+  int bitrate;
+  int track;
 };
 
 void print_bmpx_title(struct text_object *, char *, int);

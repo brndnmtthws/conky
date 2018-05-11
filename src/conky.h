@@ -33,11 +33,11 @@
 
 #define __STDC_FORMAT_MACROS
 
-#include <config.h>	/* defines */
-#include "common.h"	/* at least for struct dns_data */
-#include <sys/utsname.h> /* struct uname_s */
 #include <arpa/inet.h>
+#include <config.h>      /* defines */
+#include <sys/utsname.h> /* struct uname_s */
 #include <memory>
+#include "common.h" /* at least for struct dns_data */
 #include "luamm.hh"
 
 #if defined(HAS_MCHECK_H)
@@ -47,14 +47,14 @@
 #undef EQUAL
 #undef FALSE
 #undef TRUE
-#define EQUAL 0	//returnvalue of strcmp-variants when strings are equal
+#define EQUAL 0  // returnvalue of strcmp-variants when strings are equal
 #define FALSE 0
 #define TRUE 1
 
 #define DEFAULT_BAR_WIDTH_NO_X 10
 
 #if !defined(__GNUC__)
-#  define __attribute__(x) /* nothing */
+#define __attribute__(x) /* nothing */
 #endif
 
 #ifndef HAVE_STRNDUP
@@ -120,38 +120,38 @@ struct text_object;
 extern conky::range_config_setting<unsigned int> text_buffer_size;
 
 struct usr_info {
-	char *names;
-	char *times;
-	char *ctime;
-	char *terms;
-	int number;
+  char *names;
+  char *times;
+  char *ctime;
+  char *terms;
+  int number;
 };
 
 #ifdef BUILD_X11
 struct monitor_info {
-	int number;
-	int current;
+  int number;
+  int current;
 };
 
 struct desktop_info {
-        int current;
-        int number;
-		std::string all_names;
-		std::string name;
+  int current;
+  int number;
+  std::string all_names;
+  std::string name;
 };
 
 struct x11_info {
-	struct monitor_info monitor;
-	struct desktop_info desktop;
+  struct monitor_info monitor;
+  struct desktop_info desktop;
 };
 
 #endif /* BUILD_X11 */
 
 struct conftree {
-	char* string;
-	struct conftree* horz_next;
-	struct conftree* vert_next;
-	struct conftree* back;
+  char *string;
+  struct conftree *horz_next;
+  struct conftree *vert_next;
+  struct conftree *back;
 };
 
 void load_config_file();
@@ -164,96 +164,93 @@ char **get_templates(void);
 
 /* get_battery_stuff() item selector
  * needed by conky.c, linux.c and freebsd.c */
-enum {
-	BATTERY_STATUS,
-	BATTERY_TIME
-};
+enum { BATTERY_STATUS, BATTERY_TIME };
 
 struct information {
-	unsigned int mask;
+  unsigned int mask;
 
-	struct utsname uname_s;
+  struct utsname uname_s;
 #if defined(__DragonFly__)
-    char uname_v[256]; /* with git version */
+  char uname_v[256]; /* with git version */
 #endif
 
-	char freq[10];
+  char freq[10];
 
-	double uptime;
+  double uptime;
 
-	/* memory information in kilobytes */
-	unsigned long long mem, memwithbuffers, memeasyfree, memfree, memmax, memdirty;
-    unsigned long long swap, swapfree, swapmax;
-	unsigned long long bufmem, buffers, cached;
+  /* memory information in kilobytes */
+  unsigned long long mem, memwithbuffers, memeasyfree, memfree, memmax,
+      memdirty;
+  unsigned long long swap, swapfree, swapmax;
+  unsigned long long bufmem, buffers, cached;
 
-	unsigned short procs;
-	unsigned short run_procs;
-	unsigned short threads;
-	unsigned short run_threads;
+  unsigned short procs;
+  unsigned short run_procs;
+  unsigned short threads;
+  unsigned short run_threads;
 
-	float *cpu_usage;
-	/* struct cpu_stat cpu_summed; what the hell is this? */
-	int cpu_count;
+  float *cpu_usage;
+  /* struct cpu_stat cpu_summed; what the hell is this? */
+  int cpu_count;
 
-	float loadavg[3];
+  float loadavg[3];
 
 #ifdef BUILD_XMMS2
-	struct xmms2_s xmms2;
+  struct xmms2_s xmms2;
 #endif /* BUILD_XMMS2 */
 #ifdef BUILD_BMPX
-	struct bmpx_s bmpx;
+  struct bmpx_s bmpx;
 #endif /* BUILD_BMPX */
-	struct usr_info users;
-	struct process *cpu[10];
-	struct process *memu[10];
-	struct process *time[10];
+  struct usr_info users;
+  struct process *cpu[10];
+  struct process *memu[10];
+  struct process *time[10];
 #ifdef BUILD_IOSTATS
-	struct process *io[10];
+  struct process *io[10];
 #endif /* BUILD_IOSTATS */
-	struct process *first_process;
-	unsigned long looped;
+  struct process *first_process;
+  unsigned long looped;
 
 #ifdef BUILD_X11
-	struct x11_info x11;
+  struct x11_info x11;
 #endif /* BUILD_X11 */
 
-	short kflags;	/* kernel settings, see enum KFLAG */
-    
+  short kflags; /* kernel settings, see enum KFLAG */
+
 #if defined(__APPLE__) && defined(__MACH__)
-	/* System Integrity Protection related */
-    	struct csr_config_flags {
-        	bool csr_allow_untrusted_kexts;
-        	bool csr_allow_unrestricted_fs;
-        	bool csr_allow_task_for_pid;
-        	bool csr_allow_kernel_debugger;
-        	bool csr_allow_apple_internal;
-        	bool csr_allow_unrestricted_dtrace;
-        	bool csr_allow_unrestricted_nvram;
-        	bool csr_allow_device_configuration;
-        	bool csr_allow_any_recovery_os;
-        	bool csr_allow_user_approved_kexts;
-    	};
-    
-    	/* SIP typedefs */
-    	typedef csr_config_flags csr_config_flags_t;
-    	typedef uint32_t csr_config_t;
-    
-    	/* SIP variables */
-    	csr_config_t csr_config;
-    	csr_config_flags_t csr_config_flags;
+  /* System Integrity Protection related */
+  struct csr_config_flags {
+    bool csr_allow_untrusted_kexts;
+    bool csr_allow_unrestricted_fs;
+    bool csr_allow_task_for_pid;
+    bool csr_allow_kernel_debugger;
+    bool csr_allow_apple_internal;
+    bool csr_allow_unrestricted_dtrace;
+    bool csr_allow_unrestricted_nvram;
+    bool csr_allow_device_configuration;
+    bool csr_allow_any_recovery_os;
+    bool csr_allow_user_approved_kexts;
+  };
+
+  /* SIP typedefs */
+  typedef csr_config_flags csr_config_flags_t;
+  typedef uint32_t csr_config_t;
+
+  /* SIP variables */
+  csr_config_t csr_config;
+  csr_config_flags_t csr_config_flags;
 #endif /* defined(__APPLE__) && defined(__MACH__) */
 };
 
-class music_player_interval_setting: public conky::simple_config_setting<double> {
-	typedef conky::simple_config_setting<double> Base;
+class music_player_interval_setting
+    : public conky::simple_config_setting<double> {
+  typedef conky::simple_config_setting<double> Base;
 
-protected:
-	virtual void lua_setter(lua::state &l, bool init);
+ protected:
+  virtual void lua_setter(lua::state &l, bool init);
 
-public:
-	music_player_interval_setting()
-		: Base("music_player_interval", 0, true)
-	{}
+ public:
+  music_player_interval_setting() : Base("music_player_interval", 0, true) {}
 };
 extern music_player_interval_setting music_player_interval;
 
@@ -263,31 +260,35 @@ extern conky::range_config_setting<int> diskio_avg_samples;
 
 /* needed by linux.c and top.c -> outsource somewhere */
 enum {
-	/* set to true if kernel uses "long" format for /proc/stats */
-	KFLAG_IS_LONGSTAT = 0x01,
-	/* set to true if kernel shows # of threads for the proc value
-	 * in sysinfo() call */
-	KFLAG_PROC_IS_THREADS = 0x02
-	/* bits 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 available for future use */
-	/* KFLAG_NEXT_ONE = 0x04 */
+  /* set to true if kernel uses "long" format for /proc/stats */
+  KFLAG_IS_LONGSTAT = 0x01,
+  /* set to true if kernel shows # of threads for the proc value
+   * in sysinfo() call */
+  KFLAG_PROC_IS_THREADS = 0x02
+  /* bits 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 available for future use */
+  /* KFLAG_NEXT_ONE = 0x04 */
 };
 #define KFLAG_SETON(a) info.kflags |= a
 #define KFLAG_SETOFF(a) info.kflags &= (~a)
 #define KFLAG_FLIP(a) info.kflags ^= a
-#define KFLAG_ISSET(a) info.kflags & a
+#define KFLAG_ISSET(a) info.kflags &a
 
 #if !defined(MAX)
-#define MAX(x,y) \
-  ({ __typeof__ (x) _x = (x); \
-   __typeof__ (y) _y = (y); \
-   _x > _y ? _x : _y;})
+#define MAX(x, y)           \
+  ({                        \
+    __typeof__(x) _x = (x); \
+    __typeof__(y) _y = (y); \
+    _x > _y ? _x : _y;      \
+  })
 #endif
 
 #if !defined(MIN)
-#define MIN(x,y) \
-  ({ __typeof__ (x) _x = (x); \
-   __typeof__ (y) _y = (y); \
-   _x < _y ? _x : _y;})
+#define MIN(x, y)           \
+  ({                        \
+    __typeof__(x) _x = (x); \
+    __typeof__(y) _y = (y); \
+    _x < _y ? _x : _y;      \
+  })
 #endif
 
 /* defined in conky.c, needed by top.c */
@@ -308,7 +309,7 @@ extern conky::range_config_setting<double> update_interval;
 extern conky::range_config_setting<double> update_interval_on_battery;
 double active_update_interval();
 
-extern conky::range_config_setting<char>  stippled_borders;
+extern conky::range_config_setting<char> stippled_borders;
 
 void set_current_text_color(long colour);
 long get_current_text_color(void);
@@ -319,7 +320,7 @@ int get_total_updates(void);
 
 /* defined in conky.c */
 int spaced_print(char *, int, const char *, int, ...)
-	__attribute__((format(printf, 3, 5)));
+    __attribute__((format(printf, 3, 5)));
 extern int inotify_fd;
 
 /* defined in conky.c
@@ -353,20 +354,20 @@ extern std::string current_config;
 #define NOBATTERY 0
 
 /* to get rid of 'unused variable' warnings */
-#define UNUSED(a)  (void)a
-#define UNUSED_ATTR __attribute__ ((unused))
+#define UNUSED(a) (void)a
+#define UNUSED_ATTR __attribute__((unused))
 
 template <class T>
 void free_and_zero(T *&ptr) {
-	if(ptr) {
-		free(ptr);
-		ptr = NULL;
-	}
+  if (ptr) {
+    free(ptr);
+    ptr = NULL;
+  }
 }
 
 extern std::unique_ptr<lua::state> state;
 
 extern int argc_copy;
-extern char** argv_copy;
+extern char **argv_copy;
 
 #endif /* _conky_h_ */

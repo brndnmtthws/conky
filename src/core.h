@@ -33,12 +33,14 @@
 
 #include "conky.h"
 
-struct text_object *construct_text_object(const char *s, const char *arg, long
-		line, void **ifblock_opaque, void *free_at_crash);
+struct text_object *construct_text_object(const char *s, const char *arg,
+                                          long line, void **ifblock_opaque,
+                                          void *free_at_crash);
 
 size_t remove_comments(char *string);
 
-int extract_variable_text_internal(struct text_object *retval, const char *const_p);
+int extract_variable_text_internal(struct text_object *retval,
+                                   const char *const_p);
 
 void free_text_objects(struct text_object *root);
 

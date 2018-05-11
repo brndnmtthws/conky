@@ -43,4 +43,3 @@ double cmus_progress(struct text_object *obj);
 uint8_t cmus_percent(struct text_object *obj);
 
 #endif /* CMUS_H_ */
-

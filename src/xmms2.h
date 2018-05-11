@@ -32,26 +32,26 @@
 #include <xmmsclient/xmmsclient.h>
 
 struct xmms2_s {
-	char *artist;
-	char *album;
-	char *title;
-	char *genre;
-	char *comment;
-	char *url;
-	char *date;
-	char *playlist;
-	int tracknr;
-	int bitrate;
-	unsigned int id;
-	int duration;
-	int elapsed;
-	int timesplayed;
-	float size;
+  char *artist;
+  char *album;
+  char *title;
+  char *genre;
+  char *comment;
+  char *url;
+  char *date;
+  char *playlist;
+  int tracknr;
+  int bitrate;
+  unsigned int id;
+  int duration;
+  int elapsed;
+  int timesplayed;
+  float size;
 
-	float progress;
-	int percent;
-	char *status;
-	int conn_state;
+  float progress;
+  int percent;
+  char *status;
+  int conn_state;
 };
 
 int update_xmms2(void);

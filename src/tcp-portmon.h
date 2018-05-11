@@ -24,14 +24,14 @@
 #include "libtcp-portmon.h"
 
 struct tcp_port_monitor_data {
-	/* starting port to monitor */
-	in_port_t port_range_begin;
-	/* ending port to monitor */
-	in_port_t port_range_end;
-	/* enum from libtcp-portmon.h, e.g. COUNT, etc. */
-	int item;
-	/* 0 to n-1 connections. */
-	int connection_index;
+  /* starting port to monitor */
+  in_port_t port_range_begin;
+  /* ending port to monitor */
+  in_port_t port_range_end;
+  /* enum from libtcp-portmon.h, e.g. COUNT, etc. */
+  int item;
+  /* 0 to n-1 connections. */
+  int connection_index;
 };
 
 /* forward declare to make gcc happy */

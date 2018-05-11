@@ -28,78 +28,79 @@
  *
  */
 
-#include "conky.h"
-#include "core.h"
 #include "exec.h"
-#include "logging.h"
-#include "specials.h"
-#include "text_object.h"
-#include "update-cb.hh"
-#include <cmath>
-#include <mutex>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <cmath>
+#include <mutex>
+#include "conky.h"
+#include "core.h"
+#include "logging.h"
+#include "specials.h"
+#include "text_object.h"
+#include "update-cb.hh"
 
 struct execi_data {
-	float interval;
-	char *cmd;
-	execi_data() : interval(0), cmd(0) {}
+  float interval;
+  char *cmd;
+  execi_data() : interval(0), cmd(0) {}
 };
 
-//our own implementation of popen, the difference : the value of 'childpid' will be filled with
-//the pid of the running 'command'. This is useful if want to kill it when it hangs while reading
-//or writing to it. We have to kill it because pclose will wait until the process dies by itself
-static FILE* pid_popen(const char *command, const char *mode, pid_t *child) {
-	int ends[2];
-	int parentend, childend;
+// our own implementation of popen, the difference : the value of 'childpid'
+// will be filled with the pid of the running 'command'. This is useful if want
+// to kill it when it hangs while reading or writing to it. We have to kill it
+// because pclose will wait until the process dies by itself
+static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
+  int ends[2];
+  int parentend, childend;
 
-	//by running pipe after the strcmp's we make sure that we don't have to create a pipe
-	//and close the ends if mode is something illegal
-	if (strcmp(mode, "r") == 0) {
-		if (pipe(ends) != 0) {
-			return NULL;
-		}
-		parentend = ends[0];
-		childend = ends[1];
-	} else if (strcmp(mode, "w") == 0) {
-		if (pipe(ends) != 0) {
-			return NULL;
-		}
-		parentend = ends[1];
-		childend = ends[0];
-	} else {
-		return NULL;
-	}
+  // by running pipe after the strcmp's we make sure that we don't have to
+  // create a pipe and close the ends if mode is something illegal
+  if (strcmp(mode, "r") == 0) {
+    if (pipe(ends) != 0) {
+      return NULL;
+    }
+    parentend = ends[0];
+    childend = ends[1];
+  } else if (strcmp(mode, "w") == 0) {
+    if (pipe(ends) != 0) {
+      return NULL;
+    }
+    parentend = ends[1];
+    childend = ends[0];
+  } else {
+    return NULL;
+  }
 
-	*child = fork();
-	if (*child == -1) {
-		close(parentend);
-		close(childend);
-		return NULL;
-	} else if (*child > 0) {
-		close(childend);
-		waitpid(*child, NULL, 0);
-	} else {
-		//don't read from both stdin and pipe or write to both stdout and pipe
-		if (childend == ends[0]) {
-			close(0);
-		} else {
-			close(1);
-		}
-		close(parentend);
+  *child = fork();
+  if (*child == -1) {
+    close(parentend);
+    close(childend);
+    return NULL;
+  } else if (*child > 0) {
+    close(childend);
+    waitpid(*child, NULL, 0);
+  } else {
+    // don't read from both stdin and pipe or write to both stdout and pipe
+    if (childend == ends[0]) {
+      close(0);
+    } else {
+      close(1);
+    }
+    close(parentend);
 
-		//by dupping childend, the returned fd will have close-on-exec turned off
-		if (dup(childend) == -1)
-			perror("dup()");
-		close(childend);
+    // by dupping childend, the returned fd will have close-on-exec turned off
+    if (dup(childend) == -1) perror("dup()");
+    close(childend);
 
-		execl("/bin/sh", "sh", "-c", command, (char *) NULL);
-		_exit(EXIT_FAILURE); //child should die here, (normally execl will take care of this but it can fail)
-	}
+    execl("/bin/sh", "sh", "-c", command, (char *)NULL);
+    _exit(EXIT_FAILURE);  // child should die here, (normally execl will take
+                          // care of this but it can fail)
+  }
 
-	return fdopen(parentend, mode);
+  return fdopen(parentend, mode);
 }
 
 /**
@@ -113,43 +114,45 @@ static FILE* pid_popen(const char *command, const char *mode, pid_t *child) {
  * results, use the stored callback to call get_result_copy(), which
  * returns a std::string.
  */
-void exec_cb::work()
-{
-	pid_t childpid;
-	std::string buf;
-	std::shared_ptr<FILE> fp;
-	char b[0x1000];
+void exec_cb::work() {
+  pid_t childpid;
+  std::string buf;
+  std::shared_ptr<FILE> fp;
+  char b[0x1000];
 
-	if (FILE *t = pid_popen(std::get<0>(tuple).c_str(), "r", &childpid))
-		fp.reset(t, fclose);
-	else
-		return;
+  if (FILE *t = pid_popen(std::get<0>(tuple).c_str(), "r", &childpid))
+    fp.reset(t, fclose);
+  else
+    return;
 
-	while (!feof(fp.get()) && !ferror(fp.get())) {
-		int length = fread(b, 1, sizeof b, fp.get());
-		buf.append(b, length);
-	}
+  while (!feof(fp.get()) && !ferror(fp.get())) {
+    int length = fread(b, 1, sizeof b, fp.get());
+    buf.append(b, length);
+  }
 
-	if (*buf.rbegin() == '\n')
-		buf.resize(buf.size()-1);
+  if (*buf.rbegin() == '\n') buf.resize(buf.size() - 1);
 
-	std::lock_guard<std::mutex> l(result_mutex);
-	result = buf;
+  std::lock_guard<std::mutex> l(result_mutex);
+  result = buf;
 }
 
-//remove backspaced chars, example: "dog^H^H^Hcat" becomes "cat"
-//string has to end with \0 and it's length should fit in a int
+// remove backspaced chars, example: "dog^H^H^Hcat" becomes "cat"
+// string has to end with \0 and it's length should fit in a int
 #define BACKSPACE 8
-static void remove_deleted_chars(char *string){
-	int i = 0;
-	while (string[i] != 0) {
-		if (string[i] == BACKSPACE) {
-			if (i != 0) {
-				strcpy( &(string[i-1]), &(string[i+1]) );
-				i--;
-			} else strcpy( &(string[i]), &(string[i+1]) ); //necessary for ^H's at the start of a string
-		} else i++;
-	}
+static void remove_deleted_chars(char *string) {
+  int i = 0;
+  while (string[i] != 0) {
+    if (string[i] == BACKSPACE) {
+      if (i != 0) {
+        strcpy(&(string[i - 1]), &(string[i + 1]));
+        i--;
+      } else
+        strcpy(
+            &(string[i]),
+            &(string[i + 1]));  // necessary for ^H's at the start of a string
+    } else
+      i++;
+  }
 }
 
 /**
@@ -159,22 +162,23 @@ static void remove_deleted_chars(char *string){
  * @param[in] buf output of a command executed by an exec_cb object
  * @return number between 0.0 and 100.0
  */
-static inline double get_barnum(const char *buf)
-{
-	double barnum;
+static inline double get_barnum(const char *buf) {
+  double barnum;
 
-	if (sscanf(buf, "%lf", &barnum) != 1) {
-		NORM_ERR("reading exec value failed (perhaps it's not the "
-				"correct format?)");
-		return 0.0;
-	}
-	if (barnum > 100.0 || barnum < 0.0) {
-		NORM_ERR("your exec value is not between 0 and 100, "
-				"therefore it will be ignored");
-		return 0.0;
-	}
+  if (sscanf(buf, "%lf", &barnum) != 1) {
+    NORM_ERR(
+        "reading exec value failed (perhaps it's not the "
+        "correct format?)");
+    return 0.0;
+  }
+  if (barnum > 100.0 || barnum < 0.0) {
+    NORM_ERR(
+        "your exec value is not between 0 and 100, "
+        "therefore it will be ignored");
+    return 0.0;
+  }
 
-	return barnum;
+  return barnum;
 }
 
 /**
@@ -186,67 +190,71 @@ static inline double get_barnum(const char *buf)
  * @param[out] p the string in which we store command output
  * @param[in] p_max_size the maximum size of p...
  */
-void fill_p(const char *buffer, struct text_object *obj, char *p, int p_max_size) {
-	if (obj->parse == true) {
-		evaluate(buffer, p, p_max_size);
-	} else {
-		snprintf(p, p_max_size, "%s", buffer);
-	}
+void fill_p(const char *buffer, struct text_object *obj, char *p,
+            int p_max_size) {
+  if (obj->parse == true) {
+    evaluate(buffer, p, p_max_size);
+  } else {
+    snprintf(p, p_max_size, "%s", buffer);
+  }
 
-	remove_deleted_chars(p);
+  remove_deleted_chars(p);
 }
 
 /**
  * Parses arg to find the command to be run, as well as special options
  * like height, width, color, and update interval
  *
- * @param[out] obj stores the command and an execi_data structure (if applicable)
+ * @param[out] obj stores the command and an execi_data structure (if
+ * applicable)
  * @param[in] arg the argument to an ${exec*} object
- * @param[in] execflag bitwise flag used to specify the exec variant we need to process
+ * @param[in] execflag bitwise flag used to specify the exec variant we need to
+ * process
  */
-void scan_exec_arg(struct text_object *obj, const char *arg, unsigned int execflag)
-{
-	const char *cmd = arg;
-	struct execi_data *ed;
+void scan_exec_arg(struct text_object *obj, const char *arg,
+                   unsigned int execflag) {
+  const char *cmd = arg;
+  struct execi_data *ed;
 
-	/* in case we have an execi object, we need to parse out the interval */
-	if (execflag & EF_EXECI) {
-		ed = new execi_data;
-		int n;
+  /* in case we have an execi object, we need to parse out the interval */
+  if (execflag & EF_EXECI) {
+    ed = new execi_data;
+    int n;
 
-		/* store the interval in ed->interval */
-		if (sscanf(arg, "%f %n", &ed->interval, &n) <= 0) {
-			NORM_ERR("missing execi interval: ${execi* <interval> command}");
-			delete ed;
-			ed = NULL;
-			return;
-		}
+    /* store the interval in ed->interval */
+    if (sscanf(arg, "%f %n", &ed->interval, &n) <= 0) {
+      NORM_ERR("missing execi interval: ${execi* <interval> command}");
+      delete ed;
+      ed = NULL;
+      return;
+    }
 
-		/* set cmd to everything after the interval */
-		cmd = strndup(arg + n, text_buffer_size.get(*state));
-	}
+    /* set cmd to everything after the interval */
+    cmd = strndup(arg + n, text_buffer_size.get(*state));
+  }
 
-	/* parse any special options for the graphical exec types */
-	if (execflag & EF_BAR) {
-		cmd = scan_bar(obj, cmd, 100);
+  /* parse any special options for the graphical exec types */
+  if (execflag & EF_BAR) {
+    cmd = scan_bar(obj, cmd, 100);
 #ifdef BUILD_X11
-	} else if (execflag & EF_GAUGE) {
-		cmd = scan_gauge(obj, cmd, 100);
-	} else if (execflag & EF_GRAPH) {
-		cmd = scan_graph(obj, cmd, 100);
-		if (!cmd) {
-			NORM_ERR("error parsing arguments to execgraph object");
-		}
+  } else if (execflag & EF_GAUGE) {
+    cmd = scan_gauge(obj, cmd, 100);
+  } else if (execflag & EF_GRAPH) {
+    cmd = scan_graph(obj, cmd, 100);
+    if (!cmd) {
+      NORM_ERR("error parsing arguments to execgraph object");
+    }
 #endif /* BUILD_X11 */
-	}
+  }
 
-	/* finally, store the resulting command, or an empty string if something went wrong */
-	if (execflag & EF_EXEC) {
-		obj->data.s = strndup(cmd ? cmd : "", text_buffer_size.get(*state));
-	} else if (execflag & EF_EXECI) {
-		ed->cmd = strndup(cmd ? cmd : "", text_buffer_size.get(*state));
-		obj->data.opaque = ed;
-	}
+  /* finally, store the resulting command, or an empty string if something went
+   * wrong */
+  if (execflag & EF_EXEC) {
+    obj->data.s = strndup(cmd ? cmd : "", text_buffer_size.get(*state));
+  } else if (execflag & EF_EXECI) {
+    ed->cmd = strndup(cmd ? cmd : "", text_buffer_size.get(*state));
+    obj->data.opaque = ed;
+  }
 }
 
 /**
@@ -254,14 +262,13 @@ void scan_exec_arg(struct text_object *obj, const char *arg, unsigned int execfl
  *
  * @param[out] obj stores the callback handle
  */
-void register_exec(struct text_object *obj)
-{
-	if (obj->data.s && obj->data.s[0]) {
-		obj->exec_handle = new conky::callback_handle<exec_cb>(
-			conky::register_cb<exec_cb>(1, true, obj->data.s));
-	} else {
-		DBGP("unable to register exec callback");
-	}
+void register_exec(struct text_object *obj) {
+  if (obj->data.s && obj->data.s[0]) {
+    obj->exec_handle = new conky::callback_handle<exec_cb>(
+        conky::register_cb<exec_cb>(1, true, obj->data.s));
+  } else {
+    DBGP("unable to register exec callback");
+  }
 }
 
 /**
@@ -272,17 +279,17 @@ void register_exec(struct text_object *obj)
  *
  * @param[out] obj stores the callback handle
  */
-void register_execi(struct text_object *obj)
-{
-	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
+void register_execi(struct text_object *obj) {
+  struct execi_data *ed = (struct execi_data *)obj->data.opaque;
 
-	if (ed && ed->cmd && ed->cmd[0]) {
-		uint32_t period = std::max(lround(ed->interval/active_update_interval()), 1l);
-		obj->exec_handle = new conky::callback_handle<exec_cb>(
-			conky::register_cb<exec_cb>(period, !obj->thread, ed->cmd));
-	} else {
-		DBGP("unable to register execi callback");
-	}
+  if (ed && ed->cmd && ed->cmd[0]) {
+    uint32_t period =
+        std::max(lround(ed->interval / active_update_interval()), 1l);
+    obj->exec_handle = new conky::callback_handle<exec_cb>(
+        conky::register_cb<exec_cb>(period, !obj->thread, ed->cmd));
+  } else {
+    DBGP("unable to register execi callback");
+  }
 }
 
 /**
@@ -292,11 +299,10 @@ void register_execi(struct text_object *obj)
  * @param[out] p the string in which we store command output
  * @param[in] p_max_size the maximum size of p...
  */
-void print_exec(struct text_object *obj, char *p, int p_max_size)
-{
-	if (obj->exec_handle) {
-		fill_p((*obj->exec_handle)->get_result_copy().c_str(), obj, p, p_max_size);
-	}
+void print_exec(struct text_object *obj, char *p, int p_max_size) {
+  if (obj->exec_handle) {
+    fill_p((*obj->exec_handle)->get_result_copy().c_str(), obj, p, p_max_size);
+  }
 }
 
 /**
@@ -305,13 +311,12 @@ void print_exec(struct text_object *obj, char *p, int p_max_size)
  * @param[in] obj hold an exec_handle, assuming one was registered
  * @return a value between 0.0 and 100.0
  */
-double execbarval(struct text_object *obj)
-{
-	if (obj->exec_handle) {
-		return get_barnum((*obj->exec_handle)->get_result_copy().c_str());
-	} else {
-		return 0.0;
-	}
+double execbarval(struct text_object *obj) {
+  if (obj->exec_handle) {
+    return get_barnum((*obj->exec_handle)->get_result_copy().c_str());
+  } else {
+    return 0.0;
+  }
 }
 
 /**
@@ -319,11 +324,10 @@ double execbarval(struct text_object *obj)
  *
  * @param[in] obj holds the data that we need to free up
  */
-void free_exec(struct text_object *obj)
-{
-	free_and_zero(obj->data.s);
-	delete obj->exec_handle;
-	obj->exec_handle = NULL;
+void free_exec(struct text_object *obj) {
+  free_and_zero(obj->data.s);
+  delete obj->exec_handle;
+  obj->exec_handle = NULL;
 }
 
 /**
@@ -331,19 +335,17 @@ void free_exec(struct text_object *obj)
  *
  * @param[in] obj holds the data that we need to free up
  */
-void free_execi(struct text_object *obj)
-{
-	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
+void free_execi(struct text_object *obj) {
+  struct execi_data *ed = (struct execi_data *)obj->data.opaque;
 
-	/* if ed is NULL, there is nothing to do */
-	if (!ed)
-		return;
+  /* if ed is NULL, there is nothing to do */
+  if (!ed) return;
 
-	delete obj->exec_handle;
-	obj->exec_handle = NULL;
+  delete obj->exec_handle;
+  obj->exec_handle = NULL;
 
-	free_and_zero(ed->cmd);
-	delete ed;
-	ed = NULL;
-	obj->data.opaque = NULL;
+  free_and_zero(ed->cmd);
+  delete ed;
+  ed = NULL;
+  obj->data.opaque = NULL;
 }

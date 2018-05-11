@@ -22,35 +22,35 @@
 #include <libxml/parser.h>
 
 typedef struct PRSS_Item_ {
-	char *title;
-	char *link;
-	char *description;
-	char *category;
-	char *pubDate;
-	char *guid;
+  char *title;
+  char *link;
+  char *description;
+  char *category;
+  char *pubDate;
+  char *guid;
 } PRSS_Item;
 
 struct PRSS {
-	char *version;
+  char *version;
 
-	char *title;
-	char *link;
-	char *description;
-	char *language;
-	char *generator;
-	char *managingEditor;
-	char *webMaster;
-	char *docs;
-	char *lastBuildDate;
-	char *pubDate;
-	char *copyright;
-	char *ttl;
+  char *title;
+  char *link;
+  char *description;
+  char *language;
+  char *generator;
+  char *managingEditor;
+  char *webMaster;
+  char *docs;
+  char *lastBuildDate;
+  char *pubDate;
+  char *copyright;
+  char *ttl;
 
-	PRSS_Item *items;
-	int item_count;
+  PRSS_Item *items;
+  int item_count;
 
-	PRSS(const std::string &xml_data);
-	~PRSS();
+  PRSS(const std::string &xml_data);
+  ~PRSS();
 };
 
 #endif /* PRSS_H */

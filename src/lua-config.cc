@@ -29,16 +29,17 @@
 #include "setting.hh"
 
 namespace conky {
-	void export_symbols(lua::state &l)
-	{
-		lua::stack_sentry s(l);
-		l.checkstack(3);
+void export_symbols(lua::state &l) {
+  lua::stack_sentry s(l);
+  l.checkstack(3);
 
-		l.newtable(); {
-			export_data_sources(l);
+  l.newtable();
+  {
+    export_data_sources(l);
 
-			l.newtable();
-			l.rawsetfield(-2, "config");
-		} l.setglobal("conky");
-	}
+    l.newtable();
+    l.rawsetfield(-2, "config");
+  }
+  l.setglobal("conky");
 }
+}  // namespace conky

@@ -28,15 +28,14 @@
  *
  */
 
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
 #include "conky.h"
 #include "logging.h"
 #include "specials.h"
 #include "text_object.h"
-#include <sys/ioctl.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <ctype.h>
-
 
 #ifdef HAVE_LINUX_SOUNDCARD_H
 #include <linux/soundcard.h>
@@ -49,8 +48,8 @@
 #endif /* HAVE_LINUX_SOUNDCARD_H */
 
 #if defined(__sun)
-#include <unistd.h>
 #include <stropts.h>
+#include <unistd.h>
 #endif
 
 #define MIXER_DEV "/dev/mixer"
@@ -58,124 +57,102 @@
 static int mixer_fd;
 static const char *devs[] = SOUND_DEVICE_NAMES;
 
-int mixer_init(const char *name)
-{
-	unsigned int i;
+int mixer_init(const char *name) {
+  unsigned int i;
 
-	if (name == 0 || name[0] == '\0') {
-		name = "vol";
-	}
+  if (name == 0 || name[0] == '\0') {
+    name = "vol";
+  }
 
-	/* open mixer */
-	if (mixer_fd <= 0) {
-		mixer_fd = open(MIXER_DEV, O_RDONLY);
-		if (mixer_fd == -1) {
-			NORM_ERR("can't open %s: %s", MIXER_DEV, strerror(errno));
-			return -1;
-		}
-	}
+  /* open mixer */
+  if (mixer_fd <= 0) {
+    mixer_fd = open(MIXER_DEV, O_RDONLY);
+    if (mixer_fd == -1) {
+      NORM_ERR("can't open %s: %s", MIXER_DEV, strerror(errno));
+      return -1;
+    }
+  }
 
-	for (i = 0; i < sizeof(devs) / sizeof(const char *); i++) {
-		if (strcasecmp(devs[i], name) == 0) {
-			return i;
-		}
-	}
+  for (i = 0; i < sizeof(devs) / sizeof(const char *); i++) {
+    if (strcasecmp(devs[i], name) == 0) {
+      return i;
+    }
+  }
 
-	return -1;
+  return -1;
 }
 
-static int mixer_get(int i)
-{
-	static char rep = 0;
-	int val = -1;
+static int mixer_get(int i) {
+  static char rep = 0;
+  int val = -1;
 
-	if (ioctl(mixer_fd, MIXER_READ(i), &val) == -1) {
-		if (!rep) {
-			NORM_ERR("mixer ioctl: %s", strerror(errno));
-		}
-		rep = 1;
-		return 0;
-	}
-	rep = 0;
+  if (ioctl(mixer_fd, MIXER_READ(i), &val) == -1) {
+    if (!rep) {
+      NORM_ERR("mixer ioctl: %s", strerror(errno));
+    }
+    rep = 1;
+    return 0;
+  }
+  rep = 0;
 
-	return val;
+  return val;
 }
 
-static int mixer_get_avg(int i)
-{
-	int v = mixer_get(i);
+static int mixer_get_avg(int i) {
+  int v = mixer_get(i);
 
-	return ((v >> 8) + (v & 0xFF)) / 2;
-}
-
-static int mixer_get_left(int i)
-{
-	return mixer_get(i) >> 8;
+  return ((v >> 8) + (v & 0xFF)) / 2;
 }
 
-static int mixer_get_right(int i)
-{
-	return mixer_get(i) & 0xFF;
-}
-int mixer_is_mute(int i)
-{
-	return !mixer_get(i);
-}
+static int mixer_get_left(int i) { return mixer_get(i) >> 8; }
+
+static int mixer_get_right(int i) { return mixer_get(i) & 0xFF; }
+int mixer_is_mute(int i) { return !mixer_get(i); }
 
 #define mixer_to_255(i, x) x
 
-void parse_mixer_arg(struct text_object *obj, const char *arg)
-{
-	obj->data.l = mixer_init(arg);
+void parse_mixer_arg(struct text_object *obj, const char *arg) {
+  obj->data.l = mixer_init(arg);
 }
 
-uint8_t mixer_percentage(struct text_object *obj)
-{
-	return mixer_get_avg(obj->data.l);
+uint8_t mixer_percentage(struct text_object *obj) {
+  return mixer_get_avg(obj->data.l);
 }
 
-uint8_t mixerl_percentage(struct text_object *obj)
-{
-	return mixer_get_left(obj->data.l);
+uint8_t mixerl_percentage(struct text_object *obj) {
+  return mixer_get_left(obj->data.l);
 }
 
-uint8_t mixerr_percentage(struct text_object *obj)
-{
-	return mixer_get_right(obj->data.l);
+uint8_t mixerr_percentage(struct text_object *obj) {
+  return mixer_get_right(obj->data.l);
 }
 
-int check_mixer_muted(struct text_object *obj)
-{
-	if (!mixer_is_mute(obj->data.l))
-		return 0;
-	return 1;
+int check_mixer_muted(struct text_object *obj) {
+  if (!mixer_is_mute(obj->data.l)) return 0;
+  return 1;
 }
 
-void scan_mixer_bar(struct text_object *obj, const char *arg)
-{
-	char buf1[64];
-	int n;
+void scan_mixer_bar(struct text_object *obj, const char *arg) {
+  char buf1[64];
+  int n;
 
-	if (arg && sscanf(arg, "%63s %n", buf1, &n) >= 1) {
-		obj->data.i = mixer_init(buf1);
-		scan_bar(obj, arg + n, 100);
-	} else {
-		obj->data.i = mixer_init(NULL);
-		scan_bar(obj, arg, 100);
-	}
+  if (arg && sscanf(arg, "%63s %n", buf1, &n) >= 1) {
+    obj->data.i = mixer_init(buf1);
+    scan_bar(obj, arg + n, 100);
+  } else {
+    obj->data.i = mixer_init(NULL);
+    scan_bar(obj, arg, 100);
+  }
 }
 
-double mixer_barval(struct text_object *obj)
-{
-	return mixer_to_255(obj->data.i, mixer_get_avg(obj->data.i));
+double mixer_barval(struct text_object *obj) {
+  return mixer_to_255(obj->data.i, mixer_get_avg(obj->data.i));
 }
 
-double mixerl_barval(struct text_object *obj)
-{
-	return mixer_to_255(obj->data.i, mixer_get_left(obj->data.i));
+double mixerl_barval(struct text_object *obj) {
+  return mixer_to_255(obj->data.i, mixer_get_left(obj->data.i));
 }
 
-double mixerr_barval(struct text_object *obj)
-{
-	return mixer_to_255(obj->data.i, mixer_get_right(obj->data.i));
+double mixerr_barval(struct text_object *obj) {
+  return mixer_to_255(obj->data.i, mixer_get_right(obj->data.i));
 }

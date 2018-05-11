@@ -34,94 +34,90 @@
 #include "update-cb.hh"
 
 namespace {
-	struct moc_result {
-		std::string state;
-		std::string file;
-		std::string title;
-		std::string artist;
-		std::string song;
-		std::string album;
-		std::string totaltime;
-		std::string timeleft;
-		std::string curtime;
-		std::string bitrate;
-		std::string rate;
-	};
+struct moc_result {
+  std::string state;
+  std::string file;
+  std::string title;
+  std::string artist;
+  std::string song;
+  std::string album;
+  std::string totaltime;
+  std::string timeleft;
+  std::string curtime;
+  std::string bitrate;
+  std::string rate;
+};
 
-	class moc_cb: public conky::callback<moc_result> {
-		typedef conky::callback<moc_result> Base;
+class moc_cb : public conky::callback<moc_result> {
+  typedef conky::callback<moc_result> Base;
 
-	protected:
-		virtual void work();
+ protected:
+  virtual void work();
 
-	public:
-		moc_cb(uint32_t period)
-			: Base(period, false, Tuple())
-		{}
-	};
+ public:
+  moc_cb(uint32_t period) : Base(period, false, Tuple()) {}
+};
 
-	void moc_cb::work()
-	{
-		moc_result moc;
-		FILE *fp;
+void moc_cb::work() {
+  moc_result moc;
+  FILE *fp;
 
-		fp = popen("mocp -i", "r");
-		if (!fp) {
-			moc.state = "Can't run 'mocp -i'";
-		} else {
-			while (1) {
-				char line[100];
-				char *p;
+  fp = popen("mocp -i", "r");
+  if (!fp) {
+    moc.state = "Can't run 'mocp -i'";
+  } else {
+    while (1) {
+      char line[100];
+      char *p;
 
-				/* Read a line from the pipe and strip the possible '\n'. */
-				if (!fgets(line, 100, fp))
-					break;
-				if ((p = strrchr(line, '\n')))
-					*p = '\0';
+      /* Read a line from the pipe and strip the possible '\n'. */
+      if (!fgets(line, 100, fp)) break;
+      if ((p = strrchr(line, '\n'))) *p = '\0';
 
-				/* Parse infos. */
-				if (strncmp(line, "State:", 6) == 0)
-					moc.state = line + 7;
-				else if (strncmp(line, "File:", 5) == 0)
-					moc.file = line + 6;
-				else if (strncmp(line, "Title:", 6) == 0)
-					moc.title = line + 7;
-				else if (strncmp(line, "Artist:", 7) == 0)
-					moc.artist = line + 8;
-				else if (strncmp(line, "SongTitle:", 10) == 0)
-					moc.song = line + 11;
-				else if (strncmp(line, "Album:", 6) == 0)
-					moc.album = line + 7;
-				else if (strncmp(line, "TotalTime:", 10) == 0)
-					moc.totaltime = line + 11;
-				else if (strncmp(line, "TimeLeft:", 9) == 0)
-					moc.timeleft = line + 10;
-				else if (strncmp(line, "CurrentTime:", 12) == 0)
-					moc.curtime = line + 13;
-				else if (strncmp(line, "Bitrate:", 8) == 0)
-					moc.bitrate = line + 9;
-				else if (strncmp(line, "Rate:", 5) == 0)
-					moc.rate = line + 6;
-			}
-		}
+      /* Parse infos. */
+      if (strncmp(line, "State:", 6) == 0)
+        moc.state = line + 7;
+      else if (strncmp(line, "File:", 5) == 0)
+        moc.file = line + 6;
+      else if (strncmp(line, "Title:", 6) == 0)
+        moc.title = line + 7;
+      else if (strncmp(line, "Artist:", 7) == 0)
+        moc.artist = line + 8;
+      else if (strncmp(line, "SongTitle:", 10) == 0)
+        moc.song = line + 11;
+      else if (strncmp(line, "Album:", 6) == 0)
+        moc.album = line + 7;
+      else if (strncmp(line, "TotalTime:", 10) == 0)
+        moc.totaltime = line + 11;
+      else if (strncmp(line, "TimeLeft:", 9) == 0)
+        moc.timeleft = line + 10;
+      else if (strncmp(line, "CurrentTime:", 12) == 0)
+        moc.curtime = line + 13;
+      else if (strncmp(line, "Bitrate:", 8) == 0)
+        moc.bitrate = line + 9;
+      else if (strncmp(line, "Rate:", 5) == 0)
+        moc.rate = line + 6;
+    }
+  }
 
-		pclose(fp);
+  pclose(fp);
 
-		std::lock_guard<std::mutex> l(result_mutex);
-		result = moc;
-	}
+  std::lock_guard<std::mutex> l(result_mutex);
+  result = moc;
 }
+}  // namespace
 
-#define MOC_PRINT_GENERATOR(type, alt) \
-void print_moc_##type(struct text_object *obj, char *p, int p_max_size) \
-{ \
-	(void)obj; \
-	uint32_t period = std::max( \
-				lround(music_player_interval.get(*state)/active_update_interval()), 1l \
-			); \
-	const moc_result &moc = conky::register_cb<moc_cb>(period)->get_result_copy(); \
-	snprintf(p, p_max_size, "%s", (moc.type.length() ? moc.type.c_str() : alt)); \
-}
+#define MOC_PRINT_GENERATOR(type, alt)                                        \
+  void print_moc_##type(struct text_object *obj, char *p, int p_max_size) {   \
+    (void)obj;                                                                \
+    uint32_t period = std::max(                                               \
+        lround(music_player_interval.get(*state) / active_update_interval()), \
+        1l);                                                                  \
+    const moc_result &moc =                                                   \
+        conky::register_cb<moc_cb>(period)->get_result_copy();                \
+    snprintf(p, p_max_size, "%s",                                             \
+             (moc.type.length() ? moc.type.c_str() : alt));                   \
+  }
 
 MOC_PRINT_GENERATOR(state, "??")
 MOC_PRINT_GENERATOR(file, "no file")

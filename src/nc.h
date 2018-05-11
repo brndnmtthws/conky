@@ -16,19 +16,17 @@ void _nc_free_and_exit(int);
 #endif
 
 namespace priv {
-	class out_to_ncurses_setting: public conky::simple_config_setting<bool> {
-		typedef conky::simple_config_setting<bool> Base;
-	
-	protected:
-		virtual void lua_setter(lua::state &l, bool init);
-		virtual void cleanup(lua::state &l);
+class out_to_ncurses_setting : public conky::simple_config_setting<bool> {
+  typedef conky::simple_config_setting<bool> Base;
 
-	public:
-		out_to_ncurses_setting()
-			: Base("out_to_ncurses", false, false)
-		{}
-	};
-}
+ protected:
+  virtual void lua_setter(lua::state &l, bool init);
+  virtual void cleanup(lua::state &l);
+
+ public:
+  out_to_ncurses_setting() : Base("out_to_ncurses", false, false) {}
+};
+}  // namespace priv
 
 extern priv::out_to_ncurses_setting out_to_ncurses;
 
