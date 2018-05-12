@@ -27,11 +27,11 @@
  *
  */
 
-#include <ctype.h>
 #include <fcntl.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <cctype>
+#include <cstring>
 #include <memory>
 #include "common.h"
 #include "config.h"
@@ -43,19 +43,14 @@
 #define DEFAULT_MAX_HEADTAIL_USES 2
 
 struct headtail {
-  int wantedlines;
+  int wantedlines{0};
   std::string logfile;
-  char *buffer;
-  int current_use;
-  int max_uses;
-  int reported;
+  char *buffer{nullptr};
+  int current_use{0};
+  int max_uses{0};
+  int reported{0};
 
-  headtail()
-      : wantedlines(0),
-        buffer(NULL),
-        current_use(0),
-        max_uses(0),
-        reported(0) {}
+  headtail() = default;
 
   ~headtail() { free(buffer); }
 };
@@ -81,15 +76,15 @@ static void tailstring(char *string, int endofstring, int wantedlines) {
 }
 
 void free_tailhead(struct text_object *obj) {
-  struct headtail *ht = (struct headtail *)obj->data.opaque;
-  obj->data.opaque = NULL;
+  auto *ht = static_cast<struct headtail *>(obj->data.opaque);
+  obj->data.opaque = nullptr;
   delete ht;
 }
 
 void init_tailhead(const char *type, const char *arg, struct text_object *obj,
                    void *free_at_crash) {
   unsigned int args;
-  struct headtail *ht = new headtail;
+  auto *ht = new headtail;
 
   std::unique_ptr<char[]> tmp(new char[DEFAULT_TEXT_BUFFER_SIZE]);
   memset(tmp.get(), 0, DEFAULT_TEXT_BUFFER_SIZE);
@@ -111,7 +106,7 @@ void init_tailhead(const char *type, const char *arg, struct text_object *obj,
   }
   if (ht->wantedlines > 0 && ht->wantedlines <= MAX_HEADTAIL_LINES) {
     ht->logfile = to_real_path(tmp.get());
-    ht->buffer = NULL;
+    ht->buffer = nullptr;
     ht->current_use = 0;
   } else {
     free_tailhead(obj);
@@ -126,19 +121,21 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
                            int p_max_size) {
   int fd, i, endofstring = 0, linescounted = 0;
   FILE *fp;
-  struct stat st;
-  struct headtail *ht = (struct headtail *)obj->data.opaque;
+  struct stat st {};
+  auto *ht = static_cast<struct headtail *>(obj->data.opaque);
 
-  if (!ht) return;
+  if (ht == nullptr) {
+    return;
+  }
 
   // empty the buffer and reset the counter if we used it the max number of
   // times
-  if (ht->buffer && ht->current_use >= ht->max_uses - 1) {
+  if ((ht->buffer != nullptr) && ht->current_use >= ht->max_uses - 1) {
     free_and_zero(ht->buffer);
     ht->current_use = 0;
   }
   // use the buffer if possible
-  if (ht->buffer) {
+  if (ht->buffer != nullptr) {
     strcpy(p, ht->buffer);
     ht->current_use++;
   } else {  // otherwise find the needed data
@@ -148,7 +145,9 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
         if (fd != -1) {
           if (strcmp(type, "head") == 0) {
             for (i = 0; linescounted < ht->wantedlines; i++) {
-              if (read(fd, p + i, 1) <= 0) break;
+              if (read(fd, p + i, 1) <= 0) {
+                break;
+              }
               if (p[i] == '\n') {
                 linescounted++;
               }
@@ -158,7 +157,7 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
             i = read(fd, p, p_max_size - 1);
             tailstring(p, i, ht->wantedlines);
           } else {
-            CRIT_ERR(NULL, NULL,
+            CRIT_ERR(nullptr, nullptr,
                      "If you are seeing this then there is a bug in the code, "
                      "report it !");
           }
@@ -166,10 +165,13 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
         close(fd);
       } else {
         fp = open_file(ht->logfile.c_str(), &ht->reported);
-        if (fp != NULL) {
+        if (fp != nullptr) {
           if (strcmp(type, "head") == 0) {
             for (i = 0; i < ht->wantedlines; i++) {
-              if (!fgets(p + endofstring, p_max_size - endofstring, fp)) break;
+              if (fgets(p + endofstring, p_max_size - endofstring, fp) ==
+                  nullptr) {
+                break;
+              }
               endofstring = strlen(p);
             }
           } else if (strcmp(type, "tail") == 0) {
@@ -177,7 +179,7 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
             i = fread(p, 1, p_max_size - 1, fp);
             tailstring(p, i, ht->wantedlines);
           } else {
-            CRIT_ERR(NULL, NULL,
+            CRIT_ERR(nullptr, nullptr,
                      "If you are seeing this then there is a bug in the code, "
                      "report it !");
           }
@@ -186,11 +188,10 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
       }
       ht->buffer = strdup(p);
     } else {
-      CRIT_ERR(NULL, NULL, "$%s can't find information about %s", type,
+      CRIT_ERR(nullptr, nullptr, "$%s can't find information about %s", type,
                ht->logfile.c_str());
     }
   }
-  return;
 }
 
 void print_head(struct text_object *obj, char *p, int p_max_size) {
@@ -210,13 +211,13 @@ void print_lines(struct text_object *obj, char *p, int p_max_size) {
   char buf[BUFSZ];
   int j, lines;
 
-  if (!fp) {
+  if (fp == nullptr) {
     snprintf(p, p_max_size, "File Unreadable");
     return;
   }
 
   lines = 0;
-  while (fgets(buf, BUFSZ, fp) != NULL) {
+  while (fgets(buf, BUFSZ, fp) != nullptr) {
     for (j = 0; buf[j] != 0; j++) {
       if (buf[j] == '\n') {
         lines++;
@@ -234,16 +235,16 @@ void print_words(struct text_object *obj, char *p, int p_max_size) {
   int j, words;
   char inword = 0;
 
-  if (!fp) {
+  if (fp == nullptr) {
     snprintf(p, p_max_size, "File Unreadable");
     return;
   }
 
   words = 0;
-  while (fgets(buf, BUFSZ, fp) != NULL) {
+  while (fgets(buf, BUFSZ, fp) != nullptr) {
     for (j = 0; buf[j] != 0; j++) {
-      if (!isspace(buf[j])) {
-        if (!inword) {
+      if (isspace(buf[j]) == 0) {
+        if (inword == 0) {
           words++;
           inword = 1;
         }

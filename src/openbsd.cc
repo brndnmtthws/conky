@@ -74,7 +74,7 @@ inline void proc_find_top(struct process **cpu, struct process **mem);
 static short cpu_setup = 0;
 static kvm_t *kd = 0;
 
-struct ifmibdata *data = NULL;
+struct ifmibdata *data = nullptr;
 size_t len = 0;
 
 int init_kvm = 0;
@@ -85,8 +85,8 @@ static int kvm_init() {
     return 1;
   }
 
-  kd = kvm_open(NULL, NULL, NULL, KVM_NO_FILES, NULL);
-  if (kd == NULL) {
+  kd = kvm_open(nullptr, NULL, NULL, KVM_NO_FILES, NULL);
+  if (kd == nullptr) {
     NORM_ERR("error opening kvm");
   } else {
     init_kvm = 1;
@@ -108,7 +108,7 @@ static int swapmode(int *used, int *total) {
   }
 
   swdev = malloc(nswap * sizeof(*swdev));
-  if (swdev == NULL) {
+  if (swdev == nullptr) {
     return 0;
   }
 
@@ -144,7 +144,7 @@ void update_uptime() {
   time_t now;
   size_t size = sizeof(boottime);
 
-  if ((sysctl(mib, 2, &boottime, &size, NULL, 0) != -1) &&
+  if ((sysctl(mib, 2, &boottime, &size, nullptr, 0) != -1) &&
       (boottime.tv_sec != 0)) {
     time(&now);
     info.uptime = now - boottime.tv_sec;
@@ -172,7 +172,7 @@ void update_meminfo() {
 
   /* get total -- systemwide main memory usage structure */
   size = sizeof(vmtotal);
-  if (sysctl(mib, 2, &vmtotal, &size, NULL, 0) < 0) {
+  if (sysctl(mib, 2, &vmtotal, &size, nullptr, 0) < 0) {
     warn("sysctl failed");
     bzero(&vmtotal, sizeof(vmtotal));
   }
@@ -210,7 +210,7 @@ void update_net_stats() {
   }
 
   for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-    ns = get_net_stat((const char *)ifa->ifa_name, NULL, NULL);
+    ns = get_net_stat((const char *)ifa->ifa_name, nullptr, NULL);
 
     if (ifa->ifa_flags & IFF_UP) {
       struct ifaddrs *iftmp;
@@ -224,7 +224,7 @@ void update_net_stats() {
       }
 
       for (iftmp = ifa->ifa_next;
-           iftmp != NULL && strcmp(ifa->ifa_name, iftmp->ifa_name) == 0;
+           iftmp != nullptr && strcmp(ifa->ifa_name, iftmp->ifa_name) == 0;
            iftmp = iftmp->ifa_next) {
         if (iftmp->ifa_addr->sa_family == AF_INET) {
           memcpy(&(ns->addr), iftmp->ifa_addr, iftmp->ifa_addr->sa_len);
@@ -301,7 +301,7 @@ struct cpu_load_struct fresh = {{0, 0, 0, 0, 0}};
 long cpu_used, oldtotal, oldused;
 #else
 #include <assert.h>
-int64_t *fresh = NULL;
+int64_t *fresh = nullptr;
 
 /* XXX is 8 enough? - What's the constant for MAXCPU? */
 /* allocate this with malloc would be better */
@@ -314,22 +314,22 @@ void get_cpu_count() {
   int mib[2] = {CTL_HW, HW_NCPU};
   size_t len = sizeof(cpu_count);
 
-  if (sysctl(mib, 2, &cpu_count, &len, NULL, 0) != 0) {
+  if (sysctl(mib, 2, &cpu_count, &len, nullptr, 0) != 0) {
     NORM_ERR("error getting cpu count, defaulting to 1");
   }
 #endif
   info.cpu_count = cpu_count;
 
   info.cpu_usage = malloc(info.cpu_count * sizeof(float));
-  if (info.cpu_usage == NULL) {
-    CRIT_ERR(NULL, NULL, "malloc");
+  if (info.cpu_usage == nullptr) {
+    CRIT_ERR(nullptr, NULL, "malloc");
   }
 
 #ifndef OLDCPU
-  assert(fresh == NULL); /* XXX Is this leaking memory? */
+  assert(fresh == nullptr); /* XXX Is this leaking memory? */
   /* XXX Where shall I free this? */
-  if (NULL == (fresh = calloc(cpu_count, sizeof(int64_t) * CPUSTATES))) {
-    CRIT_ERR(NULL, NULL, "calloc");
+  if (nullptr == (fresh = calloc(cpu_count, sizeof(int64_t) * CPUSTATES))) {
+    CRIT_ERR(nullptr, NULL, "calloc");
   }
 #endif
 }
@@ -352,7 +352,7 @@ void update_cpu_usage() {
   }
 
 #ifdef OLDCPU
-  if (sysctl(mib, 2, &cp_time, &len, NULL, 0) < 0) {
+  if (sysctl(mib, 2, &cp_time, &len, nullptr, 0) < 0) {
     NORM_ERR("Cannot get kern.cp_time");
   }
 
@@ -378,7 +378,7 @@ void update_cpu_usage() {
     size = CPUSTATES * sizeof(int64_t);
     for (i = 0; i < info.cpu_count; i++) {
       int cp_time_mib[] = {CTL_KERN, KERN_CPTIME2, i};
-      if (sysctl(cp_time_mib, 3, &(fresh[i * CPUSTATES]), &size, NULL, 0) < 0) {
+      if (sysctl(cp_time_mib, 3, &(fresh[i * CPUSTATES]), &size, nullptr, 0) < 0) {
         NORM_ERR("sysctl kern.cp_time2 failed");
       }
     }
@@ -387,7 +387,7 @@ void update_cpu_usage() {
     long cp_time_tmp[CPUSTATES];
 
     size = sizeof(cp_time_tmp);
-    if (sysctl(cp_time_mib, 2, cp_time_tmp, &size, NULL, 0) < 0) {
+    if (sysctl(cp_time_mib, 2, cp_time_tmp, &size, nullptr, 0) < 0) {
       NORM_ERR("sysctl kern.cp_time failed");
     }
 
@@ -455,7 +455,7 @@ void update_obsd_sensors() {
 
   /* for (dev = 0; dev < MAXSENSORDEVICES; dev++) { */
   mib[2] = dev;
-  if (sysctl(mib, 3, &sensordev, &sdlen, NULL, 0) == -1) {
+  if (sysctl(mib, 3, &sensordev, &sdlen, nullptr, 0) == -1) {
     if (errno != ENOENT) {
       warn("sysctl");
     }
@@ -466,7 +466,7 @@ void update_obsd_sensors() {
     mib[3] = type;
     for (numt = 0; numt < sensordev.maxnumt[type]; numt++) {
       mib[4] = numt;
-      if (sysctl(mib, 5, &sensor, &slen, NULL, 0) == -1) {
+      if (sysctl(mib, 5, &sensor, &slen, nullptr, 0) == -1) {
         if (errno != ENOENT) {
           warn("sysctl");
         }
@@ -541,7 +541,7 @@ void get_obsd_vendor(struct text_object *obj, char *buf,
   mib[0] = CTL_HW;
   mib[1] = HW_VENDOR;
 
-  if (sysctl(mib, 2, vendor, &size, NULL, 0) == -1) {
+  if (sysctl(mib, 2, vendor, &size, nullptr, 0) == -1) {
     NORM_ERR("error reading vendor");
     snprintf(buf, client_buffer_size, "unknown");
   } else {
@@ -561,7 +561,7 @@ void get_obsd_product(struct text_object *obj, char *buf,
   mib[0] = CTL_HW;
   mib[1] = HW_PRODUCT;
 
-  if (sysctl(mib, 2, product, &size, NULL, 0) == -1) {
+  if (sysctl(mib, 2, product, &size, nullptr, 0) == -1) {
     NORM_ERR("error reading product");
     snprintf(buf, client_buffer_size, "unknown");
   } else {
@@ -582,7 +582,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
 
   size_t size = sizeof(freq);
 
-  if (sysctl(mib, 2, &freq, &size, NULL, 0) == 0) {
+  if (sysctl(mib, 2, &freq, &size, nullptr, 0) == 0) {
     snprintf(p_client_buffer, client_buffer_size, p_format,
              (float)freq / divisor);
   } else {
@@ -665,7 +665,7 @@ void get_top_info(void) {
                    &n_processes);
 
   for (i = 0; i < n_processes; i++) {
-    if (!((p[i].p_flag & P_SYSTEM)) && p[i].p_comm != NULL) {
+    if (!((p[i].p_flag & P_SYSTEM)) && p[i].p_comm != nullptr) {
       proc = find_process(p[i].p_pid);
       if (!proc) proc = new_process(p[i].p_pid);
 

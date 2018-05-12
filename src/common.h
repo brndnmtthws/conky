@@ -66,8 +66,8 @@ FILE *open_file(const char *file, int *reported);
 int open_fifo(const char *file, int *reported);
 std::string variable_substitute(std::string s);
 
-void format_seconds(char *buf, unsigned int n, long t);
-void format_seconds_short(char *buf, unsigned int n, long t);
+void format_seconds(char *buf, unsigned int n, long seconds);
+void format_seconds_short(char *buf, unsigned int n, long seconds);
 
 int round_to_int_temp(float);
 

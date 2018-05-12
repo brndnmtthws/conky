@@ -67,7 +67,7 @@ static short cpu_setup = 0;
 static int getsysctl(const char *name, void *ptr, size_t len) {
   size_t nlen = len;
 
-  if (sysctlbyname(name, ptr, &nlen, NULL, 0) == -1) {
+  if (sysctlbyname(name, ptr, &nlen, nullptr, 0) == -1) {
     fprintf(stderr, "getsysctl(): %s failed '%s'\n", name, strerror(errno));
     return -1;
   }
@@ -84,9 +84,9 @@ static int swapmode(unsigned long *retavail, unsigned long *retfree) {
   int total, used;
   size_t len = sizeof(int);
 
-  if (sysctlbyname("vm.swap_size", &total, &len, NULL, 0) == -1)
+  if (sysctlbyname("vm.swap_size", &total, &len, nullptr, 0) == -1)
     perror("vm_swap_usage(): vm.swap_size");
-  else if (sysctlbyname("vm.swap_anon_use", &used, &len, NULL, 0) == -1)
+  else if (sysctlbyname("vm.swap_anon_use", &used, &len, nullptr, 0) == -1)
     perror("vm_swap_usage(): vm.swap_anon_use");
   else {
     int size = getpagesize();
@@ -109,7 +109,7 @@ int update_uptime(void) {
   time_t now;
   size_t size = sizeof(boottime);
 
-  if ((sysctl(mib, 2, &boottime, &size, NULL, 0) != -1) && boottime.tv_sec) {
+  if ((sysctl(mib, 2, &boottime, &size, nullptr, 0) != -1) && boottime.tv_sec) {
     time(&now);
     info.uptime = now - boottime.tv_sec;
   } else {
@@ -187,7 +187,7 @@ int update_net_stats(void) {
   }
 
   for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-    ns = get_net_stat((const char *)ifa->ifa_name, NULL, NULL);
+    ns = get_net_stat((const char *)ifa->ifa_name, nullptr, NULL);
 
     if (ifa->ifa_flags & IFF_UP) {
       struct ifaddrs *iftmp;
@@ -201,7 +201,7 @@ int update_net_stats(void) {
       }
 
       for (iftmp = ifa->ifa_next;
-           iftmp != NULL && strcmp(ifa->ifa_name, iftmp->ifa_name) == 0;
+           iftmp != nullptr && strcmp(ifa->ifa_name, iftmp->ifa_name) == 0;
            iftmp = iftmp->ifa_next) {
         if (iftmp->ifa_addr->sa_family == AF_INET) {
           memcpy(&(ns->addr), iftmp->ifa_addr, iftmp->ifa_addr->sa_len);
@@ -243,7 +243,7 @@ int update_net_stats(void) {
 static int kern_proc_all_n() {
   size_t len = 0;
 
-  if (sysctlbyname("kern.proc.all_lwp", NULL, &len, NULL, 0) == -1) {
+  if (sysctlbyname("kern.proc.all_lwp", nullptr, &len, NULL, 0) == -1) {
     perror("kern.proc.all_lwp");
     return -1;
   }
@@ -264,7 +264,7 @@ static struct kinfo_proc *kern_proc_all(size_t proc_n) {
     struct kinfo_proc *kp = (struct kinfo_proc *)malloc(len);
 
     if (kp) {
-      if (sysctlbyname("kern.proc.all_lwp", kp, &len, NULL, 0) == -1)
+      if (sysctlbyname("kern.proc.all_lwp", kp, &len, nullptr, 0) == -1)
         perror("kern_proc(): kern.proc.all_lwp");
       else
         return kp;
@@ -272,7 +272,7 @@ static struct kinfo_proc *kern_proc_all(size_t proc_n) {
     } else
       perror("malloc");
   }
-  return NULL;
+  return nullptr;
 }
 
 void get_cpu_count(void) {
@@ -286,8 +286,8 @@ void get_cpu_count(void) {
   }
 
   info.cpu_usage = (float *)malloc((info.cpu_count + 1) * sizeof(float));
-  if (info.cpu_usage == NULL) {
-    CRIT_ERR(NULL, NULL, "malloc");
+  if (info.cpu_usage == nullptr) {
+    CRIT_ERR(nullptr, NULL, "malloc");
   }
 }
 
@@ -313,7 +313,7 @@ static void stat_cpu(struct cpu_info *cpu, struct kinfo_cputime *percpu,
 }
 
 int update_cpu_usage(void) {
-  static struct cpu_info *cpu = NULL;
+  static struct cpu_info *cpu = nullptr;
   extern void *global_cpu;
 
   /* add check for !info.cpu_usage since that mem is freed on a SIGUSR1 */
@@ -335,7 +335,7 @@ int update_cpu_usage(void) {
         info.cpu_count * sizeof(struct kinfo_cputime));
 
     if (percpu) {
-      if (sysctlbyname("kern.cputime", percpu, &percpu_n, NULL, 0) == -1 &&
+      if (sysctlbyname("kern.cputime", percpu, &percpu_n, nullptr, 0) == -1 &&
           errno != ENOMEM) {
         printf("update_cpu_usage(): with %d cpu(s) ", info.cpu_count);
         perror("kern.cputime");
@@ -545,7 +545,7 @@ void update_wifi_stats(void)
 	}
 
 	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-		ns = get_net_stat((const char *) ifa->ifa_name, NULL, NULL);
+		ns = get_net_stat((const char *) ifa->ifa_name, nullptr, NULL);
 
 		s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
@@ -586,7 +586,7 @@ cleanup:
 
 int update_diskio(void) {
   int devs_count, num_selected, num_selections, dn;
-  struct device_selection *dev_select = NULL;
+  struct device_selection *dev_select = nullptr;
   long select_generation;
   static struct statinfo statinfo_cur;
   char device_name[DEFAULT_TEXT_BUFFER_SIZE];
@@ -606,7 +606,7 @@ int update_diskio(void) {
   devs_count = statinfo_cur.dinfo->numdevs;
   if (selectdevs(&dev_select, &num_selected, &num_selections,
                  &select_generation, statinfo_cur.dinfo->generation,
-                 statinfo_cur.dinfo->devices, devs_count, NULL, 0, NULL, 0,
+                 statinfo_cur.dinfo->devices, devs_count, nullptr, 0, NULL, 0,
                  DS_SELECT_ONLY, MAXSHOWDEVS, 1) >= 0) {
     for (dn = 0; dn < devs_count; dn++) {
       int di;

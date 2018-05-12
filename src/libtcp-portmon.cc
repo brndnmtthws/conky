@@ -114,12 +114,12 @@ struct _tcp_port_monitor_t {
 
   _tcp_port_monitor_t(int max_connections)
       : hash(),
-        p_peek(max_connections, static_cast<const tcp_connection_t *>(NULL)) {}
+        p_peek(max_connections, static_cast<const tcp_connection_t *>(nullptr)) {}
 
   _tcp_port_monitor_t(const _tcp_port_monitor_t &other)
       : hash(other.hash),
         p_peek(other.p_peek.size(),
-               static_cast<const tcp_connection_t *>(NULL)) {
+               static_cast<const tcp_connection_t *>(nullptr)) {
     // we must rebuild the peek table because the pointers are no longer valid
     rebuild_peek_table();
   }
@@ -131,7 +131,7 @@ struct _tcp_port_monitor_t {
 
     /* zero out the peek array */
     std::fill(p_peek.begin(), p_peek.end(),
-              static_cast<tcp_connection_t *>(NULL));
+              static_cast<tcp_connection_t *>(nullptr));
 
     size_t i = 0;
     for (connection_hash_t::iterator j = hash.begin(); j != hash.end();
@@ -165,7 +165,7 @@ void age_tcp_port_monitor(monitor_hash_t::value_type &monitor, void *p_void) {
    * If the age goes negative, we remove the connection from the monitor.
    * Function takes O(n) time on the number of connections. */
 
-  if (p_void) { /* p_void should be NULL in this context */
+  if (p_void) { /* p_void should be nullptr in this context */
     return;
   }
 
@@ -183,7 +183,7 @@ void age_tcp_port_monitor(monitor_hash_t::value_type &monitor, void *p_void) {
 
 void rebuild_tcp_port_monitor_peek_table(monitor_hash_t::value_type &monitor,
                                          void *p_void) {
-  if (p_void) { /* p_void should be NULL in this context */
+  if (p_void) { /* p_void should be nullptr in this context */
     return;
   }
 
@@ -287,7 +287,7 @@ void print_host(char *p_buffer, size_t buffer_size, const struct in6_addr *addr,
     slen = sizeof(sa.sa6);
   }
 
-  getnameinfo(&sa.sa, slen, p_buffer, buffer_size, NULL, 0,
+  getnameinfo(&sa.sa, slen, p_buffer, buffer_size, nullptr, 0,
               fqdn ? 0 : NI_NUMERICHOST);
 }
 
@@ -318,18 +318,18 @@ void process_file(tcp_port_monitor_collection_t *p_collection,
   tcp_connection_t conn;
   unsigned long inode, uid, state;
 
-  if ((fp = std::fopen(file, "r")) == NULL) {
+  if ((fp = std::fopen(file, "r")) == nullptr) {
     return;
   }
 
   /* ignore field name line */
-  if (std::fgets(buf, 255, fp) == NULL) {
+  if (std::fgets(buf, 255, fp) == nullptr) {
     std::fclose(fp);
     return;
   }
 
   /* read all tcp connections */
-  while (std::fgets(buf, sizeof(buf), fp) != NULL) {
+  while (std::fgets(buf, sizeof(buf), fp) != nullptr) {
     if (std::sscanf(buf,
                     "%*d: %39[0-9a-fA-F]:%hx %39[0-9a-fA-F]:%hx %lx %*x:%*x "
                     "%*x:%*x %*x %lu %*d %lu",
@@ -419,7 +419,7 @@ int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
     case REMOTESERVICE:
 
       sa.sin_port = htons(p_monitor->p_peek[connection_index]->remote_port);
-      getnameinfo((struct sockaddr *)&sa, sizeof(struct sockaddr_in), NULL, 0,
+      getnameinfo((struct sockaddr *)&sa, sizeof(struct sockaddr_in), nullptr, 0,
                   p_buffer, buffer_size, NI_NUMERICHOST);
       break;
 
@@ -444,7 +444,7 @@ int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
     case LOCALSERVICE:
 
       sa.sin_port = htons(p_monitor->p_peek[connection_index]->local_port);
-      getnameinfo((struct sockaddr *)&sa, sizeof(struct sockaddr_in), NULL, 0,
+      getnameinfo((struct sockaddr *)&sa, sizeof(struct sockaddr_in), nullptr, 0,
                   p_buffer, buffer_size, NI_NUMERICHOST);
       break;
 
@@ -483,12 +483,12 @@ void update_tcp_port_monitor_collection(
 
   /* age the connections in all port monitors. */
   for_each_tcp_port_monitor_in_collection(p_collection, &age_tcp_port_monitor,
-                                          NULL);
+                                          nullptr);
 
   /* rebuild the connection peek tables of all monitors
    * so clients can peek in O(1) time */
   for_each_tcp_port_monitor_in_collection(
-      p_collection, &rebuild_tcp_port_monitor_peek_table, NULL);
+      p_collection, &rebuild_tcp_port_monitor_peek_table, nullptr);
 }
 
 /* Creation of reduntant monitors is silently ignored */
@@ -511,12 +511,12 @@ tcp_port_monitor_t *find_tcp_port_monitor(
     tcp_port_monitor_collection_t *p_collection, in_port_t port_range_begin,
     in_port_t port_range_end) {
   if (!p_collection) {
-    return NULL;
+    return nullptr;
   }
 
   /* is monitor in hash? */
   monitor_hash_t::iterator i =
       p_collection->hash.find(port_range_t(port_range_begin, port_range_end));
 
-  return i == p_collection->hash.end() ? NULL : &i->second;
+  return i == p_collection->hash.end() ? nullptr : &i->second;
 }

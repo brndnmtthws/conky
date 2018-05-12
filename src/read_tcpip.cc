@@ -27,18 +27,22 @@
  *
  */
 
-#include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <stdlib.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <cerrno>
 #include <cinttypes>
+#include <cstdlib>
 #include <string>
 #include "conky.h"
 #include "logging.h"
 #include "text_object.h"
+
+#ifndef SOCK_CLOEXEC
+# define SOCK_CLOEXEC O_CLOEXEC
+#endif /* SOCK_CLOEXEC */
 
 struct read_tcpip_data {
   char *host;
@@ -49,10 +53,11 @@ void parse_read_tcpip_arg(struct text_object *obj, const char *arg,
                           void *free_at_crash) {
   struct read_tcpip_data *rtd;
 
-  rtd = (struct read_tcpip_data *)malloc(sizeof(struct read_tcpip_data));
+  rtd = static_cast<struct read_tcpip_data *>(
+      malloc(sizeof(struct read_tcpip_data)));
   memset(rtd, 0, sizeof(struct read_tcpip_data));
 
-  rtd->host = (char *)malloc(text_buffer_size.get(*state));
+  rtd->host = static_cast<char *>(malloc(text_buffer_size.get(*state)));
   sscanf(arg, "%s", rtd->host);
   sscanf(arg + strlen(rtd->host), "%u", &(rtd->port));
   if (rtd->port == 0) {
@@ -73,10 +78,10 @@ void parse_tcp_ping_arg(struct text_object *obj, const char *arg,
   char *hostname;
   struct hostent *he;
 
-  addr = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
+  addr = static_cast<struct sockaddr_in *>(malloc(sizeof(struct sockaddr_in)));
   obj->data.opaque = addr;
   memset(addr, 0, sizeof(struct sockaddr_in));
-  hostname = (char *)malloc(strlen(arg) + 1);
+  hostname = static_cast<char *>(malloc(strlen(arg) + 1));
   switch (sscanf(arg, "%s %" SCNu16, hostname, &(addr->sin_port))) {
     case 1:
       addr->sin_port = DEFAULT_TCP_PING_PORT;
@@ -87,10 +92,10 @@ void parse_tcp_ping_arg(struct text_object *obj, const char *arg,
       free(hostname);
       CRIT_ERR(obj, free_at_crash, "tcp_ping: Reading arguments failed");
   }
-  if (!(he = gethostbyname(hostname))) {
+  if ((he = gethostbyname(hostname)) == nullptr) {
     NORM_ERR("tcp_ping: Problem with resolving '%s', using 'localhost' instead",
              hostname);
-    if (!(he = gethostbyname("localhost"))) {
+    if ((he = gethostbyname("localhost")) == nullptr) {
       free(hostname);
       CRIT_ERR(obj, free_at_crash,
                "tcp_ping: Resolving 'localhost' also failed");
@@ -103,10 +108,11 @@ void parse_tcp_ping_arg(struct text_object *obj, const char *arg,
 }
 
 void print_tcp_ping(struct text_object *obj, char *p, int p_max_size) {
-  struct timeval tv1, tv2, timeout;
-  struct sockaddr_in *addr = (struct sockaddr_in *)obj->data.opaque;
+  struct timeval tv1 {
+  }, tv2{}, timeout{};
+  auto *addr = static_cast<struct sockaddr_in *>(obj->data.opaque);
   int addrlen = sizeof(struct sockaddr);
-  int sock = socket(addr->sin_family, SOCK_STREAM, IPPROTO_TCP);
+  int sock = socket(addr->sin_family, SOCK_STREAM | SOCK_CLOEXEC, IPPROTO_TCP);
   unsigned long long usecdiff;
   fd_set writefds;
 
@@ -116,14 +122,14 @@ void print_tcp_ping(struct text_object *obj, char *p, int p_max_size) {
     FD_ZERO(&writefds);
     FD_SET(sock, &writefds);
 #define TCP_PING_TIMEOUT 10
-    timeout.tv_sec = (int)TCP_PING_TIMEOUT;
+    timeout.tv_sec = TCP_PING_TIMEOUT;
     timeout.tv_usec = (TCP_PING_TIMEOUT - timeout.tv_sec) * 1000000;
-    connect(sock, (struct sockaddr *)addr,
+    connect(sock, reinterpret_cast<struct sockaddr *>(addr),
             addrlen);  // this will "fail" because sock is non-blocking
     if (errno == EINPROGRESS) {  // but EINPROGRESS is only a "false fail"
-      gettimeofday(&tv1, 0);
-      if (select(sock + 1, NULL, &writefds, NULL, &timeout) != -1) {
-        gettimeofday(&tv2, 0);
+      gettimeofday(&tv1, nullptr);
+      if (select(sock + 1, nullptr, &writefds, nullptr, &timeout) != -1) {
+        gettimeofday(&tv2, nullptr);
         usecdiff =
             ((tv2.tv_sec - tv1.tv_sec) * 1000000) + tv2.tv_usec - tv1.tv_usec;
         if (usecdiff <= TCP_PING_TIMEOUT * 1000000) {
@@ -148,13 +154,15 @@ void print_read_tcpip(struct text_object *obj, char *p, int p_max_size,
                       int protocol) {
   int sock, received;
   fd_set readfds;
-  struct timeval tv;
-  struct read_tcpip_data *rtd = (struct read_tcpip_data *)obj->data.opaque;
-  struct addrinfo hints;
+  struct timeval tv {};
+  auto *rtd = static_cast<struct read_tcpip_data *>(obj->data.opaque);
+  struct addrinfo hints {};
   struct addrinfo *airesult, *rp;
   char portbuf[8];
 
-  if (!rtd) return;
+  if (rtd == nullptr) {
+    return;
+  }
 
   memset(&hints, 0, sizeof(struct addrinfo));
   hints.ai_family = AF_UNSPEC;
@@ -162,12 +170,12 @@ void print_read_tcpip(struct text_object *obj, char *p, int p_max_size,
   hints.ai_flags = 0;
   hints.ai_protocol = protocol;
   snprintf(portbuf, 8, "%d", rtd->port);
-  if (getaddrinfo(rtd->host, portbuf, &hints, &airesult)) {
+  if (getaddrinfo(rtd->host, portbuf, &hints, &airesult) != 0) {
     NORM_ERR("%s: Problem with resolving the hostname",
              protocol == IPPROTO_TCP ? "read_tcp" : "read_udp");
     return;
   }
-  for (rp = airesult; rp != NULL; rp = rp->ai_next) {
+  for (rp = airesult; rp != nullptr; rp = rp->ai_next) {
     sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
     if (sock == -1) {
       continue;
@@ -179,7 +187,7 @@ void print_read_tcpip(struct text_object *obj, char *p, int p_max_size,
     return;
   }
   freeaddrinfo(airesult);
-  if (rp == NULL) {
+  if (rp == nullptr) {
     if (protocol == IPPROTO_TCP) {
       NORM_ERR("read_tcp: Couldn't create a connection");
     } else {
@@ -191,7 +199,7 @@ void print_read_tcpip(struct text_object *obj, char *p, int p_max_size,
   if (protocol == IPPROTO_UDP) {
     // when using udp send a zero-length packet to let the other end know of our
     // existence
-    if (write(sock, NULL, 0) < 0) {
+    if (write(sock, nullptr, 0) < 0) {
       NORM_ERR("read_udp: Couldn't create a empty package");
     }
   }
@@ -199,12 +207,13 @@ void print_read_tcpip(struct text_object *obj, char *p, int p_max_size,
   FD_SET(sock, &readfds);
   tv.tv_sec = 1;
   tv.tv_usec = 0;
-  if (select(sock + 1, &readfds, NULL, NULL, &tv) > 0) {
+  if (select(sock + 1, &readfds, nullptr, nullptr, &tv) > 0) {
     received = recv(sock, p, p_max_size, 0);
-    if (received != -1)
+    if (received != -1) {
       p[received] = 0;
-    else
+    } else {
       p[0] = 0;
+    }
   }
   close(sock);
 }
@@ -218,18 +227,22 @@ void print_read_udp(struct text_object *obj, char *p, int p_max_size) {
 }
 
 void free_read_tcpip(struct text_object *obj) {
-  struct read_tcpip_data *rtd = (struct read_tcpip_data *)obj->data.opaque;
+  auto *rtd = static_cast<struct read_tcpip_data *>(obj->data.opaque);
 
-  if (!rtd) return;
+  if (rtd == nullptr) {
+    return;
+  }
 
   free_and_zero(rtd->host);
   free_and_zero(obj->data.opaque);
 }
 
 void free_tcp_ping(struct text_object *obj) {
-  struct sockaddr_in *addr = (struct sockaddr_in *)obj->data.opaque;
+  auto *addr = static_cast<struct sockaddr_in *>(obj->data.opaque);
 
-  if (!addr) return;
+  if (addr == nullptr) {
+    return;
+  }
 
   free_and_zero(obj->data.opaque);
 }

@@ -7,9 +7,9 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-5.0
+            - llvm-toolchain-trusty-6.0
           packages:
-            - g++-7
+            - g++-8
             - cmake
             - libxdamage-dev
             - libx11-dev
@@ -24,16 +24,19 @@ matrix:
             - libimlib2-dev
             - libxinerama-dev
             - gawk
-            - clang-5.0
-            - clang-format-5.0
+            - clang-6.0
+        sonarcloud:
+          organization: "brndnmtthws-github"
+          token:
+            secure: "KikPusy+HXcEVLr0Dqb6mkrefDU5jm7EGQ5fwO4sBG7bRMcnHV3V14s5yB4Ol8btpUC0nkNn/41+f37lkG+oT4y9ZeIH2ZrhsSEHxOgH6DF9ZSVJwtpLrF9siWgfZ0m5c5V7U5rzVYL3jlO1hQfXKCfMNAcwlKcEUrfpk7jVEZc="
       env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
     - os: linux
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-5.0
+            - llvm-toolchain-trusty-6.0
           packages:
             - cmake
             - libxdamage-dev
@@ -49,28 +52,35 @@ matrix:
             - libimlib2-dev
             - libxinerama-dev
             - gawk
-            - clang-5.0
-            - clang-format-5.0
+            - clang-6.0
+        sonarcloud:
+          organization: "brndnmtthws-github"
+          token:
+            secure: "KikPusy+HXcEVLr0Dqb6mkrefDU5jm7EGQ5fwO4sBG7bRMcnHV3V14s5yB4Ol8btpUC0nkNn/41+f37lkG+oT4y9ZeIH2ZrhsSEHxOgH6DF9ZSVJwtpLrF9siWgfZ0m5c5V7U5rzVYL3jlO1hQfXKCfMNAcwlKcEUrfpk7jVEZc="
       env:
-        - MATRIX_EVAL="CC=clang && CXX=clang++"
+        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
 before_install:
   - eval "${MATRIX_EVAL}"
 before_script:
   - mkdir build
   - cd build
-  - scan-build --use-cc=$CC --use-c++=$CXX -o scanbuildout cmake -DCHECK_CODE_FORMAT=ON ..
-  - travis_wait 30 make format-check
+  - cmake -DCHECK_CODE_QUALITY=ON ..
   - cd ..
   - mkdir build-no-x11
   - cd build-no-x11
-  - scan-build --use-cc=$CC --use-c++=$CXX -o scanbuildout cmake -DCHECK_CODE_FORMAT=ON -DBUILD_X11=OFF ..
+  - cmake -DBUILD_X11=OFF ..
   - cd ..
 script:
   - cd build
-  - scan-build --use-cc=$CC --use-c++=$CXX -o scanbuildout make -j4
+  - build-wrapper-linux-x86-64 --out-dir bw-output make -j4
   - cd ../build-no-x11
-  - scan-build --use-cc=$CC --use-c++=$CXX -o scanbuildout make -j4
+  - make -j4
+  - cd ..
+  - sonar-scanner
 branches:
   only:
     - master
 sudo: false
+cache:
+  directories:
+    - '$HOME/.sonar/cache'

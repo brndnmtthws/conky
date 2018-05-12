@@ -24,10 +24,10 @@
 #include "logging.h"
 #include "text_object.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <mutex>
 
 #include "update-cb.hh"
@@ -48,13 +48,13 @@ struct moc_result {
 };
 
 class moc_cb : public conky::callback<moc_result> {
-  typedef conky::callback<moc_result> Base;
+  using Base = conky::callback<moc_result>;
 
  protected:
-  virtual void work();
+  void work() override;
 
  public:
-  moc_cb(uint32_t period) : Base(period, false, Tuple()) {}
+  explicit moc_cb(uint32_t period) : Base(period, false, Tuple()) {}
 };
 
 void moc_cb::work() {
@@ -62,7 +62,7 @@ void moc_cb::work() {
   FILE *fp;
 
   fp = popen("mocp -i", "r");
-  if (!fp) {
+  if (fp == nullptr) {
     moc.state = "Can't run 'mocp -i'";
   } else {
     while (1) {
@@ -70,32 +70,37 @@ void moc_cb::work() {
       char *p;
 
       /* Read a line from the pipe and strip the possible '\n'. */
-      if (!fgets(line, 100, fp)) break;
-      if ((p = strrchr(line, '\n'))) *p = '\0';
+      if (fgets(line, 100, fp) == nullptr) {
+        break;
+      }
+      if ((p = strrchr(line, '\n')) != nullptr) {
+        *p = '\0';
+      }
 
       /* Parse infos. */
-      if (strncmp(line, "State:", 6) == 0)
+      if (strncmp(line, "State:", 6) == 0) {
         moc.state = line + 7;
-      else if (strncmp(line, "File:", 5) == 0)
+      } else if (strncmp(line, "File:", 5) == 0) {
         moc.file = line + 6;
-      else if (strncmp(line, "Title:", 6) == 0)
+      } else if (strncmp(line, "Title:", 6) == 0) {
         moc.title = line + 7;
-      else if (strncmp(line, "Artist:", 7) == 0)
+      } else if (strncmp(line, "Artist:", 7) == 0) {
         moc.artist = line + 8;
-      else if (strncmp(line, "SongTitle:", 10) == 0)
+      } else if (strncmp(line, "SongTitle:", 10) == 0) {
         moc.song = line + 11;
-      else if (strncmp(line, "Album:", 6) == 0)
+      } else if (strncmp(line, "Album:", 6) == 0) {
         moc.album = line + 7;
-      else if (strncmp(line, "TotalTime:", 10) == 0)
+      } else if (strncmp(line, "TotalTime:", 10) == 0) {
         moc.totaltime = line + 11;
-      else if (strncmp(line, "TimeLeft:", 9) == 0)
+      } else if (strncmp(line, "TimeLeft:", 9) == 0) {
         moc.timeleft = line + 10;
-      else if (strncmp(line, "CurrentTime:", 12) == 0)
+      } else if (strncmp(line, "CurrentTime:", 12) == 0) {
         moc.curtime = line + 13;
-      else if (strncmp(line, "Bitrate:", 8) == 0)
+      } else if (strncmp(line, "Bitrate:", 8) == 0) {
         moc.bitrate = line + 9;
-      else if (strncmp(line, "Rate:", 5) == 0)
+      } else if (strncmp(line, "Rate:", 5) == 0) {
         moc.rate = line + 6;
+      }
     }
   }
 
@@ -115,7 +120,7 @@ void moc_cb::work() {
     const moc_result &moc =                                                   \
         conky::register_cb<moc_cb>(period)->get_result_copy();                \
     snprintf(p, p_max_size, "%s",                                             \
-             (moc.type.length() ? moc.type.c_str() : alt));                   \
+             (moc.type.length() ? moc.type.c_str() : (alt)));                 \
   }
 
 MOC_PRINT_GENERATOR(state, "??")

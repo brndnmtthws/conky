@@ -28,7 +28,7 @@
 
 #include <X11/Xlib.h>
 
-void cimlib_add_image(const char *name);
+void cimlib_add_image(const char *args);
 void cimlib_set_cache_size(long size);
 void cimlib_set_cache_flush_interval(long interval);
 void cimlib_render(int x, int y, int width, int height);

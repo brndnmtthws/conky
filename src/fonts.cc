@@ -40,7 +40,9 @@ void font_setting::lua_setter(lua::state &l, bool init) {
   Base::lua_setter(l, init);
 
   if (init && out_to_x.get(*state)) {
-    if (fonts.size() == 0) fonts.resize(1);
+    if (fonts.empty()) {
+      fonts.resize(1);
+    }
     fonts[0].name = do_convert(l, -1).first;
   }
 
@@ -52,10 +54,10 @@ font_setting font;
 #ifdef BUILD_XFT
 namespace {
 class xftalpha_setting : public conky::simple_config_setting<float> {
-  typedef conky::simple_config_setting<float> Base;
+  using Base = conky::simple_config_setting<float>;
 
  protected:
-  virtual void lua_setter(lua::state &l, bool init) {
+  void lua_setter(lua::state &l, bool init) override {
     lua::stack_sentry s(l, -2);
 
     Base::lua_setter(l, init);
@@ -75,24 +77,26 @@ xftalpha_setting xftalpha;
 }  // namespace
 #endif /* BUILD_XFT */
 
-void set_font(void) {
+void set_font() {
 #ifdef BUILD_XFT
-  if (use_xft.get(*state)) return;
+  if (use_xft.get(*state)) {
+    return;
+  }
 #endif /* BUILD_XFT */
-  if (fonts[selected_font].font) {
+  if (fonts[selected_font].font != nullptr) {
     XSetFont(display, window.gc, fonts[selected_font].font->fid);
   }
 }
 
-void setup_fonts(void) {
+void setup_fonts() {
   if (not out_to_x.get(*state)) {
     return;
   }
 #ifdef BUILD_XFT
   if (use_xft.get(*state)) {
-    if (window.xftdraw) {
+    if (window.xftdraw != nullptr) {
       XftDrawDestroy(window.xftdraw);
-      window.xftdraw = 0;
+      window.xftdraw = nullptr;
     }
     window.xftdraw = XftDrawCreate(display, window.drawable, window.visual,
                                    window.colourmap);
@@ -105,7 +109,7 @@ int add_font(const char *data_in) {
   if (not out_to_x.get(*state)) {
     return 0;
   }
-  fonts.push_back(font_list());
+  fonts.emplace_back();
   fonts.rbegin()->name = data_in;
 
   return fonts.size() - 1;
@@ -115,7 +119,7 @@ void free_fonts(bool utf8) {
   if (not out_to_x.get(*state)) {
     return;
   }
-  for (size_t i = 0; i < fonts.size(); i++) {
+  for (auto &font : fonts) {
 #ifdef BUILD_XFT
     if (use_xft.get(*state)) {
       /*
@@ -128,71 +132,73 @@ void free_fonts(bool utf8) {
     } else
 #endif /* BUILD_XFT */
     {
-      if (fonts[i].font) {
-        XFreeFont(display, fonts[i].font);
+      if (font.font != nullptr) {
+        XFreeFont(display, font.font);
       }
-      if (utf8 && fonts[i].fontset) {
-        XFreeFontSet(display, fonts[i].fontset);
+      if (utf8 && (font.fontset != nullptr)) {
+        XFreeFontSet(display, font.fontset);
       }
     }
   }
   fonts.clear();
   selected_font = 0;
 #ifdef BUILD_XFT
-  if (window.xftdraw) {
+  if (window.xftdraw != nullptr) {
     XftDrawDestroy(window.xftdraw);
-    window.xftdraw = 0;
+    window.xftdraw = nullptr;
   }
 #endif /* BUILD_XFT */
 }
 
 void load_fonts(bool utf8) {
-  if (not out_to_x.get(*state)) return;
-  for (size_t i = 0; i < fonts.size(); i++) {
+  if (not out_to_x.get(*state)) {
+    return;
+  }
+  for (auto &font : fonts) {
 #ifdef BUILD_XFT
     /* load Xft font */
     if (use_xft.get(*state)) {
-      if (not fonts[i].xftfont)
-        fonts[i].xftfont =
-            XftFontOpenName(display, screen, fonts[i].name.c_str());
+      if (font.xftfont == nullptr) {
+        font.xftfont = XftFontOpenName(display, screen, font.name.c_str());
+      }
 
-      if (fonts[i].xftfont) {
+      if (font.xftfont != nullptr) {
         continue;
       }
 
-      NORM_ERR("can't load Xft font '%s'", fonts[i].name.c_str());
-      if ((fonts[i].xftfont = XftFontOpenName(display, screen, "courier-12")) !=
-          NULL) {
+      NORM_ERR("can't load Xft font '%s'", font.name.c_str());
+      if ((font.xftfont = XftFontOpenName(display, screen, "courier-12")) !=
+          nullptr) {
         continue;
       }
 
-      CRIT_ERR(NULL, NULL, "can't load Xft font '%s'", "courier-12");
+      CRIT_ERR(nullptr, nullptr, "can't load Xft font '%s'", "courier-12");
 
       continue;
     }
 #endif
-    if (utf8 && fonts[i].fontset == NULL) {
+    if (utf8 && font.fontset == nullptr) {
       char **missing;
       int missingnum;
       char *missingdrawn;
-      fonts[i].fontset = XCreateFontSet(display, fonts[i].name.c_str(),
-                                        &missing, &missingnum, &missingdrawn);
+      font.fontset = XCreateFontSet(display, font.name.c_str(), &missing,
+                                    &missingnum, &missingdrawn);
       XFreeStringList(missing);
-      if (fonts[i].fontset == NULL) {
-        NORM_ERR("can't load font '%s'", fonts[i].name.c_str());
-        fonts[i].fontset = XCreateFontSet(display, "fixed", &missing,
-                                          &missingnum, &missingdrawn);
-        if (fonts[i].fontset == NULL) {
-          CRIT_ERR(NULL, NULL, "can't load font '%s'", "fixed");
+      if (font.fontset == nullptr) {
+        NORM_ERR("can't load font '%s'", font.name.c_str());
+        font.fontset = XCreateFontSet(display, "fixed", &missing, &missingnum,
+                                      &missingdrawn);
+        if (font.fontset == nullptr) {
+          CRIT_ERR(nullptr, nullptr, "can't load font '%s'", "fixed");
         }
       }
     }
     /* load normal font */
-    if (!fonts[i].font && (fonts[i].font = XLoadQueryFont(
-                               display, fonts[i].name.c_str())) == NULL) {
-      NORM_ERR("can't load font '%s'", fonts[i].name.c_str());
-      if ((fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
-        CRIT_ERR(NULL, NULL, "can't load font '%s'", "fixed");
+    if ((font.font == nullptr) &&
+        (font.font = XLoadQueryFont(display, font.name.c_str())) == nullptr) {
+      NORM_ERR("can't load font '%s'", font.name.c_str());
+      if ((font.font = XLoadQueryFont(display, "fixed")) == nullptr) {
+        CRIT_ERR(nullptr, nullptr, "can't load font '%s'", "fixed");
       }
     }
   }

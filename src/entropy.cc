@@ -49,14 +49,14 @@
 #endif
 
 struct _entropy {
-  _entropy() : avail(0), poolsize(0) {}
-  unsigned int avail;
-  unsigned int poolsize;
+  _entropy() = default;
+  unsigned int avail{0};
+  unsigned int poolsize{0};
 };
 
 static _entropy entropy;
 
-int update_entropy(void) {
+int update_entropy() {
   get_entropy_avail(&entropy.avail);
   get_entropy_poolsize(&entropy.poolsize);
   return 0;
@@ -69,7 +69,8 @@ void print_entropy_avail(struct text_object *obj, char *p, int p_max_size) {
 
 uint8_t entropy_percentage(struct text_object *obj) {
   (void)obj;
-  return round_to_int((double)entropy.avail * 100.0 / (double)entropy.poolsize);
+  return round_to_int(static_cast<double>(entropy.avail) * 100.0 /
+                      static_cast<double>(entropy.poolsize));
 }
 
 void print_entropy_poolsize(struct text_object *obj, char *p, int p_max_size) {
@@ -80,5 +81,5 @@ void print_entropy_poolsize(struct text_object *obj, char *p, int p_max_size) {
 double entropy_barval(struct text_object *obj) {
   (void)obj;
 
-  return (double)entropy.avail / entropy.poolsize;
+  return static_cast<double>(entropy.avail) / entropy.poolsize;
 }

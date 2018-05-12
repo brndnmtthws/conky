@@ -51,11 +51,11 @@ const struct pulseaudio_default_results pulseaudio_result0 = {std::string(),
                                                               std::string(),
                                                               std::string(),
                                                               0};
-pulseaudio_c *pulseaudio = NULL;
+pulseaudio_c *pulseaudio = nullptr;
 
 void pa_sink_info_callback(pa_context *c, const pa_sink_info *i, int eol,
                            void *data) {
-  if (i != NULL && data) {
+  if (i != nullptr && data) {
     struct pulseaudio_default_results *pdr =
         (struct pulseaudio_default_results *)data;
     pdr->sink_description.assign(i->description);
@@ -74,7 +74,7 @@ void pa_sink_info_callback(pa_context *c, const pa_sink_info *i, int eol,
 
 void pa_server_info_callback(pa_context *c, const pa_server_info *i,
                              void *userdata) {
-  if (i != NULL) {
+  if (i != nullptr) {
     struct pulseaudio_default_results *pdr =
         (struct pulseaudio_default_results *)userdata;
     pdr->sink_name.assign(i->default_sink_name);
@@ -85,7 +85,7 @@ void pa_server_info_callback(pa_context *c, const pa_server_info *i,
 
 void pa_server_sink_info_callback(pa_context *c, const pa_server_info *i,
                                   void *userdata) {
-  if (i != NULL) {
+  if (i != nullptr) {
     struct pulseaudio_default_results *pdr =
         (struct pulseaudio_default_results *)userdata;
     pdr->sink_name.assign(i->default_sink_name);
@@ -188,7 +188,7 @@ void subscribe_cb(pa_context *c, pa_subscription_event_type_t t, uint32_t index,
 void init_pulseaudio(struct text_object *obj) {
   // already initialized
   (void)obj;
-  if (pulseaudio != NULL && pulseaudio->cstate == PULSE_CONTEXT_READY) {
+  if (pulseaudio != nullptr && pulseaudio->cstate == PULSE_CONTEXT_READY) {
     pulseaudio->ninits++;
     obj->data.opaque = (void *)pulseaudio;
     return;
@@ -212,9 +212,9 @@ void init_pulseaudio(struct text_object *obj) {
                                 pulseaudio);
 
   // This function connects to the pulse server
-  if (pa_context_connect(pulseaudio->context, NULL, (pa_context_flags_t)0,
-                         NULL) < 0) {
-    CRIT_ERR(NULL, NULL, "Cannot connect to pulseaudio");
+  if (pa_context_connect(pulseaudio->context, nullptr, (pa_context_flags_t)0,
+                         nullptr) < 0) {
+    CRIT_ERR(nullptr, NULL, "Cannot connect to pulseaudio");
     return;
   }
   pa_threaded_mainloop_start(pulseaudio->mainloop);
@@ -254,7 +254,7 @@ void init_pulseaudio(struct text_object *obj) {
             (pa_subscription_mask_t)(PA_SUBSCRIPTION_MASK_SINK |
                                      PA_SUBSCRIPTION_MASK_SERVER |
                                      PA_SUBSCRIPTION_MASK_CARD),
-            NULL, NULL))) {
+            nullptr, NULL))) {
     NORM_ERR("pa_context_subscribe() failed");
     return;
   }
@@ -267,14 +267,14 @@ void free_pulseaudio(struct text_object *obj) {
   if (!puau_int) return;
 
   if (--puau_int->ninits > 0) {
-    obj->data.opaque = NULL;
+    obj->data.opaque = nullptr;
     return;
   }
 
   puau_int->cstate = PULSE_CONTEXT_FINISHED;
 
   if (puau_int->context) {
-    pa_context_set_state_callback(puau_int->context, NULL, NULL);
+    pa_context_set_state_callback(puau_int->context, nullptr, NULL);
     pa_context_disconnect(puau_int->context);
     pa_context_unref(puau_int->context);
   }
@@ -283,7 +283,7 @@ void free_pulseaudio(struct text_object *obj) {
     pa_threaded_mainloop_free(puau_int->mainloop);
   }
   delete puau_int;
-  puau_int = NULL;
+  puau_int = nullptr;
 }
 
 struct pulseaudio_default_results get_pulseaudio(struct text_object *obj) {

@@ -80,9 +80,9 @@ class pulseaudio_c {
   int ninits;
   struct pulseaudio_default_results result;
   pulseaudio_c()
-      : mainloop(NULL),
-        mainloop_api(NULL),
-        context(NULL),
+      : mainloop(nullptr),
+        mainloop_api(nullptr),
+        context(nullptr),
         cstate(PULSE_CONTEXT_INITIALIZING),
         ninits(0),
         result({std::string(), std::string(), std::string(), std::string(), 0,

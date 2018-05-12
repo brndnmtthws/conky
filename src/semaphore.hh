@@ -45,18 +45,18 @@ class semaphore {
   semaphore &operator=(const semaphore &) = delete;
 
  public:
-  semaphore(unsigned int value = 0) throw(std::logic_error) {
+  semaphore(unsigned int value = 0) {
     sem = dispatch_semaphore_create(value);
 
     if (!sem) throw std::logic_error(strerror(errno));
   }
 
-  ~semaphore() throw() { dispatch_release(sem); }
-  void post() throw(std::overflow_error) { dispatch_semaphore_signal(sem); }
+  ~semaphore() { dispatch_release(sem); }
+  void post() { dispatch_semaphore_signal(sem); }
 
-  void wait() throw() { dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER); }
+  void wait() { dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER); }
 
-  bool trywait() throw() {
+  bool trywait() {
     /* XXX Quick patch */
 #define DISPATCH_EAGAIN 49
 
@@ -83,23 +83,23 @@ class semaphore {
   semaphore &operator=(const semaphore &) = delete;
 
  public:
-  semaphore(unsigned int value = 0) throw(std::logic_error) {
+  semaphore(unsigned int value = 0) {
     if (sem_init(&sem, 0, value)) throw std::logic_error(strerror(errno));
   }
 
-  ~semaphore() throw() { sem_destroy(&sem); }
+  ~semaphore() { sem_destroy(&sem); }
 
-  void post() throw(std::overflow_error) {
+  void post() {
     if (sem_post(&sem)) throw std::overflow_error(strerror(errno));
   }
 
-  void wait() throw() {
+  void wait() {
     while (sem_wait(&sem)) {
       if (errno != EINTR) abort();
     }
   }
 
-  bool trywait() throw() {
+  bool trywait() {
     while (sem_trywait(&sem)) {
       if (errno == EAGAIN)
         return false;

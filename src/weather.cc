@@ -163,7 +163,7 @@ int rel_humidity(int dew_point, int air) {
 #ifdef BUILD_WEATHER_XOAP
 void weather_forecast::parse_df(xmlXPathContextPtr xpathCtx) {
   int i, j, k;
-  char *content = NULL;
+  char *content = nullptr;
   xmlXPathObjectPtr xpathObj;
 
   xpathObj = xmlXPathEvalExpression((const xmlChar *)"/error/err", xpathCtx);
@@ -180,7 +180,7 @@ void weather_forecast::parse_df(xmlXPathContextPtr xpathCtx) {
   for (i = 0; i < NUM_XPATH_EXPRESSIONS_DF; i++) {
     xpathObj = xmlXPathEvalExpression((const xmlChar *)xpath_expression_df[i],
                                       xpathCtx);
-    if (xpathObj != NULL) {
+    if (xpathObj != nullptr) {
       xmlNodeSetPtr nodes = xpathObj->nodesetval;
       k = 0;
       for (j = 0; j < nodes->nodeNr; ++j) {
@@ -233,13 +233,13 @@ weather_forecast::weather_forecast(const std::string &data) {
   xmlDocPtr doc;
   xmlXPathContextPtr xpathCtx;
 
-  if (!(doc = xmlReadMemory(data.c_str(), data.length(), "", NULL, 0))) {
+  if (!(doc = xmlReadMemory(data.c_str(), data.length(), "", nullptr, 0))) {
     NORM_ERR("weather_forecast: can't read xml data");
     return;
   }
 
   xpathCtx = xmlXPathNewContext(doc);
-  if (xpathCtx == NULL) {
+  if (xpathCtx == nullptr) {
     NORM_ERR("weather_forecast: unable to create new XPath context");
     xmlFreeDoc(doc);
     return;
@@ -309,13 +309,13 @@ void weather::parse_weather_xml(const std::string &data) {
   xmlDocPtr doc;
   xmlXPathContextPtr xpathCtx;
 
-  if (!(doc = xmlReadMemory(data.c_str(), data.length(), "", NULL, 0))) {
+  if (!(doc = xmlReadMemory(data.c_str(), data.length(), "", nullptr, 0))) {
     NORM_ERR("weather: can't read xml data");
     return;
   }
 
   xpathCtx = xmlXPathNewContext(doc);
-  if (xpathCtx == NULL) {
+  if (xpathCtx == nullptr) {
     NORM_ERR("weather: unable to create new XPath context");
     xmlFreeDoc(doc);
     return;
@@ -634,18 +634,18 @@ weather::weather(const std::string &data)
       lastupd = lastupd_;
 
       // Process all tokens
-      char *p_tok = NULL;
-      char *p_save = NULL;
+      char *p_tok = nullptr;
+      char *p_save = nullptr;
 
-      if ((strtok_r(s_tmp, delim, &p_save)) != NULL) {
+      if ((strtok_r(s_tmp, delim, &p_save)) != nullptr) {
         // Jump first token, must be icao
-        p_tok = strtok_r(NULL, delim, &p_save);
+        p_tok = strtok_r(nullptr, delim, &p_save);
 
         do {
           parse_token(p_tok);
-          p_tok = strtok_r(NULL, delim, &p_save);
+          p_tok = strtok_r(nullptr, delim, &p_save);
 
-        } while (p_tok != NULL);
+        } while (p_tok != nullptr);
       }
       return;
     } else {
@@ -878,7 +878,7 @@ void load_xoap_keys(void) {
 
   std::string xoap = to_real_path(XOAP_FILE);
   fp = fopen(xoap.c_str(), "r");
-  if (fp != NULL) {
+  if (fp != nullptr) {
     if (fscanf(fp, "%10s %16s", par, key) == 2) {
       xoap_cc = std::string("?cc=*&link=xoap&prod=xoap&par=") + par +
                 "&key=" + key + "&unit=m";

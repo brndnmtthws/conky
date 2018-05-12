@@ -27,16 +27,16 @@
  *
  */
 
-#include <ctype.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <net/if.h>
 #include <netinet/in.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include <sys/ioctl.h>
-#include <time.h>
 #include <unistd.h>
+#include <cctype>
+#include <cerrno>
+#include <ctime>
 #include <vector>
 #include "config.h"
 #include "conky.h"
@@ -94,7 +94,7 @@ char *strndup(const char *s, size_t n) {
 }
 #endif /* HAVE_STRNDUP */
 
-int update_uname(void) {
+int update_uname() {
   uname(&info.uname_s);
 
 #if defined(__DragonFly__)
@@ -102,8 +102,8 @@ int update_uname(void) {
     size_t desc_n;
     char desc[256];
 
-    if (sysctlbyname("kern.version", NULL, &desc_n, NULL, 0) == -1 ||
-        sysctlbyname("kern.version", desc, &desc_n, NULL, 0) == -1)
+    if (sysctlbyname("kern.version", nullptr, &desc_n, NULL, 0) == -1 ||
+        sysctlbyname("kern.version", desc, &desc_n, nullptr, 0) == -1)
       perror("kern.version");
     else {
       char *start = desc;
@@ -118,8 +118,8 @@ int update_uname(void) {
   return 0;
 }
 
-double get_time(void) {
-  struct timespec tv;
+double get_time() {
+  struct timespec tv {};
 #ifdef _POSIX_MONOTONIC_CLOCK
   clock_gettime(CLOCK_MONOTONIC, &tv);
 #else
@@ -132,24 +132,25 @@ double get_time(void) {
  * variable_substitute, except only cheques for $HOME and ~/ in
  * path. If HOME is unset it uses an empty string for substitution */
 std::string to_real_path(const std::string &source) {
-  const char *homedir = getenv("HOME") ?: "";
-  if (source.find("~/") == 0)
+  const char *homedir = getenv("HOME") != nullptr ? getenv("HOME") : "";
+  if (source.find("~/") == 0) {
     return homedir + source.substr(1);
-  else if (source.find("$HOME/") == 0)
+  }
+  if (source.find("$HOME/") == 0) {
     return homedir + source.substr(5);
-  else
+  }
     return source;
 }
 
 int open_fifo(const char *file, int *reported) {
   int fd = 0;
 
-  fd = open(file, O_RDONLY | O_NONBLOCK);
+  fd = open(file, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
 
   if (fd == -1) {
-    if (!reported || *reported == 0) {
+    if ((reported == nullptr) || *reported == 0) {
       NORM_ERR("can't open %s: %s", file, strerror(errno));
-      if (reported) {
+      if (reported != nullptr) {
         *reported = 1;
       }
     }
@@ -160,18 +161,18 @@ int open_fifo(const char *file, int *reported) {
 }
 
 FILE *open_file(const char *file, int *reported) {
-  FILE *fp = 0;
+  FILE *fp = nullptr;
 
-  fp = fopen(file, "r");
+  fp = fopen(file, "re");
 
-  if (!fp) {
-    if (!reported || *reported == 0) {
+  if (fp == nullptr) {
+    if ((reported == nullptr) || *reported == 0) {
       NORM_ERR("can't open %s: %s", file, strerror(errno));
-      if (reported) {
+      if (reported != nullptr) {
         *reported = 1;
       }
     }
-    return NULL;
+    return nullptr;
   }
 
   return fp;
@@ -180,7 +181,9 @@ FILE *open_file(const char *file, int *reported) {
 std::string variable_substitute(std::string s) {
   std::string::size_type pos = 0;
   while ((pos = s.find('$', pos)) != std::string::npos) {
-    if (pos + 1 >= s.size()) break;
+    if (pos + 1 >= s.size()) {
+      break;
+    }
 
     if (s[pos + 1] == '$') {
       s.erase(pos, 1);
@@ -189,22 +192,27 @@ std::string variable_substitute(std::string s) {
       std::string var;
       std::string::size_type l = 0;
 
-      if (isalpha(s[pos + 1])) {
+      if (isalpha(s[pos + 1]) != 0) {
         l = 1;
-        while (pos + l < s.size() && isalnum(s[pos + l])) ++l;
+        while (pos + l < s.size() && (isalnum(s[pos + l]) != 0)) {
+          ++l;
+        }
         var = s.substr(pos + 1, l - 1);
       } else if (s[pos + 1] == '{') {
         l = s.find('}', pos);
-        if (l == std::string::npos) break;
+        if (l == std::string::npos) {
+          break;
+        }
         l -= pos - 1;
         var = s.substr(pos + 2, l - 3);
-      } else
+      } else {
         ++pos;
+      }
 
-      if (l) {
+      if (l != 0u) {
         s.erase(pos, l);
         const char *val = getenv(var.c_str());
-        if (val) {
+        if (val != nullptr) {
           s.insert(pos, val);
           pos += strlen(val);
         }
@@ -265,7 +273,7 @@ void format_seconds_short(char *buf, unsigned int n, long seconds) {
 
 conky::simple_config_setting<bool> no_buffers("no_buffers", true, true);
 
-void update_stuff(void) {
+void update_stuff() {
   /* clear speeds, addresses and up status in case device was removed and
    *  doesn't get updated */
 
@@ -273,7 +281,7 @@ void update_stuff(void) {
 #pragma omp parallel for schedule(dynamic, 10)
 #endif /* HAVE_OPENMP */
   for (int i = 0; i < MAX_NET_INTERFACES; ++i) {
-    if (netstats[i].dev) {
+    if (netstats[i].dev != nullptr) {
       netstats[i].up = 0;
       netstats[i].recv_speed = 0.0;
       netstats[i].trans_speed = 0.0;
@@ -300,24 +308,22 @@ void update_stuff(void) {
 /* Ohkie to return negative values for temperatures */
 int round_to_int_temp(float f) {
   if (f >= 0.0) {
-    return (int)(f + 0.5);
-  } else {
-    return (int)(f - 0.5);
+    return static_cast<int>(f + 0.5);
   }
+  return static_cast<int>(f - 0.5);
 }
 /* Don't return negative values for cpugraph, bar, gauge, percentage.
  * Causes unreasonable numbers to show */
 unsigned int round_to_int(float f) {
   if (f >= 0.0) {
-    return (int)(f + 0.5);
-  } else {
-    return 0;
+    return static_cast<int>(f + 0.5);
   }
+    return 0;
 }
 
 void scan_loadavg_arg(struct text_object *obj, const char *arg) {
   obj->data.i = 0;
-  if (arg && !arg[1] && isdigit(arg[0])) {
+  if ((arg != nullptr) && (arg[1] == 0) && (isdigit(arg[0]) != 0)) {
     obj->data.i = atoi(arg);
     if (obj->data.i > 3 || obj->data.i < 1) {
       NORM_ERR("loadavg arg needs to be in range (1,3)");
@@ -339,9 +345,10 @@ void print_loadavg(struct text_object *obj, char *p, int p_max_size) {
 }
 
 void scan_no_update(struct text_object *obj, const char *arg) {
-  obj->data.s = (char *)malloc(text_buffer_size.get(*state));
+  obj->data.s = static_cast<char *>(malloc(text_buffer_size.get(*state)));
   evaluate(arg, obj->data.s, text_buffer_size.get(*state));
-  obj->data.s = (char *)realloc(obj->data.s, strlen(obj->data.s) + 1);
+  obj->data.s =
+      static_cast<char *>(realloc(obj->data.s, strlen(obj->data.s) + 1));
 }
 
 void free_no_update(struct text_object *obj) { free(obj->data.s); }
@@ -352,7 +359,7 @@ void print_no_update(struct text_object *obj, char *p, int p_max_size) {
 
 #ifdef BUILD_X11
 void scan_loadgraph_arg(struct text_object *obj, const char *arg) {
-  char *buf = 0;
+  char *buf = nullptr;
 
   buf = scan_graph(obj, arg, 0);
   free_and_zero(buf);
@@ -368,21 +375,19 @@ double loadgraphval(struct text_object *obj) {
 uint8_t cpu_percentage(struct text_object *obj) {
   if (obj->data.i > info.cpu_count) {
     NORM_ERR("obj->data.i %i info.cpu_count %i", obj->data.i, info.cpu_count);
-    CRIT_ERR(NULL, NULL, "attempting to use more CPUs than you have!");
+    CRIT_ERR(nullptr, nullptr, "attempting to use more CPUs than you have!");
   }
-  if (info.cpu_usage) {
+  if (info.cpu_usage != nullptr) {
     return round_to_int(info.cpu_usage[obj->data.i] * 100.0);
-  } else {
-    return 0;
   }
+    return 0;
 }
 
 double cpu_barval(struct text_object *obj) {
-  if (info.cpu_usage) {
+  if (info.cpu_usage != nullptr) {
     return info.cpu_usage[obj->data.i];
-  } else {
-    return 0.;
   }
+    return 0.;
 }
 
 #define PRINT_HR_GENERATOR(name)                                        \
@@ -404,31 +409,35 @@ PRINT_HR_GENERATOR(swapmax)
 uint8_t mem_percentage(struct text_object *obj) {
   (void)obj;
 
-  return (info.memmax ? round_to_int(info.mem * 100 / info.memmax) : 0);
+  return (info.memmax != 0u ? round_to_int(info.mem * 100 / info.memmax) : 0);
 }
 
 double mem_barval(struct text_object *obj) {
   (void)obj;
 
-  return info.memmax ? ((double)info.mem / info.memmax) : 0;
+  return info.memmax != 0u ? (static_cast<double>(info.mem) / info.memmax) : 0;
 }
 
 double mem_with_buffers_barval(struct text_object *obj) {
   (void)obj;
 
-  return info.memmax ? ((double)info.memwithbuffers / info.memmax) : 0;
+  return info.memmax != 0u
+             ? (static_cast<double>(info.memwithbuffers) / info.memmax)
+             : 0;
 }
 
 uint8_t swap_percentage(struct text_object *obj) {
   (void)obj;
 
-  return (info.swapmax ? round_to_int(info.swap * 100 / info.swapmax) : 0);
+  return (info.swapmax != 0u ? round_to_int(info.swap * 100 / info.swapmax)
+                             : 0);
 }
 
 double swap_barval(struct text_object *obj) {
   (void)obj;
 
-  return info.swapmax ? ((double)info.swap / info.swapmax) : 0;
+  return info.swapmax != 0u ? (static_cast<double>(info.swap) / info.swapmax)
+                            : 0;
 }
 
 void print_kernel(struct text_object *obj, char *p, int p_max_size) {
@@ -471,12 +480,12 @@ void print_version(struct text_object *obj, char *p, int p_max_size) {
 
 void print_uptime(struct text_object *obj, char *p, int p_max_size) {
   (void)obj;
-  format_seconds(p, p_max_size, (int)info.uptime);
+  format_seconds(p, p_max_size, static_cast<int>(info.uptime));
 }
 
 void print_uptime_short(struct text_object *obj, char *p, int p_max_size) {
   (void)obj;
-  format_seconds_short(p, p_max_size, (int)info.uptime);
+  format_seconds_short(p, p_max_size, static_cast<int>(info.uptime));
 }
 
 void print_processes(struct text_object *obj, char *p, int p_max_size) {
@@ -529,13 +538,13 @@ int if_empty_iftest(struct text_object *obj) {
 
 static int check_contains(char *f, char *s) {
   int ret = 0;
-  FILE *where = open_file(f, 0);
+  FILE *where = open_file(f, nullptr);
 
-  if (where) {
+  if (where != nullptr) {
     char buf1[256];
 
-    while (fgets(buf1, 256, where)) {
-      if (strstr(buf1, s)) {
+    while (fgets(buf1, 256, where) != nullptr) {
+      if (strstr(buf1, s) != nullptr) {
         ret = 1;
         break;
       }
@@ -552,11 +561,17 @@ int if_existing_iftest(struct text_object *obj) {
   int result = 0;
 
   spc = strchr(obj->data.s, ' ');
-  if (spc != NULL) *spc = 0;
-  if (access(obj->data.s, F_OK) == 0) {
-    if (spc == NULL || check_contains(obj->data.s, spc + 1)) result = 1;
+  if (spc != nullptr) {
+    *spc = 0;
   }
-  if (spc != NULL) *spc = ' ';
+  if (access(obj->data.s, F_OK) == 0) {
+    if (spc == nullptr || (check_contains(obj->data.s, spc + 1) != 0)) {
+      result = 1;
+    }
+  }
+  if (spc != nullptr) {
+    *spc = ' ';
+  }
   return result;
 }
 
@@ -564,7 +579,7 @@ int if_running_iftest(struct text_object *obj) {
 #ifdef __linux__
   if (!get_process_by_name(obj->data.s)) {
 #else
-  if ((obj->data.s) && system(obj->data.s)) {
+  if (((obj->data.s) != nullptr) && (system(obj->data.s) != 0)) {
 #endif
     return 0;
   }
@@ -581,14 +596,14 @@ void free_acpitemp(struct text_object *obj) { close(obj->data.i); }
 
 void print_freq(struct text_object *obj, char *p, int p_max_size) {
   static int ok = 1;
-  if (ok) {
+  if (ok != 0) {
     ok = get_freq(p, p_max_size, "%.0f", 1, obj->data.i);
   }
 }
 
 void print_freq_g(struct text_object *obj, char *p, int p_max_size) {
   static int ok = 1;
-  if (ok) {
+  if (ok != 0) {
 #ifndef __OpenBSD__
     ok = get_freq(p, p_max_size, "%'.2f", 1000, obj->data.i);
 #else
@@ -605,7 +620,8 @@ void print_acpifan(struct text_object *obj, char *p, int p_max_size) {
 }
 
 void print_acpiacadapter(struct text_object *obj, char *p, int p_max_size) {
-  get_acpi_ac_adapter(p, p_max_size, (const char *)obj->data.opaque);
+  get_acpi_ac_adapter(p, p_max_size,
+                      static_cast<const char *>(obj->data.opaque));
 }
 
 void print_battery(struct text_object *obj, char *p, int p_max_size) {
@@ -633,21 +649,25 @@ void print_blink(struct text_object *obj, char *p, int p_max_size) {
   static int last_len = 0;
   int i;
 
-  if (visible) {
+  if (visible != 0) {
     generate_text_internal(&(buf[0]), max_user_text.get(*state), *obj->sub);
     last_len = strlen(&(buf[0]));
   } else {
-    for (i = 0; i < last_len; i++) buf[i] = ' ';
+    for (i = 0; i < last_len; i++) {
+      buf[i] = ' ';
+    }
   }
 
   snprintf(p, p_max_size, "%s", &(buf[0]));
-  visible = !visible;
+  visible = static_cast<int>(static_cast<int>(visible) == 0);
 }
 
 void print_include(struct text_object *obj, char *p, int p_max_size) {
   std::vector<char> buf(max_user_text.get(*state));
 
-  if (!obj->sub) return;
+  if (obj->sub == nullptr) {
+    return;
+  }
 
   generate_text_internal(&(buf[0]), max_user_text.get(*state), *obj->sub);
   snprintf(p, p_max_size, "%s", &(buf[0]));
@@ -672,19 +692,20 @@ void print_to_bytes(struct text_object *obj, char *p, int p_max_size) {
 
   generate_text_internal(&(buf[0]), max_user_text.get(*state), *obj->sub);
   if (sscanf(&(buf[0]), "%Lf%s", &bytes, unit) == 2 && strlen(unit) < 16) {
-    if (strncasecmp("b", unit, 1) == 0)
+    if (strncasecmp("b", unit, 1) == 0) {
       snprintf(&(buf[0]), max_user_text.get(*state), "%Lf", bytes);
-    else if (strncasecmp("k", unit, 1) == 0)
+    } else if (strncasecmp("k", unit, 1) == 0) {
       snprintf(&(buf[0]), max_user_text.get(*state), "%Lf", bytes * 1024);
-    else if (strncasecmp("m", unit, 1) == 0)
+    } else if (strncasecmp("m", unit, 1) == 0) {
       snprintf(&(buf[0]), max_user_text.get(*state), "%Lf",
                bytes * 1024 * 1024);
-    else if (strncasecmp("g", unit, 1) == 0)
+    } else if (strncasecmp("g", unit, 1) == 0) {
       snprintf(&(buf[0]), max_user_text.get(*state), "%Lf",
                bytes * 1024 * 1024 * 1024);
-    else if (strncasecmp("t", unit, 1) == 0)
+    } else if (strncasecmp("t", unit, 1) == 0) {
       snprintf(&(buf[0]), max_user_text.get(*state), "%Lf",
                bytes * 1024 * 1024 * 1024 * 1024);
+    }
   }
   snprintf(p, p_max_size, "%s", &(buf[0]));
 }
@@ -695,6 +716,8 @@ void print_updates(struct text_object *obj, char *p, int p_max_size) {
 }
 
 int updatenr_iftest(struct text_object *obj) {
-  if (get_total_updates() % get_updatereset() != obj->data.i - 1) return 0;
+  if (get_total_updates() % get_updatereset() != obj->data.i - 1) {
+    return 0;
+  }
   return 1;
 }

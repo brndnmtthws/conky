@@ -49,11 +49,14 @@ typedef std::unordered_map<std::string, lua::cpp_function> data_sources_t;
 data_sources_t *data_sources;
 
 data_source_base &get_data_source(lua::state *l) {
-  if (l->gettop() != 1) throw std::runtime_error("Wrong number of parameters");
+  if (l->gettop() != 1) {
+    throw std::runtime_error("Wrong number of parameters");
+  }
 
   l->rawgetfield(lua::REGISTRYINDEX, priv::data_source_metatable);
-  if (not l->getmetatable(-2) or not l->rawequal(-1, -2))
+  if (not l->getmetatable(-2) or not l->rawequal(-1, -2)) {
     throw std::runtime_error("Invalid parameter");
+  }
 
   return *static_cast<data_source_base *>(l->touserdata(1));
 }
@@ -89,15 +92,16 @@ void do_register_data_source(const std::string &name,
     data_source_constructor() { data_sources = new data_sources_t(); }
     ~data_source_constructor() {
       delete data_sources;
-      data_sources = NULL;
+      data_sources = nullptr;
     }
   };
   static data_source_constructor constructor;
 
   bool inserted = data_sources->insert({name, fn}).second;
-  if (not inserted)
+  if (not inserted) {
     throw std::logic_error("Data source with name '" + name +
                            "' already registered");
+  }
 }
 
 disabled_data_source::disabled_data_source(lua::state *l,
@@ -144,9 +148,9 @@ void export_data_sources(lua::state &l) {
 
   l.newtable();
   {
-    for (auto i = data_sources->begin(); i != data_sources->end(); ++i) {
-      l.pushfunction(i->second);
-      l.rawsetfield(-2, i->first.c_str());
+    for (auto &data_source : *data_sources) {
+      l.pushfunction(data_source.second);
+      l.rawsetfield(-2, data_source.first.c_str());
     }
   }
   l.rawsetfield(-2, "variables");

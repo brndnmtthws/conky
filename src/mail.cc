@@ -36,13 +36,13 @@
 #include "logging.h"
 #include "text_object.h"
 
-#include <errno.h>
-#include <inttypes.h>
-#include <limits.h>
+#include <cerrno>
+#include <cinttypes>
+#include <climits>
+#include <cstdio>
+#include <cstring>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <stdio.h>
-#include <string.h>
 #include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -53,6 +53,7 @@
 #include <termios.h>
 
 #include <cmath>
+#include <memory>
 #include <mutex>
 #include <sstream>
 
@@ -81,7 +82,9 @@ struct local_mail_s {
 std::pair<std::string, bool> priv::current_mail_spool_setting::do_convert(
     lua::state &l, int index) {
   auto ret = Base::do_convert(l, index);
-  if (ret.second) ret.first = variable_substitute(ret.first);
+  if (ret.second) {
+    ret.first = variable_substitute(ret.first);
+  }
   return ret;
 }
 
@@ -93,11 +96,11 @@ enum { DEFAULT_MAIL_INTERVAL = 300 /*seconds*/ };
 enum { MP_USER, MP_PASS, MP_FOLDER, MP_COMMAND, MP_HOST, MP_PORT };
 
 struct mail_result {
-  unsigned long unseen;
-  unsigned long used;
-  unsigned long messages;
+  unsigned long unseen{0};
+  unsigned long used{0};
+  unsigned long messages{0};
 
-  mail_result() : unseen(0), used(0), messages(0) {}
+  mail_result() = default;
 };
 
 class mail_cb
@@ -114,7 +117,7 @@ class mail_cb
   uint16_t retries;
 
   void resolve_host() {
-    struct addrinfo hints;
+    struct addrinfo hints {};
     char portbuf[8];
 
     memset(&hints, 0, sizeof(struct addrinfo));
@@ -123,13 +126,14 @@ class mail_cb
     hints.ai_protocol = IPPROTO_TCP;
     snprintf(portbuf, 8, "%" SCNu16, get<MP_PORT>());
 
-    if (int res = getaddrinfo(get<MP_HOST>().c_str(), portbuf, &hints, &ai))
+    if (int res = getaddrinfo(get<MP_HOST>().c_str(), portbuf, &hints, &ai)) {
       throw std::runtime_error(std::string("IMAP getaddrinfo: ") +
                                gai_strerror(res));
+    }
   }
 
   int connect() {
-    for (struct addrinfo *rp = ai; rp != NULL; rp = rp->ai_next) {
+    for (struct addrinfo *rp = ai; rp != nullptr; rp = rp->ai_next) {
       int sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
       if (sockfd == -1) {
         continue;
@@ -142,8 +146,8 @@ class mail_cb
     throw std::runtime_error("Unable to connect to mail server");
   }
 
-  virtual void merge(callback_base &&other) {
-    mail_cb &&o = dynamic_cast<mail_cb &&>(other);
+  void merge(callback_base &&other) override {
+    auto &&o = dynamic_cast<mail_cb &&>(other);
     if (retries < o.retries) {
       retries = o.retries;
       fail = 0;
@@ -154,30 +158,32 @@ class mail_cb
 
   mail_cb(uint32_t period, const Tuple &tuple, uint16_t retries_)
       : Base(period, false, tuple, true),
-        ai(NULL),
+        ai(nullptr),
         fail(0),
         retries(retries_) {}
 
-  ~mail_cb() {
-    if (ai) freeaddrinfo(ai);
+  ~mail_cb() override {
+    if (ai != nullptr) {
+      freeaddrinfo(ai);
+    }
   }
 };
 
 struct mail_param_ex : public mail_cb::Tuple {
-  uint16_t retries;
-  uint32_t period;
+  uint16_t retries{0};
+  uint32_t period{1};
 
-  mail_param_ex() : retries(0), period(1) {}
+  mail_param_ex() = default;
 };
 
 class imap_cb : public mail_cb {
-  typedef mail_cb Base;
+  using Base = mail_cb;
 
   void check_status(char *recvbuf);
   void unseen_command(unsigned long old_unseen, unsigned long old_messages);
 
  protected:
-  virtual void work();
+  void work() override;
 
  public:
   imap_cb(uint32_t period, const Tuple &tuple, uint16_t retries_)
@@ -185,10 +191,10 @@ class imap_cb : public mail_cb {
 };
 
 class pop3_cb : public mail_cb {
-  typedef mail_cb Base;
+  using Base = mail_cb;
 
  protected:
-  virtual void work();
+  void work() override;
 
  public:
   pop3_cb(uint32_t period, const Tuple &tuple, uint16_t retries_)
@@ -199,9 +205,9 @@ struct mail_param_ex *global_mail;
 }  // namespace
 
 static void update_mail_count(struct local_mail_s *mail) {
-  struct stat st;
+  struct stat st {};
 
-  if (mail == NULL) {
+  if (mail == nullptr) {
     return;
   }
 
@@ -210,18 +216,17 @@ static void update_mail_count(struct local_mail_s *mail) {
   /* don't check mail so often (9.5s is minimum interval) */
   if (current_update_time - mail->last_update < 9.5) {
     return;
-  } else {
-    mail->last_update = current_update_time;
   }
+    mail->last_update = current_update_time;
 
-  if (stat(mail->mbox, &st)) {
-    static int rep = 0;
+    if (stat(mail->mbox, &st) != 0) {
+      static int rep = 0;
 
-    if (!rep) {
-      NORM_ERR("can't stat %s: %s", mail->mbox, strerror(errno));
-      rep = 1;
-    }
-    return;
+      if (rep == 0) {
+        NORM_ERR("can't stat %s: %s", mail->mbox, strerror(errno));
+        rep = 1;
+      }
+      return;
   }
 #if HAVE_DIRENT_H
   /* maildir format */
@@ -237,8 +242,9 @@ static void update_mail_count(struct local_mail_s *mail) {
     mail->forwarded_mail_count = mail->unforwarded_mail_count = 0;
     mail->replied_mail_count = mail->unreplied_mail_count = 0;
     mail->draft_mail_count = mail->trashed_mail_count = 0;
-    dirname = (char *)malloc(sizeof(char) * (strlen(mail->mbox) + 5));
-    if (!dirname) {
+    dirname =
+        static_cast<char *>(malloc(sizeof(char) * (strlen(mail->mbox) + 5)));
+    if (dirname == nullptr) {
       NORM_ERR("malloc");
       return;
     }
@@ -248,46 +254,49 @@ static void update_mail_count(struct local_mail_s *mail) {
     strcat(dirname, "cur");
 
     dir = opendir(dirname);
-    if (!dir) {
+    if (dir == nullptr) {
       NORM_ERR("cannot open directory");
       free(dirname);
       return;
     }
     dirent = readdir(dir);
-    while (dirent) {
+    while (dirent != nullptr) {
       /* . and .. are skipped */
       if (dirent->d_name[0] != '.') {
         mail->mail_count++;
-        mailflags =
-            (char *)malloc(sizeof(char) * strlen(strrchr(dirent->d_name, ',')));
-        if (!mailflags) {
+        mailflags = static_cast<char *>(
+            malloc(sizeof(char) * strlen(strrchr(dirent->d_name, ','))));
+        if (mailflags == nullptr) {
           NORM_ERR("malloc");
           free(dirname);
           return;
         }
         strcpy(mailflags, strrchr(dirent->d_name, ','));
-        if (!strchr(mailflags, 'T')) {  /* The message is not in the trash */
-          if (strchr(mailflags, 'S')) { /*The message has been seen */
+        if (strchr(mailflags, 'T') ==
+            nullptr) { /* The message is not in the trash */
+          if (strchr(mailflags, 'S') !=
+              nullptr) { /*The message has been seen */
             mail->seen_mail_count++;
           } else {
             mail->unseen_mail_count++;
           }
-          if (strchr(mailflags, 'F')) { /*The message was flagged */
+          if (strchr(mailflags, 'F') != nullptr) { /*The message was flagged */
             mail->flagged_mail_count++;
           } else {
             mail->unflagged_mail_count++;
           }
-          if (strchr(mailflags, 'P')) { /*The message was forwarded */
+          if (strchr(mailflags, 'P') !=
+              nullptr) { /*The message was forwarded */
             mail->forwarded_mail_count++;
           } else {
             mail->unforwarded_mail_count++;
           }
-          if (strchr(mailflags, 'R')) { /*The message was replied */
+          if (strchr(mailflags, 'R') != nullptr) { /*The message was replied */
             mail->replied_mail_count++;
           } else {
             mail->unreplied_mail_count++;
           }
-          if (strchr(mailflags, 'D')) { /*The message is a draft */
+          if (strchr(mailflags, 'D') != nullptr) { /*The message is a draft */
             mail->draft_mail_count++;
           }
         } else {
@@ -303,13 +312,13 @@ static void update_mail_count(struct local_mail_s *mail) {
     strcat(dirname, "new");
 
     dir = opendir(dirname);
-    if (!dir) {
+    if (dir == nullptr) {
       NORM_ERR("cannot open directory");
       free(dirname);
       return;
     }
     dirent = readdir(dir);
-    while (dirent) {
+    while (dirent != nullptr) {
       /* . and .. are skipped */
       if (dirent->d_name[0] != '.') {
         mail->new_mail_count++;
@@ -344,17 +353,17 @@ static void update_mail_count(struct local_mail_s *mail) {
     mail->draft_mail_count = mail->trashed_mail_count = -1;
 
     fp = open_file(mail->mbox, &rep);
-    if (!fp) {
+    if (fp == nullptr) {
       return;
     }
 
     /* NOTE: adds mail as new if there isn't Status-field at all */
 
-    while (!feof(fp)) {
+    while (feof(fp) == 0) {
       char buf[128];
       int was_new = 0;
 
-      if (fgets(buf, 128, fp) == NULL) {
+      if (fgets(buf, 128, fp) == nullptr) {
         break;
       }
 
@@ -372,16 +381,16 @@ static void update_mail_count(struct local_mail_s *mail) {
         }
       } else {
         if (reading_status == 1 && strncmp(buf, "X-Mozilla-Status:", 17) == 0) {
-          int xms = strtol(buf + 17, NULL, 16);
+          int xms = strtol(buf + 17, nullptr, 16);
           /* check that mail isn't marked for deletion */
-          if (xms & 0x0008) {
+          if ((xms & 0x0008) != 0) {
             mail->trashed_mail_count++;
             reading_status = 0;
             /* Don't check whether the trashed email is unread */
             continue;
           }
           /* check that mail isn't already read */
-          if (!(xms & 0x0001)) {
+          if ((xms & 0x0001) == 0) {
             mail->new_mail_count++;
             was_new = 1;
           }
@@ -392,7 +401,7 @@ static void update_mail_count(struct local_mail_s *mail) {
         }
         if (reading_status == 1 && strncmp(buf, "Status:", 7) == 0) {
           /* check that mail isn't already read */
-          if (strchr(buf + 7, 'R') == NULL) {
+          if (strchr(buf + 7, 'R') == nullptr) {
             mail->new_mail_count++;
             was_new = 1;
           }
@@ -402,11 +411,13 @@ static void update_mail_count(struct local_mail_s *mail) {
         }
         if (reading_status >= 1 && strncmp(buf, "X-Status:", 9) == 0) {
           /* check that mail isn't marked for deletion */
-          if (strchr(buf + 9, 'D') != NULL) {
+          if (strchr(buf + 9, 'D') != nullptr) {
             mail->trashed_mail_count++;
             /* If the mail was previously detected as new,
                subtract it from the new mail count */
-            if (was_new) mail->new_mail_count--;
+            if (was_new != 0) {
+              mail->new_mail_count--;
+            }
           }
 
           reading_status = 0;
@@ -415,14 +426,16 @@ static void update_mail_count(struct local_mail_s *mail) {
       }
 
       /* skip until \n */
-      while (strchr(buf, '\n') == NULL && !feof(fp)) {
-        if (!fgets(buf, 128, fp)) break;
+      while (strchr(buf, '\n') == nullptr && (feof(fp) == 0)) {
+        if (fgets(buf, 128, fp) == nullptr) {
+          break;
+        }
       }
     }
 
     fclose(fp);
 
-    if (reading_status) {
+    if (reading_status != 0) {
       mail->new_mail_count++;
     }
 
@@ -436,7 +449,7 @@ void parse_local_mail_args(struct text_object *obj, const char *arg) {
   char mbox[256];
   struct local_mail_s *locmail;
 
-  if (!arg) {
+  if (arg == nullptr) {
     n1 = 9.5;
     strncpy(mbox, current_mail_spool.get(*state).c_str(), sizeof(mbox));
   } else {
@@ -448,7 +461,8 @@ void parse_local_mail_args(struct text_object *obj, const char *arg) {
 
   std::string dst = variable_substitute(mbox);
 
-  locmail = (struct local_mail_s *)malloc(sizeof(struct local_mail_s));
+  locmail =
+      static_cast<struct local_mail_s *>(malloc(sizeof(struct local_mail_s)));
   memset(locmail, 0, sizeof(struct local_mail_s));
   locmail->mbox = strndup(dst.c_str(), text_buffer_size.get(*state));
   locmail->interval = n1;
@@ -477,9 +491,11 @@ PRINT_MAILS_GENERATOR(draft_)
 PRINT_MAILS_GENERATOR(trashed_)
 
 void free_local_mails(struct text_object *obj) {
-  struct local_mail_s *locmail = (struct local_mail_s *)obj->data.opaque;
+  auto *locmail = static_cast<struct local_mail_s *>(obj->data.opaque);
 
-  if (!locmail) return;
+  if (locmail == nullptr) {
+    return;
+  }
 
   free_and_zero(locmail->mbox);
   free_and_zero(obj->data.opaque);
@@ -489,7 +505,7 @@ void free_local_mails(struct text_object *obj) {
 
 namespace {
 enum mail_type { POP3_TYPE, IMAP_TYPE };
-}
+}  // namespace
 
 std::unique_ptr<mail_param_ex> parse_mail_args(mail_type type,
                                                const char *arg) {
@@ -513,26 +529,28 @@ std::unique_ptr<mail_param_ex> parse_mail_args(mail_type type,
   // see if password needs prompting
   if (pass[0] == '*' && pass[1] == '\0') {
     int fp = fileno(stdin);
-    struct termios term;
+    struct termios term {};
 
     tcgetattr(fp, &term);
     term.c_lflag &= ~ECHO;
     tcsetattr(fp, TCSANOW, &term);
     printf("Enter mailbox password (%s@%s): ", user, host);
-    if (scanf("%128s", pass) != 1) pass[0] = 0;
+    if (scanf("%128s", pass) != 1) {
+      pass[0] = 0;
+    }
     printf("\n");
     term.c_lflag |= ECHO;
     tcsetattr(fp, TCSANOW, &term);
   }
 
-  mail.reset(new mail_param_ex);
+  mail = std::make_unique<mail_param_ex>();
   get<MP_HOST>(*mail) = host;
   get<MP_USER>(*mail) = user;
   get<MP_PASS>(*mail) = pass;
 
   // now we check for optional args
-  tmp = (char *)strstr(arg, "-r ");
-  if (tmp) {
+  tmp = const_cast<char *>(strstr(arg, "-r "));
+  if (tmp != nullptr) {
     tmp += 3;
     sscanf(tmp, "%" SCNu16, &mail->retries);
   } else {
@@ -540,15 +558,15 @@ std::unique_ptr<mail_param_ex> parse_mail_args(mail_type type,
   }
 
   float interval = DEFAULT_MAIL_INTERVAL;
-  tmp = (char *)strstr(arg, "-i ");
-  if (tmp) {
+  tmp = const_cast<char *>(strstr(arg, "-i "));
+  if (tmp != nullptr) {
     tmp += 3;
     sscanf(tmp, "%f", &interval);
   }
   mail->period = std::max(lround(interval / active_update_interval()), 1l);
 
-  tmp = (char *)strstr(arg, "-p ");
-  if (tmp) {
+  tmp = const_cast<char *>(strstr(arg, "-p "));
+  if (tmp != nullptr) {
     tmp += 3;
     sscanf(tmp, "%" SCNu16, &get<MP_PORT>(*mail));
   } else {
@@ -559,12 +577,12 @@ std::unique_ptr<mail_param_ex> parse_mail_args(mail_type type,
     }
   }
   if (type == IMAP_TYPE) {
-    tmp = (char *)strstr(arg, "-f ");
-    if (tmp) {
+    tmp = const_cast<char *>(strstr(arg, "-f "));
+    if (tmp != nullptr) {
       int len = 0;
       tmp += 3;
       if (tmp[0] == '\'') {
-        len = (char *)strstr(tmp + 1, "'") - tmp - 1;
+        len = strstr(tmp + 1, "'") - tmp - 1;
         tmp++;
       }
       get<MP_FOLDER>(*mail).assign(tmp, len);
@@ -572,13 +590,13 @@ std::unique_ptr<mail_param_ex> parse_mail_args(mail_type type,
       get<MP_FOLDER>(*mail) = "INBOX";  // default imap inbox
     }
   }
-  tmp = (char *)strstr(arg, "-e ");
-  if (tmp) {
+  tmp = const_cast<char *>(strstr(arg, "-e "));
+  if (tmp != nullptr) {
     int len = 0;
     tmp += 3;
 
     if (tmp[0] == '\'') {
-      len = (char *)strstr(tmp + 1, "'") - tmp - 1;
+      len = strstr(tmp + 1, "'") - tmp - 1;
     }
     get<MP_COMMAND>(*mail).assign(tmp + 1, len);
   }
@@ -589,8 +607,8 @@ std::unique_ptr<mail_param_ex> parse_mail_args(mail_type type,
 void parse_imap_mail_args(struct text_object *obj, const char *arg) {
   static int rep = 0;
 
-  if (!arg) {
-    if (!global_mail && !rep) {
+  if (arg == nullptr) {
+    if ((global_mail == nullptr) && (rep == 0)) {
       // something is wrong, warn once then stop
       NORM_ERR(
           "There's a problem with your mail settings.  "
@@ -610,8 +628,8 @@ void parse_imap_mail_args(struct text_object *obj, const char *arg) {
 void parse_pop3_mail_args(struct text_object *obj, const char *arg) {
   static int rep = 0;
 
-  if (!arg) {
-    if (!global_mail && !rep) {
+  if (arg == nullptr) {
+    if ((global_mail == nullptr) && (rep == 0)) {
       // something is wrong, warn once then stop
       NORM_ERR(
           "There's a problem with your mail settings.  "
@@ -630,29 +648,31 @@ void parse_pop3_mail_args(struct text_object *obj, const char *arg) {
 
 namespace {
 class mail_setting : public conky::simple_config_setting<std::string> {
-  typedef conky::simple_config_setting<std::string> Base;
+  using Base = conky::simple_config_setting<std::string>;
 
   mail_type type;
 
  protected:
-  virtual void lua_setter(lua::state &l, bool init) {
+  void lua_setter(lua::state &l, bool init) override {
     lua::stack_sentry s(l, -2);
 
     Base::lua_setter(l, init);
 
-    if (init && !global_mail) {
+    if (init && (global_mail == nullptr)) {
       const std::string &t = do_convert(l, -1).first;
-      if (t.size()) global_mail = parse_mail_args(type, t.c_str()).release();
+      if (static_cast<unsigned int>(!t.empty()) != 0u) {
+        global_mail = parse_mail_args(type, t.c_str()).release();
+      }
     }
 
     ++s;
   }
 
-  virtual void cleanup(lua::state &l) {
+  void cleanup(lua::state &l) override {
     lua::stack_sentry s(l, -1);
 
     delete global_mail;
-    global_mail = NULL;
+    global_mail = nullptr;
 
     l.pop();
   }
@@ -667,24 +687,27 @@ mail_setting pop3("pop3", POP3_TYPE);
 }  // namespace
 
 void free_mail_obj(struct text_object *obj) {
-  if (!obj->data.opaque) return;
+  if (obj->data.opaque == nullptr) {
+    return;
+  }
 
   if (obj->data.opaque != global_mail) {
-    mail_param_ex *mail = static_cast<mail_param_ex *>(obj->data.opaque);
+    auto *mail = static_cast<mail_param_ex *>(obj->data.opaque);
     delete mail;
-    obj->data.opaque = 0;
+    obj->data.opaque = nullptr;
   }
 }
 
 static void command(int sockfd, const std::string &cmd, char *response,
                     const char *verify) {
-  struct timeval fetchtimeout;
+  struct timeval fetchtimeout {};
   fd_set fdset;
   ssize_t total = 0;
   int numbytes = 0;
 
-  if (send(sockfd, cmd.c_str(), cmd.length(), 0) == -1)
+  if (send(sockfd, cmd.c_str(), cmd.length(), 0) == -1) {
     throw std::runtime_error("send: " + strerror_r(errno));
+  }
   DBGP2("command()  command: %s", cmd.c_str());
 
   while (1) {
@@ -693,37 +716,44 @@ static void command(int sockfd, const std::string &cmd, char *response,
     FD_ZERO(&fdset);
     FD_SET(sockfd, &fdset);
 
-    if (select(sockfd + 1, &fdset, NULL, NULL, &fetchtimeout) == 0)
+    if (select(sockfd + 1, &fdset, nullptr, nullptr, &fetchtimeout) == 0) {
       throw std::runtime_error("select: read timeout");
+    }
 
-    if ((numbytes =
-             recv(sockfd, response + total, MAXDATASIZE - 1 - total, 0)) == -1)
+    if ((numbytes = recv(sockfd, response + total, MAXDATASIZE - 1 - total,
+                         0)) == -1) {
       throw std::runtime_error("recv: " + strerror_r(errno));
+    }
 
     total += numbytes;
     response[total] = '\0';
     DBGP2("command() received: %s", response);
 
-    if (strstr(response, verify) != NULL) return;
+    if (strstr(response, verify) != nullptr) {
+      return;
+    }
 
-    if (numbytes == 0)
+    if (numbytes == 0) {
       throw std::runtime_error("Unexpected response from server");
+    }
   }
 }
 
 void imap_cb::check_status(char *recvbuf) {
   char *reply;
-  reply = (char *)strstr(recvbuf, " (MESSAGES ");
-  if (!reply || strlen(reply) < 2)
+  reply = strstr(recvbuf, " (MESSAGES ");
+  if ((reply == nullptr) || strlen(reply) < 2) {
     std::runtime_error("Unexpected response from server");
+  }
 
   reply += 2;
   *strchr(reply, ')') = '\0';
 
   std::lock_guard<std::mutex> lock(result_mutex);
   if (sscanf(reply, "MESSAGES %lu UNSEEN %lu", &result.messages,
-             &result.unseen) != 2)
+             &result.unseen) != 2) {
     throw std::runtime_error(std::string("Error parsing response: ") + recvbuf);
+  }
 }
 
 void imap_cb::unseen_command(unsigned long old_unseen,
@@ -745,11 +775,13 @@ void imap_cb::work() {
   bool has_idle = false;
 
   while (fail < retries) {
-    struct timeval fetchtimeout;
+    struct timeval fetchtimeout {};
     int res;
     fd_set fdset;
 
-    if (not ai) resolve_host();
+    if (ai == nullptr) {
+      resolve_host();
+    }
 
     try {
       sockfd = connect();
@@ -757,7 +789,9 @@ void imap_cb::work() {
       command(sockfd, "", recvbuf, "* OK");
 
       command(sockfd, "abc CAPABILITY\r\n", recvbuf, "abc OK");
-      if (strstr(recvbuf, " IDLE ") != NULL) has_idle = true;
+      if (strstr(recvbuf, " IDLE ") != nullptr) {
+        has_idle = true;
+      }
 
       std::ostringstream str;
       str << "a1 login " << get<MP_USER>() << " {" << get<MP_PASS>().length()
@@ -802,7 +836,7 @@ void imap_cb::work() {
         FD_ZERO(&fdset);
         FD_SET(sockfd, &fdset);
         FD_SET(donefd(), &fdset);
-        res = select(std::max(sockfd, donefd()) + 1, &fdset, NULL, NULL,
+        res = select(std::max(sockfd, donefd()) + 1, &fdset, nullptr, nullptr,
                      &fetchtimeout);
         if ((res == -1 && errno == EINTR) || FD_ISSET(donefd(), &fdset)) {
           try {
@@ -812,11 +846,14 @@ void imap_cb::work() {
           }
           close(sockfd);
           return;
-        } else if (res > 0) {
-          if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1)
+        }
+        if (res > 0) {
+          if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
             throw std::runtime_error("recv idling");
-        } else
+          }
+        } else {
           throw std::runtime_error("");
+        }
 
         recvbuf[numbytes] = '\0';
         DBGP2("imap_thread() received: %s", recvbuf);
@@ -824,11 +861,12 @@ void imap_cb::work() {
         bool force_check = 0;
         if (strlen(recvbuf) > 2) {
           char *buf = recvbuf;
-          buf = (char *)strstr(buf, "EXISTS");
-          while (buf && strlen(buf) > 1 && strstr(buf + 1, "EXISTS")) {
-            buf = (char *)strstr(buf + 1, "EXISTS");
+          buf = strstr(buf, "EXISTS");
+          while ((buf != nullptr) && strlen(buf) > 1 &&
+                 (strstr(buf + 1, "EXISTS") != nullptr)) {
+            buf = strstr(buf + 1, "EXISTS");
           }
-          if (buf) {
+          if (buf != nullptr) {
             // back up until we reach '*'
             while (buf >= recvbuf && buf[0] != '*') {
               buf--;
@@ -842,11 +880,12 @@ void imap_cb::work() {
             }
           }
           buf = recvbuf;
-          buf = (char *)strstr(buf, "RECENT");
-          while (buf && strlen(buf) > 1 && strstr(buf + 1, "RECENT")) {
-            buf = (char *)strstr(buf + 1, "RECENT");
+          buf = strstr(buf, "RECENT");
+          while ((buf != nullptr) && strlen(buf) > 1 &&
+                 (strstr(buf + 1, "RECENT") != nullptr)) {
+            buf = strstr(buf + 1, "RECENT");
           }
-          if (buf) {
+          if (buf != nullptr) {
             // back up until we reach '*'
             while (buf >= recvbuf && buf[0] != '*') {
               buf--;
@@ -857,7 +896,7 @@ void imap_cb::work() {
           }
         }
         /* check if we got a BYE from server */
-        if (strstr(recvbuf, "* BYE")) {
+        if (strstr(recvbuf, "* BYE") != nullptr) {
           // need to re-connect
           throw std::runtime_error("");
         }
@@ -866,7 +905,7 @@ void imap_cb::work() {
          * check if we got a FETCH from server, recent was
          * something other than 0, or we had a timeout
          */
-        if (recent > 0 || strstr(recvbuf, " FETCH ") ||
+        if (recent > 0 || (strstr(recvbuf, " FETCH ") != nullptr) ||
             fetchtimeout.tv_sec == 0 || force_check) {
           // re-check messages and unseen
           command(sockfd, "DONE\r\n", recvbuf, "a5 OK");
@@ -886,27 +925,34 @@ void imap_cb::work() {
         old_messages = result.messages;
       }
     } catch (std::runtime_error &e) {
-      if (sockfd != -1) close(sockfd);
+      if (sockfd != -1) {
+        close(sockfd);
+      }
       freeaddrinfo(ai);
-      ai = NULL;
+      ai = nullptr;
 
       ++fail;
-      if (*e.what())
+      if (*e.what() != 0) {
         NORM_ERR("Error while communicating with IMAP server: %s", e.what());
+      }
       NORM_ERR("Trying IMAP connection again for %s@%s (try %u/%u)",
                get<MP_USER>().c_str(), get<MP_HOST>().c_str(), fail + 1,
                retries);
       sleep(fail); /* sleep more for the more failures we have */
     }
 
-    if (is_done()) return;
+    if (is_done()) {
+      return;
+    }
   }
 }
 
 void print_imap_unseen(struct text_object *obj, char *p, int p_max_size) {
-  struct mail_param_ex *mail = (struct mail_param_ex *)obj->data.opaque;
+  auto *mail = static_cast<struct mail_param_ex *>(obj->data.opaque);
 
-  if (!mail) return;
+  if (mail == nullptr) {
+    return;
+  }
 
   auto cb = conky::register_cb<imap_cb>(mail->period, *mail, mail->retries);
 
@@ -914,9 +960,11 @@ void print_imap_unseen(struct text_object *obj, char *p, int p_max_size) {
 }
 
 void print_imap_messages(struct text_object *obj, char *p, int p_max_size) {
-  struct mail_param_ex *mail = (struct mail_param_ex *)obj->data.opaque;
+  auto *mail = static_cast<struct mail_param_ex *>(obj->data.opaque);
 
-  if (!mail) return;
+  if (mail == nullptr) {
+    return;
+  }
 
   auto cb = conky::register_cb<imap_cb>(mail->period, *mail, mail->retries);
 
@@ -930,7 +978,9 @@ void pop3_cb::work() {
   unsigned long old_unseen = ULONG_MAX;
 
   while (fail < retries) {
-    if (not ai) resolve_host();
+    if (ai == nullptr) {
+      resolve_host();
+    }
 
     try {
       sockfd = connect();
@@ -959,27 +1009,34 @@ void pop3_cb::work() {
       old_unseen = result.unseen;
       return;
     } catch (std::runtime_error &e) {
-      if (sockfd != -1) close(sockfd);
+      if (sockfd != -1) {
+        close(sockfd);
+      }
       freeaddrinfo(ai);
-      ai = NULL;
+      ai = nullptr;
 
       ++fail;
-      if (*e.what())
+      if (*e.what() != 0) {
         NORM_ERR("Error while communicating with POP3 server: %s", e.what());
+      }
       NORM_ERR("Trying POP3 connection again for %s@%s (try %u/%u)",
                get<MP_USER>().c_str(), get<MP_HOST>().c_str(), fail + 1,
                retries);
       sleep(fail); /* sleep more for the more failures we have */
     }
 
-    if (is_done()) return;
+    if (is_done()) {
+      return;
+    }
   }
 }
 
 void print_pop3_unseen(struct text_object *obj, char *p, int p_max_size) {
-  struct mail_param_ex *mail = (struct mail_param_ex *)obj->data.opaque;
+  auto *mail = static_cast<struct mail_param_ex *>(obj->data.opaque);
 
-  if (!mail) return;
+  if (mail == nullptr) {
+    return;
+  }
 
   auto cb = conky::register_cb<pop3_cb>(mail->period, *mail, mail->retries);
 
@@ -987,9 +1044,11 @@ void print_pop3_unseen(struct text_object *obj, char *p, int p_max_size) {
 }
 
 void print_pop3_used(struct text_object *obj, char *p, int p_max_size) {
-  struct mail_param_ex *mail = (struct mail_param_ex *)obj->data.opaque;
+  auto *mail = static_cast<struct mail_param_ex *>(obj->data.opaque);
 
-  if (!mail) return;
+  if (mail == nullptr) {
+    return;
+  }
 
   auto cb = conky::register_cb<pop3_cb>(mail->period, *mail, mail->retries);
 

@@ -99,7 +99,7 @@ void curl_internal::do_work() {
   struct headers_ {
     struct curl_slist *h;
 
-    headers_() : h(NULL) {}
+    headers_() : h(nullptr) {}
     ~headers_() { curl_slist_free_all(h); }
   } headers;
 
