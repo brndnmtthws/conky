@@ -23,7 +23,7 @@
 #include "logging.h"
 #include "text_object.h"
 
-static tcp_port_monitor_collection_t *pmc = NULL;
+static tcp_port_monitor_collection_t *pmc = nullptr;
 
 static conky::range_config_setting<int> max_port_monitor_connections(
     "max_port_monitor_connections", 0, std::numeric_limits<int>::max(),
@@ -40,14 +40,14 @@ int tcp_portmon_init(struct text_object *obj, const char *arg) {
   argc = sscanf(arg, "%d %d %31s %d", &port_begin, &port_end, itembuf,
                 &connection_index);
   if ((argc != 3) && (argc != 4)) {
-    CRIT_ERR(NULL, NULL, "tcp_portmon: requires 3 or 4 arguments");
+    CRIT_ERR(nullptr, NULL, "tcp_portmon: requires 3 or 4 arguments");
   }
   if ((port_begin < 1) || (port_begin > 65535) || (port_end < 1) ||
       (port_end > 65535)) {
-    CRIT_ERR(NULL, NULL, "tcp_portmon: port values must be from 1 to 65535");
+    CRIT_ERR(nullptr, NULL, "tcp_portmon: port values must be from 1 to 65535");
   }
   if (port_begin > port_end) {
-    CRIT_ERR(NULL, NULL, "tcp_portmon: starting port must be <= ending port");
+    CRIT_ERR(nullptr, NULL, "tcp_portmon: starting port must be <= ending port");
   }
   if (strncmp(itembuf, "count", 31) == EQUAL) {
     item = COUNT;
@@ -68,15 +68,15 @@ int tcp_portmon_init(struct text_object *obj, const char *arg) {
   } else if (strncmp(itembuf, "lservice", 31) == EQUAL) {
     item = LOCALSERVICE;
   } else {
-    CRIT_ERR(NULL, NULL, "tcp_portmon: invalid item specified");
+    CRIT_ERR(nullptr, NULL, "tcp_portmon: invalid item specified");
   }
   if ((argc == 3) && (item != COUNT)) {
-    CRIT_ERR(NULL, NULL,
+    CRIT_ERR(nullptr, NULL,
              "tcp_portmon: 3 argument form valid only for \"count\" "
              "item");
   }
   if ((argc == 4) && (connection_index < 0)) {
-    CRIT_ERR(NULL, NULL, "tcp_portmon: connection index must be non-negative");
+    CRIT_ERR(nullptr, NULL, "tcp_portmon: connection index must be non-negative");
   }
   /* ok, args looks good. save the text object data */
   pmd = (tcp_port_monitor_data *)malloc(sizeof(struct tcp_port_monitor_data));
@@ -92,7 +92,7 @@ int tcp_portmon_init(struct text_object *obj, const char *arg) {
   if (!pmc) {
     pmc = create_tcp_port_monitor_collection();
     if (!pmc) {
-      CRIT_ERR(NULL, NULL,
+      CRIT_ERR(nullptr, NULL,
                "tcp_portmon: unable to create port monitor "
                "collection");
     }
@@ -100,7 +100,7 @@ int tcp_portmon_init(struct text_object *obj, const char *arg) {
 
   /* if a port monitor for this port does not exist,
    * create one and add it to the collection */
-  if (find_tcp_port_monitor(pmc, port_begin, port_end) == NULL) {
+  if (find_tcp_port_monitor(pmc, port_begin, port_end) == nullptr) {
     tcp_port_monitor_args_t pma;
     memset(&pma, 0, sizeof pma);
     pma.max_port_monitor_connections = max_port_monitor_connections.get(*state);
@@ -108,7 +108,7 @@ int tcp_portmon_init(struct text_object *obj, const char *arg) {
     /* add the newly created monitor to the collection */
     if (insert_new_tcp_port_monitor_into_collection(pmc, port_begin, port_end,
                                                     &pma) != 0) {
-      CRIT_ERR(NULL, NULL,
+      CRIT_ERR(nullptr, NULL,
                "tcp_portmon: unable to add port monitor to "
                "collection");
     }
@@ -145,7 +145,7 @@ int tcp_portmon_update(void) {
 
 int tcp_portmon_clear(void) {
   destroy_tcp_port_monitor_collection(pmc);
-  pmc = NULL;
+  pmc = nullptr;
   return 0;
 }
 

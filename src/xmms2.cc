@@ -35,31 +35,31 @@ xmmsc_connection_t *xmms2_conn;
 #define CONN_NO 2
 
 static void xmms_alloc(struct information *ptr) {
-  if (ptr->xmms2.artist == NULL) {
+  if (ptr->xmms2.artist == nullptr) {
     ptr->xmms2.artist = (char *)malloc(text_buffer_size.get(*state));
   }
 
-  if (ptr->xmms2.album == NULL) {
+  if (ptr->xmms2.album == nullptr) {
     ptr->xmms2.album = (char *)malloc(text_buffer_size.get(*state));
   }
 
-  if (ptr->xmms2.title == NULL) {
+  if (ptr->xmms2.title == nullptr) {
     ptr->xmms2.title = (char *)malloc(text_buffer_size.get(*state));
   }
 
-  if (ptr->xmms2.genre == NULL) {
+  if (ptr->xmms2.genre == nullptr) {
     ptr->xmms2.genre = (char *)malloc(text_buffer_size.get(*state));
   }
 
-  if (ptr->xmms2.comment == NULL) {
+  if (ptr->xmms2.comment == nullptr) {
     ptr->xmms2.comment = (char *)malloc(text_buffer_size.get(*state));
   }
 
-  if (ptr->xmms2.url == NULL) {
+  if (ptr->xmms2.url == nullptr) {
     ptr->xmms2.url = (char *)malloc(text_buffer_size.get(*state));
   }
 
-  if (ptr->xmms2.date == NULL) {
+  if (ptr->xmms2.date == nullptr) {
     ptr->xmms2.date = (char *)malloc(text_buffer_size.get(*state));
   }
 
@@ -137,7 +137,7 @@ int handle_curent_id(xmmsv_t *value, void *p) {
 
     ptr->xmms2.id = current_id;
 
-    infos = xmmsv_propdict_to_dict(val, NULL);
+    infos = xmmsv_propdict_to_dict(val, nullptr);
 
     if (xmmsv_dict_get(infos, "artist", &dict_entry) &&
         xmmsv_get_string(dict_entry, &charval))
@@ -222,7 +222,7 @@ int handle_playback_state_change(xmmsv_t *value, void *p) {
     return TRUE;
   }
 
-  if (ptr->xmms2.status == NULL) {
+  if (ptr->xmms2.status == nullptr) {
     ptr->xmms2.status = (char *)malloc(text_buffer_size.get(*state));
     ptr->xmms2.status[0] = '\0';
   }
@@ -255,7 +255,7 @@ int handle_playlist_loaded(xmmsv_t *value, void *p) {
     return TRUE;
   }
 
-  if (ptr->xmms2.playlist == NULL) {
+  if (ptr->xmms2.playlist == nullptr) {
     ptr->xmms2.playlist = (char *)malloc(text_buffer_size.get(*state));
     ptr->xmms2.playlist[0] = '\0';
   }
@@ -289,12 +289,12 @@ int update_xmms2(void) {
 
   /* initialize connection */
   if (current_info->xmms2.conn_state == CONN_INIT) {
-    if (xmms2_conn == NULL) {
+    if (xmms2_conn == nullptr) {
       xmms2_conn = xmmsc_init(PACKAGE_NAME);
     }
 
     /* did init fail? */
-    if (xmms2_conn == NULL) {
+    if (xmms2_conn == nullptr) {
       fprintf(stderr, "XMMS2 init failed. %s\n",
               xmmsc_get_last_error(xmms2_conn));
       return 0;

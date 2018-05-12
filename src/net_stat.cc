@@ -44,6 +44,9 @@
 #include <sys/sockio.h>
 #define IFF_RUNNING IFF_LINK
 #endif
+#ifndef SOCK_CLOEXEC
+# define SOCK_CLOEXEC O_CLOEXEC
+#endif /* SOCK_CLOEXEC */
 
 /* network interface stuff */
 
@@ -68,26 +71,26 @@ struct net_stat foo_netstats;
  * The added interface will have all its members initialized to 0,
  * because clear_net_stats() is called from main() in conky.cc!
  *
- * @param[in] dev  device / interface name. Silently ignores char * == NULL
+ * @param[in] dev  device / interface name. Silently ignores char * == nullptr
  **/
-struct net_stat *get_net_stat(const char *dev, void *free_at_crash1,
-                              void *free_at_crash2) {
+struct net_stat *get_net_stat(const char *dev, void * /*free_at_crash1*/,
+                              void * /*free_at_crash2*/) {
   unsigned int i;
 
-  if (!dev) {
-    return 0;
+  if (dev == nullptr) {
+    return nullptr;
   }
 
   /* find interface stat */
   for (i = 0; i < MAX_NET_INTERFACES; i++) {
-    if (netstats[i].dev && strcmp(netstats[i].dev, dev) == 0) {
+    if ((netstats[i].dev != nullptr) && strcmp(netstats[i].dev, dev) == 0) {
       return &netstats[i];
     }
   }
 
   /* wasn't found? add it */
   for (i = 0; i < MAX_NET_INTERFACES; i++) {
-    if (netstats[i].dev == 0) {
+    if (netstats[i].dev == nullptr) {
       netstats[i].dev = strndup(dev, text_buffer_size.get(*state));
       /* initialize last_read_recv and last_read_trans to -1 denoting
        * that they were never read before */
@@ -112,28 +115,37 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
   bool showscope = false;
   char nextarg[21];  // longest arg possible is a devname (max 20 chars)
   int i = 0;
-  struct net_stat *netstat = NULL;
+  struct net_stat *netstat = nullptr;
 
-  if (!arg) arg = DEFAULTNETDEV;
+  if (arg == nullptr) {
+    arg = DEFAULTNETDEV;
+  }
 
   while (sscanf(arg + i, " %20s", nextarg) == 1) {
-    if (strcmp(nextarg, "-n") == 0 || strcmp(nextarg, "--netmask") == 0)
+    if (strcmp(nextarg, "-n") == 0 || strcmp(nextarg, "--netmask") == 0) {
       shownetmask = true;
-    else if (strcmp(nextarg, "-s") == 0 || strcmp(nextarg, "--scope") == 0)
+    } else if (strcmp(nextarg, "-s") == 0 || strcmp(nextarg, "--scope") == 0) {
       showscope = true;
-    else if (nextarg[0] == '-') {  // multiple flags in 1 arg
+    } else if (nextarg[0] == '-') {  // multiple flags in 1 arg
       for (int j = 1; nextarg[j] != 0; j++) {
-        if (nextarg[j] == 'n') shownetmask = true;
-        if (nextarg[j] == 's') showscope = true;
+        if (nextarg[j] == 'n') {
+          shownetmask = true;
+        }
+        if (nextarg[j] == 's') {
+          showscope = true;
+        }
       }
-    } else
+    } else {
       netstat = get_net_stat(nextarg, obj, free_at_crash);
+    }
     i += strlen(nextarg);  // skip this arg
-    while (!(isspace(arg[i]) || arg[i] == 0))
+    while (!((isspace(arg[i]) != 0) || arg[i] == 0)) {
       i++;  // and skip the spaces in front of it
+    }
   }
-  if (netstat == NULL)
+  if (netstat == nullptr) {
     netstat = get_net_stat(DEFAULTNETDEV, obj, free_at_crash);
+  }
 
 #ifdef BUILD_IPV6
   netstat->v6show_nm = shownetmask;
@@ -144,7 +156,7 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
 
 void parse_net_stat_bar_arg(struct text_object *obj, const char *arg,
                             void *free_at_crash) {
-  if (arg) {
+  if (arg != nullptr) {
     arg = scan_bar(obj, arg, 1);
     obj->data.opaque = get_net_stat(arg, obj, free_at_crash);
   } else {
@@ -156,57 +168,71 @@ void parse_net_stat_bar_arg(struct text_object *obj, const char *arg,
 }
 
 void print_downspeed(struct text_object *obj, char *p, int p_max_size) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
+  auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
-  if (!ns) return;
+  if (ns == nullptr) {
+    return;
+  }
 
   human_readable(ns->recv_speed, p, p_max_size);
 }
 
 void print_downspeedf(struct text_object *obj, char *p, int p_max_size) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
+  auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
-  if (!ns) return;
+  if (ns == nullptr) {
+    return;
+  }
 
   spaced_print(p, p_max_size, "%.1f", 8, ns->recv_speed / 1024.0);
 }
 
 void print_upspeed(struct text_object *obj, char *p, int p_max_size) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
+  auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
-  if (!ns) return;
+  if (ns == nullptr) {
+    return;
+  }
 
   human_readable(ns->trans_speed, p, p_max_size);
 }
 
 void print_upspeedf(struct text_object *obj, char *p, int p_max_size) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
+  auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
-  if (!ns) return;
+  if (ns == nullptr) {
+    return;
+  }
 
   spaced_print(p, p_max_size, "%.1f", 8, ns->trans_speed / 1024.0);
 }
 
 void print_totaldown(struct text_object *obj, char *p, int p_max_size) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
+  auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
-  if (!ns) return;
+  if (ns == nullptr) {
+    return;
+  }
 
   human_readable(ns->recv, p, p_max_size);
 }
 
 void print_totalup(struct text_object *obj, char *p, int p_max_size) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
+  auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
-  if (!ns) return;
+  if (ns == nullptr) {
+    return;
+  }
 
   human_readable(ns->trans, p, p_max_size);
 }
 
 void print_addr(struct text_object *obj, char *p, int p_max_size) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
+  auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
-  if (!ns) return;
+  if (ns == nullptr) {
+    return;
+  }
 
   if ((ns->addr.sa_data[2] & 255) == 0 && (ns->addr.sa_data[3] & 255) == 0 &&
       (ns->addr.sa_data[4] & 255) == 0 && (ns->addr.sa_data[5] & 255) == 0) {
@@ -224,7 +250,7 @@ void print_addrs(struct text_object *obj, char *p, int p_max_size) {
 
   if (!ns) return;
 
-  if (NULL != ns->addrs && strlen(ns->addrs) > 2) {
+  if (nullptr != ns->addrs && strlen(ns->addrs) > 2) {
     ns->addrs[strlen(ns->addrs) - 2] = 0; /* remove ", " from end of string */
     strncpy(p, ns->addrs, p_max_size);
   } else {
@@ -284,11 +310,11 @@ void print_v6addrs(struct text_object *obj, char *p, int p_max_size) {
 void parse_net_stat_graph_arg(struct text_object *obj, const char *arg,
                               void *free_at_crash) {
   /* scan arguments and get interface name back */
-  char *buf = 0;
+  char *buf = nullptr;
   buf = scan_graph(obj, arg, 0);
 
   // default to DEFAULTNETDEV
-  if (buf) {
+  if (buf != nullptr) {
     obj->data.opaque = get_net_stat(buf, obj, free_at_crash);
     free(buf);
     return;
@@ -303,15 +329,15 @@ void parse_net_stat_graph_arg(struct text_object *obj, const char *arg,
  *                containing a void * to a net_stat struct
  **/
 double downspeedgraphval(struct text_object *obj) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
+  auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
-  return (ns ? (ns->recv_speed / 1024.0) : 0);
+  return (ns != nullptr ? (ns->recv_speed / 1024.0) : 0);
 }
 
 double upspeedgraphval(struct text_object *obj) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
+  auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
-  return (ns ? (ns->trans_speed / 1024.0) : 0);
+  return (ns != nullptr ? (ns->trans_speed / 1024.0) : 0);
 }
 #endif /* BUILD_X11 */
 
@@ -417,7 +443,7 @@ double wireless_link_barval(struct text_object *obj) {
  * Clears the global array of net_stat structs which contains networks
  * statistics for every interface.
  **/
-void clear_net_stats(void) {
+void clear_net_stats() {
 #ifdef BUILD_IPV6
   struct v6addr *nextv6;
 #endif /* BUILD_IPV6 */
@@ -458,36 +484,50 @@ void free_if_up(struct text_object *obj) { free_and_zero(obj->data.opaque); }
 /* We should check if this is ok with OpenBSD and NetBSD as well. */
 int interface_up(struct text_object *obj) {
   int fd;
-  struct ifreq ifr;
-  char *dev = (char *)obj->data.opaque;
+  struct ifreq ifr {};
+  auto *dev = static_cast<char *>(obj->data.opaque);
 
-  if (!dev) return 0;
+  if (dev == nullptr) {
+    return 0;
+  }
 
-  if ((fd = socket(PF_INET, SOCK_DGRAM, 0)) < 0) {
-    CRIT_ERR(NULL, NULL, "could not create sockfd");
+  if ((fd = socket(PF_INET, SOCK_DGRAM | SOCK_CLOEXEC, 0)) < 0) {
+    CRIT_ERR(nullptr, nullptr, "could not create sockfd");
     return 0;
   }
   strncpy(ifr.ifr_name, dev, IFNAMSIZ);
-  if (ioctl(fd, SIOCGIFFLAGS, &ifr)) {
+  if (ioctl(fd, SIOCGIFFLAGS, &ifr) != 0) {
     /* if device does not exist, treat like not up */
-    if (errno != ENODEV && errno != ENXIO) perror("SIOCGIFFLAGS");
+    if (errno != ENODEV && errno != ENXIO) {
+      perror("SIOCGIFFLAGS");
+    }
     goto END_FALSE;
   }
 
-  if (!(ifr.ifr_flags & IFF_UP)) /* iface is not up */
+  if ((ifr.ifr_flags & IFF_UP) == 0) { /* iface is not up */
     goto END_FALSE;
-  if (if_up_strictness.get(*state) == IFUP_UP) goto END_TRUE;
+  }
+  if (if_up_strictness.get(*state) == IFUP_UP) {
+    goto END_TRUE;
+  }
 
 #ifdef IFF_RUNNING
-  if (!(ifr.ifr_flags & IFF_RUNNING)) goto END_FALSE;
+  if ((ifr.ifr_flags & IFF_RUNNING) == 0) {
+    goto END_FALSE;
+  }
 #endif
-  if (if_up_strictness.get(*state) == IFUP_LINK) goto END_TRUE;
+  if (if_up_strictness.get(*state) == IFUP_LINK) {
+    goto END_TRUE;
+  }
 
-  if (ioctl(fd, SIOCGIFADDR, &ifr)) {
+  if (ioctl(fd, SIOCGIFADDR, &ifr) != 0) {
     perror("SIOCGIFADDR");
     goto END_FALSE;
   }
-  if (((struct sockaddr_in *)&(ifr.ifr_addr))->sin_addr.s_addr) goto END_TRUE;
+  if ((reinterpret_cast<struct sockaddr_in *>(&(ifr.ifr_addr)))
+          ->sin_addr.s_addr != 0u) {
+    goto END_TRUE;
+  }
 
 END_FALSE:
   close(fd);
@@ -498,9 +538,9 @@ END_TRUE:
 }
 
 struct _dns_data {
-  _dns_data() : nscount(0), ns_list(0) {}
-  int nscount;
-  char **ns_list;
+  _dns_data() = default;
+  int nscount{0};
+  char **ns_list{nullptr};
 };
 
 static _dns_data dns_data;
@@ -510,12 +550,14 @@ void free_dns_data(struct text_object *obj) {
 
   (void)obj;
 
-  for (i = 0; i < dns_data.nscount; i++) free(dns_data.ns_list[i]);
+  for (i = 0; i < dns_data.nscount; i++) {
+    free(dns_data.ns_list[i]);
+  }
   free(dns_data.ns_list);
   memset(&dns_data, 0, sizeof(dns_data));
 }
 
-int update_dns_data(void) {
+int update_dns_data() {
   FILE *fp;
   char line[256];
   // static double last_dns_update = 0.0;
@@ -526,18 +568,20 @@ int update_dns_data(void) {
   last_dns_update = current_update_time;
   */
 
-  free_dns_data(NULL);
+  free_dns_data(nullptr);
 
-  if ((fp = fopen("/etc/resolv.conf", "r")) == NULL) return 0;
-  while (!feof(fp)) {
-    if (fgets(line, 255, fp) == NULL) {
+  if ((fp = fopen("/etc/resolv.conf", "re")) == nullptr) {
+    return 0;
+  }
+  while (feof(fp) == 0) {
+    if (fgets(line, 255, fp) == nullptr) {
       break;
     }
-    if (!strncmp(line, "nameserver ", 11)) {
+    if (strncmp(line, "nameserver ", 11) == 0) {
       line[strlen(line) - 1] = '\0';  // remove trailing newline
       dns_data.nscount++;
-      dns_data.ns_list =
-          (char **)realloc(dns_data.ns_list, dns_data.nscount * sizeof(char *));
+      dns_data.ns_list = static_cast<char **>(
+          realloc(dns_data.ns_list, dns_data.nscount * sizeof(char *)));
       dns_data.ns_list[dns_data.nscount - 1] =
           strndup(line + 11, text_buffer_size.get(*state));
     }
@@ -547,10 +591,11 @@ int update_dns_data(void) {
 }
 
 void parse_nameserver_arg(struct text_object *obj, const char *arg) {
-  obj->data.l = arg ? atoi(arg) : 0;
+  obj->data.l = arg != nullptr ? atoi(arg) : 0;
 }
 
 void print_nameserver(struct text_object *obj, char *p, int p_max_size) {
-  if (dns_data.nscount > obj->data.l)
+  if (dns_data.nscount > obj->data.l) {
     snprintf(p, p_max_size, "%s", dns_data.ns_list[obj->data.l]);
+  }
 }

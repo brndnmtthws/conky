@@ -45,11 +45,11 @@ static iconv_t **iconv_cd = 0;
 int register_iconv(iconv_t *new_iconv) {
   iconv_cd = (void ***)realloc(iconv_cd, sizeof(iconv_t *) * (iconv_count + 1));
   if (!iconv_cd) {
-    CRIT_ERR(NULL, NULL, "Out of memory");
+    CRIT_ERR(nullptr, NULL, "Out of memory");
   }
   iconv_cd[iconv_count] = (void **)malloc(sizeof(iconv_t));
   if (!iconv_cd[iconv_count]) {
-    CRIT_ERR(NULL, NULL, "Out of memory");
+    CRIT_ERR(nullptr, NULL, "Out of memory");
   }
   memcpy(iconv_cd[iconv_count], new_iconv, sizeof(iconv_t));
   iconv_count++;
@@ -91,7 +91,7 @@ void iconv_convert(size_t *a, char *buff_in, char *p, size_t p_max_size) {
 
   strncpy(buff_in, p, p_max_size);
 
-  iconv(*iconv_cd[iconv_selected - 1], NULL, NULL, NULL, NULL);
+  iconv(*iconv_cd[iconv_selected - 1], nullptr, NULL, NULL, NULL);
   while (dummy1 > 0) {
     bytes =
         iconv(*iconv_cd[iconv_selected - 1], &ptr, &dummy1, &outptr, &dummy2);

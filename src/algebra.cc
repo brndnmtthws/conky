@@ -46,7 +46,9 @@ int find_match_op(const char *expr) {
     switch (expr[idx]) {
       case '=':
       case '!':
-        if (expr[idx + 1] != '=') return -1;
+        if (expr[idx + 1] != '=') {
+          return -1;
+        }
         /* fall through */
       case '<':
       case '>':
@@ -61,18 +63,27 @@ int get_match_type(const char *expr) {
   int idx;
   const char *str;
 
-  if ((idx = find_match_op(expr)) == -1) return -1;
+  if ((idx = find_match_op(expr)) == -1) {
+    return -1;
+  }
   str = expr + idx;
 
-  if (*str == '=' && *(str + 1) == '=')
+  if (*str == '=' && *(str + 1) == '=') {
     return OP_EQ;
-  else if (*str == '!' && *(str + 1) == '=')
+  }
+  if (*str == '!' && *(str + 1) == '=') {
     return OP_NEQ;
-  else if (*str == '>') {
-    if (*(str + 1) == '=') return OP_GEQ;
+  }
+  if (*str == '>') {
+    if (*(str + 1) == '=') {
+      return OP_GEQ;
+    }
     return OP_GT;
-  } else if (*str == '<') {
-    if (*(str + 1) == '=') return OP_LEQ;
+  }
+  if (*str == '<') {
+    if (*(str + 1) == '=') {
+      return OP_LEQ;
+    }
     return OP_LT;
   }
   return -1;
@@ -84,21 +95,21 @@ int get_match_type(const char *expr) {
  * this is equal to the output of str(n)cmp(). Use a macro here, as
  * it's type-independent.
  */
-#define COMPARE(v, t)  \
-  switch (t) {         \
-    case OP_GT:        \
-      return (v > 0);  \
-    case OP_LT:        \
-      return (v < 0);  \
-    case OP_EQ:        \
-      return (v == 0); \
-    case OP_GEQ:       \
-      return (v >= 0); \
-    case OP_LEQ:       \
-      return (v <= 0); \
-    case OP_NEQ:       \
-      return (v != 0); \
-  }                    \
+#define COMPARE(v, t)    \
+  switch (t) {           \
+    case OP_GT:          \
+      return ((v) > 0);  \
+    case OP_LT:          \
+      return ((v) < 0);  \
+    case OP_EQ:          \
+      return ((v) == 0); \
+    case OP_GEQ:         \
+      return ((v) >= 0); \
+    case OP_LEQ:         \
+      return ((v) <= 0); \
+    case OP_NEQ:         \
+      return ((v) != 0); \
+  }                      \
   return 0
 
 int lcompare(long a, enum match_type mtype, long b) {
@@ -121,22 +132,35 @@ enum arg_type get_arg_type(const char *arg) {
   p = arg;
   e = arg + strlen(arg) - 1;
 
-  while (p != e && *e && *e == ' ') e--;
-  while (p != e && *p == ' ') p++;
-
-  if (*p == '"' && *e == '"') return ARG_STRING;
-
-  if (*p == '-')  // allow negative values
-    p++;
-  while (p <= e) {
-    if (!isdigit(*p)) break;
+  while (p != e && (*e != 0) && *e == ' ') {
+    e--;
+  }
+  while (p != e && *p == ' ') {
     p++;
   }
-  if (p == e + 1) return ARG_LONG;
+
+  if (*p == '"' && *e == '"') {
+    return ARG_STRING;
+  }
+
+  if (*p == '-') {  // allow negative values
+    p++;
+  }
+  while (p <= e) {
+    if (isdigit(*p) == 0) {
+      break;
+    }
+    p++;
+  }
+  if (p == e + 1) {
+    return ARG_LONG;
+  }
   if (*p == '.') {
     p++;
     while (p <= e) {
-      if (!isdigit(*p)) return ARG_BAD;
+      if (isdigit(*p) == 0) {
+        return ARG_BAD;
+      }
       p++;
     }
     return ARG_DOUBLE;
@@ -150,9 +174,15 @@ char *arg_to_string(const char *arg) {
 
   start = arg;
   len = 0;
-  while (*start && *start == ' ') start++;
-  if (!(*(start++) == '"')) return NULL;
-  while (start[len] != '"') len++;
+  while ((*start != 0) && *start == ' ') {
+    start++;
+  }
+  if (!(*(start++) == '"')) {
+    return nullptr;
+  }
+  while (start[len] != '"') {
+    len++;
+  }
   return strndup(start, len);
 }
 double arg_to_double(const char *arg) {
@@ -181,14 +211,16 @@ int compare(const char *expr) {
   idx = find_match_op(expr);
   mtype = get_match_type(expr);
 
-  if (!idx || mtype == -1) {
+  if ((idx == 0) || mtype == -1) {
     NORM_ERR("failed to parse compare string '%s'", expr);
     return -2;
   }
 
   expr_dup = strdup(expr);
   expr_dup[idx] = '\0';
-  if (expr_dup[idx + 1] == '=') expr_dup[++idx] = '\0';
+  if (expr_dup[idx + 1] == '=') {
+    expr_dup[++idx] = '\0';
+  }
 
   type1 = get_arg_type(expr_dup);
   type2 = get_arg_type(expr_dup + idx + 1);
@@ -197,8 +229,12 @@ int compare(const char *expr) {
     free(expr_dup);
     return -2;
   }
-  if (type1 == ARG_LONG && type2 == ARG_DOUBLE) type1 = ARG_DOUBLE;
-  if (type1 == ARG_DOUBLE && type2 == ARG_LONG) type2 = ARG_DOUBLE;
+  if (type1 == ARG_LONG && type2 == ARG_DOUBLE) {
+    type1 = ARG_DOUBLE;
+  }
+  if (type1 == ARG_DOUBLE && type2 == ARG_LONG) {
+    type2 = ARG_DOUBLE;
+  }
   if (type1 != type2) {
     NORM_ERR("trying to compare args '%s' and '%s' of different type", expr_dup,
              (expr_dup + idx + 1));
@@ -210,7 +246,7 @@ int compare(const char *expr) {
       char *a, *b;
       a = arg_to_string(expr_dup);
       b = arg_to_string(expr_dup + idx + 1);
-      idx = scompare(a, (enum match_type)mtype, b);
+      idx = scompare(a, static_cast<enum match_type>(mtype), b);
       free(a);
       free(b);
       free(expr_dup);
@@ -220,12 +256,12 @@ int compare(const char *expr) {
       lng_a = arg_to_long(expr_dup);
       lng_b = arg_to_long(expr_dup + idx + 1);
       free(expr_dup);
-      return lcompare(lng_a, (enum match_type)mtype, lng_b);
+      return lcompare(lng_a, static_cast<enum match_type>(mtype), lng_b);
     case ARG_DOUBLE:
       dbl_a = arg_to_double(expr_dup);
       dbl_b = arg_to_double(expr_dup + idx + 1);
       free(expr_dup);
-      return dcompare(dbl_a, (enum match_type)mtype, dbl_b);
+      return dcompare(dbl_a, static_cast<enum match_type>(mtype), dbl_b);
     case ARG_BAD: /* make_gcc_happy() */;
   }
   /* not reached */
@@ -245,7 +281,7 @@ int check_if_match(struct text_object *obj) {
   val = compare(expression.get());
   if (val == -2) {
     NORM_ERR("compare failed for expression '%s'", expression.get());
-  } else if (!val) {
+  } else if (val == 0) {
     result = 0;
   }
   return result;

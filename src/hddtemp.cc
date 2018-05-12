@@ -67,7 +67,7 @@ static void free_hddtemp_info(void) {
   DBGP("free_hddtemp_info() called");
   if (!hdd_info_head.next) return;
   __free_hddtemp_info(hdd_info_head.next);
-  hdd_info_head.next = NULL;
+  hdd_info_head.next = nullptr;
 }
 
 static void add_hddtemp_info(char *dev, short temp, char unit) {
@@ -85,7 +85,7 @@ static void add_hddtemp_info(char *dev, short temp, char unit) {
 
 static char *fetch_hddtemp_output(void) {
   int sockfd;
-  char *buf = NULL;
+  char *buf = nullptr;
   int buflen, offset = 0, rlen;
   struct addrinfo hints, *result, *rp;
   int i;
@@ -97,7 +97,7 @@ static char *fetch_hddtemp_output(void) {
   if ((i = getaddrinfo(hddtemp_host.get(*state).c_str(),
                        hddtemp_port.get(*state).c_str(), &hints, &result))) {
     NORM_ERR("getaddrinfo(): %s", gai_strerror(i));
-    return NULL;
+    return nullptr;
   }
 
   for (rp = result; rp; rp = rp->ai_next) {
@@ -131,7 +131,7 @@ GET_OUT:
 }
 
 /* this is an iterator:
- * set line to NULL in consecutive calls to get the next field
+ * set line to nullptr in consecutive calls to get the next field
  * note that exhausing iteration is assumed - otherwise *saveptr
  * is not being freed!
  */
@@ -195,7 +195,7 @@ int update_hddtemp(void) {
   }
   do {
     add_hddtemp_info(dev, val, unit);
-  } while (!read_hdd_val(NULL, &dev, &val, &unit, &saveptr));
+  } while (!read_hdd_val(nullptr, &dev, &val, &unit, &saveptr));
   free(data);
   return 0;
 }

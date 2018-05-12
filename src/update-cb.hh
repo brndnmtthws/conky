@@ -97,7 +97,7 @@ class callback_base {
 
  protected:
   callback_base(size_t hash_, uint32_t period_, bool wait_, bool use_pipe)
-      : thread(NULL),
+      : thread(nullptr),
         hash(hash_),
         period(period_),
         remaining(0),

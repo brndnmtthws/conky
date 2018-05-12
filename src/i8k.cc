@@ -52,21 +52,21 @@ struct _i8k {
 /* FIXME: there should be an ioctl interface to request specific data */
 #define PROC_I8K "/proc/i8k"
 #define I8K_DELIM " "
-static char *i8k_procbuf = NULL;
+static char *i8k_procbuf = nullptr;
 int update_i8k(void) {
   FILE *fp;
 
   if (!i8k_procbuf) {
     i8k_procbuf = (char *)malloc(128 * sizeof(char));
   }
-  if ((fp = fopen(PROC_I8K, "r")) == NULL) {
+  if ((fp = fopen(PROC_I8K, "r")) == nullptr) {
     free_and_zero(i8k_procbuf);
-    /*THREAD_CRIT_ERR(NULL, NULL, "/proc/i8k doesn't exist! use insmod to make
+    /*THREAD_CRIT_ERR(nullptr, NULL, "/proc/i8k doesn't exist! use insmod to make
       sure the kernel " "driver is loaded...");*/
     NORM_ERR(
         "/proc/i8k doesn't exist! use insmod to make sure the kernel driver is "
         "loaded...");
-    clean_up_without_threads(NULL, NULL);
+    clean_up_without_threads(nullptr, NULL);
     return 1;
   }
 
@@ -80,15 +80,15 @@ int update_i8k(void) {
   DBGP("read `%s' from /proc/i8k\n", i8k_procbuf);
 
   i8k.version = strtok(&i8k_procbuf[0], I8K_DELIM);
-  i8k.bios = strtok(NULL, I8K_DELIM);
-  i8k.serial = strtok(NULL, I8K_DELIM);
-  i8k.cpu_temp = strtok(NULL, I8K_DELIM);
-  i8k.left_fan_status = strtok(NULL, I8K_DELIM);
-  i8k.right_fan_status = strtok(NULL, I8K_DELIM);
-  i8k.left_fan_rpm = strtok(NULL, I8K_DELIM);
-  i8k.right_fan_rpm = strtok(NULL, I8K_DELIM);
-  i8k.ac_status = strtok(NULL, I8K_DELIM);
-  i8k.buttons_status = strtok(NULL, I8K_DELIM);
+  i8k.bios = strtok(nullptr, I8K_DELIM);
+  i8k.serial = strtok(nullptr, I8K_DELIM);
+  i8k.cpu_temp = strtok(nullptr, I8K_DELIM);
+  i8k.left_fan_status = strtok(nullptr, I8K_DELIM);
+  i8k.right_fan_status = strtok(nullptr, I8K_DELIM);
+  i8k.left_fan_rpm = strtok(nullptr, I8K_DELIM);
+  i8k.right_fan_rpm = strtok(nullptr, I8K_DELIM);
+  i8k.ac_status = strtok(nullptr, I8K_DELIM);
+  i8k.buttons_status = strtok(nullptr, I8K_DELIM);
   return 0;
 }
 

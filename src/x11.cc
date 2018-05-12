@@ -55,7 +55,7 @@ bool have_argb_visual;
 #endif /* BUILD_ARGB */
 
 /* some basic X11 stuff */
-Display *display = NULL;
+Display *display = nullptr;
 int display_width;
 int display_height;
 int screen;
@@ -68,7 +68,7 @@ struct conky_window window;
 char window_created = 0;
 
 /* local prototypes */
-static void update_workarea(void);
+static void update_workarea();
 static Window find_desktop_window(Window *p_root, Window *p_desktop);
 static Window find_subwindow(Window win, int w, int h);
 static void init_X11();
@@ -82,7 +82,9 @@ void out_to_x_setting::lua_setter(lua::state &l, bool init) {
 
   Base::lua_setter(l, init);
 
-  if (init && do_convert(l, -1).first) init_X11();
+  if (init && do_convert(l, -1).first) {
+    init_X11();
+  }
 
   ++s;
 }
@@ -90,7 +92,9 @@ void out_to_x_setting::lua_setter(lua::state &l, bool init) {
 void out_to_x_setting::cleanup(lua::state &l) {
   lua::stack_sentry s(l, -1);
 
-  if (do_convert(l, -1).first) deinit_X11();
+  if (do_convert(l, -1).first) {
+    deinit_X11();
+  }
 
   l.pop();
 }
@@ -110,9 +114,9 @@ void own_window_setting::lua_setter(lua::state &l, bool init) {
 #endif
     }
 
-    if (out_to_x.get(l))
+    if (out_to_x.get(l)) {
       init_window(l, do_convert(l, -1).first);
-    else {
+    } else {
       // own_window makes no sense when not drawing to X
       l.pop();
       l.pushboolean(false);
@@ -125,11 +129,13 @@ void own_window_setting::lua_setter(lua::state &l, bool init) {
 #ifdef BUILD_XDBE
 bool use_xdbe_setting::set_up(lua::state &l) {
   // double_buffer makes no sense when not drawing to X
-  if (not out_to_x.get(l)) return false;
+  if (not out_to_x.get(l)) {
+    return false;
+  }
 
   int major, minor;
 
-  if (not XdbeQueryExtension(display, &major, &minor)) {
+  if (XdbeQueryExtension(display, &major, &minor) == 0) {
     NORM_ERR("No compatible double buffer extension found");
     return false;
   }
@@ -209,8 +215,9 @@ void colour_setting::lua_setter(lua::state &l, bool init) {
   if (not out_to_x.get(l)) {
     // ignore if we're not using X
     l.replace(-2);
-  } else
+  } else {
     Base::lua_setter(l, init);
+  }
 
   ++s;
 }
@@ -258,7 +265,7 @@ conky::lua_traits<window_hints>::Map conky::lua_traits<window_hints>::map = {
 
 std::pair<uint16_t, bool> window_hints_traits::convert(
     lua::state &l, int index, const std::string &name) {
-  typedef conky::lua_traits<window_hints> Traits;
+  using Traits = conky::lua_traits<window_hints>;
 
   lua::stack_sentry s(l);
   l.checkstack(1);
@@ -273,7 +280,9 @@ std::pair<uint16_t, bool> window_hints_traits::convert(
     if (newpos > pos) {
       l.pushstring(hints.substr(pos, newpos - pos));
       auto t = conky::lua_traits<window_hints>::convert(l, -1, name);
-      if (not t.second) return {0, false};
+      if (not t.second) {
+        return {0, false};
+      };
       SET_HINT(ret, t.first);
       l.pop();
     }
@@ -388,11 +397,13 @@ static int __attribute__((noreturn)) x11_ioerror_handler(Display *d) {
 
 /* X11 initializer */
 static void init_X11() {
-  if (!display) {
-    const std::string &dispstr = display_name.get(*state).c_str();
-    // passing NULL to XOpenDisplay should open the default display
-    const char *disp = dispstr.size() ? dispstr.c_str() : NULL;
-    if ((display = XOpenDisplay(disp)) == NULL) {
+  if (display == nullptr) {
+    const std::string &dispstr = display_name.get(*state);
+    // passing nullptr to XOpenDisplay should open the default display
+    const char *disp = static_cast<unsigned int>(!dispstr.empty()) != 0u
+                           ? dispstr.c_str()
+                           : nullptr;
+    if ((display = XOpenDisplay(disp)) == nullptr) {
       throw std::runtime_error(std::string("can't open display: ") +
                                XDisplayName(disp));
     }
@@ -423,10 +434,10 @@ static void init_X11() {
 
 static void deinit_X11() {
   XCloseDisplay(display);
-  display = NULL;
+  display = nullptr;
 }
 
-static void update_workarea(void) {
+static void update_workarea() {
   /* default work area is display */
   workarea[0] = 0;
   workarea[1] = 0;
@@ -436,19 +447,19 @@ static void update_workarea(void) {
 #ifdef BUILD_XINERAMA
   /* if xinerama is being used, adjust workarea to the head's area */
   int useless1, useless2;
-  if (!XineramaQueryExtension(display, &useless1, &useless2)) {
+  if (XineramaQueryExtension(display, &useless1, &useless2) == 0) {
     return; /* doesn't even have xinerama */
   }
 
-  if (!XineramaIsActive(display)) {
+  if (XineramaIsActive(display) == 0) {
     return; /* has xinerama but isn't using it */
   }
 
   int heads = 0;
   XineramaScreenInfo *si = XineramaQueryScreens(display, &heads);
-  if (!si) {
+  if (si == nullptr) {
     NORM_ERR(
-        "warning: XineramaQueryScreen returned NULL, ignoring head settings");
+        "warning: XineramaQueryScreen returned nullptr, ignoring head settings");
     return; /* queryscreens failed? */
   }
 
@@ -482,21 +493,21 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop) {
   Window root = RootWindow(display, screen);
   Window win = root;
   Window troot, parent, *children;
-  unsigned char *buf = NULL;
+  unsigned char *buf = nullptr;
 
-  if (!p_root || !p_desktop) {
+  if ((p_root == nullptr) || (p_desktop == nullptr)) {
     return 0;
   }
 
   /* some window managers set __SWM_VROOT to some child of root window */
 
   XQueryTree(display, root, &troot, &parent, &children, &n);
-  for (i = 0; i < (int)n; i++) {
+  for (i = 0; i < static_cast<int>(n); i++) {
     if (XGetWindowProperty(display, children[i], ATOM(__SWM_VROOT), 0, 1, False,
                            XA_WINDOW, &type, &format, &nitems, &bytes,
                            &buf) == Success &&
         type == XA_WINDOW) {
-      win = *(Window *)buf;
+      win = *reinterpret_cast<Window *>(buf);
       XFree(buf);
       XFree(children);
       fprintf(stderr,
@@ -509,9 +520,9 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop) {
       return win;
     }
 
-    if (buf) {
+    if (buf != nullptr) {
       XFree(buf);
-      buf = 0;
+      buf = nullptr;
     }
   }
   XFree(children);
@@ -523,9 +534,9 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop) {
 
   win = find_subwindow(win, workarea[2], workarea[3]);
 
-  if (buf) {
+  if (buf != nullptr) {
     XFree(buf);
-    buf = 0;
+    buf = nullptr;
   }
 
   if (win != root) {
@@ -581,8 +592,9 @@ void set_transparent_background(Window win) {
         XQueryTree(display, parent, &r, &parent, &children, &n);
         XFree(children);
       }
-    } else
+    } else {
       do_set_background(win, 0);
+    }
 #ifdef BUILD_ARGB
   }
 #endif /* BUILD_ARGB */
@@ -617,13 +629,13 @@ static int get_argb_visual(Visual **visual, int *depth) {
 }
 #endif /* BUILD_ARGB */
 
-void destroy_window(void) {
+void destroy_window() {
 #ifdef BUILD_XFT
-  if (window.xftdraw) {
+  if (window.xftdraw != nullptr) {
     XftDrawDestroy(window.xftdraw);
   }
 #endif /* BUILD_XFT */
-  if (window.gc) {
+  if (window.gc != nullptr) {
     XFreeGC(display, window.gc);
   }
   memset(&window, 0, sizeof(struct conky_window));
@@ -638,14 +650,14 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
 #ifdef OWN_WINDOW
   if (own) {
     int depth = 0, flags = CWOverrideRedirect | CWBackingStore;
-    Visual *visual = NULL;
+    Visual *visual = nullptr;
 
-    if (!find_desktop_window(&window.root, &window.desktop)) {
+    if (find_desktop_window(&window.root, &window.desktop) == 0u) {
       return;
     }
 
 #ifdef BUILD_ARGB
-    if (use_argb_visual.get(l) && get_argb_visual(&visual, &depth)) {
+    if (use_argb_visual.get(l) && (get_argb_visual(&visual, &depth) != 0)) {
       have_argb_visual = true;
       window.visual = visual;
       window.colourmap = XCreateColormap(display, DefaultRootWindow(display),
@@ -772,12 +784,12 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
         wmHint.initial_state = NormalState;
       }
 
-      XmbSetWMProperties(display, window.window, NULL, NULL, argv_copy,
-                         argc_copy, NULL, &wmHint, &classHint);
+      XmbSetWMProperties(display, window.window, nullptr, nullptr, argv_copy,
+                         argc_copy, nullptr, &wmHint, &classHint);
       XStoreName(display, window.window, own_window_title.get(l).c_str());
 
       /* Sets an empty WM_PROTOCOLS property */
-      XSetWMProtocols(display, window.window, NULL, 0);
+      XSetWMProtocols(display, window.window, nullptr, 0);
 
       /* Set window type */
       if ((xa = ATOM(_NET_WM_WINDOW_TYPE)) != None) {
@@ -807,7 +819,8 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
             break;
         }
         XChangeProperty(display, window.window, xa, XA_ATOM, 32,
-                        PropModeReplace, (unsigned char *)&prop, 1);
+                        PropModeReplace,
+                        reinterpret_cast<unsigned char *>(&prop), 1);
       }
 
       /* Set desired hints */
@@ -821,7 +834,7 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
         if (xa != None) {
           long prop[5] = {2, 0, 0, 0, 0};
           XChangeProperty(display, window.window, xa, xa, 32, PropModeReplace,
-                          (unsigned char *)prop, 5);
+                          reinterpret_cast<unsigned char *>(prop), 5);
         }
       }
 
@@ -835,7 +848,8 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
           long prop = 0;
 
           XChangeProperty(display, window.window, xa, XA_CARDINAL, 32,
-                          PropModeAppend, (unsigned char *)&prop, 1);
+                          PropModeAppend,
+                          reinterpret_cast<unsigned char *>(&prop), 1);
         }
 
         xa = ATOM(_NET_WM_STATE);
@@ -843,7 +857,8 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
           Atom xa_prop = ATOM(_NET_WM_STATE_BELOW);
 
           XChangeProperty(display, window.window, xa, XA_ATOM, 32,
-                          PropModeAppend, (unsigned char *)&xa_prop, 1);
+                          PropModeAppend,
+                          reinterpret_cast<unsigned char *>(&xa_prop), 1);
         }
       }
 
@@ -857,7 +872,8 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
           long prop = 6;
 
           XChangeProperty(display, window.window, xa, XA_CARDINAL, 32,
-                          PropModeAppend, (unsigned char *)&prop, 1);
+                          PropModeAppend,
+                          reinterpret_cast<unsigned char *>(&prop), 1);
         }
 
         xa = ATOM(_NET_WM_STATE);
@@ -865,7 +881,8 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
           Atom xa_prop = ATOM(_NET_WM_STATE_ABOVE);
 
           XChangeProperty(display, window.window, xa, XA_ATOM, 32,
-                          PropModeAppend, (unsigned char *)&xa_prop, 1);
+                          PropModeAppend,
+                          reinterpret_cast<unsigned char *>(&xa_prop), 1);
         }
       }
 
@@ -879,7 +896,8 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
           CARD32 xa_prop = 0xFFFFFFFF;
 
           XChangeProperty(display, window.window, xa, XA_CARDINAL, 32,
-                          PropModeAppend, (unsigned char *)&xa_prop, 1);
+                          PropModeAppend,
+                          reinterpret_cast<unsigned char *>(&xa_prop), 1);
         }
 
         xa = ATOM(_NET_WM_STATE);
@@ -887,7 +905,8 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
           Atom xa_prop = ATOM(_NET_WM_STATE_STICKY);
 
           XChangeProperty(display, window.window, xa, XA_ATOM, 32,
-                          PropModeAppend, (unsigned char *)&xa_prop, 1);
+                          PropModeAppend,
+                          reinterpret_cast<unsigned char *>(&xa_prop), 1);
         }
       }
 
@@ -901,7 +920,8 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
           Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_TASKBAR);
 
           XChangeProperty(display, window.window, xa, XA_ATOM, 32,
-                          PropModeAppend, (unsigned char *)&xa_prop, 1);
+                          PropModeAppend,
+                          reinterpret_cast<unsigned char *>(&xa_prop), 1);
         }
       }
 
@@ -915,7 +935,8 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
           Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_PAGER);
 
           XChangeProperty(display, window.window, xa, XA_ATOM, 32,
-                          PropModeAppend, (unsigned char *)&xa_prop, 1);
+                          PropModeAppend,
+                          reinterpret_cast<unsigned char *>(&xa_prop), 1);
         }
       }
     }
@@ -931,13 +952,13 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
   {
     XWindowAttributes attrs;
 
-    if (!window.window) {
+    if (window.window == 0u) {
       window.window = find_desktop_window(&window.root, &window.desktop);
     }
     window.visual = DefaultVisual(display, screen);
     window.colourmap = DefaultColormap(display, screen);
 
-    if (XGetWindowAttributes(display, window.window, &attrs)) {
+    if (XGetWindowAttributes(display, window.window, &attrs) != 0) {
       window.width = attrs.width;
       window.height = attrs.height;
     }
@@ -973,7 +994,7 @@ static Window find_subwindow(Window win, int w, int h) {
     for (j = 0; j < n; j++) {
       XWindowAttributes attrs;
 
-      if (XGetWindowAttributes(display, children[j], &attrs)) {
+      if (XGetWindowAttributes(display, children[j], &attrs) != 0) {
         /* Window must be mapped and same size as display or
          * work space */
         if (attrs.map_state != 0 &&
@@ -994,7 +1015,7 @@ static Window find_subwindow(Window win, int w, int h) {
   return win;
 }
 
-void create_gc(void) {
+void create_gc() {
   XGCValues values;
 
   values.graphics_exposures = 0;
@@ -1010,10 +1031,12 @@ static inline void get_x11_desktop_current(Display *current_display,
   int actual_format;
   unsigned long nitems;
   unsigned long bytes_after;
-  unsigned char *prop = NULL;
+  unsigned char *prop = nullptr;
   struct information *current_info = &info;
 
-  if (atom == None) return;
+  if (atom == None) {
+    return;
+  }
 
   if ((XGetWindowProperty(current_display, root, atom, 0, 1L, False,
                           XA_CARDINAL, &actual_type, &actual_format, &nitems,
@@ -1021,7 +1044,7 @@ static inline void get_x11_desktop_current(Display *current_display,
       (actual_type == XA_CARDINAL) && (nitems == 1L) && (actual_format == 32)) {
     current_info->x11.desktop.current = prop[0] + 1;
   }
-  if (prop) {
+  if (prop != nullptr) {
     XFree(prop);
   }
 }
@@ -1033,10 +1056,12 @@ static inline void get_x11_desktop_number(Display *current_display, Window root,
   int actual_format;
   unsigned long nitems;
   unsigned long bytes_after;
-  unsigned char *prop = NULL;
+  unsigned char *prop = nullptr;
   struct information *current_info = &info;
 
-  if (atom == None) return;
+  if (atom == None) {
+    return;
+  }
 
   if ((XGetWindowProperty(current_display, root, atom, 0, 1L, False,
                           XA_CARDINAL, &actual_type, &actual_format, &nitems,
@@ -1044,7 +1069,7 @@ static inline void get_x11_desktop_number(Display *current_display, Window root,
       (actual_type == XA_CARDINAL) && (nitems == 1L) && (actual_format == 32)) {
     current_info->x11.desktop.number = prop[0];
   }
-  if (prop) {
+  if (prop != nullptr) {
     XFree(prop);
   }
 }
@@ -1056,10 +1081,12 @@ static inline void get_x11_desktop_names(Display *current_display, Window root,
   int actual_format;
   unsigned long nitems;
   unsigned long bytes_after;
-  unsigned char *prop = NULL;
+  unsigned char *prop = nullptr;
   struct information *current_info = &info;
 
-  if (atom == None) return;
+  if (atom == None) {
+    return;
+  }
 
   if ((XGetWindowProperty(current_display, root, atom, 0, (~0L), False,
                           ATOM(UTF8_STRING), &actual_type, &actual_format,
@@ -1069,7 +1096,7 @@ static inline void get_x11_desktop_names(Display *current_display, Window root,
     current_info->x11.desktop.all_names.assign(
         reinterpret_cast<const char *>(prop), nitems);
   }
-  if (prop) {
+  if (prop != nullptr) {
     XFree(prop);
   }
 }
@@ -1111,7 +1138,7 @@ void get_x11_desktop_info(Display *current_display, Atom atom) {
 
     /* Set the PropertyChangeMask on the root window, if not set */
     XGetWindowAttributes(display, root, &window_attributes);
-    if (!(window_attributes.your_event_mask & PropertyChangeMask)) {
+    if ((window_attributes.your_event_mask & PropertyChangeMask) == 0) {
       XSetWindowAttributes attributes;
       attributes.event_mask =
           window_attributes.your_event_mask | PropertyChangeMask;
@@ -1239,18 +1266,20 @@ void set_struts(int sidenum) {
     }
 
     XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
-                    PropModeReplace, (unsigned char *)&sizes, 4);
+                    PropModeReplace, reinterpret_cast<unsigned char *>(&sizes),
+                    4);
 
     if ((strut = ATOM(_NET_WM_STRUT_PARTIAL)) != None) {
       XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
-                      PropModeReplace, (unsigned char *)&sizes, 12);
+                      PropModeReplace,
+                      reinterpret_cast<unsigned char *>(&sizes), 12);
     }
   }
 }
 #endif /* OWN_WINDOW */
 
 #ifdef BUILD_XDBE
-void xdbe_swap_buffers(void) {
+void xdbe_swap_buffers() {
   if (use_xdbe.get(*state)) {
     XdbeSwapInfo swap;
 

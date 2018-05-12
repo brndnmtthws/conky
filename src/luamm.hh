@@ -91,11 +91,11 @@ class exception : public std::runtime_error {
  public:
   exception(exception &&other)
       : std::runtime_error(std::move(other)), L(other.L), key(other.key) {
-    other.L = NULL;
+    other.L = nullptr;
   }
 
   explicit exception(state *l);
-  virtual ~exception() throw();
+  virtual ~exception();
 
   void push_lua_error(state *l);
 };
@@ -246,7 +246,7 @@ class state : private std::mutex {
   // type b, throw only on memory allocation errors
   // checkstack correctly throws bad_alloc, because lua_checkstack kindly
   // informs us of that sitution
-  void checkstack(int extra) throw(std::bad_alloc);
+  void checkstack(int extra);
   const char *gsub(const char *s, const char *p, const char *r) {
     return luaL_gsub(cobj.get(), s, p, r);
   }
@@ -266,12 +266,12 @@ class state : private std::mutex {
   void pushstring(const std::string &s) {
     lua_pushlstring(cobj.get(), s.c_str(), s.size());
   }
-  void rawgetfield(int index, const char *k) throw(std::bad_alloc);
+  void rawgetfield(int index, const char *k);
   void rawset(int index) { lua_rawset(cobj.get(), index); }
-  void rawsetfield(int index, const char *k) throw(std::bad_alloc);
+  void rawsetfield(int index, const char *k);
   int ref(int t) { return luaL_ref(cobj.get(), t); }
   // len recieves length, if not null. Returned value may contain '\0'
-  const char *tocstring(int index, size_t *len = NULL) {
+  const char *tocstring(int index, size_t *len = nullptr) {
     return lua_tolstring(cobj.get(), index, len);
   }
   // Don't use pushclosure() to create a __gc function. The problem is that lua
@@ -294,9 +294,8 @@ class state : private std::mutex {
   void getglobal(const char *name);
   void gettable(int index);
   bool lessthan(int index1, int index2);
-  void loadfile(const char *filename) throw(lua::syntax_error, lua::file_error,
-                                            std::bad_alloc);
-  void loadstring(const char *s) throw(lua::syntax_error, std::bad_alloc);
+  void loadfile(const char *filename);
+  void loadstring(const char *s);
   bool next(int index);
   // register is a reserved word :/
   void register_fn(const char *name, const cpp_function &f) {
@@ -306,10 +305,10 @@ class state : private std::mutex {
   void setfield(int index, const char *k);
   void setglobal(const char *name);
   void settable(int index);
-  // lua_tostring uses NULL to indicate conversion error, since there is no such
-  // thing as a NULL std::string, we throw an exception. Returned value may
+  // lua_tostring uses nullptr to indicate conversion error, since there is no such
+  // thing as a nullptr std::string, we throw an exception. Returned value may
   // contain '\0'
-  std::string tostring(int index) throw(lua::not_string_error);
+  std::string tostring(int index);
   // allocate a new lua userdata of appropriate size, and create a object in it
   // pushes the userdata on stack and returns the pointer
   template <typename T, typename... Args>
@@ -344,23 +343,23 @@ class stack_sentry {
   const stack_sentry &operator=(const stack_sentry &) = delete;
 
  public:
-  explicit stack_sentry(state &l, int n_ = 0) throw()
+  explicit stack_sentry(state &l, int n_ = 0)
       : L(&l), n(l.gettop() + n_) {
     assert(n >= 0);
   }
 
-  ~stack_sentry() throw() {
+  ~stack_sentry() {
     assert(L->gettop() >= n);
     L->settop(n);
   }
 
-  void operator++() throw() { ++n; }
-  void operator--() throw() {
+  void operator++() { ++n; }
+  void operator--() {
     --n;
     assert(n >= 0);
   }
-  void operator+=(int n_) throw() { n += n_; }
-  void operator-=(int n_) throw() {
+  void operator+=(int n_) { n += n_; }
+  void operator-=(int n_) {
     n -= n_;
     assert(n >= 0);
   }

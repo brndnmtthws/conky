@@ -49,8 +49,8 @@ int clock_gettime(int clock_id, struct timespec *ts);
 
 int update_running_threads(void);
 
-int get_entropy_avail(unsigned int *);
-int get_entropy_poolsize(unsigned int *);
+int get_entropy_avail(const unsigned int *);
+int get_entropy_poolsize(const unsigned int *);
 
 /* System Integrity Protection */
 int get_sip_status(void);

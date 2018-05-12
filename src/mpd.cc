@@ -41,10 +41,10 @@ namespace {
 bool mpd_environment_host = false;
 
 class mpd_host_setting : public conky::simple_config_setting<std::string> {
-  typedef conky::simple_config_setting<std::string> Base;
+  using Base = conky::simple_config_setting<std::string>;
 
  protected:
-  virtual void lua_setter(lua::state &l, bool init);
+  void lua_setter(lua::state &l, bool init) override;
 
  public:
   mpd_host_setting() : Base("mpd_host", "localhost", false) {}
@@ -57,13 +57,16 @@ void mpd_host_setting::lua_setter(lua::state &l, bool init) {
     // get the value from environment
     mpd_environment_host = true;
     const char *t = getenv("MPD_HOST");
-    if (t) {
+    if (t != nullptr) {
       l.checkstack(1);
       const char *h = strchr(t, '@');
-      if (h) {
-        if (h[1]) l.pushstring(h + 1);
-      } else
+      if (h != nullptr) {
+        if (h[1] != 0) {
+          l.pushstring(h + 1);
+        }
+      } else {
         l.pushstring(t);
+      }
       l.replace(-3);
     }
   }
@@ -74,10 +77,10 @@ void mpd_host_setting::lua_setter(lua::state &l, bool init) {
 }
 
 class mpd_password_setting : public conky::simple_config_setting<std::string> {
-  typedef conky::simple_config_setting<std::string> Base;
+  using Base = conky::simple_config_setting<std::string>;
 
  protected:
-  virtual void lua_setter(lua::state &l, bool init);
+  void lua_setter(lua::state &l, bool init) override;
 
  public:
   mpd_password_setting() : Base("mpd_password", std::string(), false) {}
@@ -91,9 +94,9 @@ void mpd_password_setting::lua_setter(lua::state &l, bool init) {
   if (l.isnil(-2) && mpd_environment_host) {
     // get the value from environment
     const char *t = getenv("MPD_HOST");
-    if (t) {
+    if (t != nullptr) {
       const char *p = strchr(t, '@');
-      if (p) {
+      if (p != nullptr) {
         l.checkstack(1);
         l.pushstring(t, p - t);
         l.replace(-3);
@@ -123,27 +126,30 @@ struct mpd_result {
   std::string track;
   std::string name;
   std::string file;
-  int is_playing;
-  int vol;
-  float progress;
-  int bitrate;
-  int length;
-  int elapsed;
+  int is_playing{};
+  int vol{};
+  float progress{};
+  int bitrate{};
+  int length{};
+  int elapsed{};
 };
 
 class mpd_cb : public conky::callback<mpd_result> {
-  typedef conky::callback<mpd_result> Base;
+  using Base = conky::callback<mpd_result>;
 
   mpd_Connection *conn;
 
  protected:
-  virtual void work();
+  void work() override;
 
  public:
-  mpd_cb(uint32_t period) : Base(period, false, Tuple()), conn(NULL) {}
+  explicit mpd_cb(uint32_t period)
+      : Base(period, false, Tuple()), conn(nullptr) {}
 
-  ~mpd_cb() {
-    if (conn) mpd_closeConnection(conn);
+  ~mpd_cb() override {
+    if (conn != nullptr) {
+      mpd_closeConnection(conn);
+    }
   }
 };
 
@@ -153,37 +159,38 @@ void mpd_cb::work() {
   mpd_result mpd_info;
 
   do {
-    if (!conn)
+    if (conn == nullptr) {
       conn = mpd_newConnection(mpd_host.get(*state).c_str(),
                                mpd_port.get(*state), 10);
+    }
 
-    if (mpd_password.get(*state).size()) {
+    if (static_cast<unsigned int>(!mpd_password.get(*state).empty()) != 0u) {
       mpd_sendPasswordCommand(conn, mpd_password.get(*state).c_str());
       mpd_finishCommand(conn);
     }
 
-    if (conn->error) {
+    if (conn->error != 0) {
       NORM_ERR("MPD error: %s\n", conn->errorStr);
       mpd_closeConnection(conn);
-      conn = 0;
+      conn = nullptr;
 
       mpd_info.status = "MPD not responding";
       break;
     }
 
     mpd_sendStatusCommand(conn);
-    if ((status = mpd_getStatus(conn)) == NULL) {
+    if ((status = mpd_getStatus(conn)) == nullptr) {
       NORM_ERR("MPD error: %s\n", conn->errorStr);
       mpd_closeConnection(conn);
-      conn = 0;
+      conn = nullptr;
 
       mpd_info.status = "MPD not responding";
     }
     mpd_finishCommand(conn);
-    if (!conn || conn->error) {
+    if ((conn == nullptr) || (conn->error != 0)) {
       // fprintf(stderr, "%s\n", conn->errorStr);
       mpd_closeConnection(conn);
-      conn = 0;
+      conn = nullptr;
       break;
     }
 
@@ -225,7 +232,8 @@ void mpd_cb::work() {
         status->state == MPD_STATUS_STATE_PAUSE) {
       mpd_info.is_playing = 1;
       mpd_info.bitrate = status->bitRate;
-      mpd_info.progress = (float)status->elapsedTime / status->totalTime;
+      mpd_info.progress =
+          static_cast<float>(status->elapsedTime) / status->totalTime;
       mpd_info.elapsed = status->elapsedTime;
       mpd_info.length = status->totalTime;
     } else {
@@ -234,15 +242,15 @@ void mpd_cb::work() {
       mpd_info.elapsed = 0;
     }
 
-    if (conn->error) {
+    if (conn->error != 0) {
       // fprintf(stderr, "%s\n", conn->errorStr);
       mpd_closeConnection(conn);
-      conn = 0;
+      conn = nullptr;
       break;
     }
 
     mpd_sendCurrentSongCommand(conn);
-    while ((entity = mpd_getNextInfoEntity(conn))) {
+    while ((entity = mpd_getNextInfoEntity(conn)) != nullptr) {
       mpd_Song *song = entity->info.song;
 
       if (entity->type != MPD_INFO_ENTITY_TYPE_SONG) {
@@ -251,9 +259,9 @@ void mpd_cb::work() {
       }
 #define SETSTRING(a, b) \
   if (b)                \
-    a = b;              \
+    (a) = b;            \
   else                  \
-    a = "";
+    (a) = "";
       SETSTRING(mpd_info.artist, song->artist);
       SETSTRING(mpd_info.albumartist, song->albumartist);
       SETSTRING(mpd_info.album, song->album);
@@ -262,23 +270,23 @@ void mpd_cb::work() {
       SETSTRING(mpd_info.track, song->track);
       SETSTRING(mpd_info.name, song->name);
       SETSTRING(mpd_info.file, song->file);
-      if (entity != NULL) {
+      if (entity != nullptr) {
         mpd_freeInfoEntity(entity);
-        entity = NULL;
+        entity = nullptr;
       }
     }
     mpd_finishCommand(conn);
-    if (conn && conn->error) {
+    if ((conn != nullptr) && (conn->error != 0)) {
       // fprintf(stderr, "%s\n", conn->errorStr);
       mpd_closeConnection(conn);
-      conn = 0;
+      conn = nullptr;
       break;
     }
 
-    if (conn->error) {
+    if (conn->error != 0) {
       // fprintf(stderr, "%s\n", conn->errorStr);
       mpd_closeConnection(conn);
-      conn = 0;
+      conn = nullptr;
       break;
     }
 
@@ -347,17 +355,20 @@ double mpd_barval(struct text_object *obj) {
 void print_mpd_smart(struct text_object *obj, char *p, int p_max_size) {
   const mpd_result &mpd_info = get_mpd();
   int len = obj->data.i;
-  if (len == 0 || len > p_max_size) len = p_max_size;
+  if (len == 0 || len > p_max_size) {
+    len = p_max_size;
+  }
 
   memset(p, 0, p_max_size);
-  if (mpd_info.artist.size() && mpd_info.title.size()) {
+  if ((static_cast<unsigned int>(!mpd_info.artist.empty()) != 0u) &&
+      (static_cast<unsigned int>(!mpd_info.title.empty()) != 0u)) {
     snprintf(p, len, "%s - %s", mpd_info.artist.c_str(),
              mpd_info.title.c_str());
-  } else if (get_mpd().title.size()) {
+  } else if (static_cast<unsigned int>(!get_mpd().title.empty()) != 0u) {
     snprintf(p, len, "%s", mpd_info.title.c_str());
-  } else if (mpd_info.artist.size()) {
+  } else if (static_cast<unsigned int>(!mpd_info.artist.empty()) != 0u) {
     snprintf(p, len, "%s", mpd_info.artist.c_str());
-  } else if (mpd_info.file.size()) {
+  } else if (static_cast<unsigned int>(!mpd_info.file.empty()) != 0u) {
     snprintf(p, len, "%s", mpd_info.file.c_str());
   } else {
     *p = 0;

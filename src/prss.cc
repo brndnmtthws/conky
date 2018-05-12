@@ -30,23 +30,23 @@
 void prss_parse_doc(PRSS *result, xmlDocPtr doc);
 
 PRSS::PRSS(const std::string &xml_data)
-    : version(NULL),
-      title(NULL),
-      link(NULL),
-      description(NULL),
-      language(NULL),
-      generator(NULL),
-      managingEditor(NULL),
-      webMaster(NULL),
-      docs(NULL),
-      lastBuildDate(NULL),
-      pubDate(NULL),
-      copyright(NULL),
-      ttl(NULL),
-      items(NULL),
+    : version(nullptr),
+      title(nullptr),
+      link(nullptr),
+      description(nullptr),
+      language(nullptr),
+      generator(nullptr),
+      managingEditor(nullptr),
+      webMaster(nullptr),
+      docs(nullptr),
+      lastBuildDate(nullptr),
+      pubDate(nullptr),
+      copyright(nullptr),
+      ttl(nullptr),
+      items(nullptr),
       item_count(0) {
   std::unique_ptr<xmlDoc, void (*)(xmlDoc *)> doc(
-      xmlReadMemory(xml_data.c_str(), xml_data.length(), "", NULL,
+      xmlReadMemory(xml_data.c_str(), xml_data.length(), "", nullptr,
                     PARSE_OPTIONS),
       xmlFreeDoc);
 

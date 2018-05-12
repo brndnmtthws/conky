@@ -28,11 +28,11 @@
 #include "text_object.h"
 
 #include <Imlib2.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#include <climits>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 
 #include "x11.h"
 
@@ -69,7 +69,7 @@ void imlib_cache_size_setting::lua_setter(lua::state &l, bool init) {
   Base::lua_setter(l, init);
 
   if (init && out_to_x.get(l)) {
-    image_list_start = image_list_end = NULL;
+    image_list_start = image_list_end = nullptr;
     context = imlib_context_new();
     imlib_context_push(context);
     imlib_set_cache_size(do_convert(l, -1).first);
@@ -98,24 +98,24 @@ void imlib_cache_size_setting::cleanup(lua::state &l) {
   }
 }
 
-void cimlib_cleanup(void) {
-  struct image_list_s *cur = image_list_start, *last = NULL;
-  while (cur) {
+void cimlib_cleanup() {
+  struct image_list_s *cur = image_list_start, *last = nullptr;
+  while (cur != nullptr) {
     last = cur;
     cur = last->next;
     free(last);
   }
-  image_list_start = image_list_end = NULL;
+  image_list_start = image_list_end = nullptr;
 }
 
 void cimlib_add_image(const char *args) {
-  struct image_list_s *cur = NULL;
+  struct image_list_s *cur = nullptr;
   const char *tmp;
 
-  cur = (struct image_list_s *)malloc(sizeof(struct image_list_s));
+  cur = static_cast<struct image_list_s *>(malloc(sizeof(struct image_list_s)));
   memset(cur, 0, sizeof(struct image_list_s));
 
-  if (!sscanf(args, "%1023s", cur->name)) {
+  if (sscanf(args, "%1023s", cur->name) == 0) {
     NORM_ERR(
         "Invalid args for $image.  Format is: '<path to image> (-p"
         "x,y) (-s WxH) (-n) (-f interval)' (got '%s')",
@@ -128,27 +128,27 @@ void cimlib_add_image(const char *args) {
   //
   // now we check for optional args
   tmp = strstr(args, "-p ");
-  if (tmp) {
+  if (tmp != nullptr) {
     tmp += 3;
     sscanf(tmp, "%i,%i", &cur->x, &cur->y);
   }
   tmp = strstr(args, "-s ");
-  if (tmp) {
+  if (tmp != nullptr) {
     tmp += 3;
-    if (sscanf(tmp, "%ix%i", &cur->w, &cur->h)) {
+    if (sscanf(tmp, "%ix%i", &cur->w, &cur->h) != 0) {
       cur->wh_set = 1;
     }
   }
 
   tmp = strstr(args, "-n");
-  if (tmp) {
+  if (tmp != nullptr) {
     cur->no_cache = 1;
   }
 
   tmp = strstr(args, "-f ");
-  if (tmp) {
+  if (tmp != nullptr) {
     tmp += 3;
-    if (sscanf(tmp, "%d", &cur->flush_interval)) {
+    if (sscanf(tmp, "%d", &cur->flush_interval) != 0) {
       cur->no_cache = 0;
     }
   }
@@ -157,7 +157,7 @@ void cimlib_add_image(const char *args) {
     cur->flush_interval = 0;
   }
 
-  if (image_list_end) {
+  if (image_list_end != nullptr) {
     image_list_end->next = cur;
     image_list_end = cur;
   } else {
@@ -168,7 +168,7 @@ void cimlib_add_image(const char *args) {
 static void cimlib_draw_image(struct image_list_s *cur, int *clip_x,
                               int *clip_y, int *clip_x2, int *clip_y2) {
   int w, h;
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
   static int rep = 0;
 
   if (imlib_context_get_drawable() != window.drawable) {
@@ -176,8 +176,10 @@ static void cimlib_draw_image(struct image_list_s *cur, int *clip_x,
   }
 
   image = imlib_load_image(cur->name);
-  if (!image) {
-    if (!rep) NORM_ERR("Unable to load image '%s'", cur->name);
+  if (image == nullptr) {
+    if (rep == 0) {
+      NORM_ERR("Unable to load image '%s'", cur->name);
+    }
     rep = 1;
     return;
   }
@@ -194,7 +196,7 @@ static void cimlib_draw_image(struct image_list_s *cur, int *clip_x,
   imlib_image_set_has_alpha(1);
   w = imlib_image_get_width();
   h = imlib_image_get_height();
-  if (!cur->wh_set) {
+  if (cur->wh_set == 0) {
     cur->w = w;
     cur->h = h;
   }
@@ -202,22 +204,30 @@ static void cimlib_draw_image(struct image_list_s *cur, int *clip_x,
   imlib_blend_image_onto_image(image, 1, 0, 0, w, h, cur->x, cur->y, cur->w,
                                cur->h);
   imlib_context_set_image(image);
-  if (cur->no_cache ||
-      (cur->flush_interval && now % cur->flush_interval == 0)) {
+  if ((cur->no_cache != 0) ||
+      ((cur->flush_interval != 0) && now % cur->flush_interval == 0)) {
     imlib_free_image_and_decache();
   } else {
     imlib_free_image();
   }
-  if (cur->x < *clip_x) *clip_x = cur->x;
-  if (cur->y < *clip_y) *clip_y = cur->y;
-  if (cur->x + cur->w > *clip_x2) *clip_x2 = cur->x + cur->w;
-  if (cur->y + cur->h > *clip_y2) *clip_y2 = cur->y + cur->h;
+  if (cur->x < *clip_x) {
+    *clip_x = cur->x;
+  }
+  if (cur->y < *clip_y) {
+    *clip_y = cur->y;
+  }
+  if (cur->x + cur->w > *clip_x2) {
+    *clip_x2 = cur->x + cur->w;
+  }
+  if (cur->y + cur->h > *clip_y2) {
+    *clip_y2 = cur->y + cur->h;
+  }
 }
 
 static void cimlib_draw_all(int *clip_x, int *clip_y, int *clip_x2,
                             int *clip_y2) {
   struct image_list_s *cur = image_list_start;
-  while (cur) {
+  while (cur != nullptr) {
     cimlib_draw_image(cur, clip_x, clip_y, clip_x2, clip_y2);
     cur = cur->next;
   }
@@ -228,11 +238,13 @@ void cimlib_render(int x, int y, int width, int height) {
   int clip_x2 = 0, clip_y2 = 0;
   time_t now;
 
-  if (!image_list_start) return; /* are we actually drawing anything? */
+  if (image_list_start == nullptr) {
+    return; /* are we actually drawing anything? */
+  }
 
   /* cheque if it's time to flush our cache */
-  now = time(NULL);
-  if (imlib_cache_flush_interval.get(*state) &&
+  now = time(nullptr);
+  if ((imlib_cache_flush_interval.get(*state) != 0u) &&
       now - imlib_cache_flush_interval.get(*state) > cimlib_cache_flush_last) {
     int size = imlib_get_cache_size();
     imlib_set_cache_size(0);
@@ -258,8 +270,12 @@ void cimlib_render(int x, int y, int width, int height) {
   imlib_context_set_image(buffer);
 
   /* setup our clip rect */
-  if (clip_x == INT_MAX) clip_x = 0;
-  if (clip_y == INT_MAX) clip_y = 0;
+  if (clip_x == INT_MAX) {
+    clip_x = 0;
+  }
+  if (clip_y == INT_MAX) {
+    clip_y = 0;
+  }
 
   /* render the image at 0, 0 */
   imlib_render_image_part_on_drawable_at_size(
@@ -269,8 +285,9 @@ void cimlib_render(int x, int y, int width, int height) {
   imlib_free_image();
 }
 
-void print_image_callback(struct text_object *obj, char *p, int p_max_size) {
-  (void)p;
+void print_image_callback(struct text_object *obj, char *p,
+                          int p_max_size) {
+  p = p; // just a trick to make the compiler happy about this being non-const
   (void)p_max_size;
 
   cimlib_add_image(obj->data.s);

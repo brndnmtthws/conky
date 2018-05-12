@@ -360,7 +360,7 @@ template <class T>
 void free_and_zero(T *&ptr) {
   if (ptr) {
     free(ptr);
-    ptr = NULL;
+    ptr = nullptr;
   }
 }
 

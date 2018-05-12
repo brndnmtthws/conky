@@ -32,6 +32,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <cmath>
 #include <mutex>
 #include "conky.h"
@@ -42,9 +43,9 @@
 #include "update-cb.hh"
 
 struct execi_data {
-  float interval;
-  char *cmd;
-  execi_data() : interval(0), cmd(0) {}
+  float interval{0};
+  char *cmd{nullptr};
+  execi_data() = default;
 };
 
 // our own implementation of popen, the difference : the value of 'childpid'
@@ -59,28 +60,29 @@ static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
   // create a pipe and close the ends if mode is something illegal
   if (strcmp(mode, "r") == 0) {
     if (pipe(ends) != 0) {
-      return NULL;
+      return nullptr;
     }
     parentend = ends[0];
     childend = ends[1];
   } else if (strcmp(mode, "w") == 0) {
     if (pipe(ends) != 0) {
-      return NULL;
+      return nullptr;
     }
     parentend = ends[1];
     childend = ends[0];
   } else {
-    return NULL;
+    return nullptr;
   }
 
   *child = fork();
   if (*child == -1) {
     close(parentend);
     close(childend);
-    return NULL;
-  } else if (*child > 0) {
+    return nullptr;
+  }
+  if (*child > 0) {
     close(childend);
-    waitpid(*child, NULL, 0);
+    waitpid(*child, nullptr, 0);
   } else {
     // don't read from both stdin and pipe or write to both stdout and pipe
     if (childend == ends[0]) {
@@ -91,10 +93,12 @@ static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
     close(parentend);
 
     // by dupping childend, the returned fd will have close-on-exec turned off
-    if (dup(childend) == -1) perror("dup()");
+    if (fcntl(childend, F_DUPFD_CLOEXEC) == -1) {
+      perror("dup()");
+    }
     close(childend);
 
-    execl("/bin/sh", "sh", "-c", command, (char *)NULL);
+    execl("/bin/sh", "sh", "-c", command, (char *)nullptr);
     _exit(EXIT_FAILURE);  // child should die here, (normally execl will take
                           // care of this but it can fail)
   }
@@ -119,17 +123,20 @@ void exec_cb::work() {
   std::shared_ptr<FILE> fp;
   char b[0x1000];
 
-  if (FILE *t = pid_popen(std::get<0>(tuple).c_str(), "r", &childpid))
+  if (FILE *t = pid_popen(std::get<0>(tuple).c_str(), "r", &childpid)) {
     fp.reset(t, fclose);
-  else
+  } else {
     return;
+  }
 
-  while (!feof(fp.get()) && !ferror(fp.get())) {
+  while ((feof(fp.get()) == 0) && (ferror(fp.get()) == 0)) {
     int length = fread(b, 1, sizeof b, fp.get());
     buf.append(b, length);
   }
 
-  if (*buf.rbegin() == '\n') buf.resize(buf.size() - 1);
+  if (*buf.rbegin() == '\n') {
+    buf.resize(buf.size() - 1);
+  }
 
   std::lock_guard<std::mutex> l(result_mutex);
   result = buf;
@@ -145,12 +152,14 @@ static void remove_deleted_chars(char *string) {
       if (i != 0) {
         strcpy(&(string[i - 1]), &(string[i + 1]));
         i--;
-      } else
+      } else {
         strcpy(
             &(string[i]),
             &(string[i + 1]));  // necessary for ^H's at the start of a string
-    } else
+      }
+    } else {
       i++;
+    }
   }
 }
 
@@ -191,7 +200,7 @@ static inline double get_barnum(const char *buf) {
  */
 void fill_p(const char *buffer, struct text_object *obj, char *p,
             int p_max_size) {
-  if (obj->parse == true) {
+  if (obj->parse) {
     evaluate(buffer, p, p_max_size);
   } else {
     snprintf(p, p_max_size, "%s", buffer);
@@ -216,7 +225,7 @@ void scan_exec_arg(struct text_object *obj, const char *arg,
   struct execi_data *ed;
 
   /* in case we have an execi object, we need to parse out the interval */
-  if (execflag & EF_EXECI) {
+  if ((execflag & EF_EXECI) != 0u) {
     ed = new execi_data;
     int n;
 
@@ -224,7 +233,7 @@ void scan_exec_arg(struct text_object *obj, const char *arg,
     if (sscanf(arg, "%f %n", &ed->interval, &n) <= 0) {
       NORM_ERR("missing execi interval: ${execi* <interval> command}");
       delete ed;
-      ed = NULL;
+      ed = nullptr;
       return;
     }
 
@@ -233,14 +242,14 @@ void scan_exec_arg(struct text_object *obj, const char *arg,
   }
 
   /* parse any special options for the graphical exec types */
-  if (execflag & EF_BAR) {
+  if ((execflag & EF_BAR) != 0u) {
     cmd = scan_bar(obj, cmd, 100);
 #ifdef BUILD_X11
-  } else if (execflag & EF_GAUGE) {
+  } else if ((execflag & EF_GAUGE) != 0u) {
     cmd = scan_gauge(obj, cmd, 100);
-  } else if (execflag & EF_GRAPH) {
+  } else if ((execflag & EF_GRAPH) != 0u) {
     cmd = scan_graph(obj, cmd, 100);
-    if (!cmd) {
+    if (cmd == nullptr) {
       NORM_ERR("error parsing arguments to execgraph object");
     }
 #endif /* BUILD_X11 */
@@ -248,10 +257,11 @@ void scan_exec_arg(struct text_object *obj, const char *arg,
 
   /* finally, store the resulting command, or an empty string if something went
    * wrong */
-  if (execflag & EF_EXEC) {
-    obj->data.s = strndup(cmd ? cmd : "", text_buffer_size.get(*state));
-  } else if (execflag & EF_EXECI) {
-    ed->cmd = strndup(cmd ? cmd : "", text_buffer_size.get(*state));
+  if ((execflag & EF_EXEC) != 0u) {
+    obj->data.s =
+        strndup(cmd != nullptr ? cmd : "", text_buffer_size.get(*state));
+  } else if ((execflag & EF_EXECI) != 0u) {
+    ed->cmd = strndup(cmd != nullptr ? cmd : "", text_buffer_size.get(*state));
     obj->data.opaque = ed;
   }
 }
@@ -262,7 +272,7 @@ void scan_exec_arg(struct text_object *obj, const char *arg,
  * @param[out] obj stores the callback handle
  */
 void register_exec(struct text_object *obj) {
-  if (obj->data.s && obj->data.s[0]) {
+  if ((obj->data.s != nullptr) && (obj->data.s[0] != 0)) {
     obj->exec_handle = new conky::callback_handle<exec_cb>(
         conky::register_cb<exec_cb>(1, true, obj->data.s));
   } else {
@@ -279,9 +289,9 @@ void register_exec(struct text_object *obj) {
  * @param[out] obj stores the callback handle
  */
 void register_execi(struct text_object *obj) {
-  struct execi_data *ed = (struct execi_data *)obj->data.opaque;
+  auto *ed = static_cast<struct execi_data *>(obj->data.opaque);
 
-  if (ed && ed->cmd && ed->cmd[0]) {
+  if ((ed != nullptr) && (ed->cmd != nullptr) && (ed->cmd[0] != 0)) {
     uint32_t period =
         std::max(lround(ed->interval / active_update_interval()), 1l);
     obj->exec_handle = new conky::callback_handle<exec_cb>(
@@ -299,7 +309,7 @@ void register_execi(struct text_object *obj) {
  * @param[in] p_max_size the maximum size of p...
  */
 void print_exec(struct text_object *obj, char *p, int p_max_size) {
-  if (obj->exec_handle) {
+  if (obj->exec_handle != nullptr) {
     fill_p((*obj->exec_handle)->get_result_copy().c_str(), obj, p, p_max_size);
   }
 }
@@ -311,11 +321,10 @@ void print_exec(struct text_object *obj, char *p, int p_max_size) {
  * @return a value between 0.0 and 100.0
  */
 double execbarval(struct text_object *obj) {
-  if (obj->exec_handle) {
+  if (obj->exec_handle != nullptr) {
     return get_barnum((*obj->exec_handle)->get_result_copy().c_str());
-  } else {
-    return 0.0;
   }
+    return 0.0;
 }
 
 /**
@@ -326,7 +335,7 @@ double execbarval(struct text_object *obj) {
 void free_exec(struct text_object *obj) {
   free_and_zero(obj->data.s);
   delete obj->exec_handle;
-  obj->exec_handle = NULL;
+  obj->exec_handle = nullptr;
 }
 
 /**
@@ -335,16 +344,18 @@ void free_exec(struct text_object *obj) {
  * @param[in] obj holds the data that we need to free up
  */
 void free_execi(struct text_object *obj) {
-  struct execi_data *ed = (struct execi_data *)obj->data.opaque;
+  auto *ed = static_cast<struct execi_data *>(obj->data.opaque);
 
-  /* if ed is NULL, there is nothing to do */
-  if (!ed) return;
+  /* if ed is nullptr, there is nothing to do */
+  if (ed == nullptr) {
+    return;
+  }
 
   delete obj->exec_handle;
-  obj->exec_handle = NULL;
+  obj->exec_handle = nullptr;
 
   free_and_zero(ed->cmd);
   delete ed;
-  ed = NULL;
-  obj->data.opaque = NULL;
+  ed = nullptr;
+  obj->data.opaque = nullptr;
 }

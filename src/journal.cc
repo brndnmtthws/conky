@@ -49,7 +49,7 @@ struct journal {
 
 void free_journal(struct text_object *obj) {
   struct journal *j = (struct journal *)obj->data.opaque;
-  obj->data.opaque = NULL;
+  obj->data.opaque = nullptr;
   delete j;
 }
 
@@ -113,7 +113,7 @@ out:
 void print_journal(struct text_object *obj, char *p, int p_max_size) {
   size_t read = 0, length;
   struct journal *j = (struct journal *)obj->data.opaque;
-  sd_journal *jh = NULL;
+  sd_journal *jh = nullptr;
 
   struct tm *tm;
   time_t time;

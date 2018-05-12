@@ -49,8 +49,7 @@ const char this_cpp_object[] = "lua::this_cpp_object";
 
 // converts C++ exceptions to strings, so lua can do something with them
 int exception_to_string(lua_State *l) {
-  std::exception_ptr *ptr =
-      static_cast<std::exception_ptr *>(lua_touserdata(l, -1));
+  auto *ptr = static_cast<std::exception_ptr *>(lua_touserdata(l, -1));
   assert(ptr);
   try {
     std::rethrow_exception(*ptr);
@@ -71,7 +70,7 @@ int exception_to_string(lua_State *l) {
   return 1;
 }
 
-int absindex(lua_State *l, int index) throw() {
+int absindex(lua_State *l, int index) {
   return index < 0 && -index <= lua_gettop(l) ? lua_gettop(l) + 1 + index
                                               : index;
 }
@@ -79,9 +78,11 @@ int absindex(lua_State *l, int index) throw() {
 // Just like getfield(), only without calling metamethods (or throwing random
 // exceptions)
 inline void rawgetfield(lua_State *l, int index,
-                        const char *k) throw(std::bad_alloc) {
+                        const char *k) {
   index = absindex(l, index);
-  if (not lua_checkstack(l, 1)) throw std::bad_alloc();
+  if (lua_checkstack(l, 1) == 0) {
+    throw std::bad_alloc();
+  }
 
   lua_pushstring(l, k);
   lua_rawget(l, index);
@@ -90,9 +91,11 @@ inline void rawgetfield(lua_State *l, int index,
 // Just like setfield(), only without calling metamethods (or throwing random
 // exceptions)
 inline void rawsetfield(lua_State *l, int index,
-                        const char *k) throw(std::bad_alloc) {
+                        const char *k) {
   index = absindex(l, index);
-  if (not lua_checkstack(l, 2)) throw std::bad_alloc();
+  if (lua_checkstack(l, 2) == 0) {
+    throw std::bad_alloc();
+  }
 
   lua_pushstring(l, k);
   lua_insert(l, -2);
@@ -103,12 +106,11 @@ int closure_trampoline(lua_State *l) {
   lua_checkstack(l, 2);
   rawgetfield(l, REGISTRYINDEX, this_cpp_object);
   assert(lua_islightuserdata(l, -1));
-  state *L = static_cast<state *>(lua_touserdata(l, -1));
+  auto *L = static_cast<state *>(lua_touserdata(l, -1));
   lua_pop(l, 1);
 
   try {
-    cpp_function *fn =
-        static_cast<cpp_function *>(L->touserdata(lua_upvalueindex(1)));
+    auto *fn = static_cast<cpp_function *>(L->touserdata(lua_upvalueindex(1)));
     assert(fn);
     return (*fn)(L);
   } catch (lua::exception &e) {
@@ -137,11 +139,13 @@ int closure_trampoline(lua_State *l) {
  * execute everything in protected mode).
  */
 int panic_throw(lua_State *l) {
-  if (not lua_checkstack(l, 1)) throw std::bad_alloc();
+  if (lua_checkstack(l, 1) == 0) {
+    throw std::bad_alloc();
+  }
 
   rawgetfield(l, REGISTRYINDEX, this_cpp_object);
   assert(lua_islightuserdata(l, -1));
-  state *L = static_cast<state *>(lua_touserdata(l, -1));
+  auto *L = static_cast<state *>(lua_touserdata(l, -1));
   lua_pop(l, 1);
 
   throw lua::exception(L);
@@ -186,7 +190,7 @@ int safe_next_trampoline(lua_State *l) {
   int r = lua_next(l, 1);
   lua_checkstack(l, 1);
   lua_pushinteger(l, r);
-  return r ? 3 : 1;
+  return r != 0 ? 3 : 1;
 }
 
 }  // namespace
@@ -210,8 +214,10 @@ exception::exception(state *l) : std::runtime_error(get_error_msg(l)), L(l) {
   L->pop(1);
 }
 
-exception::~exception() throw() {
-  if (not L) return;
+exception::~exception() {
+  if (L == nullptr) {
+    return;
+  }
   L->checkstack(1);
 
   L->rawgetfield(REGISTRYINDEX, lua_exception_namespace);
@@ -220,9 +226,10 @@ exception::~exception() throw() {
 }
 
 void exception::push_lua_error(state *l) {
-  if (l != L)
+  if (l != L) {
     throw std::runtime_error(
         "Cannot transfer exceptions between different lua contexts");
+  }
   l->checkstack(2);
 
   l->rawgetfield(REGISTRYINDEX, lua_exception_namespace);
@@ -231,9 +238,9 @@ void exception::push_lua_error(state *l) {
 }
 
 state::state() {
-  if (lua_State *l = luaL_newstate())
+  if (lua_State *l = luaL_newstate()) {
     cobj.reset(l, &lua_close);
-  else {
+  } else {
     // docs say this can happen only in case of a memory allocation error
     throw std::bad_alloc();
   }
@@ -274,7 +281,9 @@ state::state() {
 
 void state::call(int nargs, int nresults, int errfunc) {
   int r = lua_pcall(cobj.get(), nargs, nresults, errfunc);
-  if (r == 0) return;
+  if (r == 0) {
+    return;
+  }
 
   if (r == LUA_ERRMEM) {
     // memory allocation error, cross your fingers
@@ -286,8 +295,7 @@ void state::call(int nargs, int nresults, int errfunc) {
   if (getmetatable(-2)) {
     if (rawequal(-1, -2)) {
       // it's a C++ exception, rethrow it
-      std::exception_ptr *ptr =
-          static_cast<std::exception_ptr *>(touserdata(-3));
+      auto *ptr = static_cast<std::exception_ptr *>(touserdata(-3));
       assert(ptr);
 
       /*
@@ -295,21 +303,23 @@ void state::call(int nargs, int nresults, int errfunc) {
        * exception will be collected by lua's GC
        */
       std::exception_ptr t(*ptr);
-      ptr = NULL;
+      ptr = nullptr;
       pop(3);
       std::rethrow_exception(t);
     }
     pop(2);
   }
   // it's a lua exception, wrap it
-  if (r == LUA_ERRERR)
+  if (r == LUA_ERRERR) {
     throw lua::errfunc_error(this);
-  else
-    throw lua::exception(this);
+  }
+  { throw lua::exception(this); }
 }
 
-void state::checkstack(int extra) throw(std::bad_alloc) {
-  if (not lua_checkstack(cobj.get(), extra)) throw std::bad_alloc();
+void state::checkstack(int extra) {
+  if (lua_checkstack(cobj.get(), extra) == 0) {
+    throw std::bad_alloc();
+  }
 }
 
 void state::concat(int n) {
@@ -322,7 +332,9 @@ void state::concat(int n) {
 
 bool state::equal(int index1, int index2) {
   // avoid pcall overhead in trivial cases
-  if (rawequal(index1, index2)) return true;
+  if (rawequal(index1, index2)) {
+    return true;
+  }
 
   return safe_compare(&safe_compare_trampoline<lua_equal>, index1, index2);
 }
@@ -371,9 +383,7 @@ bool state::lessthan(int index1, int index2) {
   return safe_compare(&safe_compare_trampoline<&lua_lessthan>, index1, index2);
 }
 
-void state::loadfile(const char *filename) throw(lua::syntax_error,
-                                                 lua::file_error,
-                                                 std::bad_alloc) {
+void state::loadfile(const char *filename) {
   switch (luaL_loadfile(cobj.get(), filename)) {
     case 0:
       return;
@@ -388,7 +398,7 @@ void state::loadfile(const char *filename) throw(lua::syntax_error,
   }
 }
 
-void state::loadstring(const char *s) throw(lua::syntax_error, std::bad_alloc) {
+void state::loadstring(const char *s) {
   switch (luaL_loadstring(cobj.get(), s)) {
     case 0:
       return;
@@ -413,7 +423,7 @@ bool state::next(int index) {
   assert(isnumber(-1));
   int r = tointeger(-1);
   pop();
-  return r;
+  return r != 0;
 }
 
 void state::pushclosure(const cpp_function &fn, int n) {
@@ -427,17 +437,19 @@ void state::pushclosure(const cpp_function &fn, int n) {
   lua_pushcclosure(cobj.get(), &closure_trampoline, n + 1);
 }
 
-void state::rawgetfield(int index, const char *k) throw(std::bad_alloc) {
+void state::rawgetfield(int index, const char *k) {
   lua::rawgetfield(cobj.get(), index, k);
 }
 
-void state::rawsetfield(int index, const char *k) throw(std::bad_alloc) {
+void state::rawsetfield(int index, const char *k) {
   lua::rawsetfield(cobj.get(), index, k);
 }
 
 bool state::safe_compare(lua_CFunction trampoline, int index1, int index2) {
   // if one of the indexes is invalid, return false
-  if (isnone(index1) || isnone(index2)) return false;
+  if (isnone(index1) || isnone(index2)) {
+    return false;
+  }
 
   // convert relative indexes into absolute
   index1 = absindex(index1);
@@ -451,7 +463,7 @@ bool state::safe_compare(lua_CFunction trampoline, int index1, int index2) {
   assert(isnumber(-1));
   int r = tointeger(-1);
   pop();
-  return r;
+  return r != 0;
 }
 
 void state::setfield(int index, const char *k) {
@@ -485,10 +497,12 @@ void state::settable(int index) {
   call(3, 0, 0);
 }
 
-std::string state::tostring(int index) throw(lua::not_string_error) {
+std::string state::tostring(int index) {
   size_t len;
   const char *str = lua_tolstring(cobj.get(), index, &len);
-  if (not str) throw not_string_error();
+  if (str == nullptr) {
+    throw not_string_error();
+  }
   return std::string(str, len);
 }
 }  // namespace lua
