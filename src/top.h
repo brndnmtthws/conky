@@ -10,7 +10,7 @@
  *
  * Copyright (c) 2005 Adi Zaimi, Dan Piponi <dan@tanelorn.demon.co.uk>,
  *					  Dave Clark <clarkd@skynet.ca>
- * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2018 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *

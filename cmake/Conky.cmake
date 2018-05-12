@@ -3,7 +3,7 @@
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2010 Brenden Matthews, et. al. (see AUTHORS)
+# Copyright (c) 2005-2018 Brenden Matthews, et. al. (see AUTHORS)
 # All rights reserved.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -133,7 +133,7 @@ else(RELEASE)
   set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}_pre${COMMIT_COUNT}")
 endif(RELEASE)
 
-set(COPYRIGHT "Copyright Brenden Matthews, et al, 2005-2015")
+set(COPYRIGHT "Copyright Brenden Matthews, et al, 2005-2018")
 
 macro(AC_SEARCH_LIBS FUNCTION_NAME INCLUDES TARGET_VAR)
   if("${TARGET_VAR}" MATCHES "^${TARGET_VAR}$")
