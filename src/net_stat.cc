@@ -29,11 +29,9 @@
 
 #include "net_stat.h"
 #include <errno.h>
-#include <netinet/in.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include "config.h"
 #include "conky.h"
 #include "logging.h"
 #include "net/if.h"

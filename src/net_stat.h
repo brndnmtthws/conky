@@ -30,6 +30,7 @@
 #ifndef _NET_STAT_H
 #define _NET_STAT_H
 
+#include "config.h"
 #include <sys/socket.h> /* struct sockaddr */
 
 #ifdef BUILD_IPV6
