@@ -31,19 +31,20 @@
 #define DISKIO_H_
 
 #include <limits.h>
+#include <cstring>
 
 struct diskio_stat {
   diskio_stat()
-      : next(NULL),
+      : next(nullptr),
         current(0),
         current_read(0),
         current_write(0),
         last(UINT_MAX),
         last_read(UINT_MAX),
         last_write(UINT_MAX) {
-    memset(sample, 0, sizeof(sample) / sizeof(sample[0]));
-    memset(sample_read, 0, sizeof(sample_read) / sizeof(sample_read[0]));
-    memset(sample_write, 0, sizeof(sample_write) / sizeof(sample_write[0]));
+            std::memset(sample, 0, sizeof(sample) / sizeof(sample[0]));
+            std::memset(sample_read, 0, sizeof(sample_read) / sizeof(sample_read[0]));
+            std::memset(sample_write, 0, sizeof(sample_write) / sizeof(sample_write[0]));
   }
   struct diskio_stat *next;
   char *dev;

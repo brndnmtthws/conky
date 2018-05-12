@@ -26,9 +26,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include "fonts.h"
+
 #include "conky.h"
 #include "logging.h"
+#include "fonts.h"
 
 int selected_font = 0;
 std::vector<font_list> fonts;

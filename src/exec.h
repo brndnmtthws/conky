@@ -30,7 +30,7 @@
 #ifndef _EXEC_H
 #define _EXEC_H
 
-#include "text_object.h"
+#include "update-cb.hh"
 
 /**
  * A callback that executes a command and stores the output as a std::string.

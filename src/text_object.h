@@ -33,7 +33,6 @@
 #include "config.h" /* for the defines */
 #include "exec.h"
 #include "specials.h" /* enum special_types */
-#include "update-cb.hh"
 
 /* text object callbacks */
 struct obj_cb {

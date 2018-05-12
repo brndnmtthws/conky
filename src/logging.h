@@ -32,6 +32,7 @@
 
 #include <cstdio>
 #include <stdexcept>
+#include "config.h"
 #include "i18n.h"
 
 class fork_throw : public std::runtime_error {

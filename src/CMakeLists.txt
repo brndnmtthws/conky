@@ -38,7 +38,7 @@ endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h)
 
 set(conky_sources
   ${conky_sources}
-  c++wrap.cc
+  c++wrap.cc c++wrap.hh
   colours.cc colours.h
   combine.cc combine.h
   common.cc common.h
@@ -64,13 +64,14 @@ set(conky_sources
   prioqueue.cc prioqueue.h
   proc.cc proc.h
   user.cc user.h
-  luamm.cc
-  data-source.cc
-  lua-config.cc
-  setting.cc
+  luamm.cc luamm.hh
+  data-source.cc data-source.hh
+  lua-config.cc lua-config.hh
+  setting.cc setting.hh
   llua.cc llua.h
-  update-cb.cc
+  update-cb.cc update-cb.hh
   logging.h
+  semaphore.hh
 )
 
 # Platform specific sources

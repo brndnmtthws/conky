@@ -331,9 +331,7 @@ static int helper_get_proc_list(struct kinfo_proc **p = NULL) {
 /*-------------------------------------------------------------------------------------------------------------------------------------------------------------------
  *  macOS Swapfiles Logic...
  *
- *  o   There is NO separate partition for swap storage ( unlike most Unix-based
- *OSes ) --- Instead swap memory is stored in the currently used partition
- *inside files
+ *  o   There is NO separate partition for swap storage ( unlike most Unix-based OSes ) --- Instead swap memory is stored in the currently used partition inside files
  *
  *  o   macOS can use ALL the available space on the used partition
  *
@@ -341,17 +339,13 @@ static int helper_get_proc_list(struct kinfo_proc **p = NULL) {
  *
  *  o   Every swapfile has index number eg. swapfile0, swapfile1, ...
  *
- *  o   Anyone can change the location of the swapfiles by editing the plist:
- */ System / Library / LaunchDaemons /
-    com.apple.dynamic_pager.plist(
-        Though it seems *like this is not supported by the dynamic_pager
-                application as can be observed *
-            from the code
-        : *https
-        :  // github.com/practicalswift/osx/blob/master/src/system_cmds/dynamic_pager.tproj/dynamic_pager.c
-            *) o Every swapfile has size of 1GB *
-    *-------------------------------------------------------------------------------------------------------------------------------------------------------------------* /
-
+ *  o   Anyone can change the location of the swapfiles by editing the plist: /System/Library/LaunchDaemons/com.apple.dynamic_pager.plist
+ *      ( Though it seems like this is not supported by the dynamic_pager application as can be observed from the code:
+ *          https://github.com/practicalswift/osx/blob/master/src/system_cmds/dynamic_pager.tproj/dynamic_pager.c )
+ *  o   Every swapfile has size of 1GB
+ *
+ *-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ */
     static int swapmode(unsigned long *retavail, unsigned long *retfree) {
   /*
    *  COMPATIBILITY:  Tiger+
