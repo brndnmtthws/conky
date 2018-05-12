@@ -29,7 +29,6 @@
 
 #include "net_stat.h"
 #include <errno.h>
-#include <netinet/in.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
