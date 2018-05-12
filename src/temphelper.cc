@@ -20,7 +20,6 @@
  * USA.
  *
  */
-#include "temphelper.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,6 +27,7 @@
 #include <sys/types.h>
 #include "config.h"
 #include "conky.h"
+#include "temphelper.h"
 
 template <>
 conky::lua_traits<TEMP_UNIT>::Map conky::lua_traits<TEMP_UNIT>::map = {

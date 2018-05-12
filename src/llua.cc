@@ -21,11 +21,11 @@
  *
  */
 
-#include "llua.h"
 #include <config.h>
 #include "build.h"
 #include "conky.h"
 #include "logging.h"
+#include "llua.h"
 
 #ifdef BUILD_LUA_EXTRAS
 extern "C" {

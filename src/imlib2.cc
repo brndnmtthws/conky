@@ -21,11 +21,11 @@
  *
  */
 
-#include "imlib2.h"
 #include "config.h"
 #include "conky.h"
 #include "logging.h"
 #include "text_object.h"
+#include "imlib2.h"
 
 #include <Imlib2.h>
 #include <limits.h>

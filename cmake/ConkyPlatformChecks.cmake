@@ -124,7 +124,13 @@ if(BUILD_I18N AND OS_DARWIN)
   else(LIBINTL_H_N)
     message(FATAL_ERROR "Unable to find libintl.h (try `brew install gettext`)")
   endif(LIBINTL_H_N)
-  set(conky_libs ${conky_libs} -lintl)
+  find_library(INTL_LIB NAMES intl PATHS
+    /usr/local/opt/gettext/lib
+    /usr/lib
+    /usr/local/lib
+    /usr/local/opt/lib
+    )
+  set(conky_libs ${conky_libs} ${INTL_LIB})
 endif(BUILD_I18N AND OS_DARWIN)
 
 if(BUILD_NCURSES AND OS_DARWIN)

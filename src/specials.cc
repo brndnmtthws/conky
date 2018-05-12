@@ -26,7 +26,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include "colours.h"
 #include "conky.h"
 #ifdef BUILD_X11
 #include "fonts.h"
@@ -40,6 +39,7 @@
 #endif /* HAVE_SYS_PARAM_H */
 #include <algorithm>
 #include <sstream>
+#include "colours.h"
 
 struct special_t *specials = NULL;
 

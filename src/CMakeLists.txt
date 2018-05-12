@@ -314,10 +314,10 @@ if(BUILD_ICONV)
 endif(BUILD_ICONV)
 
 if(BUILD_NCURSES)
-  set(nrcures
+  set(ncurses_srcs
     nc.cc nc.h
   )
-  set(optional_sources ${optional_sources} ${ncurses})
+  set(optional_sources ${optional_sources} ${ncurses_srcs})
 endif(BUILD_NCURSES)
 
 if(BUILD_PULSEAUDIO)
