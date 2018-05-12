@@ -25,6 +25,8 @@
 #ifndef MPD_H_
 #define MPD_H_
 
+#include <cstdint>
+
 /* text object functions */
 void print_mpd_elapsed(struct text_object *, char *, int);
 void print_mpd_length(struct text_object *, char *, int);

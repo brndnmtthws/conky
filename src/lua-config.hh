@@ -26,7 +26,7 @@
 #include "luamm.hh"
 
 namespace conky {
-	void export_symbols(lua::state &l);
+void export_symbols(lua::state &l);
 }
 
 #endif /* LUA_CONFIG_HH */

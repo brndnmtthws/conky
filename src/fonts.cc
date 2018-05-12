@@ -27,9 +27,8 @@
  *
  */
 
-#include "conky.h"
-#include "logging.h"
 #include "fonts.h"
+#include "logging.h"
 
 int selected_font = 0;
 std::vector<font_list> fonts;

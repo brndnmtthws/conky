@@ -26,6 +26,7 @@
  *
  */
 
+#include "mpd.h"
 #include <cmath>
 #include <mutex>
 #include "conky.h"
@@ -33,7 +34,6 @@
 #include "logging.h"
 #include "timeinfo.h"
 #include "update-cb.hh"
-#include "mpd.h"
 
 namespace {
 

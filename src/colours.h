@@ -29,6 +29,8 @@
 #ifndef _COLOURS_H
 #define _COLOURS_H
 
+#include <string>
+
 unsigned int adjust_colours(unsigned int);
 unsigned long *do_gradient(int, unsigned long, unsigned long);
 

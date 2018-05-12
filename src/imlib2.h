@@ -24,6 +24,8 @@
 #ifndef _CONKY_IMBLI2_H_
 #define _CONKY_IMBLI2_H_
 
+#include "conky.h"
+
 #include <X11/Xlib.h>
 
 void cimlib_add_image(const char *name);

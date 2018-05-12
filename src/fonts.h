@@ -26,12 +26,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifdef BUILD_X11
 #ifndef _FONTS_H
 #define _FONTS_H
 
 #include <vector>
 
+#include "conky.h"
 #include "x11.h"
 
 /* for fonts */
@@ -105,4 +105,3 @@ class font_setting : public conky::simple_config_setting<std::string> {
 extern font_setting font;
 
 #endif /* _FONTS_H */
-#endif /* BUILD_X11 */

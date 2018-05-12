@@ -37,15 +37,14 @@ enum { O_CLOEXEC = 02000000 };
 std::string strerror_r(int errnum);
 std::pair<int, int> pipe2(int flags);
 
-class errno_error: public std::runtime_error {
-	typedef std::runtime_error Base;
+class errno_error : public std::runtime_error {
+  typedef std::runtime_error Base;
 
-public:
-	errno_error(const std::string &prefix, int err_ = errno)
-		: Base(prefix + ": " + strerror_r(err_)), err(err_)
-	{}
+ public:
+  errno_error(const std::string &prefix, int err_ = errno)
+      : Base(prefix + ": " + strerror_r(err_)), err(err_) {}
 
-	const int err;
+  const int err;
 };
 
 #endif /* CPPWRAP_HH */
