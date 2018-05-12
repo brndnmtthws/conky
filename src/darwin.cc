@@ -53,9 +53,9 @@
 
 #include <AvailabilityMacros.h>
 
-#include <stdio.h>
 #include <sys/mount.h>  // statfs
 #include <sys/sysctl.h>
+#include <cstdio>
 
 #include <mach/mach_host.h>
 #include <mach/mach_init.h>
@@ -88,7 +88,7 @@
 
 /* (E)nhanced printf */
 #ifdef DEBUG_MODE
-#include <stdarg.h>
+#include <cstdarg>
 void eprintf(const char *fmt, ...) {
   va_list args;
   va_start(args, fmt);
@@ -110,7 +110,7 @@ static conky::simple_config_setting<bool> top_cpu_separate("top_cpu_separate",
 static int getsysctl(const char *name, void *ptr, size_t len) {
   size_t nlen = len;
 
-  if (sysctlbyname(name, ptr, &nlen, NULL, 0) == -1) {
+  if (sysctlbyname(name, ptr, &nlen, nullptr, 0) == -1) {
     return -1;
   }
 
@@ -166,7 +166,7 @@ int clock_gettime(int clock_id, struct timespec *ts) {
  *  Uses mach API to get load info ( task_count, thread_count )
  *
  */
-static void helper_update_threads_processes(void) {
+static void helper_update_threads_processes() {
   static host_name_port_t machHost;
   static processor_set_name_port_t processorSet = 0;
   static bool machStuffInitialised = false;
@@ -181,13 +181,15 @@ static void helper_update_threads_processes(void) {
   }
 
   /* get load info */
-  struct processor_set_load_info loadInfo;
+  struct processor_set_load_info loadInfo {};
   mach_msg_type_number_t count = PROCESSOR_SET_LOAD_INFO_COUNT;
-  kern_return_t err =
-      processor_set_statistics(processorSet, PROCESSOR_SET_LOAD_INFO,
-                               (processor_set_info_t)&loadInfo, &count);
+  kern_return_t err = processor_set_statistics(
+      processorSet, PROCESSOR_SET_LOAD_INFO,
+      reinterpret_cast<processor_set_info_t>(&loadInfo), &count);
 
-  if (err != KERN_SUCCESS) return;
+  if (err != KERN_SUCCESS) {
+    return;
+  }
 
   info.procs = loadInfo.task_count;
   info.threads = loadInfo.thread_count;
@@ -228,13 +230,14 @@ static void get_cpu_sample(struct cpusample *sample) {
   natural_t processorCount;
   processor_cpu_load_info_t processorTickInfo;
   mach_msg_type_number_t processorInfoCount;
-  struct cpusample *samples = NULL;
+  struct cpusample *samples = nullptr;
 
   machHost = mach_host_self();
 
   kern_return_t err = host_processor_info(
       machHost, PROCESSOR_CPU_LOAD_INFO, &processorCount,
-      (processor_info_array_t *)&processorTickInfo, &processorInfoCount);
+      reinterpret_cast<processor_info_array_t *>(&processorTickInfo),
+      &processorInfoCount);
   if (err != KERN_SUCCESS) {
     printf("host_statistics: %s\n", mach_error_string(err));
     return;
@@ -279,10 +282,8 @@ static void get_cpu_sample(struct cpusample *sample) {
    * Dealloc
    */
   vm_deallocate(mach_task_self(), (vm_address_t)processorTickInfo,
-                (vm_size_t)(processorInfoCount * sizeof(natural_t)));
+                static_cast<vm_size_t>(processorInfoCount * sizeof(natural_t)));
   delete[] samples;
-
-  return;
 }
 
 /*
@@ -296,31 +297,31 @@ static void get_cpu_sample(struct cpusample *sample) {
  * ATTENTION: Do not forget to free the array once you are done with it,
  *  it is not freed automatically.
  */
-static int helper_get_proc_list(struct kinfo_proc **p = NULL) {
+static int helper_get_proc_list(struct kinfo_proc **p) {
   int err = 0;
   size_t length = 0;
   static const int name[] = {CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0};
 
-  /* Call sysctl with a NULL buffer to get proper length */
-  err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, NULL, &length,
-               NULL, 0);
-  if (err) {
-    perror(NULL);
+  /* Call sysctl with a nullptr buffer to get proper length */
+  err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, nullptr, &length,
+               nullptr, 0);
+  if (err != 0) {
+    perror(nullptr);
     return (-1);
   }
 
   /* Allocate buffer */
-  *p = (kinfo_proc *)malloc(length);
-  if (!p) {
-    perror(NULL);
+  *p = static_cast<kinfo_proc *>(malloc(length));
+  if (p == nullptr) {
+    perror(nullptr);
     return (-1);
   }
 
   /* Get the actual process list */
   err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, *p, &length,
-               NULL, 0);
-  if (err) {
-    perror(NULL);
+               nullptr, 0);
+  if (err != 0) {
+    perror(nullptr);
     return (-1);
   }
 
@@ -356,10 +357,10 @@ static int swapmode(unsigned long *retavail, unsigned long *retfree) {
    */
 
   int swapMIB[] = {CTL_VM, 5};
-  struct xsw_usage swapUsage;
+  struct xsw_usage swapUsage {};
   size_t swapUsageSize = sizeof(swapUsage);
   memset(&swapUsage, 0, sizeof(swapUsage));
-  if (sysctl(swapMIB, 2, &swapUsage, &swapUsageSize, NULL, 0) == 0) {
+  if (sysctl(swapMIB, 2, &swapUsage, &swapUsageSize, nullptr, 0) == 0) {
     *retfree = swapUsage.xsu_avail / 1024;
     *retavail = swapUsage.xsu_total / 1024;
   } else {
@@ -370,17 +371,17 @@ static int swapmode(unsigned long *retavail, unsigned long *retfree) {
   return 1;
 }
 
-void prepare_update(void) {
+void prepare_update() {
   // in freebsd.cc this is empty so leaving it here too!
 }
 
-int update_uptime(void) {
+int update_uptime() {
   int mib[2] = {CTL_KERN, KERN_BOOTTIME};
-  struct timeval boottime;
+  struct timeval boottime {};
   time_t now;
   size_t size = sizeof(boottime);
 
-  if ((sysctl(mib, 2, &boottime, &size, NULL, 0) != -1) &&
+  if ((sysctl(mib, 2, &boottime, &size, nullptr, 0) != -1) &&
       (boottime.tv_sec != 0)) {
     time(&now);
     info.uptime = now - boottime.tv_sec;
@@ -404,7 +405,9 @@ int check_mount(struct text_object *obj) {
   int num_mounts = 0;
   struct statfs *mounts;
 
-  if (!obj->data.s) return 0;
+  if (obj->data.s == nullptr) {
+    return 0;
+  }
 
   num_mounts = getmntinfo(&mounts, MNT_WAIT);
 
@@ -413,10 +416,11 @@ int check_mount(struct text_object *obj) {
     return 0;
   }
 
-  for (int i = 0; i < num_mounts; i++)
+  for (int i = 0; i < num_mounts; i++) {
     if (strcmp(mounts[i].f_mntonname, obj->data.s) == 0) {
       return 1;
     }
+  }
 
   return 0;
 }
@@ -496,16 +500,16 @@ static void update_pages_stolen(libtop_tsamp_t *tsamp) {
     /* These are all declared as QUAD/uint64_t sysctls in the kernel. */
 
     if (-1 == sysctl(mib_reserved, mib_reserved_len, &reserved, &reserved_len,
-                     NULL, 0)) {
+                     nullptr, 0)) {
       return;
     }
 
     if (-1 == sysctl(mib_unusable, mib_unusable_len, &unusable, &unusable_len,
-                     NULL, 0)) {
+                     nullptr, 0)) {
       return;
     }
 
-    if (-1 == sysctl(mib_other, mib_other_len, &other, &other_len, NULL, 0)) {
+    if (-1 == sysctl(mib_other, mib_other_len, &other, &other_len, nullptr, 0)) {
       return;
     }
 
@@ -535,7 +539,8 @@ static int libtop_tsamp_update_vm_stats(libtop_tsamp_t *tsamp) {
 
   mach_msg_type_number_t count = sizeof(tsamp->vm_stat) / sizeof(natural_t);
   kr = host_statistics64(mach_host_self(), HOST_VM_INFO64,
-                         (host_info64_t)&tsamp->vm_stat, &count);
+                         reinterpret_cast<host_info64_t>(&tsamp->vm_stat),
+                         &count);
   if (kr != KERN_SUCCESS) {
     return kr;
   }
@@ -545,9 +550,9 @@ static int libtop_tsamp_update_vm_stats(libtop_tsamp_t *tsamp) {
   }
 
   // Check whether we got purgeable memory statistics
-  tsamp->purgeable_is_valid =
-      (count == (sizeof(tsamp->vm_stat) / sizeof(natural_t)));
-  if (!tsamp->purgeable_is_valid) {
+  tsamp->purgeable_is_valid = static_cast<boolean_t>(
+      count == (sizeof(tsamp->vm_stat) / sizeof(natural_t)));
+  if (tsamp->purgeable_is_valid == 0u) {
     tsamp->vm_stat.purgeable_count = 0;
     tsamp->vm_stat.purges = 0;
   }
@@ -559,20 +564,20 @@ static int libtop_tsamp_update_vm_stats(libtop_tsamp_t *tsamp) {
  * helper function for update_meminfo()
  * return physical memory in bytes
  */
-uint64_t get_physical_memory(void) {
+uint64_t get_physical_memory() {
   int mib[2] = {CTL_HW, HW_MEMSIZE};
 
   int64_t physical_memory = 0;
   size_t length = sizeof(int64_t);
 
-  if (sysctl(mib, 2, &physical_memory, &length, NULL, 0) == -1) {
+  if (sysctl(mib, 2, &physical_memory, &length, nullptr, 0) == -1) {
     physical_memory = 0;
   }
 
   return physical_memory;
 }
 
-int update_meminfo(void) {
+int update_meminfo() {
   /* XXX implement remaining memory-related variables (see conky.h) */
   /* XXX conky breaks the values ... :( probably some rounding problem...
       Though we get the right values (based on top) */
@@ -582,9 +587,11 @@ int update_meminfo(void) {
   unsigned long swap_avail, swap_free;
 
   static libtop_tsamp_t *tsamp = nullptr;
-  if (!tsamp) {
+  if (tsamp == nullptr) {
     tsamp = new libtop_tsamp_t;
-    if (!tsamp) return 0;
+    if (tsamp == nullptr) {
+      return 0;
+    }
 
     memset(tsamp, 0, sizeof(libtop_tsamp_t));
     tsamp->pagesize = page_size;
@@ -599,7 +606,9 @@ int update_meminfo(void) {
    *  but first update pages stolen count
    */
   update_pages_stolen(tsamp);
-  if (libtop_tsamp_update_vm_stats(tsamp) == KERN_FAILURE) return 0;
+  if (libtop_tsamp_update_vm_stats(tsamp) == KERN_FAILURE) {
+    return 0;
+  }
 
   /*
    * This is actually a tricky part.
@@ -644,7 +653,7 @@ int update_meminfo(void) {
   return 0;
 }
 
-int update_net_stats(void) {
+int update_net_stats() {
   struct net_stat *ns;
   double delta;
   long long r, t, last_recv, last_trans;
@@ -661,10 +670,10 @@ int update_net_stats(void) {
     return 0;
   }
 
-  for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-    ns = get_net_stat((const char *)ifa->ifa_name, NULL, NULL);
+  for (ifa = ifap; ifa != nullptr; ifa = ifa->ifa_next) {
+    ns = get_net_stat((const char *)ifa->ifa_name, nullptr, nullptr);
 
-    if (ifa->ifa_flags & IFF_UP) {
+    if ((ifa->ifa_flags & IFF_UP) != 0u) {
       struct ifaddrs *iftmp;
 
       ns->up = 1;
@@ -676,19 +685,20 @@ int update_net_stats(void) {
       }
 
       for (iftmp = ifa->ifa_next;
-           iftmp != NULL && strcmp(ifa->ifa_name, iftmp->ifa_name) == 0;
+           iftmp != nullptr && strcmp(ifa->ifa_name, iftmp->ifa_name) == 0;
            iftmp = iftmp->ifa_next) {
         if (iftmp->ifa_addr->sa_family == AF_INET) {
           memcpy(&(ns->addr), iftmp->ifa_addr, iftmp->ifa_addr->sa_len);
         }
       }
 
-      ifd = (struct if_data *)ifa->ifa_data;
+      ifd = static_cast<struct if_data *>(ifa->ifa_data);
       r = ifd->ifi_ibytes;
       t = ifd->ifi_obytes;
 
       if (r < ns->last_read_recv) {
-        ns->recv += ((long long)4294967295U - ns->last_read_recv) + r;
+        ns->recv +=
+            (static_cast<long long>(4294967295U) - ns->last_read_recv) + r;
       } else {
         ns->recv += (r - ns->last_read_recv);
       }
@@ -696,7 +706,8 @@ int update_net_stats(void) {
       ns->last_read_recv = r;
 
       if (t < ns->last_read_trans) {
-        ns->trans += ((long long)4294967295U - ns->last_read_trans) + t;
+        ns->trans +=
+            (static_cast<long long>(4294967295U) - ns->last_read_trans) + t;
       } else {
         ns->trans += (t - ns->last_read_trans);
       }
@@ -715,7 +726,7 @@ int update_net_stats(void) {
   return 0;
 }
 
-int update_threads(void) {
+int update_threads() {
   helper_update_threads_processes();
   return 0;
 }
@@ -731,20 +742,22 @@ int update_threads(void) {
  * Foreach pid and foreach pid's threads check their state and increment
  *  the run_threads counter acordingly.
  */
-int update_running_threads(void) {
-  struct kinfo_proc *p = NULL;
+int update_running_threads() {
+  struct kinfo_proc *p = nullptr;
   int proc_count = 0;
   int run_threads = 0;
 
   proc_count = helper_get_proc_list(&p);
 
-  if (proc_count == -1) return 0;
+  if (proc_count == -1) {
+    return 0;
+  }
 
-  for (int i = 0; i < proc_count; i++)
-    if (p[i].kp_proc.p_stat & SRUN) {
+  for (int i = 0; i < proc_count; i++) {
+    if ((p[i].kp_proc.p_stat & SRUN) != 0) {
       pid_t pid = 0;
-      struct proc_taskinfo pti;
-      struct proc_threadinfo pthi;
+      struct proc_taskinfo pti {};
+      struct proc_threadinfo pthi {};
       int num_threads = 0;
 
       pid = p[i].kp_proc.p_pid;
@@ -753,24 +766,30 @@ int update_running_threads(void) {
       if (sizeof(pti) ==
           proc_pidinfo(pid, PROC_PIDTASKINFO, 0, &pti, sizeof(pti))) {
         num_threads = pti.pti_threadnum;
-      } else
+      } else {
         continue;
+      }
 
       /* foreach thread check its state */
-      for (int i = 0; i < num_threads; i++)
+      for (int i = 0; i < num_threads; i++) {
         if (sizeof(pthi) ==
             proc_pidinfo(pid, PROC_PIDTHREADINFO, i, &pthi, sizeof(pthi))) {
-          if (pthi.pth_run_state == TH_STATE_RUNNING) run_threads++;
-        } else
+          if (pthi.pth_run_state == TH_STATE_RUNNING) {
+            run_threads++;
+          }
+        } else {
           continue;
+        }
+      }
     }
+  }
 
   free(p);
   info.run_threads = run_threads;
   return 0;
 }
 
-int update_total_processes(void) {
+int update_total_processes() {
   helper_update_threads_processes();
   return 0;
 
@@ -811,20 +830,23 @@ int update_total_processes(void) {
    */
 }
 
-int update_running_processes(void) {
-  struct kinfo_proc *p = NULL;
+int update_running_processes() {
+  struct kinfo_proc *p = nullptr;
   int proc_count = 0;
   int run_procs = 0;
 
   proc_count = helper_get_proc_list(&p);
 
-  if (proc_count == -1) return 0;
+  if (proc_count == -1) {
+    return 0;
+  }
 
   for (int i = 0; i < proc_count; i++) {
     int state = p[i].kp_proc.p_stat;
 
-    if (state == SRUN)  // XXX this check needs to be fixed...
+    if (state == SRUN) {  // XXX this check needs to be fixed...
       run_procs++;
+    }
   }
 
   free(p);
@@ -838,7 +860,7 @@ int update_running_processes(void) {
  * The macOS implementation gets the number of active cpus
  * in compliance with linux implementation.
  */
-void get_cpu_count(void) {
+void get_cpu_count() {
   int cpu_count = 0;
 
   if (GETSYSCTL("hw.activecpu", cpu_count) == 0) {
@@ -850,13 +872,14 @@ void get_cpu_count(void) {
 
   /* XXX this can be moved to update_cpu_usage() but keep here to follow linux
    * implementation */
-  if (!info.cpu_usage) {
+  if (info.cpu_usage == nullptr) {
     /*
      * Allocate ncpus+1 slots because cpu_usage[0] is overall usage.
      */
-    info.cpu_usage = (float *)malloc((info.cpu_count + 1) * sizeof(float));
-    if (info.cpu_usage == NULL) {
-      CRIT_ERR(NULL, NULL, "malloc");
+    info.cpu_usage =
+        static_cast<float *>(malloc((info.cpu_count + 1) * sizeof(float)));
+    if (info.cpu_usage == nullptr) {
+      CRIT_ERR(nullptr, nullptr, "malloc");
     }
   }
 }
@@ -869,17 +892,17 @@ struct cpu_info {
   long oldused;
 };
 
-int update_cpu_usage(void) {
+int update_cpu_usage() {
   /* XXX add support for multiple cpus (see linux.cc) */
 
   static bool cpu_setup = 0;
 
   long used, total;
-  static struct cpu_info *cpu = NULL;
+  static struct cpu_info *cpu = nullptr;
   unsigned int malloc_cpu_size = 0;
   extern void *global_cpu;
 
-  struct cpusample sample;
+  struct cpusample sample {};
 
   static pthread_mutex_t last_stat_update_mutex = PTHREAD_MUTEX_INITIALIZER;
   static double last_stat_update = 0.0;
@@ -896,17 +919,17 @@ int update_cpu_usage(void) {
   pthread_mutex_unlock(&last_stat_update_mutex);
 
   /* add check for !info.cpu_usage since that mem is freed on a SIGUSR1 */
-  if ((cpu_setup == 0) || (!info.cpu_usage)) {
+  if ((static_cast<int>(cpu_setup) == 0) || (info.cpu_usage == nullptr)) {
     get_cpu_count();
     cpu_setup = 1;
   }
 
-  if (!global_cpu) {
+  if (global_cpu == nullptr) {
     /*
      * Allocate ncpus+1 slots because cpu_usage[0] is overall usage.
      */
     malloc_cpu_size = (info.cpu_count + 1) * sizeof(struct cpu_info);
-    cpu = (cpu_info *)malloc(malloc_cpu_size);
+    cpu = static_cast<cpu_info *>(malloc(malloc_cpu_size));
     memset(cpu, 0, malloc_cpu_size);
     global_cpu = cpu;
   }
@@ -916,8 +939,8 @@ int update_cpu_usage(void) {
   used = total - sample.totalIdleTime;
 
   if ((total - cpu[0].oldtotal) != 0) {
-    info.cpu_usage[0] =
-        ((double)(used - cpu[0].oldused)) / (double)(total - cpu[0].oldtotal);
+    info.cpu_usage[0] = (static_cast<double>(used - cpu[0].oldused)) /
+                        static_cast<double>(total - cpu[0].oldtotal);
   } else {
     info.cpu_usage[0] = 0;
   }
@@ -928,33 +951,34 @@ int update_cpu_usage(void) {
   return 0;
 }
 
-int update_load_average(void) {
+int update_load_average() {
   double v[3];
 
   getloadavg(v, 3);
 
-  info.loadavg[0] = (double)v[0];
-  info.loadavg[1] = (double)v[1];
-  info.loadavg[2] = (double)v[2];
+  info.loadavg[0] = v[0];
+  info.loadavg[1] = v[1];
+  info.loadavg[2] = v[2];
 
   return 0;
 }
 
-double get_acpi_temperature(int fd) {
+double get_acpi_temperature(int /*fd*/) {
   printf("get_acpi_temperature: STUB\n");
   return 0.0;
 }
 
-void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item) {
+void get_battery_stuff(char * /*buf*/, unsigned int /*n*/, const char * /*bat*/,
+                       int /*item*/) {
   printf("get_battery_stuff: STUB\n");
 }
 
-int get_battery_perct(const char *bat) {
+int get_battery_perct(const char * /*bat*/) {
   printf("get_battery_perct: STUB\n");
   return 1;
 }
 
-double get_battery_perct_bar(struct text_object *obj) {
+double get_battery_perct_bar(struct text_object * /*obj*/) {
   printf("get_battery_perct_bar: STUB\n");
   return 0.0;
 }
@@ -967,18 +991,19 @@ int open_acpi_temperature(const char *name) {
   return 0;
 }
 
-void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
-                         const char *adapter) {
+void get_acpi_ac_adapter(char * /*p_client_buffer*/,
+                         size_t /*client_buffer_size*/,
+                         const char * /*adapter*/) {
   printf("get_acpi_ac_adapter: STUB\n");
 }
 
-void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
+void get_acpi_fan(char * /*p_client_buffer*/, size_t /*client_buffer_size*/) {
   printf("get_acpi_fan: STUB\n");
 }
 
 /* void */
 char get_freq(char *p_client_buffer, size_t client_buffer_size,
-              const char *p_format, int divisor, unsigned int cpu) {
+              const char *p_format, int divisor, unsigned int /*cpu*/) {
   /*
    * For now, we get the factory cpu frequency, not **current** cpu frequency
    * (Also, it is always the same for every core, so ignore |cpu| argument)
@@ -990,8 +1015,8 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
   unsigned int freq;
   size_t len;
 
-  if (!p_client_buffer || client_buffer_size <= 0 || !p_format ||
-      divisor <= 0) {
+  if ((p_client_buffer == nullptr) || client_buffer_size <= 0 ||
+      (p_format == nullptr) || divisor <= 0) {
     return 0;
   }
 
@@ -999,14 +1024,14 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
   mib[1] = HW_CPU_FREQ;
   len = sizeof(freq);
 
-  if (sysctl(mib, 2, &freq, &len, NULL, 0) == 0) {
+  if (sysctl(mib, 2, &freq, &len, nullptr, 0) == 0) {
     /*
      * convert to MHz
      */
     divisor *= 1000000;
 
     snprintf(p_client_buffer, client_buffer_size, p_format,
-             (float)freq / divisor);
+             static_cast<float>(freq) / divisor);
   } else {
     snprintf(p_client_buffer, client_buffer_size, p_format, 0.0f);
     return 0;
@@ -1022,20 +1047,21 @@ void update_wifi_stats(void)
 }
 #endif
 
-int update_diskio(void) {
+int update_diskio() {
   printf("update_diskio: STUB\n");
   return 0;
 }
 
-void get_battery_short_status(char *buffer, unsigned int n, const char *bat) {
+void get_battery_short_status(char * /*buffer*/, unsigned int /*n*/,
+                              const char * /*bat*/) {
   printf("get_battery_short_status: STUB\n");
 }
 
-int get_entropy_avail(unsigned int *val) {
+int get_entropy_avail(const unsigned int *val) {
   (void)val;
   return 1;
 }
-int get_entropy_poolsize(unsigned int *val) {
+int get_entropy_poolsize(const unsigned int *val) {
   (void)val;
   return 1;
 }
@@ -1049,9 +1075,12 @@ int get_entropy_poolsize(unsigned int *val) {
  */
 static void calc_cpu_usage_for_proc(struct process *proc, uint64_t total) {
   float mul = 100.0;
-  if (top_cpu_separate.get(*state)) mul *= info.cpu_count;
+  if (top_cpu_separate.get(*state)) {
+    mul *= info.cpu_count;
+  }
 
-  proc->amount = mul * (proc->user_time + proc->kernel_time) / (float)total;
+  proc->amount =
+      mul * (proc->user_time + proc->kernel_time) / static_cast<float>(total);
 }
 
 /*
@@ -1061,7 +1090,7 @@ static void calc_cpu_usage_for_proc(struct process *proc, uint64_t total) {
 static void calc_cpu_total(struct process *proc, uint64_t *total) {
   uint64_t current_total = 0; /* of current iteration */
   // uint64_t total = 0;             /* delta */
-  struct cpusample sample;
+  struct cpusample sample {};
 
   get_cpu_sample(&sample);
   current_total =
@@ -1119,8 +1148,8 @@ static void calc_cpu_time_for_proc(struct process *process,
  * process ) to implement get_top_info()
  */
 static void get_top_info_for_kinfo_proc(struct kinfo_proc *p) {
-  struct process *proc = NULL;
-  struct proc_taskinfo pti;
+  struct process *proc = nullptr;
+  struct proc_taskinfo pti {};
   pid_t pid;
 
   pid = p->kp_proc.p_pid;
@@ -1164,8 +1193,9 @@ static void get_top_info_for_kinfo_proc(struct kinfo_proc *p) {
     /*
      * wait until done
      */
-    while (!(calc_cpu_total_finished && calc_proc_total_finished))
+    while (!(calc_cpu_total_finished && calc_proc_total_finished)) {
       ;
+    }
 
     /* calc the amount(%) of CPU the process used  */
     calc_cpu_usage_for_proc(proc, t);
@@ -1174,9 +1204,9 @@ static void get_top_info_for_kinfo_proc(struct kinfo_proc *p) {
 
 /* While topless is obviously better, top is also not bad. */
 
-void get_top_info(void) {
+void get_top_info() {
   int proc_count = 0;
-  struct kinfo_proc *p = NULL;
+  struct kinfo_proc *p = nullptr;
 
   /*
    * QUICKFIX for #16
@@ -1199,13 +1229,16 @@ void get_top_info(void) {
    */
   proc_count = helper_get_proc_list(&p);
 
-  if (proc_count == -1) return;
+  if (proc_count == -1) {
+    return;
+  }
 
   /*
    *  get top info for-each process
    */
   for (int i = 0; i < proc_count; i++) {
-    if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && *p[i].kp_proc.p_comm != '\0') {
+    if ((((p[i].kp_proc.p_flag & P_SYSTEM)) == 0) &&
+        *p[i].kp_proc.p_comm != '\0') {
       get_top_info_for_kinfo_proc(&p[i]);
     }
   }
@@ -1224,9 +1257,11 @@ void get_top_info(void) {
  *  Also, flip the result on occasion
  */
 bool _csr_check(int aMask, bool aFlipflag) {
-  bool bit = (info.csr_config & aMask);
+  bool bit = (info.csr_config & aMask) != 0u;
 
-  if (aFlipflag) return !bit;
+  if (aFlipflag) {
+    return !bit;
+  }
 
   return bit;
 }
@@ -1234,7 +1269,7 @@ bool _csr_check(int aMask, bool aFlipflag) {
 /*
  *  Extract info from the csr_config variable and set the flags struct
  */
-void fill_csr_config_flags_struct(void) {
+void fill_csr_config_flags_struct() {
   info.csr_config_flags.csr_allow_apple_internal =
       _csr_check(CSR_ALLOW_APPLE_INTERNAL, 0);
   info.csr_config_flags.csr_allow_untrusted_kexts =
@@ -1260,7 +1295,7 @@ void fill_csr_config_flags_struct(void) {
 /*
  *  Get SIP configuration   ( sets csr_config and csr_config_flags )
  */
-int get_sip_status(void) {
+int get_sip_status() {
   if (csr_get_active_config ==
       nullptr) /*  check if weakly linked symbol exists    */
   {
@@ -1315,7 +1350,9 @@ void print_sip_status(struct text_object *obj, char *p, int p_max_size) {
   /* conky window output */
   (void)obj;
 
-  if (!obj->data.s) return;
+  if (obj->data.s == nullptr) {
+    return;
+  }
 
   if (strlen(obj->data.s) == 0) {
     snprintf(p, p_max_size, "%s",
@@ -1371,11 +1408,11 @@ void print_sip_status(struct text_object *obj, char *p, int p_max_size) {
             info.csr_config_flags.csr_allow_user_approved_kexts ? "YES" : "NO");
         break;
       case 'a':
-        snprintf(
-            p, p_max_size, "%s",
-            (info.csr_config && (info.csr_config != CSR_ALLOW_APPLE_INTERNAL))
-                ? "unsupported configuration, beware!"
-                : "configuration is ok");
+        snprintf(p, p_max_size, "%s",
+                 ((info.csr_config != 0u) &&
+                  (info.csr_config != CSR_ALLOW_APPLE_INTERNAL))
+                     ? "unsupported configuration, beware!"
+                     : "configuration is ok");
         break;
       default:
         snprintf(p, p_max_size, "%s", "unsupported");

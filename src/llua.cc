@@ -43,14 +43,14 @@ static int llua_block_notify = 0;
 
 static void llua_load(const char *script);
 
-lua_State *lua_L = NULL;
+lua_State *lua_L = nullptr;
 
 namespace {
 class lua_load_setting : public conky::simple_config_setting<std::string> {
-  typedef conky::simple_config_setting<std::string> Base;
+  using Base = conky::simple_config_setting<std::string>;
 
  protected:
-  void lua_setter(lua::state &l, bool init) {
+  void lua_setter(lua::state &l, bool init) override {
     lua::stack_sentry s(l, -2);
 
     Base::lua_setter(l, init);
@@ -70,15 +70,17 @@ class lua_load_setting : public conky::simple_config_setting<std::string> {
     ++s;
   }
 
-  void cleanup(lua::state &l) {
+  void cleanup(lua::state &l) override {
     lua::stack_sentry s(l, -1);
 
 #ifdef HAVE_SYS_INOTIFY_H
     llua_rm_notifies();
 #endif /* HAVE_SYS_INOTIFY_H */
-    if (!lua_L) return;
+    if (lua_L == nullptr) {
+      return;
+    }
     lua_close(lua_L);
-    lua_L = NULL;
+    lua_L = nullptr;
   }
 
  public:
@@ -103,13 +105,13 @@ conky::simple_config_setting<std::string> lua_draw_hook_post(
 static int llua_conky_parse(lua_State *L) {
   int n = lua_gettop(L); /* number of arguments */
   char *str;
-  char *buf = (char *)calloc(1, max_user_text.get(*state));
+  auto *buf = static_cast<char *>(calloc(1, max_user_text.get(*state)));
   if (n != 1) {
     lua_pushstring(
         L, "incorrect arguments, conky_parse(string) takes exactly 1 argument");
     lua_error(L);
   }
-  if (!lua_isstring(L, 1)) {
+  if (lua_isstring(L, 1) == 0) {
     lua_pushstring(L, "incorrect argument (expecting a string)");
     lua_error(L);
   }
@@ -129,7 +131,7 @@ static int llua_conky_set_update_interval(lua_State *L) {
                    "takes exactly 1 argument");
     lua_error(L);
   }
-  if (!lua_isnumber(L, 1)) {
+  if (lua_isnumber(L, 1) == 0) {
     lua_pushstring(L, "incorrect argument (expecting a number)");
     lua_error(L);
   }
@@ -138,10 +140,12 @@ static int llua_conky_set_update_interval(lua_State *L) {
   return 0; /* number of results */
 }
 
-void llua_init(void) {
+void llua_init() {
   const char *libs = PACKAGE_LIBDIR "/lib?.so;";
   char *old_path, *new_path;
-  if (lua_L) return;
+  if (lua_L != nullptr) {
+    return;
+  }
   lua_L = luaL_newstate();
 
   /* add our library path to the lua package.cpath global var */
@@ -149,7 +153,7 @@ void llua_init(void) {
   lua_getglobal(lua_L, "package");
   lua_getfield(lua_L, -1, "cpath");
   old_path = strdup(lua_tostring(lua_L, -1));
-  new_path = (char *)malloc(strlen(old_path) + strlen(libs) + 1);
+  new_path = static_cast<char *>(malloc(strlen(old_path) + strlen(libs) + 1));
   strcpy(new_path, libs);
   strcat(new_path, old_path);
   lua_pushstring(lua_L, new_path);
@@ -196,7 +200,7 @@ void llua_load(const char *script) {
 
   std::string path = to_real_path(script);
   error = luaL_dofile(lua_L, path.c_str());
-  if (error) {
+  if (error != 0) {
     NORM_ERR("llua_load: %s", lua_tostring(lua_L, -1));
     lua_pop(lua_L, 1);
 #ifdef HAVE_SYS_INOTIFY_H
@@ -216,10 +220,12 @@ void llua_load(const char *script) {
 static const char *tokenize(const char *str, size_t *len) {
   str += *len;
   *len = 0;
-  while (str && isspace(*str)) ++str;
+  while ((str != nullptr) && (isspace(*str) != 0)) {
+    ++str;
+  }
 
   size_t level = 0;
-  while (str[*len] && (level > 0 || !isspace(str[*len]))) {
+  while ((str[*len] != 0) && (level > 0 || (isspace(str[*len]) == 0))) {
     switch (str[*len]) {
       case '{':
         ++level;
@@ -231,8 +237,9 @@ static const char *tokenize(const char *str, size_t *len) {
     ++*len;
   }
 
-  if (!str[*len] && level > 0)
+  if ((str[*len] == 0) && level > 0) {
     NORM_ERR("tokenize: improperly nested token: %s", str);
+  }
 
   return str;
 }
@@ -251,22 +258,23 @@ static char *llua_do_call(const char *string, int retc) {
   const char *ptr = tokenize(string, &len);
 
   /* proceed only if the function name is present */
-  if (!len) {
-    return NULL;
+  if (len == 0u) {
+    return nullptr;
   }
 
   /* call only conky_ prefixed functions */
   if (strncmp(ptr, LUAPREFIX, strlen(LUAPREFIX)) != 0) {
     snprintf(func, sizeof func, "%s", LUAPREFIX);
-  } else
+  } else {
     *func = 0;
+  }
   strncat(func, ptr, std::min(len, sizeof(func) - strlen(func) - 1));
 
   /* push the function name to stack */
   lua_getglobal(lua_L, func);
 
   /* parse all function parameters from args and push them to the stack */
-  while (ptr = tokenize(ptr, &len), len) {
+  while (ptr = tokenize(ptr, &len), len != 0u) {
     lua_pushlstring(lua_L, ptr, len);
     argc++;
   }
@@ -275,7 +283,7 @@ static char *llua_do_call(const char *string, int retc) {
     NORM_ERR("llua_do_call: function %s execution failed: %s", func,
              lua_tostring(lua_L, -1));
     lua_pop(lua_L, -1);
-    return NULL;
+    return nullptr;
   }
 
   return func;
@@ -299,7 +307,7 @@ static char *llua_do_read_call(const char *function, const char *arg, int retc)
 	if (lua_pcall(lua_L, 1, retc, 0) != 0) {
 		NORM_ERR("llua_do_call: function %s execution failed: %s", func, lua_tostring(lua_L, -1));
 		lua_pop(lua_L, -1);
-		return NULL;
+		return nullptr;
 	}
 
 	return func;
@@ -309,13 +317,15 @@ static char *llua_do_read_call(const char *function, const char *arg, int retc)
 /* call a function with args, and return a string from it (must be free'd) */
 static char *llua_getstring(const char *args) {
   char *func;
-  char *ret = NULL;
+  char *ret = nullptr;
 
-  if (!lua_L) return NULL;
+  if (lua_L == nullptr) {
+    return nullptr;
+  }
 
   func = llua_do_call(args, 1);
-  if (func) {
-    if (!lua_isstring(lua_L, -1)) {
+  if (func != nullptr) {
+    if (lua_isstring(lua_L, -1) == 0) {
       NORM_ERR(
           "llua_getstring: function %s didn't return a string, result "
           "discarded",
@@ -334,9 +344,9 @@ static char *llua_getstring(const char *args) {
 static char *llua_getstring_read(const char *function, const char *arg)
 {
 	char *func;
-	char *ret = NULL;
+	char *ret = nullptr;
 
-	if(!lua_L) return NULL;
+	if(!lua_L) return nullptr;
 
 	func = llua_do_read_call(function, arg, 1);
 	if (func) {
@@ -356,11 +366,13 @@ static char *llua_getstring_read(const char *function, const char *arg)
 static int llua_getnumber(const char *args, double *ret) {
   char *func;
 
-  if (!lua_L) return 0;
+  if (lua_L == nullptr) {
+    return 0;
+  }
 
   func = llua_do_call(args, 1);
-  if (func) {
-    if (!lua_isnumber(lua_L, -1)) {
+  if (func != nullptr) {
+    if (lua_isnumber(lua_L, -1) == 0) {
       NORM_ERR(
           "llua_getnumber: function %s didn't return a number, result "
           "discarded",
@@ -454,24 +466,32 @@ void llua_set_number(const char *key, double value) {
   lua_setfield(lua_L, -2, key);
 }
 
-void llua_startup_hook(void) {
-  if (!lua_L || lua_startup_hook.get(*state).empty()) return;
+void llua_startup_hook() {
+  if ((lua_L == nullptr) || lua_startup_hook.get(*state).empty()) {
+    return;
+  }
   llua_do_call(lua_startup_hook.get(*state).c_str(), 0);
 }
 
-void llua_shutdown_hook(void) {
-  if (!lua_L || lua_shutdown_hook.get(*state).empty()) return;
+void llua_shutdown_hook() {
+  if ((lua_L == nullptr) || lua_shutdown_hook.get(*state).empty()) {
+    return;
+  }
   llua_do_call(lua_shutdown_hook.get(*state).c_str(), 0);
 }
 
 #ifdef BUILD_X11
-void llua_draw_pre_hook(void) {
-  if (!lua_L || lua_draw_hook_pre.get(*state).empty()) return;
+void llua_draw_pre_hook() {
+  if ((lua_L == nullptr) || lua_draw_hook_pre.get(*state).empty()) {
+    return;
+  }
   llua_do_call(lua_draw_hook_pre.get(*state).c_str(), 0);
 }
 
-void llua_draw_post_hook(void) {
-  if (!lua_L || lua_draw_hook_post.get(*state).empty()) return;
+void llua_draw_post_hook() {
+  if ((lua_L == nullptr) || lua_draw_hook_post.get(*state).empty()) {
+    return;
+  }
   llua_do_call(lua_draw_hook_post.get(*state).c_str(), 0);
 }
 
@@ -484,7 +504,9 @@ void llua_set_userdata(const char *key, const char *type, void *value) {
 
 void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
                              int text_height) {
-  if (!lua_L) return;
+  if (lua_L == nullptr) {
+    return;
+  }
   lua_newtable(lua_L);
 
   if (out_to_x.get(*state)) {
@@ -511,7 +533,9 @@ void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
 
 void llua_update_window_table(int text_start_x, int text_start_y,
                               int text_width, int text_height) {
-  if (!lua_L) return;
+  if (lua_L == nullptr) {
+    return;
+  }
 
   lua_getglobal(lua_L, "conky_window");
   if (lua_isnil(lua_L, -1)) {
@@ -533,7 +557,9 @@ void llua_update_window_table(int text_start_x, int text_start_y,
 #endif /* BUILD_X11 */
 
 void llua_setup_info(struct information *i, double u_interval) {
-  if (!lua_L) return;
+  if (lua_L == nullptr) {
+    return;
+  }
   lua_newtable(lua_L);
 
   llua_set_number("update_interval", u_interval);
@@ -543,7 +569,9 @@ void llua_setup_info(struct information *i, double u_interval) {
 }
 
 void llua_update_info(struct information *i, double u_interval) {
-  if (!lua_L) return;
+  if (lua_L == nullptr) {
+    return;
+  }
 
   lua_getglobal(lua_L, "conky_info");
   if (lua_isnil(lua_L, -1)) {
@@ -560,7 +588,7 @@ void llua_update_info(struct information *i, double u_interval) {
 
 void print_lua(struct text_object *obj, char *p, int p_max_size) {
   char *str = llua_getstring(obj->data.s);
-  if (str) {
+  if (str != nullptr) {
     snprintf(p, p_max_size, "%s", str);
     free(str);
   }
@@ -568,7 +596,7 @@ void print_lua(struct text_object *obj, char *p, int p_max_size) {
 
 void print_lua_parse(struct text_object *obj, char *p, int p_max_size) {
   char *str = llua_getstring(obj->data.s);
-  if (str) {
+  if (str != nullptr) {
     evaluate(str, p, p_max_size);
     free(str);
   }
@@ -576,7 +604,7 @@ void print_lua_parse(struct text_object *obj, char *p, int p_max_size) {
 
 double lua_barval(struct text_object *obj) {
   double per;
-  if (llua_getnumber(obj->data.s, &per)) {
+  if (llua_getnumber(obj->data.s, &per) != 0) {
     return per;
   }
   return 0;

@@ -133,7 +133,7 @@ int append_object(struct text_object *root, struct text_object *obj);
  *
  * Opaque is a pointer to the address of the ifblock stack's top object.
  * Calling clients should pass the address of a defined void pointer which
- * was initialised to NULL (empty stack).
+ * was initialised to nullptr (empty stack).
  * */
 int obj_be_ifblock_if(void **opaque, struct text_object *);
 int obj_be_ifblock_else(void **opaque, struct text_object *);

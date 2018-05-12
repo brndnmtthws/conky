@@ -43,9 +43,9 @@
  * also containing the totals. */
 struct diskio_stat stats;
 
-void clear_diskio_stats(void) {
+void clear_diskio_stats() {
   struct diskio_stat *cur;
-  while (stats.next) {
+  while (stats.next != nullptr) {
     cur = stats.next;
     stats.next = stats.next->next;
     free_and_zero(cur->dev);
@@ -54,26 +54,26 @@ void clear_diskio_stats(void) {
 }
 
 struct diskio_stat *prepare_diskio_stat(const char *s) {
-  struct stat sb;
+  struct stat sb {};
   std::vector<char> stat_name(text_buffer_size.get(*state)),
       device_name(text_buffer_size.get(*state)),
       device_s(text_buffer_size.get(*state));
   struct diskio_stat *cur = &stats;
   char *rpbuf;
 
-  if (!s) {
+  if (s == nullptr) {
     return &stats;
   }
 
   if (strncmp(s, "label:", 6) == 0) {
     snprintf(&(device_name[0]), text_buffer_size.get(*state),
              "/dev/disk/by-label/%s", s + 6);
-    rpbuf = realpath(&device_name[0], NULL);
+    rpbuf = realpath(&device_name[0], nullptr);
   } else {
-    rpbuf = realpath(s, NULL);
+    rpbuf = realpath(s, nullptr);
   }
 
-  if (rpbuf) {
+  if (rpbuf != nullptr) {
     strncpy(&device_s[0], rpbuf, text_buffer_size.get(*state));
     free(rpbuf);
   } else {
@@ -95,15 +95,15 @@ struct diskio_stat *prepare_diskio_stat(const char *s) {
   snprintf(&(stat_name[0]), text_buffer_size.get(*state), "/dev/%s",
            &(device_name[0]));
 
-  if (stat(&(stat_name[0]), &sb) || !S_ISBLK(sb.st_mode)) {
+  if ((stat(&(stat_name[0]), &sb) != 0) || !S_ISBLK(sb.st_mode)) {
     NORM_ERR("diskio device '%s' does not exist", &device_s[0]);
   }
 #endif
 
   /* lookup existing */
-  while (cur->next) {
+  while (cur->next != nullptr) {
     cur = cur->next;
-    if (!strcmp(cur->dev, &(device_name[0]))) {
+    if (strcmp(cur->dev, &(device_name[0])) == 0) {
       return cur;
     }
   }
@@ -130,17 +130,20 @@ void parse_diskio_arg(struct text_object *obj, const char *arg) {
  */
 static void print_diskio_dir(struct text_object *obj, int dir, char *p,
                              int p_max_size) {
-  struct diskio_stat *diskio = (struct diskio_stat *)obj->data.opaque;
+  auto *diskio = static_cast<struct diskio_stat *>(obj->data.opaque);
   double val;
 
-  if (!diskio) return;
+  if (diskio == nullptr) {
+    return;
+  }
 
-  if (dir < 0)
+  if (dir < 0) {
     val = diskio->current_read;
-  else if (dir == 0)
+  } else if (dir == 0) {
     val = diskio->current;
-  else
+  } else {
     val = diskio->current_write;
+  }
 
   /* TODO: move this correction from kB to kB/s elsewhere
    * (or get rid of it??) */
@@ -161,7 +164,7 @@ void print_diskio_write(struct text_object *obj, char *p, int p_max_size) {
 
 #ifdef BUILD_X11
 void parse_diskiograph_arg(struct text_object *obj, const char *arg) {
-  char *buf = 0;
+  char *buf = nullptr;
   buf = scan_graph(obj, arg, 0);
 
   obj->data.opaque = prepare_diskio_stat(dev_name(buf));
@@ -169,21 +172,21 @@ void parse_diskiograph_arg(struct text_object *obj, const char *arg) {
 }
 
 double diskiographval(struct text_object *obj) {
-  struct diskio_stat *diskio = (struct diskio_stat *)obj->data.opaque;
+  auto *diskio = static_cast<struct diskio_stat *>(obj->data.opaque);
 
-  return (diskio ? diskio->current : 0);
+  return (diskio != nullptr ? diskio->current : 0);
 }
 
 double diskiographval_read(struct text_object *obj) {
-  struct diskio_stat *diskio = (struct diskio_stat *)obj->data.opaque;
+  auto *diskio = static_cast<struct diskio_stat *>(obj->data.opaque);
 
-  return (diskio ? diskio->current_read : 0);
+  return (diskio != nullptr ? diskio->current_read : 0);
 }
 
 double diskiographval_write(struct text_object *obj) {
-  struct diskio_stat *diskio = (struct diskio_stat *)obj->data.opaque;
+  auto *diskio = static_cast<struct diskio_stat *>(obj->data.opaque);
 
-  return (diskio ? diskio->current_write : 0);
+  return (diskio != nullptr ? diskio->current_write : 0);
 }
 #endif /* BUILD_X11 */
 
@@ -212,9 +215,9 @@ void update_diskio_values(struct diskio_stat *ds, unsigned int reads,
     sum_r += ds->sample_read[i];
     sum_w += ds->sample_write[i];
   }
-  ds->current = sum / (double)samples;
-  ds->current_read = sum_r / (double)samples;
-  ds->current_write = sum_w / (double)samples;
+  ds->current = sum / static_cast<double>(samples);
+  ds->current_read = sum_r / static_cast<double>(samples);
+  ds->current_write = sum_w / static_cast<double>(samples);
 
   /* shift sample history */
   for (i = samples - 1; i > 0; i--) {

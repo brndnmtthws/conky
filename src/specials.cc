@@ -41,7 +41,7 @@
 #include <sstream>
 #include "colours.h"
 
-struct special_t *specials = NULL;
+struct special_t *specials = nullptr;
 
 int special_count;
 
@@ -112,20 +112,21 @@ const char *scan_gauge(struct text_object *obj, const char *args,
                        double scale) {
   struct gauge *g;
 
-  g = (struct gauge *)malloc(sizeof(struct gauge));
+  g = static_cast<struct gauge *>(malloc(sizeof(struct gauge)));
   memset(g, 0, sizeof(struct gauge));
 
   /*width and height*/
   g->width = default_gauge_width.get(*state);
   g->height = default_gauge_height.get(*state);
 
-  if (scale)
+  if (scale != 0.0) {
     g->scale = scale;
-  else
+  } else {
     g->flags |= SF_SCALED;
+  }
 
   /* gauge's argument is either height or height,width */
-  if (args) {
+  if (args != nullptr) {
     int n = 0;
 
     if (sscanf(args, "%d,%d %n", &g->height, &g->width, &n) <= 1) {
@@ -144,20 +145,21 @@ const char *scan_gauge(struct text_object *obj, const char *args,
 const char *scan_bar(struct text_object *obj, const char *args, double scale) {
   struct bar *b;
 
-  b = (struct bar *)malloc(sizeof(struct bar));
+  b = static_cast<struct bar *>(malloc(sizeof(struct bar)));
   memset(b, 0, sizeof(struct bar));
 
   /* zero width means all space that is available */
   b->width = default_bar_width.get(*state);
   b->height = default_bar_height.get(*state);
 
-  if (scale)
+  if (scale != 0.0) {
     b->scale = scale;
-  else
+  } else {
     b->flags |= SF_SCALED;
+  }
 
   /* bar's argument is either height or height,width */
-  if (args) {
+  if (args != nullptr) {
     int n = 0;
 
     if (sscanf(args, "%d,%d %n", &b->height, &b->width, &n) <= 1) {
@@ -172,7 +174,9 @@ const char *scan_bar(struct text_object *obj, const char *args, double scale) {
 
 #ifdef BUILD_X11
 void scan_font(struct text_object *obj, const char *args) {
-  if (args && *args) obj->data.s = strndup(args, DEFAULT_TEXT_BUFFER_SIZE);
+  if ((args != nullptr) && (*args != 0)) {
+    obj->data.s = strndup(args, DEFAULT_TEXT_BUFFER_SIZE);
+  }
 }
 
 /**
@@ -184,7 +188,7 @@ void scan_font(struct text_object *obj, const char *args) {
  * @param[out] obj  struct in which to save width, height and other options
  * @param[in]  args argument string to parse
  * @param[in]  defscale default scale if no scale argument given
- * @return string to the command argument, NULL if argument didn't start with
+ * @return string to the command argument, nullptr if argument didn't start with
  *         a string, but a number or if invalid argument string
  **/
 char *scan_graph(struct text_object *obj, const char *args, double defscale) {
@@ -192,7 +196,7 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
   char argstr[1024] = {'\0'};     /* args minus quoted_cmd */
   char buf[1024] = {'\0'};        /* first unquoted string argument in argstr */
 
-  struct graph *g = (struct graph *)malloc(sizeof(struct graph));
+  auto *g = static_cast<struct graph *>(malloc(sizeof(struct graph)));
   memset(g, 0, sizeof(struct graph));
   obj->special_data = g;
 
@@ -203,16 +207,17 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
   g->last_colour = 0;
   g->scale = defscale;
   g->tempgrad = FALSE;
-  if (args) {
+  if (args != nullptr) {
     /* extract double-quoted command in case of execgraph */
     if (*args == '"') {
       char *_ptr;
       size_t _size;
-      if ((_ptr = const_cast<char *>(strrchr(args, '"'))) && _ptr != args) {
+      if (((_ptr = const_cast<char *>(strrchr(args, '"'))) != nullptr) &&
+          _ptr != args) {
         _size = _ptr - args - 1;
       } else {
         NORM_ERR("mismatched double-quote in execgraph object");
-        return NULL;
+        return nullptr;
       }
 
       _size = _size < 1024 ? _size : 1023;
@@ -230,13 +235,13 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
 
     /* set tempgrad to true, if '-t' specified.
      * It doesn#t matter where the argument is exactly. */
-    if (strstr(argstr, " " TEMPGRAD) ||
+    if ((strstr(argstr, " " TEMPGRAD) != nullptr) ||
         strncmp(argstr, TEMPGRAD, strlen(TEMPGRAD)) == 0) {
       g->tempgrad = TRUE;
     }
     /* set showlog-flag, if '-l' specified
      * It doesn#t matter where the argument is exactly. */
-    if (strstr(argstr, " " LOGGRAPH) ||
+    if ((strstr(argstr, " " LOGGRAPH) != nullptr) ||
         strncmp(argstr, LOGGRAPH, strlen(LOGGRAPH)) == 0) {
       g->flags |= SF_SHOWLOG;
     }
@@ -250,15 +255,17 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
      * This means parameters like -t and -l may not be in the beginning */
     if (sscanf(argstr, "%d,%d %x %x %lf", &g->height, &g->width,
                &g->first_colour, &g->last_colour, &g->scale) == 5) {
-      return *quoted_cmd ? strndup(quoted_cmd, text_buffer_size.get(*state))
-                         : NULL;
+      return *quoted_cmd != 0
+                 ? strndup(quoted_cmd, text_buffer_size.get(*state))
+                 : nullptr;
     }
     /* [height],[width] [color1] [color2] */
     g->scale = defscale;
     if (sscanf(argstr, "%d,%d %x %x", &g->height, &g->width, &g->first_colour,
                &g->last_colour) == 4) {
-      return *quoted_cmd ? strndup(quoted_cmd, text_buffer_size.get(*state))
-                         : NULL;
+      return *quoted_cmd != 0
+                 ? strndup(quoted_cmd, text_buffer_size.get(*state))
+                 : nullptr;
     }
     /* [command] [height],[width] [color1] [color2] [scale] */
     if (sscanf(argstr, "%1023s %d,%d %x %x %lf", buf, &g->height, &g->width,
@@ -276,13 +283,15 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
     g->width = default_graph_width.get(*state);
     if (sscanf(argstr, "%x %x %lf", &g->first_colour, &g->last_colour,
                &g->scale) == 3) {
-      return *quoted_cmd ? strndup(quoted_cmd, text_buffer_size.get(*state))
-                         : NULL;
+      return *quoted_cmd != 0
+                 ? strndup(quoted_cmd, text_buffer_size.get(*state))
+                 : nullptr;
     }
     g->scale = defscale;
     if (sscanf(argstr, "%x %x", &g->first_colour, &g->last_colour) == 2) {
-      return *quoted_cmd ? strndup(quoted_cmd, text_buffer_size.get(*state))
-                         : NULL;
+      return *quoted_cmd != 0
+                 ? strndup(quoted_cmd, text_buffer_size.get(*state))
+                 : nullptr;
     }
     if (sscanf(argstr, "%1023s %x %x %lf", buf, &g->first_colour,
                &g->last_colour, &g->scale) == 4) {
@@ -298,30 +307,31 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
     g->first_colour = 0;
     g->last_colour = 0;
     if (sscanf(argstr, "%d,%d %lf", &g->height, &g->width, &g->scale) == 3) {
-      return *quoted_cmd ? strndup(quoted_cmd, text_buffer_size.get(*state))
-                         : NULL;
+      return *quoted_cmd != 0
+                 ? strndup(quoted_cmd, text_buffer_size.get(*state))
+                 : nullptr;
     }
     g->scale = defscale;
     if (sscanf(argstr, "%d,%d", &g->height, &g->width) == 2) {
-      return *quoted_cmd ? strndup(quoted_cmd, text_buffer_size.get(*state))
-                         : NULL;
+      return *quoted_cmd != 0
+                 ? strndup(quoted_cmd, text_buffer_size.get(*state))
+                 : nullptr;
     }
     if (sscanf(argstr, "%1023s %d,%d %lf", buf, &g->height, &g->width,
                &g->scale) < 4) {
       g->scale = defscale;
-      // TODO: check the return value and throw an error?
+      // TODO(brenden): check the return value and throw an error?
       sscanf(argstr, "%1023s %d,%d", buf, &g->height, &g->width);
     }
 
-    if (!*quoted_cmd && !*buf) {
-      return NULL;
-    } else {
-      return strndup(*quoted_cmd ? quoted_cmd : buf,
-                     text_buffer_size.get(*state));
+    if ((*quoted_cmd == 0) && (*buf == 0)) {
+      return nullptr;
     }
+    return strndup(*quoted_cmd != 0 ? quoted_cmd : buf,
+                   text_buffer_size.get(*state));
   }
 
-  return NULL;
+  return nullptr;
 }
 #endif /* BUILD_X11 */
 
@@ -330,7 +340,7 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
  */
 
 struct special_t *new_special_t_node() {
-  special_t *newnode = new special_t;
+  auto *newnode = new special_t;
 
   memset(newnode, 0, sizeof *newnode);
   return newnode;
@@ -349,11 +359,15 @@ struct special_t *new_special(char *buf, enum special_types t) {
 
   buf[0] = SPECIAL_CHAR;
   buf[1] = '\0';
-  if (!specials) specials = new_special_t_node();
+  if (specials == nullptr) {
+    specials = new_special_t_node();
+  }
   current = specials;
   /* allocate special_count linked list elements */
   for (int i = 0; i < special_count; i++) {
-    if (current->next == NULL) current->next = new_special_t_node();
+    if (current->next == nullptr) {
+      current->next = new_special_t_node();
+    }
     current = current->next;
   }
   current->type = t;
@@ -364,19 +378,23 @@ struct special_t *new_special(char *buf, enum special_types t) {
 void new_gauge_in_shell(struct text_object *obj, char *p, int p_max_size,
                         double usage) {
   static const char *gaugevals[] = {"_. ", "\\. ", " | ", " ./", " ._"};
-  struct gauge *g = (struct gauge *)obj->special_data;
+  auto *g = static_cast<struct gauge *>(obj->special_data);
 
   snprintf(p, p_max_size, "%s", gaugevals[round_to_int(usage * 4 / g->scale)]);
 }
 
 #ifdef BUILD_X11
 void new_gauge_in_x11(struct text_object *obj, char *buf, double usage) {
-  struct special_t *s = 0;
-  struct gauge *g = (struct gauge *)obj->special_data;
+  struct special_t *s = nullptr;
+  auto *g = static_cast<struct gauge *>(obj->special_data);
 
-  if (not out_to_x.get(*state)) return;
+  if (not out_to_x.get(*state)) {
+    return;
+  }
 
-  if (!g) return;
+  if (g == nullptr) {
+    return;
+  }
 
   s = new_special(buf, GAUGE);
 
@@ -388,21 +406,25 @@ void new_gauge_in_x11(struct text_object *obj, char *buf, double usage) {
 #endif /* BUILD_X11 */
 
 void new_gauge(struct text_object *obj, char *p, int p_max_size, double usage) {
-  struct gauge *g = (struct gauge *)obj->special_data;
+  auto *g = static_cast<struct gauge *>(obj->special_data);
 
-  if (!p_max_size || !g) return;
+  if ((p_max_size == 0) || (g == nullptr)) {
+    return;
+  }
 
-  if (g->flags & SF_SCALED)
+  if ((g->flags & SF_SCALED) != 0) {
     g->scale = MAX(g->scale, usage);
-  else
+  } else {
     usage = MIN(g->scale, usage);
+  }
 
 #ifdef BUILD_X11
-  if (out_to_x.get(*state))
+  if (out_to_x.get(*state)) {
     new_gauge_in_x11(obj, p, usage);
-  else
+  } else {
 #endif /* BUILD_X11 */
     new_gauge_in_shell(obj, p, p_max_size, usage);
+  }
 }
 
 #ifdef BUILD_X11
@@ -410,15 +432,19 @@ void new_font(struct text_object *obj, char *p, int p_max_size) {
   struct special_t *s;
   int tmp = selected_font;
 
-  if (not out_to_x.get(*state)) return;
+  if (not out_to_x.get(*state)) {
+    return;
+  }
 
-  if (!p_max_size) return;
+  if (p_max_size == 0) {
+    return;
+  }
 
   s = new_special(p, FONT);
 
-  if (obj->data.s) {
-    if (s->font_added >= (int)fonts.size() || !s->font_added ||
-        obj->data.s != fonts[s->font_added].name) {
+  if (obj->data.s != nullptr) {
+    if (s->font_added >= static_cast<int>(fonts.size()) ||
+        (s->font_added == 0) || obj->data.s != fonts[s->font_added].name) {
       selected_font = s->font_added = add_font(obj->data.s);
       selected_font = tmp;
     }
@@ -435,15 +461,17 @@ static void graph_append(struct special_t *graph, double f, char showaslog) {
   int i;
 
   /* do nothing if we don't even have a graph yet */
-  if (!graph->graph) return;
+  if (graph->graph == nullptr) {
+    return;
+  }
 
-  if (showaslog) {
+  if (showaslog != 0) {
 #ifdef BUILD_MATH
     f = log10(f + 1);
 #endif
   }
 
-  if (!graph->scaled && f > graph->scale) {
+  if ((graph->scaled == 0) && f > graph->scale) {
     f = graph->scale;
   }
 
@@ -453,7 +481,7 @@ static void graph_append(struct special_t *graph, double f, char showaslog) {
   }
   graph->graph[0] = f; /* add new data */
 
-  if (graph->scaled) {
+  if (graph->scaled != 0) {
     graph->scale =
         *std::max_element(graph->graph + 0, graph->graph + graph->graph_width);
     if (graph->scale < 1e-47) {
@@ -467,7 +495,7 @@ static void graph_append(struct special_t *graph, double f, char showaslog) {
 void new_graph_in_shell(struct special_t *s, char *buf, int buf_max_size) {
   // Split config string on comma to avoid the hassle of dealing with the
   // idiosyncrasies of multi-byte unicode on different platforms.
-  // TODO: Parse config string once and cache result.
+  // TODO(brenden): Parse config string once and cache result.
   const std::string ticks = console_graph_ticks.get(*state);
   std::stringstream ss(ticks);
   std::string tickitem;
@@ -485,7 +513,9 @@ void new_graph_in_shell(struct special_t *s, char *buf, int buf_max_size) {
     size_t itemlen = tickitems[v].size();
     for (unsigned int j = 0; j < itemlen; j++) {
       *p++ = tick[j];
-      if (p == buf_max) goto graph_buf_end;
+      if (p == buf_max) {
+        goto graph_buf_end;
+      }
     }
   }
 graph_buf_end:
@@ -502,26 +532,30 @@ graph_buf_end:
  **/
 void new_graph(struct text_object *obj, char *buf, int buf_max_size,
                double val) {
-  struct special_t *s = 0;
-  struct graph *g = (struct graph *)obj->special_data;
+  struct special_t *s = nullptr;
+  auto *g = static_cast<struct graph *>(obj->special_data);
 
-  if (!g || !buf_max_size) return;
+  if ((g == nullptr) || (buf_max_size == 0)) {
+    return;
+  }
 
   s = new_special(buf, GRAPH);
 
   /* set graph (special) width to width in obj */
   s->width = g->width;
-  if (s->width) s->graph_width = s->width;
+  if (s->width != 0) {
+    s->graph_width = s->width;
+  }
 
   if (s->graph_width != s->graph_allocated) {
-    double *graph = static_cast<double *>(
+    auto *graph = static_cast<double *>(
         realloc(s->graph, s->graph_width * sizeof(double)));
     DBGP("reallocing graph from %d to %d", s->graph_allocated, s->graph_width);
-    if (!s->graph) {
+    if (s->graph == nullptr) {
       /* initialize */
       std::fill_n(graph, s->graph_width, 0.0);
       s->scale = 100;
-    } else if (graph) {
+    } else if (graph != nullptr) {
       if (s->graph_width > s->graph_allocated) {
         /* initialize the new region */
         std::fill(graph + s->graph_allocated, graph + s->graph_width, 0.0);
@@ -548,19 +582,25 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
   }
   s->tempgrad = g->tempgrad;
 #ifdef BUILD_MATH
-  if (g->flags & SF_SHOWLOG) {
+  if ((g->flags & SF_SHOWLOG) != 0) {
     s->scale = log10(s->scale + 1);
   }
 #endif
   graph_append(s, val, g->flags);
 
-  if (not out_to_x.get(*state)) new_graph_in_shell(s, buf, buf_max_size);
+  if (not out_to_x.get(*state)) {
+    new_graph_in_shell(s, buf, buf_max_size);
+  }
 }
 
 void new_hr(struct text_object *obj, char *p, int p_max_size) {
-  if (not out_to_x.get(*state)) return;
+  if (not out_to_x.get(*state)) {
+    return;
+  }
 
-  if (!p_max_size) return;
+  if (p_max_size == 0) {
+    return;
+  }
 
   new_special(p, HORIZONTAL_LINE)->height = obj->data.l;
 }
@@ -568,13 +608,13 @@ void new_hr(struct text_object *obj, char *p, int p_max_size) {
 void scan_stippled_hr(struct text_object *obj, const char *arg) {
   struct stippled_hr *sh;
 
-  sh = (struct stippled_hr *)malloc(sizeof(struct stippled_hr));
+  sh = static_cast<struct stippled_hr *>(malloc(sizeof(struct stippled_hr)));
   memset(sh, 0, sizeof(struct stippled_hr));
 
   sh->arg = stippled_borders.get(*state);
   sh->height = 1;
 
-  if (arg) {
+  if (arg != nullptr) {
     if (sscanf(arg, "%d %d", &sh->arg, &sh->height) != 2) {
       sscanf(arg, "%d", &sh->height);
     }
@@ -586,12 +626,16 @@ void scan_stippled_hr(struct text_object *obj, const char *arg) {
 }
 
 void new_stippled_hr(struct text_object *obj, char *p, int p_max_size) {
-  struct special_t *s = 0;
-  struct stippled_hr *sh = (struct stippled_hr *)obj->special_data;
+  struct special_t *s = nullptr;
+  auto *sh = static_cast<struct stippled_hr *>(obj->special_data);
 
-  if (not out_to_x.get(*state)) return;
+  if (not out_to_x.get(*state)) {
+    return;
+  }
 
-  if (!sh || !p_max_size) return;
+  if ((sh == nullptr) || (p_max_size == 0)) {
+    return;
+  }
 
   s = new_special(p, STIPPLED_HR);
 
@@ -602,10 +646,14 @@ void new_stippled_hr(struct text_object *obj, char *p, int p_max_size) {
 
 void new_fg(struct text_object *obj, char *p, int p_max_size) {
 #ifdef BUILD_X11
-  if (out_to_x.get(*state)) new_special(p, FG)->arg = obj->data.l;
+  if (out_to_x.get(*state)) {
+    new_special(p, FG)->arg = obj->data.l;
+  }
 #endif /* BUILD_X11 */
 #ifdef BUILD_NCURSES
-  if (out_to_ncurses.get(*state)) new_special(p, FG)->arg = obj->data.l;
+  if (out_to_ncurses.get(*state)) {
+    new_special(p, FG)->arg = obj->data.l;
+  }
 #endif /* BUILD_NCURSES */
   UNUSED(obj);
   UNUSED(p);
@@ -614,9 +662,13 @@ void new_fg(struct text_object *obj, char *p, int p_max_size) {
 
 #ifdef BUILD_X11
 void new_bg(struct text_object *obj, char *p, int p_max_size) {
-  if (not out_to_x.get(*state)) return;
+  if (not out_to_x.get(*state)) {
+    return;
+  }
 
-  if (!p_max_size) return;
+  if (p_max_size == 0) {
+    return;
+  }
 
   new_special(p, BG)->arg = obj->data.l;
 }
@@ -624,33 +676,47 @@ void new_bg(struct text_object *obj, char *p, int p_max_size) {
 
 static void new_bar_in_shell(struct text_object *obj, char *buffer,
                              int buf_max_size, double usage) {
-  struct bar *b = (struct bar *)obj->special_data;
+  auto *b = static_cast<struct bar *>(obj->special_data);
   int width, i, scaledusage;
 
-  if (!b) return;
+  if (b == nullptr) {
+    return;
+  }
 
   width = b->width;
-  if (!width) width = DEFAULT_BAR_WIDTH_NO_X;
+  if (width == 0) {
+    width = DEFAULT_BAR_WIDTH_NO_X;
+  }
 
-  if (width > buf_max_size) width = buf_max_size;
+  if (width > buf_max_size) {
+    width = buf_max_size;
+  }
 
   scaledusage = round_to_int(usage * width / b->scale);
 
-  for (i = 0; i < scaledusage; i++) buffer[i] = '#';
+  for (i = 0; i < scaledusage; i++) {
+    buffer[i] = '#';
+  }
 
-  for (; i < width; i++) buffer[i] = '_';
+  for (; i < width; i++) {
+    buffer[i] = '_';
+  }
 
   buffer[i] = 0;
 }
 
 #ifdef BUILD_X11
 static void new_bar_in_x11(struct text_object *obj, char *buf, double usage) {
-  struct special_t *s = 0;
-  struct bar *b = (struct bar *)obj->special_data;
+  struct special_t *s = nullptr;
+  auto *b = static_cast<struct bar *>(obj->special_data);
 
-  if (not out_to_x.get(*state)) return;
+  if (not out_to_x.get(*state)) {
+    return;
+  }
 
-  if (!b) return;
+  if (b == nullptr) {
+    return;
+  }
 
   s = new_special(buf, BAR);
 
@@ -663,64 +729,80 @@ static void new_bar_in_x11(struct text_object *obj, char *buf, double usage) {
 
 /* usage is in range [0,255] */
 void new_bar(struct text_object *obj, char *p, int p_max_size, double usage) {
-  struct bar *b = (struct bar *)obj->special_data;
+  auto *b = static_cast<struct bar *>(obj->special_data);
 
-  if (!p_max_size || !b) return;
+  if ((p_max_size == 0) || (b == nullptr)) {
+    return;
+  }
 
-  if (b->flags & SF_SCALED)
+  if ((b->flags & SF_SCALED) != 0) {
     b->scale = MAX(b->scale, usage);
-  else
+  } else {
     usage = MIN(b->scale, usage);
+  }
 
 #ifdef BUILD_X11
-  if (out_to_x.get(*state))
+  if (out_to_x.get(*state)) {
     new_bar_in_x11(obj, p, usage);
-  else
+  } else {
 #endif /* BUILD_X11 */
     new_bar_in_shell(obj, p, p_max_size, usage);
+  }
 }
 
 void new_outline(struct text_object *obj, char *p, int p_max_size) {
-  if (!p_max_size) return;
+  if (p_max_size == 0) {
+    return;
+  }
   new_special(p, OUTLINE)->arg = obj->data.l;
 }
 
 void new_offset(struct text_object *obj, char *p, int p_max_size) {
-  if (!p_max_size) return;
+  if (p_max_size == 0) {
+    return;
+  }
   new_special(p, OFFSET)->arg = obj->data.l;
 }
 
 void new_voffset(struct text_object *obj, char *p, int p_max_size) {
-  if (!p_max_size) return;
+  if (p_max_size == 0) {
+    return;
+  }
   new_special(p, VOFFSET)->arg = obj->data.l;
 }
 
 void new_alignr(struct text_object *obj, char *p, int p_max_size) {
-  if (!p_max_size) return;
+  if (p_max_size == 0) {
+    return;
+  }
   new_special(p, ALIGNR)->arg = obj->data.l;
 }
 
 // A postive offset pushes the text further left
 void new_alignc(struct text_object *obj, char *p, int p_max_size) {
-  if (!p_max_size) return;
+  if (p_max_size == 0) {
+    return;
+  }
   new_special(p, ALIGNC)->arg = obj->data.l;
 }
 
 void new_goto(struct text_object *obj, char *p, int p_max_size) {
-  if (!p_max_size) return;
+  if (p_max_size == 0) {
+    return;
+  }
   new_special(p, GOTO)->arg = obj->data.l;
 }
 
 void scan_tab(struct text_object *obj, const char *arg) {
   struct tab *t;
 
-  t = (struct tab *)malloc(sizeof(struct tab));
+  t = static_cast<struct tab *>(malloc(sizeof(struct tab)));
   memset(t, 0, sizeof(struct tab));
 
   t->width = 10;
   t->arg = 0;
 
-  if (arg) {
+  if (arg != nullptr) {
     if (sscanf(arg, "%d %d", &t->width, &t->arg) != 2) {
       sscanf(arg, "%d", &t->arg);
     }
@@ -732,10 +814,12 @@ void scan_tab(struct text_object *obj, const char *arg) {
 }
 
 void new_tab(struct text_object *obj, char *p, int p_max_size) {
-  struct special_t *s = 0;
-  struct tab *t = (struct tab *)obj->special_data;
+  struct special_t *s = nullptr;
+  auto *t = static_cast<struct tab *>(obj->special_data);
 
-  if (!t || !p_max_size) return;
+  if ((t == nullptr) || (p_max_size == 0)) {
+    return;
+  }
 
   s = new_special(p, TAB);
   s->width = t->width;

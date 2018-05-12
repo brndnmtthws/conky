@@ -106,7 +106,7 @@ extern char window_created;
 void destroy_window(void);
 void create_gc(void);
 void set_transparent_background(Window win);
-void get_x11_desktop_info(Display *display, Atom atom);
+void get_x11_desktop_info(Display *current_display, Atom atom);
 void set_struts(int);
 
 void print_monitor(struct text_object *, char *, int);

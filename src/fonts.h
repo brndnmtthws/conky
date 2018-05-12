@@ -47,11 +47,11 @@ struct font_list {
 
   font_list()
       : name(),
-        font(NULL),
-        fontset(NULL)
+        font(nullptr),
+        fontset(nullptr)
 #ifdef BUILD_XFT
         ,
-        xftfont(NULL),
+        xftfont(nullptr),
         font_alpha(0xffff)
 #endif
   {

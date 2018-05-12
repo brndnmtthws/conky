@@ -50,15 +50,16 @@ conky::simple_config_setting<bool> times_in_seconds("times_in_seconds", false,
                                                     false);
 
 void scan_time(struct text_object *obj, const char *arg) {
-  obj->data.opaque = strndup(arg ? arg : "%F %T", text_buffer_size.get(*state));
+  obj->data.opaque =
+      strndup(arg != nullptr ? arg : "%F %T", text_buffer_size.get(*state));
 }
 
 void scan_tztime(struct text_object *obj, const char *arg) {
   char buf1[256], buf2[256], *fmt, *tz;
   struct tztime_s *ts;
 
-  fmt = tz = NULL;
-  if (arg) {
+  fmt = tz = nullptr;
+  if (arg != nullptr) {
     int nArgs = sscanf(arg, "%255s %255[^\n]", buf1, buf2);
 
     switch (nArgs) {
@@ -69,48 +70,51 @@ void scan_tztime(struct text_object *obj, const char *arg) {
     }
   }
 
-  ts = (tztime_s *)malloc(sizeof(struct tztime_s));
+  ts = static_cast<tztime_s *>(malloc(sizeof(struct tztime_s)));
   memset(ts, 0, sizeof(struct tztime_s));
-  ts->fmt = strndup(fmt ? fmt : "%F %T", text_buffer_size.get(*state));
-  ts->tz = tz ? strndup(tz, text_buffer_size.get(*state)) : NULL;
+  ts->fmt =
+      strndup(fmt != nullptr ? fmt : "%F %T", text_buffer_size.get(*state));
+  ts->tz = tz != nullptr ? strndup(tz, text_buffer_size.get(*state)) : nullptr;
   obj->data.opaque = ts;
 }
 
 void print_time(struct text_object *obj, char *p, int p_max_size) {
-  time_t t = time(NULL);
+  time_t t = time(nullptr);
   struct tm *tm = localtime(&t);
 
   setlocale(LC_TIME, "");
-  strftime(p, p_max_size, (char *)obj->data.opaque, tm);
+  strftime(p, p_max_size, static_cast<char *>(obj->data.opaque), tm);
 }
 
 void print_utime(struct text_object *obj, char *p, int p_max_size) {
-  time_t t = time(NULL);
+  time_t t = time(nullptr);
   struct tm *tm = gmtime(&t);
 
   setlocale(LC_TIME, "");
-  strftime(p, p_max_size, (char *)obj->data.opaque, tm);
+  strftime(p, p_max_size, static_cast<char *>(obj->data.opaque), tm);
 }
 
 void print_tztime(struct text_object *obj, char *p, int p_max_size) {
-  char *oldTZ = NULL;
+  char *oldTZ = nullptr;
   time_t t;
   struct tm *tm;
-  struct tztime_s *ts = (tztime_s *)obj->data.opaque;
+  auto *ts = static_cast<tztime_s *>(obj->data.opaque);
 
-  if (!ts) return;
+  if (ts == nullptr) {
+    return;
+  }
 
-  if (ts->tz) {
+  if (ts->tz != nullptr) {
     oldTZ = getenv("TZ");
     setenv("TZ", ts->tz, 1);
     tzset();
   }
-  t = time(NULL);
+  t = time(nullptr);
   tm = localtime(&t);
 
   setlocale(LC_TIME, "");
   strftime(p, p_max_size, ts->fmt, tm);
-  if (oldTZ) {
+  if (oldTZ != nullptr) {
     setenv("TZ", oldTZ, 1);
     tzset();
   } else {
@@ -122,9 +126,11 @@ void print_tztime(struct text_object *obj, char *p, int p_max_size) {
 void free_time(struct text_object *obj) { free_and_zero(obj->data.opaque); }
 
 void free_tztime(struct text_object *obj) {
-  struct tztime_s *ts = (tztime_s *)obj->data.opaque;
+  auto *ts = static_cast<tztime_s *>(obj->data.opaque);
 
-  if (!ts) return;
+  if (ts == nullptr) {
+    return;
+  }
 
   free_and_zero(ts->tz);
   free_and_zero(ts->fmt);
@@ -199,14 +205,22 @@ static void do_format_time(struct text_object *obj, char *p,
           }
         }
       }
-      if (show_weeks == 0) days += weeks * 7;
-      if (show_days == 0) hours += days * 24;
-      if (show_hours == 0) minutes += hours * 60;
-      if (show_minutes == 0) seconds += minutes * 60;
+      if (show_weeks == 0) {
+        days += weeks * 7;
+      }
+      if (show_days == 0) {
+        hours += days * 24;
+      }
+      if (show_hours == 0) {
+        minutes += hours * 60;
+      }
+      if (show_minutes == 0) {
+        seconds += minutes * 60;
+      }
       hidestring = 0;
       while (output_length < p_max_size - 1) {
         if (*currentchar != 0 && *currentchar != '"') {
-          temp = NULL;
+          temp = nullptr;
           if (*currentchar == '\\' && hidestring == 0) {
             currentchar++;
             switch (*currentchar) {
@@ -230,7 +244,7 @@ static void do_format_time(struct text_object *obj, char *p,
                 if (*currentchar >= '0' && *currentchar <= '9') {
                   safe_asprintf(&temp, "%.*f", (*currentchar) - '0', seconds);
                 } else if (*currentchar == 'x') {
-                  if (seconds == (int)seconds) {
+                  if (seconds == static_cast<int>(seconds)) {
                     safe_asprintf(&temp, "%d", (int)seconds);
                   } else {
                     safe_asprintf(&temp, "%.9f", seconds);
@@ -261,42 +275,54 @@ static void do_format_time(struct text_object *obj, char *p,
               if (*(temp - 1) == '\\') {
                 switch (*temp) {
                   case 'w':
-                    if (weeks == 0) hidestring = 1;
+                    if (weeks == 0) {
+                      hidestring = 1;
+                    }
                     break;
                   case 'd':
-                    if (days == 0) hidestring = 1;
+                    if (days == 0) {
+                      hidestring = 1;
+                    }
                     break;
                   case 'h':
-                    if (hours == 0) hidestring = 1;
+                    if (hours == 0) {
+                      hidestring = 1;
+                    }
                     break;
                   case 'm':
-                    if (minutes == 0) hidestring = 1;
+                    if (minutes == 0) {
+                      hidestring = 1;
+                    }
                     break;
                   case 's':
                   case 'S':
-                    if (seconds == 0) hidestring = 1;
+                    if (seconds == 0) {
+                      hidestring = 1;
+                    }
                     break;
                 }
               }
             }
-            temp = NULL;
+            temp = nullptr;
           } else if (*currentchar == ')') {
             hidestring = 0;
           } else if (hidestring == 0) {
             p[output_length] = *currentchar;
             output_length++;
           }
-          if (temp) {
+          if (temp != nullptr) {
             if (output_length + strlen(temp) < p_max_size - 1) {
               strcpy(p + output_length, temp);
               output_length += strlen(temp);
-            } else
+            } else {
               NORM_ERR("The format string for $format_time is too long");
+            }
             free(temp);
           }
           currentchar++;
-        } else
+        } else {
           break;
+        }
       }
       p[output_length] = 0;
     } else {

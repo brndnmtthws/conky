@@ -44,7 +44,7 @@ static char *unknown = "unknown";
 void fail(GError *error, struct information *);
 
 void update_bmpx() {
-  GError *error = NULL;
+  GError *error = nullptr;
   struct information *current_info = &info;
   gint current_track;
   GHashTable *metadata;
@@ -54,7 +54,7 @@ void update_bmpx() {
     dbus_g_type_specialized_init();
 
     bus = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
-    if (bus == NULL) {
+    if (bus == nullptr) {
       NORM_ERR("BMPx error 1: %s\n", error->message);
       fail(error, current_info);
       return;

@@ -58,7 +58,7 @@ void print_fs_used(struct text_object *, char *, int);
 void print_fs_type(struct text_object *, char *, int);
 
 int update_fs_stats(void);
-struct fs_stat *prepare_fs_stat(const char *path);
+struct fs_stat *prepare_fs_stat(const char *s);
 void clear_fs_stats(void);
 
 #endif /* _FS_H */

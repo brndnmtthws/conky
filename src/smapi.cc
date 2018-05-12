@@ -58,7 +58,7 @@ static int smapi_bat_installed_internal(int idx) {
 static char *smapi_read_str(const char *path) {
   FILE *fp;
   char str[256] = "failed";
-  if ((fp = fopen(path, "r")) != NULL) {
+  if ((fp = fopen(path, "r")) != nullptr) {
     if (fscanf(fp, "%255s\n", str) < 0) perror("fscanf()");
     fclose(fp);
   }
@@ -67,7 +67,7 @@ static char *smapi_read_str(const char *path) {
 
 static char *smapi_get_str(const char *fname) {
   char path[128];
-  if (snprintf(path, 127, SYS_SMAPI_PATH "/%s", fname) < 0) return NULL;
+  if (snprintf(path, 127, SYS_SMAPI_PATH "/%s", fname) < 0) return nullptr;
 
   return smapi_read_str(path);
 }
@@ -75,7 +75,7 @@ static char *smapi_get_str(const char *fname) {
 static char *smapi_get_bat_str(int idx, const char *fname) {
   char path[128];
   if (snprintf(path, 127, SYS_SMAPI_PATH "/BAT%i/%s", idx, fname) < 0)
-    return NULL;
+    return nullptr;
   return smapi_read_str(path);
 }
 
@@ -92,10 +92,10 @@ static char *smapi_get_bat_val(const char *args) {
   if (sscanf(args, "%i %n", &idx, &cnt) <= 0 ||
       snprintf(fname, 127, "%s", (args + cnt)) < 0) {
     NORM_ERR("smapi: wrong arguments, should be 'bat,<int>,<str>'");
-    return NULL;
+    return nullptr;
   }
 
-  if (!smapi_bat_installed_internal(idx)) return NULL;
+  if (!smapi_bat_installed_internal(idx)) return nullptr;
 
   return smapi_get_bat_str(idx, fname);
 }
@@ -103,7 +103,7 @@ static char *smapi_get_bat_val(const char *args) {
 static char *smapi_get_val(const char *args) {
   char str[128];
 
-  if (!args || sscanf(args, "%127s", str) <= 0) return NULL;
+  if (!args || sscanf(args, "%127s", str) <= 0) return nullptr;
 
   if (!strcmp(str, "bat")) return smapi_get_bat_val(args + 4);
 

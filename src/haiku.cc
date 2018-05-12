@@ -96,15 +96,15 @@ void get_cpu_count(void) {
   info.cpu_count = si.cpu_count;
 
   info.cpu_usage = (float *)malloc((info.cpu_count + 1) * sizeof(float));
-  if (info.cpu_usage == NULL) {
-    CRIT_ERR(NULL, NULL, "malloc");
+  if (info.cpu_usage == nullptr) {
+    CRIT_ERR(nullptr, NULL, "malloc");
   }
 }
 
 int update_cpu_usage() {
   // TODO
   static bigtime_t prev = 0;
-  static cpu_info *prev_cpuinfo = NULL;
+  static cpu_info *prev_cpuinfo = nullptr;
   bigtime_t now;
   cpu_info *cpuinfo;
 
@@ -118,8 +118,8 @@ int update_cpu_usage() {
 
   if (!prev_cpuinfo) {
     prev_cpuinfo = (cpu_info *)malloc(malloc_cpu_size);
-    if (prev_cpuinfo == NULL) {
-      CRIT_ERR(NULL, NULL, "malloc");
+    if (prev_cpuinfo == nullptr) {
+      CRIT_ERR(nullptr, NULL, "malloc");
     }
     memset(prev_cpuinfo, 0, malloc_cpu_size);
   }
@@ -127,8 +127,8 @@ int update_cpu_usage() {
   cpuinfo = (cpu_info *)malloc(malloc_cpu_size);
   memset(cpuinfo, 0, malloc_cpu_size);
 
-  if (cpuinfo == NULL) {
-    CRIT_ERR(NULL, NULL, "malloc");
+  if (cpuinfo == nullptr) {
+    CRIT_ERR(nullptr, NULL, "malloc");
   }
 
   now = system_time();
@@ -165,7 +165,7 @@ int get_battery_perct(const char *bat) {
   /*
   int batcapacity;
 
-  get_battery_stats(NULL, &batcapacity, NULL, NULL);
+  get_battery_stats(nullptr, &batcapacity, NULL, NULL);
   return batcapacity;
   */
   // TODO

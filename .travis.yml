@@ -25,9 +25,11 @@ matrix:
             - libxinerama-dev
             - gawk
             - clang-5.0
-            - clang-format-5.0
-      env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        env:
+          - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        sonarcloud:
+          organization: "brndnmtthws-github"
+            secure: "KikPusy+HXcEVLr0Dqb6mkrefDU5jm7EGQ5fwO4sBG7bRMcnHV3V14s5yB4Ol8btpUC0nkNn/41+f37lkG+oT4y9ZeIH2ZrhsSEHxOgH6DF9ZSVJwtpLrF9siWgfZ0m5c5V7U5rzVYL3jlO1hQfXKCfMNAcwlKcEUrfpk7jVEZc="
     - os: linux
       addons:
         apt:
@@ -50,27 +52,32 @@ matrix:
             - libxinerama-dev
             - gawk
             - clang-5.0
-            - clang-format-5.0
-      env:
-        - MATRIX_EVAL="CC=clang && CXX=clang++"
+        env:
+          - MATRIX_EVAL="CC=clang && CXX=clang++"
+        sonarcloud:
+          organization: "brndnmtthws-github"
+            secure: "KikPusy+HXcEVLr0Dqb6mkrefDU5jm7EGQ5fwO4sBG7bRMcnHV3V14s5yB4Ol8btpUC0nkNn/41+f37lkG+oT4y9ZeIH2ZrhsSEHxOgH6DF9ZSVJwtpLrF9siWgfZ0m5c5V7U5rzVYL3jlO1hQfXKCfMNAcwlKcEUrfpk7jVEZc="
 before_install:
   - eval "${MATRIX_EVAL}"
 before_script:
   - mkdir build
   - cd build
-  - scan-build --use-cc=$CC --use-c++=$CXX -o scanbuildout cmake -DCHECK_CODE_FORMAT=ON ..
-  - travis_wait 30 make format-check
+  - cmake -DCHECK_CODE_QUALITY=ON ..
   - cd ..
   - mkdir build-no-x11
   - cd build-no-x11
-  - scan-build --use-cc=$CC --use-c++=$CXX -o scanbuildout cmake -DCHECK_CODE_FORMAT=ON -DBUILD_X11=OFF ..
+  - cmake -DBUILD_X11=OFF ..
   - cd ..
 script:
   - cd build
-  - scan-build --use-cc=$CC --use-c++=$CXX -o scanbuildout make -j4
+  - build-wrapper-linux-x86-64 --out-dir bw-output make -j4
   - cd ../build-no-x11
-  - scan-build --use-cc=$CC --use-c++=$CXX -o scanbuildout make -j4
+  - make -j4
+  - sonar-scanner
 branches:
   only:
     - master
 sudo: false
+cache:
+  directories:
+    - '$HOME/.sonar/cache'

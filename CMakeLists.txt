@@ -19,9 +19,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.6)
 
 project(conky)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # This is the directory for our custom CMake modules.
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
@@ -37,13 +41,6 @@ include(ConkyPlatformChecks)
 
 # CPack module for installation tasks
 include(ConkyCPackSetup)
-
-if(CHECK_CODE_FORMAT)
-  # Set up clang-format
-  set(CLANG_FORMAT_BIN_NAME clang-format clang-format-5.0)
-  set(CLANG_FORMAT_EXCLUDE_PATTERNS  "build/" ${CMAKE_BINARY_DIR})
-  find_package(ClangFormat)
-endif(CHECK_CODE_FORMAT)
 
 # setup our configuration headers
 configure_file(${CMAKE_MODULE_PATH}/config.h.in ${CMAKE_BINARY_DIR}/config.h)
@@ -81,3 +78,15 @@ if(MAINTAINER_MODE)
   install(FILES ${MAN_FILES}
     DESTINATION ${MAN_PATH})
 endif(MAINTAINER_MODE)
+
+if(CHECK_CODE_QUALITY)
+  # Set up clang-tidy
+  set(CLANG_TIDY_BIN_NAME
+    clang-tidy
+    clang-tidy-5.0
+    clang-tidy-6.0
+    clang-tidy-7.0
+  )
+  set(CLANG_TIDY_EXCLUDE_PATTERNS  "build/" ${CMAKE_BINARY_DIR})
+  find_package(ClangTidy)
+endif(CHECK_CODE_QUALITY)

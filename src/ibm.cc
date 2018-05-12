@@ -86,11 +86,11 @@ void get_ibm_acpi_fan(struct text_object *obj, char *p, int p_max_size) {
   snprintf(fan, 127, "%s/fan", IBM_ACPI_DIR);
 
   fp = fopen(fan, "r");
-  if (fp != NULL) {
+  if (fp != nullptr) {
     while (!feof(fp)) {
       char line[256];
 
-      if (fgets(line, 255, fp) == NULL) {
+      if (fgets(line, 255, fp) == nullptr) {
         break;
       }
       if (sscanf(line, "speed: %u", &speed)) {
@@ -98,7 +98,7 @@ void get_ibm_acpi_fan(struct text_object *obj, char *p, int p_max_size) {
       }
     }
   } else {
-    CRIT_ERR(NULL, NULL,
+    CRIT_ERR(nullptr, NULL,
              "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
              "ibm* from your " PACKAGE_NAME " config file.",
              fan, strerror(errno));
@@ -136,11 +136,11 @@ int get_ibm_acpi_temps(void) {
   snprintf(thermal, 127, "%s/thermal", IBM_ACPI_DIR);
   fp = fopen(thermal, "r");
 
-  if (fp != NULL) {
+  if (fp != nullptr) {
     while (!feof(fp)) {
       char line[256];
 
-      if (fgets(line, 255, fp) == NULL) {
+      if (fgets(line, 255, fp) == nullptr) {
         break;
       }
       if (sscanf(line, "temperatures: %d %d %d %d %d %d %d %d",
@@ -151,7 +151,7 @@ int get_ibm_acpi_temps(void) {
       }
     }
   } else {
-    CRIT_ERR(NULL, NULL,
+    CRIT_ERR(nullptr, NULL,
              "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
              "ibm* from your " PACKAGE_NAME " config file.",
              thermal, strerror(errno));
@@ -186,12 +186,12 @@ void get_ibm_acpi_volume(struct text_object *obj, char *p, int p_max_size) {
   snprintf(volume, 127, "%s/volume", IBM_ACPI_DIR);
 
   fp = fopen(volume, "r");
-  if (fp != NULL) {
+  if (fp != nullptr) {
     while (!feof(fp)) {
       char line[256];
       unsigned int read_vol = -1;
 
-      if (fgets(line, 255, fp) == NULL) {
+      if (fgets(line, 255, fp) == nullptr) {
         break;
       }
       if (sscanf(line, "level: %u", &read_vol)) {
@@ -203,7 +203,7 @@ void get_ibm_acpi_volume(struct text_object *obj, char *p, int p_max_size) {
       }
     }
   } else {
-    CRIT_ERR(NULL, NULL,
+    CRIT_ERR(nullptr, NULL,
              "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
              "ibm* from your " PACKAGE_NAME " config file.",
              volume, strerror(errno));
@@ -217,7 +217,7 @@ void get_ibm_acpi_volume(struct text_object *obj, char *p, int p_max_size) {
     snprintf(p, p_max_size, "%d", vol);
 }
 
-/* static FILE *fp = NULL; */
+/* static FILE *fp = nullptr; */
 
 /* get LCD brightness on IBM/Lenovo laptops running the ibm acpi.
  * /proc/acpi/ibm/brightness looks like this (3 lines):
@@ -240,11 +240,11 @@ void get_ibm_acpi_brightness(struct text_object *obj, char *p, int p_max_size) {
   snprintf(filename, 127, "%s/brightness", IBM_ACPI_DIR);
 
   fp = fopen(filename, "r");
-  if (fp != NULL) {
+  if (fp != nullptr) {
     while (!feof(fp)) {
       char line[256];
 
-      if (fgets(line, 255, fp) == NULL) {
+      if (fgets(line, 255, fp) == nullptr) {
         break;
       }
       if (sscanf(line, "level: %u", &brightness)) {
@@ -252,7 +252,7 @@ void get_ibm_acpi_brightness(struct text_object *obj, char *p, int p_max_size) {
       }
     }
   } else {
-    CRIT_ERR(NULL, NULL,
+    CRIT_ERR(nullptr, NULL,
              "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
              "ibm* from your " PACKAGE_NAME " config file.",
              filename, strerror(errno));
@@ -285,11 +285,11 @@ void get_ibm_acpi_thinklight(struct text_object *obj, char *p, int p_max_size) {
   snprintf(filename, 127, "%s/light", IBM_ACPI_DIR);
 
   fp = fopen(filename, "r");
-  if (fp != NULL) {
+  if (fp != nullptr) {
     while (!feof(fp)) {
       char line[256];
 
-      if (fgets(line, 255, fp) == NULL) {
+      if (fgets(line, 255, fp) == nullptr) {
         break;
       }
       if (sscanf(line, "status: %s", thinklight)) {
@@ -297,7 +297,7 @@ void get_ibm_acpi_thinklight(struct text_object *obj, char *p, int p_max_size) {
       }
     }
   } else {
-    CRIT_ERR(NULL, NULL,
+    CRIT_ERR(nullptr, NULL,
              "can't open '%s': %s\nYou are not using the IBM "
              "ACPI. Remove ibm* from your " PACKAGE_NAME " config file.",
              filename, strerror(errno));
