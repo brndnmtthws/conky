@@ -1,4 +1,4 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*- */
+/* */
 
 #ifndef OPENBSD_H_
 #define OPENBSD_H_

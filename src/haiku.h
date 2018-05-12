@@ -1,4 +1,4 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*- */
+/* */
 
 #ifndef HAIKU_H_
 #define HAIKU_H_

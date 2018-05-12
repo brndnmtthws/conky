@@ -1,4 +1,4 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*- */
+/* */
 
 #ifndef NETBSD_H_
 #define NETBSD_H_

@@ -1,4 +1,3 @@
-# -*- mode: Makefile; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
 #
 # Conky, a system monitor, based on torsmo
 #
@@ -27,5 +26,3 @@
 
 configdir = ${sysconfdir}/conky
 dist_config_DATA = conky.conf conky_no_x11.conf
-
-# vi:set ts=4 sw=4 noet ai nocindent syntax=automake:
