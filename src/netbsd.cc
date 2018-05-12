@@ -30,7 +30,7 @@
 #include "netbsd.h"
 #include "net_stat.h"
 
-static kvm_t *kd = NULL;
+static kvm_t *kd = nullptr;
 int kd_init = 0, nkd_init = 0;
 u_int32_t sensvalue;
 char errbuf[_POSIX2_LINE_MAX];
@@ -40,8 +40,8 @@ static int init_kvm(void) {
     return 0;
   }
 
-  kd = kvm_openfiles(NULL, NULL, NULL, KVM_NO_FILES, errbuf);
-  if (kd == NULL) {
+  kd = kvm_openfiles(nullptr, NULL, NULL, KVM_NO_FILES, errbuf);
+  if (kd == nullptr) {
     warnx("cannot kvm_openfiles: %s", errbuf);
     return -1;
   }
@@ -65,7 +65,7 @@ static int swapmode(int *retavail, int *retfree) {
 
   sep = (struct swapent *)malloc(n * (sizeof(*sep)));
 
-  if (sep == NULL) {
+  if (sep == nullptr) {
     warn("memory allocation failed");
     return 0;
   }
@@ -92,7 +92,7 @@ void update_uptime() {
   time_t now;
   int size = sizeof(boottime);
 
-  if ((sysctl(mib, 2, &boottime, &size, NULL, 0) != -1) &&
+  if ((sysctl(mib, 2, &boottime, &size, nullptr, 0) != -1) &&
       (boottime.tv_sec != 0)) {
     time(&now);
     info.uptime = now - boottime.tv_sec;
@@ -116,7 +116,7 @@ void update_meminfo() {
   struct uvmexp_sysctl uvmexp;
   size_t size = sizeof(uvmexp);
 
-  if (sysctl(mib, 2, &uvmexp, &size, NULL, 0) < 0) {
+  if (sysctl(mib, 2, &uvmexp, &size, nullptr, 0) < 0) {
     warn("could not get memory info");
     return;
   }
@@ -143,12 +143,12 @@ void update_net_stats() {
   struct ifnet ifnet;
   struct ifnet_head ifhead; /* interfaces are in a tail queue */
   u_long ifnetaddr;
-  static struct nlist namelist[] = {{"_ifnet"}, {NULL}};
+  static struct nlist namelist[] = {{"_ifnet"}, {nullptr}};
   static kvm_t *nkd;
 
   if (!nkd_init) {
-    nkd = kvm_openfiles(NULL, NULL, NULL, O_RDONLY, errbuf);
-    if (nkd == NULL) {
+    nkd = kvm_openfiles(nullptr, NULL, NULL, O_RDONLY, errbuf);
+    if (nkd == nullptr) {
       warnx("cannot kvm_openfiles: %s", errbuf);
       warnx("maybe you need to setgid kmem this program?");
       return;
@@ -179,7 +179,7 @@ void update_net_stats() {
     long long last_recv, last_trans;
 
     kvm_read(nkd, (u_long)ifnetaddr, (void *)&ifnet, sizeof(ifnet));
-    ns = get_net_stat(ifnet.if_xname, NULL, NULL);
+    ns = get_net_stat(ifnet.if_xname, nullptr, NULL);
     ns->up = 1;
     last_recv = ns->recv;
     last_trans = ns->trans;
@@ -267,7 +267,7 @@ void update_cpu_usage() {
 
   info.cpu_usage = 0;
 
-  if (sysctlbyname("kern.cp_time", &cp_time, &len, NULL, 0) < 0) {
+  if (sysctlbyname("kern.cp_time", &cp_time, &len, nullptr, 0) < 0) {
     warn("cannot get kern.cp_time");
   }
 

@@ -39,7 +39,7 @@
 static short colour_depth = 0;
 static long redmask, greenmask, bluemask;
 
-static void set_up_gradient(void) {
+static void set_up_gradient() {
   int i;
 #ifdef BUILD_X11
   if (out_to_x.get(*state)) {
@@ -81,9 +81,9 @@ unsigned int adjust_colours(unsigned int colour) {
     r = (colour & 0xff0000) >> 16;
     g = (colour & 0xff00) >> 8;
     b = colour & 0xff;
-    colour = (int)(r * CONST_8_TO_5_BITS) << 11;
-    colour |= (int)(g * CONST_8_TO_6_BITS) << 5;
-    colour |= (int)(b * CONST_8_TO_5_BITS);
+    colour = static_cast<int>(r * CONST_8_TO_5_BITS) << 11;
+    colour |= static_cast<int>(g * CONST_8_TO_6_BITS) << 5;
+    colour |= static_cast<int>(b * CONST_8_TO_5_BITS);
   }
   return colour;
 }
@@ -96,8 +96,8 @@ unsigned long *do_gradient(int width, unsigned long first_colour,
   int reddiff, greendiff, bluediff;  // difference
   short redshift = (2 * colour_depth / 3 + colour_depth % 3);
   short greenshift = (colour_depth / 3);
-  unsigned long *colours =
-      (unsigned long *)malloc(width * sizeof(unsigned long));
+  auto *colours =
+      static_cast<unsigned long *>(malloc(width * sizeof(unsigned long)));
   int i;
 
   if (colour_depth == 0) {
@@ -118,7 +118,7 @@ unsigned long *do_gradient(int width, unsigned long first_colour,
   for (i = 0; i < width; i++) {
     int red3 = 0, green3 = 0, blue3 = 0;  // colour components
 
-    float factor = ((float)i / (width - 1));
+    float factor = (static_cast<float>(i) / (width - 1));
 
     /* the '+ 0.5' bit rounds our floats to ints properly */
     if (red1 >= red2) {
@@ -167,7 +167,8 @@ long get_x11_color(const char *name) {
   XColor color;
 
   color.pixel = 0;
-  if (!XParseColor(display, DefaultColormap(display, screen), name, &color)) {
+  if (XParseColor(display, DefaultColormap(display, screen), name, &color) ==
+      0) {
     /* lets check if it's a hex colour with the # missing in front
      * if yes, then do something about it */
     char newname[DEFAULT_TEXT_BUFFER_SIZE];
@@ -175,17 +176,17 @@ long get_x11_color(const char *name) {
     newname[0] = '#';
     strncpy(&newname[1], name, DEFAULT_TEXT_BUFFER_SIZE - 1);
     /* now lets try again */
-    if (!XParseColor(display, DefaultColormap(display, screen), &newname[0],
-                     &color)) {
+    if (XParseColor(display, DefaultColormap(display, screen), &newname[0],
+                    &color) == 0) {
       NORM_ERR("can't parse X color '%s'", name);
       return 0xFF00FF;
     }
   }
-  if (!XAllocColor(display, DefaultColormap(display, screen), &color)) {
+  if (XAllocColor(display, DefaultColormap(display, screen), &color) == 0) {
     NORM_ERR("can't allocate X color '%s'", name);
   }
 
-  return (long)color.pixel;
+  return static_cast<long>(color.pixel);
 }
 
 long get_x11_color(const std::string &colour) {

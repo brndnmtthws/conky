@@ -50,7 +50,7 @@ struct ical_event *add_event(struct ical_event *listend,
 
   start = icalcomponent_get_dtstart(new_ev);
   if (icaltime_compare(
-          start, icaltime_from_timet_with_zone(time(NULL), 0, NULL)) <= 0) {
+          start, icaltime_from_timet_with_zone(time(nullptr), 0, NULL)) <= 0) {
     icalproperty *rrule =
         icalcomponent_get_first_property(new_ev, ICAL_RRULE_PROPERTY);
     if (rrule) {
@@ -59,7 +59,7 @@ struct ical_event *add_event(struct ical_event *listend,
       icaltimetype nexttime = icalrecur_iterator_next(ritr);
       while (!icaltime_is_null_time(nexttime)) {
         if (icaltime_compare(nexttime, icaltime_from_timet_with_zone(
-                                           time(NULL), 0, NULL)) > 0) {
+                                           time(nullptr), 0, NULL)) > 0) {
           start = nexttime;
           break;
         }
@@ -67,7 +67,7 @@ struct ical_event *add_event(struct ical_event *listend,
       }
       icalrecur_iterator_free(ritr);
     } else
-      return NULL;
+      return nullptr;
   }
   ev_new = (struct ical_event *)malloc(sizeof(struct ical_event));
   memset(ev_new, 0, sizeof(struct ical_event));
@@ -133,7 +133,7 @@ void parse_ical_args(struct text_object *obj, const char *arg,
     NORM_ERR("No ical events available");
     return;
   }
-  ll_start = add_event(NULL, curc);
+  ll_start = add_event(nullptr, curc);
   ll_end = ll_start;
   while (1) {
     curc = icalcomponent_get_next_component(allc, ICAL_VEVENT_COMPONENT);

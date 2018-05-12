@@ -103,13 +103,13 @@ int parseTrainingXml(char *data, Character *s) {
   struct tm end_tm, cache_tm;
 
   // initialize the time structs
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
   localtime_r(&now, &end_tm);
   localtime_r(&now, &cache_tm);
 
   if (!data) return 1;
 
-  doc = xmlReadMemory(data, strlen(data), "", NULL, XML_PARSE_RECOVER);
+  doc = xmlReadMemory(data, strlen(data), "", nullptr, XML_PARSE_RECOVER);
   root = xmlDocGetRootElement(doc);
 
   for (n = root->children; n; n = n->next) {
@@ -153,14 +153,14 @@ int parseTrainingXml(char *data, Character *s) {
 
 static char *getXmlFromAPI(const char *apiKeyID, const char *apiVCode,
                            const char *charid, const char *url) {
-  struct curl_httppost *post = NULL;
-  struct curl_httppost *last = NULL;
+  struct curl_httppost *post = nullptr;
+  struct curl_httppost *last = nullptr;
   struct xmlData chr;
   char *content;
   CURL *curl_handle;
   int rc = 0;
 
-  chr.data = NULL;
+  chr.data = nullptr;
   chr.size = 0;
 
   curl_handle = curl_easy_init();
@@ -183,8 +183,8 @@ static char *getXmlFromAPI(const char *apiKeyID, const char *apiVCode,
 
   rc = curl_easy_perform(curl_handle);
 
-  if (chr.data == NULL) {
-    return NULL;
+  if (chr.data == nullptr) {
+    return nullptr;
   }
 
   content = strdup(chr.data);
@@ -197,9 +197,9 @@ static void init_eve(void) {
   int i;
 
   for (i = 0; i < MAXCHARS; i++) {
-    eveCharacters[i].charid = NULL;
-    eveCharacters[i].skillname = NULL;
-    eveCharacters[i].time = NULL;
+    eveCharacters[i].charid = nullptr;
+    eveCharacters[i].skillname = nullptr;
+    eveCharacters[i].time = nullptr;
     eveCharacters[i].level = 0;
     eveCharacters[i].skill = 0;
     eveCharacters[i].delay = 0;
@@ -210,7 +210,7 @@ static int isCacheValid(struct tm cached) {
   // struct timeval tv;
   // struct timezone tz;
   double offset = 0;
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
   time_t cache = 0;
   double diff = 0;
 
@@ -232,7 +232,7 @@ static char *formatTime(struct tm *ends) {
   // struct timeval tv;
   // struct timezone tz;
   double offset = 0;
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
   time_t tEnds = 0;
   long lin = 0;
   long lie = 0;
@@ -279,20 +279,20 @@ static void writeSkilltree(char *content, const char *filename) {
 
 static char *getSkillname(const char *file, int skillid) {
   char *skilltree;
-  char *skill = NULL;
+  char *skill = nullptr;
   xmlNodePtr n;
   xmlDocPtr doc = 0;
   xmlNodePtr root = 0;
 
-  skilltree = getXmlFromAPI(NULL, NULL, NULL, EVEURL_SKILLTREE);
+  skilltree = getXmlFromAPI(nullptr, NULL, NULL, EVEURL_SKILLTREE);
   if (skilltree) {
     writeSkilltree(skilltree, file);
     free(skilltree);
   }
 
-  doc = xmlReadFile(file, NULL, XML_PARSE_RECOVER);
+  doc = xmlReadFile(file, nullptr, XML_PARSE_RECOVER);
   unlink(file);
-  if (!doc) return NULL;
+  if (!doc) return nullptr;
 
   root = xmlDocGetRootElement(doc);
 
@@ -307,10 +307,10 @@ static char *getSkillname(const char *file, int skillid) {
           for (r = q->children; r; r = r->next) {
             xmlElementPtr ele = (xmlElementPtr)r;
             xmlAttrPtr attr = (xmlAttrPtr)ele->attributes;
-            char *mySkill = NULL;
+            char *mySkill = nullptr;
             int id;
 
-            while (attr != NULL) {
+            while (attr != nullptr) {
               if (!strcasecmp((const char *)attr->name, "typeName")) {
                 mySkill = strdup((const char *)attr->children->content);
               } else if (!strcasecmp((const char *)attr->name, "typeID")) {
@@ -337,7 +337,7 @@ END:
 }
 
 static char *eve(char *apiKeyID, char *apiVCode, char *charid) {
-  Character *chr = NULL;
+  Character *chr = nullptr;
   char skillfile[] = "/tmp/.cesfXXXXXX";
   int i = 0;
   char *output = 0;
@@ -349,7 +349,7 @@ static char *eve(char *apiKeyID, char *apiVCode, char *charid) {
   int tmp_fd, old_umask;
 
   for (i = 0; i < num_chars; i++) {
-    if (eveCharacters[i].charid != NULL) {
+    if (eveCharacters[i].charid != nullptr) {
       if (strcasecmp(eveCharacters[i].charid, charid) == 0) {
         chr = &eveCharacters[i];
         break;
@@ -358,7 +358,7 @@ static char *eve(char *apiKeyID, char *apiVCode, char *charid) {
   }
 
   if (!chr) {
-    if (num_chars == MAXCHARS - 1) return NULL;
+    if (num_chars == MAXCHARS - 1) return nullptr;
     chr = &eveCharacters[num_chars];
     memset(chr, 0, sizeof(Character));
     chr->charid = strdup(charid);
@@ -366,7 +366,7 @@ static char *eve(char *apiKeyID, char *apiVCode, char *charid) {
   }
 
   if (chr->delay > 0) {
-    now = time(NULL);
+    now = time(nullptr);
     if (now < chr->delay) {
       output = strdup("Server error");
       return output;
@@ -386,9 +386,9 @@ static char *eve(char *apiKeyID, char *apiVCode, char *charid) {
     }
   } else {
     content = getXmlFromAPI(apiKeyID, apiVCode, charid, EVEURL_TRAINING);
-    if (content == NULL) {
+    if (content == nullptr) {
       error = strdup("Server error");
-      now = time(NULL);
+      now = time(nullptr);
       now += (time_t)1800;
       chr->delay = now;
       return error;

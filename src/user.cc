@@ -29,9 +29,9 @@
 
 #include <config.h>
 
-#include <errno.h>
 #include <grp.h>
 #include <pwd.h>
+#include <cerrno>
 #include <memory>
 #include "conky.h"
 #include "logging.h"
@@ -48,7 +48,7 @@ void print_uid_name(struct text_object *obj, char *p, int p_max_size) {
   uid = strtol(objbuf.get(), &firstinvalid, 10);
   if (errno == 0 && objbuf.get() != firstinvalid) {
     pw = getpwuid(uid);
-    if (pw != NULL) {
+    if (pw != nullptr) {
       snprintf(p, p_max_size, "%s", pw->pw_name);
     } else {
       NORM_ERR("The uid %d doesn't exist", uid);
@@ -70,7 +70,7 @@ void print_gid_name(struct text_object *obj, char *p, int p_max_size) {
   gid = strtol(objbuf.get(), &firstinvalid, 10);
   if (errno == 0 && objbuf.get() != firstinvalid) {
     grp = getgrgid(gid);
-    if (grp != NULL) {
+    if (grp != nullptr) {
       snprintf(p, p_max_size, "%s", grp->gr_name);
     } else {
       NORM_ERR("The gid %d doesn't exist", gid);

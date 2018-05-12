@@ -175,7 +175,7 @@ int update_meminfo(void) {
   }
 
   while (!feof(meminfo_fp)) {
-    if (fgets(buf, 255, meminfo_fp) == NULL) {
+    if (fgets(buf, 255, meminfo_fp) == nullptr) {
       break;
     }
 
@@ -227,7 +227,7 @@ void print_laptop_mode(struct text_object *obj, char *p, int p_max_size) {
 
   (void)obj;
 
-  if ((fp = fopen("/proc/sys/vm/laptop_mode", "r")) != NULL) {
+  if ((fp = fopen("/proc/sys/vm/laptop_mode", "r")) != nullptr) {
     if (fscanf(fp, "%d\n", &val) <= 0) val = 0;
     fclose(fp);
   }
@@ -245,7 +245,7 @@ void print_ioscheduler(struct text_object *obj, char *p, int p_max_size) {
   if (!obj->data.s) goto out_fail;
 
   snprintf(buf, 127, "/sys/block/%s/queue/scheduler", obj->data.s);
-  if ((fp = fopen(buf, "r")) == NULL) goto out_fail;
+  if ((fp = fopen(buf, "r")) == nullptr) goto out_fail;
 
   while (fscanf(fp, "%127s", buf) == 1) {
     if (buf[0] == '[') {
@@ -276,7 +276,7 @@ static struct {
   }
 
 void update_gateway_info_failure(const char *reason) {
-  if (reason != NULL) {
+  if (reason != nullptr) {
     perror(reason);
   }
   // 2 pointers to 1 location causes a crash when we try to free them both
@@ -298,7 +298,7 @@ int update_gateway_info(void) {
   free_and_zero(gw_info.ip);
   gw_info.count = 0;
 
-  if ((fp = fopen("/proc/net/route", "r")) == NULL) {
+  if ((fp = fopen("/proc/net/route", "r")) == nullptr) {
     update_gateway_info_failure("fopen()");
     return 0;
   }
@@ -412,7 +412,7 @@ int update_net_stats(void) {
     long long r, t, last_recv, last_trans;
 
     /* quit only after all non-header lines from /proc/net/dev parsed */
-    if (fgets(buf, 255, net_dev_fp) == NULL) {
+    if (fgets(buf, 255, net_dev_fp) == nullptr) {
       break;
     }
     p = buf;
@@ -436,7 +436,7 @@ int update_net_stats(void) {
     p++;
 
     /* get pointer to interface statistics with the interface name in s */
-    ns = get_net_stat(s, NULL, NULL);
+    ns = get_net_stat(s, nullptr, NULL);
     ns->up = 1;
     memset(&(ns->addr.sa_data), 0, 14);
 
@@ -498,12 +498,12 @@ int update_net_stats(void) {
       if (!(((struct ifreq *)conf.ifc_buf) + k)) break;
 
       ns2 = get_net_stat(((struct ifreq *)conf.ifc_buf)[k].ifr_ifrn.ifrn_name,
-                         NULL, NULL);
+                         nullptr, NULL);
       ns2->addr = ((struct ifreq *)conf.ifc_buf)[k].ifr_ifru.ifru_addr;
       sprintf(temp_addr, "%u.%u.%u.%u, ", ns2->addr.sa_data[2] & 255,
               ns2->addr.sa_data[3] & 255, ns2->addr.sa_data[4] & 255,
               ns2->addr.sa_data[5] & 255);
-      if (NULL == strstr(ns2->addrs, temp_addr))
+      if (nullptr == strstr(ns2->addrs, temp_addr))
         strncpy(ns2->addrs + strlen(ns2->addrs), temp_addr, 17);
     }
 
@@ -620,17 +620,17 @@ int update_net_stats(void) {
   // remove the old v6 addresses otherwise they are listed multiple times
   for (unsigned int i = 0; i < MAX_NET_INTERFACES; i++) {
     ns = &netstats[i];
-    while (ns->v6addrs != NULL) {
+    while (ns->v6addrs != nullptr) {
       lastv6 = ns->v6addrs;
       ns->v6addrs = ns->v6addrs->next;
       free(lastv6);
     }
   }
-  if ((file = fopen(PROCDIR "/net/if_inet6", "r")) != NULL) {
+  if ((file = fopen(PROCDIR "/net/if_inet6", "r")) != nullptr) {
     while (fscanf(file, "%32s %*02x %02x %02x %*02x %20s\n", v6addr, &netmask,
                   &scope, devname) != EOF) {
-      ns = get_net_stat(devname, NULL, NULL);
-      if (ns->v6addrs == NULL) {
+      ns = get_net_stat(devname, nullptr, NULL);
+      if (ns->v6addrs == nullptr) {
         lastv6 = (struct v6addr *)malloc(sizeof(struct v6addr));
         ns->v6addrs = lastv6;
       } else {
@@ -661,7 +661,7 @@ int update_net_stats(void) {
         default:
           lastv6->scope = '?';
       }
-      lastv6->next = NULL;
+      lastv6->next = nullptr;
     }
     fclose(file);
   }
@@ -765,7 +765,7 @@ void determine_longstat_file(void) {
 
   if (not(stat_fp = open_file("/proc/stat", &rep))) return;
   while (not feof(stat_fp)) {
-    if (fgets(buf, MAX_PROCSTAT_LINELEN, stat_fp) == NULL) break;
+    if (fgets(buf, MAX_PROCSTAT_LINELEN, stat_fp) == nullptr) break;
     if (strncmp(buf, "cpu", 3) == 0) {
       determine_longstat(buf);
       break;
@@ -794,7 +794,7 @@ void get_cpu_count(void) {
   info.cpu_count = 0;
 
   while (!feof(stat_fp)) {
-    if (fgets(buf, 255, stat_fp) == NULL) {
+    if (fgets(buf, 255, stat_fp) == nullptr) {
       break;
     }
 
@@ -803,16 +803,16 @@ void get_cpu_count(void) {
     // "0,3-7".  I assume that chip is really an 8-core die with two cores
     // disabled...  Presumably you could also get "0,3-4,6", and other
     // combos too...
-    for (str1 = buf;; str1 = NULL) {
+    for (str1 = buf;; str1 = nullptr) {
       token = strtok_r(str1, ",", &saveptr1);
-      if (token == NULL) break;
+      if (token == nullptr) break;
       ++info.cpu_count;
 
       subtoken1 = -1;
       subtoken2 = -1;
-      for (str2 = token;; str2 = NULL) {
+      for (str2 = token;; str2 = nullptr) {
         subtoken = strtok_r(str2, "-", &saveptr2);
-        if (subtoken == NULL) break;
+        if (subtoken == nullptr) break;
         if (subtoken1 < 0)
           subtoken1 = atoi(subtoken);
         else
@@ -832,12 +832,12 @@ void get_cpu_count(void) {
 int update_stat(void) {
   FILE *stat_fp;
   static int rep = 0;
-  static struct cpu_info *cpu = NULL;
+  static struct cpu_info *cpu = nullptr;
   char buf[256];
   int i;
   unsigned int idx;
   double curtmp;
-  const char *stat_template = NULL;
+  const char *stat_template = nullptr;
   unsigned int malloc_cpu_size = 0;
   extern void *global_cpu;
 
@@ -884,7 +884,7 @@ int update_stat(void) {
 
   idx = 0;
   while (!feof(stat_fp)) {
-    if (fgets(buf, 255, stat_fp) == NULL) {
+    if (fgets(buf, 255, stat_fp) == nullptr) {
       break;
     }
 
@@ -969,7 +969,7 @@ int fscanf_no_i18n(FILE *stream, const char *format, ...) {
   va_list ap;
 
 #ifdef BUILD_I18N
-  const char *oldlocale = setlocale(LC_NUMERIC, NULL);
+  const char *oldlocale = setlocale(LC_NUMERIC, nullptr);
 
   setlocale(LC_NUMERIC, "C");
 #endif
@@ -1062,8 +1062,8 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
 
   memset(buf, 0, sizeof(buf));
 
-  /* if device is NULL or *, get first */
-  if (dev == NULL || strcmp(dev, "*") == 0) {
+  /* if device is nullptr or *, get first */
+  if (dev == nullptr || strcmp(dev, "*") == 0) {
     static int rep = 0;
 
     if (!get_first_file_in_a_directory(dir, buf, &rep)) {
@@ -1184,7 +1184,7 @@ static double get_sysfs_info(int *fd, int divisor, char *devtype, char *type) {
 
   /* My dirty hack for computing CPU value
    * Filedil, from forums.gentoo.org */
-  /* if (strstr(devtype, "temp1_input") != NULL) {
+  /* if (strstr(devtype, "temp1_input") != nullptr) {
     return -15.096 + 1.4893 * (val / 1000.0);
   } */
 
@@ -1322,7 +1322,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
        * this node and divide by 1000 to get Mhz. */
       if (fgets(s, sizeof(s), f)) {
         s[strlen(s) - 1] = '\0';
-        freq = strtod(s, NULL);
+        freq = strtod(s, nullptr);
       }
       fclose(f);
       snprintf(p_client_buffer, client_buffer_size, p_format,
@@ -1339,7 +1339,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
   }
 
   // read the file
-  while (fgets(s, sizeof(s), f) != NULL) {
+  while (fgets(s, sizeof(s), f) != nullptr) {
 #if defined(__i386) || defined(__x86_64)
     // and search for the cpu mhz
     if (strncmp(s, "cpu MHz", 7) == 0 && cpu == 0) {
@@ -1359,11 +1359,11 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
       // strip " est.\n"
       frequency[strlen(frequency) - 6] = '\0';
       // kernel reports in Hz
-      freq = strtod(frequency, NULL) / 1000000;
+      freq = strtod(frequency, nullptr) / 1000000;
 #else
       // strip \n
       frequency[strlen(frequency) - 1] = '\0';
-      freq = strtod(frequency, NULL);
+      freq = strtod(frequency, nullptr);
 #endif
       break;
     }
@@ -1418,7 +1418,7 @@ static char get_voltage(char *p_client_buffer, size_t client_buffer_size,
   if (f) {
     if (fgets(s, sizeof(s), f)) {
       s[strlen(s) - 1] = '\0';
-      freq = strtod(s, NULL);
+      freq = strtod(s, nullptr);
     }
     fclose(f);
   } else {
@@ -1441,7 +1441,7 @@ static char get_voltage(char *p_client_buffer, size_t client_buffer_size,
     while (!feof(f)) {
       char line[256];
 
-      if (fgets(line, 255, f) == NULL) {
+      if (fgets(line, 255, f) == nullptr) {
         break;
       }
       sscanf(line, "%d %d", &freq_comp, &voltage);
@@ -1558,7 +1558,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
   if (fp) {
     /* sysfs processing */
     while (!feof(fp)) {
-      if (fgets(buf, sizeof(buf), fp) == NULL) break;
+      if (fgets(buf, sizeof(buf), fp) == nullptr) break;
 
       if (strncmp(buf, "POWER_SUPPLY_ONLINE=", 20) == 0) {
         int online = 0;
@@ -1613,7 +1613,7 @@ int open_acpi_temperature(const char *name) {
   char path[256];
   int fd;
 
-  if (name == NULL || strcmp(name, "*") == 0) {
+  if (name == nullptr || strcmp(name, "*") == 0) {
     snprintf(path, 255, ACPI_THERMAL_FORMAT, ACPI_THERMAL_ZONE_DEFAULT);
   } else {
     snprintf(path, 255, ACPI_THERMAL_FORMAT, name);
@@ -1743,9 +1743,9 @@ monitori p��ll� mutta ilman verkkovirtaa
 #define APM_PATH "/proc/apm"
 #define MAX_BATTERY_COUNT 4
 
-static FILE *sysfs_bat_fp[MAX_BATTERY_COUNT] = {NULL, NULL, NULL, NULL};
-static FILE *acpi_bat_fp[MAX_BATTERY_COUNT] = {NULL, NULL, NULL, NULL};
-static FILE *apm_bat_fp[MAX_BATTERY_COUNT] = {NULL, NULL, NULL, NULL};
+static FILE *sysfs_bat_fp[MAX_BATTERY_COUNT] = {nullptr, NULL, NULL, NULL};
+static FILE *acpi_bat_fp[MAX_BATTERY_COUNT] = {nullptr, NULL, NULL, NULL};
+static FILE *apm_bat_fp[MAX_BATTERY_COUNT] = {nullptr, NULL, NULL, NULL};
 
 static int batteries_initialized = 0;
 static char batteries[MAX_BATTERY_COUNT][32];
@@ -1823,17 +1823,17 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
 
   /* first try SYSFS if that fails try ACPI */
 
-  if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL &&
-      apm_bat_fp[idx] == NULL) {
+  if (sysfs_bat_fp[idx] == nullptr && acpi_bat_fp[idx] == NULL &&
+      apm_bat_fp[idx] == nullptr) {
     sysfs_bat_fp[idx] = open_file(sysfs_path, &rep);
   }
 
-  if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL &&
-      apm_bat_fp[idx] == NULL) {
+  if (sysfs_bat_fp[idx] == nullptr && acpi_bat_fp[idx] == NULL &&
+      apm_bat_fp[idx] == nullptr) {
     acpi_bat_fp[idx] = open_file(acpi_path, &rep1);
   }
 
-  if (sysfs_bat_fp[idx] != NULL) {
+  if (sysfs_bat_fp[idx] != nullptr) {
     /* SYSFS */
     int present_rate = -1;
     int remaining_capacity = -1;
@@ -1844,7 +1844,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
 
     while (!feof(sysfs_bat_fp[idx])) {
       char buf[256];
-      if (fgets(buf, 256, sysfs_bat_fp[idx]) == NULL) break;
+      if (fgets(buf, 256, sysfs_bat_fp[idx]) == nullptr) break;
 
       /* let's just hope units are ok */
       if (strncmp(buf, "POWER_SUPPLY_PRESENT=1", 22) == 0)
@@ -1871,7 +1871,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
     }
 
     fclose(sysfs_bat_fp[idx]);
-    sysfs_bat_fp[idx] = NULL;
+    sysfs_bat_fp[idx] = nullptr;
 
     /* Hellf[i]re notes that remaining capacity can exceed acpi_last_full */
     if (remaining_capacity > acpi_last_full[idx])
@@ -1956,7 +1956,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
       else
         strncpy(last_battery_str[idx], "not present", 64);
     }
-  } else if (acpi_bat_fp[idx] != NULL) {
+  } else if (acpi_bat_fp[idx] != nullptr) {
     /* ACPI */
     int present_rate = -1;
     int remaining_capacity = -1;
@@ -1971,11 +1971,11 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
 
       snprintf(path, 127, ACPI_BATTERY_BASE_PATH "/%s/info", bat);
       fp = open_file(path, &rep3);
-      if (fp != NULL) {
+      if (fp != nullptr) {
         while (!feof(fp)) {
           char b[256];
 
-          if (fgets(b, 256, fp) == NULL) {
+          if (fgets(b, 256, fp) == nullptr) {
             break;
           }
           if (sscanf(b, "last full capacity: %d", &acpi_last_full[idx]) != 0) {
@@ -1994,7 +1994,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
     while (!feof(acpi_bat_fp[idx])) {
       char buf[256];
 
-      if (fgets(buf, 256, acpi_bat_fp[idx]) == NULL) {
+      if (fgets(buf, 256, acpi_bat_fp[idx]) == nullptr) {
         break;
       }
 
@@ -2088,14 +2088,14 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
       }
     }
     fclose(acpi_bat_fp[idx]);
-    acpi_bat_fp[idx] = NULL;
+    acpi_bat_fp[idx] = nullptr;
   } else {
     /* APM */
-    if (apm_bat_fp[idx] == NULL) {
+    if (apm_bat_fp[idx] == nullptr) {
       apm_bat_fp[idx] = open_file(APM_PATH, &rep2);
     }
 
-    if (apm_bat_fp[idx] != NULL) {
+    if (apm_bat_fp[idx] != nullptr) {
       unsigned int ac, status, flag;
       int life;
 
@@ -2118,7 +2118,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
       /* it seemed to buffer it so file must be closed (or could use
        * syscalls directly but I don't feel like coding it now) */
       fclose(apm_bat_fp[idx]);
-      apm_bat_fp[idx] = NULL;
+      apm_bat_fp[idx] = nullptr;
     }
   }
   set_return_value(buffer, n, item, idx);
@@ -2181,22 +2181,22 @@ int _get_battery_perct(const char *bat) {
 
   /* Only check for SYSFS or ACPI */
 
-  if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL &&
-      apm_bat_fp[idx] == NULL) {
+  if (sysfs_bat_fp[idx] == nullptr && acpi_bat_fp[idx] == NULL &&
+      apm_bat_fp[idx] == nullptr) {
     sysfs_bat_fp[idx] = open_file(sysfs_path, &rep);
     rep = 0;
   }
 
-  if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL &&
-      apm_bat_fp[idx] == NULL) {
+  if (sysfs_bat_fp[idx] == nullptr && acpi_bat_fp[idx] == NULL &&
+      apm_bat_fp[idx] == nullptr) {
     acpi_bat_fp[idx] = open_file(acpi_path, &rep);
   }
 
-  if (sysfs_bat_fp[idx] != NULL) {
+  if (sysfs_bat_fp[idx] != nullptr) {
     /* SYSFS */
     while (!feof(sysfs_bat_fp[idx])) {
       char buf[256];
-      if (fgets(buf, 256, sysfs_bat_fp[idx]) == NULL) break;
+      if (fgets(buf, 256, sysfs_bat_fp[idx]) == nullptr) break;
 
       if (strncmp(buf, "POWER_SUPPLY_CHARGE_NOW=", 24) == 0) {
         sscanf(buf, "POWER_SUPPLY_CHARGE_NOW=%d", &remaining_capacity);
@@ -2210,9 +2210,9 @@ int _get_battery_perct(const char *bat) {
     }
 
     fclose(sysfs_bat_fp[idx]);
-    sysfs_bat_fp[idx] = NULL;
+    sysfs_bat_fp[idx] = nullptr;
 
-  } else if (acpi_bat_fp[idx] != NULL) {
+  } else if (acpi_bat_fp[idx] != nullptr) {
     /* ACPI */
     /* read last full capacity if it's zero */
     if (acpi_design_capacity[idx] == 0) {
@@ -2222,11 +2222,11 @@ int _get_battery_perct(const char *bat) {
 
       snprintf(path, 127, ACPI_BATTERY_BASE_PATH "/%s/info", bat);
       fp = open_file(path, &rep2);
-      if (fp != NULL) {
+      if (fp != nullptr) {
         while (!feof(fp)) {
           char b[256];
 
-          if (fgets(b, 256, fp) == NULL) {
+          if (fgets(b, 256, fp) == nullptr) {
             break;
           }
           if (sscanf(b, "last full capacity: %d", &acpi_design_capacity[idx]) !=
@@ -2243,7 +2243,7 @@ int _get_battery_perct(const char *bat) {
     while (!feof(acpi_bat_fp[idx])) {
       char buf[256];
 
-      if (fgets(buf, 256, acpi_bat_fp[idx]) == NULL) {
+      if (fgets(buf, 256, acpi_bat_fp[idx]) == nullptr) {
         break;
       }
 
@@ -2339,19 +2339,19 @@ void get_powerbook_batt_info(struct text_object *obj, char *buffer, int n) {
   }
   pb_battery_info_update = current_update_time;
 
-  if (pmu_battery_fp == NULL) {
+  if (pmu_battery_fp == nullptr) {
     pmu_battery_fp = open_file(batt_path, &rep);
-    if (pmu_battery_fp == NULL) {
+    if (pmu_battery_fp == nullptr) {
       return;
     }
   }
 
-  if (pmu_battery_fp != NULL) {
+  if (pmu_battery_fp != nullptr) {
     rewind(pmu_battery_fp);
     while (!feof(pmu_battery_fp)) {
       char buf[32];
 
-      if (fgets(buf, sizeof(buf), pmu_battery_fp) == NULL) {
+      if (fgets(buf, sizeof(buf), pmu_battery_fp) == nullptr) {
         break;
       }
 
@@ -2366,19 +2366,19 @@ void get_powerbook_batt_info(struct text_object *obj, char *buffer, int n) {
       }
     }
   }
-  if (pmu_info_fp == NULL) {
+  if (pmu_info_fp == nullptr) {
     pmu_info_fp = open_file(info_path, &rep);
-    if (pmu_info_fp == NULL) {
+    if (pmu_info_fp == nullptr) {
       return;
     }
   }
 
-  if (pmu_info_fp != NULL) {
+  if (pmu_info_fp != nullptr) {
     rewind(pmu_info_fp);
     while (!feof(pmu_info_fp)) {
       char buf[32];
 
-      if (fgets(buf, sizeof(buf), pmu_info_fp) == NULL) {
+      if (fgets(buf, sizeof(buf), pmu_info_fp) == nullptr) {
         break;
       }
       if (buf[0] == 'A') {
@@ -2468,7 +2468,7 @@ void print_disk_protect_queue(struct text_object *obj, char *p,
   if (access(path, F_OK)) {
     snprintf(path, 127, "/sys/block/%s/queue/protect", obj->data.s);
   }
-  if ((fp = fopen(path, "r")) == NULL) {
+  if ((fp = fopen(path, "r")) == nullptr) {
     snprintf(p, p_max_size, "n/a   ");
     return;
   }
@@ -2733,7 +2733,7 @@ static void process_parse_stat(struct process *process) {
    * 3. copy string from its position
    */
   char *space_ptr = strchr(cmdline, ' ');
-  if (space_ptr == NULL) {
+  if (space_ptr == nullptr) {
     strcpy(tmpstr, cmdline);
   } else {
     long int space_pos = space_ptr - cmdline;
@@ -2742,7 +2742,7 @@ static void process_parse_stat(struct process *process) {
   }
 
   char *slash_ptr = strrchr(tmpstr, '/');
-  if (slash_ptr == NULL) {
+  if (slash_ptr == nullptr) {
     strncpy(cmdline_procname, cmdline, BUFFER_LEN);
   } else {
     long int slash_pos = slash_ptr - tmpstr;
@@ -2838,7 +2838,7 @@ static void process_parse_io(struct process *process) {
   }
 
   pos = strstr(line, read_bytes_str);
-  if (pos == NULL) {
+  if (pos == nullptr) {
     /* these should not happen (unless the format of the file changes) */
     return;
   }
@@ -2849,7 +2849,7 @@ static void process_parse_io(struct process *process) {
   }
 
   pos = strstr(line, write_bytes_str);
-  if (pos == NULL) {
+  if (pos == nullptr) {
     return;
   }
   pos += strlen(write_bytes_str);

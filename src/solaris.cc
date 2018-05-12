@@ -65,10 +65,10 @@ static int pagetok(int pages) {
 }
 
 static void update_kstat() {
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
 
-  if (kstat == NULL) {
-    if ((kstat = kstat_open()) == NULL) {
+  if (kstat == nullptr) {
+    if ((kstat = kstat_open()) == nullptr) {
       NORM_ERR("can't open kstat: %s", strerror(errno));
       return;
     }
@@ -91,13 +91,13 @@ static kstat_named_t *get_kstat(const char *module, int inst, const char *name,
   update_kstat();
 
   ksp = kstat_lookup(kstat, (char *)module, inst, (char *)name);
-  if (ksp == NULL) {
+  if (ksp == nullptr) {
     NORM_ERR("cannot lookup kstat %s:%d:%s:%s %s", module, inst, name, stat,
              strerror(errno));
-    return NULL;
+    return nullptr;
   }
 
-  if (kstat_read(kstat, ksp, NULL) >= 0) {
+  if (kstat_read(kstat, ksp, nullptr) >= 0) {
     if (ksp->ks_type == KSTAT_TYPE_NAMED || ksp->ks_type == KSTAT_TYPE_TIMER) {
       kstat_named_t *knp =
           (kstat_named_t *)kstat_data_lookup(ksp, (char *)stat);
@@ -105,11 +105,11 @@ static kstat_named_t *get_kstat(const char *module, int inst, const char *name,
     } else {
       NORM_ERR("kstat %s:%d:%s:%s has unexpected type %d", module, inst, name,
                stat, ksp->ks_type);
-      return NULL;
+      return nullptr;
     }
   }
   NORM_ERR("cannot read kstat %s:%d:%s:%s", module, inst, name, stat);
-  return NULL;
+  return nullptr;
 }
 
 void prepare_update() { kstat_updated = 0; }
@@ -124,7 +124,7 @@ int update_meminfo() {
 
   /* RAM stats */
   knp = get_kstat("unix", -1, "system_pages", "freemem");
-  if (knp != NULL) info.memfree = pagetok(knp->value.ui32);
+  if (knp != nullptr) info.memfree = pagetok(knp->value.ui32);
   info.memmax = pagetok(sysconf(_SC_PHYS_PAGES));
   if (info.memmax > info.memfree)
     info.mem = info.memmax - info.memfree;
@@ -136,7 +136,7 @@ int update_meminfo() {
   /* for swapctl(2) */
   swt =
       (struct swaptable *)malloc(nswap * sizeof(struct swapent) + sizeof(int));
-  if (swt == NULL) return 0;
+  if (swt == nullptr) return 0;
   swt->swt_n = nswap;
   swe = &(swt->swt_ent[0]);
   /* We are not interested in ste_path */
@@ -180,7 +180,7 @@ double get_acpi_temperature(int fd) {
 
 int update_total_processes(void) {
   kstat_named_t *knp = get_kstat("unix", -1, "system_misc", "nproc");
-  if (knp != NULL) info.procs = knp->value.ui32;
+  if (knp != nullptr) info.procs = knp->value.ui32;
   return 0;
 }
 
@@ -223,7 +223,7 @@ int update_net_stats(void) {
     long long r, t;
     kstat_named_t *knp;
 
-    ns = get_net_stat((const char *)ifr->ifr_name, NULL, NULL);
+    ns = get_net_stat((const char *)ifr->ifr_name, nullptr, NULL);
     ns->up = 1;
     memcpy(&(ns->addr), &ifr->ifr_addr, sizeof(ifr->ifr_addr));
 
@@ -235,7 +235,7 @@ int update_net_stats(void) {
 
     /* Get received bytes */
     knp = get_kstat("link", -1, ifr->ifr_name, "rbytes");
-    if (knp == NULL) {
+    if (knp == nullptr) {
       NORM_ERR("cannot read rbytes for %s\n", ifr->ifr_name);
       continue;
     }
@@ -249,7 +249,7 @@ int update_net_stats(void) {
 
     /* Get transceived bytes */
     knp = get_kstat("link", -1, ifr->ifr_name, "obytes");
-    if (knp == NULL) {
+    if (knp == nullptr) {
       NORM_ERR("cannot read obytes for %s\n", ifr->ifr_name);
       continue;
     }
@@ -269,7 +269,7 @@ int update_net_stats(void) {
 
 int update_cpu_usage(void) {
   static int last_cpu_cnt = 0;
-  static int *last_cpu_use = NULL;
+  static int *last_cpu_use = nullptr;
   double d = current_update_time - last_update_time;
   int cpu;
 
@@ -280,10 +280,10 @@ int update_cpu_usage(void) {
   info.cpu_count = sysconf(_SC_NPROCESSORS_ONLN);
 
   /* (Re)allocate the array with previous values */
-  if (last_cpu_cnt != info.cpu_count || last_cpu_use == NULL) {
+  if (last_cpu_cnt != info.cpu_count || last_cpu_use == nullptr) {
     last_cpu_use = (int *)realloc(last_cpu_use, info.cpu_count * sizeof(int));
     last_cpu_cnt = info.cpu_count;
-    if (last_cpu_use == NULL) return 0;
+    if (last_cpu_use == nullptr) return 0;
   }
 
   info.cpu_usage = (float *)malloc(info.cpu_count * sizeof(float));
@@ -297,8 +297,8 @@ int update_cpu_usage(void) {
 
     snprintf(stat_name, PATH_MAX, "cpu_stat%d", cpu);
     ksp = kstat_lookup(kstat, (char *)"cpu_stat", cpu, stat_name);
-    if (ksp == NULL) continue;
-    if (kstat_read(kstat, ksp, NULL) == -1) continue;
+    if (ksp == nullptr) continue;
+    if (kstat_read(kstat, ksp, nullptr) == -1) continue;
     cs = (cpu_stat_t *)ksp->ks_data;
 
     cpu_idle = cs->cpu_sysinfo.cpu[CPU_IDLE];
@@ -355,7 +355,7 @@ void get_top_info(void) {
   while ((entry = readdir(dir))) {
     pid_t pid;
 
-    if (entry == NULL) break;
+    if (entry == nullptr) break;
     if (sscanf(entry->d_name, "%u", &pid) != 1) continue;
     update_proc_entry(get_process(pid));
   }
@@ -380,9 +380,9 @@ int update_diskio(void) {
     kstat_io_t *ksio;
     kstat_t *ksp;
 
-    if (cur->dev == NULL) continue;
-    if ((ksp = kstat_lookup(kstat, NULL, -1, cur->dev)) == NULL) continue;
-    if (kstat_read(kstat, ksp, NULL) == -1) continue;
+    if (cur->dev == nullptr) continue;
+    if ((ksp = kstat_lookup(kstat, nullptr, -1, cur->dev)) == NULL) continue;
+    if (kstat_read(kstat, ksp, nullptr) == -1) continue;
     ksio = (kstat_io_t *)ksp->ks_data;
     tot_read += read = (unsigned int)(ksio->nread / 512);
     tot_written += written = (unsigned int)(ksio->nwritten / 512);
@@ -432,7 +432,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
 
   snprintf(stat_name, PATH_MAX, "cpu_info%d", cpu - 1);
   knp = get_kstat("cpu_info", cpu - 1, stat_name, "current_clock_Hz");
-  if (knp == NULL) return 0;
+  if (knp == nullptr) return 0;
   snprintf(p_client_buffer, client_buffer_size, p_format,
            (float)knp->value.ui32 / divisor / 1000000.0);
   return 1;
@@ -442,8 +442,8 @@ int update_uptime(void) {
   kstat_named_t *knp;
 
   knp = get_kstat("unix", -1, "system_misc", "boot_time");
-  if (knp == NULL) return 0;
-  info.uptime = time(NULL) - knp->value.ui32;
+  if (knp == nullptr) return 0;
+  info.uptime = time(nullptr) - knp->value.ui32;
   return 1;
 }
 
@@ -472,5 +472,5 @@ int update_load_average(void) {
 
 void get_cpu_count(void) {
   kstat_named_t *knp = get_kstat("unix", -1, "system_misc", "ncpus");
-  if (knp != NULL) info.cpu_count = knp->value.ui32;
+  if (knp != nullptr) info.cpu_count = knp->value.ui32;
 }

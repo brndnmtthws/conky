@@ -139,7 +139,7 @@ void scan_mixer_bar(struct text_object *obj, const char *arg) {
     obj->data.i = mixer_init(buf1);
     scan_bar(obj, arg + n, 100);
   } else {
-    obj->data.i = mixer_init(NULL);
+    obj->data.i = mixer_init(nullptr);
     scan_bar(obj, arg, 100);
   }
 }

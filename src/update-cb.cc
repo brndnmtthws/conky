@@ -25,8 +25,8 @@
 
 #include "update-cb.hh"
 
-#include <unistd.h>
 #include <typeinfo>
+#include <unistd.h>
 
 namespace conky {
 namespace {
@@ -38,16 +38,18 @@ namespace priv {
 callback_base::~callback_base() { stop(); }
 
 void callback_base::stop() {
-  if (thread) {
+  if (thread != nullptr) {
     done = true;
     sem_start.post();
-    if (pipefd.second >= 0)
-      if (write(pipefd.second, "X", 1) != 1)
+    if (pipefd.second >= 0) {
+      if (write(pipefd.second, "X", 1) != 1) {
         NORM_ERR("can't write 'X' to pipefd %d: %s", pipefd.second,
                  strerror(errno));
+      }
+    }
     thread->join();
     delete thread;
-    thread = NULL;
+    thread = nullptr;
   }
   if (pipefd.first >= 0) {
     close(pipefd.first);
@@ -62,9 +64,13 @@ void callback_base::stop() {
 inline size_t callback_base::get_hash(const handle &h) { return h->hash; }
 
 inline bool callback_base::is_equal(const handle &a, const handle &b) {
-  if (a->hash != b->hash) return false;
+  if (a->hash != b->hash) {
+    return false;
+  }
 
-  if (typeid(*a) != typeid(*b)) return false;
+  if (typeid(*a) != typeid(*b)) {
+    return false;
+  }
 
   return *a == *b;
 }
@@ -91,13 +97,17 @@ callback_base::handle callback_base::do_register_cb(const handle &h) {
   const auto &p = callbacks.insert(h);
 
   /* insertion failed; callback already exists */
-  if (not p.second) (*p.first)->merge(std::move(*h));
+  if (not p.second) {
+    (*p.first)->merge(std::move(*h));
+  }
 
   return *p.first;
 }
 
 void callback_base::run() {
-  if (not thread) thread = new std::thread(&callback_base::start_routine, this);
+  if (thread == nullptr) {
+    thread = new std::thread(&callback_base::start_routine, this);
+  }
 
   sem_start.post();
 }
@@ -105,15 +115,20 @@ void callback_base::run() {
 void callback_base::start_routine() {
   for (;;) {
     sem_start.wait();
-    if (done) return;
+    if (done) {
+      return;
+    }
 
     // clear any remaining posts in case the previous iteration was very slow
     // (this should only happen if wait == false)
-    while (sem_start.trywait())
+    while (sem_start.trywait()) {
       ;
+    }
 
     work();
-    if (wait) sem_wait.post();
+    if (wait) {
+      sem_wait.post();
+    }
   }
 }
 
@@ -135,17 +150,22 @@ void run_all_callbacks() {
       if (!i->unique() || ++cb.unused < UNUSED_MAX) {
         cb.remaining = cb.period - 1;
         cb.run();
-        if (cb.wait) ++wait;
+        if (cb.wait) {
+          ++wait;
+        }
       }
     }
     if (cb.unused == UNUSED_MAX) {
       auto t = i;
       ++i;
       callback_base::callbacks.erase(t);
-    } else
+    } else {
       ++i;
+    }
   }
 
-  while (wait-- > 0) sem_wait.wait();
+  while (wait-- > 0) {
+    sem_wait.wait();
+  }
 }
 }  // namespace conky

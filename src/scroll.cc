@@ -26,13 +26,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include <vector>
 #include "conky.h"
 #include "core.h"
 #include "logging.h"
 #include "specials.h"
 #include "text_object.h"
 #include "x11.h"
+#include <vector>
 
 /**
  * Length of a character in bytes.
@@ -41,14 +41,20 @@
 inline int scroll_character_length(char c) {
 #ifdef BUILD_X11
   if (utf8_mode.get(*state)) {
-    unsigned char uc = (unsigned char)c;
+    auto uc = static_cast<unsigned char>(c);
     int len = 0;
 
-    if (c == -1) return 1;
+    if (c == -1) {
+      return 1;
+    }
 
-    if ((uc & 0x80) == 0) return 1;
+    if ((uc & 0x80) == 0) {
+      return 1;
+    }
 
-    while (len < 7 && (uc & (0x80 >> len)) != 0) ++len;
+    while (len < 7 && (uc & (0x80 >> len)) != 0) {
+      ++len;
+    }
 
     return len;
   }
@@ -124,7 +130,7 @@ static void scroll_scroll_right(struct scroll_data *sd,
                                 unsigned int amount) {
   for (int i = 0; i < amount; ++i) {
     if (sd->start <= 0) {
-      sd->start = (int)strlen(&(buf[0]));
+      sd->start = static_cast<int>(strlen(&(buf[0])));
     }
 
     while (--(sd->start) >= 0) {
@@ -141,23 +147,26 @@ void parse_scroll_arg(struct text_object *obj, const char *arg,
   int n1 = 0, n2 = 0;
   char dirarg[6];
 
-  sd = (struct scroll_data *)malloc(sizeof(struct scroll_data));
+  sd = static_cast<struct scroll_data *>(malloc(sizeof(struct scroll_data)));
   memset(sd, 0, sizeof(struct scroll_data));
 
   sd->resetcolor = get_current_text_color();
   sd->step = 1;
   sd->direction = SCROLL_LEFT;
 
-  if (arg && sscanf(arg, "%5s %n", dirarg, &n1) == 1) {
-    if (strcasecmp(dirarg, "right") == 0 || strcasecmp(dirarg, "r") == 0)
+  if ((arg != nullptr) && sscanf(arg, "%5s %n", dirarg, &n1) == 1) {
+    if (strcasecmp(dirarg, "right") == 0 || strcasecmp(dirarg, "r") == 0) {
       sd->direction = SCROLL_RIGHT;
-    else if (strcasecmp(dirarg, "wait") == 0 || strcasecmp(dirarg, "w") == 0)
+    } else if (strcasecmp(dirarg, "wait") == 0 ||
+               strcasecmp(dirarg, "w") == 0) {
       sd->direction = SCROLL_WAIT;
-    else if (strcasecmp(dirarg, "left") != 0 && strcasecmp(dirarg, "l") != 0)
+    } else if (strcasecmp(dirarg, "left") != 0 &&
+               strcasecmp(dirarg, "l") != 0) {
       n1 = 0;
+    }
   }
 
-  if (!arg || sscanf(arg + n1, "%u %n", &sd->show, &n2) <= 0) {
+  if ((arg == nullptr) || sscanf(arg + n1, "%u %n", &sd->show, &n2) <= 0) {
     free(sd);
 #ifdef BUILD_X11
     free(obj->next);
@@ -182,19 +191,21 @@ void parse_scroll_arg(struct text_object *obj, const char *arg,
     sd->wait_arg = sd->wait = 0;
   }
 
-  sd->text = (char *)malloc(strlen(arg + n1) + sd->show + 1);
+  sd->text = static_cast<char *>(malloc(strlen(arg + n1) + sd->show + 1));
 
   if (strlen(arg) > sd->show && sd->direction != SCROLL_WAIT) {
-    for (n2 = 0; (unsigned int)n2 < sd->show; n2++) {
+    for (n2 = 0; static_cast<unsigned int>(n2) < sd->show; n2++) {
       sd->text[n2] = ' ';
     }
     sd->text[n2] = 0;
-  } else
+  } else {
     sd->text[0] = 0;
+  }
 
   strcat(sd->text, arg + n1);
   sd->start = sd->direction == SCROLL_WAIT ? strlen(sd->text) : 0;
-  obj->sub = (struct text_object *)malloc(sizeof(struct text_object));
+  obj->sub =
+      static_cast<struct text_object *>(malloc(sizeof(struct text_object)));
   extract_variable_text_internal(obj->sub, sd->text);
 
   obj->data.opaque = sd;
@@ -205,14 +216,16 @@ void parse_scroll_arg(struct text_object *obj, const char *arg,
 }
 
 void print_scroll(struct text_object *obj, char *p, int p_max_size) {
-  struct scroll_data *sd = (struct scroll_data *)obj->data.opaque;
+  auto *sd = static_cast<struct scroll_data *>(obj->data.opaque);
   unsigned int j, colorchanges = 0, frontcolorchanges = 0,
                   visibcolorchanges = 0, strend;
   unsigned int visiblechars = 0;
   char *pwithcolors;
-  std::vector<char> buf(max_user_text.get(*state), (char)0);
+  std::vector<char> buf(max_user_text.get(*state), static_cast<char>(0));
 
-  if (!sd) return;
+  if (sd == nullptr) {
+    return;
+  }
 
   generate_text_internal(&(buf[0]), max_user_text.get(*state), *obj->sub);
   for (j = 0; buf[j] != 0; j++) {
@@ -256,7 +269,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size) {
     } else {
       int l = scroll_character_length(c);
 
-      while (--l) {
+      while (--l != 0) {
         p[j] = buf[sd->start + j];
         ++j;
       }
@@ -270,11 +283,13 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size) {
   p[j] = 0;
   // count colorchanges in front of the visible part and place that many
   // colorchanges in front of the visible part
-  for (j = 0; j < (unsigned)sd->start; j++) {
-    if (buf[j] == SPECIAL_CHAR) frontcolorchanges++;
+  for (j = 0; j < static_cast<unsigned>(sd->start); j++) {
+    if (buf[j] == SPECIAL_CHAR) {
+      frontcolorchanges++;
+    }
   }
-  pwithcolors =
-      (char *)malloc(strlen(p) + 4 + colorchanges - visibcolorchanges);
+  pwithcolors = static_cast<char *>(
+      malloc(strlen(p) + 4 + colorchanges - visibcolorchanges));
   for (j = 0; j < frontcolorchanges; j++) {
     pwithcolors[j] = SPECIAL_CHAR;
   }
@@ -296,14 +311,14 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size) {
     unsigned int charsleft = scroll_count_characters_to_right(sd, buf);
 
     if (sd->show >= charsleft) {
-      if (sd->wait_arg && (--sd->wait <= 0 && sd->wait_arg != 1)) {
+      if ((sd->wait_arg != 0u) && (--sd->wait <= 0 && sd->wait_arg != 1)) {
         sd->wait = sd->wait_arg;
       } else {
         sd->start = 0;
       }
     } else {
-      if (!sd->wait_arg || sd->wait_arg == 1 ||
-          (sd->wait_arg && sd->wait-- <= 0)) {
+      if ((sd->wait_arg == 0u) || sd->wait_arg == 1 ||
+          ((sd->wait_arg != 0u) && sd->wait-- <= 0)) {
         sd->wait = 0;
 
         if (sd->step < charsleft) {
@@ -318,15 +333,18 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size) {
   }
 #ifdef BUILD_X11
   // reset color when scroll is finished
-  if (out_to_x.get(*state))
+  if (out_to_x.get(*state)) {
     new_special(p + strlen(p), FG)->arg = sd->resetcolor;
+  }
 #endif
 }
 
 void free_scroll(struct text_object *obj) {
-  struct scroll_data *sd = (struct scroll_data *)obj->data.opaque;
+  auto *sd = static_cast<struct scroll_data *>(obj->data.opaque);
 
-  if (!sd) return;
+  if (sd == nullptr) {
+    return;
+  }
 
   free_and_zero(sd->text);
   free_text_objects(obj->sub);

@@ -82,7 +82,7 @@ static short cpu_setup = 0;
 static int getsysctl(const char *name, void *ptr, size_t len) {
   size_t nlen = len;
 
-  if (sysctlbyname(name, ptr, &nlen, NULL, 0) == -1) {
+  if (sysctlbyname(name, ptr, &nlen, nullptr, 0) == -1) {
     return -1;
   }
 
@@ -93,7 +93,7 @@ static int getsysctl(const char *name, void *ptr, size_t len) {
   return 0;
 }
 
-struct ifmibdata *data = NULL;
+struct ifmibdata *data = nullptr;
 size_t len = 0;
 
 static int swapmode(unsigned long *retavail, unsigned long *retfree) {
@@ -127,7 +127,7 @@ int update_uptime(void) {
   time_t now;
   size_t size = sizeof(boottime);
 
-  if ((sysctl(mib, 2, &boottime, &size, NULL, 0) != -1) &&
+  if ((sysctl(mib, 2, &boottime, &size, nullptr, 0) != -1) &&
       (boottime.tv_sec != 0)) {
     time(&now);
     info.uptime = now - boottime.tv_sec;
@@ -209,7 +209,7 @@ int update_net_stats(void) {
   }
 
   for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-    ns = get_net_stat((const char *)ifa->ifa_name, NULL, NULL);
+    ns = get_net_stat((const char *)ifa->ifa_name, nullptr, NULL);
 
     if (ifa->ifa_flags & IFF_UP) {
       struct ifaddrs *iftmp;
@@ -223,7 +223,7 @@ int update_net_stats(void) {
       }
 
       for (iftmp = ifa->ifa_next;
-           iftmp != NULL && strcmp(ifa->ifa_name, iftmp->ifa_name) == 0;
+           iftmp != nullptr && strcmp(ifa->ifa_name, iftmp->ifa_name) == 0;
            iftmp = iftmp->ifa_next) {
         if (iftmp->ifa_addr->sa_family == AF_INET) {
           memcpy(&(ns->addr), iftmp->ifa_addr, iftmp->ifa_addr->sa_len);
@@ -301,8 +301,8 @@ void get_cpu_count(void) {
   }
 
   info.cpu_usage = (float *)malloc((info.cpu_count + 1) * sizeof(float));
-  if (info.cpu_usage == NULL) {
-    CRIT_ERR(NULL, NULL, "malloc");
+  if (info.cpu_usage == nullptr) {
+    CRIT_ERR(nullptr, NULL, "malloc");
   }
 }
 
@@ -314,9 +314,9 @@ struct cpu_info {
 int update_cpu_usage(void) {
   int i, j = 0;
   long used, total;
-  long *cp_time = NULL;
+  long *cp_time = nullptr;
   size_t cp_len;
-  static struct cpu_info *cpu = NULL;
+  static struct cpu_info *cpu = nullptr;
   unsigned int malloc_cpu_size = 0;
   extern void *global_cpu;
 
@@ -337,7 +337,7 @@ int update_cpu_usage(void) {
   cp_len = CPUSTATES * sizeof(long);
   cp_time = (long int *)malloc(cp_len);
 
-  if (sysctlbyname("kern.cp_time", cp_time, &cp_len, NULL, 0) < 0) {
+  if (sysctlbyname("kern.cp_time", cp_time, &cp_len, nullptr, 0) < 0) {
     fprintf(stderr, "Cannot get kern.cp_time\n");
   }
 
@@ -364,7 +364,7 @@ int update_cpu_usage(void) {
 
   /* on e.g. i386 SMP we may have more values than actual cpus; this will just
    * drop extra values */
-  if (sysctlbyname("kern.cp_times", cp_time, &cp_len, NULL, 0) < 0 &&
+  if (sysctlbyname("kern.cp_times", cp_time, &cp_len, nullptr, 0) < 0 &&
       errno != ENOMEM) {
     fprintf(stderr, "Cannot get kern.cp_times\n");
   }
@@ -489,7 +489,7 @@ static int check_bat(const char *bat) {
 int get_battery_perct(const char *bat) {
   int batcapacity;
 
-  get_battery_stats(NULL, &batcapacity, NULL, NULL);
+  get_battery_stats(nullptr, &batcapacity, NULL, NULL);
   return batcapacity;
 }
 
@@ -545,7 +545,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
   }
 
   freq_sysctl = (char *)calloc(16, sizeof(char));
-  if (freq_sysctl == NULL) {
+  if (freq_sysctl == nullptr) {
     exit(-1);
   }
 
@@ -578,7 +578,7 @@ void update_wifi_stats(void)
 	}
 
 	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-		ns = get_net_stat((const char *) ifa->ifa_name, NULL, NULL);
+		ns = get_net_stat((const char *) ifa->ifa_name, nullptr, NULL);
 
 		s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
@@ -619,7 +619,7 @@ cleanup:
 
 int update_diskio(void) {
   int devs_count, num_selected, num_selections, dn;
-  struct device_selection *dev_select = NULL;
+  struct device_selection *dev_select = nullptr;
   long select_generation;
   static struct statinfo statinfo_cur;
   char device_name[text_buffer_size.get(*state)];
@@ -631,7 +631,7 @@ int update_diskio(void) {
   statinfo_cur.dinfo = (struct devinfo *)calloc(1, sizeof(struct devinfo));
   stats.current = stats.current_read = stats.current_write = 0;
 
-  if (devstat_getdevs(NULL, &statinfo_cur) < 0) {
+  if (devstat_getdevs(nullptr, &statinfo_cur) < 0) {
     free(statinfo_cur.dinfo);
     return 0;
   }
@@ -639,7 +639,7 @@ int update_diskio(void) {
   devs_count = statinfo_cur.dinfo->numdevs;
   if (devstat_selectdevs(&dev_select, &num_selected, &num_selections,
                          &select_generation, statinfo_cur.dinfo->generation,
-                         statinfo_cur.dinfo->devices, devs_count, NULL, 0, NULL,
+                         statinfo_cur.dinfo->devices, devs_count, nullptr, 0, NULL,
                          0, DS_SELECT_ONLY, MAXSHOWDEVS, 1) >= 0) {
     for (dn = 0; dn < devs_count; dn++) {
       int di;
@@ -680,7 +680,7 @@ void get_top_info(void) {
   p = kvm_getprocs(kd, KERN_PROC_PROC, 0, &n_processes);
 
   for (i = 0; i < n_processes; i++) {
-    if (!((p[i].ki_flag & P_SYSTEM)) && p[i].ki_comm != NULL) {
+    if (!((p[i].ki_flag & P_SYSTEM)) && p[i].ki_comm != nullptr) {
       proc = get_process(p[i].ki_pid);
 
       proc->time_stamp = g_time;

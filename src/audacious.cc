@@ -101,7 +101,7 @@ class audacious_cb : public conky::callback<aud_result> {
   audacious_cb(uint32_t period) : Base(period, false, Tuple()) {
 #ifdef NEW_AUDACIOUS_FOUND
     g_type_init();
-    DBusGConnection *connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
+    DBusGConnection *connection = dbus_g_bus_get(DBUS_BUS_SESSION, nullptr);
     if (!connection)
       throw std::runtime_error("unable to establish dbus connection");
 
@@ -128,8 +128,8 @@ class audacious_cb : public conky::callback<aud_result> {
 void audacious_cb::work() {
   aud_result tmp;
   gchar *psong, *pfilename;
-  psong = NULL;
-  pfilename = NULL;
+  psong = nullptr;
+  pfilename = nullptr;
 
   do {
     if (!audacious_remote_is_running(session)) {

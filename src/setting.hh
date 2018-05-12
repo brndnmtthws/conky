@@ -174,7 +174,7 @@ class config_setting_base {
     return a->seq_no < b->seq_no;
   }
 
-  explicit config_setting_base(const std::string &name_);
+  explicit config_setting_base(std::string name_);
   virtual ~config_setting_base() {}
 
   /*

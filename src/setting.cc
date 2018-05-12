@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <memory>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace conky {
@@ -34,7 +35,7 @@ namespace conky {
 namespace {
 typedef std::unordered_map<std::string, priv::config_setting_base *>
     settings_map;
-typedef std::vector<priv::config_setting_base *> settings_vector;
+using settings_vector = std::vector<priv::config_setting_base *>;
 
 /*
  * We cannot construct this object statically, because order of object
@@ -46,20 +47,20 @@ settings_map *settings;
 
 /*
  * Returns the setting record corresponding to the value at the specified index.
- * If the value is not valid, returns NULL and prints an error.
+ * If the value is not valid, returns nullptr and prints an error.
  */
 priv::config_setting_base *get_setting(lua::state &l, int index) {
   lua::Type type = l.type(index);
   if (type != lua::TSTRING) {
     NORM_ERR("invalid setting of type '%s'", l.type_name(type));
-    return NULL;
+    return nullptr;
   }
 
   const std::string &name = l.tostring(index);
   auto iter = settings->find(name);
   if (iter == settings->end()) {
     NORM_ERR("Unknown setting '%s'", name.c_str());
-    return NULL;
+    return nullptr;
   }
 
   return iter->second;
@@ -70,8 +71,9 @@ settings_vector make_settings_vector() {
   settings_vector ret;
   ret.reserve(settings->size());
 
-  for (auto i = settings->begin(); i != settings->end(); ++i)
-    ret.push_back(i->second);
+  for (auto &setting : *settings) {
+    ret.push_back(setting.second);
+  }
   sort(ret.begin(), ret.end(), &priv::config_setting_base::seq_compare);
 
   return ret;
@@ -86,7 +88,7 @@ size_t get_next_seq_no() {
     settings_constructor() { settings = new settings_map; }
     ~settings_constructor() {
       delete settings;
-      settings = NULL;
+      settings = nullptr;
     }
   };
   static settings_constructor constructor;
@@ -97,12 +99,13 @@ size_t get_next_seq_no() {
 
 namespace priv {
 
-config_setting_base::config_setting_base(const std::string &name_)
-    : name(name_), seq_no(get_next_seq_no()) {
+config_setting_base::config_setting_base(std::string name_)
+    : name(std::move(name_)), seq_no(get_next_seq_no()) {
   bool inserted = settings->insert({name, this}).second;
-  if (not inserted)
+  if (not inserted) {
     throw std::logic_error("Setting with name '" + name +
                            "' already registered");
+  }
 }
 
 void config_setting_base::lua_set(lua::state &l) {
@@ -128,7 +131,9 @@ void config_setting_base::process_setting(lua::state &l, bool init) {
   lua::stack_sentry s(l, -3);
 
   config_setting_base *ptr = get_setting(l, -3);
-  if (not ptr) return;
+  if (ptr == nullptr) {
+    return;
+  }
 
   ptr->lua_setter(l, init);
   l.pushvalue(-2);
@@ -194,13 +199,15 @@ void set_config_settings(lua::state &l) {
 
   l.getglobal("conky");
   {
-    if (l.type(-1) != lua::TTABLE)
+    if (l.type(-1) != lua::TTABLE) {
       throw std::runtime_error("conky must be a table");
+    }
 
     l.rawgetfield(-1, "config");
     {
-      if (l.type(-1) != lua::TTABLE)
+      if (l.type(-1) != lua::TTABLE) {
         throw std::runtime_error("conky.config must be a table");
+      }
 
       priv::config_setting_base::make_conky_config(l);
       l.rawsetfield(-3, "config");
@@ -211,9 +218,9 @@ void set_config_settings(lua::state &l) {
       {
         const settings_vector &v = make_settings_vector();
 
-        for (size_t i = 0; i < v.size(); ++i) {
-          l.pushstring(v[i]->name);
-          l.rawgetfield(-3, v[i]->name.c_str());
+        for (auto i : v) {
+          l.pushstring(i->name);
+          l.rawgetfield(-3, i->name.c_str());
           l.pushnil();
           priv::config_setting_base::process_setting(l, true);
         }

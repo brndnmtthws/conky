@@ -50,7 +50,7 @@ struct ctx {
 void ev_connected(irc_session_t *session, const char *event, const char *origin,
                   const char **params, unsigned int count) {
   struct ctx *ctxptr = (struct ctx *)irc_get_ctx(session);
-  if (irc_cmd_join(session, ctxptr->chan, NULL) != 0) {
+  if (irc_cmd_join(session, ctxptr->chan, nullptr) != 0) {
     NORM_ERR("irc: %s", irc_strerror(irc_errno(session)));
   }
   if (event || origin || params || count) {
@@ -62,7 +62,7 @@ void addmessage(struct ctx *ctxptr, char *nick, const char *text) {
   struct ll_text *newmsg = (struct ll_text *)malloc(sizeof(struct ll_text));
   newmsg->text = (char *)malloc(strlen(nick) + strlen(text) + 4);  // 4 = ": \n"
   sprintf(newmsg->text, "%s: %s\n", nick, text);
-  newmsg->next = NULL;
+  newmsg->next = nullptr;
   int msgcnt = 1;
   if (!lastmsg) {
     ctxptr->messages = newmsg;
@@ -126,9 +126,9 @@ void ev_num(irc_session_t *session, unsigned int event, const char *origin,
   "The correct syntax is ${irc server(:port) #channel (max_msg_lines)}"
 #define IRCPORT 6667
 #define IRCNICK "conky"
-#define IRCSERVERPASS NULL
-#define IRCUSER NULL
-#define IRCREAL NULL
+#define IRCSERVERPASS nullptr
+#define IRCUSER nullptr
+#define IRCREAL nullptr
 
 void *ircclient(void *ptr) {
   struct obj_irc *ircobj = (struct obj_irc *)ptr;
@@ -145,20 +145,20 @@ void *ircclient(void *ptr) {
   callbacks.event_numeric = ev_num;
   ircobj->session = irc_create_session(&callbacks);
   server = strtok(ircobj->arg, " ");
-  ctxptr->chan = strtok(NULL, " ");
+  ctxptr->chan = strtok(nullptr, " ");
   if (!ctxptr->chan) {
     NORM_ERR("irc: %s", IRCSYNTAX);
   }
-  str_max_msg_lines = strtok(NULL, " ");
+  str_max_msg_lines = strtok(nullptr, " ");
   if (str_max_msg_lines) {
-    ctxptr->max_msg_lines = strtol(str_max_msg_lines, NULL, 10);
+    ctxptr->max_msg_lines = strtol(str_max_msg_lines, nullptr, 10);
   }
-  ctxptr->messages = NULL;
+  ctxptr->messages = nullptr;
   irc_set_ctx(ircobj->session, ctxptr);
   server = strtok(server, ":");
-  strport = strtok(NULL, ":");
+  strport = strtok(nullptr, ":");
   if (strport) {
-    port = strtol(strport, NULL, 10);
+    port = strtol(strport, nullptr, 10);
     if (port < 1 || port > 65535) port = IRCPORT;
   } else {
     port = IRCPORT;
@@ -190,16 +190,16 @@ void *ircclient(void *ptr) {
   }
   free(ircobj->arg);
   free(ctxptr);
-  return NULL;
+  return nullptr;
 }
 
 void parse_irc_args(struct text_object *obj, const char *arg) {
   struct obj_irc *opaque = (struct obj_irc *)malloc(sizeof(struct obj_irc));
   opaque->thread = (pthread_t *)malloc(sizeof(pthread_t));
-  srand(time(NULL));
-  opaque->session = NULL;
+  srand(time(nullptr));
+  opaque->session = nullptr;
   opaque->arg = strdup(arg);
-  pthread_create(opaque->thread, NULL, ircclient, opaque);
+  pthread_create(opaque->thread, nullptr, ircclient, opaque);
   obj->data.opaque = opaque;
 }
 
@@ -225,14 +225,14 @@ void print_irc(struct text_object *obj, char *p, int p_max_size) {
     p[strlen(p) - 1] = 0;
   }
   if (!ctxptr->max_msg_lines) {
-    ctxptr->messages = NULL;
+    ctxptr->messages = nullptr;
   }
 }
 
 void free_irc(struct text_object *obj) {
   struct obj_irc *ircobj = (struct obj_irc *)obj->data.opaque;
   struct ctx *ctxptr;
-  struct ll_text *nextmsg, *curmsg = NULL;
+  struct ll_text *nextmsg, *curmsg = nullptr;
 
   if (ircobj->session) {
     if (irc_is_connected(ircobj->session)) {
@@ -240,7 +240,7 @@ void free_irc(struct text_object *obj) {
       curmsg = ctxptr->messages;
       irc_disconnect(ircobj->session);
     }
-    pthread_join(*(ircobj->thread), NULL);
+    pthread_join(*(ircobj->thread), nullptr);
     irc_destroy_session(ircobj->session);
   }
   free(ircobj->thread);

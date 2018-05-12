@@ -68,12 +68,13 @@ void parse_combine_arg(struct text_object *obj, const char *arg) {
   }
   if (startvar[0] >= 0 && endvar[0] >= 0 && startvar[1] >= 0 &&
       endvar[1] >= 0) {
-    cd = (struct combine_data *)malloc(sizeof(struct combine_data));
+    cd =
+        static_cast<struct combine_data *>(malloc(sizeof(struct combine_data)));
     memset(cd, 0, sizeof(struct combine_data));
 
-    cd->left = (char *)malloc(endvar[0] - startvar[0] + 1);
-    cd->seperation = (char *)malloc(startvar[1] - endvar[0] + 1);
-    cd->right = (char *)malloc(endvar[1] - startvar[1] + 1);
+    cd->left = static_cast<char *>(malloc(endvar[0] - startvar[0] + 1));
+    cd->seperation = static_cast<char *>(malloc(startvar[1] - endvar[0] + 1));
+    cd->right = static_cast<char *>(malloc(endvar[1] - startvar[1] + 1));
 
     strncpy(cd->left, arg + startvar[0], endvar[0] - startvar[0]);
     cd->left[endvar[0] - startvar[0]] = 0;
@@ -84,9 +85,11 @@ void parse_combine_arg(struct text_object *obj, const char *arg) {
     strncpy(cd->right, arg + startvar[1], endvar[1] - startvar[1]);
     cd->right[endvar[1] - startvar[1]] = 0;
 
-    obj->sub = (struct text_object *)malloc(sizeof(struct text_object));
+    obj->sub =
+        static_cast<struct text_object *>(malloc(sizeof(struct text_object)));
     extract_variable_text_internal(obj->sub, cd->left);
-    obj->sub->sub = (struct text_object *)malloc(sizeof(struct text_object));
+    obj->sub->sub =
+        static_cast<struct text_object *>(malloc(sizeof(struct text_object)));
     extract_variable_text_internal(obj->sub->sub, cd->right);
     obj->data.opaque = cd;
   } else {
@@ -95,7 +98,7 @@ void parse_combine_arg(struct text_object *obj, const char *arg) {
 }
 
 void print_combine(struct text_object *obj, char *p, int p_max_size) {
-  struct combine_data *cd = (struct combine_data *)obj->data.opaque;
+  auto *cd = static_cast<struct combine_data *>(obj->data.opaque);
   std::vector<std::vector<char>> buf;
   buf.resize(2);
   buf[0].resize(max_user_text.get(*state));
@@ -111,49 +114,60 @@ void print_combine(struct text_object *obj, char *p, int p_max_size) {
   struct llrows *ll_rows[2], *current[2];
   struct text_object *objsub = obj->sub;
 
-  if (!cd || !p_max_size) return;
+  if ((cd == nullptr) || (p_max_size == 0)) {
+    return;
+  }
 
   p[0] = 0;
   for (i = 0; i < 2; i++) {
     nr_rows[i] = 1;
     nextstart = 0;
-    ll_rows[i] = (struct llrows *)malloc(sizeof(struct llrows));
+    ll_rows[i] = static_cast<struct llrows *>(malloc(sizeof(struct llrows)));
     current[i] = ll_rows[i];
-    for (j = 0; j < i; j++) objsub = objsub->sub;
+    for (j = 0; j < i; j++) {
+      objsub = objsub->sub;
+    }
     generate_text_internal(&(buf[i][0]), max_user_text.get(*state), *objsub);
     for (j = 0; buf[i][j] != 0; j++) {
-      if (buf[i][j] == '\t') buf[i][j] = ' ';
-      if (buf[i][j] == '\n')
+      if (buf[i][j] == '\t') {
+        buf[i][j] = ' ';
+      }
+      if (buf[i][j] == '\n') {
         buf[i][j] = 0;  // the vars inside combine may not have a \n at the end
+      }
       if (buf[i][j] ==
           2) {  // \002 is used instead of \n to separate lines inside a var
         buf[i][j] = 0;
         current[i]->row = strdup(&(buf[i][0]) + nextstart);
-        if (i == 0 && (long)strlen(current[i]->row) > longest)
-          longest = (long)strlen(current[i]->row);
-        current[i]->next = (struct llrows *)malloc(sizeof(struct llrows));
+        if (i == 0 && static_cast<long>(strlen(current[i]->row)) > longest) {
+          longest = static_cast<long>(strlen(current[i]->row));
+        }
+        current[i]->next =
+            static_cast<struct llrows *>(malloc(sizeof(struct llrows)));
         current[i] = current[i]->next;
         nextstart = j + 1;
         nr_rows[i]++;
       }
     }
     current[i]->row = strdup(&(buf[i][0]) + nextstart);
-    if (i == 0 && (long)strlen(current[i]->row) > longest)
-      longest = (long)strlen(current[i]->row);
-    current[i]->next = NULL;
+    if (i == 0 && static_cast<long>(strlen(current[i]->row)) > longest) {
+      longest = static_cast<long>(strlen(current[i]->row));
+    }
+    current[i]->next = nullptr;
     current[i] = ll_rows[i];
   }
   for (j = 0; j < (nr_rows[0] > nr_rows[1] ? nr_rows[0] : nr_rows[1]); j++) {
-    if (current[0]) {
+    if (current[0] != nullptr) {
       strcat(p, current[0]->row);
       i = strlen(current[0]->row);
-    } else
+    } else {
       i = 0;
+    }
     while (i < longest) {
       strcat(p, " ");
       i++;
     }
-    if (current[1]) {
+    if (current[1] != nullptr) {
       strcat(p, cd->seperation);
       strcat(p, current[1]->row);
     }
@@ -161,14 +175,17 @@ void print_combine(struct text_object *obj, char *p, int p_max_size) {
 #ifdef HAVE_OPENMP
 #pragma omp parallel for schedule(dynamic, 10)
 #endif /* HAVE_OPENMP */
-    for (i = 0; i < 2; i++)
-      if (current[i]) current[i] = current[i]->next;
+    for (i = 0; i < 2; i++) {
+      if (current[i] != nullptr) {
+        current[i] = current[i]->next;
+      }
+    }
   }
 #ifdef HAVE_OPENMP
 #pragma omp parallel for schedule(dynamic, 10)
 #endif /* HAVE_OPENMP */
   for (i = 0; i < 2; i++) {
-    while (ll_rows[i] != NULL) {
+    while (ll_rows[i] != nullptr) {
       current[i] = ll_rows[i];
       free(current[i]->row);
       ll_rows[i] = current[i]->next;
@@ -178,9 +195,11 @@ void print_combine(struct text_object *obj, char *p, int p_max_size) {
 }
 
 void free_combine(struct text_object *obj) {
-  struct combine_data *cd = (struct combine_data *)obj->data.opaque;
+  auto *cd = static_cast<struct combine_data *>(obj->data.opaque);
 
-  if (!cd) return;
+  if (cd == nullptr) {
+    return;
+  }
   free(cd->left);
   free(cd->seperation);
   free(cd->right);

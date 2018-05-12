@@ -45,9 +45,9 @@ conky::simple_config_setting<std::string> db("mysql_db", "mysql", false);
 }  // namespace
 
 void print_mysql(struct text_object *obj, char *p, int p_max_size) {
-  MYSQL *conn = mysql_init(NULL);
+  MYSQL *conn = mysql_init(nullptr);
 
-  if (conn == NULL) {
+  if (conn == nullptr) {
     NORM_ERR("Can't initialize MySQL");
     mysql_library_end();
     return;
@@ -55,7 +55,7 @@ void print_mysql(struct text_object *obj, char *p, int p_max_size) {
   if (!mysql_real_connect(conn, host.get(*state).c_str(),
                           user.get(*state).c_str(),
                           password.get(*state).c_str(), db.get(*state).c_str(),
-                          port.get(*state), NULL, 0)) {
+                          port.get(*state), nullptr, 0)) {
     NORM_ERR("MySQL: %s", mysql_error(conn));
     mysql_close(conn);
     mysql_library_end();
@@ -68,7 +68,7 @@ void print_mysql(struct text_object *obj, char *p, int p_max_size) {
     return;
   }
   MYSQL_RES *res = mysql_use_result(conn);
-  if (res == NULL) {
+  if (res == nullptr) {
     NORM_ERR("MySQL: %s", mysql_error(conn));
     mysql_close(conn);
     mysql_library_end();

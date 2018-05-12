@@ -240,17 +240,17 @@ void mpd_freeSearchStats(mpd_SearchStats *stats);
 typedef struct _mpd_Song {
   /* filename of song */
   char *file;
-  /* artist, maybe NULL if there is no tag */
+  /* artist, maybe nullptr if there is no tag */
   char *artist;
-  /* albumartist, maybe NULL if there is no tag */
+  /* albumartist, maybe nullptr if there is no tag */
   char *albumartist;
-  /* title, maybe NULL if there is no tag */
+  /* title, maybe nullptr if there is no tag */
   char *title;
-  /* album, maybe NULL if there is no tag */
+  /* album, maybe nullptr if there is no tag */
   char *album;
-  /* track, maybe NULL if there is no tag */
+  /* track, maybe nullptr if there is no tag */
   char *track;
-  /* name, maybe NULL if there is no tag; it's the name of the current song,
+  /* name, maybe nullptr if there is no tag; it's the name of the current song,
    * f.e. the icyName of the stream */
   char *name;
   /* date */
@@ -279,7 +279,7 @@ typedef struct _mpd_Song {
 
 /* mpd_newSong
  * use to allocate memory for a new mpd_Song
- * file, artist, etc all initialized to NULL
+ * file, artist, etc all initialized to nullptr
  * if you're going to assign values to file, artist, etc., be sure to
  * malloc or strdup the memory
  * use mpd_freeSong to free the memory for the mpd_Song, it will also
@@ -326,7 +326,7 @@ typedef struct _mpd_PlaylistFile {
 } mpd_PlaylistFile;
 
 /* mpd_newPlaylistFile
- * allocates memory for new mpd_PlaylistFile, path is set to NULL
+ * allocates memory for new mpd_PlaylistFile, path is set to nullptr
  * free this memory with mpd_freePlaylistFile */
 mpd_PlaylistFile *mpd_newPlaylistFile(void);
 
@@ -375,10 +375,10 @@ mpd_InfoEntity *mpd_getNextInfoEntity(mpd_Connection *connection);
 void mpd_sendCurrentSongCommand(mpd_Connection *connection);
 
 /* songNum of -1, means to display the whole list */
-void mpd_sendPlaylistInfoCommand(mpd_Connection *connection, int songNum);
+void mpd_sendPlaylistInfoCommand(mpd_Connection *connection, int songPos);
 
 /* songId of -1, means to display the whole list */
-void mpd_sendPlaylistIdCommand(mpd_Connection *connection, int songId);
+void mpd_sendPlaylistIdCommand(mpd_Connection *connection, int id);
 
 /* use this to get the changes in the playlist since version _playlist_ */
 void mpd_sendPlChangesCommand(mpd_Connection *connection, long long playlist);
@@ -417,7 +417,7 @@ void mpd_sendFindCommand(mpd_Connection *connection, int table,
 
 /* use this function fetch next artist entry, be sure to free the
  * returned string.
- * NULL means there are no more.
+ * nullptr means there are no more.
  * Best used with sendListArtists */
 char *mpd_getNextArtist(mpd_Connection *connection);
 
@@ -427,7 +427,7 @@ char *mpd_getNextTag(mpd_Connection *connection, int type);
 
 /* list artist or albums by artist
  * arg1 should be set to the artist if listing albums by a artist
- * otherwise NULL for listing all artists or albums */
+ * otherwise nullptr for listing all artists or albums */
 void mpd_sendListCommand(mpd_Connection *connection, int table,
                          const char *arg1);
 
@@ -437,9 +437,9 @@ void mpd_sendAddCommand(mpd_Connection *connection, const char *file);
 
 int mpd_sendAddIdCommand(mpd_Connection *connection, const char *file);
 
-void mpd_sendDeleteCommand(mpd_Connection *connection, int songNum);
+void mpd_sendDeleteCommand(mpd_Connection *connection, int songPos);
 
-void mpd_sendDeleteIdCommand(mpd_Connection *connection, int songNum);
+void mpd_sendDeleteIdCommand(mpd_Connection *connection, int id);
 
 void mpd_sendSaveCommand(mpd_Connection *connection, const char *name);
 
@@ -457,9 +457,9 @@ void mpd_sendClearCommand(mpd_Connection *connection);
 /* use this to start playing at the beginning, useful when in random mode */
 #define MPD_PLAY_AT_BEGINNING -1
 
-void mpd_sendPlayCommand(mpd_Connection *connection, int songNum);
+void mpd_sendPlayCommand(mpd_Connection *connection, int songPos);
 
-void mpd_sendPlayIdCommand(mpd_Connection *connection, int songNum);
+void mpd_sendPlayIdCommand(mpd_Connection *connection, int id);
 
 void mpd_sendStopCommand(mpd_Connection *connection);
 
@@ -471,15 +471,15 @@ void mpd_sendPrevCommand(mpd_Connection *connection);
 
 void mpd_sendMoveCommand(mpd_Connection *connection, int from, int to);
 
-void mpd_sendMoveIdCommand(mpd_Connection *connection, int from, int to);
+void mpd_sendMoveIdCommand(mpd_Connection *connection, int id, int to);
 
 void mpd_sendSwapCommand(mpd_Connection *connection, int song1, int song2);
 
-void mpd_sendSwapIdCommand(mpd_Connection *connection, int song1, int song2);
+void mpd_sendSwapIdCommand(mpd_Connection *connection, int id1, int id2);
 
 void mpd_sendSeekCommand(mpd_Connection *connection, int song, int seek_time);
 
-void mpd_sendSeekIdCommand(mpd_Connection *connection, int song, int seek_time);
+void mpd_sendSeekIdCommand(mpd_Connection *connection, int id, int seek_time);
 
 void mpd_sendRepeatCommand(mpd_Connection *connection, int repeatMode);
 

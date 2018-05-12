@@ -31,9 +31,9 @@
  *
  */
 
-#include <limits.h> /* INT_MAX */
-#include <stdlib.h>
-#include <string.h>
+#include <climits> /* INT_MAX */
+#include <cstdlib>
+#include <cstring>
 #include "conky.h"
 
 struct prio_elem {
@@ -65,10 +65,10 @@ struct prio_queue {
 /* nop callback to save us from conditional calling */
 static void pq_free_nop(void *a) { (void)a; }
 
-struct prio_queue *init_prio_queue(void) {
+struct prio_queue *init_prio_queue() {
   struct prio_queue *retval;
 
-  retval = (struct prio_queue *)malloc(sizeof(struct prio_queue));
+  retval = static_cast<struct prio_queue *>(malloc(sizeof(struct prio_queue)));
   memset(retval, 0, sizeof(struct prio_queue));
 
   /* use pq_free_nop by default */
@@ -84,15 +84,21 @@ struct prio_queue *init_prio_queue(void) {
 
 void pq_set_compare(struct prio_queue *queue,
                     int (*pqcompare)(void *a, void *b)) {
-  if (pqcompare) queue->compare = pqcompare;
+  if (pqcompare != nullptr) {
+    queue->compare = pqcompare;
+  }
 }
 
 void pq_set_free(struct prio_queue *queue, void (*pqfree)(void *a)) {
-  if (pqfree) queue->free = pqfree;
+  if (pqfree != nullptr) {
+    queue->free = pqfree;
+  }
 }
 
 void pq_set_max_size(struct prio_queue *queue, int max_size) {
-  if (max_size >= 0) queue->max_size = max_size;
+  if (max_size >= 0) {
+    queue->max_size = max_size;
+  }
 }
 
 int pq_get_cur_size(struct prio_queue *queue) { return queue->cur_size; }
@@ -100,7 +106,7 @@ int pq_get_cur_size(struct prio_queue *queue) { return queue->cur_size; }
 static struct prio_elem *init_prio_elem(void *data) {
   struct prio_elem *retval;
 
-  retval = (struct prio_elem *)malloc(sizeof(struct prio_elem));
+  retval = static_cast<struct prio_elem *>(malloc(sizeof(struct prio_elem)));
   memset(retval, 0, sizeof(struct prio_elem));
 
   retval->data = data;
@@ -111,10 +117,12 @@ void insert_prio_elem(struct prio_queue *queue, void *data) {
   struct prio_elem *cur;
 
   /* queue->compare is a must-have */
-  if (!queue->compare) return;
+  if (queue->compare == nullptr) {
+    return;
+  }
 
   /* empty queue, insert the first item */
-  if (!queue->cur_size) {
+  if (queue->cur_size == 0) {
     queue->cur_size++;
     queue->head = queue->tail = init_prio_elem(data);
     return;
@@ -127,8 +135,9 @@ void insert_prio_elem(struct prio_queue *queue, void *data) {
       queue->tail->next = init_prio_elem(data);
       queue->tail->next->prev = queue->tail;
       queue->tail = queue->tail->next;
-    } else /* list was already full */
+    } else { /* list was already full */
       (*queue->free)(data);
+    }
     return;
   }
 
@@ -142,7 +151,7 @@ void insert_prio_elem(struct prio_queue *queue, void *data) {
   }
 
   /* find the actual position if short-cuts failed */
-  for (cur = queue->head->next; cur; cur = cur->next) {
+  for (cur = queue->head->next; cur != nullptr; cur = cur->next) {
     if (queue->compare(cur->data, data) >= 0) {
       queue->cur_size++;
       cur->prev->next = init_prio_elem(data);
@@ -167,17 +176,20 @@ void *pop_prio_elem(struct prio_queue *queue) {
   struct prio_elem *tmp;
   void *data;
 
-  if (queue->cur_size <= 0) return NULL;
+  if (queue->cur_size <= 0) {
+    return nullptr;
+  }
 
   tmp = queue->head;
   data = tmp->data;
 
   queue->head = queue->head->next;
   queue->cur_size--;
-  if (queue->head)
-    queue->head->prev = NULL;
-  else /* list is now empty */
-    queue->tail = NULL;
+  if (queue->head != nullptr) {
+    queue->head->prev = nullptr;
+  } else { /* list is now empty */
+    queue->tail = nullptr;
+  }
 
   free(tmp);
   return data;
@@ -185,6 +197,8 @@ void *pop_prio_elem(struct prio_queue *queue) {
 
 void free_prio_queue(struct prio_queue *queue) {
   void *data;
-  while ((data = pop_prio_elem(queue))) (*queue->free)(data);
+  while ((data = pop_prio_elem(queue)) != nullptr) {
+    (*queue->free)(data);
+  }
   free(queue);
 }

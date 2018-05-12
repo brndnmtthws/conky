@@ -38,7 +38,7 @@ static void user_name(char *ptr) {
   const struct utmp *usr = 0;
 
   setutent();
-  while ((usr = getutent()) != NULL) {
+  while ((usr = getutent()) != nullptr) {
     if (usr->ut_type == USER_PROCESS) {
       if (strlen(ptr) + strlen(usr->ut_name) + 1 <= BUFLEN) {
         strncat(ptr, usr->ut_name, UT_NAMESIZE);
@@ -51,7 +51,7 @@ static void user_num(int *ptr) {
   int users_num = 0;
 
   setutent();
-  while ((usr = getutent()) != NULL) {
+  while ((usr = getutent()) != nullptr) {
     if (usr->ut_type == USER_PROCESS) {
       ++users_num;
     }
@@ -62,7 +62,7 @@ static void user_term(char *ptr) {
   const struct utmp *usr;
 
   setutent();
-  while ((usr = getutent()) != NULL) {
+  while ((usr = getutent()) != nullptr) {
     if (usr->ut_type == USER_PROCESS) {
       if (strlen(ptr) + strlen(usr->ut_line) + 1 <= BUFLEN) {
         strncat(ptr, usr->ut_line, UT_LINESIZE);
@@ -76,7 +76,7 @@ static void user_time(char *ptr) {
   char buf[BUFLEN] = "";
 
   setutent();
-  while ((usr = getutent()) != NULL) {
+  while ((usr = getutent()) != nullptr) {
     if (usr->ut_type == USER_PROCESS) {
       log_in = usr->ut_time;
       time(&real);
@@ -97,7 +97,7 @@ static void tty_user_time(char *ptr, char *tty) {
   setutent();
   strcpy(line.ut_line, tty);
   usr = getutline(&line);
-  if (usr == NULL) {
+  if (usr == nullptr) {
     return;
   }
 
@@ -110,13 +110,13 @@ static void tty_user_time(char *ptr, char *tty) {
 }
 
 static void users_alloc(struct information *ptr) {
-  if (ptr->users.names == NULL) {
+  if (ptr->users.names == nullptr) {
     ptr->users.names = (char *)malloc(text_buffer_size.get(*state));
   }
-  if (ptr->users.terms == NULL) {
+  if (ptr->users.terms == nullptr) {
     ptr->users.terms = (char *)malloc(text_buffer_size.get(*state));
   }
-  if (ptr->users.times == NULL) {
+  if (ptr->users.times == nullptr) {
     ptr->users.times = (char *)malloc(text_buffer_size.get(*state));
   }
 }
@@ -125,13 +125,13 @@ static void update_user_time(char *tty) {
   struct information *current_info = &info;
   char temp[BUFLEN] = "";
 
-  if (current_info->users.ctime == NULL) {
+  if (current_info->users.ctime == nullptr) {
     current_info->users.ctime = (char *)malloc(text_buffer_size.get(*state));
   }
 
   tty_user_time(temp, tty);
 
-  if (temp != NULL) {
+  if (temp != nullptr) {
     free_and_zero(current_info->users.ctime);
     current_info->users.ctime = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.ctime, temp, text_buffer_size.get(*state));
@@ -148,7 +148,7 @@ int update_users(void) {
   int t;
   users_alloc(current_info);
   user_name(temp);
-  if (temp != NULL) {
+  if (temp != nullptr) {
     free_and_zero(current_info->users.names);
     current_info->users.names = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.names, temp, text_buffer_size.get(*state));
@@ -168,7 +168,7 @@ int update_users(void) {
   }
   temp[0] = 0;
   user_term(temp);
-  if (temp != NULL) {
+  if (temp != nullptr) {
     free_and_zero(current_info->users.terms);
     current_info->users.terms = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.terms, temp, text_buffer_size.get(*state));
@@ -178,7 +178,7 @@ int update_users(void) {
     strncpy(current_info->users.terms, "broken", text_buffer_size.get(*state));
   }
   user_time(temp);
-  if (temp != NULL) {
+  if (temp != nullptr) {
     free_and_zero(current_info->users.times);
     current_info->users.times = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.times, temp, text_buffer_size.get(*state));

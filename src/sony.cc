@@ -58,11 +58,11 @@ void get_sony_fanspeed(struct text_object *obj, char *p_client_buffer,
   snprintf(fan, 127, "%s/fanspeed", SONY_LAPTOP_DIR);
 
   fp = fopen(fan, "r");
-  if (fp != NULL) {
+  if (fp != nullptr) {
     while (!feof(fp)) {
       char line[256];
 
-      if (fgets(line, 255, fp) == NULL) {
+      if (fgets(line, 255, fp) == nullptr) {
         break;
       }
       if (sscanf(line, "%u", &speed)) {
@@ -70,7 +70,7 @@ void get_sony_fanspeed(struct text_object *obj, char *p_client_buffer,
       }
     }
   } else {
-    CRIT_ERR(NULL, NULL,
+    CRIT_ERR(nullptr, NULL,
              "can't open '%s': %s\nEnable sony support or remove "
              "sony* from your " PACKAGE_NAME " config file.",
              fan, strerror(errno));

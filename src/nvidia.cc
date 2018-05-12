@@ -367,8 +367,8 @@ void nvidia_display_setting::lua_setter(lua::state &l, bool init) {
 
   std::string str = do_convert(l, -1).first;
   if (str.size()) {
-    if ((nvdisplay = XOpenDisplay(str.c_str())) == NULL) {
-      CRIT_ERR(NULL, NULL, "can't open nvidia display: %s",
+    if ((nvdisplay = XOpenDisplay(str.c_str())) == nullptr) {
+      CRIT_ERR(nullptr, NULL, "can't open nvidia display: %s",
                XDisplayName(str.c_str()));
     }
   }
@@ -381,7 +381,7 @@ void nvidia_display_setting::cleanup(lua::state &l) {
 
   if (nvdisplay) {
     XCloseDisplay(nvdisplay);
-    nvdisplay = NULL;
+    nvdisplay = nullptr;
   }
 
   l.pop();
@@ -443,7 +443,7 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
   }
 
   // free the string buffer after arg is not anymore needed
-  if (strbuf != NULL) free(strbuf);
+  if (strbuf != nullptr) free(strbuf);
 
   // Save pointers to the arg and command strings for debugging and printing
   nvs->arg = translate_module_argument[aid];
@@ -654,7 +654,7 @@ static inline int get_nvidia_target_count(Display *dpy, TARGET_ID tid) {
 
   if (num_tgts < 1) {
     // Print error and exit if there's no NVIDIA's GPU
-    CRIT_ERR(NULL, NULL,
+    CRIT_ERR(nullptr, NULL,
              "%s:"
              "\n          Trying to query Nvidia target failed (using the "
              "propietary drivers)."
@@ -747,7 +747,7 @@ static char *get_nvidia_string(TARGET_ID tid, ATTR_ID aid, int gid) {
         "%s: Something went wrong running nvidia string query (tid: %d, aid: "
         "%d, GPU %d)",
         __func__, tid, aid, gid);
-    return NULL;
+    return nullptr;
   }
   // fprintf(stderr, "checking get_nvidia_string-> '%s'", str);
   return str;
@@ -839,9 +839,9 @@ static int get_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token,
   kvp = strtok_r(str, NV_KVPAIR_SEPARATORS, &saveptr1);
   while (kvp) {
     key = strtok_r(kvp, NV_KEYVAL_SEPARATORS, &saveptr2);
-    val = strtok_r(NULL, NV_KEYVAL_SEPARATORS, &saveptr2);
+    val = strtok_r(nullptr, NV_KEYVAL_SEPARATORS, &saveptr2);
     if (key && val && (strcmp(token, key) == 0)) {
-      temp = (int)strtol(val, NULL, 0);
+      temp = (int)strtol(val, nullptr, 0);
       if (search == SEARCH_FIRST) {
         value = temp;
         break;
@@ -856,7 +856,7 @@ static int get_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token,
         break;
       }
     }
-    kvp = strtok_r(NULL, NV_KVPAIR_SEPARATORS, &saveptr1);
+    kvp = strtok_r(nullptr, NV_KVPAIR_SEPARATORS, &saveptr1);
   }
 
   // This call updated the cache for the cacheable values;
@@ -888,10 +888,10 @@ void print_nvidia_value(struct text_object *obj, char *p, int p_max_size) {
 
   // Assume failure
   value = -1;
-  str = NULL;
+  str = nullptr;
 
   // Perform query
-  if (nvs != NULL) {
+  if (nvs != nullptr) {
     // Reduce overcommitted GPU number to last GPU
     if (nvs->gpu_id > num_GPU) nvs->gpu_id = num_GPU;
 
@@ -946,7 +946,7 @@ void print_nvidia_value(struct text_object *obj, char *p, int p_max_size) {
   // Print result
   if (value != -1) {
     snprintf(p, p_max_size, "%d", value);
-  } else if (str != NULL) {
+  } else if (str != nullptr) {
     snprintf(p, p_max_size, "%s", str);
     free(str);
   } else {
@@ -964,7 +964,7 @@ double get_nvidia_barval(struct text_object *obj) {
 
   // Convert query_result to a percentage using ((val-min)÷(max-min)×100)+0.5 if
   // needed.
-  if (nvs != NULL) {
+  if (nvs != nullptr) {
     switch (nvs->attribute) {
       case ATTR_UTILS_STRING:  // one of the percentage utils (gpuutil,
                                // membwutil, videoutil and pcieutil)
@@ -1020,7 +1020,7 @@ double get_nvidia_barval(struct text_object *obj) {
       case ATTR_FREQS_STRING:  // mtrfreq (calculate out of memfreqmax)
         if (nvs->token == "memTransferRate") {
           // Just in case error for silly devs
-          CRIT_ERR(NULL, NULL,
+          CRIT_ERR(nullptr, NULL,
                    "%s: attribute is 'ATTR_FREQS_STRING' but token is not "
                    "\"memTransferRate\" (arg: '%s')",
                    nvs->command, nvs->arg);
@@ -1039,7 +1039,7 @@ double get_nvidia_barval(struct text_object *obj) {
         break;
 
       default:  // Throw error if unsupported args are used
-        CRIT_ERR(NULL, NULL, "%s: invalid argument specified: '%s'",
+        CRIT_ERR(nullptr, NULL, "%s: invalid argument specified: '%s'",
                  nvs->command, nvs->arg);
     }
   }
