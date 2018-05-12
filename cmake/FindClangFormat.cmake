@@ -1,13 +1,13 @@
 # Find Clang format
-# 
-# 
+#
+#
 if(NOT CLANG_FORMAT_BIN_NAME)
 	set(CLANG_FORMAT_BIN_NAME clang-format)
 endif()
 
 # if custom path check there first
 if(CLANG_FORMAT_ROOT_DIR)
-    find_program(CLANG_FORMAT_BIN 
+    find_program(CLANG_FORMAT_BIN
         NAMES
         ${CLANG_FORMAT_BIN_NAME}
         PATHS
@@ -20,7 +20,7 @@ find_program(CLANG_FORMAT_BIN NAMES ${CLANG_FORMAT_BIN_NAME})
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(
     CLANG_FORMAT
-    DEFAULT_MSG 
+    DEFAULT_MSG
     CLANG_FORMAT_BIN)
 
 mark_as_advanced(

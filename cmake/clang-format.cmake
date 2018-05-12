@@ -8,12 +8,12 @@ file(GLOB_RECURSE ALL_SOURCE_FILES ${CLANG_FORMAT_CXX_FILE_EXTENSIONS})
 set(CLANG_FORMAT_EXCLUDE_PATTERNS ${CLANG_FORMAT_EXCLUDE_PATTERNS} "/CMakeFiles/" "cmake")
 
 # get all project files file
-foreach (SOURCE_FILE ${ALL_SOURCE_FILES}) 
+foreach (SOURCE_FILE ${ALL_SOURCE_FILES})
     foreach (EXCLUDE_PATTERN ${CLANG_FORMAT_EXCLUDE_PATTERNS})
-        string(FIND ${SOURCE_FILE} ${EXCLUDE_PATTERN} EXCLUDE_FOUND) 
-        if (NOT ${EXCLUDE_FOUND} EQUAL -1) 
+        string(FIND ${SOURCE_FILE} ${EXCLUDE_PATTERN} EXCLUDE_FOUND)
+        if (NOT ${EXCLUDE_FOUND} EQUAL -1)
             list(REMOVE_ITEM ALL_SOURCE_FILES ${SOURCE_FILE})
-        endif () 
+        endif ()
     endforeach ()
 endforeach ()
 
@@ -34,7 +34,7 @@ add_custom_target(format-check
     -style=file
     -output-replacements-xml
     ${ALL_SOURCE_FILES}
-    | grep -q "replacement offset" 
+    | grep -q "replacement offset"
 )
 
 # Get the path to this file
@@ -54,7 +54,7 @@ endforeach()
 add_custom_target(format-check-changed
     COMMENT "Checking changed files in git"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMAND ${_clangcheckpath}/../scripts/clang-format-check-changed.py 
+    COMMAND ${_clangcheckpath}/../scripts/clang-format-check-changed.py
     --file-extensions \"${CHANGED_FILE_EXTENSIONS}\"
     ${EXCLUDE_PATTERN_ARGS}
     --clang-format-bin ${CLANG_FORMAT_BIN}

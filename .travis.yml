@@ -58,12 +58,12 @@ before_install:
 before_script:
   - mkdir build
   - cd build
-  - scan-build --use-cc=$CC --use-c++=$CXX -o scanbuildout cmake ..
+  - scan-build --use-cc=$CC --use-c++=$CXX -o scanbuildout cmake -DCHECK_CODE_FORMAT=ON ..
   - travis_wait 30 make format-check
   - cd ..
   - mkdir build-no-x11
   - cd build-no-x11
-  - scan-build --use-cc=$CC --use-c++=$CXX -o scanbuildout cmake -DBUILD_X11=OFF ..
+  - scan-build --use-cc=$CC --use-c++=$CXX -o scanbuildout cmake -DCHECK_CODE_FORMAT=ON -DBUILD_X11=OFF ..
   - cd ..
 script:
   - cd build
