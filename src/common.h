@@ -1,11 +1,10 @@
-/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=cpp
+/*
  *
  * Conky, a system monitor, based on torsmo
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2018 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -28,13 +27,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string>
 #include <string.h>
 #include <sys/socket.h>
-#include "text_object.h"
+#include <string>
 #include "setting.hh"
+#include "text_object.h"
 
-char* readfile(const char* filename, int* total_read, char showerror);
+char *readfile(const char *filename, int *total_read, char showerror);
 
 void print_to_bytes(struct text_object *, char *, int);
 
@@ -60,7 +59,8 @@ void get_cpu_count(void);
 double get_time(void);
 
 /* Converts '~/...' paths to '/home/blah/...'
- * It's similar to variable_substitute, except only cheques for $HOME and ~/ in path */
+ * It's similar to variable_substitute, except only cheques for $HOME and ~/ in
+ * path */
 std::string to_real_path(const std::string &source);
 FILE *open_file(const char *file, int *reported);
 int open_fifo(const char *file, int *reported);
@@ -77,7 +77,8 @@ extern conky::simple_config_setting<bool> no_buffers;
 
 int open_acpi_temperature(const char *name);
 double get_acpi_temperature(int fd);
-void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size, const char *adapter);
+void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
+                         const char *adapter);
 void get_acpi_fan(char *, size_t);
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item);
 int get_battery_perct(const char *bat);
@@ -122,7 +123,6 @@ void print_sysname(struct text_object *, char *, int);
 #if defined(__DragonFly__)
 void print_version(struct text_object *obj, char *p, int p_max_size);
 #endif
-
 
 void print_uptime(struct text_object *, char *, int);
 void print_uptime_short(struct text_object *, char *, int);

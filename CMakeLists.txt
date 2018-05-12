@@ -1,10 +1,9 @@
-# vim: ts=4 sw=4 noet ai cindent syntax=cmake
 #
 # Conky, a system monitor, based on torsmo
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2010 Brenden Matthews, et. al. (see AUTHORS)
+# Copyright (c) 2005-2018 Brenden Matthews, et. al. (see AUTHORS)
 # All rights reserved.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -20,7 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.5)
 
 project(conky)
 
@@ -39,9 +38,21 @@ include(ConkyPlatformChecks)
 # CPack module for installation tasks
 include(ConkyCPackSetup)
 
+if(CHECK_CODE_FORMAT)
+  # Set up clang-format
+  set(CLANG_FORMAT_BIN_NAME clang-format clang-format-5.0)
+  set(CLANG_FORMAT_EXCLUDE_PATTERNS  "build/" ${CMAKE_BINARY_DIR})
+  find_package(ClangFormat)
+endif(CHECK_CODE_FORMAT)
+
 # setup our configuration headers
 configure_file(${CMAKE_MODULE_PATH}/config.h.in ${CMAKE_BINARY_DIR}/config.h)
 configure_file(${CMAKE_MODULE_PATH}/build.h.in ${CMAKE_BINARY_DIR}/build.h)
+
+set(conky_sources
+  ${CMAKE_BINARY_DIR}/config.h
+  ${CMAKE_BINARY_DIR}/build.h
+)
 
 # Finally, add some code
 add_subdirectory(lua)
@@ -50,7 +61,7 @@ add_subdirectory(doc)
 add_subdirectory(src)
 
 IF(NOT DEFINED DOC_PATH)
-    set(DOC_PATH "share/doc/${CPACK_PACKAGE_NAME}-${VERSION}")
+  set(DOC_PATH "share/doc/${CPACK_PACKAGE_NAME}-${VERSION}")
 ENDIF(NOT DEFINED DOC_PATH)
 set(DOC_FILES extras/convert.lua data/conky_no_x11.conf data/conky.conf)
 
@@ -61,12 +72,12 @@ set(MAN_PATH "share/man/man1")
 set(MAN_FILES doc/conky.1)
 
 install(FILES ${DOC_FILES}
-	DESTINATION ${DOC_PATH})
+  DESTINATION ${DOC_PATH})
 
 if(MAINTAINER_MODE)
-	install(FILES ${HTML_FILES}
-		DESTINATION ${HTML_PATH})
+  install(FILES ${HTML_FILES}
+    DESTINATION ${HTML_PATH})
 
-	install(FILES ${MAN_FILES}
-		DESTINATION ${MAN_PATH})
+  install(FILES ${MAN_FILES}
+    DESTINATION ${MAN_PATH})
 endif(MAINTAINER_MODE)

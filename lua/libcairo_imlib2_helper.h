@@ -1,10 +1,10 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+/*
  *
  * Conky, a system monitor, based on torsmo
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2018 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -25,22 +25,22 @@
 #ifndef _LIBCAIRO_IMAGE_HELPER_H_
 #define _LIBCAIRO_IMAGE_HELPER_H_
 
-#include <cairo.h>
 #include <Imlib2.h>
+#include <cairo.h>
 
-void
-cairo_draw_image(const char * file, cairo_surface_t * cs, int x, int y,
-                 double scale_x, double scale_y,
-                 double * return_scale_w, double * return_scale_h)
-{
-  Imlib_Image * image = imlib_load_image(file);
-  if (! image) { return; }
+void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
+                      double scale_x, double scale_y, double *return_scale_w,
+                      double *return_scale_h) {
+  Imlib_Image *image = imlib_load_image(file);
+  if (!image) {
+    return;
+  }
 
   imlib_context_set_image(image);
   int w = imlib_image_get_width(), h = imlib_image_get_height();
 
-  double scaled_w = *return_scale_w = scale_x * (double)w
-       , scaled_h = *return_scale_h = scale_y * (double)h;
+  double scaled_w = *return_scale_w = scale_x * (double)w,
+         scaled_h = *return_scale_h = scale_y * (double)h;
 
   /* create temporary image */
   Imlib_Image premul = imlib_create_image(scaled_w, scaled_h);
@@ -59,11 +59,11 @@ cairo_draw_image(const char * file, cairo_surface_t * cs, int x, int y,
   imlib_image_copy_alpha_to_image(image, 0, 0);
 
   /* now pass the result to cairo */
-  cairo_surface_t * result = cairo_image_surface_create_for_data(
-    (void *) imlib_image_get_data_for_reading_only(),
-    CAIRO_FORMAT_ARGB32, scaled_w, scaled_h, sizeof(DATA32) * scaled_w);
+  cairo_surface_t *result = cairo_image_surface_create_for_data(
+      (void *)imlib_image_get_data_for_reading_only(), CAIRO_FORMAT_ARGB32,
+      scaled_w, scaled_h, sizeof(DATA32) * scaled_w);
 
-  cairo_t * cr = cairo_create(cs);
+  cairo_t *cr = cairo_create(cs);
   cairo_set_source_surface(cr, result, x, y);
   cairo_paint(cr);
 

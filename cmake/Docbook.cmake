@@ -1,10 +1,9 @@
-# vim: ts=4 sw=4 noet ai cindent syntax=cmake
 #
 # Conky, a system monitor, based on torsmo
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2010 Brenden Matthews, et. al. (see AUTHORS)
+# Copyright (c) 2005-2018 Brenden Matthews, et. al. (see AUTHORS)
 # All rights reserved.
 #
 # This program is free software: you can redistribute it and/or modify

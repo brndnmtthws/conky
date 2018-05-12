@@ -1,5 +1,4 @@
-/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=cpp
+/*
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -25,8 +24,8 @@
 
 #include "c++wrap.hh"
 
-#include <unistd.h>
 #include <stdio.h>
+#include <unistd.h>
 
 /* force use of  POSIX strerror_r instead of non-portable GNU specific */
 #ifdef _GNU_SOURCE
@@ -42,47 +41,41 @@
 #include <fcntl.h>
 
 namespace {
-	int pipe2_emulate(int pipefd[2], int flags)
-	{
-		if(pipe(pipefd) == -1)
-			return -1;
+int pipe2_emulate(int pipefd[2], int flags) {
+  if (pipe(pipefd) == -1) return -1;
 
-		if(flags & O_CLOEXEC) {
-			// we emulate O_CLOEXEC if the system does not have it
-			// not very thread-safe, but at least it works
+  if (flags & O_CLOEXEC) {
+    // we emulate O_CLOEXEC if the system does not have it
+    // not very thread-safe, but at least it works
 
-			for(int i = 0; i < 2; ++i) {
-				int r = fcntl(pipefd[i], F_GETFD);
-				if(r == -1)
-					return -1;
+    for (int i = 0; i < 2; ++i) {
+      int r = fcntl(pipefd[i], F_GETFD);
+      if (r == -1) return -1;
 
-				if(fcntl(pipefd[i], F_SETFD, r | FD_CLOEXEC) == -1)
-					return -1;
-			}
-		}
+      if (fcntl(pipefd[i], F_SETFD, r | FD_CLOEXEC) == -1) return -1;
+    }
+  }
 
-		return 0;
-	}
-
-	int (* const pipe2_ptr)(int[2], int) = &pipe2_emulate;
+  return 0;
 }
+
+int (*const pipe2_ptr)(int[2], int) = &pipe2_emulate;
+}  // namespace
 #else
-	int (* const pipe2_ptr)(int[2], int) = &pipe2;
+int (*const pipe2_ptr)(int[2], int) = &pipe2;
 #endif
 
-std::string strerror_r(int errnum)
-{
-	static thread_local char buf[100];
-	if (strerror_r(errnum, buf, sizeof buf) != 0)
-		snprintf(buf, sizeof buf, "Unknown error %i", errnum);
-	return buf;
+std::string strerror_r(int errnum) {
+  static thread_local char buf[100];
+  if (strerror_r(errnum, buf, sizeof buf) != 0)
+    snprintf(buf, sizeof buf, "Unknown error %i", errnum);
+  return buf;
 }
 
-std::pair<int, int> pipe2(int flags)
-{
-	int fd[2];
-	if(pipe2_ptr(fd, flags) == -1)
-		throw errno_error("pipe2");
-	else
-		return std::pair<int, int>(fd[0], fd[1]);
+std::pair<int, int> pipe2(int flags) {
+  int fd[2];
+  if (pipe2_ptr(fd, flags) == -1)
+    throw errno_error("pipe2");
+  else
+    return std::pair<int, int>(fd[0], fd[1]);
 }

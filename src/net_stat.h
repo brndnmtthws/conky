@@ -1,5 +1,4 @@
-/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=cpp
+/*
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -10,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2018 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -31,55 +30,57 @@
 #ifndef _NET_STAT_H
 #define _NET_STAT_H
 
-#include <sys/socket.h>	/* struct sockaddr */
+#include "config.h"
+#include <sys/socket.h> /* struct sockaddr */
+#include <netinet/in.h> /* struct in6_addr */
 
 #ifdef BUILD_IPV6
 struct v6addr {
-	struct in6_addr addr;
-	unsigned int netmask;
-	char scope;
-	struct v6addr *next;
+  struct in6_addr addr;
+  unsigned int netmask;
+  char scope;
+  struct v6addr *next;
 };
 #endif /* BUILD_IPV6 */
 
 struct net_stat {
-	/* interface name, e.g. wlan0, eth0, ... */
-	char *dev;
-	/* set to 1, if interface is up */
-	int up;
-	/* network traffic read on last call in order to calculate how much
-	 * was received or transmitted since the last call. contains -1 if
-	 * it was never read before. in bytes */
-	long long last_read_recv, last_read_trans;
-	/* total received and transmitted data statistics in bytes */
-	long long recv, trans;
-	/* averaged network speed in bytes / second */
-	double recv_speed, trans_speed;
-	/* struct with at least the member sa_data which is a const * containing
-	 * the socket address.
-	 * @see http://pubs.opengroup.org/onlinepubs/7908799/xns/syssocket.h.html */
-	struct sockaddr addr;
+  /* interface name, e.g. wlan0, eth0, ... */
+  char *dev;
+  /* set to 1, if interface is up */
+  int up;
+  /* network traffic read on last call in order to calculate how much
+   * was received or transmitted since the last call. contains -1 if
+   * it was never read before. in bytes */
+  long long last_read_recv, last_read_trans;
+  /* total received and transmitted data statistics in bytes */
+  long long recv, trans;
+  /* averaged network speed in bytes / second */
+  double recv_speed, trans_speed;
+  /* struct with at least the member sa_data which is a const * containing
+   * the socket address.
+   * @see http://pubs.opengroup.org/onlinepubs/7908799/xns/syssocket.h.html */
+  struct sockaddr addr;
 #ifdef BUILD_IPV6
-	struct v6addr *v6addrs;
-	bool v6show_nm;
-	bool v6show_sc;
+  struct v6addr *v6addrs;
+  bool v6show_nm;
+  bool v6show_sc;
 #endif /* BUILD_IPV6 */
 #if defined(__linux__)
-	char addrs[17 * MAX_NET_INTERFACES + 1];
+  char addrs[17 * MAX_NET_INTERFACES + 1];
 #endif /* __linux__ */
-	/* network speeds between two conky calls in bytes per second.
-	 * An average over these samples is calculated in recv_speed and
-	 * trans_speed */
-	double net_rec[15], net_trans[15];
-	// wireless extensions
-	char essid[32];
-	int channel;
-	char freq[16];
-	char bitrate[16];
-	char mode[16];
-	int link_qual;
-	int link_qual_max;
-	char ap[18];
+  /* network speeds between two conky calls in bytes per second.
+   * An average over these samples is calculated in recv_speed and
+   * trans_speed */
+  double net_rec[15], net_trans[15];
+  // wireless extensions
+  char essid[32];
+  int channel;
+  char freq[16];
+  char bitrate[16];
+  char mode[16];
+  int link_qual;
+  int link_qual_max;
+  char ap[18];
 };
 
 extern struct net_stat netstats[];
@@ -120,7 +121,7 @@ double wireless_link_barval(struct text_object *);
 #endif /* BUILD_WLAN */
 
 void clear_net_stats(void);
-void clear_net_stats(net_stat*);
+void clear_net_stats(net_stat *);
 
 void parse_if_up_arg(struct text_object *, const char *);
 int interface_up(struct text_object *);

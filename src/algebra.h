@@ -1,5 +1,4 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/*
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -10,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2018 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -31,19 +30,19 @@
 #define _ALGEBRA_H
 
 enum match_type {
-	OP_LT = 1,	/* < */
-	OP_GT = 2,	/* > */
-	OP_EQ = 3,	/* == */
-	OP_LEQ = 4,	/* <= */
-	OP_GEQ = 5,	/* >= */
-	OP_NEQ = 6	/* != */
+  OP_LT = 1,  /* < */
+  OP_GT = 2,  /* > */
+  OP_EQ = 3,  /* == */
+  OP_LEQ = 4, /* <= */
+  OP_GEQ = 5, /* >= */
+  OP_NEQ = 6  /* != */
 };
 
 enum arg_type {
-	ARG_BAD = 0,    /* something strange */
-	ARG_STRING = 1, /* "asdf" */
-	ARG_LONG = 2,	/* 123456 */
-	ARG_DOUBLE = 3  /* 12.456 */
+  ARG_BAD = 0,    /* something strange */
+  ARG_STRING = 1, /* "asdf" */
+  ARG_LONG = 2,   /* 123456 */
+  ARG_DOUBLE = 3  /* 12.456 */
 };
 
 int compare(const char *);

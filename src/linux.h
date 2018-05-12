@@ -1,11 +1,10 @@
-/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=cpp
+/*
  *
  * Conky, a system monitor, based on torsmo
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2018 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -45,7 +44,7 @@ void get_powerbook_batt_info(struct text_object *, char *, int);
 void parse_i2c_sensor(struct text_object *, const char *);
 void parse_hwmon_sensor(struct text_object *, const char *);
 void parse_platform_sensor(struct text_object *, const char *);
-void print_sysfs_sensor(struct text_object *, char *, int );
+void print_sysfs_sensor(struct text_object *, char *, int);
 void free_sysfs_sensor(struct text_object *);
 
 int get_entropy_avail(unsigned int *);

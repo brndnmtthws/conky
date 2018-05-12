@@ -1,5 +1,4 @@
-/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=cpp
+/*
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -27,7 +26,7 @@
 #include "luamm.hh"
 
 namespace conky {
-	void export_symbols(lua::state &l);
+void export_symbols(lua::state &l);
 }
 
 #endif /* LUA_CONFIG_HH */

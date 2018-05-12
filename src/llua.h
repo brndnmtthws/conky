@@ -1,10 +1,9 @@
-/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=cpp
+/*
  *
  * Conky, a system monitor, based on torsmo
  *
  * Copyright (c) 2009 Toni Spets
- * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2018 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -26,8 +25,8 @@
 #define LUA_H_
 
 extern "C" {
-#include <lua.h>
 #include <lauxlib.h>
+#include <lua.h>
 #include <lualib.h>
 }
 
@@ -51,8 +50,10 @@ void llua_shutdown_hook(void);
 void llua_draw_pre_hook(void);
 void llua_draw_post_hook(void);
 
-void llua_setup_window_table(int text_start_x, int text_start_y, int text_width, int text_height);
-void llua_update_window_table(int text_start_x, int text_start_y, int text_width, int text_height);
+void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
+                             int text_height);
+void llua_update_window_table(int text_start_x, int text_start_y,
+                              int text_width, int text_height);
 #endif /* BUILD_X11 */
 
 void llua_setup_info(struct information *i, double u_interval);

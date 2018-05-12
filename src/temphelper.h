@@ -1,5 +1,4 @@
-/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=cpp
+/*
  *
  * temphelper.h:  aid in converting temperature units
  *
@@ -25,11 +24,10 @@
 #ifndef TEMPHELPER_H
 #define TEMPHELPER_H
 
-enum TEMP_UNIT {
-	TEMP_CELSIUS,
-	TEMP_FAHRENHEIT
-};
+#include <cstddef>
 
-int temp_print(char *, size_t, double, enum TEMP_UNIT);
+enum TEMP_UNIT { TEMP_CELSIUS, TEMP_FAHRENHEIT };
+
+int temp_print(char *, std::size_t, double, enum TEMP_UNIT);
 
 #endif /* TEMPHELPER_H */

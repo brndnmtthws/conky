@@ -5,4 +5,3 @@ int get_entropy_avail(unsigned int *);
 int get_entropy_poolsize(unsigned int *);
 
 #endif /*SOLARIS_H_*/
-

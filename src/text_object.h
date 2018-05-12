@@ -1,4 +1,4 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+/*
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2018 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -29,35 +29,34 @@
 #ifndef _TEXT_OBJECT_H
 #define _TEXT_OBJECT_H
 
-#include <stdint.h>		/* uint8_t */
-#include "config.h"		/* for the defines */
-#include "specials.h"		/* enum special_types */
-#include "update-cb.hh"
+#include <stdint.h> /* uint8_t */
+#include "config.h" /* for the defines */
 #include "exec.h"
+#include "specials.h" /* enum special_types */
 
 /* text object callbacks */
 struct obj_cb {
-	/* text object: print obj's output to p */
-	void (*print)(struct text_object *obj, char *p, int p_max_size);
+  /* text object: print obj's output to p */
+  void (*print)(struct text_object *obj, char *p, int p_max_size);
 
-	/* ifblock object: return zero to trigger jumping */
-	int (*iftest)(struct text_object *obj);
+  /* ifblock object: return zero to trigger jumping */
+  int (*iftest)(struct text_object *obj);
 
-	/* meter objects:
-	 * The following functions return the current meter-type value
-	 * in a range between 0 and the value passed to the appropriate
-	 * scan_* function. Or, if named function has been called with
-	 * a value of 0, make use of auto-scaling (i.e., scaling to the
-	 * maximum value seen so far). */
-	double (*barval)(struct text_object *obj);
-	double (*gaugeval)(struct text_object *obj);
-	double (*graphval)(struct text_object *obj);
+  /* meter objects:
+   * The following functions return the current meter-type value
+   * in a range between 0 and the value passed to the appropriate
+   * scan_* function. Or, if named function has been called with
+   * a value of 0, make use of auto-scaling (i.e., scaling to the
+   * maximum value seen so far). */
+  double (*barval)(struct text_object *obj);
+  double (*gaugeval)(struct text_object *obj);
+  double (*graphval)(struct text_object *obj);
 
-	/* percentage object: return value in range [0, 100] */
-	uint8_t (*percentage)(struct text_object *obj);
+  /* percentage object: return value in range [0, 100] */
+  uint8_t (*percentage)(struct text_object *obj);
 
-	/* free obj's data */
-	void (*free)(struct text_object *obj);
+  /* free obj's data */
+  void (*free)(struct text_object *obj);
 };
 
 /* generic free opaque callback
@@ -76,55 +75,55 @@ void gen_print_nothing(struct text_object *, char *, int);
  * used by the $text object */
 void gen_print_obj_data_s(struct text_object *, char *, int);
 
-class legacy_cb: public conky::callback<void *, int (*)()> {
-    typedef conky::callback<void *, int (*)()> Base;
+class legacy_cb : public conky::callback<void *, int (*)()> {
+  typedef conky::callback<void *, int (*)()> Base;
 
-protected:
-    virtual void work()
-    { std::get<0>(tuple)(); }
+ protected:
+  virtual void work() { std::get<0>(tuple)(); }
 
-public:
-    legacy_cb(uint32_t period, int (*fn)())
-        : Base(period, true, Base::Tuple(fn))
-    {}
+ public:
+  legacy_cb(uint32_t period, int (*fn)())
+      : Base(period, true, Base::Tuple(fn)) {}
 };
 
 typedef conky::callback_handle<legacy_cb> legacy_cb_handle;
 typedef conky::callback_handle<exec_cb> exec_cb_handle;
 
 /**
- * This is where Conky collects information on the conky.text objects in your config
+ * This is where Conky collects information on the conky.text objects in your
+ * config
  *
- * During startup and reload, objects are parsed and callbacks are set. Note that
- * there are currently two types of callback: obj_cb (old style) and
- * conky::callback (new style). On each update interval, generate_text_internal()
- * in conky.cc traverses the list of text_objects and calls the old callbacks.
- * The new style callbacks are run separately by conky::run_all_callbacks().
+ * During startup and reload, objects are parsed and callbacks are set. Note
+ * that there are currently two types of callback: obj_cb (old style) and
+ * conky::callback (new style). On each update interval,
+ * generate_text_internal() in conky.cc traverses the list of text_objects and
+ * calls the old callbacks. The new style callbacks are run separately by
+ * conky::run_all_callbacks().
  */
 struct text_object {
-	struct text_object *next, *prev;	/* doubly linked list of text objects */
-	struct text_object *sub;		/* for objects parsing text into objects */
-	struct text_object *ifblock_next;	/* jump target for ifblock objects */
+  struct text_object *next, *prev;  /* doubly linked list of text objects */
+  struct text_object *sub;          /* for objects parsing text into objects */
+  struct text_object *ifblock_next; /* jump target for ifblock objects */
 
-	union {
-		void *opaque;		/* new style generic per object data */
-		char *s;		/* some string */
-		int i;			/* some integer */
-		long l;			/* some long integer */
-	} data;
+  union {
+    void *opaque; /* new style generic per object data */
+    char *s;      /* some string */
+    int i;        /* some integer */
+    long l;       /* some long integer */
+  } data;
 
-	void *special_data;
-	long line;
-	bool parse;	/* if true then data.s should still be parsed */
-	bool thread;	/* if true then data.s should be set by a seperate thread */
+  void *special_data;
+  long line;
+  bool parse;  /* if true then data.s should still be parsed */
+  bool thread; /* if true then data.s should be set by a seperate thread */
 
-	struct obj_cb callbacks;
+  struct obj_cb callbacks;
 
-	/* Each _cb_handle is a std::shared_ptr with very tight restrictions on
-	 * construction. For now, it is necessary to store them here as regular
-	 * pointers so we can instantiate them later. */
-	exec_cb_handle *exec_handle;
-	legacy_cb_handle *cb_handle;
+  /* Each _cb_handle is a std::shared_ptr with very tight restrictions on
+   * construction. For now, it is necessary to store them here as regular
+   * pointers so we can instantiate them later. */
+  exec_cb_handle *exec_handle;
+  legacy_cb_handle *cb_handle;
 };
 
 /* text object list helpers */

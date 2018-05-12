@@ -1,5 +1,4 @@
-/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=cpp
+/*
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -9,7 +8,7 @@
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2018 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -26,37 +25,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include "conky.h"
-#include "config.h"
 #include "text_object.h"
-#include "logging.h"
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <cstring>
+#include "config.h"
+#include "conky.h"
+#include "logging.h"
 
-void gen_free_opaque(struct text_object *obj)
-{
-	free_and_zero(obj->data.opaque);
+void gen_free_opaque(struct text_object *obj) {
+  free_and_zero(obj->data.opaque);
 }
 
-int gen_false_iftest(struct text_object *obj)
-{
-	(void)obj;
-	return 0;
+int gen_false_iftest(struct text_object *obj) {
+  (void)obj;
+  return 0;
 }
 
-void gen_print_nothing(struct text_object *obj, char *p, int p_max_size)
-{
-	(void)obj;
-	(void)p;
-	(void)p_max_size;
+void gen_print_nothing(struct text_object *obj, char *p, int p_max_size) {
+  (void)obj;
+  (void)p;
+  (void)p_max_size;
 }
 
-void gen_print_obj_data_s(struct text_object *obj, char *p, int p_max_size)
-{
-	if (!obj->data.s)
-		return;
-	snprintf(p, p_max_size, "%s", obj->data.s);
+void gen_print_obj_data_s(struct text_object *obj, char *p, int p_max_size) {
+  if (!obj->data.s) return;
+  snprintf(p, p_max_size, "%s", obj->data.s);
 }
 
 /* text_object_list
@@ -73,29 +67,26 @@ void gen_print_obj_data_s(struct text_object *obj, char *p, int p_max_size)
  */
 
 /* append an object or list of objects to the given root object's list */
-int append_object(struct text_object *root, struct text_object *obj)
-{
-	struct text_object *end;
+int append_object(struct text_object *root, struct text_object *obj) {
+  struct text_object *end;
 
-	/* hook in start of list to append */
-	end = root->prev;
-	obj->prev = end;
+  /* hook in start of list to append */
+  end = root->prev;
+  obj->prev = end;
 
-	/* update pointers of the list to append to */
-	if (end) {
-		if (end->next)
-			CRIT_ERR(NULL, NULL, "huston, we have a lift-off");
-		end->next = obj;
-	} else {
-		root->next = obj;
-	}
+  /* update pointers of the list to append to */
+  if (end) {
+    if (end->next) CRIT_ERR(NULL, NULL, "huston, we have a lift-off");
+    end->next = obj;
+  } else {
+    root->next = obj;
+  }
 
-	/* find end of appended list to point root->prev there */
-	while (obj->next)
-		obj = obj->next;
-	root->prev = obj;
+  /* find end of appended list to point root->prev there */
+  while (obj->next) obj = obj->next;
+  root->prev = obj;
 
-	return 0;
+  return 0;
 }
 
 /* ifblock handlers for the object list
@@ -108,19 +99,15 @@ int append_object(struct text_object *root, struct text_object *obj)
 /* possible ifblock types
  * only used internally, so no need to make this public
  */
-enum ifblock_type {
-	IFBLOCK_IF = 1,
-	IFBLOCK_ELSE,
-	IFBLOCK_ENDIF
-};
+enum ifblock_type { IFBLOCK_IF = 1, IFBLOCK_ELSE, IFBLOCK_ENDIF };
 
 /* linked list of ifblock objects, building a stack
  * only used internally, so no need to make this public
  */
 struct ifblock_stack_obj {
-	enum ifblock_type type;
-	struct text_object *obj;
-	struct ifblock_stack_obj *next;
+  enum ifblock_type type;
+  struct text_object *obj;
+  struct ifblock_stack_obj *next;
 };
 
 /* push an ifblock object onto the stack
@@ -133,72 +120,64 @@ struct ifblock_stack_obj {
  *   any optional IFBLOCK_ELSE along with it's IFBLOCK_IF
  */
 static int push_ifblock(struct ifblock_stack_obj **ifblock_stack_top,
-                        struct text_object *obj, enum ifblock_type type)
-{
-	struct ifblock_stack_obj *stackobj;
+                        struct text_object *obj, enum ifblock_type type) {
+  struct ifblock_stack_obj *stackobj;
 
-	switch (type) {
-		case IFBLOCK_ENDIF:
-			if (!(*ifblock_stack_top))
-				CRIT_ERR(NULL, NULL, "got an endif without matching if");
-			(*ifblock_stack_top)->obj->ifblock_next = obj;
-			/* if there's some else in between, remove and free it */
-			if ((*ifblock_stack_top)->type == IFBLOCK_ELSE) {
-				stackobj = *ifblock_stack_top;
-				*ifblock_stack_top = stackobj->next;
-				free(stackobj);
-			}
-			/* finally remove and free the if object */
-			stackobj = *ifblock_stack_top;
-			*ifblock_stack_top = stackobj->next;
-			free(stackobj);
-			break;
-		case IFBLOCK_ELSE:
-			if (!(*ifblock_stack_top))
-				CRIT_ERR(NULL, NULL, "got an else without matching if");
-			(*ifblock_stack_top)->obj->ifblock_next = obj;
-			/* fall through */
-		case IFBLOCK_IF:
-			stackobj = (ifblock_stack_obj*) malloc(sizeof(struct ifblock_stack_obj));
-			stackobj->type = type;
-			stackobj->obj = obj;
-			stackobj->next = *ifblock_stack_top;
-			*ifblock_stack_top = stackobj;
-			break;
-		default:
-			CRIT_ERR(NULL, NULL, "push_ifblock() missuse detected!");
-	}
-	return 0;
+  switch (type) {
+    case IFBLOCK_ENDIF:
+      if (!(*ifblock_stack_top))
+        CRIT_ERR(NULL, NULL, "got an endif without matching if");
+      (*ifblock_stack_top)->obj->ifblock_next = obj;
+      /* if there's some else in between, remove and free it */
+      if ((*ifblock_stack_top)->type == IFBLOCK_ELSE) {
+        stackobj = *ifblock_stack_top;
+        *ifblock_stack_top = stackobj->next;
+        free(stackobj);
+      }
+      /* finally remove and free the if object */
+      stackobj = *ifblock_stack_top;
+      *ifblock_stack_top = stackobj->next;
+      free(stackobj);
+      break;
+    case IFBLOCK_ELSE:
+      if (!(*ifblock_stack_top))
+        CRIT_ERR(NULL, NULL, "got an else without matching if");
+      (*ifblock_stack_top)->obj->ifblock_next = obj;
+      /* fall through */
+    case IFBLOCK_IF:
+      stackobj = (ifblock_stack_obj *)malloc(sizeof(struct ifblock_stack_obj));
+      stackobj->type = type;
+      stackobj->obj = obj;
+      stackobj->next = *ifblock_stack_top;
+      *ifblock_stack_top = stackobj;
+      break;
+    default:
+      CRIT_ERR(NULL, NULL, "push_ifblock() missuse detected!");
+  }
+  return 0;
 }
 
 /* public functions for client use */
 
-int obj_be_ifblock_if(void **opaque, struct text_object *obj)
-{
-	return push_ifblock((struct ifblock_stack_obj **)opaque, obj, IFBLOCK_IF);
+int obj_be_ifblock_if(void **opaque, struct text_object *obj) {
+  return push_ifblock((struct ifblock_stack_obj **)opaque, obj, IFBLOCK_IF);
 }
-int obj_be_ifblock_else(void **opaque, struct text_object *obj)
-{
-	return push_ifblock((struct ifblock_stack_obj **)opaque, obj, IFBLOCK_ELSE);
+int obj_be_ifblock_else(void **opaque, struct text_object *obj) {
+  return push_ifblock((struct ifblock_stack_obj **)opaque, obj, IFBLOCK_ELSE);
 }
-int obj_be_ifblock_endif(void **opaque, struct text_object *obj)
-{
-	return push_ifblock((struct ifblock_stack_obj **)opaque, obj, IFBLOCK_ENDIF);
+int obj_be_ifblock_endif(void **opaque, struct text_object *obj) {
+  return push_ifblock((struct ifblock_stack_obj **)opaque, obj, IFBLOCK_ENDIF);
 }
 
 /* check if ifblock stack is empty
  * if so, return true (!= 0)
  */
-int ifblock_stack_empty(void **opaque)
-{
-	return *opaque == NULL;
-}
+int ifblock_stack_empty(void **opaque) { return *opaque == NULL; }
 
-void obj_be_plain_text(struct text_object *obj, const char *text)
-{
-	obj->data.s = strdup(text);
+void obj_be_plain_text(struct text_object *obj, const char *text) {
+  obj->data.s = strdup(text);
 
-	memset(&obj->callbacks, 0, sizeof(obj->callbacks));
-	obj->callbacks.print = &gen_print_obj_data_s;
-	obj->callbacks.free = &gen_free_opaque;
+  memset(&obj->callbacks, 0, sizeof(obj->callbacks));
+  obj->callbacks.print = &gen_print_obj_data_s;
+  obj->callbacks.free = &gen_free_opaque;
 }

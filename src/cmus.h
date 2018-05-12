@@ -1,5 +1,4 @@
-/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=cpp
+/*
  *
  * CMUS Conky integration
  *
@@ -43,4 +42,3 @@ double cmus_progress(struct text_object *obj);
 uint8_t cmus_percent(struct text_object *obj);
 
 #endif /* CMUS_H_ */
-

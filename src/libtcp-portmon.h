@@ -1,5 +1,4 @@
-/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=cpp
+/*
  *
  * libtcp-portmon.h:  tcp port monitoring library.
  *
@@ -23,8 +22,8 @@
 #ifndef LIBTCP_PORTMON_H
 #define LIBTCP_PORTMON_H
 
-#include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -47,15 +46,15 @@
 
 /* The inventory of peekable items within the port monitor. */
 enum tcp_port_monitor_peekables {
-	COUNT = 0,
-	REMOTEIP,
-	REMOTEHOST,
-	REMOTEPORT,
-	REMOTESERVICE,
-	LOCALIP,
-	LOCALHOST,
-	LOCALPORT,
-	LOCALSERVICE
+  COUNT = 0,
+  REMOTEIP,
+  REMOTEHOST,
+  REMOTEPORT,
+  REMOTESERVICE,
+  LOCALIP,
+  LOCALHOST,
+  LOCALPORT,
+  LOCALSERVICE
 };
 
 /* ------------------------------------------------------------
@@ -82,8 +81,8 @@ typedef struct _tcp_port_monitor_collection_t tcp_port_monitor_collection_t;
 
 /* struct to hold monitor creation arguments */
 typedef struct _tcp_port_monitor_args_t {
-	/* monitor supports tracking at most this many connections */
-	int max_port_monitor_connections;
+  /* monitor supports tracking at most this many connections */
+  int max_port_monitor_connections;
 } tcp_port_monitor_args_t;
 
 /* ----------------------------------
@@ -94,15 +93,16 @@ typedef struct _tcp_port_monitor_args_t {
  * the indicated port monitor.
  * The requested monitor value is copied into a client-supplied char buffer.
  * Returns 0 on success, -1 otherwise. */
-int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor,
-	/* (item of interest, from tcp_port_monitor_peekables enum) */
-	int item,
-	/* (0 to number of connections in monitor - 1) */
-	int connection_index,
-	/* buffer to receive requested value */
-	char *p_buffer,
-	/* size of p_buffer */
-	size_t buffer_size);
+int peek_tcp_port_monitor(
+    const tcp_port_monitor_t *p_monitor,
+    /* (item of interest, from tcp_port_monitor_peekables enum) */
+    int item,
+    /* (0 to number of connections in monitor - 1) */
+    int connection_index,
+    /* buffer to receive requested value */
+    char *p_buffer,
+    /* size of p_buffer */
+    size_t buffer_size);
 
 /* --------------------------------
  * Client operations on collections
@@ -114,21 +114,21 @@ tcp_port_monitor_collection_t *create_tcp_port_monitor_collection(void);
 /* Destroy the monitor collection (and everything it contains).
  * Do this one last. */
 void destroy_tcp_port_monitor_collection(
-	tcp_port_monitor_collection_t *p_collection);
+    tcp_port_monitor_collection_t *p_collection);
 
 /* Updates the tcp statitics for all monitors within a collection */
 void update_tcp_port_monitor_collection(
-	tcp_port_monitor_collection_t *p_collection);
+    tcp_port_monitor_collection_t *p_collection);
 
 /* Creation of reduntant monitors is silently ignored
  * Returns 0 on success, -1 otherwise. */
 int insert_new_tcp_port_monitor_into_collection(
-	tcp_port_monitor_collection_t *p_collection, in_port_t port_range_begin,
-	in_port_t port_range_end, tcp_port_monitor_args_t *p_creation_args);
+    tcp_port_monitor_collection_t *p_collection, in_port_t port_range_begin,
+    in_port_t port_range_end, tcp_port_monitor_args_t *p_creation_args);
 
 /* Clients need a way to find monitors */
 tcp_port_monitor_t *find_tcp_port_monitor(
-	tcp_port_monitor_collection_t *p_collection,
-	in_port_t port_range_begin, in_port_t port_range_end);
+    tcp_port_monitor_collection_t *p_collection, in_port_t port_range_begin,
+    in_port_t port_range_end);
 
 #endif

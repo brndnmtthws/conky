@@ -1,5 +1,4 @@
-/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=cpp
+/*
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -10,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2018 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -50,41 +49,36 @@
 #endif
 
 struct _entropy {
-	_entropy() : avail(0), poolsize(0) {}
-	unsigned int avail;
-	unsigned int poolsize;
+  _entropy() : avail(0), poolsize(0) {}
+  unsigned int avail;
+  unsigned int poolsize;
 };
 
 static _entropy entropy;
 
-int update_entropy(void)
-{
-	get_entropy_avail(&entropy.avail);
-	get_entropy_poolsize(&entropy.poolsize);
-	return 0;
+int update_entropy(void) {
+  get_entropy_avail(&entropy.avail);
+  get_entropy_poolsize(&entropy.poolsize);
+  return 0;
 }
 
-void print_entropy_avail(struct text_object *obj, char *p, int p_max_size)
-{
-	(void)obj;
-	snprintf(p, p_max_size, "%u", entropy.avail);
+void print_entropy_avail(struct text_object *obj, char *p, int p_max_size) {
+  (void)obj;
+  snprintf(p, p_max_size, "%u", entropy.avail);
 }
 
-uint8_t entropy_percentage(struct text_object *obj)
-{
-	(void)obj;
-	return round_to_int((double)entropy.avail * 100.0 / (double)entropy.poolsize);
+uint8_t entropy_percentage(struct text_object *obj) {
+  (void)obj;
+  return round_to_int((double)entropy.avail * 100.0 / (double)entropy.poolsize);
 }
 
-void print_entropy_poolsize(struct text_object *obj, char *p, int p_max_size)
-{
-	(void)obj;
-	snprintf(p, p_max_size, "%u", entropy.poolsize);
+void print_entropy_poolsize(struct text_object *obj, char *p, int p_max_size) {
+  (void)obj;
+  snprintf(p, p_max_size, "%u", entropy.poolsize);
 }
 
-double entropy_barval(struct text_object *obj)
-{
-	(void)obj;
+double entropy_barval(struct text_object *obj) {
+  (void)obj;
 
-	return (double)entropy.avail / entropy.poolsize;
+  return (double)entropy.avail / entropy.poolsize;
 }

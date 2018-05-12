@@ -1,11 +1,10 @@
-/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=cpp
+/*
  *
  * Conky, a system monitor, based on torsmo
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2005-2012 Brenden Matthews, et. al.
+ * Copyright (c) 2005-2018 Brenden Matthews, et. al.
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +24,8 @@
 #ifndef _CONKY_IMBLI2_H_
 #define _CONKY_IMBLI2_H_
 
+#include "conky.h"
+
 #include <X11/Xlib.h>
 
 void cimlib_add_image(const char *name);
@@ -35,18 +36,18 @@ void cimlib_cleanup(void);
 
 void print_image_callback(struct text_object *, char *, int);
 
-class imlib_cache_size_setting: public conky::range_config_setting<unsigned long> {
-	typedef conky::range_config_setting<unsigned long> Base;
+class imlib_cache_size_setting
+    : public conky::range_config_setting<unsigned long> {
+  typedef conky::range_config_setting<unsigned long> Base;
 
-protected:
-	virtual void lua_setter(lua::state &l, bool init);
-	virtual void cleanup(lua::state &l);
+ protected:
+  virtual void lua_setter(lua::state &l, bool init);
+  virtual void cleanup(lua::state &l);
 
-public:
-	imlib_cache_size_setting()
-		: Base("imlib_cache_size", 0,
-				std::numeric_limits<unsigned long>::max(), 4096*1024, true)
-	{}
+ public:
+  imlib_cache_size_setting()
+      : Base("imlib_cache_size", 0, std::numeric_limits<unsigned long>::max(),
+             4096 * 1024, true) {}
 };
 
 #endif /* _CONKY_IMBLI2_H_ */

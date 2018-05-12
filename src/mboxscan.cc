@@ -1,5 +1,4 @@
-/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=cpp
+/*
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -10,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2006 Marco Candrian <mac@calmar.ws>
- * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2018 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -28,14 +27,14 @@
  *
  */
 
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <memory>
 #include "conky.h"
 #include "logging.h"
 #include "mail.h"
 #include "text_object.h"
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <errno.h>
-#include <memory>
 
 #define FROM_WIDTH 10
 #define SUBJECT_WIDTH 22
@@ -43,14 +42,14 @@
 #define TIME_DELAY 5
 
 struct ring_list {
-	char *from;
-	char *subject;
-	struct ring_list *previous;
-	struct ring_list *next;
+  char *from;
+  char *subject;
+  struct ring_list *previous;
+  struct ring_list *next;
 };
 
-static time_t last_ctime;	/* needed for mutt at least */
-static time_t last_mtime;	/* not sure what to test: testing both now */
+static time_t last_ctime; /* needed for mutt at least */
+static time_t last_mtime; /* not sure what to test: testing both now */
 static double last_update;
 
 static int args_ok = 0;
@@ -61,358 +60,340 @@ static int time_delay;
 
 static char mbox_mail_spool[DEFAULT_TEXT_BUFFER_SIZE];
 
-static void mbox_scan(char *args, char *output, size_t max_len)
-{
-	int i, u, flag;
-	int force_rescan = 0;
-	std::unique_ptr<char []> buf_(new char[text_buffer_size.get(*state)]);
-	char *buf = buf_.get();
-	struct stat statbuf;
-	struct ring_list *curr = 0, *prev = 0, *startlist = 0;
-	FILE *fp;
+static void mbox_scan(char *args, char *output, size_t max_len) {
+  int i, u, flag;
+  int force_rescan = 0;
+  std::unique_ptr<char[]> buf_(new char[text_buffer_size.get(*state)]);
+  char *buf = buf_.get();
+  struct stat statbuf;
+  struct ring_list *curr = 0, *prev = 0, *startlist = 0;
+  FILE *fp;
 
-	/* output was set to 1 after malloc'ing in conky.c */
-	/* -> beeing able to test it here for catching SIGUSR1 */
-	if (output[0] == 1) {
-		force_rescan = 1;
-		output[0] = '\0';
-	}
+  /* output was set to 1 after malloc'ing in conky.c */
+  /* -> beeing able to test it here for catching SIGUSR1 */
+  if (output[0] == 1) {
+    force_rescan = 1;
+    output[0] = '\0';
+  }
 
-	if (!args_ok || force_rescan) {
+  if (!args_ok || force_rescan) {
+    char *substr = strstr(args, "-n");
 
-		char *substr = strstr(args, "-n");
+    if (substr) {
+      if (sscanf(substr, "-n %i", &print_num_mails) != 1) {
+        print_num_mails = PRINT_MAILS;
+      }
+    } else {
+      print_num_mails = PRINT_MAILS;
+    }
+    if (print_num_mails < 1) {
+      print_num_mails = 1;
+    }
 
-		if (substr) {
-			if (sscanf(substr, "-n %i", &print_num_mails) != 1) {
-				print_num_mails = PRINT_MAILS;
-			}
-		} else {
-			print_num_mails = PRINT_MAILS;
-		}
-		if (print_num_mails < 1) {
-			print_num_mails = 1;
-		}
+    substr = strstr(args, "-t");
+    if (substr) {
+      if (sscanf(substr, "-t %i", &time_delay) != 1) {
+        time_delay = TIME_DELAY;
+      }
+    } else {
+      time_delay = TIME_DELAY;
+    }
 
-		substr = strstr(args, "-t");
-		if (substr) {
-			if (sscanf(substr, "-t %i", &time_delay) != 1) {
-				time_delay = TIME_DELAY;
-			}
-		} else {
-			time_delay = TIME_DELAY;
-		}
+    substr = strstr(args, "-fw");
+    if (substr) {
+      if (sscanf(substr, "-fw %i", &from_width) != 1) {
+        from_width = FROM_WIDTH;
+      }
+    } else {
+      from_width = FROM_WIDTH;
+    }
 
-		substr = strstr(args, "-fw");
-		if (substr) {
-			if (sscanf(substr, "-fw %i", &from_width) != 1) {
-				from_width = FROM_WIDTH;
-			}
-		} else {
-			from_width = FROM_WIDTH;
-		}
+    substr = strstr(args, "-sw");
+    if (substr) {
+      if (sscanf(substr, "-sw %i", &subject_width) != 1) {
+        subject_width = SUBJECT_WIDTH;
+      }
+    } else {
+      subject_width = SUBJECT_WIDTH;
+    }
+    /* encapsulated with "'s find first occurrence of " */
+    if (args[strlen(args) - 1] == '"') {
+      char *start;
+      strncpy(mbox_mail_spool, args, DEFAULT_TEXT_BUFFER_SIZE);
+      start = strchr(mbox_mail_spool, '"') + 1;
 
-		substr = strstr(args, "-sw");
-		if (substr) {
-			if (sscanf(substr, "-sw %i", &subject_width) != 1) {
-				subject_width = SUBJECT_WIDTH;
-			}
-		} else {
-			subject_width = SUBJECT_WIDTH;
-		}
-		/* encapsulated with "'s find first occurrence of " */
-		if (args[strlen(args) - 1] == '"') {
-			char *start;
-			strncpy(mbox_mail_spool, args, DEFAULT_TEXT_BUFFER_SIZE);
-			start = strchr(mbox_mail_spool, '"') + 1;
+      start[(long)(strrchr(mbox_mail_spool, '"') - start)] = '\0';
+      strncpy(mbox_mail_spool, start, DEFAULT_TEXT_BUFFER_SIZE);
+    } else {
+      char *copy_args = strndup(args, text_buffer_size.get(*state));
+      char *tmp = strtok(copy_args, " ");
+      char *start = tmp;
 
-			start[(long) (strrchr(mbox_mail_spool, '"') - start)] = '\0';
-			strncpy(mbox_mail_spool, start, DEFAULT_TEXT_BUFFER_SIZE);
-		} else {
-			char *copy_args = strndup(args, text_buffer_size.get(*state));
-			char *tmp = strtok(copy_args, " ");
-			char *start = tmp;
+      while (tmp) {
+        tmp = strtok(NULL, " ");
+        if (tmp) {
+          start = tmp;
+        }
+      }
+      strncpy(mbox_mail_spool, start, DEFAULT_TEXT_BUFFER_SIZE);
+      free(copy_args);
+    }
+    if (strlen(mbox_mail_spool) < 1) {
+      CRIT_ERR(NULL, NULL,
+               "Usage: ${mboxscan [-n <number of messages to print>] "
+               "[-fw <from width>] [-sw <subject width>] "
+               "[-t <delay in sec> mbox]}");
+    }
 
-			while (tmp) {
-				tmp = strtok(NULL, " ");
-				if (tmp) {
-					start = tmp;
-				}
-			}
-			strncpy(mbox_mail_spool, start, DEFAULT_TEXT_BUFFER_SIZE);
-			free(copy_args);
-		}
-		if (strlen(mbox_mail_spool) < 1) {
-			CRIT_ERR(NULL, NULL, "Usage: ${mboxscan [-n <number of messages to print>] "
-				"[-fw <from width>] [-sw <subject width>] "
-				"[-t <delay in sec> mbox]}");
-		}
+    /* allowing $MAIL in the config */
+    if (!strcmp(mbox_mail_spool, "$MAIL")) {
+      strcpy(mbox_mail_spool, current_mail_spool.get(*state).c_str());
+    }
 
-		/* allowing $MAIL in the config */
-		if (!strcmp(mbox_mail_spool, "$MAIL")) {
-			strcpy(mbox_mail_spool, current_mail_spool.get(*state).c_str());
-		}
+    if (stat(mbox_mail_spool, &statbuf)) {
+      CRIT_ERR(NULL, NULL, "can't stat %s: %s", mbox_mail_spool,
+               strerror(errno));
+    }
+    args_ok = 1; /* args-computing necessary only once */
+  }
 
-		if (stat(mbox_mail_spool, &statbuf)) {
-			CRIT_ERR(NULL, NULL, "can't stat %s: %s", mbox_mail_spool, strerror(errno));
-		}
-		args_ok = 1;	/* args-computing necessary only once */
-	}
+  /* if time_delay not yet reached, then return */
+  if (current_update_time - last_update < time_delay && !force_rescan) {
+    return;
+  }
 
-	/* if time_delay not yet reached, then return */
-	if (current_update_time - last_update < time_delay && !force_rescan) {
-		return;
-	}
+  last_update = current_update_time;
 
-	last_update = current_update_time;
+  /* mbox still exists? and get stat-infos */
+  if (stat(mbox_mail_spool, &statbuf)) {
+    NORM_ERR("can't stat %s: %s", mbox_mail_spool, strerror(errno));
+    output[0] = '\0'; /* delete any output */
+    return;
+  }
 
-	/* mbox still exists? and get stat-infos */
-	if (stat(mbox_mail_spool, &statbuf)) {
-		NORM_ERR("can't stat %s: %s", mbox_mail_spool, strerror(errno));
-		output[0] = '\0';	/* delete any output */
-		return;
-	}
+  /* modification time has not changed, so skip scanning the box */
+  if (statbuf.st_ctime == last_ctime && statbuf.st_mtime == last_mtime &&
+      !force_rescan) {
+    return;
+  }
 
-	/* modification time has not changed, so skip scanning the box */
-	if (statbuf.st_ctime == last_ctime && statbuf.st_mtime == last_mtime
-			&& !force_rescan) {
-		return;
-	}
+  last_ctime = statbuf.st_ctime;
+  last_mtime = statbuf.st_mtime;
 
-	last_ctime = statbuf.st_ctime;
-	last_mtime = statbuf.st_mtime;
+  /* build up double-linked ring-list to hold data, while scanning down the
+   * mbox */
+  for (i = 0; i < print_num_mails; i++) {
+    curr = (struct ring_list *)malloc(sizeof(struct ring_list));
+    curr->from = (char *)malloc(from_width + 1);
+    curr->subject = (char *)malloc(subject_width + 1);
+    curr->from[0] = '\0';
+    curr->subject[0] = '\0';
 
-	/* build up double-linked ring-list to hold data, while scanning down the
-	 * mbox */
-	for (i = 0; i < print_num_mails; i++) {
-		curr = (struct ring_list *) malloc(sizeof(struct ring_list));
-		curr->from = (char *) malloc(from_width + 1);
-		curr->subject = (char *) malloc(subject_width + 1);
-		curr->from[0] = '\0';
-		curr->subject[0] = '\0';
+    if (i == 0) {
+      startlist = curr;
+    }
+    if (i > 0) {
+      curr->previous = prev;
+      prev->next = curr;
+    }
+    prev = curr;
+  }
 
-		if (i == 0) {
-			startlist = curr;
-		}
-		if (i > 0) {
-			curr->previous = prev;
-			prev->next = curr;
-		}
-		prev = curr;
-	}
+  /* connect end to start for an endless loop-ring */
+  startlist->previous = curr;
+  curr->next = startlist;
 
-	/* connect end to start for an endless loop-ring */
-	startlist->previous = curr;
-	curr->next = startlist;
+  /* mbox */
+  fp = fopen(mbox_mail_spool, "r");
+  if (!fp) {
+    return;
+  }
 
-	/* mbox */
-	fp = fopen(mbox_mail_spool, "r");
-	if (!fp) {
-		return;
-	}
+  /* first find a "From " to set it to 0 for header-sarchings */
+  flag = 1;
+  while (!feof(fp)) {
+    if (fgets(buf, text_buffer_size.get(*state), fp) == NULL) {
+      break;
+    }
 
-	/* first find a "From " to set it to 0 for header-sarchings */
-	flag = 1;
-	while (!feof(fp)) {
-		if (fgets(buf, text_buffer_size.get(*state), fp) == NULL) {
-			break;
-		}
+    if (strncmp(buf, "From ", 5) == 0) {
+      curr = curr->next;
 
-		if (strncmp(buf, "From ", 5) == 0) {
-			curr = curr->next;
+      /* skip until \n */
+      while (strchr(buf, '\n') == NULL && !feof(fp)) {
+        if (!fgets(buf, text_buffer_size.get(*state), fp)) break;
+      }
 
-			/* skip until \n */
-			while (strchr(buf, '\n') == NULL && !feof(fp)) {
-				if (!fgets(buf, text_buffer_size.get(*state), fp))
-					break;
-			}
+      flag = 0; /* in the headers now */
+      continue;
+    }
 
-			flag = 0;	/* in the headers now */
-			continue;
-		}
+    if (flag == 1) { /* in the body, so skip */
+      continue;
+    }
 
-		if (flag == 1) {	/* in the body, so skip */
-			continue;
-		}
+    if (buf[0] == '\n') {
+      /* beyond the headers now (empty line), skip until \n */
+      /* then search for new mail ("From ") */
 
-		if (buf[0] == '\n') {
-			/* beyond the headers now (empty line), skip until \n */
-			/* then search for new mail ("From ") */
+      while (strchr(buf, '\n') == NULL && !feof(fp)) {
+        if (!fgets(buf, text_buffer_size.get(*state), fp)) break;
+      }
+      flag = 1; /* in the body now */
+      continue;
+    }
 
-			while (strchr(buf, '\n') == NULL && !feof(fp)) {
-				if (!fgets(buf, text_buffer_size.get(*state), fp))
-					break;
-			}
-			flag = 1;	/* in the body now */
-			continue;
-		}
+    if ((strncmp(buf, "X-Status: ", 10) == 0) ||
+        (strncmp(buf, "Status: R", 9) == 0)) {
+      /* Mail was read or something, so skip that message */
+      flag = 1; /* search for next From */
+      curr->subject[0] = '\0';
+      curr->from[0] = '\0';
+      /* (will get current again on new 'From ' finding) */
+      curr = curr->previous;
+      /* Skip until \n */
+      while (strchr(buf, '\n') == NULL && !feof(fp)) {
+        if (!fgets(buf, text_buffer_size.get(*state), fp)) break;
+      }
+      continue;
+    }
 
-		if ((strncmp(buf, "X-Status: ", 10) == 0)
-				|| (strncmp(buf, "Status: R", 9) == 0)) {
+    /* that covers ^From: and ^from: ^From:<tab> */
+    if (strncmp(buf + 1, "rom:", 4) == 0) {
+      i = 0;
+      u = 6; /* no "From: " string needed, so skip */
+      while (1) {
+        if (buf[u] == '"') { /* no quotes around names */
+          u++;
+          continue;
+        }
 
-			/* Mail was read or something, so skip that message */
-			flag = 1;	/* search for next From */
-			curr->subject[0] = '\0';
-			curr->from[0] = '\0';
-			/* (will get current again on new 'From ' finding) */
-			curr = curr->previous;
-			/* Skip until \n */
-			while (strchr(buf, '\n') == NULL && !feof(fp)) {
-				if (!fgets(buf, text_buffer_size.get(*state), fp))
-					break;
-			}
-			continue;
-		}
+        /* some are: From: <foo@bar.com> */
+        if (buf[u] == '<' && i > 1) {
+          curr->from[i] = '\0';
+          /* skip until \n */
+          while (strchr(buf, '\n') == NULL && !feof(fp)) {
+            if (!fgets(buf, text_buffer_size.get(*state), fp)) break;
+          }
+          break;
+        }
 
-		/* that covers ^From: and ^from: ^From:<tab> */
-		if (strncmp(buf + 1, "rom:", 4) == 0) {
+        if (buf[u] == '\n') {
+          curr->from[i] = '\0';
+          break;
+        }
 
-			i = 0;
-			u = 6;	/* no "From: " string needed, so skip */
-			while (1) {
+        if (buf[u] == '\0') {
+          curr->from[i] = '\0';
+          break;
+        }
 
-				if (buf[u] == '"') {	/* no quotes around names */
-					u++;
-					continue;
-				}
+        if (i >= from_width) {
+          curr->from[i] = '\0';
+          /* skip until \n */
+          while (strchr(buf, '\n') == NULL && !feof(fp)) {
+            if (!fgets(buf, text_buffer_size.get(*state), fp)) break;
+          }
+          break;
+        }
 
-				/* some are: From: <foo@bar.com> */
-				if (buf[u] == '<' && i > 1) {
+        /* nothing special so just set it */
+        curr->from[i++] = buf[u++];
+      }
+    }
 
-					curr->from[i] = '\0';
-					/* skip until \n */
-					while (strchr(buf, '\n') == NULL && !feof(fp)) {
-						if (!fgets(buf, text_buffer_size.get(*state), fp))
-							break;
-					}
-					break;
-				}
+    /* that covers ^Subject: and ^subject: and ^Subjec:<tab> */
+    if (strncmp(buf + 1, "ubject:", 7) == 0) {
+      i = 0;
+      u = 9; /* no "Subject: " string needed, so skip */
+      while (1) {
+        if (buf[u] == '\n') {
+          curr->subject[i] = '\0';
+          break;
+        }
+        if (buf[u] == '\0') {
+          curr->subject[i] = '\0';
+          break;
+        }
+        if (i >= subject_width) {
+          curr->subject[i] = '\0';
 
-				if (buf[u] == '\n') {
-					curr->from[i] = '\0';
-					break;
-				}
+          /* skip until \n */
+          while (strchr(buf, '\n') == NULL && !feof(fp)) {
+            if (!fgets(buf, text_buffer_size.get(*state), fp)) break;
+          }
+          break;
+        }
 
-				if (buf[u] == '\0') {
-					curr->from[i] = '\0';
-					break;
-				}
+        /* nothing special so just set it */
+        curr->subject[i++] = buf[u++];
+      }
+    }
+  }
 
-				if (i >= from_width) {
-					curr->from[i] = '\0';
-					/* skip until \n */
-					while (strchr(buf, '\n') == NULL && !feof(fp)) {
-						if (!fgets(buf, text_buffer_size.get(*state), fp))
-							break;
-					}
-					break;
-				}
+  fclose(fp);
 
-				/* nothing special so just set it */
-				curr->from[i++] = buf[u++];
-			}
-		}
+  output[0] = '\0';
 
-		/* that covers ^Subject: and ^subject: and ^Subjec:<tab> */
-		if (strncmp(buf + 1, "ubject:", 7) == 0) {
+  i = print_num_mails;
+  while (i) {
+    struct ring_list *tmp;
+    if (curr->from[0] != '\0') {
+      if (i != print_num_mails) {
+        snprintf(buf, text_buffer_size.get(*state), "\nF: %-*s S: %-*s",
+                 from_width, curr->from, subject_width, curr->subject);
+      } else { /* first time - no \n in front */
+        snprintf(buf, text_buffer_size.get(*state), "F: %-*s S: %-*s",
+                 from_width, curr->from, subject_width, curr->subject);
+      }
+    } else {
+      snprintf(buf, text_buffer_size.get(*state), "\n");
+    }
+    strncat(output, buf, max_len - strlen(output));
 
-			i = 0;
-			u = 9;	/* no "Subject: " string needed, so skip */
-			while (1) {
+    tmp = curr;
+    curr = curr->previous;
+    free(tmp->from);
+    free(tmp->subject);
+    free(tmp);
 
-				if (buf[u] == '\n') {
-					curr->subject[i] = '\0';
-					break;
-				}
-				if (buf[u] == '\0') {
-					curr->subject[i] = '\0';
-					break;
-				}
-				if (i >= subject_width) {
-					curr->subject[i] = '\0';
-
-					/* skip until \n */
-					while (strchr(buf, '\n') == NULL && !feof(fp)) {
-						if (!fgets(buf, text_buffer_size.get(*state), fp))
-							break;
-					}
-					break;
-				}
-
-				/* nothing special so just set it */
-				curr->subject[i++] = buf[u++];
-			}
-		}
-	}
-
-	fclose(fp);
-
-	output[0] = '\0';
-
-	i = print_num_mails;
-	while (i) {
-		struct ring_list *tmp;
-		if (curr->from[0] != '\0') {
-			if (i != print_num_mails) {
-				snprintf(buf, text_buffer_size.get(*state), "\nF: %-*s S: %-*s", from_width,
-					curr->from, subject_width, curr->subject);
-			} else {	/* first time - no \n in front */
-				snprintf(buf, text_buffer_size.get(*state), "F: %-*s S: %-*s", from_width,
-					curr->from, subject_width, curr->subject);
-			}
-		} else {
-			snprintf(buf, text_buffer_size.get(*state), "\n");
-		}
-		strncat(output, buf, max_len - strlen(output));
-
-		tmp = curr;
-		curr = curr->previous;
-		free(tmp->from);
-		free(tmp->subject);
-		free(tmp);
-
-		i--;
-	}
+    i--;
+  }
 }
 
 struct mboxscan_data {
-	char *args;
-	char *output;
+  char *args;
+  char *output;
 };
 
-void parse_mboxscan_arg(struct text_object *obj, const char *arg)
-{
-	struct mboxscan_data *msd;
+void parse_mboxscan_arg(struct text_object *obj, const char *arg) {
+  struct mboxscan_data *msd;
 
-	msd = (mboxscan_data*) malloc(sizeof(struct mboxscan_data));
-	memset(msd, 0, sizeof(struct mboxscan_data));
+  msd = (mboxscan_data *)malloc(sizeof(struct mboxscan_data));
+  memset(msd, 0, sizeof(struct mboxscan_data));
 
-	msd->args = strndup(arg, text_buffer_size.get(*state));
-	msd->output = (char *) malloc(text_buffer_size.get(*state));
-	/* if '1' (in mboxscan.c) then there was SIGUSR1, hmm */
-	msd->output[0] = 1;
+  msd->args = strndup(arg, text_buffer_size.get(*state));
+  msd->output = (char *)malloc(text_buffer_size.get(*state));
+  /* if '1' (in mboxscan.c) then there was SIGUSR1, hmm */
+  msd->output[0] = 1;
 
-	obj->data.opaque = msd;
+  obj->data.opaque = msd;
 }
 
-void print_mboxscan(struct text_object *obj, char *p, int p_max_size)
-{
-	struct mboxscan_data *msd = (mboxscan_data*) obj->data.opaque;
+void print_mboxscan(struct text_object *obj, char *p, int p_max_size) {
+  struct mboxscan_data *msd = (mboxscan_data *)obj->data.opaque;
 
-	if (!msd)
-		return;
+  if (!msd) return;
 
-	mbox_scan(msd->args, msd->output, text_buffer_size.get(*state));
-	snprintf(p, p_max_size, "%s", msd->output);
+  mbox_scan(msd->args, msd->output, text_buffer_size.get(*state));
+  snprintf(p, p_max_size, "%s", msd->output);
 }
 
-void free_mboxscan(struct text_object *obj)
-{
-	struct mboxscan_data *msd = (mboxscan_data*) obj->data.opaque;
+void free_mboxscan(struct text_object *obj) {
+  struct mboxscan_data *msd = (mboxscan_data *)obj->data.opaque;
 
-	if (!msd)
-		return;
-	free_and_zero(msd->args);
-	free_and_zero(msd->output);
-	free_and_zero(obj->data.opaque);
+  if (!msd) return;
+  free_and_zero(msd->args);
+  free_and_zero(msd->output);
+  free_and_zero(obj->data.opaque);
 }
-

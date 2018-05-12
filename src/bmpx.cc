@@ -1,5 +1,4 @@
-/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=cpp
+/*
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -9,7 +8,7 @@
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2018 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -31,11 +30,11 @@
 #include "conky.h"
 #include "logging.h"
 
-#include <bmp/dbus.hh>
 #include <dbus/dbus-glib.h>
+#include <bmp/dbus.hh>
 
 #define DBUS_TYPE_G_STRING_VALUE_HASHTABLE \
-	(dbus_g_type_get_map("GHashTable", G_TYPE_STRING, G_TYPE_VALUE))
+  (dbus_g_type_get_map("GHashTable", G_TYPE_STRING, G_TYPE_VALUE))
 
 static DBusGConnection *bus;
 static DBusGProxy *remote_object;
@@ -44,105 +43,103 @@ static char *unknown = "unknown";
 
 void fail(GError *error, struct information *);
 
-void update_bmpx()
-{
-	GError *error = NULL;
-	struct information *current_info = &info;
-	gint current_track;
-	GHashTable *metadata;
+void update_bmpx() {
+  GError *error = NULL;
+  struct information *current_info = &info;
+  gint current_track;
+  GHashTable *metadata;
 
-	if (connected == 0) {
-		g_type_init();
-		dbus_g_type_specialized_init();
+  if (connected == 0) {
+    g_type_init();
+    dbus_g_type_specialized_init();
 
-		bus = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
-		if (bus == NULL) {
-			NORM_ERR("BMPx error 1: %s\n", error->message);
-			fail(error, current_info);
-			return;
-		}
+    bus = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
+    if (bus == NULL) {
+      NORM_ERR("BMPx error 1: %s\n", error->message);
+      fail(error, current_info);
+      return;
+    }
 
-		remote_object = dbus_g_proxy_new_for_name(bus, BMP_DBUS_SERVICE,
-				BMP_DBUS_PATH__BMP, BMP_DBUS_INTERFACE__BMP);
-		if (!remote_object) {
-			NORM_ERR("BMPx error 2: %s\n", error->message);
-			fail(error, current_info);
-			return;
-		}
+    remote_object = dbus_g_proxy_new_for_name(
+        bus, BMP_DBUS_SERVICE, BMP_DBUS_PATH__BMP, BMP_DBUS_INTERFACE__BMP);
+    if (!remote_object) {
+      NORM_ERR("BMPx error 2: %s\n", error->message);
+      fail(error, current_info);
+      return;
+    }
 
-		connected = 1;
-	}
+    connected = 1;
+  }
 
-	if (connected == 1) {
-		if (dbus_g_proxy_call(remote_object, "GetCurrentTrack", &error,
-					G_TYPE_INVALID, G_TYPE_INT, &current_track, G_TYPE_INVALID)) {
-		} else {
-			NORM_ERR("BMPx error 3: %s\n", error->message);
-			fail(error, current_info);
-			return;
-		}
+  if (connected == 1) {
+    if (dbus_g_proxy_call(remote_object, "GetCurrentTrack", &error,
+                          G_TYPE_INVALID, G_TYPE_INT, &current_track,
+                          G_TYPE_INVALID)) {
+    } else {
+      NORM_ERR("BMPx error 3: %s\n", error->message);
+      fail(error, current_info);
+      return;
+    }
 
-		if (dbus_g_proxy_call(remote_object, "GetMetadataForListItem", &error,
-					G_TYPE_INT, current_track, G_TYPE_INVALID,
-					DBUS_TYPE_G_STRING_VALUE_HASHTABLE, &metadata,
-					G_TYPE_INVALID)) {
-			free_and_zero(current_info->bmpx.title);
-			free_and_zero(current_info->bmpx.artist);
-			free_and_zero(current_info->bmpx.album);
-			current_info->bmpx.title =
-				g_value_dup_string(g_hash_table_lookup(metadata, "title"));
-			current_info->bmpx.artist =
-				g_value_dup_string(g_hash_table_lookup(metadata, "artist"));
-			current_info->bmpx.album =
-				g_value_dup_string(g_hash_table_lookup(metadata, "album"));
-			current_info->bmpx.bitrate =
-				g_value_get_int(g_hash_table_lookup(metadata, "bitrate"));
-			current_info->bmpx.track =
-				g_value_get_int(g_hash_table_lookup(metadata, "track-number"));
-			current_info->bmpx.uri =
-				g_value_get_string(g_hash_table_lookup(metadata, "location"));
-		} else {
-			NORM_ERR("BMPx error 4: %s\n", error->message);
-			fail(error, current_info);
-			return;
-		}
+    if (dbus_g_proxy_call(remote_object, "GetMetadataForListItem", &error,
+                          G_TYPE_INT, current_track, G_TYPE_INVALID,
+                          DBUS_TYPE_G_STRING_VALUE_HASHTABLE, &metadata,
+                          G_TYPE_INVALID)) {
+      free_and_zero(current_info->bmpx.title);
+      free_and_zero(current_info->bmpx.artist);
+      free_and_zero(current_info->bmpx.album);
+      current_info->bmpx.title =
+          g_value_dup_string(g_hash_table_lookup(metadata, "title"));
+      current_info->bmpx.artist =
+          g_value_dup_string(g_hash_table_lookup(metadata, "artist"));
+      current_info->bmpx.album =
+          g_value_dup_string(g_hash_table_lookup(metadata, "album"));
+      current_info->bmpx.bitrate =
+          g_value_get_int(g_hash_table_lookup(metadata, "bitrate"));
+      current_info->bmpx.track =
+          g_value_get_int(g_hash_table_lookup(metadata, "track-number"));
+      current_info->bmpx.uri =
+          g_value_get_string(g_hash_table_lookup(metadata, "location"));
+    } else {
+      NORM_ERR("BMPx error 4: %s\n", error->message);
+      fail(error, current_info);
+      return;
+    }
 
-		g_hash_table_destroy(metadata);
-	} else {
-		fail(error, current_info);
-	}
+    g_hash_table_destroy(metadata);
+  } else {
+    fail(error, current_info);
+  }
 }
 
-void fail(GError *error, struct information *current_info)
-{
-	if (error) {
-		g_error_free(error);
-	}
-	if (current_info->bmpx.title) {
-		g_free(current_info->bmpx.title);
-		current_info->bmpx.title = 0;
-	}
-	if (current_info->bmpx.artist) {
-		g_free(current_info->bmpx.artist);
-		current_info->bmpx.artist = 0;
-	}
-	if (current_info->bmpx.album) {
-		g_free(current_info->bmpx.album);
-		current_info->bmpx.album = 0;
-	}
-	current_info->bmpx.title = unknown;
-	current_info->bmpx.artist = unknown;
-	current_info->bmpx.album = unknown;
-	current_info->bmpx.bitrate = 0;
-	current_info->bmpx.track = 0;
+void fail(GError *error, struct information *current_info) {
+  if (error) {
+    g_error_free(error);
+  }
+  if (current_info->bmpx.title) {
+    g_free(current_info->bmpx.title);
+    current_info->bmpx.title = 0;
+  }
+  if (current_info->bmpx.artist) {
+    g_free(current_info->bmpx.artist);
+    current_info->bmpx.artist = 0;
+  }
+  if (current_info->bmpx.album) {
+    g_free(current_info->bmpx.album);
+    current_info->bmpx.album = 0;
+  }
+  current_info->bmpx.title = unknown;
+  current_info->bmpx.artist = unknown;
+  current_info->bmpx.album = unknown;
+  current_info->bmpx.bitrate = 0;
+  current_info->bmpx.track = 0;
 }
 
-#define BMPX_PRINT_GENERATOR(name, fmt) \
-void print_bmpx_##name(struct text_object *obj, char *p, int p_max_size) \
-{ \
-	(void)obj; \
-	snprintf(p, p_max_size, fmt, info.bmpx.name); \
-}
+#define BMPX_PRINT_GENERATOR(name, fmt)                                      \
+  void print_bmpx_##name(struct text_object *obj, char *p, int p_max_size) { \
+    (void)obj;                                                               \
+    snprintf(p, p_max_size, fmt, info.bmpx.name);                            \
+  }
 
 BMPX_PRINT_GENERATOR(title, "%s")
 BMPX_PRINT_GENERATOR(artist, "%s")
@@ -152,4 +149,3 @@ BMPX_PRINT_GENERATOR(track, "%i")
 BMPX_PRINT_GENERATOR(bitrate, "%i")
 
 #undef BMPX_PRINT_GENERATOR
-

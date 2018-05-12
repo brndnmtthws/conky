@@ -1,5 +1,4 @@
-/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=cpp
+/*
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -10,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2018 Brenden Matthews, Philip Kovacs, et. al.
  *   (see AUTHORS)
  * All rights reserved.
  *
@@ -31,7 +30,7 @@
 #ifndef _EXEC_H
 #define _EXEC_H
 
-#include "text_object.h"
+#include "update-cb.hh"
 
 /**
  * A callback that executes a command and stores the output as a std::string.
@@ -48,16 +47,15 @@
  * command will in fact run on every update interval, rather than every
  * ten seconds as one would expect.
  */
-class exec_cb: public conky::callback<std::string, std::string> {
-	typedef conky::callback<std::string, std::string> Base;
+class exec_cb : public conky::callback<std::string, std::string> {
+  typedef conky::callback<std::string, std::string> Base;
 
-	protected:
-		virtual void work();
+ protected:
+  virtual void work();
 
-	public:
-		exec_cb(uint32_t period, bool wait, const std::string &cmd)
-			: Base(period, wait, Base::Tuple(cmd))
-		{}
+ public:
+  exec_cb(uint32_t period, bool wait, const std::string &cmd)
+      : Base(period, wait, Base::Tuple(cmd)) {}
 };
 
 /**
@@ -67,11 +65,11 @@ class exec_cb: public conky::callback<std::string, std::string> {
  * as the last argument to scan_exec_arg().
  */
 enum {
-	EF_EXEC  = (1 << 0),
-	EF_EXECI = (1 << 1),
-	EF_BAR   = (1 << 2),
-	EF_GRAPH = (1 << 3),
-	EF_GAUGE = (1 << 4)
+  EF_EXEC = (1 << 0),
+  EF_EXECI = (1 << 1),
+  EF_BAR = (1 << 2),
+  EF_GRAPH = (1 << 3),
+  EF_GAUGE = (1 << 4)
 };
 
 void scan_exec_arg(struct text_object *, const char *, unsigned int);
