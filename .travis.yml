@@ -22,6 +22,7 @@ matrix:
             - libcairo2-dev
             - libimlib2-dev
             - libxinerama-dev
+            - libmysqlclient-dev
             - gawk
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
@@ -46,6 +47,7 @@ matrix:
             - libcairo2-dev
             - libimlib2-dev
             - libxinerama-dev
+            - libmysqlclient-dev
             - gawk
         sonarcloud:
           organization: "brndnmtthws-github"
