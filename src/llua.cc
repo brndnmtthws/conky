@@ -21,11 +21,11 @@
  *
  */
 
-#include "llua.h"
+#include <config.h>
 #include "build.h"
 #include "conky.h"
+#include "llua.h"
 #include "logging.h"
-#include <config.h>
 
 #ifdef BUILD_LUA_EXTRAS
 extern "C" {
@@ -76,9 +76,7 @@ class lua_load_setting : public conky::simple_config_setting<std::string> {
 #ifdef HAVE_SYS_INOTIFY_H
     llua_rm_notifies();
 #endif /* HAVE_SYS_INOTIFY_H */
-    if (lua_L == nullptr) {
-      return;
-    }
+    if (lua_L == nullptr) { return; }
     lua_close(lua_L);
     lua_L = nullptr;
   }
@@ -143,9 +141,7 @@ static int llua_conky_set_update_interval(lua_State *L) {
 void llua_init() {
   const char *libs = PACKAGE_LIBDIR "/lib?.so;";
   char *old_path, *new_path;
-  if (lua_L != nullptr) {
-    return;
-  }
+  if (lua_L != nullptr) { return; }
   lua_L = luaL_newstate();
 
   /* add our library path to the lua package.cpath global var */
@@ -220,12 +216,11 @@ void llua_load(const char *script) {
 static const char *tokenize(const char *str, size_t *len) {
   str += *len;
   *len = 0;
-  while ((str != nullptr) && (isspace(*str) != 0)) {
-    ++str;
-  }
+  while ((str != nullptr) && (isspace(*str) != 0)) { ++str; }
 
   size_t level = 0;
-  while ((str[*len] != 0) && (level > 0 || (isspace(str[*len]) == 0))) {
+  while ((str != nullptr) && (str[*len] != 0) &&
+         (level > 0 || (isspace(str[*len]) == 0))) {
     switch (str[*len]) {
       case '{':
         ++level;
@@ -237,7 +232,7 @@ static const char *tokenize(const char *str, size_t *len) {
     ++*len;
   }
 
-  if ((str[*len] == 0) && level > 0) {
+  if (str != nullptr && (str[*len] == 0) && level > 0) {
     NORM_ERR("tokenize: improperly nested token: %s", str);
   }
 
@@ -258,9 +253,7 @@ static char *llua_do_call(const char *string, int retc) {
   const char *ptr = tokenize(string, &len);
 
   /* proceed only if the function name is present */
-  if (len == 0u) {
-    return nullptr;
-  }
+  if (len == 0U) { return nullptr; }
 
   /* call only conky_ prefixed functions */
   if (strncmp(ptr, LUAPREFIX, strlen(LUAPREFIX)) != 0) {
@@ -319,9 +312,7 @@ static char *llua_getstring(const char *args) {
   char *func;
   char *ret = nullptr;
 
-  if (lua_L == nullptr) {
-    return nullptr;
-  }
+  if (lua_L == nullptr) { return nullptr; }
 
   func = llua_do_call(args, 1);
   if (func != nullptr) {
@@ -366,9 +357,7 @@ static char *llua_getstring_read(const char *function, const char *arg)
 static int llua_getnumber(const char *args, double *ret) {
   char *func;
 
-  if (lua_L == nullptr) {
-    return 0;
-  }
+  if (lua_L == nullptr) { return 0; }
 
   func = llua_do_call(args, 1);
   if (func != nullptr) {
@@ -410,9 +399,7 @@ void llua_append_notify(const char *name) {
     new_tail = lua_notifies = llua_notify_list_do_alloc(name);
   } else {
     struct _lua_notify_s *tail = lua_notifies;
-    while (tail->next) {
-      tail = tail->next;
-    }
+    while (tail->next) { tail = tail->next; }
     // should be @ the end now
     new_tail = llua_notify_list_do_alloc(name);
     tail->next = new_tail;
@@ -467,31 +454,23 @@ void llua_set_number(const char *key, double value) {
 }
 
 void llua_startup_hook() {
-  if ((lua_L == nullptr) || lua_startup_hook.get(*state).empty()) {
-    return;
-  }
+  if ((lua_L == nullptr) || lua_startup_hook.get(*state).empty()) { return; }
   llua_do_call(lua_startup_hook.get(*state).c_str(), 0);
 }
 
 void llua_shutdown_hook() {
-  if ((lua_L == nullptr) || lua_shutdown_hook.get(*state).empty()) {
-    return;
-  }
+  if ((lua_L == nullptr) || lua_shutdown_hook.get(*state).empty()) { return; }
   llua_do_call(lua_shutdown_hook.get(*state).c_str(), 0);
 }
 
 #ifdef BUILD_X11
 void llua_draw_pre_hook() {
-  if ((lua_L == nullptr) || lua_draw_hook_pre.get(*state).empty()) {
-    return;
-  }
+  if ((lua_L == nullptr) || lua_draw_hook_pre.get(*state).empty()) { return; }
   llua_do_call(lua_draw_hook_pre.get(*state).c_str(), 0);
 }
 
 void llua_draw_post_hook() {
-  if ((lua_L == nullptr) || lua_draw_hook_post.get(*state).empty()) {
-    return;
-  }
+  if ((lua_L == nullptr) || lua_draw_hook_post.get(*state).empty()) { return; }
   llua_do_call(lua_draw_hook_post.get(*state).c_str(), 0);
 }
 
@@ -504,9 +483,7 @@ void llua_set_userdata(const char *key, const char *type, void *value) {
 
 void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
                              int text_height) {
-  if (lua_L == nullptr) {
-    return;
-  }
+  if (lua_L == nullptr) { return; }
   lua_newtable(lua_L);
 
   if (out_to_x.get(*state)) {
@@ -533,9 +510,7 @@ void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
 
 void llua_update_window_table(int text_start_x, int text_start_y,
                               int text_width, int text_height) {
-  if (lua_L == nullptr) {
-    return;
-  }
+  if (lua_L == nullptr) { return; }
 
   lua_getglobal(lua_L, "conky_window");
   if (lua_isnil(lua_L, -1)) {
@@ -557,9 +532,7 @@ void llua_update_window_table(int text_start_x, int text_start_y,
 #endif /* BUILD_X11 */
 
 void llua_setup_info(struct information *i, double u_interval) {
-  if (lua_L == nullptr) {
-    return;
-  }
+  if (lua_L == nullptr) { return; }
   lua_newtable(lua_L);
 
   llua_set_number("update_interval", u_interval);
@@ -569,9 +542,7 @@ void llua_setup_info(struct information *i, double u_interval) {
 }
 
 void llua_update_info(struct information *i, double u_interval) {
-  if (lua_L == nullptr) {
-    return;
-  }
+  if (lua_L == nullptr) { return; }
 
   lua_getglobal(lua_L, "conky_info");
   if (lua_isnil(lua_L, -1)) {
@@ -604,8 +575,6 @@ void print_lua_parse(struct text_object *obj, char *p, int p_max_size) {
 
 double lua_barval(struct text_object *obj) {
   double per;
-  if (llua_getnumber(obj->data.s, &per) != 0) {
-    return per;
-  }
+  if (llua_getnumber(obj->data.s, &per) != 0) { return per; }
   return 0;
 }

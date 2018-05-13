@@ -230,6 +230,7 @@ int update_apcupsd() {
     freeaddrinfo(ai);
     if (rp == nullptr) {
       // no error reporting, the daemon is probably not running
+      close(sock);
       break;
     }
 
@@ -241,6 +242,7 @@ int update_apcupsd() {
     if (send(sock, &sz, sizeof(sz), 0) != sizeof(sz) ||
         send(sock, "status", 6, 0) != 6) {
       perror("send");
+      close(sock);
       break;
     }
 
@@ -248,12 +250,11 @@ int update_apcupsd() {
     // read the lines of output and put them into the info structure
     //
     if (fill_items(sock, &apc) == 0) {
+      close(sock);
       break;
     }
 
   } while (0);
-
-  close(sock);
 
   //
   // "atomically" copy the data into working set

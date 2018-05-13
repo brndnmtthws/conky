@@ -181,7 +181,6 @@ double get_acpi_temperature(int fd) {
 int update_total_processes(void) {
   kstat_named_t *knp = get_kstat("unix", -1, "system_misc", "nproc");
   if (knp != nullptr) info.procs = knp->value.ui32;
-  return 0;
 }
 
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item) {
@@ -347,9 +346,7 @@ void get_top_info(void) {
   DIR *dir;
   struct dirent *entry;
 
-  if (!(dir = opendir("/proc"))) {
-    return;
-  }
+  if (!(dir = opendir("/proc"))) { return; }
   info.run_procs = 0;
 
   while ((entry = readdir(dir))) {

@@ -77,7 +77,6 @@ int update_net_stats() {
 
 int update_total_processes() {
   // TODO
-  return 1;
 }
 
 int update_running_processes() {
@@ -96,9 +95,7 @@ void get_cpu_count(void) {
   info.cpu_count = si.cpu_count;
 
   info.cpu_usage = (float *)malloc((info.cpu_count + 1) * sizeof(float));
-  if (info.cpu_usage == nullptr) {
-    CRIT_ERR(nullptr, NULL, "malloc");
-  }
+  if (info.cpu_usage == nullptr) { CRIT_ERR(nullptr, NULL, "malloc"); }
 }
 
 int update_cpu_usage() {
@@ -118,18 +115,14 @@ int update_cpu_usage() {
 
   if (!prev_cpuinfo) {
     prev_cpuinfo = (cpu_info *)malloc(malloc_cpu_size);
-    if (prev_cpuinfo == nullptr) {
-      CRIT_ERR(nullptr, NULL, "malloc");
-    }
+    if (prev_cpuinfo == nullptr) { CRIT_ERR(nullptr, NULL, "malloc"); }
     memset(prev_cpuinfo, 0, malloc_cpu_size);
   }
 
   cpuinfo = (cpu_info *)malloc(malloc_cpu_size);
   memset(cpuinfo, 0, malloc_cpu_size);
 
-  if (cpuinfo == nullptr) {
-    CRIT_ERR(nullptr, NULL, "malloc");
-  }
+  if (cpuinfo == nullptr) { CRIT_ERR(nullptr, NULL, "malloc"); }
 
   now = system_time();
   if (get_cpu_info(0, info.cpu_count, &cpuinfo[1]) == B_OK) {
@@ -183,9 +176,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
                          const char *adapter) {
   (void)adapter;  // only linux uses this
 
-  if (!p_client_buffer || client_buffer_size <= 0) {
-    return;
-  }
+  if (!p_client_buffer || client_buffer_size <= 0) { return; }
 
   /* not implemented */
   memset(p_client_buffer, 0, client_buffer_size);
@@ -193,9 +184,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
 
 /* char *get_acpi_fan() */
 void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
-  if (!p_client_buffer || client_buffer_size <= 0) {
-    return;
-  }
+  if (!p_client_buffer || client_buffer_size <= 0) { return; }
 
   /* not implemented */
   memset(p_client_buffer, 0, client_buffer_size);

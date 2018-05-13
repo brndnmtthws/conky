@@ -264,7 +264,7 @@ void print_v6addrs(struct text_object *obj, char *p, int p_max_size) {
   char tempaddress[INET6_ADDRSTRLEN];
   struct v6addr *current_v6 = ns->v6addrs;
 
-  if (!ns) return;
+  if (ns == nullptr) return;
 
   if (p_max_size == 0) return;
   if (!ns->v6addrs) {

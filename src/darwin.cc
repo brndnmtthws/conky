@@ -48,14 +48,14 @@
  * different styles at some specific places... :)
  */
 
-#include "darwin.h"
 #include "conky.h"  // for struct info
+#include "darwin.h"
 
 #include <AvailabilityMacros.h>
 
-#include <cstdio>
 #include <sys/mount.h>  // statfs
 #include <sys/sysctl.h>
+#include <cstdio>
 
 #include <mach/mach_host.h>
 #include <mach/mach_init.h>
@@ -65,12 +65,12 @@
 
 #include <mach/mach.h>  // update_total_processes
 
-#include "top.h"                // get_top_info
 #include <dispatch/dispatch.h>  // get_top_info
 #include <libproc.h>            // get_top_info
+#include "top.h"                // get_top_info
 
-#include "net_stat.h"  // update_net_stats
 #include <ifaddrs.h>   // update_net_stats
+#include "net_stat.h"  // update_net_stats
 
 #include "darwin_sip.h"  // sip status
 
@@ -110,13 +110,9 @@ static conky::simple_config_setting<bool> top_cpu_separate("top_cpu_separate",
 static int getsysctl(const char *name, void *ptr, size_t len) {
   size_t nlen = len;
 
-  if (sysctlbyname(name, ptr, &nlen, nullptr, 0) == -1) {
-    return -1;
-  }
+  if (sysctlbyname(name, ptr, &nlen, nullptr, 0) == -1) { return -1; }
 
-  if (nlen != len && errno == ENOMEM) {
-    return -1;
-  }
+  if (nlen != len && errno == ENOMEM) { return -1; }
 
   return 0;
 }
@@ -187,9 +183,7 @@ static void helper_update_threads_processes() {
       processorSet, PROCESSOR_SET_LOAD_INFO,
       reinterpret_cast<processor_set_info_t>(&loadInfo), &count);
 
-  if (err != KERN_SUCCESS) {
-    return;
-  }
+  if (err != KERN_SUCCESS) { return; }
 
   info.procs = loadInfo.task_count;
   info.threads = loadInfo.thread_count;
@@ -303,8 +297,8 @@ static int helper_get_proc_list(struct kinfo_proc **p) {
   static const int name[] = {CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0};
 
   /* Call sysctl with a nullptr buffer to get proper length */
-  err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, nullptr, &length,
-               nullptr, 0);
+  err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, nullptr,
+               &length, nullptr, 0);
   if (err != 0) {
     perror(nullptr);
     return (-1);
@@ -405,9 +399,7 @@ int check_mount(struct text_object *obj) {
   int num_mounts = 0;
   struct statfs *mounts;
 
-  if (obj->data.s == nullptr) {
-    return 0;
-  }
+  if (obj->data.s == nullptr) { return 0; }
 
   num_mounts = getmntinfo(&mounts, MNT_WAIT);
 
@@ -417,9 +409,7 @@ int check_mount(struct text_object *obj) {
   }
 
   for (int i = 0; i < num_mounts; i++) {
-    if (strcmp(mounts[i].f_mntonname, obj->data.s) == 0) {
-      return 1;
-    }
+    if (strcmp(mounts[i].f_mntonname, obj->data.s) == 0) { return 1; }
   }
 
   return 0;
@@ -509,7 +499,8 @@ static void update_pages_stolen(libtop_tsamp_t *tsamp) {
       return;
     }
 
-    if (-1 == sysctl(mib_other, mib_other_len, &other, &other_len, nullptr, 0)) {
+    if (-1 ==
+        sysctl(mib_other, mib_other_len, &other, &other_len, nullptr, 0)) {
       return;
     }
 
@@ -541,9 +532,7 @@ static int libtop_tsamp_update_vm_stats(libtop_tsamp_t *tsamp) {
   kr = host_statistics64(mach_host_self(), HOST_VM_INFO64,
                          reinterpret_cast<host_info64_t>(&tsamp->vm_stat),
                          &count);
-  if (kr != KERN_SUCCESS) {
-    return kr;
-  }
+  if (kr != KERN_SUCCESS) { return kr; }
 
   if (tsamp->pages_stolen > 0) {
     tsamp->vm_stat.wire_count += tsamp->pages_stolen;
@@ -589,9 +578,7 @@ int update_meminfo() {
   static libtop_tsamp_t *tsamp = nullptr;
   if (tsamp == nullptr) {
     tsamp = new libtop_tsamp_t;
-    if (tsamp == nullptr) {
-      return 0;
-    }
+    if (tsamp == nullptr) { return 0; }
 
     memset(tsamp, 0, sizeof(libtop_tsamp_t));
     tsamp->pagesize = page_size;
@@ -606,9 +593,7 @@ int update_meminfo() {
    *  but first update pages stolen count
    */
   update_pages_stolen(tsamp);
-  if (libtop_tsamp_update_vm_stats(tsamp) == KERN_FAILURE) {
-    return 0;
-  }
+  if (libtop_tsamp_update_vm_stats(tsamp) == KERN_FAILURE) { return 0; }
 
   /*
    * This is actually a tricky part.
@@ -662,13 +647,9 @@ int update_net_stats() {
 
   /* get delta */
   delta = current_update_time - last_update_time;
-  if (delta <= 0.0001) {
-    return 0;
-  }
+  if (delta <= 0.0001) { return 0; }
 
-  if (getifaddrs(&ifap) < 0) {
-    return 0;
-  }
+  if (getifaddrs(&ifap) < 0) { return 0; }
 
   for (ifa = ifap; ifa != nullptr; ifa = ifa->ifa_next) {
     ns = get_net_stat((const char *)ifa->ifa_name, nullptr, nullptr);
@@ -680,9 +661,7 @@ int update_net_stats() {
       last_recv = ns->recv;
       last_trans = ns->trans;
 
-      if (ifa->ifa_addr->sa_family != AF_LINK) {
-        continue;
-      }
+      if (ifa->ifa_addr->sa_family != AF_LINK) { continue; }
 
       for (iftmp = ifa->ifa_next;
            iftmp != nullptr && strcmp(ifa->ifa_name, iftmp->ifa_name) == 0;
@@ -749,9 +728,7 @@ int update_running_threads() {
 
   proc_count = helper_get_proc_list(&p);
 
-  if (proc_count == -1) {
-    return 0;
-  }
+  if (proc_count == -1) { return 0; }
 
   for (int i = 0; i < proc_count; i++) {
     if ((p[i].kp_proc.p_stat & SRUN) != 0) {
@@ -774,9 +751,7 @@ int update_running_threads() {
       for (int i = 0; i < num_threads; i++) {
         if (sizeof(pthi) ==
             proc_pidinfo(pid, PROC_PIDTHREADINFO, i, &pthi, sizeof(pthi))) {
-          if (pthi.pth_run_state == TH_STATE_RUNNING) {
-            run_threads++;
-          }
+          if (pthi.pth_run_state == TH_STATE_RUNNING) { run_threads++; }
         } else {
           continue;
         }
@@ -791,7 +766,6 @@ int update_running_threads() {
 
 int update_total_processes() {
   helper_update_threads_processes();
-  return 0;
 
   /*
    *  WARNING: You may stumble upon this implementation:
@@ -837,9 +811,7 @@ int update_running_processes() {
 
   proc_count = helper_get_proc_list(&p);
 
-  if (proc_count == -1) {
-    return 0;
-  }
+  if (proc_count == -1) { return 0; }
 
   for (int i = 0; i < proc_count; i++) {
     int state = p[i].kp_proc.p_stat;
@@ -878,9 +850,7 @@ void get_cpu_count() {
      */
     info.cpu_usage =
         static_cast<float *>(malloc((info.cpu_count + 1) * sizeof(float)));
-    if (info.cpu_usage == nullptr) {
-      CRIT_ERR(nullptr, nullptr, "malloc");
-    }
+    if (info.cpu_usage == nullptr) { CRIT_ERR(nullptr, nullptr, "malloc"); }
   }
 }
 
@@ -1075,9 +1045,7 @@ int get_entropy_poolsize(const unsigned int *val) {
  */
 static void calc_cpu_usage_for_proc(struct process *proc, uint64_t total) {
   float mul = 100.0;
-  if (top_cpu_separate.get(*state)) {
-    mul *= info.cpu_count;
-  }
+  if (top_cpu_separate.get(*state)) { mul *= info.cpu_count; }
 
   proc->amount =
       mul * (proc->user_time + proc->kernel_time) / static_cast<float>(total);
@@ -1193,9 +1161,7 @@ static void get_top_info_for_kinfo_proc(struct kinfo_proc *p) {
     /*
      * wait until done
      */
-    while (!(calc_cpu_total_finished && calc_proc_total_finished)) {
-      ;
-    }
+    while (!(calc_cpu_total_finished && calc_proc_total_finished)) { ; }
 
     /* calc the amount(%) of CPU the process used  */
     calc_cpu_usage_for_proc(proc, t);
@@ -1229,9 +1195,7 @@ void get_top_info() {
    */
   proc_count = helper_get_proc_list(&p);
 
-  if (proc_count == -1) {
-    return;
-  }
+  if (proc_count == -1) { return; }
 
   /*
    *  get top info for-each process
@@ -1259,9 +1223,7 @@ void get_top_info() {
 bool _csr_check(int aMask, bool aFlipflag) {
   bool bit = (info.csr_config & aMask) != 0u;
 
-  if (aFlipflag) {
-    return !bit;
-  }
+  if (aFlipflag) { return !bit; }
 
   return bit;
 }
@@ -1350,9 +1312,7 @@ void print_sip_status(struct text_object *obj, char *p, int p_max_size) {
   /* conky window output */
   (void)obj;
 
-  if (obj->data.s == nullptr) {
-    return;
-  }
+  if (obj->data.s == nullptr) { return; }
 
   if (strlen(obj->data.s) == 0) {
     snprintf(p, p_max_size, "%s",

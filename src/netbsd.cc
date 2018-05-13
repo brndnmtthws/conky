@@ -27,8 +27,8 @@
  *
  */
 
-#include "netbsd.h"
 #include "net_stat.h"
+#include "netbsd.h"
 
 static kvm_t *kd = nullptr;
 int kd_init = 0, nkd_init = 0;
@@ -36,9 +36,7 @@ u_int32_t sensvalue;
 char errbuf[_POSIX2_LINE_MAX];
 
 static int init_kvm(void) {
-  if (kd_init) {
-    return 0;
-  }
+  if (kd_init) { return 0; }
 
   kd = kvm_openfiles(nullptr, NULL, NULL, KVM_NO_FILES, errbuf);
   if (kd == nullptr) {
@@ -168,9 +166,7 @@ void update_net_stats() {
 
   /* get delta */
   delta = current_update_time - last_update_time;
-  if (delta <= 0.0001) {
-    return;
-  }
+  if (delta <= 0.0001) { return; }
 
   for (i = 0, ifnetaddr = (u_long)ifhead.tqh_first;
        ifnet.if_list.tqe_next && i < 16;
@@ -212,7 +208,7 @@ void update_net_stats() {
   }
 }
 
-void update_total_processes() {
+int update_total_processes() {
   /* It's easier to use kvm here than sysctl */
 
   int n_processes;
@@ -310,9 +306,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
                          const char *adapter) {
   (void)adapter;  // only linux uses this
 
-  if (!p_client_buffer || client_buffer_size <= 0) {
-    return;
-  }
+  if (!p_client_buffer || client_buffer_size <= 0) { return; }
 
   /* not implemented */
   memset(p_client_buffer, 0, client_buffer_size);
@@ -320,9 +314,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
 
 /* char *get_acpi_fan() */
 void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
-  if (!p_client_buffer || client_buffer_size <= 0) {
-    return;
-  }
+  if (!p_client_buffer || client_buffer_size <= 0) { return; }
 
   /* not implemented */
   memset(p_client_buffer, 0, client_buffer_size);
