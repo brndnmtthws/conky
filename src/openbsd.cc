@@ -81,9 +81,7 @@ int init_kvm = 0;
 int init_sensors = 0;
 
 static int kvm_init() {
-  if (init_kvm) {
-    return 1;
-  }
+  if (init_kvm) { return 1; }
 
   kd = kvm_open(nullptr, NULL, NULL, KVM_NO_FILES, NULL);
   if (kd == nullptr) {
@@ -103,14 +101,10 @@ static int swapmode(int *used, int *total) {
   int nswap, rnswap, i;
 
   nswap = swapctl(SWAP_NSWAP, 0, 0);
-  if (nswap == 0) {
-    return 0;
-  }
+  if (nswap == 0) { return 0; }
 
   swdev = malloc(nswap * sizeof(*swdev));
-  if (swdev == nullptr) {
-    return 0;
-  }
+  if (swdev == nullptr) { return 0; }
 
   rnswap = swapctl(SWAP_STATS, swdev, nswap);
   if (rnswap == -1) {
@@ -201,13 +195,9 @@ void update_net_stats() {
 
   /* get delta */
   delta = current_update_time - last_update_time;
-  if (delta <= 0.0001) {
-    return;
-  }
+  if (delta <= 0.0001) { return; }
 
-  if (getifaddrs(&ifap) < 0) {
-    return;
-  }
+  if (getifaddrs(&ifap) < 0) { return; }
 
   for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
     ns = get_net_stat((const char *)ifa->ifa_name, nullptr, NULL);
@@ -219,9 +209,7 @@ void update_net_stats() {
       last_recv = ns->recv;
       last_trans = ns->trans;
 
-      if (ifa->ifa_addr->sa_family != AF_LINK) {
-        continue;
-      }
+      if (ifa->ifa_addr->sa_family != AF_LINK) { continue; }
 
       for (iftmp = ifa->ifa_next;
            iftmp != nullptr && strcmp(ifa->ifa_name, iftmp->ifa_name) == 0;
@@ -262,7 +250,7 @@ void update_net_stats() {
   freeifaddrs(ifap);
 }
 
-void update_total_processes() {
+int update_total_processes() {
   int n_processes;
 
   kvm_init();
@@ -281,9 +269,7 @@ void update_running_processes() {
 
   p = kvm_getproc2(kd, KERN_PROC_ALL, 0, max_size, &n_processes);
   for (i = 0; i < n_processes; i++) {
-    if (p[i].p_stat == SRUN) {
-      cnt++;
-    }
+    if (p[i].p_stat == SRUN) { cnt++; }
   }
 
   info.run_procs = cnt;
@@ -321,9 +307,7 @@ void get_cpu_count() {
   info.cpu_count = cpu_count;
 
   info.cpu_usage = malloc(info.cpu_count * sizeof(float));
-  if (info.cpu_usage == nullptr) {
-    CRIT_ERR(nullptr, NULL, "malloc");
-  }
+  if (info.cpu_usage == nullptr) { CRIT_ERR(nullptr, NULL, "malloc"); }
 
 #ifndef OLDCPU
   assert(fresh == nullptr); /* XXX Is this leaking memory? */
@@ -378,7 +362,8 @@ void update_cpu_usage() {
     size = CPUSTATES * sizeof(int64_t);
     for (i = 0; i < info.cpu_count; i++) {
       int cp_time_mib[] = {CTL_KERN, KERN_CPTIME2, i};
-      if (sysctl(cp_time_mib, 3, &(fresh[i * CPUSTATES]), &size, nullptr, 0) < 0) {
+      if (sysctl(cp_time_mib, 3, &(fresh[i * CPUSTATES]), &size, nullptr, 0) <
+          0) {
         NORM_ERR("sysctl kern.cp_time2 failed");
       }
     }
@@ -391,9 +376,7 @@ void update_cpu_usage() {
       NORM_ERR("sysctl kern.cp_time failed");
     }
 
-    for (i = 0; i < CPUSTATES; i++) {
-      fresh[i] = (int64_t)cp_time_tmp[i];
-    }
+    for (i = 0; i < CPUSTATES; i++) { fresh[i] = (int64_t)cp_time_tmp[i]; }
   }
 
   /* XXX Do sg with this int64_t => long => double ? float hell. */
@@ -456,9 +439,7 @@ void update_obsd_sensors() {
   /* for (dev = 0; dev < MAXSENSORDEVICES; dev++) { */
   mib[2] = dev;
   if (sysctl(mib, 3, &sensordev, &sdlen, nullptr, 0) == -1) {
-    if (errno != ENOENT) {
-      warn("sysctl");
-    }
+    if (errno != ENOENT) { warn("sysctl"); }
     return;
     // continue;
   }
@@ -467,14 +448,10 @@ void update_obsd_sensors() {
     for (numt = 0; numt < sensordev.maxnumt[type]; numt++) {
       mib[4] = numt;
       if (sysctl(mib, 5, &sensor, &slen, nullptr, 0) == -1) {
-        if (errno != ENOENT) {
-          warn("sysctl");
-        }
+        if (errno != ENOENT) { warn("sysctl"); }
         continue;
       }
-      if (sensor.flags & SENSOR_FINVALID) {
-        continue;
-      }
+      if (sensor.flags & SENSOR_FINVALID) { continue; }
 
       switch (type) {
         case SENSOR_TEMP:

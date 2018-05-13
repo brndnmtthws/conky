@@ -199,6 +199,9 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
     prev = curr;
   }
 
+  if (startlist == nullptr) {
+    return;
+  }
   /* connect end to start for an endless loop-ring */
   startlist->previous = curr;
   curr->next = startlist;

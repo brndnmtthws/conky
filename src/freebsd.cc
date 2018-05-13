@@ -82,13 +82,9 @@ static short cpu_setup = 0;
 static int getsysctl(const char *name, void *ptr, size_t len) {
   size_t nlen = len;
 
-  if (sysctlbyname(name, ptr, &nlen, nullptr, 0) == -1) {
-    return -1;
-  }
+  if (sysctlbyname(name, ptr, &nlen, nullptr, 0) == -1) { return -1; }
 
-  if (nlen != len && errno == ENOMEM) {
-    return -1;
-  }
+  if (nlen != len && errno == ENOMEM) { return -1; }
 
   return 0;
 }
@@ -107,9 +103,7 @@ static int swapmode(unsigned long *retavail, unsigned long *retfree) {
 #define CONVERT(v) ((quad_t)(v) * (pagesize / 1024))
 
   n = kvm_getswapinfo(kd, swapary, 1, 0);
-  if (n < 0 || swapary[0].ksw_total == 0) {
-    return 0;
-  }
+  if (n < 0 || swapary[0].ksw_total == 0) { return 0; }
 
   *retavail = CONVERT(swapary[0].ksw_total);
   *retfree = CONVERT(swapary[0].ksw_total - swapary[0].ksw_used);
@@ -147,9 +141,7 @@ int check_mount(struct text_object *obj) {
 
   mntsize = getmntinfo(&mntbuf, MNT_NOWAIT);
   for (i = mntsize - 1; i >= 0; i--) {
-    if (strcmp(mntbuf[i].f_mntonname, obj->data.s) == 0) {
-      return 1;
-    }
+    if (strcmp(mntbuf[i].f_mntonname, obj->data.s) == 0) { return 1; }
   }
 
   return 0;
@@ -200,13 +192,9 @@ int update_net_stats(void) {
 
   /* get delta */
   delta = current_update_time - last_update_time;
-  if (delta <= 0.0001) {
-    return 0;
-  }
+  if (delta <= 0.0001) { return 0; }
 
-  if (getifaddrs(&ifap) < 0) {
-    return 0;
-  }
+  if (getifaddrs(&ifap) < 0) { return 0; }
 
   for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
     ns = get_net_stat((const char *)ifa->ifa_name, nullptr, NULL);
@@ -218,9 +206,7 @@ int update_net_stats(void) {
       last_recv = ns->recv;
       last_trans = ns->trans;
 
-      if (ifa->ifa_addr->sa_family != AF_LINK) {
-        continue;
-      }
+      if (ifa->ifa_addr->sa_family != AF_LINK) { continue; }
 
       for (iftmp = ifa->ifa_next;
            iftmp != nullptr && strcmp(ifa->ifa_name, iftmp->ifa_name) == 0;
@@ -269,7 +255,6 @@ int update_total_processes(void) {
   kvm_getprocs(kd, KERN_PROC_ALL, 0, &n_processes);
 
   info.procs = n_processes;
-  return 0;
 }
 
 int update_running_processes(void) {
@@ -280,9 +265,7 @@ int update_running_processes(void) {
   std::lock_guard<std::mutex> guard(kvm_proc_mutex);
   p = kvm_getprocs(kd, KERN_PROC_ALL, 0, &n_processes);
   for (i = 0; i < n_processes; i++) {
-    if (p[i].ki_stat == SRUN) {
-      cnt++;
-    }
+    if (p[i].ki_stat == SRUN) { cnt++; }
   }
 
   info.run_procs = cnt;
@@ -301,9 +284,7 @@ void get_cpu_count(void) {
   }
 
   info.cpu_usage = (float *)malloc((info.cpu_count + 1) * sizeof(float));
-  if (info.cpu_usage == nullptr) {
-    CRIT_ERR(nullptr, NULL, "malloc");
-  }
+  if (info.cpu_usage == nullptr) { CRIT_ERR(nullptr, NULL, "malloc"); }
 }
 
 struct cpu_info {
@@ -510,9 +491,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
 
   (void)adapter;  // only linux uses this
 
-  if (!p_client_buffer || client_buffer_size <= 0) {
-    return;
-  }
+  if (!p_client_buffer || client_buffer_size <= 0) { return; }
 
   if (GETSYSCTL("hw.acpi.acline", state)) {
     fprintf(stderr, "Cannot read sysctl \"hw.acpi.acline\"\n");
@@ -545,9 +524,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
   }
 
   freq_sysctl = (char *)calloc(16, sizeof(char));
-  if (freq_sysctl == nullptr) {
-    exit(-1);
-  }
+  if (freq_sysctl == nullptr) { exit(-1); }
 
   snprintf(freq_sysctl, 16, "dev.cpu.%d.freq", (cpu - 1));
 
@@ -639,8 +616,8 @@ int update_diskio(void) {
   devs_count = statinfo_cur.dinfo->numdevs;
   if (devstat_selectdevs(&dev_select, &num_selected, &num_selections,
                          &select_generation, statinfo_cur.dinfo->generation,
-                         statinfo_cur.dinfo->devices, devs_count, nullptr, 0, NULL,
-                         0, DS_SELECT_ONLY, MAXSHOWDEVS, 1) >= 0) {
+                         statinfo_cur.dinfo->devices, devs_count, nullptr, 0,
+                         NULL, 0, DS_SELECT_ONLY, MAXSHOWDEVS, 1) >= 0) {
     for (dn = 0; dn < devs_count; dn++) {
       int di;
       struct devstat *dev;

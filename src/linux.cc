@@ -24,7 +24,6 @@
  *
  */
 
-#include "linux.h"
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
@@ -35,6 +34,7 @@
 #include "common.h"
 #include "conky.h"
 #include "diskio.h"
+#include "linux.h"
 #include "logging.h"
 #include "net_stat.h"
 #include "proc.h"
@@ -170,14 +170,10 @@ int update_meminfo(void) {
       info.swapfree = info.swapmax = info.bufmem = info.buffers = info.cached =
           info.memfree = info.memeasyfree = 0;
 
-  if (!(meminfo_fp = open_file("/proc/meminfo", &rep))) {
-    return 0;
-  }
+  if (!(meminfo_fp = open_file("/proc/meminfo", &rep))) { return 0; }
 
   while (!feof(meminfo_fp)) {
-    if (fgets(buf, 255, meminfo_fp) == nullptr) {
-      break;
-    }
+    if (fgets(buf, 255, meminfo_fp) == nullptr) { break; }
 
     if (strncmp(buf, "MemTotal:", 9) == 0) {
       sscanf(buf, "%*s %llu", &info.memmax);
@@ -276,9 +272,7 @@ static struct {
   }
 
 void update_gateway_info_failure(const char *reason) {
-  if (reason != nullptr) {
-    perror(reason);
-  }
+  if (reason != nullptr) { perror(reason); }
   // 2 pointers to 1 location causes a crash when we try to free them both
   gw_info.iface = strndup("failed", text_buffer_size.get(*state));
   gw_info.ip = strndup("failed", text_buffer_size.get(*state));
@@ -385,9 +379,7 @@ int update_net_stats(void) {
 
   /* get delta */
   delta = current_update_time - last_update_time;
-  if (delta <= 0.0001) {
-    return 0;
-  }
+  if (delta <= 0.0001) { return 0; }
 
   /* open file /proc/net/dev. If not something went wrong, clear all
    * network statistics */
@@ -398,8 +390,10 @@ int update_net_stats(void) {
   /* ignore first two header lines in file /proc/net/dev. If somethings
    * goes wrong, e.g. end of file reached, quit.
    * (Why isn't clear_net_stats called for this case ??? */
-  if (!fgets(buf, 255, net_dev_fp) || /* garbage */
-      !fgets(buf, 255, net_dev_fp)) { /* garbage (field names) */
+  char *one = fgets(buf, 255, net_dev_fp);
+  char *two = fgets(buf, 255, net_dev_fp);
+  if (!one || /* garbage */
+      !two) { /* garbage (field names) */
     fclose(net_dev_fp);
     return 0;
   }
@@ -412,25 +406,17 @@ int update_net_stats(void) {
     long long r, t, last_recv, last_trans;
 
     /* quit only after all non-header lines from /proc/net/dev parsed */
-    if (fgets(buf, 255, net_dev_fp) == nullptr) {
-      break;
-    }
+    if (fgets(buf, 255, net_dev_fp) == nullptr) { break; }
     p = buf;
     /* change char * p to first non-space character, which is the beginning
      * of the interface name */
-    while (*p != '\0' && isspace((int)*p)) {
-      p++;
-    }
+    while (*p != '\0' && isspace((int)*p)) { p++; }
 
     s = p;
 
     /* increment p until the end of the interface name has been reached */
-    while (*p != '\0' && *p != ':') {
-      p++;
-    }
-    if (*p == '\0') {
-      continue;
-    }
+    while (*p != '\0' && *p != ':') { p++; }
+    if (*p == '\0') { continue; }
     /* replace ':' with '\0' in output of /proc/net/dev */
     *p = '\0';
     p++;
@@ -580,9 +566,7 @@ int update_net_stats(void) {
       }
 
       // get ap mac
-      if (winfo->has_ap_addr) {
-        iw_sawap_ntop(&winfo->ap_addr, ns->ap);
-      }
+      if (winfo->has_ap_addr) { iw_sawap_ntop(&winfo->ap_addr, ns->ap); }
 
       // get essid
       if (winfo->b.has_essid) {
@@ -682,21 +666,15 @@ int update_total_processes(void) {
   char ignore2;
 
   info.procs = 0;
-  if (!(dir = opendir("/proc"))) {
-    return 0;
-  }
-  while ((entry = readdir(dir))) {
-    if (!entry) {
-      /* Problem reading list of processes */
-      closedir(dir);
-      info.procs = 0;
-      return 0;
+  dir = opendir("/proc");
+  if (dir) {
+    while ((entry = readdir(dir))) {
+      if (sscanf(entry->d_name, "%d%c", &ignore1, &ignore2) == 1) {
+        info.procs++;
+      }
     }
-    if (sscanf(entry->d_name, "%d%c", &ignore1, &ignore2) == 1) {
-      info.procs++;
-    }
+    closedir(dir);
   }
-  closedir(dir);
   return 0;
 }
 
@@ -783,9 +761,7 @@ void get_cpu_count(void) {
   int subtoken1 = -1;
   int subtoken2 = -1;
 
-  if (info.cpu_usage) {
-    return;
-  }
+  if (info.cpu_usage) { return; }
 
   if (!(stat_fp = open_file("/sys/devices/system/cpu/present", &rep))) {
     return;
@@ -794,9 +770,7 @@ void get_cpu_count(void) {
   info.cpu_count = 0;
 
   while (!feof(stat_fp)) {
-    if (fgets(buf, 255, stat_fp) == nullptr) {
-      break;
-    }
+    if (fgets(buf, 255, stat_fp) == nullptr) { break; }
 
     // Do some parsing here to handle skipped cpu numbers.  For example,
     // for an AMD FX(tm)-6350 Six-Core Processor /sys/.../present reports
@@ -884,9 +858,7 @@ int update_stat(void) {
 
   idx = 0;
   while (!feof(stat_fp)) {
-    if (fgets(buf, 255, stat_fp) == nullptr) {
-      break;
-    }
+    if (fgets(buf, 255, stat_fp) == nullptr) { break; }
 
     if (strncmp(buf, "procs_running ", 14) == 0) {
       sscanf(buf, "%*s %hu", &info.run_threads);
@@ -897,9 +869,7 @@ int update_stat(void) {
       } else {
         idx = 0;
       }
-      if (idx > info.cpu_count) {
-        continue;
-      }
+      if (idx > info.cpu_count) { continue; }
       sscanf(buf, stat_template, &(cpu[idx].cpu_user), &(cpu[idx].cpu_nice),
              &(cpu[idx].cpu_system), &(cpu[idx].cpu_idle),
              &(cpu[idx].cpu_iowait), &(cpu[idx].cpu_irq),
@@ -915,9 +885,7 @@ int update_stat(void) {
 
       delta = current_update_time - last_update_time;
 
-      if (delta <= 0.001) {
-        break;
-      }
+      if (delta <= 0.001) { break; }
 
       cur_total = (float)(cpu[idx].cpu_total - cpu[idx].cpu_last_total);
       if (cur_total == 0.0) {
@@ -933,9 +901,7 @@ int update_stat(void) {
 #ifdef HAVE_OPENMP
 #pragma omp parallel for reduction(+ : curtmp) schedule(dynamic, 10)
 #endif /* HAVE_OPENMP */
-      for (i = 0; i < samples; i++) {
-        curtmp = curtmp + cpu[idx].cpu_val[i];
-      }
+      for (i = 0; i < samples; i++) { curtmp = curtmp + cpu[idx].cpu_val[i]; }
       info.cpu_usage[idx] = curtmp / samples;
 
       cpu[idx].cpu_last_total = cpu[idx].cpu_total;
@@ -1014,9 +980,7 @@ int update_load_average(void) {
 /***********************************************************/
 
 static int no_dots(const struct dirent *d) {
-  if (d->d_name[0] == '.') {
-    return 0;
-  }
+  if (d->d_name[0] == '.') { return 0; }
   return 1;
 }
 
@@ -1028,15 +992,11 @@ static int get_first_file_in_a_directory(const char *dir, char *s, int *rep) {
   if (n < 0) {
     if (!rep || !*rep) {
       NORM_ERR("scandir for %s: %s", dir, strerror(errno));
-      if (rep) {
-        *rep = 1;
-      }
+      if (rep) { *rep = 1; }
     }
     return 0;
   } else {
-    if (n == 0) {
-      return 0;
-    }
+    if (n == 0) { return 0; }
 
     strncpy(s, namelist[0]->d_name, 255);
     s[255] = '\0';
@@ -1044,9 +1004,7 @@ static int get_first_file_in_a_directory(const char *dir, char *s, int *rep) {
 #ifdef HAVE_OPENMP
 #pragma omp parallel for schedule(dynamic, 10)
 #endif /* HAVE_OPENMP */
-    for (i = 0; i < n; i++) {
-      free(namelist[i]);
-    }
+    for (i = 0; i < n; i++) { free(namelist[i]); }
     free(namelist);
 
     return 1;
@@ -1066,9 +1024,7 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
   if (dev == nullptr || strcmp(dev, "*") == 0) {
     static int rep = 0;
 
-    if (!get_first_file_in_a_directory(dir, buf, &rep)) {
-      return -1;
-    }
+    if (!get_first_file_in_a_directory(dir, buf, &rep)) { return -1; }
     dev = buf;
   }
 
@@ -1119,9 +1075,7 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
     *divisor = 0;
   }
   /* fan does not use *_div as a read divisor */
-  if (strcmp("fan", type) == 0) {
-    return fd;
-  }
+  if (strcmp("fan", type) == 0) { return fd; }
 
   /* test if *_div file exist, open it and use it as divisor */
   if (strcmp(type, "tempf") == 0) {
@@ -1154,9 +1108,7 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
 static double get_sysfs_info(int *fd, int divisor, char *devtype, char *type) {
   int val = 0;
 
-  if (*fd <= 0) {
-    return 0;
-  }
+  if (*fd <= 0) { return 0; }
 
   lseek(*fd, 0, SEEK_SET);
 
@@ -1178,9 +1130,7 @@ static double get_sysfs_info(int *fd, int divisor, char *devtype, char *type) {
   close(*fd);
   /* open file */
   *fd = open(devtype, O_RDONLY);
-  if (*fd < 0) {
-    NORM_ERR("can't open '%s': %s", devtype, strerror(errno));
-  }
+  if (*fd < 0) { NORM_ERR("can't open '%s': %s", devtype, strerror(errno)); }
 
   /* My dirty hack for computing CPU value
    * Filedil, from forums.gentoo.org */
@@ -1425,9 +1375,6 @@ static char get_voltage(char *p_client_buffer, size_t client_buffer_size,
     fprintf(stderr, PACKAGE_NAME ": Failed to access '%s' at ",
             current_freq_file);
     perror("get_voltage()");
-    if (f) {
-      fclose(f);
-    }
     return 0;
   }
 
@@ -1441,22 +1388,15 @@ static char get_voltage(char *p_client_buffer, size_t client_buffer_size,
     while (!feof(f)) {
       char line[256];
 
-      if (fgets(line, 255, f) == nullptr) {
-        break;
-      }
+      if (fgets(line, 255, f) == nullptr) { break; }
       sscanf(line, "%d %d", &freq_comp, &voltage);
-      if (freq_comp == freq) {
-        break;
-      }
+      if (freq_comp == freq) { break; }
     }
     fclose(f);
   } else {
     fprintf(stderr, PACKAGE_NAME ": Failed to access '%s' at ",
             current_freq_file);
     perror("get_voltage()");
-    if (f) {
-      fclose(f);
-    }
     return 0;
   }
   snprintf(p_client_buffer, client_buffer_size, p_format,
@@ -1466,16 +1406,12 @@ static char get_voltage(char *p_client_buffer, size_t client_buffer_size,
 
 void print_voltage_mv(struct text_object *obj, char *p, int p_max_size) {
   static int ok = 1;
-  if (ok) {
-    ok = get_voltage(p, p_max_size, "%.0f", 1, obj->data.i);
-  }
+  if (ok) { ok = get_voltage(p, p_max_size, "%.0f", 1, obj->data.i); }
 }
 
 void print_voltage_v(struct text_object *obj, char *p, int p_max_size) {
   static int ok = 1;
-  if (ok) {
-    ok = get_voltage(p, p_max_size, "%'.3f", 1000, obj->data.i);
-  }
+  if (ok) { ok = get_voltage(p, p_max_size, "%'.3f", 1000, obj->data.i); }
 }
 
 #define ACPI_FAN_DIR "/proc/acpi/fan/"
@@ -1486,9 +1422,7 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
   char buf2[256];
   FILE *fp;
 
-  if (!p_client_buffer || client_buffer_size <= 0) {
-    return;
-  }
+  if (!p_client_buffer || client_buffer_size <= 0) { return; }
 
   /* yeah, slow... :/ */
   if (!get_first_file_in_a_directory(ACPI_FAN_DIR, buf, &rep)) {
@@ -1540,9 +1474,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
   struct stat sb;
   FILE *fp;
 
-  if (!p_client_buffer || client_buffer_size <= 0) {
-    return;
-  }
+  if (!p_client_buffer || client_buffer_size <= 0) { return; }
 
   if (adapter)
     snprintf(buf2, sizeof(buf2), "%s/%s/uevent", SYSFS_AC_ADAPTER_DIR, adapter);
@@ -1620,9 +1552,7 @@ int open_acpi_temperature(const char *name) {
   }
 
   fd = open(path, O_RDONLY);
-  if (fd < 0) {
-    NORM_ERR("can't open '%s': %s", path, strerror(errno));
-  }
+  if (fd < 0) { NORM_ERR("can't open '%s': %s", path, strerror(errno)); }
 
   return fd;
 }
@@ -1635,9 +1565,7 @@ static double last_acpi_temp_time;
 #define MAXTHERMZONELEN 6
 
 double get_acpi_temperature(int fd) {
-  if (fd <= 0) {
-    return 0;
-  }
+  if (fd <= 0) { return 0; }
 
   /* don't update acpi temperature too often */
   if (current_update_time - last_acpi_temp_time < 11.32) {
@@ -1766,15 +1694,11 @@ static double last_battery_perct_time[MAX_BATTERY_COUNT];
 void init_batteries(void) {
   int idx;
 
-  if (batteries_initialized) {
-    return;
-  }
+  if (batteries_initialized) { return; }
 #ifdef HAVE_OPENMP
 #pragma omp parallel for schedule(dynamic, 10)
 #endif /* HAVE_OPENMP */
-  for (idx = 0; idx < MAX_BATTERY_COUNT; idx++) {
-    batteries[idx][0] = '\0';
-  }
+  for (idx = 0; idx < MAX_BATTERY_COUNT; idx++) { batteries[idx][0] = '\0'; }
   batteries_initialized = 1;
 }
 
@@ -1782,15 +1706,11 @@ int get_battery_idx(const char *bat) {
   int idx;
 
   for (idx = 0; idx < MAX_BATTERY_COUNT; idx++) {
-    if (!strlen(batteries[idx]) || !strcmp(batteries[idx], bat)) {
-      break;
-    }
+    if (!strlen(batteries[idx]) || !strcmp(batteries[idx], bat)) { break; }
   }
 
   /* if not found, enter a new entry */
-  if (!strlen(batteries[idx])) {
-    snprintf(batteries[idx], 31, "%s", bat);
-  }
+  if (!strlen(batteries[idx])) { snprintf(batteries[idx], 31, "%s", bat); }
 
   return idx;
 }
@@ -1975,9 +1895,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
         while (!feof(fp)) {
           char b[256];
 
-          if (fgets(b, 256, fp) == nullptr) {
-            break;
-          }
+          if (fgets(b, 256, fp) == nullptr) { break; }
           if (sscanf(b, "last full capacity: %d", &acpi_last_full[idx]) != 0) {
             break;
           }
@@ -1994,9 +1912,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
     while (!feof(acpi_bat_fp[idx])) {
       char buf[256];
 
-      if (fgets(buf, 256, acpi_bat_fp[idx]) == nullptr) {
-        break;
-      }
+      if (fgets(buf, 256, acpi_bat_fp[idx]) == nullptr) { break; }
 
       /* let's just hope units are ok */
       if (strncmp(buf, "present:", 8) == 0) {
@@ -2226,9 +2142,7 @@ int _get_battery_perct(const char *bat) {
         while (!feof(fp)) {
           char b[256];
 
-          if (fgets(b, 256, fp) == nullptr) {
-            break;
-          }
+          if (fgets(b, 256, fp) == nullptr) { break; }
           if (sscanf(b, "last full capacity: %d", &acpi_design_capacity[idx]) !=
               0) {
             break;
@@ -2243,18 +2157,14 @@ int _get_battery_perct(const char *bat) {
     while (!feof(acpi_bat_fp[idx])) {
       char buf[256];
 
-      if (fgets(buf, 256, acpi_bat_fp[idx]) == nullptr) {
-        break;
-      }
+      if (fgets(buf, 256, acpi_bat_fp[idx]) == nullptr) { break; }
 
       if (buf[0] == 'r') {
         sscanf(buf, "remaining capacity: %d", &remaining_capacity);
       }
     }
   }
-  if (remaining_capacity < 0) {
-    return 0;
-  }
+  if (remaining_capacity < 0) { return 0; }
   /* compute the battery percentage */
   last_battery_perct[idx] =
       (int)(((float)remaining_capacity / acpi_design_capacity[idx]) * 100);
@@ -2328,8 +2238,10 @@ void get_powerbook_batt_info(struct text_object *obj, char *buffer, int n) {
   static int rep = 0;
   const char *batt_path = PMU_PATH "/battery_0";
   const char *info_path = PMU_PATH "/info";
-  unsigned int flags;
-  int charge, max_charge, ac = -1;
+  unsigned int flags = 0;
+  int charge = 0;
+  int max_charge = 1;
+  int ac = -1;
   long timeval = -1;
 
   /* don't update battery too often */
@@ -2341,9 +2253,7 @@ void get_powerbook_batt_info(struct text_object *obj, char *buffer, int n) {
 
   if (pmu_battery_fp == nullptr) {
     pmu_battery_fp = open_file(batt_path, &rep);
-    if (pmu_battery_fp == nullptr) {
-      return;
-    }
+    if (pmu_battery_fp == nullptr) { return; }
   }
 
   if (pmu_battery_fp != nullptr) {
@@ -2351,9 +2261,7 @@ void get_powerbook_batt_info(struct text_object *obj, char *buffer, int n) {
     while (!feof(pmu_battery_fp)) {
       char buf[32];
 
-      if (fgets(buf, sizeof(buf), pmu_battery_fp) == nullptr) {
-        break;
-      }
+      if (fgets(buf, sizeof(buf), pmu_battery_fp) == nullptr) { break; }
 
       if (buf[0] == 'f') {
         sscanf(buf, "flags      : %8x", &flags);
@@ -2368,9 +2276,7 @@ void get_powerbook_batt_info(struct text_object *obj, char *buffer, int n) {
   }
   if (pmu_info_fp == nullptr) {
     pmu_info_fp = open_file(info_path, &rep);
-    if (pmu_info_fp == nullptr) {
-      return;
-    }
+    if (pmu_info_fp == nullptr) { return; }
   }
 
   if (pmu_info_fp != nullptr) {
@@ -2378,12 +2284,8 @@ void get_powerbook_batt_info(struct text_object *obj, char *buffer, int n) {
     while (!feof(pmu_info_fp)) {
       char buf[32];
 
-      if (fgets(buf, sizeof(buf), pmu_info_fp) == nullptr) {
-        break;
-      }
-      if (buf[0] == 'A') {
-        sscanf(buf, "AC Power               : %d", &ac);
-      }
+      if (fgets(buf, sizeof(buf), pmu_info_fp) == nullptr) { break; }
+      if (buf[0] == 'A') { sscanf(buf, "AC Power               : %d", &ac); }
     }
   }
   /* update status string */
@@ -2512,9 +2414,7 @@ int update_diskio(void) {
   stats.current_read = 0;
   stats.current_write = 0;
 
-  if (!(fp = open_file("/proc/diskstats", &rep))) {
-    return 0;
-  }
+  if (!(fp = open_file("/proc/diskstats", &rep))) { return 0; }
 
   /* read reads and writes from all disks (minor = 0), including cd-roms
    * and floppies, and sum them up */
@@ -2535,9 +2435,7 @@ int update_diskio(void) {
     } else {
       col_count = sscanf(buf, "%u %u %s %*u %u %*u %u", &major, &minor, devbuf,
                          &reads, &writes);
-      if (col_count != 5) {
-        continue;
-      }
+      if (col_count != 5) { continue; }
     }
     cur = stats.next;
     while (cur && strcmp(devbuf, cur->dev)) cur = cur->next;
@@ -2611,9 +2509,7 @@ static unsigned long long calc_cpu_total(void) {
   ps = open("/proc/stat", O_RDONLY);
   rc = read(ps, line, BUFFER_LEN - 1);
   close(ps);
-  if (rc < 0) {
-    return 0;
-  }
+  if (rc < 0) { return 0; }
 
   sscanf(line, template_, &cpu, &niceval, &systemval, &idle, &iowait, &irq,
          &softirq, &steal);
@@ -2681,12 +2577,15 @@ static void process_parse_stat(struct process *process) {
            process->pid);
 
   ps = open(filename, O_RDONLY);
-  if (ps < 0) {
+  if (ps == -1) {
     /* The process must have finished in the last few jiffies! */
     return;
   }
 
-  if (fstat(ps, &process_stat) != 0) return;
+  if (fstat(ps, &process_stat) != 0) {
+    close(ps);
+    return;
+  }
   process->uid = process_stat.st_uid;
 
   /* Mark process as up-to-date. */
@@ -2694,9 +2593,7 @@ static void process_parse_stat(struct process *process) {
 
   rc = read(ps, line, BUFFER_LEN - 1);
   close(ps);
-  if (rc < 0) {
-    return;
-  }
+  if (rc < 0) { return; }
 
   /* Read /proc/<pid>/cmdline */
   cmdline_ps = open(cmdline_filename, O_RDONLY);
@@ -2707,9 +2604,7 @@ static void process_parse_stat(struct process *process) {
 
   endl = read(cmdline_ps, cmdline, BUFFER_LEN - 1);
   close(cmdline_ps);
-  if (endl < 0) {
-    return;
-  }
+  if (endl < 0) { return; }
 
   /* Some processes have null-separated arguments (see proc(5)); let's fix it */
   int i = endl;
@@ -2719,9 +2614,7 @@ static void process_parse_stat(struct process *process) {
   }
   while (i--) {
     /* Replace null character between arguments with a space */
-    if (cmdline[i] == 0) {
-      cmdline[i] = ' ';
-    }
+    if (cmdline[i] == 0) { cmdline[i] = ' '; }
   }
 
   cmdline[endl] = 0;
@@ -2833,9 +2726,7 @@ static void process_parse_io(struct process *process) {
 
   rc = read(ps, line, BUFFER_LEN - 1);
   close(ps);
-  if (rc < 0) {
-    return;
-  }
+  if (rc < 0) { return; }
 
   pos = strstr(line, read_bytes_str);
   if (pos == nullptr) {
@@ -2844,19 +2735,13 @@ static void process_parse_io(struct process *process) {
   }
   pos += strlen(read_bytes_str);
   process->read_bytes = strtoull(pos, &endpos, 10);
-  if (endpos == pos) {
-    return;
-  }
+  if (endpos == pos) { return; }
 
   pos = strstr(line, write_bytes_str);
-  if (pos == nullptr) {
-    return;
-  }
+  if (pos == nullptr) { return; }
   pos += strlen(write_bytes_str);
   process->write_bytes = strtoull(pos, &endpos, 10);
-  if (endpos == pos) {
-    return;
-  }
+  if (endpos == pos) { return; }
 
   if (process->previous_read_bytes == ULLONG_MAX) {
     process->previous_read_bytes = process->read_bytes;
@@ -2909,21 +2794,13 @@ static void update_process_table(void) {
   DIR *dir;
   struct dirent *entry;
 
-  if (!(dir = opendir("/proc"))) {
-    return;
-  }
+  if (!(dir = opendir("/proc"))) { return; }
 
   info.run_procs = 0;
 
   /* Get list of processes from /proc directory */
   while ((entry = readdir(dir))) {
     pid_t pid;
-
-    if (!entry) {
-      /* Problem reading list of processes */
-      closedir(dir);
-      return;
-    }
 
     if (sscanf(entry->d_name, "%d", &pid) > 0) {
       /* compute each process cpu usage */

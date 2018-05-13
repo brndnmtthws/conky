@@ -101,10 +101,12 @@ void parse_tcp_ping_arg(struct text_object *obj, const char *arg,
                "tcp_ping: Resolving 'localhost' also failed");
     }
   }
-  free(hostname);
-  addr->sin_port = htons(addr->sin_port);
-  addr->sin_family = he->h_addrtype;
-  memcpy(&(addr->sin_addr), he->h_addr, he->h_length);
+  if (he != nullptr) {
+    free(hostname);
+    addr->sin_port = htons(addr->sin_port);
+    addr->sin_family = he->h_addrtype;
+    memcpy(&(addr->sin_addr), he->h_addr, he->h_length);
+  }
 }
 
 void print_tcp_ping(struct text_object *obj, char *p, int p_max_size) {

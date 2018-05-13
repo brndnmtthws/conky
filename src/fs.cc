@@ -27,13 +27,13 @@
  *
  */
 
-#include "fs.h"
 #include <fcntl.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <cctype>
 #include <cerrno>
 #include "conky.h"
+#include "fs.h"
 #include "logging.h"
 #include "specials.h"
 #include "text_object.h"
@@ -76,14 +76,10 @@ int update_fs_stats() {
   unsigned i;
   static double last_fs_update = 0.0;
 
-  if (current_update_time - last_fs_update < 13) {
-    return 0;
-  }
+  if (current_update_time - last_fs_update < 13) { return 0; }
 
   for (i = 0; i < MAX_FS_STATS; ++i) {
-    if (fs_stats[i].set != 0) {
-      update_fs_stat(&fs_stats[i]);
-    }
+    if (fs_stats[i].set != 0) { update_fs_stat(&fs_stats[i]); }
   }
   last_fs_update = current_update_time;
   return 0;
@@ -187,13 +183,16 @@ void get_fs_type(const char *path, char *result) {
     if (!match) break;
     fseek(mtab, 0, SEEK_SET);
     slash = strrchr(search_path, '/');
-    if (slash == nullptr) CRIT_ERR(NULL, NULL, "invalid path '%s'", path);
-    if (strlen(slash) == 1) /* trailing slash */
-      *(slash) = '\0';
-    else if (strlen(slash) > 1)
-      *(slash + 1) = '\0';
-    else
-      CRIT_ERR(nullptr, NULL, "found a crack in the matrix!");
+    if (slash == nullptr) {
+      CRIT_ERR(NULL, NULL, "invalid path '%s'", path);
+    } else {
+      if (strlen(slash) == 1) /* trailing slash */
+        *(slash) = '\0';
+      else if (strlen(slash) > 1)
+        *(slash + 1) = '\0';
+      else
+        CRIT_ERR(nullptr, NULL, "found a crack in the matrix!");
+    }
   } while (strlen(search_path) > 0);
   free(search_path);
 
@@ -211,12 +210,8 @@ void get_fs_type(const char *path, char *result) {
 void init_fs_bar(struct text_object *obj, const char *arg) {
   arg = scan_bar(obj, arg, 1);
   if (arg != nullptr) {
-    while (isspace(*arg) != 0) {
-      arg++;
-    }
-    if (*arg == '\0') {
-      arg = "/";
-    }
+    while (isspace(*arg) != 0) { arg++; }
+    if (*arg == '\0') { arg = "/"; }
   } else {
     arg = "/";
   }
@@ -270,7 +265,5 @@ HUMAN_PRINT_FS_GENERATOR(used, fs->size - fs->free)
 void print_fs_type(struct text_object *obj, char *p, int p_max_size) {
   auto *fs = static_cast<struct fs_stat *>(obj->data.opaque);
 
-  if (fs != nullptr) {
-    snprintf(p, p_max_size, "%s", fs->type);
-  }
+  if (fs != nullptr) { snprintf(p, p_max_size, "%s", fs->type); }
 }

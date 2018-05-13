@@ -4,4 +4,4 @@ root = true
 end_of_line = lf
 insert_final_newline = true
 indent_style = space
-intend_size = 2
+indent_size = 2
