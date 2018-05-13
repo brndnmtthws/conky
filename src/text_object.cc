@@ -37,15 +37,12 @@ void gen_free_opaque(struct text_object *obj) {
   free_and_zero(obj->data.opaque);
 }
 
-int gen_false_iftest(struct text_object *obj) {
-  (void)obj;
+int gen_false_iftest(struct text_object *) {
   return 0;
 }
 
-void gen_print_nothing(struct text_object *obj, char *p, int p_max_size) {
-  (void)obj;
-  p = p; // just a trick to make the compiler happy about this being non-const
-  (void)p_max_size;
+void gen_print_nothing(struct text_object *, char *, int) {
+  // literally does nothing
 }
 
 void gen_print_obj_data_s(struct text_object *obj, char *p, int p_max_size) {

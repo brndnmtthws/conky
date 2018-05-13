@@ -2067,7 +2067,7 @@ int extract_variable_text_internal(struct text_object *retval,
         } catch (obj_create_error &e) {
           free(buf);
           free(orig_p);
-          throw e;
+          throw;
         }
         if (obj != nullptr) {
           append_object(retval, obj);

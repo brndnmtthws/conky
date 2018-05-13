@@ -285,10 +285,7 @@ void cimlib_render(int x, int y, int width, int height) {
   imlib_free_image();
 }
 
-void print_image_callback(struct text_object *obj, char *p,
-                          int p_max_size) {
-  p = p; // just a trick to make the compiler happy about this being non-const
-  (void)p_max_size;
-
+void print_image_callback(struct text_object *obj, char *,
+                          int) {
   cimlib_add_image(obj->data.s);
 }
