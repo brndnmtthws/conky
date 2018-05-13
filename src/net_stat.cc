@@ -250,7 +250,7 @@ void print_addrs(struct text_object *obj, char *p, int p_max_size) {
 
   if (!ns) return;
 
-  if (NULL != ns->*addrs && strlen(ns->addrs) > 2) {
+  if (NULL != ns->(*addrs) && strlen(ns->addrs) > 2) {
     ns->addrs[strlen(ns->addrs) - 2] = 0; /* remove ", " from end of string */
     strncpy(p, ns->addrs, p_max_size);
   } else {
