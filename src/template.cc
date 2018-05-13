@@ -59,9 +59,7 @@ static char *backslash_escape(const char *src, char **templates,
   while (*p != 0) {
     switch (*p) {
       case '\\':
-        if (*(p + 1) == 0) {
-          break;
-        }
+        if (*(p + 1) == 0) { break; }
         if (*(p + 1) == '\\') {
           src_dup[dup_idx++] = '\\';
           p++;
@@ -131,9 +129,7 @@ static char *handle_template(const char *tmpl, const char *args) {
       while ((*p != 0) && (*p == ' ' && (p == args_dup || *(p - 1) != '\\'))) {
         p++;
       }
-      if (p > args_dup && *(p - 1) == '\\') {
-        p--;
-      }
+      if (p > args_dup && *(p - 1) == '\\') { p--; }
       p_old = p;
       while ((*p != 0) && (*p != ' ' || (p > args_dup && *(p - 1) == '\\'))) {
         p++;
@@ -157,9 +153,7 @@ static char *handle_template(const char *tmpl, const char *args) {
                                argsp, argcnt);
   DBGP("substituted %s, output is '%s'", tmpl, eval_text);
   free(args_dup);
-  for (i = 0; i < argcnt; i++) {
-    free(argsp[i]);
-  }
+  for (i = 0; i < argcnt; i++) { free(argsp[i]); }
   free(argsp);
   return eval_text;
 }
@@ -176,13 +170,9 @@ char *find_and_replace_templates(const char *inbuf) {
 
   p = indup = strdup(inbuf);
   while (*p != 0) {
-    while ((*p != 0) && *p != '$') {
-      *(o++) = *(p++);
-    }
+    while ((*p != 0) && *p != '$') { *(o++) = *(p++); }
 
-    if ((*p) == 0) {
-      break;
-    }
+    if ((*p) == 0) { break; }
 
     if ((static_cast<int>(strncmp(p, "$template", strlen("$template")) != 0) !=
          0) &&
@@ -194,9 +184,7 @@ char *find_and_replace_templates(const char *inbuf) {
     if (*(p + 1) == '{') {
       p += 2;
       templ = p;
-      while ((*p != 0) && (isspace(*p) == 0) && *p != '{' && *p != '}') {
-        p++;
-      }
+      while ((*p != 0) && (isspace(*p) == 0) && *p != '{' && *p != '}') { p++; }
       if (*p == '}') {
         args = nullptr;
       } else {
@@ -223,17 +211,16 @@ char *find_and_replace_templates(const char *inbuf) {
     } else {
       templ = p + 1;
       p += strlen("$template");
-      while ((*p != 0) && (isdigit(*p) != 0)) {
-        p++;
-      }
+      while ((*p != 0) && (isdigit(*p) != 0)) { p++; }
       args = nullptr;
     }
     tmpl_out = handle_template(templ, args);
     if (tmpl_out != nullptr) {
-      outlen += strlen(tmpl_out);
+      int len = strlen(tmpl_out);
+      outlen += len;
       *o = '\0';
       outbuf = static_cast<char *>(realloc(outbuf, outlen * sizeof(char)));
-      strcat(outbuf, tmpl_out);
+      strncat(outbuf, tmpl_out, len);
       free(tmpl_out);
       o = outbuf + strlen(outbuf);
     } else {
@@ -249,11 +236,7 @@ char *find_and_replace_templates(const char *inbuf) {
 
 /* check text for any template object references */
 int text_contains_templates(const char *text) {
-  if (strcasestr(text, "${template") != nullptr) {
-    return 1;
-  }
-  if (strcasestr(text, "$template") != nullptr) {
-    return 1;
-  }
+  if (strcasestr(text, "${template") != nullptr) { return 1; }
+  if (strcasestr(text, "$template") != nullptr) { return 1; }
   return 0;
 }

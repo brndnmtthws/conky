@@ -26,13 +26,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+#include <vector>
 #include "conky.h"
 #include "core.h"
 #include "logging.h"
 #include "specials.h"
 #include "text_object.h"
 #include "x11.h"
-#include <vector>
 
 /**
  * Length of a character in bytes.
@@ -44,17 +44,11 @@ inline int scroll_character_length(char c) {
     auto uc = static_cast<unsigned char>(c);
     int len = 0;
 
-    if (c == -1) {
-      return 1;
-    }
+    if (c == -1) { return 1; }
 
-    if ((uc & 0x80) == 0) {
-      return 1;
-    }
+    if ((uc & 0x80) == 0) { return 1; }
 
-    while (len < 7 && (uc & (0x80 >> len)) != 0) {
-      ++len;
-    }
+    while (len < 7 && (uc & (0x80 >> len)) != 0) { ++len; }
 
     return len;
   }
@@ -69,12 +63,8 @@ inline int scroll_character_length(char c) {
  */
 inline bool scroll_check_skip_byte(char c) {
 #ifdef BUILD_X11
-  if (utf8_mode.get(*state)) {
-    // Check if byte matches UTF-8 continuation byte pattern (0b10xxxxxx)
-    if ((c & 0xC0) == 0x80) {
-      return true;
-    }
-  }
+  // Check if byte matches UTF-8 continuation byte pattern (0b10xxxxxx)
+  if (utf8_mode.get(*state) && (c & 0xC0) == 0x80) { return true; }
 #endif
 
   return SPECIAL_CHAR == c;
@@ -120,23 +110,17 @@ static void scroll_scroll_left(struct scroll_data *sd,
     sd->start += scroll_character_length(buf[sd->start]);
   }
 
-  if (buf[sd->start] == 0 || sd->start > strlen(buf.data())) {
-    sd->start = 0;
-  }
+  if (buf[sd->start] == 0 || sd->start > strlen(buf.data())) { sd->start = 0; }
 }
 
 static void scroll_scroll_right(struct scroll_data *sd,
                                 const std::vector<char> &buf,
                                 unsigned int amount) {
   for (int i = 0; i < amount; ++i) {
-    if (sd->start <= 0) {
-      sd->start = static_cast<int>(strlen(&(buf[0])));
-    }
+    if (sd->start <= 0) { sd->start = static_cast<int>(strlen(&(buf[0]))); }
 
     while (--(sd->start) >= 0) {
-      if (!scroll_check_skip_byte(buf[sd->start])) {
-        break;
-      }
+      if (!scroll_check_skip_byte(buf[sd->start])) { break; }
     }
   }
 }
@@ -202,7 +186,7 @@ void parse_scroll_arg(struct text_object *obj, const char *arg,
     sd->text[0] = 0;
   }
 
-  strcat(sd->text, arg + n1);
+  strncat(sd->text, arg + n1, strlen(arg + n1));
   sd->start = sd->direction == SCROLL_WAIT ? strlen(sd->text) : 0;
   obj->sub =
       static_cast<struct text_object *>(malloc(sizeof(struct text_object)));
@@ -223,9 +207,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size) {
   char *pwithcolors;
   std::vector<char> buf(max_user_text.get(*state), static_cast<char>(0));
 
-  if (sd == nullptr) {
-    return;
-  }
+  if (sd == nullptr) { return; }
 
   generate_text_internal(&(buf[0]), max_user_text.get(*state), *obj->sub);
   for (j = 0; buf[j] != 0; j++) {
@@ -247,20 +229,14 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size) {
   }
   // if length of text changed to shorter so the (sd->start) is already
   // outside of actual text then reset (sd->start)
-  if (sd->start >= strlen(&(buf[0]))) {
-    sd->start = 0;
-  }
+  if (sd->start >= strlen(&(buf[0]))) { sd->start = 0; }
   // make sure a colorchange at the front is not part of the string we are going
   // to show
-  while (buf[sd->start] == SPECIAL_CHAR) {
-    sd->start++;
-  }
+  while (buf[sd->start] == SPECIAL_CHAR) { sd->start++; }
   // place all chars that should be visible in p, including colorchanges
   for (j = 0, visiblechars = 0; visiblechars < sd->show;) {
     char c = p[j] = buf[sd->start + j];
-    if (0 == c) {
-      break;
-    }
+    if (0 == c) { break; }
 
     ++j;
 
@@ -277,24 +253,18 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size) {
       ++visiblechars;
     }
   }
-  for (; visiblechars < sd->show; j++, visiblechars++) {
-    p[j] = ' ';
-  }
+  for (; visiblechars < sd->show; j++, visiblechars++) { p[j] = ' '; }
   p[j] = 0;
   // count colorchanges in front of the visible part and place that many
   // colorchanges in front of the visible part
   for (j = 0; j < static_cast<unsigned>(sd->start); j++) {
-    if (buf[j] == SPECIAL_CHAR) {
-      frontcolorchanges++;
-    }
+    if (buf[j] == SPECIAL_CHAR) { frontcolorchanges++; }
   }
-  pwithcolors = static_cast<char *>(
-      malloc(strlen(p) + 4 + colorchanges - visibcolorchanges));
-  for (j = 0; j < frontcolorchanges; j++) {
-    pwithcolors[j] = SPECIAL_CHAR;
-  }
+  int pwithcolors_len = strlen(p) + 4 + colorchanges - visibcolorchanges;
+  pwithcolors = static_cast<char *>(malloc(pwithcolors_len));
+  for (j = 0; j < frontcolorchanges; j++) { pwithcolors[j] = SPECIAL_CHAR; }
   pwithcolors[j] = 0;
-  strcat(pwithcolors, p);
+  strncat(pwithcolors, p, pwithcolors_len);
   strend = strlen(pwithcolors);
   // and place the colorchanges not in front or in the visible part behind the
   // visible part
@@ -302,7 +272,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size) {
     pwithcolors[strend + j] = SPECIAL_CHAR;
   }
   pwithcolors[strend + j] = 0;
-  strcpy(p, pwithcolors);
+  strncpy(p, pwithcolors, p_max_size);
   free(pwithcolors);
   // scroll
   if (sd->direction == SCROLL_LEFT) {
@@ -342,9 +312,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size) {
 void free_scroll(struct text_object *obj) {
   auto *sd = static_cast<struct scroll_data *>(obj->data.opaque);
 
-  if (sd == nullptr) {
-    return;
-  }
+  if (sd == nullptr) { return; }
 
   free_and_zero(sd->text);
   free_text_objects(obj->sub);

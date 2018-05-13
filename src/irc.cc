@@ -47,14 +47,12 @@ struct ctx {
   struct ll_text *messages;
 };
 
-void ev_connected(irc_session_t *session, const char *event, const char *origin,
-                  const char **params, unsigned int count) {
+void ev_connected(irc_session_t *session, const char *, const char *,
+                  const char **, unsigned int) {
   struct ctx *ctxptr = (struct ctx *)irc_get_ctx(session);
   if (irc_cmd_join(session, ctxptr->chan, nullptr) != 0) {
     NORM_ERR("irc: %s", irc_strerror(irc_errno(session)));
   }
-  if (event || origin || params || count) {
-  }  // fix gcc warnings
 }
 
 void addmessage(struct ctx *ctxptr, char *nick, const char *text) {
@@ -93,33 +91,29 @@ void addmessage(struct ctx *ctxptr, char *nick, const char *text) {
   }
 }
 
-void ev_talkinchan(irc_session_t *session, const char *event,
-                   const char *origin, const char **params,
-                   unsigned int count) {
+void ev_talkinchan(irc_session_t *session, const char *, const char *origin,
+                   const char **params, unsigned int) {
   char nickname[64];
   struct ctx *ctxptr = (struct ctx *)irc_get_ctx(session);
 
   irc_target_get_nick(origin, nickname, sizeof(nickname));
   addmessage(ctxptr, nickname, params[1]);
-  if (session || event || count) {
-  }  // fix gcc warnings
 }
 
-void ev_num(irc_session_t *session, unsigned int event, const char *origin,
-            const char **params, unsigned int count) {
+void ev_num(irc_session_t *session, unsigned int event, const char *,
+            const char **params, unsigned int) {
   char attachment[4] = "_00";
 
   if (event == 433) {  // nick in use
-    char *newnick = (char *)malloc(strlen(params[1]) + 4);
+    int len = strlen(params[1]) + 4;
+    char *newnick = (char *)malloc(len);
     strcpy(newnick, params[1]);
     attachment[1] += rand() % 10;
     attachment[2] += rand() % 10;
-    strcat(newnick, attachment);
+    strncat(newnick, attachment, len - 1);
     irc_cmd_nick(session, newnick);
     free(newnick);
   }
-  if (origin || count) {
-  }  // fix gcc warnings
 }
 
 #define IRCSYNTAX \
@@ -146,9 +140,7 @@ void *ircclient(void *ptr) {
   ircobj->session = irc_create_session(&callbacks);
   server = strtok(ircobj->arg, " ");
   ctxptr->chan = strtok(nullptr, " ");
-  if (!ctxptr->chan) {
-    NORM_ERR("irc: %s", IRCSYNTAX);
-  }
+  if (!ctxptr->chan) { NORM_ERR("irc: %s", IRCSYNTAX); }
   str_max_msg_lines = strtok(nullptr, " ");
   if (str_max_msg_lines) {
     ctxptr->max_msg_lines = strtol(str_max_msg_lines, nullptr, 10);
@@ -165,21 +157,15 @@ void *ircclient(void *ptr) {
   }
   int err = irc_connect(ircobj->session, server, port, IRCSERVERPASS, IRCNICK,
                         IRCUSER, IRCREAL);
-  if (err != 0) {
-    err = irc_errno(ircobj->session);
-  }
+  if (err != 0) { err = irc_errno(ircobj->session); }
 #ifdef BUILD_IPV6
   if (err == LIBIRC_ERR_RESOLV) {
     err = irc_connect6(ircobj->session, server, port, IRCSERVERPASS, IRCNICK,
                        IRCUSER, IRCREAL);
-    if (err != 0) {
-      err = irc_errno(ircobj->session);
-    }
+    if (err != 0) { err = irc_errno(ircobj->session); }
   }
 #endif /* BUILD_IPV6 */
-  if (err != 0) {
-    NORM_ERR("irc: %s", irc_strerror(err));
-  }
+  if (err != 0) { NORM_ERR("irc: %s", irc_strerror(err)); }
   if (irc_run(ircobj->session) != 0) {
     int ircerror = irc_errno(ircobj->session);
     if (irc_is_connected(ircobj->session)) {
@@ -221,12 +207,8 @@ void print_irc(struct text_object *obj, char *p, int p_max_size) {
     }
     curmsg = nextmsg;
   }
-  if (p[0] != 0) {
-    p[strlen(p) - 1] = 0;
-  }
-  if (!ctxptr->max_msg_lines) {
-    ctxptr->messages = nullptr;
-  }
+  if (p[0] != 0) { p[strlen(p) - 1] = 0; }
+  if (!ctxptr->max_msg_lines) { ctxptr->messages = nullptr; }
 }
 
 void free_irc(struct text_object *obj) {
