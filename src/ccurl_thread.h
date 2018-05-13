@@ -27,11 +27,13 @@
 
 #include <curl/curl.h>
 
+#include "logging.h"
 #include "update-cb.hh"
 
 namespace priv {
 // factored out stuff that does not depend on the template parameters
-struct curl_internal {
+class curl_internal {
+ public:
   std::string last_modified;
   std::string etag;
   std::string data;
@@ -47,7 +49,7 @@ struct curl_internal {
   // it should populate the result variable
   virtual void process_data() = 0;
 
-  curl_internal(const std::string &url);
+  explicit curl_internal(const std::string &url);
   virtual ~curl_internal() {
     if (curl) curl_easy_cleanup(curl);
   }
@@ -60,7 +62,7 @@ struct curl_internal {
  */
 template <typename Result, typename... Keys>
 class curl_callback : public conky::callback<Result, std::string, Keys...>,
-                      protected priv::curl_internal {
+                      public priv::curl_internal {
   typedef conky::callback<Result, std::string, Keys...> Base1;
   typedef priv::curl_internal Base2;
 

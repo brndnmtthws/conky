@@ -422,7 +422,7 @@ if(BUILD_IMLIB2)
 endif(BUILD_IMLIB2)
 
 if(BUILD_JOURNAL)
-  pkg_search_module(SYSTEMD REQUIRED libsystemd)
+  pkg_search_module(SYSTEMD REQUIRED libsystemd libsystemd-journal)
   set(conky_libs ${conky_libs} ${SYSTEMD_LIB} ${SYSTEMD_LDFLAGS})
   set(conky_includes ${conky_includes} ${SYSTEMD_INCLUDE_PATH})
 endif(BUILD_JOURNAL)

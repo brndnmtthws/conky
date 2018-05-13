@@ -30,6 +30,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <systemd/sd-journal.h>
+#include <time.h>
 #include <unistd.h>
 #include <memory>
 #include "common.h"
@@ -39,8 +40,13 @@
 #include "text_object.h"
 
 #define MAX_JOURNAL_LINES 200
+#ifndef SD_JOURNAL_SYSTEM
+// SD_JOURNAL_SYSTEM added and SD_JOURNAL_SYSTEM_ONLY deprecated in systemd-205
+#define SD_JOURNAL_SYSTEM SD_JOURNAL_SYSTEM_ONLY
+#endif /* SD_JOURNAL_SYSTEM */
 
-struct journal {
+class journal {
+ public:
   int wantedlines;
   int flags;
 
@@ -48,7 +54,7 @@ struct journal {
 };
 
 void free_journal(struct text_object *obj) {
-  struct journal *j = (struct journal *)obj->data.opaque;
+  journal *j = (journal *)obj->data.opaque;
   obj->data.opaque = nullptr;
   delete j;
 }
@@ -56,7 +62,7 @@ void free_journal(struct text_object *obj) {
 void init_journal(const char *type, const char *arg, struct text_object *obj,
                   void *free_at_crash) {
   unsigned int args;
-  struct journal *j = new journal;
+  journal *j = new journal;
 
   std::unique_ptr<char[]> tmp(new char[DEFAULT_TEXT_BUFFER_SIZE]);
   memset(tmp.get(), 0, DEFAULT_TEXT_BUFFER_SIZE);
@@ -73,8 +79,10 @@ void init_journal(const char *type, const char *arg, struct text_object *obj,
     if (args > 1) {
       if (strcmp(tmp.get(), "system") == 0) {
         j->flags |= SD_JOURNAL_SYSTEM;
+#ifdef SD_JOURNAL_CURRENT_USER  // not present in older version of systemd
       } else if (strcmp(tmp.get(), "user") == 0) {
         j->flags |= SD_JOURNAL_CURRENT_USER;
+#endif /* SD_JOURNAL_CURRENT_USER */
       } else {
         free_journal(obj);
         CRIT_ERR(obj, free_at_crash,
@@ -110,12 +118,38 @@ out:
   return length ? length - fieldlen : 0;
 }
 
+bool read_log(size_t *read, size_t *length, time_t *time, uint64_t *timestamp,
+              sd_journal *jh, char *p, int p_max_size) {
+  struct tm tm;
+  if (sd_journal_get_realtime_usec(jh, timestamp) < 0) return false;
+  *time = *timestamp / 1000000;
+  localtime_r(time, &tm);
+
+  if ((*length =
+           strftime(p + *read, p_max_size - *read, "%b %d %H:%M:%S", &tm)) <= 0)
+    return false;
+  *read += *length;
+  p[*read++] = ' ';
+
+  if (print_field(jh, "_HOSTNAME", ' ', read, p, p_max_size) < 0) return false;
+
+  if (print_field(jh, "SYSLOG_IDENTIFIER", '[', read, p, p_max_size) < 0)
+    return false;
+
+  if (print_field(jh, "_PID", ']', read, p, p_max_size) < 0) return false;
+
+  p[*read++] = ':';
+  p[*read++] = ' ';
+
+  if (print_field(jh, "MESSAGE", '\n', read, p, p_max_size) < 0) return false;
+  return true;
+}
+
 void print_journal(struct text_object *obj, char *p, int p_max_size) {
-  size_t read = 0, length;
   struct journal *j = (struct journal *)obj->data.opaque;
   sd_journal *jh = nullptr;
-
-  struct tm *tm;
+  size_t read = 0;
+  size_t length;
   time_t time;
   uint64_t timestamp;
 
@@ -123,7 +157,6 @@ void print_journal(struct text_object *obj, char *p, int p_max_size) {
     NORM_ERR("unable to open journal");
     goto out;
   }
-  if (!j) return;
 
   if (sd_journal_seek_tail(jh) < 0) {
     NORM_ERR("unable to seek to end of journal");
@@ -134,32 +167,11 @@ void print_journal(struct text_object *obj, char *p, int p_max_size) {
     goto out;
   }
 
-  do {
-    if (sd_journal_get_realtime_usec(jh, &timestamp) < 0) break;
-    time = timestamp / 1000000;
-    tm = localtime(&time);
-
-    if ((length =
-             strftime(p + read, p_max_size - read, "%b %d %H:%M:%S", tm)) <= 0)
-      break;
-    read += length;
-    p[read++] = ' ';
-
-    if (print_field(jh, "_HOSTNAME", ' ', &read, p, p_max_size) < 0) break;
-
-    if (print_field(jh, "SYSLOG_IDENTIFIER", '[', &read, p, p_max_size) < 0)
-      break;
-
-    if (print_field(jh, "_PID", ']', &read, p, p_max_size) < 0) break;
-
-    p[read++] = ':';
-    p[read++] = ' ';
-
-    if (print_field(jh, "MESSAGE", '\n', &read, p, p_max_size) < 0) break;
-  } while (sd_journal_next(jh));
+  while (read_log(&read, &length, &time, &timestamp, jh, p, p_max_size) &&
+         sd_journal_next(jh))
+    ;
 
 out:
   if (jh) sd_journal_close(jh);
   p[read] = '\0';
-  return;
 }

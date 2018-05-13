@@ -43,6 +43,8 @@ if(MAINTAINER_MODE)
 	set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -pedantic -Werror -Wno-format ${CMAKE_CXX_FLAGS_DEBUG}" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
 endif(MAINTAINER_MODE)
 
+option(CHECK_CODE_QUALITY "Check code formatting/quality with clang" false)
+
 option(RELEASE "Build release package" false)
 mark_as_advanced(RELEASE)
 
@@ -146,14 +148,14 @@ option(BUILD_MOC "Enable if you want MOC (music player) support" true)
 
 option(BUILD_XMMS2 "Enable if you want XMMS2 (music player) support" false)
 
-option(BUILD_EVE "Enable if you want Eve-Online skill monitoring support" false)
+option(BUILD_EVE "Enable if you want Eve-Online skill monitoring support" true)
 
 option(BUILD_CURL "Enable if you want Curl support" false)
 
 option(BUILD_RSS "Enable if you want RSS support" false)
 
-option(BUILD_WEATHER_METAR "Enable METAR weather support" false)
-option(BUILD_WEATHER_XOAP "Enable XOAP weather support" false)
+option(BUILD_WEATHER_METAR "Enable METAR weather support" true)
+option(BUILD_WEATHER_XOAP "Enable XOAP weather support" true)
 if(BUILD_WEATHER_METAR OR BUILD_WEATHER_XOAP OR BUILD_RSS)
 	set(BUILD_CURL true)
 endif(BUILD_WEATHER_METAR OR BUILD_WEATHER_XOAP OR BUILD_RSS)
@@ -174,10 +176,8 @@ endif(BUILD_HTTP)
 
 option(BUILD_ICONV "Enable iconv support" false)
 
-option(BUILD_CMUS "Enable support for cmus music player" false)
+option(BUILD_CMUS "Enable support for cmus music player" true)
 
 option(BUILD_JOURNAL "Enable support for reading from the systemd journal" false)
 
 option(BUILD_PULSEAUDIO "Enable support for Pulseaudio's default sink and source" false)
-
-option(CHECK_CODE_QUALITY "Check code formatting/quality with clang" false)
