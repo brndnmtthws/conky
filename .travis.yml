@@ -62,10 +62,11 @@ matrix:
 before_install:
   - eval "${MATRIX_EVAL}"
 before_script:
-  - mkdir build
-  - cd build
-  - cmake -DCHECK_CODE_QUALITY=ON ..
+  - mkdir build && cd build
+  - cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
   - cd ..
+  - cp build/compile_commands.json .
+  - ./bin/check-style.sh
   - mkdir build-no-x11
   - cd build-no-x11
   - cmake -DBUILD_X11=OFF ..
@@ -76,7 +77,7 @@ script:
   - cd ../build-no-x11
   - make -j4
   - cd ..
-  - sonar-scanner
+  - if [ "$CC" = "gcc-8" ] ; then sonar-scanner ; fi
 branches:
   only:
     - master
