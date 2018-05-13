@@ -23,10 +23,6 @@ matrix:
             - libimlib2-dev
             - libxinerama-dev
             - gawk
-        sonarcloud:
-          organization: "brndnmtthws-github"
-          token:
-            secure: "KikPusy+HXcEVLr0Dqb6mkrefDU5jm7EGQ5fwO4sBG7bRMcnHV3V14s5yB4Ol8btpUC0nkNn/41+f37lkG+oT4y9ZeIH2ZrhsSEHxOgH6DF9ZSVJwtpLrF9siWgfZ0m5c5V7U5rzVYL3jlO1hQfXKCfMNAcwlKcEUrfpk7jVEZc="
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
     - os: linux
@@ -36,6 +32,7 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-6.0
           packages:
+            - clang-6.0
             - cmake
             - libxdamage-dev
             - libx11-dev
@@ -50,7 +47,6 @@ matrix:
             - libimlib2-dev
             - libxinerama-dev
             - gawk
-            - clang-6.0
         sonarcloud:
           organization: "brndnmtthws-github"
           token:
@@ -69,7 +65,8 @@ before_script:
   - cd ..
 script:
   - cd build
-  - build-wrapper-linux-x86-64 --out-dir bw-output make -j4
+  - if [ "$CXX" = "clang++-6.0" ] ; then build-wrapper-linux-x86-64 --out-dir bw-output make -j4 ; fi
+  - if [ "$CXX" = "g++-8" ] ; then make -j4 ; fi
   - cd ../build-no-x11
   - make -j4
   - cd ..
