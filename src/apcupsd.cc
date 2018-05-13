@@ -26,11 +26,11 @@
 #include "logging.h"
 #include "text_object.h"
 
-#include <cerrno>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <cerrno>
 
 enum _apcupsd_items {
   APCUPSD_NAME,
@@ -72,9 +72,7 @@ static int net_recv_ex(int sock, void *buf, int size, struct timeval *tv) {
     FD_SET(sock, &fds);
     res = select(sock + 1, &fds, nullptr, nullptr, tv);
   } while (res < 0 && errno == EINTR);
-  if (res < 0) {
-    return 0;
-  }
+  if (res < 0) { return 0; }
   if (res == 0) {
     // timeout
     errno = ETIMEDOUT;  // select was succesfull, errno is now 0
@@ -86,9 +84,7 @@ static int net_recv_ex(int sock, void *buf, int size, struct timeval *tv) {
     errno = 0;
     res = recv(sock, static_cast<char *>(buf), size, 0);
   } while (res < 0 && errno == EINTR);
-  if (res < 0) {
-    return 0;
-  }
+  if (res < 0) { return 0; }
   if (res == 0) {
     // orderly shutdown
     errno = ENOTCONN;
@@ -109,9 +105,7 @@ static int net_recv(int sock, void *buf, int size) {
 
   while (todo != 0) {
     len = net_recv_ex(sock, static_cast<char *>(buf) + off, todo, &tv);
-    if (len == 0) {
-      return 0;
-    }
+    if (len == 0) { return 0; }
     todo -= len;
     off += len;
   }
@@ -124,13 +118,9 @@ static int net_recv(int sock, void *buf, int size) {
 static int get_line(int sock, char line[], short linesize) {
   // get the line length
   short sz;
-  if (net_recv(sock, &sz, sizeof(sz)) == 0) {
-    return -1;
-  }
+  if (net_recv(sock, &sz, sizeof(sz)) == 0) { return -1; }
   sz = ntohs(sz);
-  if (sz == 0) {
-    return 0;
-  }
+  if (sz == 0) { return 0; }
 
   // get the line
   while (sz >= linesize) {
@@ -138,9 +128,7 @@ static int get_line(int sock, char line[], short linesize) {
     net_recv(sock, line, linesize);
     sz -= linesize;
   }
-  if (net_recv(sock, line, sz) == 0) {
-    return 0;
-  }
+  if (net_recv(sock, line, sz) == 0) { return 0; }
   line[sz] = 0;
   return sz;
 }
@@ -191,7 +179,7 @@ static int fill_items(int sock, PAPCUPSD_S apc) {
 int update_apcupsd() {
   int i;
   APCUPSD_S apc;
-  int sock;
+  int sock = -1;
 
   for (i = 0; i < _APCUPSD_COUNT; ++i) {
     memcpy(apc.items[i], "N/A", 4);  // including \0
@@ -219,18 +207,15 @@ int update_apcupsd() {
     }
     for (rp = ai; rp != nullptr; rp = rp->ai_next) {
       sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-      if (sock == -1) {
-        continue;
-      }
-      if (connect(sock, rp->ai_addr, rp->ai_addrlen) != -1) {
-        break;
-      }
+      if (sock == -1) { continue; }
+      if (connect(sock, rp->ai_addr, rp->ai_addrlen) != -1) { break; }
       close(sock);
+      sock = -1;
     }
     freeaddrinfo(ai);
     if (rp == nullptr) {
       // no error reporting, the daemon is probably not running
-      close(sock);
+      if (sock >= 0) { close(sock); }
       break;
     }
 
@@ -266,9 +251,7 @@ int update_apcupsd() {
 int apcupsd_scan_arg(const char *arg) {
   char host[64];
   int port;
-  if (sscanf(arg, "%63s %d", host, &port) != 2) {
-    return 1;
-  }
+  if (sscanf(arg, "%63s %d", host, &port) != 2) { return 1; }
 
   apcupsd.port = port;
   strncpy(apcupsd.host, host, sizeof(apcupsd.host));

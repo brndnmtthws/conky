@@ -27,7 +27,6 @@
  *
  */
 
-#include "net_stat.h"
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <cerrno>
@@ -35,6 +34,7 @@
 #include "conky.h"
 #include "logging.h"
 #include "net/if.h"
+#include "net_stat.h"
 #include "specials.h"
 #include "text_object.h"
 #if defined(__sun)
@@ -45,7 +45,7 @@
 #define IFF_RUNNING IFF_LINK
 #endif
 #ifndef SOCK_CLOEXEC
-# define SOCK_CLOEXEC O_CLOEXEC
+#define SOCK_CLOEXEC O_CLOEXEC
 #endif /* SOCK_CLOEXEC */
 
 /* network interface stuff */
@@ -77,9 +77,7 @@ struct net_stat *get_net_stat(const char *dev, void * /*free_at_crash1*/,
                               void * /*free_at_crash2*/) {
   unsigned int i;
 
-  if (dev == nullptr) {
-    return nullptr;
-  }
+  if (dev == nullptr) { return nullptr; }
 
   /* find interface stat */
   for (i = 0; i < MAX_NET_INTERFACES; i++) {
@@ -117,9 +115,7 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
   int i = 0;
   struct net_stat *netstat = nullptr;
 
-  if (arg == nullptr) {
-    arg = DEFAULTNETDEV;
-  }
+  if (arg == nullptr) { arg = DEFAULTNETDEV; }
 
   while (sscanf(arg + i, " %20s", nextarg) == 1) {
     if (strcmp(nextarg, "-n") == 0 || strcmp(nextarg, "--netmask") == 0) {
@@ -128,12 +124,8 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
       showscope = true;
     } else if (nextarg[0] == '-') {  // multiple flags in 1 arg
       for (int j = 1; nextarg[j] != 0; j++) {
-        if (nextarg[j] == 'n') {
-          shownetmask = true;
-        }
-        if (nextarg[j] == 's') {
-          showscope = true;
-        }
+        if (nextarg[j] == 'n') { shownetmask = true; }
+        if (nextarg[j] == 's') { showscope = true; }
       }
     } else {
       netstat = get_net_stat(nextarg, obj, free_at_crash);
@@ -170,9 +162,7 @@ void parse_net_stat_bar_arg(struct text_object *obj, const char *arg,
 void print_downspeed(struct text_object *obj, char *p, int p_max_size) {
   auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
-  if (ns == nullptr) {
-    return;
-  }
+  if (ns == nullptr) { return; }
 
   human_readable(ns->recv_speed, p, p_max_size);
 }
@@ -180,9 +170,7 @@ void print_downspeed(struct text_object *obj, char *p, int p_max_size) {
 void print_downspeedf(struct text_object *obj, char *p, int p_max_size) {
   auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
-  if (ns == nullptr) {
-    return;
-  }
+  if (ns == nullptr) { return; }
 
   spaced_print(p, p_max_size, "%.1f", 8, ns->recv_speed / 1024.0);
 }
@@ -190,9 +178,7 @@ void print_downspeedf(struct text_object *obj, char *p, int p_max_size) {
 void print_upspeed(struct text_object *obj, char *p, int p_max_size) {
   auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
-  if (ns == nullptr) {
-    return;
-  }
+  if (ns == nullptr) { return; }
 
   human_readable(ns->trans_speed, p, p_max_size);
 }
@@ -200,9 +186,7 @@ void print_upspeed(struct text_object *obj, char *p, int p_max_size) {
 void print_upspeedf(struct text_object *obj, char *p, int p_max_size) {
   auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
-  if (ns == nullptr) {
-    return;
-  }
+  if (ns == nullptr) { return; }
 
   spaced_print(p, p_max_size, "%.1f", 8, ns->trans_speed / 1024.0);
 }
@@ -210,9 +194,7 @@ void print_upspeedf(struct text_object *obj, char *p, int p_max_size) {
 void print_totaldown(struct text_object *obj, char *p, int p_max_size) {
   auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
-  if (ns == nullptr) {
-    return;
-  }
+  if (ns == nullptr) { return; }
 
   human_readable(ns->recv, p, p_max_size);
 }
@@ -220,9 +202,7 @@ void print_totaldown(struct text_object *obj, char *p, int p_max_size) {
 void print_totalup(struct text_object *obj, char *p, int p_max_size) {
   auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
-  if (ns == nullptr) {
-    return;
-  }
+  if (ns == nullptr) { return; }
 
   human_readable(ns->trans, p, p_max_size);
 }
@@ -230,9 +210,7 @@ void print_totalup(struct text_object *obj, char *p, int p_max_size) {
 void print_addr(struct text_object *obj, char *p, int p_max_size) {
   auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
-  if (ns == nullptr) {
-    return;
-  }
+  if (ns == nullptr) { return; }
 
   if ((ns->addr.sa_data[2] & 255) == 0 && (ns->addr.sa_data[3] & 255) == 0 &&
       (ns->addr.sa_data[4] & 255) == 0 && (ns->addr.sa_data[5] & 255) == 0) {
@@ -263,8 +241,6 @@ void print_v6addrs(struct text_object *obj, char *p, int p_max_size) {
   struct net_stat *ns = (struct net_stat *)obj->data.opaque;
   char tempaddress[INET6_ADDRSTRLEN];
   struct v6addr *current_v6 = ns->v6addrs;
-
-  if (ns == nullptr) return;
 
   if (p_max_size == 0) return;
   if (!ns->v6addrs) {
@@ -487,9 +463,7 @@ int interface_up(struct text_object *obj) {
   struct ifreq ifr {};
   auto *dev = static_cast<char *>(obj->data.opaque);
 
-  if (dev == nullptr) {
-    return 0;
-  }
+  if (dev == nullptr) { return 0; }
 
   if ((fd = socket(PF_INET, SOCK_DGRAM | SOCK_CLOEXEC, 0)) < 0) {
     CRIT_ERR(nullptr, nullptr, "could not create sockfd");
@@ -498,27 +472,19 @@ int interface_up(struct text_object *obj) {
   strncpy(ifr.ifr_name, dev, IFNAMSIZ);
   if (ioctl(fd, SIOCGIFFLAGS, &ifr) != 0) {
     /* if device does not exist, treat like not up */
-    if (errno != ENODEV && errno != ENXIO) {
-      perror("SIOCGIFFLAGS");
-    }
+    if (errno != ENODEV && errno != ENXIO) { perror("SIOCGIFFLAGS"); }
     goto END_FALSE;
   }
 
   if ((ifr.ifr_flags & IFF_UP) == 0) { /* iface is not up */
     goto END_FALSE;
   }
-  if (if_up_strictness.get(*state) == IFUP_UP) {
-    goto END_TRUE;
-  }
+  if (if_up_strictness.get(*state) == IFUP_UP) { goto END_TRUE; }
 
 #ifdef IFF_RUNNING
-  if ((ifr.ifr_flags & IFF_RUNNING) == 0) {
-    goto END_FALSE;
-  }
+  if ((ifr.ifr_flags & IFF_RUNNING) == 0) { goto END_FALSE; }
 #endif
-  if (if_up_strictness.get(*state) == IFUP_LINK) {
-    goto END_TRUE;
-  }
+  if (if_up_strictness.get(*state) == IFUP_LINK) { goto END_TRUE; }
 
   if (ioctl(fd, SIOCGIFADDR, &ifr) != 0) {
     perror("SIOCGIFADDR");
@@ -550,9 +516,7 @@ void free_dns_data(struct text_object *obj) {
 
   (void)obj;
 
-  for (i = 0; i < dns_data.nscount; i++) {
-    free(dns_data.ns_list[i]);
-  }
+  for (i = 0; i < dns_data.nscount; i++) { free(dns_data.ns_list[i]); }
   free(dns_data.ns_list);
   memset(&dns_data, 0, sizeof(dns_data));
 }
@@ -570,13 +534,9 @@ int update_dns_data() {
 
   free_dns_data(nullptr);
 
-  if ((fp = fopen("/etc/resolv.conf", "re")) == nullptr) {
-    return 0;
-  }
+  if ((fp = fopen("/etc/resolv.conf", "re")) == nullptr) { return 0; }
   while (feof(fp) == 0) {
-    if (fgets(line, 255, fp) == nullptr) {
-      break;
-    }
+    if (fgets(line, 255, fp) == nullptr) { break; }
     if (strncmp(line, "nameserver ", 11) == 0) {
       line[strlen(line) - 1] = '\0';  // remove trailing newline
       dns_data.nscount++;
