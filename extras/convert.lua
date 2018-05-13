@@ -134,7 +134,7 @@ end;
 local config = input:read('*a');
 input:close();
 
-local settings, text = config:match('^(.-)TEXT\n(.*)$');
+local settings, text = config:match('^(.-)TEXT(.*)\n(.*)$');
 
 local converted = 'conky.config = {\n' .. settings:gsub('.-\n', convert) .. '};\n\nconky.text = ' ..
                 quote(text) .. ';\n';
