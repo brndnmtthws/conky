@@ -21,7 +21,6 @@
  *
  */
 
-#include "eve.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,6 +30,7 @@
 #include <utime.h>
 #include <string>
 #include "config.h"
+#include "eve.h"
 #include "logging.h"
 #include "text_object.h"
 
@@ -96,7 +96,11 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
 }
 
 int parseTrainingXml(char *data, Character *s) {
-  char *skill, *level, *ends, *cache, *isTraining;
+  char *skill = "0";
+  char *level = "0";
+  char *ends = "";
+  char *cache = "";
+  char *isTraining = "0";
   xmlNodePtr n;
   xmlDocPtr doc = 0;
   xmlNodePtr root = 0;
@@ -183,9 +187,7 @@ static char *getXmlFromAPI(const char *apiKeyID, const char *apiVCode,
 
   rc = curl_easy_perform(curl_handle);
 
-  if (chr.data == nullptr) {
-    return nullptr;
-  }
+  if (chr.data == nullptr) { return nullptr; }
 
   content = strdup(chr.data);
   curl_easy_cleanup(curl_handle);
