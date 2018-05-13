@@ -1032,7 +1032,7 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
     if (*buf) {
       /* buf holds result from get_first_file_in_a_directory() above,
        * e.g. "hwmon0" -- append "/device" */
-      strcat(buf, "/device");
+      strncat(buf, "/device", 256);
     } else {
       /* dev holds device number N as a string,
        * e.g. "0", -- convert to "hwmon0/device" */
@@ -1760,7 +1760,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
     char charging_state[64];
     char present[4];
 
-    strcpy(charging_state, "unknown");
+    strncpy(charging_state, "unknown", 64);
 
     while (!feof(sysfs_bat_fp[idx])) {
       char buf[256];
@@ -1768,9 +1768,9 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
 
       /* let's just hope units are ok */
       if (strncmp(buf, "POWER_SUPPLY_PRESENT=1", 22) == 0)
-        strcpy(present, "yes");
+        strncpy(present, "yes", 4);
       else if (strncmp(buf, "POWER_SUPPLY_PRESENT=0", 22) == 0)
-        strcpy(present, "no");
+        strncpy(present, "no", 4);
       else if (strncmp(buf, "POWER_SUPPLY_STATUS=", 20) == 0)
         sscanf(buf, "POWER_SUPPLY_STATUS=%63s", charging_state);
       /* present_rate is not the same as the current flowing now but it
@@ -1863,9 +1863,9 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
        * when the second one is empty and the first one
        * being charged. */
       if (remaining_capacity == 0)
-        strcpy(last_battery_str[idx], "empty");
+        strncpy(last_battery_str[idx], "empty", 64);
       else
-        strcpy(last_battery_str[idx], "charged");
+        strncpy(last_battery_str[idx], "charged", 64);
     }
     /* unknown, probably full / AC */
     else {
@@ -1907,7 +1907,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
 
     fseek(acpi_bat_fp[idx], 0, SEEK_SET);
 
-    strcpy(charging_state, "unknown");
+    strncpy(charging_state, "unknown", 8);
 
     while (!feof(acpi_bat_fp[idx])) {
       char buf[256];

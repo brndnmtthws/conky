@@ -41,7 +41,7 @@
 #include "text_object.h"
 
 #ifndef SOCK_CLOEXEC
-# define SOCK_CLOEXEC O_CLOEXEC
+#define SOCK_CLOEXEC O_CLOEXEC
 #endif /* SOCK_CLOEXEC */
 
 struct read_tcpip_data {
@@ -62,7 +62,7 @@ void parse_read_tcpip_arg(struct text_object *obj, const char *arg,
   sscanf(arg + strlen(rtd->host), "%u", &(rtd->port));
   if (rtd->port == 0) {
     rtd->port = atoi(rtd->host);
-    strcpy(rtd->host, "localhost");
+    strncpy(rtd->host, "localhost", 10);
   }
   if (rtd->port < 1 || rtd->port > 65535)
     CRIT_ERR(obj, free_at_crash,
@@ -162,9 +162,7 @@ void print_read_tcpip(struct text_object *obj, char *p, int p_max_size,
   struct addrinfo *airesult, *rp;
   char portbuf[8];
 
-  if (rtd == nullptr) {
-    return;
-  }
+  if (rtd == nullptr) { return; }
 
   memset(&hints, 0, sizeof(struct addrinfo));
   hints.ai_family = AF_UNSPEC;
@@ -179,12 +177,8 @@ void print_read_tcpip(struct text_object *obj, char *p, int p_max_size,
   }
   for (rp = airesult; rp != nullptr; rp = rp->ai_next) {
     sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-    if (sock == -1) {
-      continue;
-    }
-    if (connect(sock, rp->ai_addr, rp->ai_addrlen) != -1) {
-      break;
-    }
+    if (sock == -1) { continue; }
+    if (connect(sock, rp->ai_addr, rp->ai_addrlen) != -1) { break; }
     close(sock);
     return;
   }
@@ -231,9 +225,7 @@ void print_read_udp(struct text_object *obj, char *p, int p_max_size) {
 void free_read_tcpip(struct text_object *obj) {
   auto *rtd = static_cast<struct read_tcpip_data *>(obj->data.opaque);
 
-  if (rtd == nullptr) {
-    return;
-  }
+  if (rtd == nullptr) { return; }
 
   free_and_zero(rtd->host);
   free_and_zero(obj->data.opaque);
@@ -242,9 +234,7 @@ void free_read_tcpip(struct text_object *obj) {
 void free_tcp_ping(struct text_object *obj) {
   auto *addr = static_cast<struct sockaddr_in *>(obj->data.opaque);
 
-  if (addr == nullptr) {
-    return;
-  }
+  if (addr == nullptr) { return; }
 
   free_and_zero(obj->data.opaque);
 }

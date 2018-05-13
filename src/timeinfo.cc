@@ -100,9 +100,7 @@ void print_tztime(struct text_object *obj, char *p, int p_max_size) {
   struct tm *tm;
   auto *ts = static_cast<tztime_s *>(obj->data.opaque);
 
-  if (ts == nullptr) {
-    return;
-  }
+  if (ts == nullptr) { return; }
 
   if (ts->tz != nullptr) {
     oldTZ = getenv("TZ");
@@ -128,9 +126,7 @@ void free_time(struct text_object *obj) { free_and_zero(obj->data.opaque); }
 void free_tztime(struct text_object *obj) {
   auto *ts = static_cast<tztime_s *>(obj->data.opaque);
 
-  if (ts == nullptr) {
-    return;
-  }
+  if (ts == nullptr) { return; }
 
   free_and_zero(ts->tz);
   free_and_zero(ts->fmt);
@@ -171,9 +167,7 @@ static void do_format_time(struct text_object *obj, char *p,
   errno = 0;
   seconds = strtod(obj->data.s, &currentchar);
   if (errno == 0 && obj->data.s != currentchar) {
-    while (*currentchar != 0 && *currentchar != '"') {
-      currentchar++;
-    }
+    while (*currentchar != 0 && *currentchar != '"') { currentchar++; }
     if (*currentchar != 0) {
       currentchar++;
       minutes = seconds / 60;
@@ -205,18 +199,10 @@ static void do_format_time(struct text_object *obj, char *p,
           }
         }
       }
-      if (show_weeks == 0) {
-        days += weeks * 7;
-      }
-      if (show_days == 0) {
-        hours += days * 24;
-      }
-      if (show_hours == 0) {
-        minutes += hours * 60;
-      }
-      if (show_minutes == 0) {
-        seconds += minutes * 60;
-      }
+      if (show_weeks == 0) { days += weeks * 7; }
+      if (show_days == 0) { hours += days * 24; }
+      if (show_hours == 0) { minutes += hours * 60; }
+      if (show_minutes == 0) { seconds += minutes * 60; }
       hidestring = 0;
       while (output_length < p_max_size - 1) {
         if (*currentchar != 0 && *currentchar != '"') {
@@ -275,30 +261,20 @@ static void do_format_time(struct text_object *obj, char *p,
               if (*(temp - 1) == '\\') {
                 switch (*temp) {
                   case 'w':
-                    if (weeks == 0) {
-                      hidestring = 1;
-                    }
+                    if (weeks == 0) { hidestring = 1; }
                     break;
                   case 'd':
-                    if (days == 0) {
-                      hidestring = 1;
-                    }
+                    if (days == 0) { hidestring = 1; }
                     break;
                   case 'h':
-                    if (hours == 0) {
-                      hidestring = 1;
-                    }
+                    if (hours == 0) { hidestring = 1; }
                     break;
                   case 'm':
-                    if (minutes == 0) {
-                      hidestring = 1;
-                    }
+                    if (minutes == 0) { hidestring = 1; }
                     break;
                   case 's':
                   case 'S':
-                    if (seconds == 0) {
-                      hidestring = 1;
-                    }
+                    if (seconds == 0) { hidestring = 1; }
                     break;
                 }
               }
@@ -312,7 +288,8 @@ static void do_format_time(struct text_object *obj, char *p,
           }
           if (temp != nullptr) {
             if (output_length + strlen(temp) < p_max_size - 1) {
-              strcpy(p + output_length, temp);
+              strncpy(p + output_length, temp,
+                      p_max_size - output_length + strlen(temp));
               output_length += strlen(temp);
             } else {
               NORM_ERR("The format string for $format_time is too long");

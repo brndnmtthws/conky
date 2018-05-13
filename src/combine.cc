@@ -49,9 +49,7 @@ void parse_combine_arg(struct text_object *obj, const char *arg) {
   j = 0;
   for (i = 0; arg[i] != 0 && j < 2; i++) {
     if (startvar[j] == -1) {
-      if (arg[i] == '$') {
-        startvar[j] = i;
-      }
+      if (arg[i] == '$') { startvar[j] = i; }
     } else if (endvar[j] == -1) {
       if (arg[i] == '{') {
         indenting++;
@@ -104,6 +102,7 @@ void print_combine(struct text_object *obj, char *p, int p_max_size) {
   buf[0].resize(max_user_text.get(*state));
   buf[1].resize(max_user_text.get(*state));
   int i, j;
+  int p_len_remaining = p_max_size - 1;
   long longest = 0;
   int nextstart;
   int nr_rows[2];
@@ -114,9 +113,7 @@ void print_combine(struct text_object *obj, char *p, int p_max_size) {
   struct llrows *ll_rows[2], *current[2];
   struct text_object *objsub = obj->sub;
 
-  if ((cd == nullptr) || (p_max_size == 0)) {
-    return;
-  }
+  if ((cd == nullptr) || (p_max_size == 0)) { return; }
 
   p[0] = 0;
   for (i = 0; i < 2; i++) {
@@ -124,14 +121,10 @@ void print_combine(struct text_object *obj, char *p, int p_max_size) {
     nextstart = 0;
     ll_rows[i] = static_cast<struct llrows *>(malloc(sizeof(struct llrows)));
     current[i] = ll_rows[i];
-    for (j = 0; j < i; j++) {
-      objsub = objsub->sub;
-    }
+    for (j = 0; j < i; j++) { objsub = objsub->sub; }
     generate_text_internal(&(buf[i][0]), max_user_text.get(*state), *objsub);
     for (j = 0; buf[i][j] != 0; j++) {
-      if (buf[i][j] == '\t') {
-        buf[i][j] = ' ';
-      }
+      if (buf[i][j] == '\t') { buf[i][j] = ' '; }
       if (buf[i][j] == '\n') {
         buf[i][j] = 0;  // the vars inside combine may not have a \n at the end
       }
@@ -158,27 +151,30 @@ void print_combine(struct text_object *obj, char *p, int p_max_size) {
   }
   for (j = 0; j < (nr_rows[0] > nr_rows[1] ? nr_rows[0] : nr_rows[1]); j++) {
     if (current[0] != nullptr) {
-      strcat(p, current[0]->row);
+      strncat(p, current[0]->row, p_len_remaining);
+      p_len_remaining -= strlen(current[0]->row);
       i = strlen(current[0]->row);
     } else {
       i = 0;
     }
     while (i < longest) {
-      strcat(p, " ");
+      strncat(p, " ", p_len_remaining);
+      p_len_remaining -= 2;
       i++;
     }
     if (current[1] != nullptr) {
-      strcat(p, cd->seperation);
-      strcat(p, current[1]->row);
+      p_len_remaining -= strlen(cd->seperation);
+      strncat(p, cd->seperation, p_len_remaining);
+      p_len_remaining -= strlen(current[1]->row);
+      strncat(p, current[1]->row, p_len_remaining);
     }
-    strcat(p, "\n");
+    strncat(p, "\n", p_len_remaining);
+    p_len_remaining -= 2;
 #ifdef HAVE_OPENMP
 #pragma omp parallel for schedule(dynamic, 10)
 #endif /* HAVE_OPENMP */
     for (i = 0; i < 2; i++) {
-      if (current[i] != nullptr) {
-        current[i] = current[i]->next;
-      }
+      if (current[i] != nullptr) { current[i] = current[i]->next; }
     }
   }
 #ifdef HAVE_OPENMP
@@ -197,9 +193,7 @@ void print_combine(struct text_object *obj, char *p, int p_max_size) {
 void free_combine(struct text_object *obj) {
   auto *cd = static_cast<struct combine_data *>(obj->data.opaque);
 
-  if (cd == nullptr) {
-    return;
-  }
+  if (cd == nullptr) { return; }
   free(cd->left);
   free(cd->seperation);
   free(cd->right);

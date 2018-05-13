@@ -22,7 +22,6 @@
  *
  */
 
-#include "weather.h"
 #include <ctype.h>
 #include <time.h>
 #include <array>
@@ -35,6 +34,7 @@
 #include "logging.h"
 #include "temphelper.h"
 #include "text_object.h"
+#include "weather.h"
 #ifdef BUILD_WEATHER_XOAP
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
@@ -842,22 +842,29 @@ static int process_weather_uri(char *uri, char *locID, int dayf UNUSED_ATTR) {
   }
 
   /* Construct complete uri */
+  int len_remaining = 128;
 #ifdef BUILD_WEATHER_XOAP
   if (strstr(uri, "xoap.weather.com")) {
     if ((dayf == 0) && (xoap_cc.length() != 0)) {
-      strcat(uri, locID);
-      strcat(uri, xoap_cc.c_str());
+      strncat(uri, locID, len_remaining);
+      len_remaining -= strlen(locID);
+      strncat(uri, xoap_cc.c_str(), len_remaining);
+      len_remaining -= strlen(xoap_cc.c_str());
     } else if ((dayf == 1) && (xoap_df.length() != 0)) {
-      strcat(uri, locID);
-      strcat(uri, xoap_df.c_str());
+      strncat(uri, locID, len_remaining);
+      len_remaining -= strlen(locID);
+      strncat(uri, xoap_df.c_str(), len_remaining);
+      len_remaining -= strlen(xoap_df.c_str());
     } else {
       return 0;
     }
   } else
 #endif /* BUILD_WEATHER_XOAP */
       if (strstr(uri, "tgftp.nws.noaa.gov")) {
-    strcat(uri, locID);
-    strcat(uri, ".TXT");
+    strncat(uri, locID, len_remaining);
+    len_remaining -= strlen(locID);
+    strncat(uri, ".TXT", len_remaining);
+    len_remaining -= 5;
   } else if (!strstr(uri, "localhost") && !strstr(uri, "127.0.0.1")) {
     return -1;
   }
@@ -921,14 +928,10 @@ void scan_weather_forecast_arg(struct text_object *obj, const char *arg,
   }
 
   /* Limit the day between 0 (today) and FORECAST_DAYS */
-  if (wfd->day >= FORECAST_DAYS) {
-    wfd->day = FORECAST_DAYS - 1;
-  }
+  if (wfd->day >= FORECAST_DAYS) { wfd->day = FORECAST_DAYS - 1; }
 
   /* Limit the data retrieval interval to 3 hours and an half */
-  if (interval < 210) {
-    interval = 210;
-  }
+  if (interval < 210) { interval = 210; }
 
   /* Convert to seconds */
   wfd->interval = interval * 60;
@@ -980,9 +983,7 @@ void scan_weather_arg(struct text_object *obj, const char *arg,
   }
 
   /* Limit the data retrieval interval to half hour min */
-  if (interval < 30) {
-    interval = 30;
-  }
+  if (interval < 30) { interval = 30; }
 
   /* Convert to seconds */
   wd->interval = interval * 60;

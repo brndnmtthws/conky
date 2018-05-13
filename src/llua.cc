@@ -150,8 +150,8 @@ void llua_init() {
   lua_getfield(lua_L, -1, "cpath");
   old_path = strdup(lua_tostring(lua_L, -1));
   new_path = static_cast<char *>(malloc(strlen(old_path) + strlen(libs) + 1));
-  strcpy(new_path, libs);
-  strcat(new_path, old_path);
+  strncpy(new_path, libs, strlen(libs));
+  strncat(new_path, old_path, strlen(old_path));
   lua_pushstring(lua_L, new_path);
   lua_setfield(lua_L, -3, "cpath");
   lua_pop(lua_L, 2);

@@ -93,7 +93,7 @@ static void tty_user_time(char *ptr, char *tty) {
   struct utmp *usr, line;
 
   setutent();
-  strcpy(line.ut_line, tty);
+  strncpy(line.ut_line, tty, UT_LINESIZE);
   usr = getutline(&line);
   if (usr == nullptr) { return; }
 
