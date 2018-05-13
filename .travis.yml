@@ -75,6 +75,6 @@ branches:
   only:
     - master
 sudo: false
-cache:
-  directories:
-    - '$HOME/.sonar/cache'
+#cache:
+#  directories:
+#    - '$HOME/.sonar/cache'
