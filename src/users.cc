@@ -52,9 +52,7 @@ static void user_num(int *ptr) {
 
   setutent();
   while ((usr = getutent()) != nullptr) {
-    if (usr->ut_type == USER_PROCESS) {
-      ++users_num;
-    }
+    if (usr->ut_type == USER_PROCESS) { ++users_num; }
   }
   *ptr = users_num;
 }
@@ -97,9 +95,7 @@ static void tty_user_time(char *ptr, char *tty) {
   setutent();
   strcpy(line.ut_line, tty);
   usr = getutline(&line);
-  if (usr == nullptr) {
-    return;
-  }
+  if (usr == nullptr) { return; }
 
   log_in = usr->ut_time;
 
@@ -159,9 +155,7 @@ int update_users(void) {
   }
   user_num(&t);
   if (t != 0) {
-    if (current_info->users.number) {
-      current_info->users.number = 0;
-    }
+    if (current_info->users.number) { current_info->users.number = 0; }
     current_info->users.number = t;
   } else {
     current_info->users.number = 0;

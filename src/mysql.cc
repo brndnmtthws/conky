@@ -26,9 +26,9 @@
  *
  */
 
-#include "mysql.h"
 #include "conky.h"
 #include "logging.h"
+#include "mysql.h"
 
 #include <mysql.h>
 
@@ -44,6 +44,12 @@ conky::simple_config_setting<std::string> password("mysql_password",
 conky::simple_config_setting<std::string> db("mysql_db", "mysql", false);
 }  // namespace
 
+void mysql_finish(MYSQL *conn, MYSQL_RES *res) {
+  if (nullptr != res) { mysql_free_result(res); }
+  mysql_close(conn);
+  mysql_library_end();
+}
+
 void print_mysql(struct text_object *obj, char *p, int p_max_size) {
   MYSQL *conn = mysql_init(nullptr);
   MYSQL_RES *res = nullptr;
@@ -58,16 +64,19 @@ void print_mysql(struct text_object *obj, char *p, int p_max_size) {
                           password.get(*state).c_str(), db.get(*state).c_str(),
                           port.get(*state), nullptr, 0)) {
     NORM_ERR("MySQL: %s", mysql_error(conn));
-    goto error;
+    mysql_finish(conn, res);
+    return;
   }
   if (mysql_query(conn, obj->data.s)) {
     NORM_ERR("MySQL: %s", mysql_error(conn));
-    goto error;
+    mysql_finish(conn, res);
+    return;
   }
   res = mysql_use_result(conn);
   if (res == nullptr) {
     NORM_ERR("MySQL: %s", mysql_error(conn));
-    goto error;
+    mysql_finish(conn, res);
+    return;
   }
   MYSQL_ROW row = mysql_fetch_row(res);
   if (row) {
@@ -75,12 +84,5 @@ void print_mysql(struct text_object *obj, char *p, int p_max_size) {
   } else {
     NORM_ERR("MySQL: '%s' returned no results", obj->data.s);
   }
-
-error:
-  if (nullptr != res) {
-    mysql_free_result(res);
-  }
-  mysql_close(conn);
-  mysql_library_end();
-  return;
+  mysql_finish(conn, res);
 }

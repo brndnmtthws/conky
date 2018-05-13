@@ -19,6 +19,7 @@
 #define PRSS_H
 
 #include <libxml/parser.h>
+#include <string>
 
 typedef struct PRSS_Item_ {
   char *title;
@@ -29,7 +30,8 @@ typedef struct PRSS_Item_ {
   char *guid;
 } PRSS_Item;
 
-struct PRSS {
+class PRSS {
+ public:
   char *version;
 
   char *title;
@@ -48,7 +50,7 @@ struct PRSS {
   PRSS_Item *items;
   int item_count;
 
-  PRSS(const std::string &xml_data);
+  explicit PRSS(const std::string &xml_data);
   ~PRSS();
 };
 
