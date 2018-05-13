@@ -27,7 +27,6 @@
  *
  */
 
-#include "conky.h"
 #include <algorithm>
 #include <cerrno>
 #include <climits>
@@ -42,6 +41,7 @@
 #include <string>
 #include "common.h"
 #include "config.h"
+#include "conky.h"
 #include "text_object.h"
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
@@ -52,8 +52,8 @@
 #include <sys/inotify.h>
 #endif /* HAVE_SYS_INOTIFY_H */
 #ifdef BUILD_X11
-#include "x11.h"
 #include <X11/Xutil.h>
+#include "x11.h"
 #ifdef BUILD_XDAMAGE
 #include <X11/extensions/Xdamage.h>
 #endif
@@ -498,8 +498,7 @@ int sendanswer(void *cls, struct MHD_Connection *connection, const char *url,
   int ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
   MHD_destroy_response(response);
   if (cls || url || method || version || upload_data || upload_data_size ||
-      con_cls) {
-  }  // make compiler happy
+      con_cls) {}  // make compiler happy
   return ret;
 }
 
@@ -513,8 +512,8 @@ class out_to_http_setting : public conky::simple_config_setting<bool> {
     Base::lua_setter(l, init);
 
     if (init && do_convert(l, -1).first) {
-      httpd = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, HTTPPORT, nullptr, NULL,
-                               &sendanswer, nullptr, MHD_OPTION_END);
+      httpd = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, HTTPPORT, nullptr,
+                               NULL, &sendanswer, nullptr, MHD_OPTION_END);
     }
 
     ++s;
@@ -630,7 +629,7 @@ int calc_text_width(const char *s) {
   size_t slen = strlen(s);
 
 #ifdef BUILD_X11
-  if (not out_to_x.get(*state)) {
+  if (!out_to_x.get(*state)) {
 #endif /* BUILD_X11 */
     return slen;
 #ifdef BUILD_X11
@@ -650,7 +649,7 @@ int calc_text_width(const char *s) {
   }
 #endif /* BUILD_XFT */
 
-    return XTextWidth(fonts[selected_font].font, s, slen);
+  return XTextWidth(fonts[selected_font].font, s, slen);
 
 #endif /* BUILD_X11 */
 }
@@ -666,9 +665,7 @@ static inline void for_each_line(char *b, int f(char *, int)) {
   char *ps, *pe;
   int special_index = 0; /* specials index */
 
-  if (b == nullptr) {
-    return;
-  }
+  if (b == nullptr) { return; }
   for (ps = b, pe = b; *pe != 0; pe++) {
     if (*pe == '\n') {
       *pe = '\0';
@@ -678,9 +675,7 @@ static inline void for_each_line(char *b, int f(char *, int)) {
     }
   }
 
-  if (ps < pe) {
-    f(ps, special_index);
-  }
+  if (ps < pe) { f(ps, special_index); }
 }
 
 static void convert_escapes(char *buf) {
@@ -710,9 +705,7 @@ int spaced_print(char *buf, int size, const char *format, int width, ...) {
   va_list argp;
   char *tempbuf;
 
-  if (size < 1) {
-    return 0;
-  }
+  if (size < 1) { return 0; }
   tempbuf = static_cast<char *>(malloc(size * sizeof(char)));
 
   // Passes the varargs along to vsnprintf
@@ -799,13 +792,9 @@ void human_readable(long long num, char *buf, int size) {
    * e.g. 99.95 with a precision of 1 gets 100.0, which again should be
    * printed with a precision of 0. Yay. */
 
-  precision = 0;                   /* print 100-999 without decimal part */
-  if (fnum < 99.95) {
-    precision = 1; /* print 10-99 with one decimal place */
-  }
-  if (fnum < 9.995) {
-    precision = 2; /* print 0-9 with two decimal places */
-  }
+  precision = 0; /* print 100-999 without decimal part */
+  if (fnum < 99.95) { precision = 1; /* print 10-99 with one decimal place */ }
+  if (fnum < 9.995) { precision = 2; /* print 0-9 with two decimal places */ }
 
   spaced_print(buf, size, format, width, precision, fnum, _(*suffix));
 }
@@ -856,9 +845,7 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root) {
   struct text_object *obj;
   size_t a;
 
-  if (p == nullptr) {
-    return;
-  }
+  if (p == nullptr) { return; }
 
 #ifdef BUILD_ICONV
   char *buff_in;
@@ -876,9 +863,7 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root) {
     } else if (obj->callbacks.iftest != nullptr) {
       if ((*obj->callbacks.iftest)(obj) == 0) {
         DBGP2("jumping");
-        if (obj->ifblock_next != nullptr) {
-          obj = obj->ifblock_next;
-        }
+        if (obj->ifblock_next != nullptr) { obj = obj->ifblock_next; }
       }
     } else if (obj->callbacks.barval != nullptr) {
       new_bar(obj, p, p_max_size, (*obj->callbacks.barval)(obj));
@@ -1000,23 +985,15 @@ static int get_string_width_special(char *s, int special_index) {
   int width = 0;
   long i;
 
-  if (s == nullptr) {
-    return 0;
-  }
+  if (s == nullptr) { return 0; }
 
-  if (not out_to_x.get(*state)) {
-    return strlen(s);
-  }
+  if (!out_to_x.get(*state)) { return strlen(s); }
 
   p = strndup(s, text_buffer_size.get(*state));
   final = p;
 
-  for (i = 0; i < special_index; i++) {
-    current = current->next;
-  }
-  for (i = 0; i < idx; i++) {
-    current = current->next;
-  }
+  for (i = 0; i < special_index; i++) { current = current->next; }
+  for (i = 0; i < idx; i++) { current = current->next; }
 
   while (*p != 0) {
     if (*p == SPECIAL_CHAR) {
@@ -1073,9 +1050,7 @@ static int get_string_width_special(char *s, int special_index) {
       p++;
     }
   }
-  if (strlen(final) > 1) {
-    width += calc_text_width(final);
-  }
+  if (strlen(final) > 1) { width += calc_text_width(final); }
   free(final);
   return width;
 }
@@ -1086,9 +1061,7 @@ int last_font_height;
 static void update_text_area() {
   int x = 0, y = 0;
 
-  if (not out_to_x.get(*state)) {
-    return;
-  }
+  if (!out_to_x.get(*state)) { return; }
   /* update text size if it isn't fixed */
 #ifdef OWN_WINDOW
   if (fixed_size == 0)
@@ -1103,9 +1076,7 @@ static void update_text_area() {
       text_height = minimum_height.get(*state);
     }
     int mw = maximum_width.get(*state);
-    if (text_width > mw && mw > 0) {
-      text_width = mw;
-    }
+    if (text_width > mw && mw > 0) { text_width = mw; }
   }
 
   alignment align = text_alignment.get(*state);
@@ -1202,13 +1173,9 @@ static int text_size_updater(char *s, int special_index) {
   char *p;
   special_t *current = specials;
 
-  for (int i = 0; i < special_index; i++) {
-    current = current->next;
-  }
+  for (int i = 0; i < special_index; i++) { current = current->next; }
 
-  if (not out_to_x.get(*state)) {
-    return 0;
-  }
+  if (!out_to_x.get(*state)) { return 0; }
   /* get string widths and skip specials */
   p = s;
   while (*p != 0) {
@@ -1225,22 +1192,16 @@ static int text_size_updater(char *s, int special_index) {
           last_font_height += font_height();
         }
       } else if (current->type == OFFSET) {
-        if (current->arg > 0) {
-          w += current->arg;
-        }
+        if (current->arg > 0) { w += current->arg; }
       } else if (current->type == VOFFSET) {
         last_font_height += current->arg;
       } else if (current->type == GOTO) {
-        if (current->arg > cur_x) {
-          w = static_cast<int>(current->arg);
-        }
+        if (current->arg > cur_x) { w = static_cast<int>(current->arg); }
       } else if (current->type == TAB) {
         int start = current->arg;
         int step = current->width;
 
-        if ((step == 0) || step < 0) {
-          step = 10;
-        }
+        if ((step == 0) || step < 0) { step = 10; }
         w += step - (cur_x - text_start_x - start) % step;
       } else if (current->type == FONT) {
         selected_font = current->font_added;
@@ -1258,13 +1219,9 @@ static int text_size_updater(char *s, int special_index) {
 
   w += get_string_width(s);
 
-  if (w > text_width) {
-    text_width = w;
-  }
+  if (w > text_width) { text_width = w; }
   int mw = maximum_width.get(*state);
-  if (text_width > mw && mw > 0) {
-    text_width = mw;
-  }
+  if (text_width > mw && mw > 0) { text_width = mw; }
 
   text_height += last_font_height;
   last_font_height = font_height();
@@ -1288,9 +1245,7 @@ static inline void set_foreground_color(long c) {
   }
 #endif /* BUILD_X11 */
 #ifdef BUILD_NCURSES
-  if (out_to_ncurses.get(*state)) {
-    attron(COLOR_PAIR(c));
-  }
+  if (out_to_ncurses.get(*state)) { attron(COLOR_PAIR(c)); }
 #endif /* BUILD_NCURSES */
   UNUSED(c);
 }
@@ -1302,9 +1257,7 @@ std::string string_replace_all(std::string original, const std::string &oldpart,
   int oldpartlen = oldpart.length();
   while (1) {
     i = original.find(oldpart, i);
-    if (i == std::string::npos) {
-      break;
-    }
+    if (i == std::string::npos) { break; }
     original.replace(i, oldpartlen, newpart);
   }
   return original;
@@ -1315,16 +1268,12 @@ static void draw_string(const char *s) {
   int max = 0;
   int added;
 
-  if (s[0] == '\0') {
-    return;
-  }
+  if (s[0] == '\0') { return; }
 
   width_of_s = get_string_width(s);
   if (out_to_stdout.get(*state) && draw_mode == FG) {
     printf("%s\n", s);
-    if (extra_newline.get(*state)) {
-      fputc('\n', stdout);
-    }
+    if (extra_newline.get(*state)) { fputc('\n', stdout); }
     fflush(stdout); /* output immediately, don't buffer */
   }
   if (out_to_stderr.get(*state) && draw_mode == FG) {
@@ -1338,9 +1287,7 @@ static void draw_string(const char *s) {
     fprintf(append_fpointer, "%s\n", s);
   }
 #ifdef BUILD_NCURSES
-  if (out_to_ncurses.get(*state) && draw_mode == FG) {
-    printw("%s", s);
-  }
+  if (out_to_ncurses.get(*state) && draw_mode == FG) { printw("%s", s); }
 #endif
 #ifdef BUILD_HTTP
   if (out_to_http.get(*state) && draw_mode == FG) {
@@ -1477,9 +1424,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
       }
       /* draw special */
       special_t *current = specials;
-      for (int i = 0; i < special_index; i++) {
-        current = current->next;
-      }
+      for (int i = 0; i < special_index; i++) { current = current->next; }
       switch (current->type) {
 #ifdef BUILD_X11
         case HORIZONTAL_LINE: {
@@ -1515,24 +1460,16 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
         case BAR: {
           int h, by;
           double bar_usage, scale;
-          if (cur_x - text_start_x > mw && mw > 0) {
-            break;
-          }
+          if (cur_x - text_start_x > mw && mw > 0) { break; }
           h = current->height;
           bar_usage = current->arg;
           scale = current->scale;
           by = cur_y - (font_ascent() / 2) - 1;
 
-          if (h < font_h) {
-            by -= h / 2 - 1;
-          }
+          if (h < font_h) { by -= h / 2 - 1; }
           w = current->width;
-          if (w == 0) {
-            w = text_start_x + text_width - cur_x - 1;
-          }
-          if (w < 0) {
-            w = 0;
-          }
+          if (w == 0) { w = text_start_x + text_width - cur_x - 1; }
+          if (w < 0) { w = 0; }
 
           XSetLineAttributes(display, window.gc, 1, LineSolid, CapButt,
                              JoinMiter);
@@ -1542,9 +1479,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           XFillRectangle(display, window.drawable, window.gc,
                          text_offset_x + cur_x, text_offset_y + by,
                          w * bar_usage / scale, h);
-          if (h > cur_y_add && h > font_h) {
-            cur_y_add = h;
-          }
+          if (h > cur_y_add && h > font_h) { cur_y_add = h; }
           break;
         }
 
@@ -1557,23 +1492,15 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           double usage, scale;
 #endif /* BUILD_MATH */
 
-          if (cur_x - text_start_x > mw && mw > 0) {
-            break;
-          }
+          if (cur_x - text_start_x > mw && mw > 0) { break; }
 
           h = current->height;
           by = cur_y - (font_ascent() / 2) - 1;
 
-          if (h < font_h) {
-            by -= h / 2 - 1;
-          }
+          if (h < font_h) { by -= h / 2 - 1; }
           w = current->width;
-          if (w == 0) {
-            w = text_start_x + text_width - cur_x - 1;
-          }
-          if (w < 0) {
-            w = 0;
-          }
+          if (w == 0) { w = text_start_x + text_width - cur_x - 1; }
+          if (w < 0) { w = 0; }
 
           XSetLineAttributes(display, window.gc, 1, LineSolid, CapButt,
                              JoinMiter);
@@ -1596,9 +1523,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
                     text_offset_y + static_cast<int>(py));
 #endif /* BUILD_MATH */
 
-          if (h > cur_y_add && h > font_h) {
-            cur_y_add = h;
-          }
+          if (h > cur_y_add && h > font_h) { cur_y_add = h; }
 
           set_foreground_color(last_colour);
 
@@ -1609,15 +1534,11 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           int h, by, i = 0, j = 0;
           int colour_idx = 0;
           unsigned long last_colour = current_color;
-          if (cur_x - text_start_x > mw && mw > 0) {
-            break;
-          }
+          if (cur_x - text_start_x > mw && mw > 0) { break; }
           h = current->height;
           by = cur_y - (font_ascent() / 2) - 1;
 
-          if (h < font_h) {
-            by -= h / 2 - 1;
-          }
+          if (h < font_h) { by -= h / 2 - 1; }
           w = current->width;
           if (w == 0) {
             w = text_start_x + text_width - cur_x - 1;
@@ -1626,9 +1547,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
               w = current->graph_allocated + 1;
             }
           }
-          if (w < 0) {
-            w = 0;
-          }
+          if (w < 0) { w = 0; }
           if (draw_graph_borders.get(*state)) {
             XSetLineAttributes(display, window.gc, 1, LineSolid, CapButt,
                                JoinMiter);
@@ -1683,9 +1602,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             }
             free_and_zero(tmpcolour);
           }
-          if (h > cur_y_add && h > font_h) {
-            cur_y_add = h;
-          }
+          if (h > cur_y_add && h > font_h) { cur_y_add = h; }
           if (show_graph_range.get(*state)) {
             int tmp_x = cur_x;
             int tmp_y = cur_y;
@@ -1775,22 +1692,16 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
         }
 #endif /* BUILD_X11 */
         case FG:
-          if (draw_mode == FG) {
-            set_foreground_color(current->arg);
-          }
+          if (draw_mode == FG) { set_foreground_color(current->arg); }
           break;
 
 #ifdef BUILD_X11
         case BG:
-          if (draw_mode == BG) {
-            set_foreground_color(current->arg);
-          }
+          if (draw_mode == BG) { set_foreground_color(current->arg); }
           break;
 
         case OUTLINE:
-          if (draw_mode == OUTLINE) {
-            set_foreground_color(current->arg);
-          }
+          if (draw_mode == OUTLINE) { set_foreground_color(current->arg); }
           break;
 
         case OFFSET:
@@ -1805,9 +1716,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           int start = current->arg;
           int step = current->width;
 
-          if ((step == 0) || step < 0) {
-            step = 10;
-          }
+          if ((step == 0) || step < 0) { step = 10; }
           w = step - (cur_x - text_start_x - start) % step;
           break;
         }
@@ -1843,9 +1752,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             "current->arg %i\n", pos_x, text_start_x,
             text_width, cur_x, get_string_width(s), gap_x,
             current->arg); */
-          if (pos_x > current->arg) {
-            w = pos_x - current->arg;
-          }
+          if (pos_x > current->arg) { w = pos_x - current->arg; }
           break;
         }
 #endif /* BUILD_X11 */
@@ -1854,9 +1761,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 #ifdef BUILD_X11
             cur_x = static_cast<int>(current->arg);
             // make sure shades are 1 pixel to the right of the text
-            if (draw_mode == BG) {
-              cur_x++;
-            }
+            if (draw_mode == BG) { cur_x++; }
 #endif /* BUILD_X11 */
 #ifdef BUILD_NCURSES
             if (out_to_ncurses.get(*state)) {
@@ -1888,14 +1793,10 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 #endif /* BUILD_X11 */
   draw_string(s);
 #ifdef BUILD_NCURSES
-  if (out_to_ncurses.get(*state)) {
-    printw("\n");
-  }
+  if (out_to_ncurses.get(*state)) { printw("\n"); }
 #endif /* BUILD_NCURSES */
 #ifdef BUILD_X11
-  if (out_to_x.get(*state)) {
-    cur_y += font_descent();
-  }
+  if (out_to_x.get(*state)) { cur_y += font_descent(); }
 #endif /* BUILD_X11 */
   return special_index;
 }
@@ -1973,9 +1874,7 @@ static void draw_text() {
 #endif /* BUILD_NCURSES */
   for_each_line(text_buffer, draw_line);
 #ifdef BUILD_HTTP
-  if (out_to_http.get(*state)) {
-    webpage.append(WEBPAGE_END);
-  }
+  if (out_to_http.get(*state)) { webpage.append(WEBPAGE_END); }
 #endif
 }
 
@@ -2017,9 +1916,7 @@ static void draw_stuff() {
 
       for (text_offset_x = -1; text_offset_x < 2; text_offset_x++) {
         for (text_offset_y = -1; text_offset_y < 2; text_offset_y++) {
-          if (text_offset_x == 0 && text_offset_y == 0) {
-            continue;
-          }
+          if (text_offset_x == 0 && text_offset_y == 0) { continue; }
           set_foreground_color(default_outline_color.get(*state));
           draw_mode = OUTLINE;
           draw_text();
@@ -2036,13 +1933,9 @@ static void draw_stuff() {
 #if defined(BUILD_X11)
   llua_draw_post_hook();
 #if defined(BUILD_XDBE)
-  if (out_to_x.get(*state)) {
-    xdbe_swap_buffers();
-  }
+  if (out_to_x.get(*state)) { xdbe_swap_buffers(); }
 #else
-  if (out_to_x.get(*state)) {
-    xpmdb_swap_buffers();
-  }
+  if (out_to_x.get(*state)) { xpmdb_swap_buffers(); }
 #endif
 #endif /* BUILD_X11 && BUILD_XDBE */
   if (overwrite_fpointer != nullptr) {
@@ -2088,9 +1981,7 @@ static void update_text() {
 #endif /* BUILD_IMLIB2 */
   generate_text();
 #ifdef BUILD_X11
-  if (out_to_x.get(*state)) {
-    clear_text(1);
-  }
+  if (out_to_x.get(*state)) { clear_text(1); }
 #endif /* BUILD_X11 */
   need_to_update = 1;
   llua_update_info(&info, active_update_interval());
@@ -2109,14 +2000,10 @@ bool is_on_battery() {  // checks if at least one battery specified in
   detect_battery_str += ',';
 
   for (char i : detect_battery_str) {  // parse using ',' as delimiter
-    if ((i != ',') && (i != ' ')) {
-      str_buf += i;
-    }
+    if ((i != ',') && (i != ' ')) { str_buf += i; }
     if ((i == ',') && !str_buf.empty()) {
       get_battery_short_status(buf, 64, str_buf.c_str());
-      if (buf[0] == 'D') {
-        return true;
-      }
+      if (buf[0] == 'D') { return true; }
       str_buf = "";
     }
   }
@@ -2206,9 +2093,7 @@ static void main_loop() {
           }
         } else {
           /* timeout */
-          if (s == 0) {
-            update_text();
-          }
+          if (s == 0) { update_text(); }
         }
       }
 
@@ -2374,9 +2259,7 @@ static void main_loop() {
               /* if window size isn't what expected, set fixed size */
               if (ev.xconfigure.width != window.width ||
                   ev.xconfigure.height != window.height) {
-                if (window.width != 0 && window.height != 0) {
-                  fixed_size = 1;
-                }
+                if (window.width != 0 && window.height != 0) { fixed_size = 1; }
 
                 /* clear old stuff before screwing up
                  * size and pos */
@@ -2396,9 +2279,7 @@ static void main_loop() {
                 text_width = window.width - 2 * border_total;
                 text_height = window.height - 2 * border_total;
                 int mw = maximum_width.get(*state);
-                if (text_width > mw && mw > 0) {
-                  text_width = mw;
-                }
+                if (text_width > mw && mw > 0) { text_width = mw; }
               }
 
               /* if position isn't what expected, set fixed pos
@@ -2425,15 +2306,15 @@ static void main_loop() {
                 /* allow conky to hold input focus. */
                 break;
               }
-                /* forward the click to the desktop window */
-                XUngrabPointer(display, ev.xbutton.time);
-                ev.xbutton.window = window.desktop;
-                ev.xbutton.x = ev.xbutton.x_root;
-                ev.xbutton.y = ev.xbutton.y_root;
-                XSendEvent(display, ev.xbutton.window, False, ButtonPressMask,
-                           &ev);
-                XSetInputFocus(display, ev.xbutton.window, RevertToParent,
-                               ev.xbutton.time);
+              /* forward the click to the desktop window */
+              XUngrabPointer(display, ev.xbutton.time);
+              ev.xbutton.window = window.desktop;
+              ev.xbutton.x = ev.xbutton.x_root;
+              ev.xbutton.y = ev.xbutton.y_root;
+              XSendEvent(display, ev.xbutton.window, False, ButtonPressMask,
+                         &ev);
+              XSetInputFocus(display, ev.xbutton.window, RevertToParent,
+                             ev.xbutton.time);
             }
             break;
 
@@ -2446,12 +2327,12 @@ static void main_loop() {
                 /* allow conky to hold input focus. */
                 break;
               }
-                /* forward the release to the desktop window */
-                ev.xbutton.window = window.desktop;
-                ev.xbutton.x = ev.xbutton.x_root;
-                ev.xbutton.y = ev.xbutton.y_root;
-                XSendEvent(display, ev.xbutton.window, False, ButtonReleaseMask,
-                           &ev);
+              /* forward the release to the desktop window */
+              ev.xbutton.window = window.desktop;
+              ev.xbutton.x = ev.xbutton.x_root;
+              ev.xbutton.y = ev.xbutton.y_root;
+              XSendEvent(display, ev.xbutton.window, False, ButtonReleaseMask,
+                         &ev);
             }
             break;
 
@@ -2510,10 +2391,10 @@ static void main_loop() {
       }
     } else {
 #endif /* BUILD_X11 */
-      t = (next_update_time - get_time()) * 1000000;
-      if (t > 0) {
-        usleep(static_cast<useconds_t>(t));
-      }
+      struct timespec ts1, ts2;
+      ts1.tv_sec = 0;
+      ts1.tv_nsec = (next_update_time - get_time()) * 1000000000L;
+      nanosleep(&ts1, &ts2);
       update_text();
       draw_stuff();
 #ifdef BUILD_NCURSES
@@ -2673,9 +2554,7 @@ void clean_up_x11() {
 void free_specials(special_t *&current) {
   if (current != nullptr) {
     free_specials(current->next);
-    if (current->type == GRAPH) {
-      free(current->graph);
-    }
+    if (current->type == GRAPH) { free(current->graph); }
     delete current;
     current = nullptr;
   }
@@ -2693,7 +2572,7 @@ void clean_up_without_threads(void *memtofree1, void *memtofree2) {
     fonts.clear();  // in set_default_configurations a font is set but not
   }
   // loaded
-#endif              /* BUILD_X11 */
+#endif /* BUILD_X11 */
 
   if (info.first_process != nullptr) {
     free_all_processes();
@@ -2826,11 +2705,11 @@ void load_config_file() {
     l.pushstring(current_config.c_str());
     l.call(1, 1);
 #else
-    char *syntaxerr;
-    asprintf(&syntaxerr, _(SYNTAX_ERR_READ_CONF), e.what());
-    std::string syntaxerrobj(syntaxerr);
-    free(syntaxerr);
-    throw conky::error(syntaxerrobj);
+  char *syntaxerr;
+  asprintf(&syntaxerr, _(SYNTAX_ERR_READ_CONF), e.what());
+  std::string syntaxerrobj(syntaxerr);
+  free(syntaxerr);
+  throw conky::error(syntaxerrobj);
 #endif
   }
   l.call(0, 0);
@@ -2966,17 +2845,13 @@ void set_current_config() {
   if (current_config.empty()) {
     /* Try to use personal config file first */
     std::string buf = to_real_path(XDG_CONFIG_FILE);
-    if (stat(buf.c_str(), &s) == 0) {
-      current_config = buf;
-    }
+    if (stat(buf.c_str(), &s) == 0) { current_config = buf; }
   }
 
   if (current_config.empty()) {
     /* Try to use personal config file first */
     std::string buf = to_real_path(CONFIG_FILE);
-    if (stat(buf.c_str(), &s) == 0) {
-      current_config = buf;
-    }
+    if (stat(buf.c_str(), &s) == 0) { current_config = buf; }
   }
 
   /* Try to use system config file if personal config does not exist */
@@ -2996,9 +2871,7 @@ void set_current_config() {
   }
 
   // "-" stands for "read from stdin"
-  if (current_config == "-") {
-    current_config = "/dev/stdin";
-  }
+  if (current_config == "-") { current_config = "/dev/stdin"; }
 }
 
 void initialisation(int argc, char **argv) {
@@ -3027,9 +2900,7 @@ void initialisation(int argc, char **argv) {
     int startup_pause;
     char *conv_end;
 
-    if (c == -1) {
-      break;
-    }
+    if (c == -1) { break; }
 
     switch (c) {
       case 'd':
@@ -3124,9 +2995,7 @@ void initialisation(int argc, char **argv) {
   conky::set_config_settings(*state);
 
 #ifdef BUILD_X11
-  if (out_to_x.get(*state)) {
-    current_text_color = default_color.get(*state);
-  }
+  if (out_to_x.get(*state)) { current_text_color = default_color.get(*state); }
 #endif
 
   /* generate text and get initial size */
@@ -3227,9 +3096,7 @@ int main(int argc, char **argv) {
   while (1) {
     int c = getopt_long(argc, argv, getopt_string, longopts, nullptr);
 
-    if (c == -1) {
-      break;
-    }
+    if (c == -1) { break; }
 
     switch (c) {
       case 'D':
