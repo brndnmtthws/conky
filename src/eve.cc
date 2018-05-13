@@ -310,7 +310,7 @@ static char *getSkillname(const char *file, int skillid) {
             xmlElementPtr ele = (xmlElementPtr)r;
             xmlAttrPtr attr = (xmlAttrPtr)ele->attributes;
             char *mySkill = nullptr;
-            int id;
+            int id = -1;
 
             while (attr != nullptr) {
               if (!strcasecmp((const char *)attr->name, "typeName")) {

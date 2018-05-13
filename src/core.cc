@@ -28,12 +28,12 @@
  */
 
 /* local headers */
-#include "core.h"
 #include "algebra.h"
 #include "bsdapm.h"
 #include "build.h"
 #include "colours.h"
 #include "combine.h"
+#include "core.h"
 #include "diskio.h"
 #include "entropy.h"
 #include "exec.h"
@@ -130,15 +130,12 @@
 const char *dev_name(const char *path) {
   static char buf[PATH_MAX];
 
-  if (path == nullptr) {
-    return nullptr;
-  }
+  if (path == nullptr) { return nullptr; }
 
-#define DEV_NAME(x) \
-  ((x) != nullptr && strlen(x) > 5 && strncmp(x, "/dev/", 5) == 0 ? (x) + 5 : (x))
-  if (realpath(path, buf) == nullptr) {
-    return DEV_NAME(path);
-  }
+#define DEV_NAME(x)                                                         \
+  ((x) != nullptr && strlen(x) > 5 && strncmp(x, "/dev/", 5) == 0 ? (x) + 5 \
+                                                                  : (x))
+  if (realpath(path, buf) == nullptr) { return DEV_NAME(path); }
   return DEV_NAME(buf);
 #undef DEV_NAME
 }
@@ -152,9 +149,7 @@ static struct text_object *new_text_object_internal() {
 static struct text_object *create_plain_text(const char *s) {
   struct text_object *obj;
 
-  if (s == nullptr || *s == '\0') {
-    return nullptr;
-  }
+  if (s == nullptr || *s == '\0') { return nullptr; }
 
   obj = new_text_object_internal();
 
@@ -173,169 +168,169 @@ void stock_parse_arg(struct text_object *obj, const char *arg) {
     return;
   }
   if (!strcasecmp("ask", data))
-    strcpy(data, "a");
+    strncpy(data, "a", 3);
   else if (!strcasecmp("adv", data))
-    strcpy(data, "a2");
+    strncpy(data, "a2", 3);
   else if (!strcasecmp("asksize", data))
-    strcpy(data, "a5");
+    strncpy(data, "a5", 3);
   else if (!strcasecmp("bid", data))
-    strcpy(data, "b");
+    strncpy(data, "b", 3);
   else if (!strcasecmp("askrt", data))
-    strcpy(data, "b2");
+    strncpy(data, "b2", 3);
   else if (!strcasecmp("bidrt", data))
-    strcpy(data, "b3");
+    strncpy(data, "b3", 3);
   else if (!strcasecmp("bookvalue", data))
-    strcpy(data, "b4");
+    strncpy(data, "b4", 3);
   else if (!strcasecmp("bidsize", data))
-    strcpy(data, "b6");
+    strncpy(data, "b6", 3);
   else if (!strcasecmp("change", data))
-    strcpy(data, "c1");
+    strncpy(data, "c1", 3);
   else if (!strcasecmp("commission", data))
-    strcpy(data, "c3");
+    strncpy(data, "c3", 3);
   else if (!strcasecmp("changert", data))
-    strcpy(data, "c6");
+    strncpy(data, "c6", 3);
   else if (!strcasecmp("ahcrt", data))
-    strcpy(data, "c8");
+    strncpy(data, "c8", 3);
   else if (!strcasecmp("ds", data))
-    strcpy(data, "d");
+    strncpy(data, "d", 3);
   else if (!strcasecmp("ltd", data))
-    strcpy(data, "d1");
+    strncpy(data, "d1", 3);
   else if (!strcasecmp("tradedate", data))
-    strcpy(data, "d2");
+    strncpy(data, "d2", 3);
   else if (!strcasecmp("es", data))
-    strcpy(data, "e");
+    strncpy(data, "e", 3);
   else if (!strcasecmp("ei", data))
-    strcpy(data, "e1");
+    strncpy(data, "e1", 3);
   else if (!strcasecmp("epsecy", data))
-    strcpy(data, "e7");
+    strncpy(data, "e7", 3);
   else if (!strcasecmp("epseny", data))
-    strcpy(data, "e8");
+    strncpy(data, "e8", 3);
   else if (!strcasecmp("epsenq", data))
-    strcpy(data, "e9");
+    strncpy(data, "e9", 3);
   else if (!strcasecmp("floatshares", data))
-    strcpy(data, "f6");
+    strncpy(data, "f6", 3);
   else if (!strcasecmp("dayslow", data))
-    strcpy(data, "g");
+    strncpy(data, "g", 3);
   else if (!strcasecmp("dayshigh", data))
-    strcpy(data, "h");
+    strncpy(data, "h", 3);
   else if (!strcasecmp("52weeklow", data))
-    strcpy(data, "j");
+    strncpy(data, "j", 3);
   else if (!strcasecmp("52weekhigh", data))
-    strcpy(data, "k");
+    strncpy(data, "k", 3);
   else if (!strcasecmp("hgp", data))
-    strcpy(data, "g1");
+    strncpy(data, "g1", 3);
   else if (!strcasecmp("ag", data))
-    strcpy(data, "g3");
+    strncpy(data, "g3", 3);
   else if (!strcasecmp("hg", data))
-    strcpy(data, "g4");
+    strncpy(data, "g4", 3);
   else if (!strcasecmp("hgprt", data))
-    strcpy(data, "g5");
+    strncpy(data, "g5", 3);
   else if (!strcasecmp("hgrt", data))
-    strcpy(data, "g6");
+    strncpy(data, "g6", 3);
   else if (!strcasecmp("moreinfo", data))
-    strcpy(data, "i");
+    strncpy(data, "i", 3);
   else if (!strcasecmp("obrt", data))
-    strcpy(data, "i5");
+    strncpy(data, "i5", 3);
   else if (!strcasecmp("mc", data))
-    strcpy(data, "j1");
+    strncpy(data, "j1", 3);
   else if (!strcasecmp("mcrt", data))
-    strcpy(data, "j3");
+    strncpy(data, "j3", 3);
   else if (!strcasecmp("ebitda", data))
-    strcpy(data, "j4");
+    strncpy(data, "j4", 3);
   else if (!strcasecmp("c52wlow", data))
-    strcpy(data, "j5");
+    strncpy(data, "j5", 3);
   else if (!strcasecmp("pc52wlow", data))
-    strcpy(data, "j6");
+    strncpy(data, "j6", 3);
   else if (!strcasecmp("cprt", data))
-    strcpy(data, "k2");
+    strncpy(data, "k2", 3);
   else if (!strcasecmp("lts", data))
-    strcpy(data, "k3");
+    strncpy(data, "k3", 3);
   else if (!strcasecmp("c52whigh", data))
-    strcpy(data, "k4");
+    strncpy(data, "k4", 3);
   else if (!strcasecmp("pc52whigh", data))
-    strcpy(data, "k5");
+    strncpy(data, "k5", 3);
   else if (!strcasecmp("ltp", data))
-    strcpy(data, "l1");
+    strncpy(data, "l1", 3);
   else if (!strcasecmp("hl", data))
-    strcpy(data, "l2");
+    strncpy(data, "l2", 3);
   else if (!strcasecmp("ll", data))
-    strcpy(data, "l3");
+    strncpy(data, "l3", 3);
   else if (!strcasecmp("dr", data))
-    strcpy(data, "m");
+    strncpy(data, "m", 3);
   else if (!strcasecmp("drrt", data))
-    strcpy(data, "m2");
+    strncpy(data, "m2", 3);
   else if (!strcasecmp("50ma", data))
-    strcpy(data, "m3");
+    strncpy(data, "m3", 3);
   else if (!strcasecmp("200ma", data))
-    strcpy(data, "m4");
+    strncpy(data, "m4", 3);
   else if (!strcasecmp("c200ma", data))
-    strcpy(data, "m5");
+    strncpy(data, "m5", 3);
   else if (!strcasecmp("pc200ma", data))
-    strcpy(data, "m6");
+    strncpy(data, "m6", 3);
   else if (!strcasecmp("c50ma", data))
-    strcpy(data, "m7");
+    strncpy(data, "m7", 3);
   else if (!strcasecmp("pc50ma", data))
-    strcpy(data, "m8");
+    strncpy(data, "m8", 3);
   else if (!strcasecmp("name", data))
-    strcpy(data, "n");
+    strncpy(data, "n", 3);
   else if (!strcasecmp("notes", data))
-    strcpy(data, "n4");
+    strncpy(data, "n4", 3);
   else if (!strcasecmp("open", data))
-    strcpy(data, "o");
+    strncpy(data, "o", 3);
   else if (!strcasecmp("pc", data))
-    strcpy(data, "p");
+    strncpy(data, "p", 3);
   else if (!strcasecmp("pricepaid", data))
-    strcpy(data, "p1");
+    strncpy(data, "p1", 3);
   else if (!strcasecmp("cip", data))
-    strcpy(data, "p2");
+    strncpy(data, "p2", 3);
   else if (!strcasecmp("ps", data))
-    strcpy(data, "p5");
+    strncpy(data, "p5", 3);
   else if (!strcasecmp("pb", data))
-    strcpy(data, "p6");
+    strncpy(data, "p6", 3);
   else if (!strcasecmp("edv", data))
-    strcpy(data, "q");
+    strncpy(data, "q", 3);
   else if (!strcasecmp("per", data))
-    strcpy(data, "r");
+    strncpy(data, "r", 3);
   else if (!strcasecmp("dpd", data))
-    strcpy(data, "r1");
+    strncpy(data, "r1", 3);
   else if (!strcasecmp("perrt", data))
-    strcpy(data, "r2");
+    strncpy(data, "r2", 3);
   else if (!strcasecmp("pegr", data))
-    strcpy(data, "r5");
+    strncpy(data, "r5", 3);
   else if (!strcasecmp("pepsecy", data))
-    strcpy(data, "r6");
+    strncpy(data, "r6", 3);
   else if (!strcasecmp("pepseny", data))
-    strcpy(data, "r7");
+    strncpy(data, "r7", 3);
   else if (!strcasecmp("symbol", data))
-    strcpy(data, "s");
+    strncpy(data, "s", 3);
   else if (!strcasecmp("sharesowned", data))
-    strcpy(data, "s1");
+    strncpy(data, "s1", 3);
   else if (!strcasecmp("shortratio", data))
-    strcpy(data, "s7");
+    strncpy(data, "s7", 3);
   else if (!strcasecmp("ltt", data))
-    strcpy(data, "t1");
+    strncpy(data, "t1", 3);
   else if (!strcasecmp("tradelinks", data))
-    strcpy(data, "t6");
+    strncpy(data, "t6", 3);
   else if (!strcasecmp("tt", data))
-    strcpy(data, "t7");
+    strncpy(data, "t7", 3);
   else if (!strcasecmp("1ytp", data))
-    strcpy(data, "t8");
+    strncpy(data, "t8", 3);
   else if (!strcasecmp("volume", data))
-    strcpy(data, "v");
+    strncpy(data, "v", 3);
   else if (!strcasecmp("hv", data))
-    strcpy(data, "v1");
+    strncpy(data, "v1", 3);
   else if (!strcasecmp("hvrt", data))
-    strcpy(data, "v7");
+    strncpy(data, "v7", 3);
   else if (!strcasecmp("52weekrange", data))
-    strcpy(data, "w");
+    strncpy(data, "w", 3);
   else if (!strcasecmp("dvc", data))
-    strcpy(data, "w1");
+    strncpy(data, "w1", 3);
   else if (!strcasecmp("dvcrt", data))
-    strcpy(data, "w4");
+    strncpy(data, "w4", 3);
   else if (!strcasecmp("se", data))
-    strcpy(data, "x");
+    strncpy(data, "x", 3);
   else if (!strcasecmp("dy", data))
-    strcpy(data, "y");
+    strncpy(data, "y", 3);
   else {
     NORM_ERR(
         "\"%s\" is not supported by $stock. Supported: 1ytp, 200ma, 50ma, "
@@ -527,7 +522,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (arg != nullptr) {
     sscanf(arg, "%63s", bat);
   } else {
-    strcpy(bat, "BAT0");
+    strncpy(bat, "BAT0", 5);
   }
   obj->data.s = strndup(bat, text_buffer_size.get(*state));
   obj->callbacks.print = &print_battery;
@@ -537,7 +532,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (arg != nullptr) {
     sscanf(arg, "%63s", bat);
   } else {
-    strcpy(bat, "BAT0");
+    strncpy(bat, "BAT0", 5);
   }
   obj->data.s = strndup(bat, text_buffer_size.get(*state));
   obj->callbacks.print = &print_battery_short;
@@ -547,7 +542,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (arg != nullptr) {
     sscanf(arg, "%63s", bat);
   } else {
-    strcpy(bat, "BAT0");
+    strncpy(bat, "BAT0", 5);
   }
   obj->data.s = strndup(bat, text_buffer_size.get(*state));
   obj->callbacks.print = &print_battery_time;
@@ -557,7 +552,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (arg != nullptr) {
     sscanf(arg, "%63s", bat);
   } else {
-    strcpy(bat, "BAT0");
+    strncpy(bat, "BAT0", 5);
   }
   obj->data.s = strndup(bat, text_buffer_size.get(*state));
   obj->callbacks.percentage = &battery_percentage;
@@ -568,7 +563,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if ((arg != nullptr) && strlen(arg) > 0) {
     sscanf(arg, "%63s", bat);
   } else {
-    strcpy(bat, "BAT0");
+    strncpy(bat, "BAT0", 5);
   }
   obj->data.s = strndup(bat, text_buffer_size.get(*state));
   obj->callbacks.barval = &get_battery_perct_bar;
@@ -1911,15 +1906,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
  */
 static size_t remove_comment(char *string, char *last) {
   char *end = string;
-  while (*end != '\0' && *end != '\n') {
-    ++end;
-  }
-  if (last != nullptr) {
-    *last = *end;
-  }
-  if (*end == '\n') {
-    end++;
-  }
+  while (*end != '\0' && *end != '\n') { ++end; }
+  if (last != nullptr) { *last = *end; }
+  if (*end == '\n') { end++; }
   strfold(string, end - string);
   return end - string;
 }
@@ -1970,15 +1959,11 @@ int extract_variable_text_internal(struct text_object *retval,
   line = global_text_lines;
 
   while (*p != 0) {
-    if (*p == '\n') {
-      line++;
-    }
+    if (*p == '\n') { line++; }
     if (*p == '$') {
       *p = '\0';
       obj = create_plain_text(s);
-      if (obj != nullptr) {
-        append_object(retval, obj);
-      }
+      if (obj != nullptr) { append_object(retval, obj); }
       *p = '$';
       p++;
       s = p;
@@ -1994,20 +1979,14 @@ int extract_variable_text_internal(struct text_object *retval,
           p++;
           s = p;
           while ((*p != 0) && brl != brr) {
-            if (*p == '{') {
-              brl++;
-            }
-            if (*p == '}') {
-              brr++;
-            }
+            if (*p == '{') { brl++; }
+            if (*p == '}') { brr++; }
             p++;
           }
           p--;
         } else {
           s = p;
-          if (*p == '#') {
-            p++;
-          }
+          if (*p == '#') { p++; }
           while ((*p != 0) &&
                  ((isalnum(static_cast<int>(*p)) != 0) || *p == '_')) {
             p++;
@@ -2021,9 +2000,7 @@ int extract_variable_text_internal(struct text_object *retval,
         strncpy(buf, s, len);
         buf[len] = '\0';
 
-        if (*p == '}') {
-          p++;
-        }
+        if (*p == '}') { p++; }
         s = p;
 
         /* search for variable in environment */
@@ -2031,9 +2008,7 @@ int extract_variable_text_internal(struct text_object *retval,
         var = getenv(buf);
         if (var != nullptr) {
           obj = create_plain_text(var);
-          if (obj != nullptr) {
-            append_object(retval, obj);
-          }
+          if (obj != nullptr) { append_object(retval, obj); }
           free(buf);
           continue;
         }
@@ -2047,12 +2022,8 @@ int extract_variable_text_internal(struct text_object *retval,
           arg = strchr(buf, ' ');
           *arg = '\0';
           arg++;
-          while (isspace(static_cast<int>(*arg)) != 0) {
-            arg++;
-          }
-          if (*arg == 0) {
-            arg = nullptr;
-          }
+          while (isspace(static_cast<int>(*arg)) != 0) { arg++; }
+          if (*arg == 0) { arg = nullptr; }
         }
 
         /* lowercase variable name */
@@ -2069,17 +2040,13 @@ int extract_variable_text_internal(struct text_object *retval,
           free(orig_p);
           throw;
         }
-        if (obj != nullptr) {
-          append_object(retval, obj);
-        }
+        if (obj != nullptr) { append_object(retval, obj); }
         free(buf);
         continue;
       }
-        obj = create_plain_text("$");
-        s = p + 1;
-        if (obj != nullptr) {
-          append_object(retval, obj);
-        }
+      obj = create_plain_text("$");
+      s = p + 1;
+      if (obj != nullptr) { append_object(retval, obj); }
 
     } else if (*p == '\\' && *(p + 1) == '#') {
       strfold(p, 1);
@@ -2093,9 +2060,7 @@ int extract_variable_text_internal(struct text_object *retval,
     p++;
   }
   obj = create_plain_text(s);
-  if (obj != nullptr) {
-    append_object(retval, obj);
-  }
+  if (obj != nullptr) { append_object(retval, obj); }
 
   if (ifblock_stack_empty(&ifblock_opaque) == 0) {
     NORM_ERR("one or more $endif's are missing");
@@ -2119,9 +2084,7 @@ void free_text_objects(struct text_object *root) {
   if ((root != nullptr) && (root->prev != nullptr)) {
     for (obj = root->prev; obj != nullptr; obj = root->prev) {
       root->prev = obj->prev;
-      if (obj->callbacks.free != nullptr) {
-        (*obj->callbacks.free)(obj);
-      }
+      if (obj->callbacks.free != nullptr) { (*obj->callbacks.free)(obj); }
       free_text_objects(obj->sub);
       free_and_zero(obj->sub);
       free_and_zero(obj->special_data);
