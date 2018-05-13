@@ -18,6 +18,7 @@
 #ifndef PRSS_H
 #define PRSS_H
 
+#include <string>
 #include <libxml/parser.h>
 
 typedef struct PRSS_Item_ {

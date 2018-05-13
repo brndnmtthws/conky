@@ -28,6 +28,7 @@
 #include <curl/curl.h>
 
 #include "update-cb.hh"
+#include "logging.h"
 
 namespace priv {
 // factored out stuff that does not depend on the template parameters
