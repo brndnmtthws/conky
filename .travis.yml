@@ -22,6 +22,22 @@ matrix:
             - libcairo2-dev
             - libimlib2-dev
             - libxinerama-dev
+            - libmysqlclient-dev
+            - libical-dev
+            - libircclient-dev
+            - libcairo2-dev
+            - libmicrohttpd-dev
+            - ncurses-dev
+            - liblua5.1-dev
+            - librsvg2-dev
+            - libaudclient-dev
+            - libxmmsclient-dev
+            - libpulse-dev
+            - libcurl4-gnutls-dev
+            - audacious-dev
+            - libsystemd-journal-dev
+            - libxml2-dev
+            - tolua++
             - gawk
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
@@ -46,6 +62,22 @@ matrix:
             - libcairo2-dev
             - libimlib2-dev
             - libxinerama-dev
+            - libmysqlclient-dev
+            - libical-dev
+            - libircclient-dev
+            - libcairo2-dev
+            - libmicrohttpd-dev
+            - ncurses-dev
+            - liblua5.1-dev
+            - librsvg2-dev
+            - libaudclient-dev
+            - libxmmsclient-dev
+            - libpulse-dev
+            - libcurl4-gnutls-dev
+            - audacious-dev
+            - libsystemd-journal-dev
+            - libxml2-dev
+            - tolua++
             - gawk
         sonarcloud:
           organization: "brndnmtthws-github"
@@ -57,11 +89,46 @@ before_install:
   - eval "${MATRIX_EVAL}"
 before_script:
   - mkdir build && cd build
-  - cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+  - >
+      cmake
+      -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+      -DBUILD_MYSQL=ON
+      -DBUILD_LUA_CAIRO=ON
+      -DBUILD_LUA_IMLIB2=ON
+      -DBUILD_LUA_RSVG=ON
+      -DBUILD_LUA_CAIRO=ON
+      -DBUILD_AUDACIOUS=ON
+      -DBUILD_XMMS2=ON
+      -DBUILD_ICAL=ON
+      -DBUILD_IRC=ON
+      -DBUILD_HTTP=ON
+      -DBUILD_ICONV=ON
+      -DBUILD_PULSEAUDIO=ON
+      -DBUILD_JOURNAL=ON
+      -DBUILD_RSS=ON
+      ..
   - cd ..
   - mkdir build-no-x11
   - cd build-no-x11
-  - cmake -DBUILD_X11=OFF ..
+  - >
+      cmake
+      -DBUILD_X11=OFF
+      -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+      -DBUILD_MYSQL=ON
+      -DBUILD_LUA_CAIRO=ON
+      -DBUILD_LUA_IMLIB2=ON
+      -DBUILD_LUA_RSVG=ON
+      -DBUILD_LUA_CAIRO=ON
+      -DBUILD_AUDACIOUS=ON
+      -DBUILD_XMMS2=ON
+      -DBUILD_ICAL=ON
+      -DBUILD_IRC=ON
+      -DBUILD_HTTP=ON
+      -DBUILD_ICONV=ON
+      -DBUILD_PULSEAUDIO=ON
+      -DBUILD_JOURNAL=ON
+      -DBUILD_RSS=ON
+      ..
   - cd ..
 script:
   - cd build
