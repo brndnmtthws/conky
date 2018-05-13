@@ -1304,7 +1304,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
 #endif  // defined(__i386) || defined(__x86_64)
 
       // copy just the number
-      strcpy(frequency, strchr(s, ':') + 2);
+      strncpy(frequency, strchr(s, ':') + 2, 32);
 #if defined(__alpha)
       // strip " est.\n"
       frequency[strlen(frequency) - 6] = '\0';
@@ -1987,9 +1987,9 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
       /* Below happens with the second battery on my X40,
        * when the second one is empty and the first one being charged. */
       if (remaining_capacity == 0) {
-        strcpy(last_battery_str[idx], "empty");
+        strncpy(last_battery_str[idx], "empty", 6);
       } else {
-        strcpy(last_battery_str[idx], "charged");
+        strncpy(last_battery_str[idx], "charged", 8);
       }
       /* unknown, probably full / AC */
     } else {
@@ -2627,7 +2627,7 @@ static void process_parse_stat(struct process *process) {
    */
   char *space_ptr = strchr(cmdline, ' ');
   if (space_ptr == nullptr) {
-    strcpy(tmpstr, cmdline);
+    strncpy(tmpstr, cmdline, BUFFER_LEN);
   } else {
     long int space_pos = space_ptr - cmdline;
     strncpy(tmpstr, cmdline, space_pos);
