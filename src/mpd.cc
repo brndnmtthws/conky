@@ -185,6 +185,7 @@ void mpd_cb::work() {
       conn = nullptr;
 
       mpd_info.status = "MPD not responding";
+      break;
     }
     mpd_finishCommand(conn);
     if ((conn == nullptr) || (conn->error != 0)) {
