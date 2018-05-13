@@ -27,7 +27,7 @@ if(BUILD_BUILTIN_CONFIG)
 		set(builtin_config conky_no_x11.conf)
 	endif(BUILD_X11)
 	add_custom_command(OUTPUT defconfig.h COMMAND
-		${CMAKE_SOURCE_DIR}/text2c.sh ${CMAKE_CURRENT_SOURCE_DIR}/${builtin_config}
+		${CMAKE_SOURCE_DIR}/bin/text2c.sh ${CMAKE_CURRENT_SOURCE_DIR}/${builtin_config}
 		defconfig.h defconfig DEPENDS ${builtin_config}
 	)
 	add_custom_target(defconfig ALL DEPENDS defconfig.h)
@@ -36,7 +36,7 @@ endif(BUILD_BUILTIN_CONFIG)
 
 if(BUILD_OLD_CONFIG)
 	add_custom_command(OUTPUT convertconf.h COMMAND
-		${CMAKE_SOURCE_DIR}/text2c.sh ${CMAKE_SOURCE_DIR}/extras/convert.lua
+		${CMAKE_SOURCE_DIR}/bin/text2c.sh ${CMAKE_SOURCE_DIR}/extras/convert.lua
 		convertconf.h convertconf DEPENDS ${CMAKE_SOURCE_DIR}/extras/convert.lua
 	)
 	add_custom_target(convertconf ALL DEPENDS convertconf.h)
