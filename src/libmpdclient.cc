@@ -99,7 +99,8 @@ static int winsock_dll_error(mpd_Connection *connection) {
 
   if ((WSAStartup(MAKEWORD(2, 2), &wsaData)) != 0 ||
       LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2) {
-    strcpy(connection->errorStr, "Could not find usable WinSock DLL.");
+    strncpy(connection->errorStr, "Could not find usable WinSock DLL.",
+            MPD_ERRORSTR_MAX_LENGTH);
     connection->error = MPD_ERROR_SYSTEM;
     return 1;
   }
@@ -268,7 +269,8 @@ static int mpd_connect(mpd_Connection *connection, const char *host, int port,
       destlen = sizeof(struct sockaddr_in);
       break;
     default:
-      strcpy(connection->errorStr, "address type is not IPv4");
+      strncpy(connection->errorStr, "address type is not IPv4",
+              MPD_ERRORSTR_MAX_LENGTH);
       connection->error = MPD_ERROR_SYSTEM;
       return -1;
       break;
@@ -276,7 +278,8 @@ static int mpd_connect(mpd_Connection *connection, const char *host, int port,
 
   if (connection->sock > -1) { closesocket(connection->sock); }
   if ((connection->sock = socket(dest->sa_family, SOCK_STREAM, 0)) < 0) {
-    strcpy(connection->errorStr, "problems creating socket");
+    strncpy(connection->errorStr, "problems creating socket",
+            MPD_ERRORSTR_MAX_LENGTH);
     connection->error = MPD_ERROR_SYSTEM;
     return -1;
   }
@@ -383,10 +386,10 @@ mpd_Connection *mpd_newConnection(const char *host, int port, float timeout) {
   struct timeval tv {};
   fd_set fds;
 
-  strcpy(connection->buffer, "");
+  strncpy(connection->buffer, "", 1);
   connection->buflen = 0;
   connection->bufstart = 0;
-  strcpy(connection->errorStr, "");
+  strncpy(connection->errorStr, "", MPD_ERRORSTR_MAX_LENGTH);
   connection->error = 0;
   connection->doneProcessing = 0;
   connection->commandList = 0;
@@ -438,7 +441,7 @@ mpd_Connection *mpd_newConnection(const char *host, int port, float timeout) {
 
   *rt = '\0';
   output = strndup(connection->buffer, text_buffer_size.get(*state));
-  strcpy(connection->buffer, rt + 1);
+  strncpy(connection->buffer, rt + 1, MPD_BUFFER_MAX_LENGTH);
   connection->buflen = strlen(connection->buffer);
 
   if (mpd_parseWelcome(connection, host, port, /* rt, */ output) == 0) {
@@ -474,7 +477,8 @@ static void mpd_executeCommand(mpd_Connection *connection,
   int commandLen = strlen(command);
 
   if ((connection->doneProcessing == 0) && (connection->commandList == 0)) {
-    strcpy(connection->errorStr, "not done processing current command");
+    strncpy(connection->errorStr, "not done processing current command",
+            MPD_ERRORSTR_MAX_LENGTH);
     connection->error = 1;
     return;
   }
@@ -537,7 +541,8 @@ static void mpd_getNextReturnElement(mpd_Connection *connection) {
 
   if ((connection->doneProcessing != 0) ||
       ((connection->listOks != 0) && (connection->doneListOk != 0))) {
-    strcpy(connection->errorStr, "already done processing current command");
+    strncpy(connection->errorStr, "already done processing current command",
+            MPD_ERRORSTR_MAX_LENGTH);
     connection->error = 1;
     return;
   }
@@ -552,7 +557,7 @@ static void mpd_getNextReturnElement(mpd_Connection *connection) {
       connection->bufstart = 0;
     }
     if (connection->buflen >= MPD_BUFFER_MAX_LENGTH) {
-      strcpy(connection->errorStr, "buffer overrun");
+      strncpy(connection->errorStr, "buffer overrun", MPD_ERRORSTR_MAX_LENGTH);
       connection->error = MPD_ERROR_BUFFEROVERRUN;
       connection->doneProcessing = 1;
       connection->doneListOk = 0;
@@ -569,7 +574,8 @@ static void mpd_getNextReturnElement(mpd_Connection *connection) {
                     MPD_BUFFER_MAX_LENGTH - connection->buflen, MSG_DONTWAIT);
       if (readed < 0 && SENDRECV_ERRNO_IGNORE) { continue; }
       if (readed <= 0) {
-        strcpy(connection->errorStr, "connection closed");
+        strncpy(connection->errorStr, "connection closed",
+                MPD_ERRORSTR_MAX_LENGTH);
         connection->error = MPD_ERROR_CONNCLOSED;
         connection->doneProcessing = 1;
         connection->doneListOk = 0;
@@ -578,7 +584,8 @@ static void mpd_getNextReturnElement(mpd_Connection *connection) {
       connection->buflen += readed;
       connection->buffer[connection->buflen] = '\0';
     } else {
-      strcpy(connection->errorStr, "connection timeout");
+      strncpy(connection->errorStr, "connection timeout",
+              MPD_ERRORSTR_MAX_LENGTH);
       connection->error = MPD_ERROR_TIMEOUT;
       connection->doneProcessing = 1;
       connection->doneListOk = 0;
@@ -592,7 +599,8 @@ static void mpd_getNextReturnElement(mpd_Connection *connection) {
 
   if (strcmp(output, "OK") == 0) {
     if (connection->listOks > 0) {
-      strcpy(connection->errorStr, "expected more list_OK's");
+      strncpy(connection->errorStr, "expected more list_OK's",
+              MPD_ERRORSTR_MAX_LENGTH);
       connection->error = 1;
     }
     connection->listOks = 0;
@@ -603,7 +611,8 @@ static void mpd_getNextReturnElement(mpd_Connection *connection) {
 
   if (strcmp(output, "list_OK") == 0) {
     if (connection->listOks == 0) {
-      strcpy(connection->errorStr, "got an unexpected list_OK");
+      strncpy(connection->errorStr, "got an unexpected list_OK",
+              MPD_ERRORSTR_MAX_LENGTH);
       connection->error = 1;
     } else {
       connection->doneListOk = 1;
@@ -617,7 +626,7 @@ static void mpd_getNextReturnElement(mpd_Connection *connection) {
     char *needle;
     int val;
 
-    strcpy(connection->errorStr, output);
+    strncpy(connection->errorStr, output, MPD_ERRORSTR_MAX_LENGTH);
     connection->error = MPD_ERROR_ACK;
     connection->errorCode = MPD_ACK_ERROR_UNK;
     connection->errorAt = MPD_ERROR_AT_UNK;
@@ -787,7 +796,7 @@ mpd_Status *mpd_getStatus(mpd_Connection *connection) {
     return nullptr;
   }
   if (status->state < 0) {
-    strcpy(connection->errorStr, "state not found");
+    strncpy(connection->errorStr, "state not found", MPD_ERRORSTR_MAX_LENGTH);
     connection->error = 1;
     free(status);
     return nullptr;
@@ -1146,7 +1155,8 @@ mpd_InfoEntity *mpd_getNextInfoEntity(mpd_Connection *connection) {
       entity->info.song->pos = atoi(connection->returnElement->value);
     } else {
       connection->error = 1;
-      strcpy(connection->errorStr, "problem parsing song info");
+      strncpy(connection->errorStr, "problem parsing song info",
+              MPD_ERRORSTR_MAX_LENGTH);
       return nullptr;
     }
   } else {
@@ -1366,12 +1376,13 @@ void mpd_sendListCommand(mpd_Connection *connection, int table,
   char *string;
 
   if (table == MPD_TABLE_ARTIST) {
-    strcpy(st, "artist");
+    strncpy(st, "artist", MPD_BUFFER_MAX_LENGTH);
   } else if (table == MPD_TABLE_ALBUM) {
-    strcpy(st, "album");
+    strncpy(st, "album", MPD_BUFFER_MAX_LENGTH);
   } else {
     connection->error = 1;
-    strcpy(connection->errorStr, "unknown table for list");
+    strncpy(connection->errorStr, "unknown table for list",
+            MPD_ERRORSTR_MAX_LENGTH);
     return;
   }
   if (arg1 != nullptr) {
@@ -1669,7 +1680,8 @@ void mpd_sendPasswordCommand(mpd_Connection *connection, const char *pass) {
 
 void mpd_sendCommandListBegin(mpd_Connection *connection) {
   if (connection->commandList != 0) {
-    strcpy(connection->errorStr, "already in command list mode");
+    strncpy(connection->errorStr, "already in command list mode",
+            MPD_ERRORSTR_MAX_LENGTH);
     connection->error = 1;
     return;
   }
@@ -1679,7 +1691,8 @@ void mpd_sendCommandListBegin(mpd_Connection *connection) {
 
 void mpd_sendCommandListOkBegin(mpd_Connection *connection) {
   if (connection->commandList != 0) {
-    strcpy(connection->errorStr, "already in command list mode");
+    strncpy(connection->errorStr, "already in command list mode",
+            MPD_ERRORSTR_MAX_LENGTH);
     connection->error = 1;
     return;
   }
@@ -1690,7 +1703,8 @@ void mpd_sendCommandListOkBegin(mpd_Connection *connection) {
 
 void mpd_sendCommandListEnd(mpd_Connection *connection) {
   if (connection->commandList == 0) {
-    strcpy(connection->errorStr, "not in command list mode");
+    strncpy(connection->errorStr, "not in command list mode",
+            MPD_ERRORSTR_MAX_LENGTH);
     connection->error = 1;
     return;
   }
@@ -1799,7 +1813,8 @@ char *mpd_getNextTagType(mpd_Connection *connection) {
 
 void mpd_startSearch(mpd_Connection *connection, int exact) {
   if (connection->request != nullptr) {
-    strcpy(connection->errorStr, "search already in progress");
+    strncpy(connection->errorStr, "search already in progress",
+            MPD_ERRORSTR_MAX_LENGTH);
     connection->error = 1;
     return;
   }
@@ -1813,7 +1828,8 @@ void mpd_startSearch(mpd_Connection *connection, int exact) {
 
 void mpd_startStatsSearch(mpd_Connection *connection) {
   if (connection->request != nullptr) {
-    strcpy(connection->errorStr, "search already in progress");
+    strncpy(connection->errorStr, "search already in progress",
+            MPD_ERRORSTR_MAX_LENGTH);
     connection->error = 1;
     return;
   }
@@ -1823,7 +1839,8 @@ void mpd_startStatsSearch(mpd_Connection *connection) {
 
 void mpd_startPlaylistSearch(mpd_Connection *connection, int exact) {
   if (connection->request != nullptr) {
-    strcpy(connection->errorStr, "search already in progress");
+    strncpy(connection->errorStr, "search already in progress",
+            MPD_ERRORSTR_MAX_LENGTH);
     connection->error = 1;
     return;
   }
@@ -1841,13 +1858,15 @@ void mpd_startFieldSearch(mpd_Connection *connection, int type) {
   int len;
 
   if (connection->request != nullptr) {
-    strcpy(connection->errorStr, "search already in progress");
+    strncpy(connection->errorStr, "search already in progress",
+            MPD_ERRORSTR_MAX_LENGTH);
     connection->error = 1;
     return;
   }
 
   if (type < 0 || type >= MPD_TAG_NUM_OF_ITEM_TYPES) {
-    strcpy(connection->errorStr, "invalid type specified");
+    strncpy(connection->errorStr, "invalid type specified",
+            MPD_ERRORSTR_MAX_LENGTH);
     connection->error = 1;
     return;
   }
@@ -1869,19 +1888,21 @@ void mpd_addConstraintSearch(mpd_Connection *connection, int type,
   char *string;
 
   if (connection->request == nullptr) {
-    strcpy(connection->errorStr, "no search in progress");
+    strncpy(connection->errorStr, "no search in progress",
+            MPD_ERRORSTR_MAX_LENGTH);
     connection->error = 1;
     return;
   }
 
   if (type < 0 || type >= MPD_TAG_NUM_OF_ITEM_TYPES) {
-    strcpy(connection->errorStr, "invalid type specified");
+    strncpy(connection->errorStr, "invalid type specified",
+            MPD_ERRORSTR_MAX_LENGTH);
     connection->error = 1;
     return;
   }
 
   if (name == nullptr) {
-    strcpy(connection->errorStr, "no name specified");
+    strncpy(connection->errorStr, "no name specified", MPD_ERRORSTR_MAX_LENGTH);
     connection->error = 1;
     return;
   }
@@ -1903,7 +1924,8 @@ void mpd_commitSearch(mpd_Connection *connection) {
   int len;
 
   if (connection->request == nullptr) {
-    strcpy(connection->errorStr, "no search in progress");
+    strncpy(connection->errorStr, "no search in progress",
+            MPD_ERRORSTR_MAX_LENGTH);
     connection->error = 1;
     return;
   }
