@@ -31,6 +31,7 @@
 #include "algebra.h"
 #include "bsdapm.h"
 #include "build.h"
+#include "cat.h"
 #include "colours.h"
 #include "combine.h"
 #include "core.h"
@@ -810,6 +811,14 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       scan_no_update(obj, arg);
   obj->callbacks.print = &print_no_update;
   obj->callbacks.free = &free_no_update;
+  END OBJ(cat, 0)
+  obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  obj->callbacks.print = &print_cat;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(catp, 0)
+  obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  obj->callbacks.print = &print_catp;
+  obj->callbacks.free = &gen_free_opaque;
   END OBJ_ARG(exec, nullptr, "exec needs arguments: <command>")
       scan_exec_arg(obj, arg, EF_EXEC);
   obj->parse = false;
