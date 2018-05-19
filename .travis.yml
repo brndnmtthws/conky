@@ -135,7 +135,7 @@ script:
   - cd ../build-no-x11
   - make -j4
   - cd ..
-  - if [ "$CXX" = "clang++-6.0" ] ; then sonar-scanner ; fi
+  - if [ "$CXX" = "clang++-6.0" -a ! -z "$SONAR_TOKEN" ] ; then sonar-scanner ; fi
 branches:
   only:
     - master
