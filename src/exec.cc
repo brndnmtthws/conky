@@ -27,7 +27,6 @@
  *
  */
 
-#include "exec.h"
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -37,6 +36,7 @@
 #include <mutex>
 #include "conky.h"
 #include "core.h"
+#include "exec.h"
 #include "logging.h"
 #include "specials.h"
 #include "text_object.h"
@@ -59,15 +59,11 @@ static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
   // by running pipe after the strcmp's we make sure that we don't have to
   // create a pipe and close the ends if mode is something illegal
   if (strcmp(mode, "r") == 0) {
-    if (pipe(ends) != 0) {
-      return nullptr;
-    }
+    if (pipe(ends) != 0) { return nullptr; }
     parentend = ends[0];
     childend = ends[1];
   } else if (strcmp(mode, "w") == 0) {
-    if (pipe(ends) != 0) {
-      return nullptr;
-    }
+    if (pipe(ends) != 0) { return nullptr; }
     parentend = ends[1];
     childend = ends[0];
   } else {
@@ -93,9 +89,7 @@ static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
     close(parentend);
 
     // by dupping childend, the returned fd will have close-on-exec turned off
-    if (fcntl(childend, F_DUPFD_CLOEXEC) == -1) {
-      perror("dup()");
-    }
+    if (fcntl(childend, F_DUPFD, 0) == -1) { perror("fcntl()"); }
     close(childend);
 
     execl("/bin/sh", "sh", "-c", command, (char *)nullptr);
@@ -134,9 +128,7 @@ void exec_cb::work() {
     buf.append(b, length);
   }
 
-  if (*buf.rbegin() == '\n') {
-    buf.resize(buf.size() - 1);
-  }
+  if (*buf.rbegin() == '\n') { buf.resize(buf.size() - 1); }
 
   std::lock_guard<std::mutex> l(result_mutex);
   result = buf;
@@ -324,7 +316,7 @@ double execbarval(struct text_object *obj) {
   if (obj->exec_handle != nullptr) {
     return get_barnum((*obj->exec_handle)->get_result_copy().c_str());
   }
-    return 0.0;
+  return 0.0;
 }
 
 /**
@@ -347,9 +339,7 @@ void free_execi(struct text_object *obj) {
   auto *ed = static_cast<struct execi_data *>(obj->data.opaque);
 
   /* if ed is nullptr, there is nothing to do */
-  if (ed == nullptr) {
-    return;
-  }
+  if (ed == nullptr) { return; }
 
   delete obj->exec_handle;
   obj->exec_handle = nullptr;
