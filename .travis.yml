@@ -95,7 +95,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link gettext --force ; fi
 before_script:
   - |
-    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       mkdir build && cd build
 
       cmake                   \
@@ -117,7 +117,7 @@ before_script:
       cd ..
       mkdir build-no-x11
       cd build-no-x11
-      
+
       cmake                   \
         -DBUILD_X11=OFF       \
         -DBUILD_MYSQL=ON      \
@@ -157,7 +157,7 @@ script:
   - if [ "$CXX" = "clang++-6.0" -a ! -z "$SONAR_TOKEN" ] ; then sonar-scanner ; fi
 branches:
   only:
-    - master 
+    - master
 sudo: false
 cache:
   directories:
