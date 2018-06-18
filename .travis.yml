@@ -89,10 +89,10 @@ matrix:
     - os: osx
       osx_image: xcode9.4
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then eval "${MATRIX_EVAL}"                     ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then eval "${MATRIX_EVAL}" ; fi
 
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install freetype gettext lua imlib2    ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link gettext --force                   ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install freetype gettext lua imlib2 ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link gettext --force ; fi
 before_script:
   - |
     if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
