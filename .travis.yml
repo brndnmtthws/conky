@@ -1,8 +1,8 @@
 language: cpp
-dist: trusty
 matrix:
   include:
     - os: linux
+      dist: trusty
       addons:
         apt:
           sources:
@@ -42,6 +42,7 @@ matrix:
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
     - os: linux
+      dist: trusty
       addons:
         apt:
           sources:
@@ -85,60 +86,78 @@ matrix:
             secure: "KikPusy+HXcEVLr0Dqb6mkrefDU5jm7EGQ5fwO4sBG7bRMcnHV3V14s5yB4Ol8btpUC0nkNn/41+f37lkG+oT4y9ZeIH2ZrhsSEHxOgH6DF9ZSVJwtpLrF9siWgfZ0m5c5V7U5rzVYL3jlO1hQfXKCfMNAcwlKcEUrfpk7jVEZc="
       env:
         - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+    - os: osx
+      osx_image: xcode9.4
 before_install:
-  - eval "${MATRIX_EVAL}"
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then eval "${MATRIX_EVAL}"                     ; fi
+
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install freetype gettext lua imlib2    ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link gettext --force                   ; fi
 before_script:
-  - mkdir build && cd build
-  - >
-      cmake
-      -DBUILD_MYSQL=ON
-      -DBUILD_LUA_CAIRO=ON
-      -DBUILD_LUA_IMLIB2=ON
-      -DBUILD_LUA_RSVG=ON
-      -DBUILD_LUA_CAIRO=ON
-      -DBUILD_AUDACIOUS=ON
-      -DBUILD_XMMS2=ON
-      -DBUILD_ICAL=ON
-      -DBUILD_IRC=ON
-      -DBUILD_HTTP=ON
-      -DBUILD_ICONV=ON
-      -DBUILD_PULSEAUDIO=ON
-      -DBUILD_JOURNAL=ON
-      -DBUILD_RSS=ON
-      ..
-  - cd ..
-  - mkdir build-no-x11
-  - cd build-no-x11
-  - >
-      cmake
-      -DBUILD_X11=OFF
-      -DBUILD_MYSQL=ON
-      -DBUILD_LUA_CAIRO=ON
-      -DBUILD_LUA_IMLIB2=ON
-      -DBUILD_LUA_RSVG=ON
-      -DBUILD_LUA_CAIRO=ON
-      -DBUILD_AUDACIOUS=ON
-      -DBUILD_XMMS2=ON
-      -DBUILD_ICAL=ON
-      -DBUILD_IRC=ON
-      -DBUILD_HTTP=ON
-      -DBUILD_ICONV=ON
-      -DBUILD_PULSEAUDIO=ON
-      -DBUILD_JOURNAL=ON
-      -DBUILD_RSS=ON
-      ..
-  - cd ..
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
+      mkdir build && cd build
+
+      cmake                   \
+        -DBUILD_MYSQL=ON      \
+        -DBUILD_LUA_CAIRO=ON  \
+        -DBUILD_LUA_IMLIB2=ON \
+        -DBUILD_LUA_RSVG=ON   \
+        -DBUILD_LUA_CAIRO=ON  \
+        -DBUILD_AUDACIOUS=ON  \
+        -DBUILD_XMMS2=ON      \
+        -DBUILD_ICAL=ON       \
+        -DBUILD_IRC=ON        \
+        -DBUILD_HTTP=ON       \
+        -DBUILD_ICONV=ON      \
+        -DBUILD_PULSEAUDIO=ON \
+        -DBUILD_JOURNAL=ON    \
+        -DBUILD_RSS=ON        \
+        ..
+      cd ..
+      mkdir build-no-x11
+      cd build-no-x11
+      
+      cmake                   \
+        -DBUILD_X11=OFF       \
+        -DBUILD_MYSQL=ON      \
+        -DBUILD_LUA_CAIRO=ON  \
+        -DBUILD_LUA_IMLIB2=ON \
+        -DBUILD_LUA_RSVG=ON   \
+        -DBUILD_LUA_CAIRO=ON  \
+        -DBUILD_AUDACIOUS=ON  \
+        -DBUILD_XMMS2=ON      \
+        -DBUILD_ICAL=ON       \
+        -DBUILD_IRC=ON        \
+        -DBUILD_HTTP=ON       \
+        -DBUILD_ICONV=ON      \
+        -DBUILD_PULSEAUDIO=ON \
+        -DBUILD_JOURNAL=ON    \
+        -DBUILD_RSS=ON        \
+        ..
+      cd ..
+    elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      mkdir build && cd build
+      cmake ..
+      cd ..
+
+      mkdir build-no-x11
+      cd build-no-x11
+      cmake -DBUILD_X11=OFF ..
+      cd ..
+    fi
 script:
   - cd build
   - if [ "$CXX" = "clang++-6.0" ] ; then build-wrapper-linux-x86-64 --out-dir bw-output make -j4 ; fi
   - if [ "$CXX" = "g++-8" ] ; then make -j4 ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make -j4 ; fi
   - cd ../build-no-x11
   - make -j4
   - cd ..
   - if [ "$CXX" = "clang++-6.0" -a ! -z "$SONAR_TOKEN" ] ; then sonar-scanner ; fi
 branches:
   only:
-    - master
+    - master 
 sudo: false
 cache:
   directories:
