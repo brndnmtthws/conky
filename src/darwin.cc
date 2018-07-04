@@ -766,6 +766,7 @@ int update_running_threads() {
 
 int update_total_processes() {
   helper_update_threads_processes();
+  return 0;
 
   /*
    *  WARNING: You may stumble upon this implementation:
@@ -1160,7 +1161,7 @@ static void get_top_info_for_kinfo_proc(struct kinfo_proc *p) {
     /*
      * wait until done
      */
-    while (!(calc_cpu_total_finished && calc_proc_total_finished)) { ; }
+    while (!(calc_cpu_total_finished && calc_proc_total_finished)) { usleep(500); }
 
     /* calc the amount(%) of CPU the process used  */
     calc_cpu_usage_for_proc(proc, t);
