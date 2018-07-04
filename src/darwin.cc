@@ -766,6 +766,7 @@ int update_running_threads() {
 
 int update_total_processes() {
   helper_update_threads_processes();
+  return 0;
 
   /*
    *  WARNING: You may stumble upon this implementation:
@@ -774,7 +775,7 @@ int update_total_processes() {
    *  This method DOESN'T find the correct number of tasks.
    *
    *  This is probably (??) because on macOS there is no option for
-   * KERN_PROC_KTHREAD like there is in FreeBSD
+   *  KERN_PROC_KTHREAD like there is in FreeBSD
    *
    *  In FreeBSD's sysctl.h we can see the following:
    *
@@ -799,8 +800,8 @@ int update_total_processes() {
    *  KERN_PROC_LCID      by login context id
    *
    *  Probably by saying "everything" they mean that KERN_PROC_ALL gives all
-   * processes (user-level plus kernel threads) ( So basically this is the
-   * problem with the old implementation )
+   *  processes (user-level plus kernel threads) ( So basically this is the
+   *  problem with the old implementation )
    */
 }
 
@@ -1057,7 +1058,6 @@ static void calc_cpu_usage_for_proc(struct process *proc, uint64_t total) {
  */
 static void calc_cpu_total(struct process *proc, uint64_t *total) {
   uint64_t current_total = 0; /* of current iteration */
-  // uint64_t total = 0;             /* delta */
   struct cpusample sample {};
 
   get_cpu_sample(&sample);
@@ -1161,7 +1161,7 @@ static void get_top_info_for_kinfo_proc(struct kinfo_proc *p) {
     /*
      * wait until done
      */
-    while (!(calc_cpu_total_finished && calc_proc_total_finished)) { ; }
+    while (!(calc_cpu_total_finished && calc_proc_total_finished)) { usleep(500); }
 
     /* calc the amount(%) of CPU the process used  */
     calc_cpu_usage_for_proc(proc, t);
@@ -1179,12 +1179,12 @@ void get_top_info() {
    * XXX if we run conky -t '${top_mem mem 1}' it will crash because
    * info.cpu_count is not initialised.
    *
-   *  We can initialise it down here, but it seems like in the linux
+   * We can initialise it down here, but it seems like in the linux
    * implementation of get_top_info() there is no call to the get_cpu_count()
    * function.  Neither is there in core.cc... If this is the case, when is
    * info.cpu_count initialised???
    *
-   *  Find a proper better place for get_cpu_count() call. (for comformance with
+   * Find a proper better place for get_cpu_count() call. (for comformance with
    * linux.cc)
    */
   get_cpu_count();
@@ -1273,32 +1273,31 @@ int get_sip_status() {
 
 /*
  *  Prints SIP status or a specific SIP feature status depending on the argument
- * passed to $sip_status command
+ *  passed to $sip_status command
  *
  *  Variables that can be passed to $sip_status command
  *
  *  nothing --> print enabled / disabled
- *  0   --> allow_apple_internal
- *  1   --> allow_untrusted_kexts
- *  2   --> allow_task_for_pid
- *  3   --> allow_unrestricted_fs
- *  4   --> allow_kernel_debugger
- *  5   --> allow_unrestricted_dtrace
- *  6   --> allow_unrestricted_nvram
- *  7   --> allow_device_configuration
- *  8   --> allow_any_recovery_os
- *  9   --> allow_user_approved_kexts
+ *  0   --> apple internal
+ *  1   --> forbid untrusted kexts
+ *  2   --> forbid task-for-pid
+ *  3   --> restrict filesystem
+ *  4   --> forbid kernel-debugger
+ *  5   --> restrict dtrace
+ *  6   --> restrict nvram
+ *  7   --> forbid device-configuration
+ *  8   --> forbid any-recovery-os
+ *  9   --> forbid user-approved-kexts
  *  a   --> check if unsupported configuration  ---> this is not an apple SIP
- * flag. This is for us.
+ *  flag. This is for us.
  *
  *  The print function is designed to show 'YES' if a specific protection
- * measure is ENABLED. For example, if SIP is configured to disallow untrusted
- * kexts, then our function will print 'YES'. Thus, it doesnt print 'YES' in the
- * case SIP allows untrusted kexts.
+ *  measure is ENABLED. For example, if SIP is configured to disallow untrusted
+ *  kexts, then our function will print 'YES'.
  *
  *  For this reason, your conkyrc should say for example: Untrusted Kexts
- * Protection: ${sip_status 1} You should not write: "Allow Untrusted Kexts",
- * this is wrong.
+ *  Protection: ${sip_status 1} You should not write: "Allow Untrusted Kexts",
+ *  this is wrong.
  */
 void print_sip_status(struct text_object *obj, char *p, int p_max_size) {
   if (csr_get_active_config ==
@@ -1388,7 +1387,7 @@ void print_sip_status(struct text_object *obj, char *p, int p_max_size) {
 
 #else /* Mavericks and before */
 /*
- *  Versions prior to Yosemite DONT EVEN DEFINE csr_get_active_config()
+ * Versions prior to Yosemite DONT EVEN DEFINE csr_get_active_config()
  * function.  Thus we must avoid calling this function!
  */
 
