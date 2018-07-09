@@ -39,4 +39,17 @@ cairo_matrix_t *create_cairo_matrix_t(void) {
   return calloc(1, sizeof(cairo_matrix_t));
 }
 
+void destroy_cairo_text_extents_t(cairo_text_extents_t *pointer) {
+  free(pointer);
+}
+
+void destroy_cairo_font_extents_t(cairo_font_extents_t *pointer) {
+  free(pointer);
+}
+
+void destroy_cairo_matrix_t(cairo_matrix_t *pointer) {
+  free(pointer);
+}
+
+
 #endif /* _LIBCAIRO_HELPER_H_ */

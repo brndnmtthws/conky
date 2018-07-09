@@ -61,6 +61,7 @@ typedef struct _cairo_matrix {
 	double x0;
 	double y0;
 	static tolua_outside cairo_matrix_t* create_cairo_matrix_t @ create();
+	static tolua_outside void destroy_cairo_matrix_t @ destroy(cairo_matrix_t *pointer);
 } cairo_matrix_t;
 typedef int cairo_bool_t;
 
@@ -410,6 +411,7 @@ typedef struct {
 	double x_advance;
 	double y_advance;
 	static tolua_outside cairo_text_extents_t* create_cairo_text_extents_t @ create();
+	static tolua_outside void destroy_cairo_text_extents_t @ destroy(cairo_text_extents_t *pointer);
 } cairo_text_extents_t;
 
 typedef struct {
@@ -419,6 +421,7 @@ typedef struct {
 	double max_x_advance;
 	double max_y_advance;
 	static tolua_outside cairo_font_extents_t* create_cairo_font_extents_t @ create();
+	static tolua_outside void destroy_cairo_font_extents_t @ destroy(cairo_font_extents_t *pointer);
 } cairo_font_extents_t;
 
 typedef enum _cairo_font_slant {
