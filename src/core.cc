@@ -490,6 +490,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #ifdef BUILD_WLAN
     END OBJ(wireless_essid, &update_net_stats) obj->data.opaque =
     get_net_stat(arg, obj, free_at_crash);
+    parse_net_stat_arg(obj, arg, free_at_crash);
     obj->callbacks.print = &print_wireless_essid;
     END OBJ(wireless_channel, &update_net_stats)
     parse_net_stat_arg(obj, arg, free_at_crash);
