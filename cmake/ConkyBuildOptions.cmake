@@ -76,7 +76,6 @@ if(OS_LINUX)
 	option(BUILD_PORT_MONITORS "Build TCP portmon support" true)
 	option(BUILD_IBM "Support for IBM/Lenovo notebooks" true)
 	option(BUILD_HDDTEMP "Support for hddtemp" true)
-	option(BUILD_WLAN "Enable wireless support" false)
 	# nvidia may also work on FreeBSD, not sure
 	option(BUILD_NVIDIA "Enable nvidia support" false)
 	option(BUILD_IPV6 "Enable if you want IPv6 support" true)
@@ -84,13 +83,14 @@ else(OS_LINUX)
 	set(BUILD_PORT_MONITORS false)
 	set(BUILD_IBM false)
 	set(BUILD_HDDTEMP false)
-	set(BUILD_WLAN false)
 	set(BUILD_NVIDIA false)
 	set(BUILD_IPV6 false)
 endif(OS_LINUX)
 
 # Optional features etc
 #
+
+option(BUILD_WLAN "Enable wireless support" false)
 
 option(BUILD_BUILTIN_CONFIG "Enable builtin default configuration" true)
 
