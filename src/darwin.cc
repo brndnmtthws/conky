@@ -74,6 +74,8 @@
 
 #include "darwin_sip.h"  // sip status
 
+#include <IntelPowerGadget/EnergyLib.h>
+
 /* clock_gettime includes */
 #ifndef HAVE_CLOCK_GETTIME
 #include <errno.h>
@@ -974,49 +976,29 @@ void get_acpi_fan(char * /*p_client_buffer*/, size_t /*client_buffer_size*/) {
 
 /* void */
 char get_freq(char *p_client_buffer, size_t client_buffer_size,
-              const char *p_format, int divisor, unsigned int /*cpu*/) {
+              const char *p_format, int divisor, unsigned int cpu) {
   /*
-   * For now, we get the factory cpu frequency, not **current** cpu frequency
-   * (Also, it is always the same for every core, so ignore |cpu| argument)
+   * Our data is always the same for every core, so ignore |cpu| argument.
    */
 
-  // XXX Probably find a way to get **current** cpu frequency
-
-  int mib[2];
-  unsigned int freq;
-  size_t len;
-
-  if ((p_client_buffer == nullptr) || client_buffer_size <= 0 ||
-      (p_format == nullptr) || divisor <= 0) {
-    return 0;
+  bool initialised = false;
+    
+  if (!initialised)
+  {
+    IntelEnergyLibInitialize();
+    initialised = true;
   }
+  
+  int freq = 0;
+  GetIAFrequency(cpu, &freq);
 
-  mib[0] = CTL_HW;
-  mib[1] = HW_CPU_FREQ;
-  len = sizeof(freq);
-
-  if (sysctl(mib, 2, &freq, &len, nullptr, 0) == 0) {
-    /*
-     * convert to MHz
-     */
-    divisor *= 1000000;
-
-    snprintf(p_client_buffer, client_buffer_size, p_format,
-             static_cast<float>(freq) / divisor);
-  } else {
-    snprintf(p_client_buffer, client_buffer_size, p_format, 0.0f);
-    return 0;
-  }
+  snprintf(p_client_buffer, client_buffer_size, p_format,
+           static_cast<float>(freq));
+  
+  // XXX provide a func which will call IntelEnergyLibShutdown()
 
   return 1;
 }
-
-#if 0
-void update_wifi_stats(void)
-{
-    printf("update_wifi_stats: STUB but also in #if 0\n");
-}
-#endif
 
 int update_diskio() {
   printf("update_diskio: STUB\n");
