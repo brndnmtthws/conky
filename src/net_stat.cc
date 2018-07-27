@@ -466,10 +466,6 @@ int interface_up(struct text_object *obj) {
   if (dev == nullptr) { return 0; }
 
 #if defined(__APPLE__) && defined(__MACH__)
-    //
-    // TODO: when opening pull request remember to ask if we should have only the macOS
-    // version for all OS, as shown at: showif.c
-    
   if ((fd = socket(PF_INET, SOCK_DGRAM, 0)) < 0) {
 #else
   if ((fd = socket(PF_INET, SOCK_DGRAM | SOCK_CLOEXEC, 0)) < 0) {
