@@ -141,6 +141,11 @@ if(BUILD_MATH)
   set(conky_libs ${conky_libs} -lm)
 endif(BUILD_MATH)
 
+if(OS_DARWIN AND BUILD_IPGFREQ)
+  find_library(IPG IntelPowerGadget)
+  set(conky_libs ${conky_libs} ${IPG})
+endif(OS_DARWIN AND BUILD_IPGFREQ)
+
 if(BUILD_ICAL)
   check_include_files(libical/ical.h ICAL_H_)
   if(NOT ICAL_H_)

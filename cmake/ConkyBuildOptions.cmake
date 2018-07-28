@@ -87,6 +87,11 @@ else(OS_LINUX)
 	set(BUILD_IPV6 false)
 endif(OS_LINUX)
 
+# macOS Only
+if(OS_DARWIN)
+	option(BUILD_IPGFREQ "Enable cpu freq calculation based on Intel® Power Gadget; otherwise use constant factory value" false)
+endif(OS_DARWIN)
+
 # Optional features etc
 #
 
