@@ -978,7 +978,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
    * Our data is always the same for every core, so ignore |cpu| argument.
    */
   
-  bool initialised = false;
+  static bool initialised = false;
   
   if (!initialised)
   {
