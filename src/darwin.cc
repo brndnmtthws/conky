@@ -42,12 +42,6 @@
  *is available. patched the _csr_check function to return the bool bit instead.
  */
 
-/*
- * Apologies for the code style...
- * In my eyes it feels better to have
- * different styles at some specific places... :)
- */
-
 #include "conky.h"  // for struct info
 #include "darwin.h"
 
@@ -74,7 +68,9 @@
 
 #include "darwin_sip.h"  // sip status
 
+#ifdef BUILD_IPGFREQ
 #include <IntelPowerGadget/EnergyLib.h>
+#endif
 
 /* clock_gettime includes */
 #ifndef HAVE_CLOCK_GETTIME
@@ -977,12 +973,13 @@ void get_acpi_fan(char * /*p_client_buffer*/, size_t /*client_buffer_size*/) {
 /* void */
 char get_freq(char *p_client_buffer, size_t client_buffer_size,
               const char *p_format, int divisor, unsigned int cpu) {
+#ifdef BUILD_IPGFREQ
   /*
    * Our data is always the same for every core, so ignore |cpu| argument.
    */
-
+  
   bool initialised = false;
-    
+  
   if (!initialised)
   {
     IntelEnergyLibInitialize();
@@ -991,11 +988,42 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
   
   int freq = 0;
   GetIAFrequency(cpu, &freq);
-
+  
   snprintf(p_client_buffer, client_buffer_size, p_format,
            static_cast<float>(freq));
+#else
+  /*
+   * We get the factory cpu frequency, not **current** cpu frequency
+   * (Also, it is always the same for every core, so ignore |cpu| argument)
+   * Enable BUILD_IPGFREQ for getting current frequency.
+   */
   
-  // XXX provide a func which will call IntelEnergyLibShutdown()
+  int mib[2];
+  unsigned int freq;
+  size_t len;
+  
+  if ((p_client_buffer == nullptr) || client_buffer_size <= 0 ||
+      (p_format == nullptr) || divisor <= 0) {
+    return 0;
+  }
+  
+  mib[0] = CTL_HW;
+  mib[1] = HW_CPU_FREQ;
+  len = sizeof(freq);
+  
+  if (sysctl(mib, 2, &freq, &len, nullptr, 0) == 0) {
+    /*
+     * convert to MHz
+     */
+    divisor *= 1000000;
+    
+    snprintf(p_client_buffer, client_buffer_size, p_format,
+             static_cast<float>(freq) / divisor);
+  } else {
+    snprintf(p_client_buffer, client_buffer_size, p_format, 0.0f);
+    return 0;
+  }
+#endif
 
   return 1;
 }
