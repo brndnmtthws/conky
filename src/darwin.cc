@@ -973,6 +973,12 @@ void get_acpi_fan(char * /*p_client_buffer*/, size_t /*client_buffer_size*/) {
 /* void */
 char get_freq(char *p_client_buffer, size_t client_buffer_size,
               const char *p_format, int divisor, unsigned int cpu) {
+  
+  if ((p_client_buffer == nullptr) || client_buffer_size <= 0 ||
+      (p_format == nullptr) || divisor <= 0) {
+    return 0;
+  }
+  
 #ifdef BUILD_IPGFREQ
   /*
    * Our data is always the same for every core, so ignore |cpu| argument.
@@ -980,8 +986,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
   
   static bool initialised = false;
   
-  if (!initialised)
-  {
+  if (!initialised) {
     IntelEnergyLibInitialize();
     initialised = true;
   }
@@ -990,7 +995,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
   GetIAFrequency(cpu, &freq);
   
   snprintf(p_client_buffer, client_buffer_size, p_format,
-           static_cast<float>(freq));
+           static_cast<float>(freq) / divisor);
 #else
   /*
    * We get the factory cpu frequency, not **current** cpu frequency
@@ -1001,11 +1006,6 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
   int mib[2];
   unsigned int freq;
   size_t len;
-  
-  if ((p_client_buffer == nullptr) || client_buffer_size <= 0 ||
-      (p_format == nullptr) || divisor <= 0) {
-    return 0;
-  }
   
   mib[0] = CTL_HW;
   mib[1] = HW_CPU_FREQ;
@@ -1024,7 +1024,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
     return 0;
   }
 #endif
-
+  
   return 1;
 }
 
