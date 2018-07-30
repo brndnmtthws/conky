@@ -72,6 +72,10 @@
 #include <IntelPowerGadget/EnergyLib.h>
 #endif
 
+#ifdef BUILD_WLAN
+#import <CoreWLAN/CoreWLAN.h>
+#endif
+
 /* clock_gettime includes */
 #ifndef HAVE_CLOCK_GETTIME
 #include <errno.h>
@@ -636,6 +640,14 @@ int update_meminfo() {
   return 0;
 }
 
+#ifdef BUILD_WLAN
+
+void update_wlan_stats(struct net_stat *ns) {
+  
+}
+
+#endif
+
 int update_net_stats() {
   struct net_stat *ns;
   double delta;
@@ -655,6 +667,10 @@ int update_net_stats() {
     if ((ifa->ifa_flags & IFF_UP) != 0u) {
       struct ifaddrs *iftmp;
 
+#ifdef BUILD_WLAN
+      update_wlan_stats(ns);
+#endif
+      
       ns->up = 1;
       last_recv = ns->recv;
       last_trans = ns->trans;
