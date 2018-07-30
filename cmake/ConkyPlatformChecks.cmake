@@ -137,14 +137,19 @@ if(BUILD_NCURSES AND OS_DARWIN)
   set(conky_libs ${conky_libs} -lncurses)
 endif(BUILD_NCURSES AND OS_DARWIN)
 
-if(BUILD_MATH)
-  set(conky_libs ${conky_libs} -lm)
-endif(BUILD_MATH)
+if(BUILD_WLAN AND OS_DARWIN)
+  find_library(CW CoreWLAN)
+  set(conky_libs ${conky_libs} ${CW})
+endif(BUILD_WLAN AND OS_DARWIN)
 
 if(OS_DARWIN AND BUILD_IPGFREQ)
   find_library(IPG IntelPowerGadget)
   set(conky_libs ${conky_libs} ${IPG})
 endif(OS_DARWIN AND BUILD_IPGFREQ)
+
+if(BUILD_MATH)
+  set(conky_libs ${conky_libs} -lm)
+endif(BUILD_MATH)
 
 if(BUILD_ICAL)
   check_include_files(libical/ical.h ICAL_H_)
