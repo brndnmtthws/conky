@@ -1300,3 +1300,16 @@ void xpmdb_swap_buffers(void) {
   }
 }
 #endif /* BUILD_XDBE */
+
+#define LOCK_TEMPLATE(func, num) \
+void print_##func(struct text_object *obj, char *p, int p_max_size) { \
+  (void)obj; \
+  XKeyboardState x; \
+  XGetKeyboardControl(display, &x); \
+  snprintf(p, p_max_size, "%s", (x.led_mask & num ? "On" : "Off")); \
+  return; \
+}
+
+LOCK_TEMPLATE(num_led, 2)
+LOCK_TEMPLATE(caps_led, 1)
+LOCK_TEMPLATE(scroll_led, 4)
