@@ -243,7 +243,7 @@ void print_words(struct text_object *obj, char *p, int p_max_size) {
   words = 0;
   while (fgets(buf, BUFSZ, fp) != nullptr) {
     for (j = 0; buf[j] != 0; j++) {
-      if (isspace(buf[j]) == 0) {
+      if (isspace((unsigned char)buf[j]) == 0) {
         if (inword == 0) {
           words++;
           inword = 1;

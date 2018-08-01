@@ -192,9 +192,9 @@ std::string variable_substitute(std::string s) {
       std::string var;
       std::string::size_type l = 0;
 
-      if (isalpha(s[pos + 1]) != 0) {
+      if (isalpha((unsigned char)s[pos + 1]) != 0) {
         l = 1;
-        while (pos + l < s.size() && (isalnum(s[pos + l]) != 0)) {
+        while (pos + l < s.size() && (isalnum((unsigned char)s[pos + l]) != 0)) {
           ++l;
         }
         var = s.substr(pos + 1, l - 1);
@@ -323,7 +323,7 @@ unsigned int round_to_int(float f) {
 
 void scan_loadavg_arg(struct text_object *obj, const char *arg) {
   obj->data.i = 0;
-  if ((arg != nullptr) && (arg[1] == 0) && (isdigit(arg[0]) != 0)) {
+  if ((arg != nullptr) && (arg[1] == 0) && (isdigit((unsigned char)arg[0]) != 0)) {
     obj->data.i = atoi(arg);
     if (obj->data.i > 3 || obj->data.i < 1) {
       NORM_ERR("loadavg arg needs to be in range (1,3)");
