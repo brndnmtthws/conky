@@ -425,7 +425,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &gen_free_opaque;
 #endif /* !__OpenBSD__ */
   END OBJ(freq, nullptr) get_cpu_count();
-  if ((arg == nullptr) || (isdigit(arg[0]) == 0) || strlen(arg) >= 3 ||
+  if ((arg == nullptr) || (isdigit((unsigned char)arg[0]) == 0) || strlen(arg) >= 3 ||
       atoi(&arg[0]) == 0 || atoi(&arg[0]) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("freq: Invalid CPU number or you don't have that many CPUs! "
@@ -435,7 +435,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   }
   obj->callbacks.print = &print_freq;
   END OBJ(freq_g, nullptr) get_cpu_count();
-  if ((arg == nullptr) || (isdigit(arg[0]) == 0) || strlen(arg) >= 3 ||
+  if ((arg == nullptr) || (isdigit((unsigned char)arg[0]) == 0) || strlen(arg) >= 3 ||
       atoi(&arg[0]) == 0 || atoi(&arg[0]) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("freq_g: Invalid CPU number or you don't have that many "
@@ -461,7 +461,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &free_tcp_ping;
 #if defined(__linux__)
   END OBJ(voltage_mv, 0) get_cpu_count();
-  if (!arg || !isdigit(arg[0]) || strlen(arg) >= 3 || atoi(&arg[0]) == 0 ||
+  if (!arg || !isdigit((unsigned char)arg[0]) || strlen(arg) >= 3 || atoi(&arg[0]) == 0 ||
       atoi(&arg[0]) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("voltage_mv: Invalid CPU number or you don't have that many "
@@ -471,7 +471,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   }
   obj->callbacks.print = &print_voltage_mv;
   END OBJ(voltage_v, 0) get_cpu_count();
-  if (!arg || !isdigit(arg[0]) || strlen(arg) >= 3 || atoi(&arg[0]) == 0 ||
+  if (!arg || !isdigit((unsigned char)arg[0]) || strlen(arg) >= 3 || atoi(&arg[0]) == 0 ||
       atoi(&arg[0]) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("voltage_v: Invalid CPU number or you don't have that many "
@@ -815,6 +815,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
   obj->callbacks.print = &print_cat;
   obj->callbacks.free = &gen_free_opaque;
+  END OBJ(num_led, 0)
+  obj->callbacks.print = &print_num_led;
+  END OBJ(caps_led, 0)
+  obj->callbacks.print = &print_caps_led;
+  END OBJ(scroll_led, 0)
+  obj->callbacks.print = &print_scroll_led;
   END OBJ(catp, 0)
   obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
   obj->callbacks.print = &print_catp;
@@ -1997,7 +2003,7 @@ int extract_variable_text_internal(struct text_object *retval,
           s = p;
           if (*p == '#') { p++; }
           while ((*p != 0) &&
-                 ((isalnum(static_cast<int>(*p)) != 0) || *p == '_')) {
+                 ((isalnum((unsigned char)(*p)) != 0) || *p == '_')) {
             p++;
           }
         }
@@ -2031,7 +2037,7 @@ int extract_variable_text_internal(struct text_object *retval,
           arg = strchr(buf, ' ');
           *arg = '\0';
           arg++;
-          while (isspace(static_cast<int>(*arg)) != 0) { arg++; }
+          while (isspace((unsigned char)(*arg)) != 0) { arg++; }
           if (*arg == 0) { arg = nullptr; }
         }
 

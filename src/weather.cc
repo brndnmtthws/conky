@@ -343,7 +343,7 @@ void weather::parse_token(const char *token) {
 
       // Check if token is a weather condition
       for (i = 0; i < 2; i++) {
-        if (!isalpha(token[i])) break;
+        if (!isalpha((unsigned char)token[i])) break;
       }
       if (i == 2) {
         for (i = 0; i < NUM_WC_CODES; i++) {
@@ -369,7 +369,7 @@ void weather::parse_token(const char *token) {
       // Check if token is a modified weather condition
       if ((token[0] == '+') || (token[0] == '-')) {
         for (i = 1; i < 3; i++) {
-          if (!isalpha(token[i])) break;
+          if (!isalpha((unsigned char)token[i])) break;
         }
         if (i == 3) {
           for (i = 0; i < NUM_WC_CODES; i++) {
@@ -425,11 +425,11 @@ void weather::parse_token(const char *token) {
 
       // Check if token is the temperature
       for (i = 0; i < 2; i++) {
-        if (!isdigit(token[i])) break;
+        if (!isdigit((unsigned char)token[i])) break;
       }
       if ((i == 2) && (token[2] == '/')) {
         for (i = 3; i < 5; i++) {
-          if (!isdigit(token[i])) break;
+          if (!isdigit((unsigned char)token[i])) break;
         }
         if (i == 5) {
           // First 2 digits gives the air temperature
@@ -448,7 +448,7 @@ void weather::parse_token(const char *token) {
       // Check if token is the pressure
       if ((token[0] == 'Q') || (token[0] == 'A')) {
         for (i = 1; i < 5; i++) {
-          if (!isdigit(token[i])) break;
+          if (!isdigit((unsigned char)token[i])) break;
         }
         if (i == 5) {
           if (token[0] == 'A') {
@@ -484,11 +484,11 @@ void weather::parse_token(const char *token) {
 
       // Check if token is the cloud cover
       for (i = 0; i < 3; i++) {
-        if (!isalpha(token[i])) break;
+        if (!isalpha((unsigned char)token[i])) break;
       }
       if (i == 3) {
         for (i = 3; i < 6; i++) {
-          if (!isdigit(token[i])) break;
+          if (!isdigit((unsigned char)token[i])) break;
         }
         if (i == 6) {
           // Check if first 3 digits gives the cloud cover condition
@@ -504,11 +504,11 @@ void weather::parse_token(const char *token) {
 
       // Check if token is positive temp and negative dew
       for (i = 0; i < 2; i++) {
-        if (!isdigit(token[i])) break;
+        if (!isdigit((unsigned char)token[i])) break;
       }
       if ((i == 2) && (token[2] == '/') && (token[3] == 'M')) {
         for (i = 4; i < 6; i++) {
-          if (!isdigit(token[i])) break;
+          if (!isdigit((unsigned char)token[i])) break;
         }
         if (i == 6) {
           // 1st and 2nd digits gives the temperature
@@ -531,13 +531,13 @@ void weather::parse_token(const char *token) {
 
       // Check if token is the observation time
       for (i = 0; i < 6; i++) {
-        if (!isdigit(token[i])) break;
+        if (!isdigit((unsigned char)token[i])) break;
       }
       if ((i == 6) && (token[6] == 'Z')) return;
 
       // Check if token is the wind speed/direction in knots
       for (i = 0; i < 5; i++) {
-        if (!isdigit(token[i])) break;
+        if (!isdigit((unsigned char)token[i])) break;
       }
       if ((i == 5) && (token[5] == 'K') && (token[6] == 'T')) {
         // First 3 digits are wind direction
@@ -554,11 +554,11 @@ void weather::parse_token(const char *token) {
       // Check if token is negative temperature
       if ((token[0] == 'M') && (token[4] == 'M')) {
         for (i = 1; i < 3; i++) {
-          if (!isdigit(token[i])) break;
+          if (!isdigit((unsigned char)token[i])) break;
         }
         if ((i == 3) && (token[3] == '/')) {
           for (i = 5; i < 7; i++) {
-            if (!isdigit(token[i])) break;
+            if (!isdigit((unsigned char)token[i])) break;
           }
           if (i == 7) {
             // 2nd and 3rd digits gives the temperature
@@ -577,11 +577,11 @@ void weather::parse_token(const char *token) {
 
       // Check if token is wind variability
       for (i = 0; i < 3; i++) {
-        if (!isdigit(token[i])) break;
+        if (!isdigit((unsigned char)token[i])) break;
       }
       if ((i == 3) && (token[3] == 'V')) {
         for (i = 4; i < 7; i++) {
-          if (!isdigit(token[i])) break;
+          if (!isdigit((unsigned char)token[i])) break;
         }
         if (i == 7) return;
       }
@@ -593,7 +593,7 @@ void weather::parse_token(const char *token) {
 
       // Check if token is the wind speed/direction in m/s
       for (i = 0; i < 5; i++) {
-        if (!isdigit(token[i])) break;
+        if (!isdigit((unsigned char)token[i])) break;
       }
       if ((i == 5) && (token[5] == 'M') && (token[6] == 'P') &&
           (token[7] == 'S')) {

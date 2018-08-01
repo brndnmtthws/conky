@@ -210,7 +210,7 @@ void get_fs_type(const char *path, char *result) {
 void init_fs_bar(struct text_object *obj, const char *arg) {
   arg = scan_bar(obj, arg, 1);
   if (arg != nullptr) {
-    while (isspace(*arg) != 0) { arg++; }
+    while (isspace((unsigned char)*arg) != 0) { arg++; }
     if (*arg == '\0') { arg = "/"; }
   } else {
     arg = "/";

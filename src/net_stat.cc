@@ -131,7 +131,7 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
       netstat = get_net_stat(nextarg, obj, free_at_crash);
     }
     i += strlen(nextarg);  // skip this arg
-    while (!((isspace(arg[i]) != 0) || arg[i] == 0)) {
+    while (!((isspace((unsigned char)arg[i]) != 0) || arg[i] == 0)) {
       i++;  // and skip the spaces in front of it
     }
   }

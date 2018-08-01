@@ -477,7 +477,7 @@ void update_obsd_sensors() {
 }
 
 void parse_obsd_sensor(struct text_object *obj, const char *arg) {
-  if (!isdigit(arg[0]) || atoi(&arg[0]) < 0 ||
+  if (!isdigit((unsigned char)arg[0]) || atoi(&arg[0]) < 0 ||
       atoi(&arg[0]) > OBSD_MAX_SENSORS - 1) {
     obj->data.l = 0;
     NORM_ERR("Invalid sensor number!");

@@ -410,7 +410,7 @@ int update_net_stats(void) {
     p = buf;
     /* change char * p to first non-space character, which is the beginning
      * of the interface name */
-    while (*p != '\0' && isspace((int)*p)) { p++; }
+    while (*p != '\0' && isspace((unsigned char)*p)) { p++; }
 
     s = p;
 
@@ -864,7 +864,7 @@ int update_stat(void) {
       sscanf(buf, "%*s %hu", &info.run_threads);
     } else if (strncmp(buf, "cpu", 3) == 0) {
       double delta;
-      if (isdigit(buf[3])) {
+      if (isdigit((unsigned char)buf[3])) {
         idx++;  // just increment here since the CPU index can skip numbers
       } else {
         idx = 0;
