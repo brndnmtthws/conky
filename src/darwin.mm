@@ -68,6 +68,8 @@
 
 #include "darwin_sip.h"  // sip status
 
+#include <vector>
+
 #ifdef BUILD_IPGFREQ
 #include <IntelPowerGadget/EnergyLib.h>
 #endif
@@ -108,6 +110,10 @@ void eprintf(const char *fmt, ...) {
  */
 static conky::simple_config_setting<bool> top_cpu_separate("top_cpu_separate",
                                                            false, true);
+/*
+ * used by update_cpu_usage()
+ */
+std::vector<struct cpusample *> sample_handles; /* a registry of handles */
 
 static int getsysctl(const char *name, void *ptr, size_t len) {
   size_t nlen = len;
@@ -221,13 +227,12 @@ typedef struct memorysample {
  * Gets systemTime, userTime and idleTime for CPU
  * MenuMeters has been great inspiration for this function
  */
-static void get_cpu_sample(struct cpusample *sample) {
+static void get_cpu_sample(struct cpusample **sample) {
   host_name_port_t machHost;
   natural_t processorCount;
   processor_cpu_load_info_t processorTickInfo;
   mach_msg_type_number_t processorInfoCount;
-  struct cpusample *samples = nullptr;
-
+  
   machHost = mach_host_self();
 
   kern_return_t err = host_processor_info(
@@ -240,21 +245,14 @@ static void get_cpu_sample(struct cpusample *sample) {
   }
 
   /*
-   * allocate ncpus+1 cpusample structs (one foreach CPU)
-   * ** samples[0] is overal CPU usage
-   */
-  samples = new struct cpusample[processorCount + 1];
-  memset(samples, 0, sizeof(cpusample) * (processorCount + 1));
-
-  /*
    * start from samples[1] because samples[0] is overall CPU usage
    */
   for (natural_t i = 1; i < processorCount + 1; i++) {
-    samples[i].totalSystemTime =
+    (*sample)[i].totalSystemTime =
         processorTickInfo[i - 1].cpu_ticks[CPU_STATE_SYSTEM],
-    samples[i].totalUserTime =
+    (*sample)[i].totalUserTime =
         processorTickInfo[i - 1].cpu_ticks[CPU_STATE_USER],
-    samples[i].totalIdleTime =
+    (*sample)[i].totalIdleTime =
         processorTickInfo[i - 1].cpu_ticks[CPU_STATE_IDLE];
   }
 
@@ -262,24 +260,34 @@ static void get_cpu_sample(struct cpusample *sample) {
    * sum up all totals
    */
   for (natural_t i = 1; i < processorCount + 1; i++) {
-    samples[0].totalSystemTime += samples[i].totalSystemTime;
-    samples[0].totalUserTime += samples[i].totalUserTime;
-    samples[0].totalIdleTime += samples[i].totalIdleTime;
+    (*sample)[0].totalSystemTime += (*sample)[i].totalSystemTime;
+    (*sample)[0].totalUserTime += (*sample)[i].totalUserTime;
+    (*sample)[0].totalIdleTime += (*sample)[i].totalIdleTime;
   }
-
-  /*
-   * set the sample pointer
-   */
-  sample->totalSystemTime = samples[0].totalSystemTime;
-  sample->totalUserTime = samples[0].totalUserTime;
-  sample->totalIdleTime = samples[0].totalIdleTime;
 
   /*
    * Dealloc
    */
   vm_deallocate(mach_task_self(), (vm_address_t)processorTickInfo,
                 static_cast<vm_size_t>(processorInfoCount * sizeof(natural_t)));
-  delete[] samples;
+}
+
+void allocate_cpu_sample(struct cpusample **sample) {
+  /*
+   * allocate ncpus+1 cpusample structs (one foreach CPU)
+   * ** sample_handle[0] is overal CPU usage
+   */
+  *sample = reinterpret_cast<struct cpusample *>(malloc(sizeof(cpusample) * (info.cpu_count + 1)));
+  memset(*sample, 0, sizeof(cpusample) * (info.cpu_count + 1));
+
+  sample_handles.push_back(*sample);  /* register handle */
+}
+
+void deallocate_cpu_sample(struct text_object *obj) {
+  while (sample_handles.size() > 0) {
+    free(sample_handles.back());
+    sample_handles.pop_back();
+  }
 }
 
 /*
@@ -569,11 +577,9 @@ uint64_t get_physical_memory() {
 }
 
 int update_meminfo() {
-  /* XXX implement remaining memory-related variables (see conky.h) */
-  /* XXX conky breaks the values ... :( probably some rounding problem...
-      Though we get the right values (based on top) */
-  /* XXX probably investigate the "probably apple keeps some info secret" */
-
+  
+  /* XXX See #34 */
+  
   vm_size_t page_size = getpagesize();  // get pagesize in bytes
   unsigned long swap_avail, swap_free;
 
@@ -857,8 +863,6 @@ void get_cpu_count() {
     info.cpu_count = 0;
   }
 
-  /* XXX this can be moved to update_cpu_usage() but keep here to follow linux
-   * implementation */
   if (info.cpu_usage == nullptr) {
     /*
      * Allocate ncpus+1 slots because cpu_usage[0] is overall usage.
@@ -878,16 +882,14 @@ struct cpu_info {
 };
 
 int update_cpu_usage() {
-  /* XXX add support for multiple cpus (see linux.cc) */
-
   static bool cpu_setup = 0;
 
   long used, total;
   static struct cpu_info *cpu = nullptr;
   unsigned int malloc_cpu_size = 0;
   extern void *global_cpu;
-
-  struct cpusample sample {};
+  
+  struct cpusample *sample = nullptr;
 
   static pthread_mutex_t last_stat_update_mutex = PTHREAD_MUTEX_INITIALIZER;
   static double last_stat_update = 0.0;
@@ -919,19 +921,29 @@ int update_cpu_usage() {
     global_cpu = cpu;
   }
 
+  allocate_cpu_sample(&sample);
+
   get_cpu_sample(&sample);
-  total = sample.totalUserTime + sample.totalIdleTime + sample.totalSystemTime;
-  used = total - sample.totalIdleTime;
 
-  if ((total - cpu[0].oldtotal) != 0) {
-    info.cpu_usage[0] = (static_cast<double>(used - cpu[0].oldused)) /
-                        static_cast<double>(total - cpu[0].oldtotal);
-  } else {
-    info.cpu_usage[0] = 0;
+  /*
+   * Setup conky's structs for-each core
+   */
+  for (int i = 1; i < info.cpu_count + 1; i++) {
+    int j = i - 1;
+
+    total = sample[i].totalUserTime + sample[i].totalIdleTime + sample[i].totalSystemTime;
+    used = total - sample[i].totalIdleTime;
+
+    if ((total - cpu[j].oldtotal) != 0) {
+      info.cpu_usage[j] = (static_cast<double>(used - cpu[j].oldused)) /
+      static_cast<double>(total - cpu[j].oldtotal);
+    } else {
+      info.cpu_usage[j] = 0;
+    }
+
+    cpu[j].oldused = used;
+    cpu[j].oldtotal = total;
   }
-
-  cpu[0].oldused = used;
-  cpu[0].oldtotal = total;
 
   return 0;
 }
@@ -1084,11 +1096,13 @@ static void calc_cpu_usage_for_proc(struct process *proc, uint64_t total) {
  */
 static void calc_cpu_total(struct process *proc, uint64_t *total) {
   uint64_t current_total = 0; /* of current iteration */
-  struct cpusample sample {};
-
+  struct cpusample *sample = nullptr;
+  
+  allocate_cpu_sample(&sample);
+  
   get_cpu_sample(&sample);
   current_total =
-      sample.totalUserTime + sample.totalIdleTime + sample.totalSystemTime;
+      sample[0].totalUserTime + sample[0].totalIdleTime + sample[0].totalSystemTime;
 
   *total = current_total - proc->previous_total_cpu_time;
   proc->previous_total_cpu_time = current_total;
@@ -1201,17 +1215,7 @@ void get_top_info() {
   struct kinfo_proc *p = nullptr;
 
   /*
-   * QUICKFIX for #16
-   * XXX if we run conky -t '${top_mem mem 1}' it will crash because
-   * info.cpu_count is not initialised.
-   *
-   * We can initialise it down here, but it seems like in the linux
-   * implementation of get_top_info() there is no call to the get_cpu_count()
-   * function.  Neither is there in core.cc... If this is the case, when is
-   * info.cpu_count initialised???
-   *
-   * Find a proper better place for get_cpu_count() call. (for comformance with
-   * linux.cc)
+   * See #16
    */
   get_cpu_count();
 
