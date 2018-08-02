@@ -129,13 +129,13 @@ void print_i8k_ac_status(struct text_object *obj, char *p, int p_max_size) {
 
   sscanf(i8k.ac_status, "%d", &ac_status);
   if (ac_status == -1) {
-    snprintf(p, p_max_size, "disabled (read i8k docs)");
+    snprintf(p, p_max_size, "%s", "disabled (read i8k docs)");
   }
   if (ac_status == 0) {
-    snprintf(p, p_max_size, "off");
+    snprintf(p, p_max_size, "%s", "off");
   }
   if (ac_status == 1) {
-    snprintf(p, p_max_size, "on");
+    snprintf(p, p_max_size, "%s", "on");
   }
 }
 

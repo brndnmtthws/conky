@@ -212,7 +212,7 @@ void print_lines(struct text_object *obj, char *p, int p_max_size) {
   int j, lines;
 
   if (fp == nullptr) {
-    snprintf(p, p_max_size, "File Unreadable");
+    snprintf(p, p_max_size, "%s", "File Unreadable");
     return;
   }
 
@@ -236,14 +236,14 @@ void print_words(struct text_object *obj, char *p, int p_max_size) {
   char inword = 0;
 
   if (fp == nullptr) {
-    snprintf(p, p_max_size, "File Unreadable");
+    snprintf(p, p_max_size, "%s", "File Unreadable");
     return;
   }
 
   words = 0;
   while (fgets(buf, BUFSZ, fp) != nullptr) {
     for (j = 0; buf[j] != 0; j++) {
-      if (isspace(buf[j]) == 0) {
+      if (isspace((unsigned char)buf[j]) == 0) {
         if (inword == 0) {
           words++;
           inword = 1;
