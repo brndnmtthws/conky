@@ -40,6 +40,7 @@
 #include "exec.h"
 #include "i8k.h"
 #include "text_object.h"
+#include "x11.h"
 #ifdef BUILD_IMLIB2
 #include "imlib2.h"
 #endif
