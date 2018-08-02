@@ -169,7 +169,7 @@ void print_read_tcpip(struct text_object *obj, char *p, int p_max_size,
   hints.ai_socktype = protocol == IPPROTO_TCP ? SOCK_STREAM : SOCK_DGRAM;
   hints.ai_flags = 0;
   hints.ai_protocol = protocol;
-  snprintf(portbuf, 8, "%d", rtd->port);
+  snprintf(portbuf, 8, "%u", rtd->port);
   if (getaddrinfo(rtd->host, portbuf, &hints, &airesult) != 0) {
     NORM_ERR("%s: Problem with resolving the hostname",
              protocol == IPPROTO_TCP ? "read_tcp" : "read_udp");
