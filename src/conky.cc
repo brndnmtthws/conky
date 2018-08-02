@@ -2389,10 +2389,13 @@ static void main_loop() {
       }
     } else {
 #endif /* BUILD_X11 */
-      struct timespec ts1, ts2;
-      ts1.tv_sec = 0;
-      ts1.tv_nsec = (next_update_time - get_time()) * 1000000000L;
-      nanosleep(&ts1, &ts2);
+      struct timespec req, rem;
+      auto time_to_sleep = next_update_time - get_time();
+      auto seconds = (time_t)std::floor(time_to_sleep);
+      auto nanos = (time_to_sleep - seconds) * 1000000000L;
+      req.tv_sec = seconds;
+      req.tv_nsec = nanos;
+      nanosleep(&req, &rem);
       update_text();
       draw_stuff();
 #ifdef BUILD_NCURSES
