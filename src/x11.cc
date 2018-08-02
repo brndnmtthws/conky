@@ -1326,8 +1326,16 @@ void print_kb_layout(struct text_object *obj, char *p, int p_max_size) {
   desc = XkbGetKeyboard(display, XkbAllComponentsMask, XkbUseCoreKbd);
   group = XGetAtomName(display, desc->names->groups[state.group]);
 
-  snprintf(p, p_max_size, "%s", (group != NULL ? group : "unknown")); \
+  snprintf(p, p_max_size, "%s", (group != NULL ? group : "unknown"));
   XFree(group);
+  return;
+}
 
+void print_mouse_speed(struct text_object *obj, char *p, int p_max_size) {
+  (void)obj;
+  int acc_num = 0, acc_denom = 0, threshold = 0;
+
+  XGetPointerControl(display, &acc_num, &acc_denom, &threshold);
+  snprintf(p, p_max_size, "%d%%", (110 - threshold));
   return;
 }

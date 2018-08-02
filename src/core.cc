@@ -825,6 +825,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_scroll_led;
   END OBJ(kb_layout, 0)
   obj->callbacks.print = &print_kb_layout;
+  END OBJ(mouse_speed, 0)
+  obj->callbacks.print = &print_mouse_speed;
 #endif /* BUILD_X11 */
 
   END OBJ(catp, 0)
