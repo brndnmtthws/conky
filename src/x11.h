@@ -120,6 +120,8 @@ void print_num_led(struct text_object *, char *, int);
 void print_caps_led(struct text_object *, char *, int);
 void print_scroll_led(struct text_object *, char *, int);
 
+void print_kb_layout(struct text_object *, char *, int);
+
 #ifdef BUILD_XDBE
 void xdbe_swap_buffers(void);
 #else
