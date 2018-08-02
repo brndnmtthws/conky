@@ -135,7 +135,7 @@ void print_tcp_ping(struct text_object *obj, char *p, int p_max_size) {
         usecdiff =
             ((tv2.tv_sec - tv1.tv_sec) * 1000000) + tv2.tv_usec - tv1.tv_usec;
         if (usecdiff <= TCP_PING_TIMEOUT * 1000000) {
-          snprintf(p, p_max_size, "%llu", usecdiff);
+          snprintf(p, p_max_size, "%llu", (usecdiff / 1000U));
         } else {
 #define TCP_PING_FAILED "down"
           snprintf(p, p_max_size, TCP_PING_FAILED);
