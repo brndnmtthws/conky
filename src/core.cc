@@ -829,6 +829,11 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_mouse_speed;
 #endif /* BUILD_X11 */
 
+  END OBJ(password, 0)
+  obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  obj->callbacks.print = &print_password;
+  obj->callbacks.free = &gen_free_opaque;
+
   END OBJ(catp, 0)
   obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
   obj->callbacks.print = &print_catp;
