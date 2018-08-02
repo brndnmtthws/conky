@@ -40,7 +40,6 @@
 #include "exec.h"
 #include "i8k.h"
 #include "text_object.h"
-#include "x11.h"
 #ifdef BUILD_IMLIB2
 #include "imlib2.h"
 #endif
@@ -816,12 +815,16 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
   obj->callbacks.print = &print_cat;
   obj->callbacks.free = &gen_free_opaque;
+
+#ifdef BUILD_X11
   END OBJ(num_led, 0)
   obj->callbacks.print = &print_num_led;
   END OBJ(caps_led, 0)
   obj->callbacks.print = &print_caps_led;
   END OBJ(scroll_led, 0)
   obj->callbacks.print = &print_scroll_led;
+#endif /* BUILD_X11 */
+
   END OBJ(catp, 0)
   obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
   obj->callbacks.print = &print_catp;
