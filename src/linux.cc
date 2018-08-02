@@ -253,7 +253,7 @@ void print_ioscheduler(struct text_object *obj, char *p, int p_max_size) {
   }
   fclose(fp);
 out_fail:
-  snprintf(p, p_max_size, "n/a");
+  snprintf(p, p_max_size, "%s", "n/a");
   return;
 }
 
@@ -573,7 +573,7 @@ int update_net_stats(void) {
         if (winfo->b.essid_on) {
           snprintf(ns->essid, 32, "%s", winfo->b.essid);
         } else {
-          snprintf(ns->essid, 32, "off/any");
+          snprintf(ns->essid, 32, "%s", "off/any");
         }
       }
       // get channel and freq
@@ -1426,7 +1426,7 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
 
   /* yeah, slow... :/ */
   if (!get_first_file_in_a_directory(ACPI_FAN_DIR, buf, &rep)) {
-    snprintf(p_client_buffer, client_buffer_size, "no fans?");
+    snprintf(p_client_buffer, client_buffer_size, "%s", "no fans?");
     return;
   }
 
@@ -1434,7 +1434,7 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
 
   fp = open_file(buf2, &rep);
   if (!fp) {
-    snprintf(p_client_buffer, client_buffer_size,
+    snprintf(p_client_buffer, client_buffer_size, "%s",
              "can't open fan's state file");
     return;
   }
@@ -1504,7 +1504,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
   } else {
     /* yeah, slow... :/ */
     if (!get_first_file_in_a_directory(ACPI_AC_ADAPTER_DIR, buf, &rep)) {
-      snprintf(p_client_buffer, client_buffer_size, "no ac_adapters?");
+      snprintf(p_client_buffer, client_buffer_size, "%s", "no ac_adapters?");
       return;
     }
 
@@ -1512,7 +1512,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
 
     fp = open_file(buf2, &rep);
     if (!fp) {
-      snprintf(p_client_buffer, client_buffer_size,
+      snprintf(p_client_buffer, client_buffer_size, "%s",
                "No ac adapter found.... where is it?");
       return;
     }
@@ -1821,12 +1821,12 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
             "charging %d%%",
             (int)(((float)remaining_capacity / acpi_last_full[idx]) * 100));
         snprintf(last_battery_time_str[idx],
-                 sizeof(last_battery_time_str[idx]) - 1, "unknown");
+                 sizeof(last_battery_time_str[idx]) - 1, "%s", "unknown");
       } else {
         strncpy(last_battery_str[idx], "charging",
                 sizeof(last_battery_str[idx]) - 1);
         snprintf(last_battery_time_str[idx],
-                 sizeof(last_battery_time_str[idx]) - 1, "unknown");
+                 sizeof(last_battery_time_str[idx]) - 1, "%s", "unknown");
       }
     }
     /* discharging */
@@ -1845,14 +1845,14 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
         snprintf(last_battery_str[idx], sizeof(last_battery_str[idx]) - 1,
                  "full");
         snprintf(last_battery_time_str[idx],
-                 sizeof(last_battery_time_str[idx]) - 1, "unknown");
+                 sizeof(last_battery_time_str[idx]) - 1, "%s", "unknown");
       } else {
         snprintf(
             last_battery_str[idx], sizeof(last_battery_str[idx]) - 1,
             "discharging %d%%",
             (int)(((float)remaining_capacity / acpi_last_full[idx]) * 100));
         snprintf(last_battery_time_str[idx],
-                 sizeof(last_battery_time_str[idx]) - 1, "unknown");
+                 sizeof(last_battery_time_str[idx]) - 1, "%s", "unknown");
       }
     }
     /* charged */
@@ -1951,12 +1951,12 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
                  "charging %d%%",
                  (int)((remaining_capacity * 100) / acpi_last_full[idx]));
         snprintf(last_battery_time_str[idx],
-                 sizeof(last_battery_time_str[idx]) - 1, "unknown");
+                 sizeof(last_battery_time_str[idx]) - 1, "%s", "unknown");
       } else {
         strncpy(last_battery_str[idx], "charging",
                 sizeof(last_battery_str[idx]) - 1);
         snprintf(last_battery_time_str[idx],
-                 sizeof(last_battery_time_str[idx]) - 1, "unknown");
+                 sizeof(last_battery_time_str[idx]) - 1, "%s", "unknown");
       }
       /* discharging */
     } else if (strncmp(charging_state, "discharging", 64) == 0) {
@@ -1973,13 +1973,13 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
         snprintf(last_battery_str[idx], sizeof(last_battery_str[idx]) - 1,
                  "charged");
         snprintf(last_battery_time_str[idx],
-                 sizeof(last_battery_time_str[idx]) - 1, "unknown");
+                 sizeof(last_battery_time_str[idx]) - 1, "%s", "unknown");
       } else {
         snprintf(last_battery_str[idx], sizeof(last_battery_str[idx]) - 1,
                  "discharging %d%%",
                  (int)((remaining_capacity * 100) / acpi_last_full[idx]));
         snprintf(last_battery_time_str[idx],
-                 sizeof(last_battery_time_str[idx]) - 1, "unknown");
+                 sizeof(last_battery_time_str[idx]) - 1, "%s", "unknown");
       }
       /* charged */
     } else if (strncmp(charging_state, "charged", 64) == 0) {
@@ -2021,7 +2021,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
 
       if (life == -1) {
         /* could check now that there is ac */
-        snprintf(last_battery_str[idx], 64, "not present");
+        snprintf(last_battery_str[idx], 64, "%s", "not present");
 
         /* could check that status == 3 here? */
       } else if (ac && life != 100) {
@@ -2307,10 +2307,10 @@ void get_powerbook_batt_info(struct text_object *obj, char *buffer, int n) {
   if (timeval == 0 && ac && (flags & PMU_BATT_PRESENT) &&
       !(flags & PMU_BATT_CHARGING)) {
     snprintf(pb_battery_info[PB_BATT_PERCENT],
-             sizeof(pb_battery_info[PB_BATT_PERCENT]), "100%%");
+             sizeof(pb_battery_info[PB_BATT_PERCENT]), "%s", "100%%");
   } else if (timeval == 0) {
     snprintf(pb_battery_info[PB_BATT_PERCENT],
-             sizeof(pb_battery_info[PB_BATT_PERCENT]), "unknown");
+             sizeof(pb_battery_info[PB_BATT_PERCENT]), "%s", "unknown");
   } else {
     snprintf(pb_battery_info[PB_BATT_PERCENT],
              sizeof(pb_battery_info[PB_BATT_PERCENT]), "%d%%",
@@ -2320,7 +2320,7 @@ void get_powerbook_batt_info(struct text_object *obj, char *buffer, int n) {
   /* update time string */
   if (timeval == 0) { /* fully charged or battery not present */
     snprintf(pb_battery_info[PB_BATT_TIME],
-             sizeof(pb_battery_info[PB_BATT_TIME]), "unknown");
+             sizeof(pb_battery_info[PB_BATT_TIME]), "%s", "unknown");
   } else if (timeval < 60 * 60) { /* don't show secs */
     format_seconds_short(pb_battery_info[PB_BATT_TIME],
                          sizeof(pb_battery_info[PB_BATT_TIME]), timeval);
@@ -2371,16 +2371,16 @@ void print_disk_protect_queue(struct text_object *obj, char *p,
     snprintf(path, 127, "/sys/block/%s/queue/protect", obj->data.s);
   }
   if ((fp = fopen(path, "r")) == nullptr) {
-    snprintf(p, p_max_size, "n/a   ");
+    snprintf(p, p_max_size, "%s", "n/a   ");
     return;
   }
   if (fscanf(fp, "%d\n", &state) != 1) {
     fclose(fp);
-    snprintf(p, p_max_size, "failed");
+    snprintf(p, p_max_size, "%s", "failed");
     return;
   }
   fclose(fp);
-  snprintf(p, p_max_size, (state > 0) ? "frozen" : "free  ");
+  snprintf(p, p_max_size, "%s", (state > 0) ? "frozen" : "free  ");
 }
 
 std::unordered_map<std::string, bool> dev_list;
@@ -2454,7 +2454,7 @@ void print_distribution(struct text_object *obj, char *p, int p_max_size) {
   struct stat sb;
 
   if (stat("/etc/arch-release", &sb) == 0) {
-    snprintf(p, p_max_size, "Arch Linux");
+    snprintf(p, p_max_size, "%s", "Arch Linux");
     return;
   }
   snprintf(p, p_max_size, "Unknown");

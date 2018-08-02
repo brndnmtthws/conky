@@ -214,7 +214,7 @@ void print_addr(struct text_object *obj, char *p, int p_max_size) {
 
   if ((ns->addr.sa_data[2] & 255) == 0 && (ns->addr.sa_data[3] & 255) == 0 &&
       (ns->addr.sa_data[4] & 255) == 0 && (ns->addr.sa_data[5] & 255) == 0) {
-    snprintf(p, p_max_size, "No Address");
+    snprintf(p, p_max_size, "%s", "No Address");
   } else {
     snprintf(p, p_max_size, "%u.%u.%u.%u", ns->addr.sa_data[2] & 255,
              ns->addr.sa_data[3] & 255, ns->addr.sa_data[4] & 255,
@@ -244,7 +244,7 @@ void print_v6addrs(struct text_object *obj, char *p, int p_max_size) {
 
   if (p_max_size == 0) return;
   if (!ns->v6addrs) {
-    snprintf(p, p_max_size, "No Address");
+    snprintf(p, p_max_size, "%s", "No Address");
     return;
   }
   *p = 0;
@@ -348,7 +348,7 @@ void print_wireless_channel(struct text_object *obj, char *p, int p_max_size) {
   if (ns->channel != 0) {
     snprintf(p, p_max_size, "%i", ns->channel);
   } else {
-    snprintf(p, p_max_size, "/");
+    snprintf(p, p_max_size, "%s", "/");
   }
 }
 void print_wireless_frequency(struct text_object *obj, char *p,

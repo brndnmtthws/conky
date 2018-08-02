@@ -362,7 +362,7 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
                  from_width, curr->from, subject_width, curr->subject);
       }
     } else {
-      snprintf(buf, text_buffer_size.get(*state), "\n");
+      snprintf(buf, text_buffer_size.get(*state), "%s", "\n");
     }
     strncat(output, buf, max_len - strlen(output));
 

@@ -950,7 +950,7 @@ void print_nvidia_value(struct text_object *obj, char *p, int p_max_size) {
     snprintf(p, p_max_size, "%s", str);
     free(str);
   } else {
-    snprintf(p, p_max_size, "N/A");
+    snprintf(p, p_max_size, "%s", "N/A");
   }
 }
 

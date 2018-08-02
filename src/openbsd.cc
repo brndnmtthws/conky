@@ -520,7 +520,7 @@ void get_obsd_vendor(struct text_object *obj, char *buf,
 
   if (sysctl(mib, 2, vendor, &size, nullptr, 0) == -1) {
     NORM_ERR("error reading vendor");
-    snprintf(buf, client_buffer_size, "unknown");
+    snprintf(buf, client_buffer_size, "%s", "unknown");
   } else {
     snprintf(buf, client_buffer_size, "%s", vendor);
   }
@@ -540,7 +540,7 @@ void get_obsd_product(struct text_object *obj, char *buf,
 
   if (sysctl(mib, 2, product, &size, nullptr, 0) == -1) {
     NORM_ERR("error reading product");
-    snprintf(buf, client_buffer_size, "unknown");
+    snprintf(buf, client_buffer_size, "%s", "unknown");
   } else {
     snprintf(buf, client_buffer_size, "%s", product);
   }

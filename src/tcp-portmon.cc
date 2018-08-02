@@ -133,14 +133,14 @@ void tcp_portmon_action(struct text_object *obj, char *p, int p_max_size) {
       find_tcp_port_monitor(pmc, pmd->port_range_begin, pmd->port_range_end);
 
   if (!p_monitor) {
-    snprintf(p, p_max_size, "monitor not found");
+    snprintf(p, p_max_size, "%s", "monitor not found");
     return;
   }
 
   /* now grab the text of interest */
   if (peek_tcp_port_monitor(p_monitor, pmd->item, pmd->connection_index, p,
                             p_max_size) != 0) {
-    snprintf(p, p_max_size, "monitor peek error");
+    snprintf(p, p_max_size, "%s", "monitor peek error");
   }
 }
 

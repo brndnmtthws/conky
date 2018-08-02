@@ -74,13 +74,13 @@ void print_apm_adapter(struct text_object *obj, char *p, int p_max_size) {
 
   fd = open(APMDEV, O_RDONLY);
   if (fd < 0) {
-    snprintf(p, p_max_size, "ERR");
+    snprintf(p, p_max_size, "%s", "ERR");
     return;
   }
 
   if (apm_getinfo(fd, &a_info) != 0) {
     close(fd);
-    snprintf(p, p_max_size, "ERR");
+    snprintf(p, p_max_size, "%s", "ERR");
     return;
   }
   close(fd);
@@ -123,13 +123,13 @@ void print_apm_battery_life(struct text_object *obj, char *p, int p_max_size) {
 
   fd = open(APMDEV, O_RDONLY);
   if (fd < 0) {
-    snprintf(p, p_max_size, "ERR");
+    snprintf(p, p_max_size, "%s", "ERR");
     return;
   }
 
   if (apm_getinfo(fd, &a_info) != 0) {
     close(fd);
-    snprintf(p, p_max_size, "ERR");
+    snprintf(p, p_max_size, "%s", "ERR");
     return;
   }
   close(fd);
@@ -165,13 +165,13 @@ void print_apm_battery_time(struct text_object *obj, char *p, int p_max_size) {
 
   fd = open(APMDEV, O_RDONLY);
   if (fd < 0) {
-    snprintf(p, p_max_size, "ERR");
+    snprintf(p, p_max_size, "%s", "ERR");
     return;
   }
 
   if (apm_getinfo(fd, &a_info) != 0) {
     close(fd);
-    snprintf(p, p_max_size, "ERR");
+    snprintf(p, p_max_size, "%s", "ERR");
     return;
   }
   close(fd);
@@ -182,7 +182,7 @@ void print_apm_battery_time(struct text_object *obj, char *p, int p_max_size) {
   batt_time = a_info.ai_batt_time;
 
   if (batt_time == -1) {
-    snprintf(p, p_max_size, "unknown");
+    snprintf(p, p_max_size, "%s", "unknown");
   } else
 #ifdef __OpenBSD__
   {
