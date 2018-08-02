@@ -138,7 +138,7 @@ void print_tcp_ping(struct text_object *obj, char *p, int p_max_size) {
           snprintf(p, p_max_size, "%llu", (usecdiff / 1000U));
         } else {
 #define TCP_PING_FAILED "down"
-          snprintf(p, p_max_size, TCP_PING_FAILED);
+          snprintf(p, p_max_size, "%s", TCP_PING_FAILED);
         }
       } else {
         NORM_ERR("tcp_ping: Couldn't wait on the 'pong'");
