@@ -37,6 +37,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <string.h>
+#include <ctype.h>
 
 
 static inline void read_file(const char *data, char *buf, const int size)
@@ -90,4 +92,24 @@ void print_catp(struct text_object *obj, char *p, int p_max_size)
 	evaluate(buf, p, p_max_size);
 
 	delete[] buf;
+}
+
+void print_cap(struct text_object *obj, char *p, int p_max_size) {
+  int x = 0;
+  int z = 0;
+  char buf[p_max_size];
+  char *src = obj->data.s;
+  char *dest = buf;
+
+  for (; *src && p_max_size-1 > x; src++, x++) {
+    if (0 == z) {
+      *dest++ = (toupper((unsigned char) *src));
+      z++;
+      continue;
+    }
+    *dest++ = *src;
+    if (' ' == *src) z = 0;
+  }
+  *dest = '\0';
+  snprintf(p, p_max_size, "%s", buf);
 }

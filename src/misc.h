@@ -28,12 +28,13 @@
  *
  */
 
-#ifndef _CAT_H
-#define _CAT_H
+#ifndef _MISC_H
+#define _MISC_H
 
 #include "text_object.h"
 
 void print_cat(struct text_object *, char *, int);
 void print_catp(struct text_object *, char *, int);
+void print_cap(struct text_object *, char *, int);
 
-#endif /* _CAT_H */
+#endif /* _MISC_H */
