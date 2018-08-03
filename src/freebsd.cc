@@ -641,8 +641,8 @@ int update_diskio(void) {
     free(dev_select);
   }
 
-  if (statinfo_cur->mem_ptr) {
-    free(statinfo_cur->mem_ptr);
+  if (statinfo_cur.dinfo->mem_ptr) {
+    free(statinfo_cur.dinfo->mem_ptr);
   }
   free(statinfo_cur.dinfo);
   return 0;
