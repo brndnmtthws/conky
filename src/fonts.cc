@@ -40,9 +40,7 @@ void font_setting::lua_setter(lua::state &l, bool init) {
   Base::lua_setter(l, init);
 
   if (init && out_to_x.get(*state)) {
-    if (fonts.empty()) {
-      fonts.resize(1);
-    }
+    if (fonts.empty()) { fonts.resize(1); }
     fonts[0].name = do_convert(l, -1).first;
   }
 
@@ -79,19 +77,17 @@ xftalpha_setting xftalpha;
 
 void set_font() {
 #ifdef BUILD_XFT
-  if (use_xft.get(*state)) {
-    return;
-  }
+  if (use_xft.get(*state)) { return; }
 #endif /* BUILD_XFT */
-  if (fonts[selected_font].font != nullptr) {
+  if (fonts.size() > selected_font && fonts[selected_font].font != nullptr &&
+      window.gc != nullptr) {
     XSetFont(display, window.gc, fonts[selected_font].font->fid);
   }
 }
 
 void setup_fonts() {
-  if (not out_to_x.get(*state)) {
-    return;
-  }
+  DBGP("setting up fonts");
+  if (!out_to_x.get(*state)) { return; }
 #ifdef BUILD_XFT
   if (use_xft.get(*state)) {
     if (window.xftdraw != nullptr) {
@@ -106,9 +102,7 @@ void setup_fonts() {
 }
 
 int add_font(const char *data_in) {
-  if (not out_to_x.get(*state)) {
-    return 0;
-  }
+  if (!out_to_x.get(*state)) { return 0; }
   fonts.emplace_back();
   fonts.rbegin()->name = data_in;
 
@@ -116,9 +110,7 @@ int add_font(const char *data_in) {
 }
 
 void free_fonts(bool utf8) {
-  if (not out_to_x.get(*state)) {
-    return;
-  }
+  if (!out_to_x.get(*state)) { return; }
   for (auto &font : fonts) {
 #ifdef BUILD_XFT
     if (use_xft.get(*state)) {
@@ -132,9 +124,7 @@ void free_fonts(bool utf8) {
     } else
 #endif /* BUILD_XFT */
     {
-      if (font.font != nullptr) {
-        XFreeFont(display, font.font);
-      }
+      if (font.font != nullptr) { XFreeFont(display, font.font); }
       if (utf8 && (font.fontset != nullptr)) {
         XFreeFontSet(display, font.fontset);
       }
@@ -151,9 +141,8 @@ void free_fonts(bool utf8) {
 }
 
 void load_fonts(bool utf8) {
-  if (not out_to_x.get(*state)) {
-    return;
-  }
+  DBGP("loading fonts");
+  if (!out_to_x.get(*state)) { return; }
   for (auto &font : fonts) {
 #ifdef BUILD_XFT
     /* load Xft font */
@@ -162,9 +151,7 @@ void load_fonts(bool utf8) {
         font.xftfont = XftFontOpenName(display, screen, font.name.c_str());
       }
 
-      if (font.xftfont != nullptr) {
-        continue;
-      }
+      if (font.xftfont != nullptr) { continue; }
 
       NORM_ERR("can't load Xft font '%s'", font.name.c_str());
       if ((font.xftfont = XftFontOpenName(display, screen, "courier-12")) !=
