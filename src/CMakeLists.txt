@@ -45,6 +45,7 @@ set(conky_sources
   conky.cc conky.h
   core.cc core.h
   cat.cc cat.h
+  cpu.cc cpu.h
   diskio.cc diskio.h
   entropy.cc entropy.h
   exec.cc exec.h
