@@ -83,7 +83,7 @@ void NORM_ERR(const char *format, Args &&... args) {
 /* critical error */
 template <typename... Args>
 inline void CRIT_ERR(void *memtofree1, void *memtofree2, const char *format,
-  Args &&... args) {
+                     Args &&... args) {
   NORM_ERR(format, args...);
   clean_up(memtofree1, memtofree2);
   exit(EXIT_FAILURE);
@@ -91,7 +91,7 @@ inline void CRIT_ERR(void *memtofree1, void *memtofree2, const char *format,
 
 template <typename... Args>
 inline void THREAD_CRIT_ERR(void *memtofree1, void *memtofree2,
-  const char *format, Args &&... args) {
+                            const char *format, Args &&... args) {
   NORM_ERR(format, args...);
   clean_up_without_threads(memtofree1, memtofree2);
   return;
@@ -106,21 +106,16 @@ class error : public std::runtime_error {
 
 /* debugging output */
 extern int global_debug_level;
-template <typename... Args>
-inline void __DBGP(const int level, const char *format, Args &&... args) {
-  if (global_debug_level > level) {
-    fprintf(stderr, "DEBUG(%d) [" __FILE__ ":%d]: ", level, __LINE__);
-  gettextize_format(format, args...);
-    fputs("\n", stderr);
-  }
-}
-template <typename... Args>
-void DBGP(const char *format, Args &&... args) {
-    __DBGP(0, format, args...);
-}
-template <typename... Args>
-void DBGP2(const char *format, Args &&... args) {
-    __DBGP(1, format, args...);
-}
+
+#define __DBGP(level, ...)                                               \
+  do {                                                                   \
+    if (global_debug_level > level) {                                    \
+      fprintf(stderr, "DEBUG(%d) [" __FILE__ ":%d]: ", level, __LINE__); \
+      gettextize_format(__VA_ARGS__);                                    \
+      fputs("\n", stderr);                                               \
+    }                                                                    \
+  } while (0)
+#define DBGP(...) __DBGP(0, __VA_ARGS__)
+#define DBGP2(...) __DBGP(1, __VA_ARGS__)
 
 #endif /* _LOGGING_H */
