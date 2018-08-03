@@ -14,7 +14,7 @@ config, it's suggested to use 2 args so that the new config is written in a new
 file (so that you have backup if something went wrong).
 
 For more information about the new format, read the wiki page
-<http://wiki.conky.be/index.php?title=conky2rc_format>
+<https://github.com/brndnmtthws/conky/wiki>
 ]];
 
 local function quote(s)
@@ -46,8 +46,8 @@ local num_setting = {
     maximum_width = true, mpd_port = true, music_player_interval = true, net_avg_samples = true,
     own_window_argb_value = true, pad_percents = true, stippled_borders = true,
     text_buffer_size = true, top_name_width = true, total_run_times = true,
-    update_interval = true, update_interval_on_battery = true, xftalpha = true, 
-    xinerama_head = true, 
+    update_interval = true, update_interval_on_battery = true, xftalpha = true,
+    xinerama_head = true,
 };
 
 local split_setting = {
