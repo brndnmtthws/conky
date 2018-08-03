@@ -87,7 +87,7 @@ void set_font() {
 
 void setup_fonts() {
   DBGP("setting up fonts");
-  if (not out_to_x.get(*state)) { return; }
+  if (!out_to_x.get(*state)) { return; }
 #ifdef BUILD_XFT
   if (use_xft.get(*state)) {
     if (window.xftdraw != nullptr) {
@@ -102,7 +102,7 @@ void setup_fonts() {
 }
 
 int add_font(const char *data_in) {
-  if (not out_to_x.get(*state)) { return 0; }
+  if (!out_to_x.get(*state)) { return 0; }
   fonts.emplace_back();
   fonts.rbegin()->name = data_in;
 
@@ -110,7 +110,7 @@ int add_font(const char *data_in) {
 }
 
 void free_fonts(bool utf8) {
-  if (not out_to_x.get(*state)) { return; }
+  if (!out_to_x.get(*state)) { return; }
   for (auto &font : fonts) {
 #ifdef BUILD_XFT
     if (use_xft.get(*state)) {
@@ -142,7 +142,7 @@ void free_fonts(bool utf8) {
 
 void load_fonts(bool utf8) {
   DBGP("loading fonts");
-  if (not out_to_x.get(*state)) { return; }
+  if (!out_to_x.get(*state)) { return; }
   for (auto &font : fonts) {
 #ifdef BUILD_XFT
     /* load Xft font */
