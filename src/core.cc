@@ -84,6 +84,8 @@
 #include "top.h"
 #include "user.h"
 #include "users.h"
+#include <inttypes.h>
+#include "cpu.h"
 #ifdef BUILD_CURL
 #include "ccurl_thread.h"
 #endif /* BUILD_CURL */
@@ -823,7 +825,21 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_caps_led;
   END OBJ(scroll_led, 0)
   obj->callbacks.print = &print_scroll_led;
+  END OBJ(kb_layout, 0)
+  obj->callbacks.print = &print_kb_layout;
+  END OBJ(mouse_speed, 0)
+  obj->callbacks.print = &print_mouse_speed;
 #endif /* BUILD_X11 */
+
+  END OBJ(password, 0)
+  obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  obj->callbacks.print = &print_password;
+  obj->callbacks.free = &gen_free_opaque;
+
+ #ifdef __x86_64__
+  END OBJ(freq2, 0)
+  obj->callbacks.print = &print_freq2;
+#endif /* __x86_64__ */
 
   END OBJ(cap, 0)
   obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));

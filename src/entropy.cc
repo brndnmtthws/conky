@@ -30,6 +30,8 @@
 #include "config.h"
 #include "conky.h"
 #include "text_object.h"
+#include <inttypes.h>
+#include <time.h>
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
@@ -82,4 +84,21 @@ double entropy_barval(struct text_object *obj) {
   (void)obj;
 
   return static_cast<double>(entropy.avail) / entropy.poolsize;
+}
+
+void print_password(struct text_object *obj, char *p, int p_max_size) {
+  time_t t;
+  static const char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()_";
+  static const int len = (int)sizeof(letters) - 1;
+  uintmax_t x = strtoumax(obj->data.s, (char **)NULL, 10), z = 0;
+
+  if (-1 == (t = time(NULL))) {
+    return;
+  }
+  srandom((unsigned int)t);
+
+  for (; z < x && p_max_size-1 > z; z++) {
+    *p++ = letters[random() % len];
+  }
+  *p = '\0';
 }
