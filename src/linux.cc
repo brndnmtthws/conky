@@ -106,7 +106,9 @@ static conky::simple_config_setting<bool> top_cpu_separate("top_cpu_separate",
  * using a flag in this manner creates less confusing code. */
 static int prefer_proc = 0;
 
-const char *temp2 = "empty";
+/* To tell 'print_sysfs_sensor' whether to print the temperature
+ * in int or float */
+static const char *temp2 = "empty";
 
 void prepare_update(void) {}
 
