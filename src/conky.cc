@@ -39,6 +39,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <vector>
 #include "common.h"
 #include "config.h"
 #include "conky.h"
@@ -1989,21 +1990,29 @@ static void update_text() {
 int inotify_fd = -1;
 #endif
 
+template<typename Out>
+void split(const std::string &s, char delim, Out result) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        *(result++) = item;
+    }
+}
+
+std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    split(s, delim, std::back_inserter(elems));
+    return elems;
+}
+
 bool is_on_battery() {  // checks if at least one battery specified in
                         // "detect_battery" is discharging
   char buf[64];
-  std::string detect_battery_str;
-  std::string str_buf = str_buf;
-  detect_battery_str.assign(detect_battery.get(*state));
-  detect_battery_str += ',';
+  std::vector<std::string> b_items = split(detect_battery.get(*state), ',');
 
-  for (char i : detect_battery_str) {  // parse using ',' as delimiter
-    if ((i != ',') && (i != ' ')) { str_buf += i; }
-    if ((i == ',') && !str_buf.empty()) {
-      get_battery_short_status(buf, 64, str_buf.c_str());
-      if (buf[0] == 'D') { return true; }
-      str_buf = "";
-    }
+  for(auto const& value: b_items) {
+    get_battery_short_status(buf, 64, value.c_str());
+    if (buf[0] == 'D') { return true; }
   }
   return false;
 }
