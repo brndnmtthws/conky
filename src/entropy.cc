@@ -90,7 +90,8 @@ void print_password(struct text_object *obj, char *p, int p_max_size) {
   time_t t;
   static const char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()_";
   static const int len = (int)sizeof(letters) - 1;
-  uintmax_t x = strtoumax(obj->data.s, (char **)NULL, 10), z = 0;
+  uintmax_t x = strtoumax(obj->data.s, (char **)NULL, 10);
+  uintmax_t z = 0;
 
   if (-1 == (t = time(NULL))) {
     return;

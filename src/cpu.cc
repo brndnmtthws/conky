@@ -65,8 +65,12 @@
 #endif /* __FreeBSD__ */
 
 uint8_t has_tsc_reg(void) {
-  uint_fast16_t vend = 0, leafs = 0;
-  uint_fast16_t eax = 0, ecx = 0, edx = 0, ebx = 0;
+  uint_fast16_t vend = 0;
+  uint_fast16_t leafs = 0;
+  uint_fast16_t eax = 0;
+  uint_fast16_t ecx = 0;
+  uint_fast16_t edx = 0;
+  uint_fast16_t ebx = 0;
 
   CPU_REGS(0x00000000, vend, leafs);
   if (0x00000001 > leafs) {
@@ -84,9 +88,14 @@ uint8_t has_tsc_reg(void) {
 }
 
 uintmax_t rdtsc(void) {
-  unsigned int tickhi = 0, ticklo = 0;
-  uint_fast16_t eax = 0, ecx = 0, edx = 0, ebx = 0;
-  uint_fast16_t regz = 0, x = 0;
+  unsigned int tickhi = 0;
+  unsigned int ticklo = 0;
+  uint_fast16_t eax = 0;
+  uint_fast16_t ecx = 0;
+  uint_fast16_t edx = 0;
+  uint_fast16_t ebx = 0;
+  uint_fast16_t regz = 0;
+  uint_fast16_t x = 0;
 
   if (0U != (has_tsc_reg())) {
     goto seeya;
@@ -123,7 +132,8 @@ seeya:
 
 void
 get_cpu_clock_speed(char *str1, int p_max_size) {
-  uintmax_t x = 0, z = 0;
+  uintmax_t x = 0;
+  uintmax_t z = 0;
   struct timespec tc = {0L, 0L};
 
   tc.tv_nsec = TICKZ * 1000000L;
@@ -140,7 +150,6 @@ get_cpu_clock_speed(char *str1, int p_max_size) {
 void print_freq2(struct text_object *obj, char *p, int p_max_size) {
   (void)obj;
   get_cpu_clock_speed(p, p_max_size);
-  return;
 }
 
 #else

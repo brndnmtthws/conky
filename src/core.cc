@@ -836,7 +836,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_password;
   obj->callbacks.free = &gen_free_opaque;
 
- #ifdef __x86_64__
+#ifdef __x86_64__
   END OBJ(freq2, 0)
   obj->callbacks.print = &print_freq2;
 #endif /* __x86_64__ */

@@ -1308,7 +1308,6 @@ void print_##func(struct text_object *obj, char *p, int p_max_size) { \
   XKeyboardState x; \
   XGetKeyboardControl(display, &x); \
   snprintf(p, p_max_size, "%s", (x.led_mask & num ? "On" : "Off")); \
-  return; \
 }
 
 LOCK_TEMPLATE(num_led, 2)
@@ -1328,7 +1327,6 @@ void print_kb_layout(struct text_object *obj, char *p, int p_max_size) {
 
   snprintf(p, p_max_size, "%s", (group != NULL ? group : "unknown"));
   XFree(group);
-  return;
 }
 
 void print_mouse_speed(struct text_object *obj, char *p, int p_max_size) {
@@ -1337,5 +1335,4 @@ void print_mouse_speed(struct text_object *obj, char *p, int p_max_size) {
 
   XGetPointerControl(display, &acc_num, &acc_denom, &threshold);
   snprintf(p, p_max_size, "%d%%", (110 - threshold));
-  return;
 }
