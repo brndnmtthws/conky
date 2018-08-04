@@ -39,6 +39,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <vector>
 #include "common.h"
 #include "config.h"
 #include "conky.h"
