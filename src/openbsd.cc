@@ -489,7 +489,7 @@ void print_obsd_sensors_temp(struct text_object *obj, char *p, int p_max_size) {
   obsd_sensors.device = sensor_device.get(*state);
   update_obsd_sensors();
   temp_print(p, p_max_size, obsd_sensors.temp[obsd_sensors.device][obj->data.l],
-             TEMP_CELSIUS);
+             TEMP_CELSIUS, 1);
 }
 
 void print_obsd_sensors_fan(struct text_object *obj, char *p, int p_max_size) {

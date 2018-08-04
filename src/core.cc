@@ -31,7 +31,7 @@
 #include "algebra.h"
 #include "bsdapm.h"
 #include "build.h"
-#include "cat.h"
+#include "misc.h"
 #include "colours.h"
 #include "combine.h"
 #include "core.h"
@@ -824,6 +824,11 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(scroll_led, 0)
   obj->callbacks.print = &print_scroll_led;
 #endif /* BUILD_X11 */
+
+  END OBJ(cap, 0)
+  obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  obj->callbacks.print = &print_cap;
+  obj->callbacks.free = &gen_free_opaque;
 
   END OBJ(catp, 0)
   obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));

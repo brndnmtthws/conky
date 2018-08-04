@@ -113,7 +113,7 @@ void print_i8k_cpu_temp(struct text_object *obj, char *p, int p_max_size) {
   (void)obj;
 
   sscanf(i8k.cpu_temp, "%d", &cpu_temp);
-  temp_print(p, p_max_size, (double)cpu_temp, TEMP_CELSIUS);
+  temp_print(p, p_max_size, (double)cpu_temp, TEMP_CELSIUS, 1);
 }
 
 void print_i8k_right_fan_status(struct text_object *obj, char *p,
