@@ -139,7 +139,7 @@ void print_smapi_bat_temp(struct text_object *obj, char *p, int p_max_size) {
               ? smapi_get_bat_int(idx, "temperature")
               : 0;
     /* temperature is in milli degree celsius */
-    temp_print(p, p_max_size, val / 1000, TEMP_CELSIUS);
+    temp_print(p, p_max_size, val / 1000, TEMP_CELSIUS, 1);
   } else
     NORM_ERR("argument to smapi_bat_temp must be an integer");
 }

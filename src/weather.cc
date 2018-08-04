@@ -721,9 +721,9 @@ static void weather_forecast_process_info(char *p, int p_max_size,
   std::lock_guard<std::mutex> lock(cb->result_mutex);
   const weather_forecast &data = cb->get_result();
   if (strcmp(data_type, "hi") == EQUAL) {
-    temp_print(p, p_max_size, data[day].hi, TEMP_CELSIUS);
+    temp_print(p, p_max_size, data[day].hi, TEMP_CELSIUS, 1);
   } else if (strcmp(data_type, "low") == EQUAL) {
-    temp_print(p, p_max_size, data[day].low, TEMP_CELSIUS);
+    temp_print(p, p_max_size, data[day].low, TEMP_CELSIUS, 1);
   } else if (strcmp(data_type, "icon") == EQUAL) {
     strncpy(p, data[day].icon.c_str(), p_max_size);
   } else if (strcmp(data_type, "forecast") == EQUAL) {
@@ -777,7 +777,7 @@ static void weather_process_info(char *p, int p_max_size,
   if (strcmp(data_type, "last_update") == EQUAL) {
     strncpy(p, data->lastupd.c_str(), p_max_size);
   } else if (strcmp(data_type, "temperature") == EQUAL) {
-    temp_print(p, p_max_size, data->temp, TEMP_CELSIUS);
+    temp_print(p, p_max_size, data->temp, TEMP_CELSIUS, 1);
   } else if (strcmp(data_type, "cloud_cover") == EQUAL) {
 #ifdef BUILD_WEATHER_XOAP
     if (data->xoap_t[0] != '\0') {

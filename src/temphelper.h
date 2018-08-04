@@ -28,6 +28,6 @@
 
 enum TEMP_UNIT { TEMP_CELSIUS, TEMP_FAHRENHEIT };
 
-int temp_print(char *, std::size_t, double, enum TEMP_UNIT);
+int temp_print(char *, std::size_t, double, enum TEMP_UNIT, int);
 
 #endif /* TEMPHELPER_H */
