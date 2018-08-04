@@ -307,10 +307,7 @@ void update_stuff() {
 
 /* Ohkie to return negative values for temperatures */
 int round_to_int_temp(float f) {
-  if (f >= 0.0) {
-    return static_cast<int>(f + 0.5);
-  }
-  return static_cast<int>(f - 0.5);
+  return static_cast<int>(f);
 }
 /* Don't return negative values for cpugraph, bar, gauge, percentage.
  * Causes unreasonable numbers to show */
