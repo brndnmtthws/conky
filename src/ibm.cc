@@ -318,5 +318,5 @@ void parse_ibm_temps_arg(struct text_object *obj, const char *arg) {
 }
 
 void print_ibm_temps(struct text_object *obj, char *p, int p_max_size) {
-  temp_print(p, p_max_size, ibm_acpi_temps[obj->data.l], TEMP_CELSIUS);
+  temp_print(p, p_max_size, ibm_acpi_temps[obj->data.l], TEMP_CELSIUS, 1);
 }

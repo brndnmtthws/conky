@@ -56,12 +56,17 @@ static double convert_temp_output(double n, enum TEMP_UNIT input_unit) {
 }
 
 int temp_print(char *p, size_t p_max_size, double n,
-               enum TEMP_UNIT input_unit) {
-  int out;
-  size_t plen;
+               enum TEMP_UNIT input_unit, int to_int) {
+  int i_out = 0;
+  float f_out = 0.0;
+  size_t plen = 0;
 
-  out = round_to_int_temp(convert_temp_output(n, input_unit));
-  plen = spaced_print(p, p_max_size, "%d", 3, out);
-
+  if (1 == to_int) {
+    i_out = round_to_int_temp(convert_temp_output(n, input_unit));
+    plen = spaced_print(p, p_max_size, "%d", 3, i_out);
+  } else {
+    f_out = convert_temp_output(n, input_unit);
+    plen = spaced_print(p, p_max_size, "%.2f", 3, f_out);
+  }
   return static_cast<int>(!(plen >= p_max_size));
 }

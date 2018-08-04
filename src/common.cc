@@ -307,10 +307,7 @@ void update_stuff() {
 
 /* Ohkie to return negative values for temperatures */
 int round_to_int_temp(float f) {
-  if (f >= 0.0) {
-    return static_cast<int>(f + 0.5);
-  }
-  return static_cast<int>(f - 0.5);
+  return static_cast<int>(f);
 }
 /* Don't return negative values for cpugraph, bar, gauge, percentage.
  * Causes unreasonable numbers to show */
@@ -588,7 +585,7 @@ int if_running_iftest(struct text_object *obj) {
 
 #ifndef __OpenBSD__
 void print_acpitemp(struct text_object *obj, char *p, int p_max_size) {
-  temp_print(p, p_max_size, get_acpi_temperature(obj->data.i), TEMP_CELSIUS);
+  temp_print(p, p_max_size, get_acpi_temperature(obj->data.i), TEMP_CELSIUS, 1);
 }
 
 void free_acpitemp(struct text_object *obj) { close(obj->data.i); }

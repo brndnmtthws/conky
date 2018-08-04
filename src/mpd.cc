@@ -234,7 +234,9 @@ void mpd_cb::work() {
       mpd_info.is_playing = 1;
       mpd_info.bitrate = status->bitRate;
       mpd_info.progress =
-          static_cast<float>(status->elapsedTime) / status->totalTime;
+          ((0 != status->totalTime) ?
+           static_cast<float>(status->elapsedTime) / status->totalTime
+           : 0.0);
       mpd_info.elapsed = status->elapsedTime;
       mpd_info.length = status->totalTime;
     } else {
