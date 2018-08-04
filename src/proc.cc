@@ -240,7 +240,7 @@ void print_pid_nice(struct text_object *obj, char *p, int p_max_size) {
 
   generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
 
-  if (*(obj->data.s) != 0) {
+  if (!obj->data.s) {
     snprintf(pathbuf, 64, PROCDIR "/%d/stat", strtopid(objbuf.get()));
     buf = readfile(pathbuf, &bytes_read, 1);
     if (buf != nullptr) {

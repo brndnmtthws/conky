@@ -228,6 +228,6 @@ void print_hddtemp(struct text_object *obj, char *p, int p_max_size) {
     snprintf(p, p_max_size, "%s", "N/A");
   } else {
     temp_print(p, p_max_size, (double)val,
-               (unit == 'C' ? TEMP_CELSIUS : TEMP_FAHRENHEIT));
+               (unit == 'C' ? TEMP_CELSIUS : TEMP_FAHRENHEIT), 1);
   }
 }
