@@ -2704,7 +2704,7 @@ void load_config_file() {
     } else {
 #endif
       l.loadfile(current_config.c_str());
-#ifdef BUILD_OLD_CONFIG
+#ifdef BUILD_BUILTIN_CONFIG
     }
 #endif
   } catch (lua::syntax_error &e) {
