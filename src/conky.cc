@@ -2704,7 +2704,9 @@ void load_config_file() {
     } else {
 #endif
       l.loadfile(current_config.c_str());
+#ifdef BUILD_OLD_CONFIG
     }
+#endif
   } catch (lua::syntax_error &e) {
 #define SYNTAX_ERR_READ_CONF "Syntax error (%s) while reading config file. "
 #ifdef BUILD_OLD_CONFIG
