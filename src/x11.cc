@@ -37,6 +37,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>
 #include <X11/Xutil.h>
+#include <X11/XKBlib.h>
 #ifdef BUILD_IMLIB2
 #include "imlib2.h"
 #endif /* BUILD_IMLIB2 */
@@ -1307,9 +1308,33 @@ void print_##func(struct text_object *obj, char *p, int p_max_size) { \
   XKeyboardState x; \
   XGetKeyboardControl(display, &x); \
   snprintf(p, p_max_size, "%s", (x.led_mask & num ? "On" : "Off")); \
-  return; \
 }
 
 LOCK_TEMPLATE(num_led, 2)
 LOCK_TEMPLATE(caps_led, 1)
 LOCK_TEMPLATE(scroll_led, 4)
+
+void print_kb_layout(struct text_object *obj, char *p, int p_max_size) {
+  (void)obj;
+
+  char *group = NULL;
+  XkbStateRec state;
+  XkbDescPtr desc;
+
+  XkbGetState(display, XkbUseCoreKbd, &state);
+  desc = XkbGetKeyboard(display, XkbAllComponentsMask, XkbUseCoreKbd);
+  group = XGetAtomName(display, desc->names->groups[state.group]);
+
+  snprintf(p, p_max_size, "%s", (group != NULL ? group : "unknown"));
+  XFree(group);
+}
+
+void print_mouse_speed(struct text_object *obj, char *p, int p_max_size) {
+  (void)obj;
+  int acc_num = 0;
+  int acc_denom = 0;
+  int threshold = 0;
+
+  XGetPointerControl(display, &acc_num, &acc_denom, &threshold);
+  snprintf(p, p_max_size, "%d%%", (110 - threshold));
+}

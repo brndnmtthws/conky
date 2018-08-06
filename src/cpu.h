@@ -27,15 +27,14 @@
  *
  */
 
-#ifndef _ENTROPY_H
-#define _ENTROPY_H
+#ifndef _CPU_H
+#define _CPU_H
 
-int update_entropy(void);
+#ifdef __x86_64__
+uintmax_t rdtsc(void);
+void get_cpu_clock_speed(char *, int);
+uint8_t has_tsc_reg(void);
+void print_freq2(struct text_object *, char *, int);
+#endif /* __x86_64__ */
 
-void print_entropy_avail(struct text_object *, char *, int);
-uint8_t entropy_percentage(struct text_object *);
-void print_entropy_poolsize(struct text_object *, char *, int);
-double entropy_barval(struct text_object *);
-void print_password(struct text_object *, char *, int);
-
-#endif /* _ENTROPY_H */
+#endif /* _CPU_H */

@@ -129,6 +129,11 @@ bool read_log(size_t *read, size_t *length, time_t *time, uint64_t *timestamp,
            strftime(p + *read, p_max_size - *read, "%b %d %H:%M:%S", &tm)) <= 0)
     return false;
   *read += *length;
+
+  if (p_max_size < *read) {
+    *read = p_max_size - 1;
+    return false;
+  }
   p[*read++] = ' ';
 
   if (print_field(jh, "_HOSTNAME", ' ', read, p, p_max_size) < 0) return false;
@@ -138,7 +143,16 @@ bool read_log(size_t *read, size_t *length, time_t *time, uint64_t *timestamp,
 
   if (print_field(jh, "_PID", ']', read, p, p_max_size) < 0) return false;
 
+  if (p_max_size < *read) {
+    *read = p_max_size - 1;
+    return false;
+  }
   p[*read++] = ':';
+
+  if (p_max_size < *read) {
+    *read = p_max_size - 1;
+    return false;
+  }
   p[*read++] = ' ';
 
   if (print_field(jh, "MESSAGE", '\n', read, p, p_max_size) < 0) return false;

@@ -1998,8 +1998,7 @@ void split(const std::string &s, char delim, Out result) {
         *(result++) = item;
     }
 }
-
-std::vector<std::string> split(const std::string &s, char delim) {
+ std::vector<std::string> split(const std::string &s, char delim) {
     std::vector<std::string> elems;
     split(s, delim, std::back_inserter(elems));
     return elems;
@@ -2010,7 +2009,7 @@ bool is_on_battery() {  // checks if at least one battery specified in
   char buf[64];
   std::vector<std::string> b_items = split(detect_battery.get(*state), ',');
 
-  for(auto const& value: b_items) {
+   for(auto const& value: b_items) {
     get_battery_short_status(buf, 64, value.c_str());
     if (buf[0] == 'D') { return true; }
   }
