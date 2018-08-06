@@ -259,7 +259,7 @@ void print_v6addrs(struct text_object *obj, char *p, int p_max_size) {
     }
     // scope
     if (ns->v6show_sc) {
-      char scopestr[3];
+      char scopestr[4];
       sprintf(scopestr, "(%c)", current_v6->scope);
       strncat(p, scopestr, p_max_size);
     }
