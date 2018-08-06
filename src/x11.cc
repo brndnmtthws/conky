@@ -1331,7 +1331,9 @@ void print_kb_layout(struct text_object *obj, char *p, int p_max_size) {
 
 void print_mouse_speed(struct text_object *obj, char *p, int p_max_size) {
   (void)obj;
-  int acc_num = 0, acc_denom = 0, threshold = 0;
+  int acc_num = 0;
+  int acc_denom = 0;
+  int threshold = 0;
 
   XGetPointerControl(display, &acc_num, &acc_denom, &threshold);
   snprintf(p, p_max_size, "%d%%", (110 - threshold));
