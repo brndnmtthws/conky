@@ -121,7 +121,14 @@ endif(BUILD_NCURSES)
 option(BUILD_X11 "Build X11 support" true)
 if(BUILD_X11)
 	option(OWN_WINDOW "Enable own_window support" true)
-	option(BUILD_XDAMAGE "Build Xdamage support" true)
+
+	# Mac Fix
+	if(OS_DARWIN)
+		option(BUILD_XDAMAGE "Build Xdamage support" false)
+	else(OS_DARWIN)
+		option(BUILD_XDAMAGE "Build Xdamage support" true)
+	endif(OS_DARWIN)
+
 	option(BUILD_XINERAMA "Build Xinerama support" true)
 	option(BUILD_XDBE "Build Xdbe (double-buffer) support" true)
 	option(BUILD_XFT "Build Xft (freetype fonts) support" true)
