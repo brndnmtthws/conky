@@ -781,10 +781,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(conky_build_date, nullptr) obj_be_plain_text(obj, BUILD_DATE);
   END OBJ(conky_build_arch, nullptr) obj_be_plain_text(obj, BUILD_ARCH);
   END OBJ(downspeed, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
+      update_gateway_info();
+  parse_net_stat_arg(obj, arg, free_at_crash);
   obj->callbacks.print = &print_downspeed;
   END OBJ(downspeedf, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
+      update_gateway_info();
+  parse_net_stat_arg(obj, arg, free_at_crash);
   obj->callbacks.print = &print_downspeedf;
 #ifdef BUILD_X11
   END OBJ(downspeedgraph, &update_net_stats)
@@ -1405,10 +1407,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(alignc, nullptr) obj->data.l = arg != nullptr ? atoi(arg) : 0;
   obj->callbacks.print = &new_alignc;
   END OBJ(upspeed, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
+      update_gateway_info();
+  parse_net_stat_arg(obj, arg, free_at_crash);
   obj->callbacks.print = &print_upspeed;
   END OBJ(upspeedf, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
+      update_gateway_info();
+  parse_net_stat_arg(obj, arg, free_at_crash);
   obj->callbacks.print = &print_upspeedf;
 #ifdef BUILD_X11
   END OBJ(upspeedgraph, &update_net_stats)
