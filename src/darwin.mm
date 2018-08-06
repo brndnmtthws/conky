@@ -113,7 +113,7 @@ static conky::simple_config_setting<bool> top_cpu_separate("top_cpu_separate",
 /*
  * used by update_cpu_usage()
  */
-std::vector<struct cpusample *> sample_handles; /* a registry of handles */
+struct cpusample *sample_handle = nullptr;
 
 static int getsysctl(const char *name, void *ptr, size_t len) {
   size_t nlen = len;
@@ -273,20 +273,23 @@ static void get_cpu_sample(struct cpusample **sample) {
 }
 
 void allocate_cpu_sample(struct cpusample **sample) {
+  if (*sample != nullptr)
+    return;
+  
   /*
    * allocate ncpus+1 cpusample structs (one foreach CPU)
    * ** sample_handle[0] is overal CPU usage
    */
   *sample = reinterpret_cast<struct cpusample *>(malloc(sizeof(cpusample) * (info.cpu_count + 1)));
   memset(*sample, 0, sizeof(cpusample) * (info.cpu_count + 1));
-
-  sample_handles.push_back(*sample);  /* register handle */
+  
+  sample_handle = *sample; /* use a public handle for deallocating */
 }
 
 void deallocate_cpu_sample(struct text_object *obj) {
-  while (sample_handles.size() > 0) {
-    free(sample_handles.back());
-    sample_handles.pop_back();
+  if (sample_handle != nullptr) {
+    free(sample_handle);
+    sample_handle = nullptr;
   }
 }
 
@@ -889,7 +892,7 @@ int update_cpu_usage() {
   unsigned int malloc_cpu_size = 0;
   extern void *global_cpu;
   
-  struct cpusample *sample = nullptr;
+  static struct cpusample *sample = nullptr;
 
   static pthread_mutex_t last_stat_update_mutex = PTHREAD_MUTEX_INITIALIZER;
   static double last_stat_update = 0.0;
@@ -922,7 +925,7 @@ int update_cpu_usage() {
   }
 
   allocate_cpu_sample(&sample);
-
+  
   get_cpu_sample(&sample);
 
   /*
