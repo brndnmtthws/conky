@@ -4598,19 +4598,11 @@
         </term>
         <listitem>
             <para>Download, parse and display METAR data.</para>
-            <para>For the 'URI', there are two
-            possibilities:</para>
+            <para>'URI' must be a valid METAR URI.</para>
             <simplelist>
                 <member>
-                http://weather.noaa.gov/pub/data/observations/metar/stations/</member>
-                <member>
-                http://xoap.weather.com/weather/local/</member>
+                http://tgftp.nws.noaa.gov/data/observations/metar/stations/</member>
             </simplelist>
-            <para>The first one is free to use but the second
-            requires you to register and obtain your partner ID and
-            license key. These two must be written, separated by a
-            space, into a file called .xoaprc which needs to be
-            placed into your home directory.</para>
             <para>'locID' must be a valid location identifier for
             the required uri. For the NOAA site this must be a
             valid ICAO (see for instance
@@ -4694,9 +4686,10 @@
         <listitem>
             <para>Download, parse and display weather forecast data
 	    for a given day (daytime only).</para>
-            <para>For the 'URI', for the time being only
-            http://xoap.weather.com/weather/local/ is
-	    supported. See 'weather' above for details of usage</para>
+            <para>For the 'URI', http://xoap.weather.com/weather/local/ is
+            deprecated. Please suggest a new URI in
+            https://github.com/brndnmtthws/conky/issues/313. See 'weather'
+            above for details of usage</para>
             <para>'locID', see 'weather' above.</para>
             <para>'day' is a number from 0 (today) to 4 (3 days
             after tomorrow).</para>
