@@ -535,13 +535,19 @@ static void print_top_time(struct text_object *obj, char *p, int p_max_size) {
 
 static void print_top_user(struct text_object *obj, char *p, int p_max_size) {
   auto *td = static_cast<struct top_data *>(obj->data.opaque);
+  struct passwd *pw;
 
   if ((td == nullptr) || (td->list == nullptr) ||
       (td->list[td->num] == nullptr)) {
     return;
   }
 
-  snprintf(p, p_max_size, "%.8s", getpwuid(td->list[td->num]->uid)->pw_name);
+  pw = getpwuid(td->list[td->num]->uid);
+  if (pw != nullptr) {
+    snprintf(p, p_max_size, "%.8s", pw->pw_name);
+  } else {
+    NORM_ERR("The uid doesn't exist");
+  }
 }
 
 #define PRINT_TOP_GENERATOR(name, width, fmt, field)                    \
