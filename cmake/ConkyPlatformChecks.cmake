@@ -435,7 +435,7 @@ endif(BUILD_PULSEAUDIO)
 
 # Common libraries
 if(WANT_GLIB)
-  pkg_check_modules(GLIB REQUIRED glib-2.0)
+  pkg_check_modules(GLIB REQUIRED glib-2.0>=2.36)
   set(conky_libs ${conky_libs} ${GLIB_LIBRARIES})
   set(conky_includes ${conky_includes} ${GLIB_INCLUDE_DIRS})
 endif(WANT_GLIB)

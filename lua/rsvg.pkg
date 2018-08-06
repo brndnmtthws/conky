@@ -101,7 +101,6 @@ RsvgHandle *rsvg_handle_new_from_file (const char * file_name, GError ** error);
 int         rsvg_handle_render_cairo     (RsvgHandle * handle, cairo_t * cr);
 int         rsvg_handle_render_cairo_sub (RsvgHandle * handle, cairo_t * cr, const char *id);
 
-void g_type_init(void);
 void g_object_unref(gpointer object);
 
 RsvgHandle * rsvg_create_handle_from_file(const char *);
