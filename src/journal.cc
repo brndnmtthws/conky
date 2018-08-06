@@ -88,6 +88,8 @@ void init_journal(const char *type, const char *arg, struct text_object *obj,
         CRIT_ERR(obj, free_at_crash,
                  "invalid arg for %s, type must be 'system' or 'user'", type);
       }
+    } else {
+      NORM_ERR("You should type a 'user' or 'system' as an argument");
     }
 
   } else {
@@ -114,7 +116,13 @@ static int print_field(sd_journal *jh, const char *field, char spacer,
   *read += length - fieldlen;
 
 out:
-  if (spacer) p[(*read)++] = spacer;
+  if (spacer) {
+    if (p_max_size < *read) {
+      *read = p_max_size - 1;
+    } else {
+      p[(*read)++] = spacer;
+    }
+  }
   return length ? length - fieldlen : 0;
 }
 
