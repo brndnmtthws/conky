@@ -360,6 +360,7 @@ void print_gateway_ip(struct text_object *obj, char *p, int p_max_size) {
  * if some error happened
  **/
 int update_net_stats(void) {
+  update_gateway_info();
   FILE *net_dev_fp;
   static int rep = 0;
   /* variably to notify the parts averaging the download speed, that this
