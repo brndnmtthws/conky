@@ -171,12 +171,10 @@ if(BUILD_IPV6)
 endif(BUILD_IPV6)
 
 if(BUILD_HTTP)
-  find_file(HTTP_H_ microhttpd.h)
-  #I'm not using check_include_files because microhttpd.h seems to need a lot of different headers and i'm not sure which...
-  if(NOT HTTP_H_)
-    message(FATAL_ERROR "Unable to find libmicrohttpd")
-  endif(NOT HTTP_H_)
-  set(conky_libs ${conky_libs} -lmicrohttpd)
+  #pkg_check_modules(MICROHTTPD REQUIRED libmicrohttpd>=0.9.25)
+  pkg_check_modules(MICROHTTPD REQUIRED libmicrohttpd)
+  set(conky_libs ${conky_libs} ${MICROHTTPD_LIBRARIES})
+  set(conky_includes ${conky_includes} ${MICROHTTPD_INCLUDE_DIRS})
 endif(BUILD_HTTP)
 
 if(BUILD_NCURSES)
