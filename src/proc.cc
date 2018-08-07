@@ -646,6 +646,7 @@ void print_pid_Xid(struct text_object *obj, char *p, int p_max_size, idtype type
     case uid:
       begin = strstr(buf, "Uid:\t");
       break;
+    default:
     }
     if (begin != nullptr) {
       if(type == gid) {
@@ -692,6 +693,7 @@ void print_pid_Xid(struct text_object *obj, char *p, int p_max_size, idtype type
       case uid:
         errorstring.append("real uid");
         break;
+      default:
       }
       errorstring.append(" in '%s'");
       NORM_ERR(errorstring.c_str(), pathstream.str().c_str());
