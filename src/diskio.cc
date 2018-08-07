@@ -147,7 +147,7 @@ static void print_diskio_dir(struct text_object *obj, int dir, char *p,
 
   /* TODO: move this correction from kB to kB/s elsewhere
    * (or get rid of it??) */
-  human_readable(0, obj->data.s, (val / active_update_interval()), p, p_max_size);
+  human_readable(0, obj->data.s, (val / active_update_interval()) * 1024LL, p, p_max_size);
 }
 
 void print_diskio(struct text_object *obj, char *p, int p_max_size) {
