@@ -112,10 +112,8 @@
         <listitem>Specify a default width for bars. If not specified,
         the default value is 0, which causes the bar to expand to
         fit the width of your Conky window. If you set
-        out_to_console = true, the text version of the bar will
-        actually have no width and you will need to set a
-        sensible default or set the height and width of each bar
-        individually.
+        out_to_console = true, the default value will be 10
+        for the text version of the bar.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
