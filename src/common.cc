@@ -390,7 +390,7 @@ double cpu_barval(struct text_object *obj) {
 #define PRINT_HR_GENERATOR(name)                                        \
   void print_##name(struct text_object *obj, char *p, int p_max_size) { \
     (void)obj;                                                          \
-    human_readable(info.name * 1024, p, p_max_size);                    \
+    human_readable(info.name * 1000, p, p_max_size);                    \
   }
 
 PRINT_HR_GENERATOR(mem)
@@ -507,12 +507,12 @@ void print_threads(struct text_object *obj, char *p, int p_max_size) {
 
 void print_buffers(struct text_object *obj, char *p, int p_max_size) {
   (void)obj;
-  human_readable(info.buffers * 1024, p, p_max_size);
+  human_readable(info.buffers * 1000, p, p_max_size);
 }
 
 void print_cached(struct text_object *obj, char *p, int p_max_size) {
   (void)obj;
-  human_readable(info.cached * 1024, p, p_max_size);
+  human_readable(info.cached * 1000, p, p_max_size);
 }
 
 void print_evaluate(struct text_object *obj, char *p, int p_max_size) {
