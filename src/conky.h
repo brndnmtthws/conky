@@ -369,18 +369,4 @@ extern std::unique_ptr<lua::state> state;
 extern int argc_copy;
 extern char **argv_copy;
 
-/* a safer asprintf()
- * - no need to check for errors
- * - exit conky on memory allocation failure
- * - XXX: no return value at all, otherwise this
- *        could be used globally */
-#define safe_asprintf(bufp, ...)                                   \
-  {                                                                \
-    int __v;                                                       \
-    if ((__v = asprintf(bufp, __VA_ARGS__)) == -1) {               \
-      fprintf(stderr, "%s: memory allocation failed\n", __func__); \
-      exit(__v);                                                   \
-    }                                                              \
-  }
-
 #endif /* _conky_h_ */
