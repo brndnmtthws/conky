@@ -650,19 +650,44 @@ void print_pid_Xid(struct text_object *obj, char *p, int p_max_size, idtype type
       break;
     }
     if (begin != nullptr) {
-      if(type == gid) {
+      switch(type) {
+      case gid:
         begin += strlen("Gid:\t");
-      } else if(type == uid) {
+        break;
+      case uid:
         begin += strlen("Uid:\t");
-      } else if(type == sgid || type == suid || type == fsgid || type == fsuid) {
+        break;
+      case egid:
+      case euid:
+        begin = strchr(begin, '\t');
+	begin++;
+        begin = strchr(begin, '\t');
+	begin++;
+        break;
+      case sgid:
+      case suid:
+        begin = strchr(begin, '\t');
+	begin++;
         begin = strchr(begin, '\t');
         begin++;
-        if(type == fsgid || type == fsuid) {
-          begin = strchr(begin, '\t');
-          begin++;
-        }
+        begin = strchr(begin, '\t');
+        begin++;
+        break;
+      case fsgid:
+      case fsuid:
+        begin = strchr(begin, '\t');
+        begin++;
+        begin = strchr(begin, '\t');
+        begin++;
+        begin = strchr(begin, '\t');
+        begin++;
+        begin = strchr(begin, '\t');
+        begin++;
+	break;
+      default:
+        break;
       }
-      end = strchr(begin, '\t');
+      if(type == fsgid || type == fsuid) end = strchr(begin, '\n'); else end = strchr(begin, '\t');
       if (end != nullptr) {
         *(end) = 0;
       }
