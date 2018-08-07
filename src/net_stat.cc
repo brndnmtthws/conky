@@ -48,6 +48,12 @@
 #define SOCK_CLOEXEC O_CLOEXEC
 #endif /* SOCK_CLOEXEC */
 
+#if defined(__linux__)
+#include "linux.h"
+#else
+char e_iface[50] = "empty";
+#endif /* __linux__ */
+
 /* network interface stuff */
 
 enum if_up_strictness_ { IFUP_UP, IFUP_LINK, IFUP_ADDR };
@@ -116,6 +122,11 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
   struct net_stat *netstat = nullptr;
 
   if (arg == nullptr) { arg = DEFAULTNETDEV; }
+
+  if (0 == (strcmp("$gw_iface", arg)) ||
+      0 == (strcmp("${gw_iface}", arg))) {
+    arg = e_iface;
+  }
 
   while (sscanf(arg + i, " %20s", nextarg) == 1) {
     if (strcmp(nextarg, "-n") == 0 || strcmp(nextarg, "--netmask") == 0) {

@@ -94,6 +94,8 @@ struct sysfs {
   float factor, offset;
 };
 
+char e_iface[50];
+
 #define SHORTSTAT_TEMPL "%*s %llu %llu %llu"
 #define LONGSTAT_TEMPL "%*s %llu %llu %llu "
 
@@ -314,6 +316,7 @@ int update_gateway_info(void) {
     }
     if (!(dest || mask) && ((flags & RTF_GATEWAY) || !gate)) {
       gw_info.count++;
+      snprintf(e_iface, 49, "%s", iface);
       SAVE_SET_STRING(gw_info.iface, iface)
       ina.s_addr = gate;
       SAVE_SET_STRING(gw_info.ip, inet_ntoa(ina))
@@ -357,6 +360,7 @@ void print_gateway_ip(struct text_object *obj, char *p, int p_max_size) {
  * if some error happened
  **/
 int update_net_stats(void) {
+  update_gateway_info();
   FILE *net_dev_fp;
   static int rep = 0;
   /* variably to notify the parts averaging the download speed, that this

@@ -31,7 +31,6 @@
 #include "algebra.h"
 #include "bsdapm.h"
 #include "build.h"
-#include "misc.h"
 #include "colours.h"
 #include "combine.h"
 #include "core.h"
@@ -39,6 +38,7 @@
 #include "entropy.h"
 #include "exec.h"
 #include "i8k.h"
+#include "misc.h"
 #include "text_object.h"
 #ifdef BUILD_IMLIB2
 #include "imlib2.h"
@@ -74,6 +74,8 @@
 #ifdef BUILD_NVIDIA
 #include "nvidia.h"
 #endif
+#include <inttypes.h>
+#include "cpu.h"
 #include "read_tcpip.h"
 #include "scroll.h"
 #include "specials.h"
@@ -84,8 +86,6 @@
 #include "top.h"
 #include "user.h"
 #include "users.h"
-#include <inttypes.h>
-#include "cpu.h"
 #ifdef BUILD_CURL
 #include "ccurl_thread.h"
 #endif /* BUILD_CURL */
@@ -427,8 +427,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &gen_free_opaque;
 #endif /* !__OpenBSD__ */
   END OBJ(freq, nullptr) get_cpu_count();
-  if ((arg == nullptr) || (isdigit((unsigned char)arg[0]) == 0) || strlen(arg) >= 3 ||
-      atoi(&arg[0]) == 0 || atoi(&arg[0]) > info.cpu_count) {
+  if ((arg == nullptr) || (isdigit((unsigned char)arg[0]) == 0) ||
+      strlen(arg) >= 3 || atoi(&arg[0]) == 0 ||
+      atoi(&arg[0]) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("freq: Invalid CPU number or you don't have that many CPUs! "
       "Displaying the clock for CPU 1."); */
@@ -437,8 +438,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   }
   obj->callbacks.print = &print_freq;
   END OBJ(freq_g, nullptr) get_cpu_count();
-  if ((arg == nullptr) || (isdigit((unsigned char)arg[0]) == 0) || strlen(arg) >= 3 ||
-      atoi(&arg[0]) == 0 || atoi(&arg[0]) > info.cpu_count) {
+  if ((arg == nullptr) || (isdigit((unsigned char)arg[0]) == 0) ||
+      strlen(arg) >= 3 || atoi(&arg[0]) == 0 ||
+      atoi(&arg[0]) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("freq_g: Invalid CPU number or you don't have that many "
       "CPUs! Displaying the clock for CPU 1."); */
@@ -463,8 +465,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &free_tcp_ping;
 #if defined(__linux__)
   END OBJ(voltage_mv, 0) get_cpu_count();
-  if (!arg || !isdigit((unsigned char)arg[0]) || strlen(arg) >= 3 || atoi(&arg[0]) == 0 ||
-      atoi(&arg[0]) > info.cpu_count) {
+  if (!arg || !isdigit((unsigned char)arg[0]) || strlen(arg) >= 3 ||
+      atoi(&arg[0]) == 0 || atoi(&arg[0]) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("voltage_mv: Invalid CPU number or you don't have that many "
       "CPUs! Displaying voltage for CPU 1."); */
@@ -473,8 +475,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   }
   obj->callbacks.print = &print_voltage_mv;
   END OBJ(voltage_v, 0) get_cpu_count();
-  if (!arg || !isdigit((unsigned char)arg[0]) || strlen(arg) >= 3 || atoi(&arg[0]) == 0 ||
-      atoi(&arg[0]) > info.cpu_count) {
+  if (!arg || !isdigit((unsigned char)arg[0]) || strlen(arg) >= 3 ||
+      atoi(&arg[0]) == 0 || atoi(&arg[0]) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("voltage_v: Invalid CPU number or you don't have that many "
       "CPUs! Displaying voltage for CPU 1."); */
@@ -813,41 +815,35 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       scan_no_update(obj, arg);
   obj->callbacks.print = &print_no_update;
   obj->callbacks.free = &free_no_update;
-  END OBJ(cat, 0)
-  obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  END OBJ(cat, 0) obj->data.s =
+      strndup(arg ? arg : "", text_buffer_size.get(*state));
   obj->callbacks.print = &print_cat;
   obj->callbacks.free = &gen_free_opaque;
 
 #ifdef BUILD_X11
-  END OBJ(num_led, 0)
-  obj->callbacks.print = &print_num_led;
-  END OBJ(caps_led, 0)
-  obj->callbacks.print = &print_caps_led;
-  END OBJ(scroll_led, 0)
-  obj->callbacks.print = &print_scroll_led;
-  END OBJ(kb_layout, 0)
-  obj->callbacks.print = &print_kb_layout;
-  END OBJ(mouse_speed, 0)
-  obj->callbacks.print = &print_mouse_speed;
+  END OBJ(num_led, 0) obj->callbacks.print = &print_num_led;
+  END OBJ(caps_led, 0) obj->callbacks.print = &print_caps_led;
+  END OBJ(scroll_led, 0) obj->callbacks.print = &print_scroll_led;
+  END OBJ(kb_layout, 0) obj->callbacks.print = &print_kb_layout;
+  END OBJ(mouse_speed, 0) obj->callbacks.print = &print_mouse_speed;
 #endif /* BUILD_X11 */
 
-  END OBJ(password, 0)
-  obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  END OBJ(password, 0) obj->data.s =
+      strndup(arg ? arg : "", text_buffer_size.get(*state));
   obj->callbacks.print = &print_password;
   obj->callbacks.free = &gen_free_opaque;
 
 #ifdef __x86_64__
-  END OBJ(freq2, 0)
-  obj->callbacks.print = &print_freq2;
+  END OBJ(freq2, 0) obj->callbacks.print = &print_freq2;
 #endif /* __x86_64__ */
 
-  END OBJ(cap, 0)
-  obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  END OBJ(cap, 0) obj->data.s =
+      strndup(arg ? arg : "", text_buffer_size.get(*state));
   obj->callbacks.print = &print_cap;
   obj->callbacks.free = &gen_free_opaque;
 
-  END OBJ(catp, 0)
-  obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  END OBJ(catp, 0) obj->data.s =
+      strndup(arg ? arg : "", text_buffer_size.get(*state));
   obj->callbacks.print = &print_catp;
   obj->callbacks.free = &gen_free_opaque;
   END OBJ_ARG(exec, nullptr, "exec needs arguments: <command>")
