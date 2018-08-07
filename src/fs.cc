@@ -255,7 +255,7 @@ uint8_t fs_used_percentage(struct text_object *obj) {
 #define HUMAN_PRINT_FS_GENERATOR(name, expr)                               \
   void print_fs_##name(struct text_object *obj, char *p, int p_max_size) { \
     struct fs_stat *fs = (struct fs_stat *)obj->data.opaque;               \
-    if (fs) human_readable(expr, p, p_max_size);                           \
+    if (fs) human_readable(0, obj->data.s, expr, p, p_max_size);                           \
   }
 
 HUMAN_PRINT_FS_GENERATOR(free, fs->avail)
