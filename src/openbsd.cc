@@ -400,6 +400,9 @@ void update_cpu_usage() {
 #endif
 }
 
+void free_cpu(struct text_object *) {
+}
+
 void update_load_average() {
   double v[3];
 

@@ -371,6 +371,9 @@ int update_cpu_usage(void) {
   return 0;
 }
 
+void free_cpu(struct text_object *) {
+}
+
 int update_load_average(void) {
   double v[3];
 

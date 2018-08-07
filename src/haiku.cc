@@ -143,6 +143,9 @@ int update_cpu_usage() {
   return 1;
 }
 
+void free_cpu(struct text_object *) {
+}
+
 int update_load_average() {
   // TODO
   return 1;

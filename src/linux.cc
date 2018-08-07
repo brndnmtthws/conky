@@ -936,6 +936,9 @@ int update_cpu_usage(void) {
   return 0;
 }
 
+void free_cpu(struct text_object *) {
+}
+
 // fscanf() that reads floats with points even if you are using a locale where
 // floats are with commas
 int fscanf_no_i18n(FILE *stream, const char *format, ...) {

@@ -286,7 +286,7 @@ void allocate_cpu_sample(struct cpusample **sample) {
   sample_handle = *sample; /* use a public handle for deallocating */
 }
 
-void deallocate_cpu_sample(struct text_object *obj) {
+void free_cpu(struct text_object *) {
   if (sample_handle != nullptr) {
     free(sample_handle);
     sample_handle = nullptr;

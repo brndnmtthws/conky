@@ -121,12 +121,6 @@
 #include "darwin.h"
 #endif
 
-#if defined (__APPLE__) && defined (__MACH__)
-#define DARWIN_DEALLOCATE_CPU_SAMPLE obj->callbacks.free = &deallocate_cpu_sample;
-#else
-#define DARWIN_DEALLOCATE_CPU_SAMPLE
-#endif
-
 #include <cctype>
 #include <cstring>
 
@@ -680,21 +674,21 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(cpu, &update_cpu_usage) get_cpu_count();
   SCAN_CPU(arg, obj->data.i);
   obj->callbacks.percentage = &cpu_percentage;
-  DARWIN_DEALLOCATE_CPU_SAMPLE
+  obj->callbacks.free = &free_cpu;
   DBGP2("Adding $cpu for CPU %d", obj->data.i);
 #ifdef BUILD_X11
   END OBJ(cpugauge, &update_cpu_usage) get_cpu_count();
   SCAN_CPU(arg, obj->data.i);
   scan_gauge(obj, arg, 1);
   obj->callbacks.gaugeval = &cpu_barval;
-  DARWIN_DEALLOCATE_CPU_SAMPLE
+  obj->callbacks.free = &free_cpu;
   DBGP2("Adding $cpugauge for CPU %d", obj->data.i);
 #endif
   END OBJ(cpubar, &update_cpu_usage) get_cpu_count();
   SCAN_CPU(arg, obj->data.i);
   scan_bar(obj, arg, 1);
   obj->callbacks.barval = &cpu_barval;
-  DARWIN_DEALLOCATE_CPU_SAMPLE
+  obj->callbacks.free = &free_cpu;
   DBGP2("Adding $cpubar for CPU %d", obj->data.i);
 #ifdef BUILD_X11
   END OBJ(cpugraph, &update_cpu_usage) get_cpu_count();
@@ -704,7 +698,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   DBGP2("Adding $cpugraph for CPU %d", obj->data.i);
   free_and_zero(buf);
   obj->callbacks.graphval = &cpu_barval;
-  DARWIN_DEALLOCATE_CPU_SAMPLE
+  obj->callbacks.free = &free_cpu;
   END OBJ(loadgraph, &update_load_average) scan_loadgraph_arg(obj, arg);
   obj->callbacks.graphval = &loadgraphval;
 #endif /* BUILD_X11 */
