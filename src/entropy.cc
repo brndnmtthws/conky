@@ -64,7 +64,7 @@ int update_entropy() {
   return 0;
 }
 
-void print_entropy_avail(struct text_object *obj, char *p, int p_max_size) {
+void print_entropy_avail(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   snprintf(p, p_max_size, "%u", entropy.avail);
 }
@@ -75,7 +75,7 @@ uint8_t entropy_percentage(struct text_object *obj) {
                       static_cast<double>(entropy.poolsize));
 }
 
-void print_entropy_poolsize(struct text_object *obj, char *p, int p_max_size) {
+void print_entropy_poolsize(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   snprintf(p, p_max_size, "%u", entropy.poolsize);
 }
@@ -86,7 +86,7 @@ double entropy_barval(struct text_object *obj) {
   return static_cast<double>(entropy.avail) / entropy.poolsize;
 }
 
-void print_password(struct text_object *obj, char *p, int p_max_size) {
+void print_password(struct text_object *obj, char *p, unsigned int p_max_size) {
   time_t t;
   static const char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()_";
   static const int len = (int)sizeof(letters) - 1;

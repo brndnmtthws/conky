@@ -30,7 +30,7 @@
 #define _COMBINE_H
 
 void parse_combine_arg(struct text_object *, const char *);
-void print_combine(struct text_object *, char *, int);
+void print_combine(struct text_object *, char *, unsigned int);
 void free_combine(struct text_object *);
 
 #endif /* _COMBINE_H */

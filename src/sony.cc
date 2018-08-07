@@ -44,7 +44,7 @@
  * I don't know the exact measurement unit, though. I may assume that 0 for
  * 'fan stopped' and 255 for 'maximum fan speed'. */
 void get_sony_fanspeed(struct text_object *obj, char *p_client_buffer,
-                       int client_buffer_size) {
+                       unsigned int client_buffer_size) {
   FILE *fp;
   unsigned int speed = 0;
   char fan[128];

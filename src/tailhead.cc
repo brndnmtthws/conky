@@ -118,7 +118,7 @@ void init_tailhead(const char *type, const char *arg, struct text_object *obj,
 }
 
 static void print_tailhead(const char *type, struct text_object *obj, char *p,
-                           int p_max_size) {
+                           unsigned int p_max_size) {
   int fd, i, endofstring = 0, linescounted = 0;
   FILE *fp;
   struct stat st {};
@@ -194,18 +194,18 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
   }
 }
 
-void print_head(struct text_object *obj, char *p, int p_max_size) {
+void print_head(struct text_object *obj, char *p, unsigned int p_max_size) {
   print_tailhead("head", obj, p, p_max_size);
 }
 
-void print_tail(struct text_object *obj, char *p, int p_max_size) {
+void print_tail(struct text_object *obj, char *p, unsigned int p_max_size) {
   print_tailhead("tail", obj, p, p_max_size);
 }
 
 /* FIXME: use something more general (see also tail.c, head.c */
 #define BUFSZ 0x1000
 
-void print_lines(struct text_object *obj, char *p, int p_max_size) {
+void print_lines(struct text_object *obj, char *p, unsigned int p_max_size) {
   static int rep = 0;
   FILE *fp = open_file(obj->data.s, &rep);
   char buf[BUFSZ];
@@ -228,7 +228,7 @@ void print_lines(struct text_object *obj, char *p, int p_max_size) {
   fclose(fp);
 }
 
-void print_words(struct text_object *obj, char *p, int p_max_size) {
+void print_words(struct text_object *obj, char *p, unsigned int p_max_size) {
   static int rep = 0;
   FILE *fp = open_file(obj->data.s, &rep);
   char buf[BUFSZ];

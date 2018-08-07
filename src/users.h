@@ -32,11 +32,11 @@
 
 int update_users(void);
 
-void print_user_names(struct text_object *, char *, int);
-void print_user_terms(struct text_object *, char *, int);
-void print_user_times(struct text_object *, char *, int);
-void print_user_time(struct text_object *, char *, int);
-void print_user_number(struct text_object *, char *, int);
+void print_user_names(struct text_object *, char *, unsigned int);
+void print_user_terms(struct text_object *, char *, unsigned int);
+void print_user_times(struct text_object *, char *, unsigned int);
+void print_user_time(struct text_object *, char *, unsigned int);
+void print_user_number(struct text_object *, char *, unsigned int);
 
 void free_user_names(struct text_object *);
 void free_user_terms(struct text_object *);

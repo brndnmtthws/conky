@@ -50,7 +50,7 @@ void mysql_finish(MYSQL *conn, MYSQL_RES *res) {
   mysql_library_end();
 }
 
-void print_mysql(struct text_object *obj, char *p, int p_max_size) {
+void print_mysql(struct text_object *obj, char *p, unsigned int p_max_size) {
   MYSQL *conn = mysql_init(nullptr);
   MYSQL_RES *res = nullptr;
 

@@ -557,7 +557,7 @@ void llua_update_info(struct information *i, double u_interval) {
   lua_setglobal(lua_L, "conky_info");
 }
 
-void print_lua(struct text_object *obj, char *p, int p_max_size) {
+void print_lua(struct text_object *obj, char *p, unsigned int p_max_size) {
   char *str = llua_getstring(obj->data.s);
   if (str != nullptr) {
     snprintf(p, p_max_size, "%s", str);
@@ -565,7 +565,7 @@ void print_lua(struct text_object *obj, char *p, int p_max_size) {
   }
 }
 
-void print_lua_parse(struct text_object *obj, char *p, int p_max_size) {
+void print_lua_parse(struct text_object *obj, char *p, unsigned int p_max_size) {
   char *str = llua_getstring(obj->data.s);
   if (str != nullptr) {
     evaluate(str, p, p_max_size);

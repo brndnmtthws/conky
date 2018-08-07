@@ -1156,7 +1156,7 @@ void get_x11_desktop_info(Display *current_display, Atom atom) {
 
 static const char NOT_IN_X[] = "Not running in X";
 
-void print_monitor(struct text_object *obj, char *p, int p_max_size) {
+void print_monitor(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
 
   if (not out_to_x.get(*state)) {
@@ -1166,7 +1166,7 @@ void print_monitor(struct text_object *obj, char *p, int p_max_size) {
   snprintf(p, p_max_size, "%d", XDefaultScreen(display));
 }
 
-void print_monitor_number(struct text_object *obj, char *p, int p_max_size) {
+void print_monitor_number(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
 
   if (not out_to_x.get(*state)) {
@@ -1176,7 +1176,7 @@ void print_monitor_number(struct text_object *obj, char *p, int p_max_size) {
   snprintf(p, p_max_size, "%d", XScreenCount(display));
 }
 
-void print_desktop(struct text_object *obj, char *p, int p_max_size) {
+void print_desktop(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
 
   if (not out_to_x.get(*state)) {
@@ -1186,7 +1186,7 @@ void print_desktop(struct text_object *obj, char *p, int p_max_size) {
   snprintf(p, p_max_size, "%d", info.x11.desktop.current);
 }
 
-void print_desktop_number(struct text_object *obj, char *p, int p_max_size) {
+void print_desktop_number(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
 
   if (not out_to_x.get(*state)) {
@@ -1196,7 +1196,7 @@ void print_desktop_number(struct text_object *obj, char *p, int p_max_size) {
   snprintf(p, p_max_size, "%d", info.x11.desktop.number);
 }
 
-void print_desktop_name(struct text_object *obj, char *p, int p_max_size) {
+void print_desktop_name(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
 
   if (not out_to_x.get(*state)) {
@@ -1298,7 +1298,7 @@ void xpmdb_swap_buffers(void) {
 #endif /* BUILD_XDBE */
 
 #define LOCK_TEMPLATE(func, num) \
-void print_##func(struct text_object *obj, char *p, int p_max_size) { \
+void print_##func(struct text_object *obj, char *p, unsigned int p_max_size) { \
   (void)obj; \
   XKeyboardState x; \
   XGetKeyboardControl(display, &x); \
@@ -1309,7 +1309,7 @@ LOCK_TEMPLATE(num_led, 2)
 LOCK_TEMPLATE(caps_led, 1)
 LOCK_TEMPLATE(scroll_led, 4)
 
-void print_kb_layout(struct text_object *obj, char *p, int p_max_size) {
+void print_kb_layout(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
 
   char *group = NULL;
@@ -1324,7 +1324,7 @@ void print_kb_layout(struct text_object *obj, char *p, int p_max_size) {
   XFree(group);
 }
 
-void print_mouse_speed(struct text_object *obj, char *p, int p_max_size) {
+void print_mouse_speed(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   int acc_num = 0;
   int acc_denom = 0;

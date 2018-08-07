@@ -30,7 +30,7 @@
 void parse_local_mail_args(struct text_object *, const char *);
 
 #define PRINT_MAILS_PROTO_GENERATOR(x) \
-  void print_##x##mails(struct text_object *, char *, int);
+  void print_##x##mails(struct text_object *, char *, unsigned int);
 
 PRINT_MAILS_PROTO_GENERATOR()
 PRINT_MAILS_PROTO_GENERATOR(new_)
@@ -53,10 +53,10 @@ void parse_global_pop3_mail_args(const char *);
 void parse_imap_mail_args(struct text_object *, const char *);
 void parse_pop3_mail_args(struct text_object *, const char *);
 void free_mail_obj(struct text_object *);
-void print_imap_unseen(struct text_object *, char *, int);
-void print_imap_messages(struct text_object *, char *, int);
-void print_pop3_unseen(struct text_object *, char *, int);
-void print_pop3_used(struct text_object *, char *, int);
+void print_imap_unseen(struct text_object *, char *, unsigned int);
+void print_imap_messages(struct text_object *, char *, unsigned int);
+void print_pop3_unseen(struct text_object *, char *, unsigned int);
+void print_pop3_used(struct text_object *, char *, unsigned int);
 
 namespace priv {
 class current_mail_spool_setting

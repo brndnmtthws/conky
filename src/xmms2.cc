@@ -351,20 +351,20 @@ int update_xmms2(void) {
   return 0;
 }
 
-void print_xmms2_tracknr(struct text_object *obj, char *p, int p_max_size) {
+void print_xmms2_tracknr(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   if (info.xmms2.tracknr != -1) {
     snprintf(p, p_max_size, "%i", info.xmms2.tracknr);
   }
 }
 
-void print_xmms2_elapsed(struct text_object *obj, char *p, int p_max_size) {
+void print_xmms2_elapsed(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   snprintf(p, p_max_size, "%02d:%02d", info.xmms2.elapsed / 60000,
            (info.xmms2.elapsed / 1000) % 60);
 }
 
-void print_xmms2_duration(struct text_object *obj, char *p, int p_max_size) {
+void print_xmms2_duration(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   snprintf(p, p_max_size, "%02d:%02d", info.xmms2.duration / 60000,
            (info.xmms2.duration / 1000) % 60);
@@ -376,7 +376,7 @@ double xmms2_barval(struct text_object *obj) {
   return info.xmms2.progress;
 }
 
-void print_xmms2_smart(struct text_object *obj, char *p, int p_max_size) {
+void print_xmms2_smart(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   int artist_len = strlen(info.xmms2.artist);
   int title_len = strlen(info.xmms2.title);
@@ -390,7 +390,8 @@ void print_xmms2_smart(struct text_object *obj, char *p, int p_max_size) {
 }
 
 #define XMMS2_PRINT_GENERATOR(name, fmt)                                      \
-  void print_xmms2_##name(struct text_object *obj, char *p, int p_max_size) { \
+  void print_xmms2_##name(struct text_object *obj, char *p,                   \
+		                                   unsigned int p_max_size) { \
     (void)obj;                                                                \
     snprintf(p, p_max_size, fmt, info.xmms2.name);                            \
   }

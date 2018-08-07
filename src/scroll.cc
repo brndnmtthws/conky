@@ -199,7 +199,7 @@ void parse_scroll_arg(struct text_object *obj, const char *arg,
 #endif /* BUILD_X11 */
 }
 
-void print_scroll(struct text_object *obj, char *p, int p_max_size) {
+void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
   auto *sd = static_cast<struct scroll_data *>(obj->data.opaque);
   unsigned int j, colorchanges = 0, frontcolorchanges = 0,
                   visibcolorchanges = 0, strend;

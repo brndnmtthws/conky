@@ -34,7 +34,7 @@ void cimlib_set_cache_flush_interval(long interval);
 void cimlib_render(int x, int y, int width, int height);
 void cimlib_cleanup(void);
 
-void print_image_callback(struct text_object *, char *, int);
+void print_image_callback(struct text_object *, char *, unsigned int);
 
 class imlib_cache_size_setting
     : public conky::range_config_setting<unsigned long> {

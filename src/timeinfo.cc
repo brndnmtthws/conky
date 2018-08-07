@@ -78,7 +78,7 @@ void scan_tztime(struct text_object *obj, const char *arg) {
   obj->data.opaque = ts;
 }
 
-void print_time(struct text_object *obj, char *p, int p_max_size) {
+void print_time(struct text_object *obj, char *p, unsigned int p_max_size) {
   time_t t = time(nullptr);
   struct tm *tm = localtime(&t);
 
@@ -86,7 +86,7 @@ void print_time(struct text_object *obj, char *p, int p_max_size) {
   strftime(p, p_max_size, static_cast<char *>(obj->data.opaque), tm);
 }
 
-void print_utime(struct text_object *obj, char *p, int p_max_size) {
+void print_utime(struct text_object *obj, char *p, unsigned int p_max_size) {
   time_t t = time(nullptr);
   struct tm *tm = gmtime(&t);
 
@@ -94,7 +94,7 @@ void print_utime(struct text_object *obj, char *p, int p_max_size) {
   strftime(p, p_max_size, static_cast<char *>(obj->data.opaque), tm);
 }
 
-void print_tztime(struct text_object *obj, char *p, int p_max_size) {
+void print_tztime(struct text_object *obj, char *p, unsigned int p_max_size) {
   char *oldTZ = nullptr;
   time_t t;
   struct tm *tm;
@@ -312,7 +312,7 @@ static void do_format_time(struct text_object *obj, char *p,
   }
 }
 
-void print_format_time(struct text_object *obj, char *p, int p_max_size) {
+void print_format_time(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::unique_ptr<char[]> buf(new char[max_user_text.get(*state)]);
 
   generate_text_internal(buf.get(), max_user_text.get(*state), *obj->sub);

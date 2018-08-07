@@ -36,15 +36,11 @@
 void init_pulseaudio(struct text_object *obj);
 void free_pulseaudio(struct text_object *obj);
 uint8_t puau_vol(struct text_object *);  // preserve pa_* for libpulse
-void print_puau_sink_description(struct text_object *obj, char *p,
-                                 int p_max_size);
-void print_puau_sink_active_port_name(struct text_object *obj, char *p,
-                                      int p_max_size);
-void print_puau_sink_active_port_description(struct text_object *obj, char *p,
-                                             int p_max_size);
-void print_puau_card_name(struct text_object *obj, char *p, int p_max_size);
-void print_puau_card_active_profile(struct text_object *obj, char *p,
-                                    int p_max_size);
+void print_puau_sink_description(struct text_object *obj, char *p, unsigned int p_max_size);
+void print_puau_sink_active_port_name(struct text_object *obj, char *p, unsigned int p_max_size);
+void print_puau_sink_active_port_description(struct text_object *obj, char *p, unsigned int p_max_size);
+void print_puau_card_name(struct text_object *obj, char *p, unsigned int p_max_size);
+void print_puau_card_active_profile(struct text_object *obj, char *p, unsigned int p_max_size);
 double puau_volumebarval(struct text_object *obj);
 int puau_muted(struct text_object *obj);
 

@@ -191,7 +191,7 @@ static inline double get_barnum(const char *buf) {
  * @param[in] p_max_size the maximum size of p...
  */
 void fill_p(const char *buffer, struct text_object *obj, char *p,
-            int p_max_size) {
+            unsigned int p_max_size) {
   if (obj->parse) {
     evaluate(buffer, p, p_max_size);
   } else {
@@ -300,7 +300,7 @@ void register_execi(struct text_object *obj) {
  * @param[out] p the string in which we store command output
  * @param[in] p_max_size the maximum size of p...
  */
-void print_exec(struct text_object *obj, char *p, int p_max_size) {
+void print_exec(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (obj->exec_handle != nullptr) {
     fill_p((*obj->exec_handle)->get_result_copy().c_str(), obj, p, p_max_size);
   }

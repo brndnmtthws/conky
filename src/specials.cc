@@ -375,7 +375,7 @@ struct special_t *new_special(char *buf, enum special_types t) {
   return current;
 }
 
-void new_gauge_in_shell(struct text_object *obj, char *p, int p_max_size,
+void new_gauge_in_shell(struct text_object *obj, char *p, unsigned int p_max_size,
                         double usage) {
   static const char *gaugevals[] = {"_. ", "\\. ", " | ", " ./", " ._"};
   auto *g = static_cast<struct gauge *>(obj->special_data);
@@ -405,7 +405,7 @@ void new_gauge_in_x11(struct text_object *obj, char *buf, double usage) {
 }
 #endif /* BUILD_X11 */
 
-void new_gauge(struct text_object *obj, char *p, int p_max_size, double usage) {
+void new_gauge(struct text_object *obj, char *p, unsigned int p_max_size, double usage) {
   auto *g = static_cast<struct gauge *>(obj->special_data);
 
   if ((p_max_size == 0) || (g == nullptr)) {
@@ -430,7 +430,7 @@ void new_gauge(struct text_object *obj, char *p, int p_max_size, double usage) {
 }
 
 #ifdef BUILD_X11
-void new_font(struct text_object *obj, char *p, int p_max_size) {
+void new_font(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct special_t *s;
   int tmp = selected_font;
 
@@ -595,7 +595,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
   }
 }
 
-void new_hr(struct text_object *obj, char *p, int p_max_size) {
+void new_hr(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (not out_to_x.get(*state)) {
     return;
   }
@@ -627,7 +627,7 @@ void scan_stippled_hr(struct text_object *obj, const char *arg) {
   obj->special_data = sh;
 }
 
-void new_stippled_hr(struct text_object *obj, char *p, int p_max_size) {
+void new_stippled_hr(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct special_t *s = nullptr;
   auto *sh = static_cast<struct stippled_hr *>(obj->special_data);
 
@@ -646,7 +646,7 @@ void new_stippled_hr(struct text_object *obj, char *p, int p_max_size) {
 }
 #endif /* BUILD_X11 */
 
-void new_fg(struct text_object *obj, char *p, int p_max_size) {
+void new_fg(struct text_object *obj, char *p, unsigned int p_max_size) {
 #ifdef BUILD_X11
   if (out_to_x.get(*state)) {
     new_special(p, FG)->arg = obj->data.l;
@@ -663,7 +663,7 @@ void new_fg(struct text_object *obj, char *p, int p_max_size) {
 }
 
 #ifdef BUILD_X11
-void new_bg(struct text_object *obj, char *p, int p_max_size) {
+void new_bg(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (not out_to_x.get(*state)) {
     return;
   }
@@ -730,7 +730,7 @@ static void new_bar_in_x11(struct text_object *obj, char *buf, double usage) {
 #endif /* BUILD_X11 */
 
 /* usage is in range [0,255] */
-void new_bar(struct text_object *obj, char *p, int p_max_size, double usage) {
+void new_bar(struct text_object *obj, char *p, unsigned int p_max_size, double usage) {
   auto *b = static_cast<struct bar *>(obj->special_data);
 
   if ((p_max_size == 0) || (b == nullptr)) {
@@ -754,28 +754,28 @@ void new_bar(struct text_object *obj, char *p, int p_max_size, double usage) {
 #endif /* BUILD_X11 */
 }
 
-void new_outline(struct text_object *obj, char *p, int p_max_size) {
+void new_outline(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) {
     return;
   }
   new_special(p, OUTLINE)->arg = obj->data.l;
 }
 
-void new_offset(struct text_object *obj, char *p, int p_max_size) {
+void new_offset(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) {
     return;
   }
   new_special(p, OFFSET)->arg = obj->data.l;
 }
 
-void new_voffset(struct text_object *obj, char *p, int p_max_size) {
+void new_voffset(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) {
     return;
   }
   new_special(p, VOFFSET)->arg = obj->data.l;
 }
 
-void new_alignr(struct text_object *obj, char *p, int p_max_size) {
+void new_alignr(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) {
     return;
   }
@@ -783,14 +783,14 @@ void new_alignr(struct text_object *obj, char *p, int p_max_size) {
 }
 
 // A postive offset pushes the text further left
-void new_alignc(struct text_object *obj, char *p, int p_max_size) {
+void new_alignc(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) {
     return;
   }
   new_special(p, ALIGNC)->arg = obj->data.l;
 }
 
-void new_goto(struct text_object *obj, char *p, int p_max_size) {
+void new_goto(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) {
     return;
   }
@@ -817,7 +817,7 @@ void scan_tab(struct text_object *obj, const char *arg) {
   obj->special_data = t;
 }
 
-void new_tab(struct text_object *obj, char *p, int p_max_size) {
+void new_tab(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct special_t *s = nullptr;
   auto *t = static_cast<struct tab *>(obj->special_data);
 

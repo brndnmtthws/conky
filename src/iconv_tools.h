@@ -35,7 +35,7 @@ void iconv_convert(size_t *, char *, char *, size_t);
 void init_iconv_start(struct text_object *, void *, const char *);
 void init_iconv_stop(void);
 
-void print_iconv_start(struct text_object *, char *, int);
-void print_iconv_stop(struct text_object *, char *, int);
+void print_iconv_start(struct text_object *, char *, unsigned int);
+void print_iconv_stop(struct text_object *, char *, unsigned int);
 
 #endif /* _ICONV_TOOLS_H */

@@ -28,6 +28,6 @@
 
 int update_hddtemp(void);
 void free_hddtemp(struct text_object *);
-void print_hddtemp(struct text_object *, char *, int);
+void print_hddtemp(struct text_object *, char *, unsigned int);
 
 #endif /*HDDTEMP_H_*/

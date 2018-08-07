@@ -109,7 +109,7 @@ void parse_tcp_ping_arg(struct text_object *obj, const char *arg,
   }
 }
 
-void print_tcp_ping(struct text_object *obj, char *p, int p_max_size) {
+void print_tcp_ping(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct timeval tv1 {
   }, tv2{}, timeout{};
   auto *addr = static_cast<struct sockaddr_in *>(obj->data.opaque);
@@ -214,11 +214,11 @@ void print_read_tcpip(struct text_object *obj, char *p, int p_max_size,
   close(sock);
 }
 
-void print_read_tcp(struct text_object *obj, char *p, int p_max_size) {
+void print_read_tcp(struct text_object *obj, char *p, unsigned int p_max_size) {
   print_read_tcpip(obj, p, p_max_size, IPPROTO_TCP);
 }
 
-void print_read_udp(struct text_object *obj, char *p, int p_max_size) {
+void print_read_udp(struct text_object *obj, char *p, unsigned int p_max_size) {
   print_read_tcpip(obj, p, p_max_size, IPPROTO_UDP);
 }
 

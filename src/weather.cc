@@ -943,7 +943,7 @@ void scan_weather_forecast_arg(struct text_object *obj, const char *arg,
   obj->data.opaque = wfd;
 }
 
-void print_weather_forecast(struct text_object *obj, char *p, int p_max_size) {
+void print_weather_forecast(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct weather_forecast_data *wfd =
       (struct weather_forecast_data *)obj->data.opaque;
 
@@ -995,7 +995,7 @@ void scan_weather_arg(struct text_object *obj, const char *arg,
   obj->data.opaque = wd;
 }
 
-void print_weather(struct text_object *obj, char *p, int p_max_size) {
+void print_weather(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct weather_data *wd = (struct weather_data *)obj->data.opaque;
 
   if (!wd || !wd->uri) {

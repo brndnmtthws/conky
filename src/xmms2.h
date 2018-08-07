@@ -56,25 +56,25 @@ struct xmms2_s {
 
 int update_xmms2(void);
 
-void print_xmms2_tracknr(struct text_object *, char *, int);
-void print_xmms2_elapsed(struct text_object *, char *, int);
-void print_xmms2_duration(struct text_object *, char *, int);
+void print_xmms2_tracknr(struct text_object *, char *, unsigned int);
+void print_xmms2_elapsed(struct text_object *, char *, unsigned int);
+void print_xmms2_duration(struct text_object *, char *, unsigned int);
 double xmms2_barval(struct text_object *);
-void print_xmms2_smart(struct text_object *, char *, int);
-void print_xmms2_artist(struct text_object *, char *, int);
-void print_xmms2_album(struct text_object *, char *, int);
-void print_xmms2_title(struct text_object *, char *, int);
-void print_xmms2_genre(struct text_object *, char *, int);
-void print_xmms2_comment(struct text_object *, char *, int);
-void print_xmms2_url(struct text_object *, char *, int);
-void print_xmms2_status(struct text_object *, char *, int);
-void print_xmms2_date(struct text_object *, char *, int);
-void print_xmms2_bitrate(struct text_object *, char *, int);
-void print_xmms2_id(struct text_object *, char *, int);
-void print_xmms2_size(struct text_object *, char *, int);
-void print_xmms2_playlist(struct text_object *, char *, int);
-void print_xmms2_timesplayed(struct text_object *, char *, int);
-void print_xmms2_percent(struct text_object *, char *, int);
+void print_xmms2_smart(struct text_object *, char *, unsigned int);
+void print_xmms2_artist(struct text_object *, char *, unsigned int);
+void print_xmms2_album(struct text_object *, char *, unsigned int);
+void print_xmms2_title(struct text_object *, char *, unsigned int);
+void print_xmms2_genre(struct text_object *, char *, unsigned int);
+void print_xmms2_comment(struct text_object *, char *, unsigned int);
+void print_xmms2_url(struct text_object *, char *, unsigned int);
+void print_xmms2_status(struct text_object *, char *, unsigned int);
+void print_xmms2_date(struct text_object *, char *, unsigned int);
+void print_xmms2_bitrate(struct text_object *, char *, unsigned int);
+void print_xmms2_id(struct text_object *, char *, unsigned int);
+void print_xmms2_size(struct text_object *, char *, unsigned int);
+void print_xmms2_playlist(struct text_object *, char *, unsigned int);
+void print_xmms2_timesplayed(struct text_object *, char *, unsigned int);
+void print_xmms2_percent(struct text_object *, char *, unsigned int);
 int if_xmms2_connected(struct text_object *);
 
 void free_xmms2(struct text_object *);

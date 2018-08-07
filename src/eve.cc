@@ -438,7 +438,7 @@ void scan_eve(struct text_object *obj, const char *arg) {
   obj->data.opaque = ed;
 }
 
-void print_eve(struct text_object *obj, char *p, int p_max_size) {
+void print_eve(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct eve_data *ed = (struct eve_data *)obj->data.opaque;
 
   if (!ed) return;

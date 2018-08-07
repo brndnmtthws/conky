@@ -220,7 +220,7 @@ static int get_hddtemp_info(const char *dev, short *val, char *unit) {
   return 0;
 }
 
-void print_hddtemp(struct text_object *obj, char *p, int p_max_size) {
+void print_hddtemp(struct text_object *obj, char *p, unsigned int p_max_size) {
   short val;
   char unit;
 
