@@ -55,4 +55,6 @@ int update_stat(void);
 void print_distribution(struct text_object *, char *, int);
 
 void determine_longstat_file(void);
+
+extern char e_iface[50];
 #endif /* _LINUX_H */

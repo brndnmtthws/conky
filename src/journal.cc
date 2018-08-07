@@ -88,6 +88,8 @@ void init_journal(const char *type, const char *arg, struct text_object *obj,
         CRIT_ERR(obj, free_at_crash,
                  "invalid arg for %s, type must be 'system' or 'user'", type);
       }
+    } else {
+      NORM_ERR("You should type a 'user' or 'system' as an argument");
     }
 
   } else {
@@ -114,7 +116,13 @@ static int print_field(sd_journal *jh, const char *field, char spacer,
   *read += length - fieldlen;
 
 out:
-  if (spacer) p[(*read)++] = spacer;
+  if (spacer) {
+    if (p_max_size < *read) {
+      *read = p_max_size - 1;
+    } else {
+      p[(*read)++] = spacer;
+    }
+  }
   return length ? length - fieldlen : 0;
 }
 
@@ -129,6 +137,11 @@ bool read_log(size_t *read, size_t *length, time_t *time, uint64_t *timestamp,
            strftime(p + *read, p_max_size - *read, "%b %d %H:%M:%S", &tm)) <= 0)
     return false;
   *read += *length;
+
+  if (p_max_size < *read) {
+    *read = p_max_size - 1;
+    return false;
+  }
   p[*read++] = ' ';
 
   if (print_field(jh, "_HOSTNAME", ' ', read, p, p_max_size) < 0) return false;
@@ -138,7 +151,16 @@ bool read_log(size_t *read, size_t *length, time_t *time, uint64_t *timestamp,
 
   if (print_field(jh, "_PID", ']', read, p, p_max_size) < 0) return false;
 
+  if (p_max_size < *read) {
+    *read = p_max_size - 1;
+    return false;
+  }
   p[*read++] = ':';
+
+  if (p_max_size < *read) {
+    *read = p_max_size - 1;
+    return false;
+  }
   p[*read++] = ' ';
 
   if (print_field(jh, "MESSAGE", '\n', read, p, p_max_size) < 0) return false;

@@ -17,7 +17,7 @@
                 <option>acpifan</option>
             </command>
         </term>
-        <listitem>ACPI fan state 
+        <listitem>ACPI fan state
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -26,7 +26,7 @@
                 <option>acpitemp</option>
             </command>
         </term>
-        <listitem>ACPI temperature in C. 
+        <listitem>ACPI temperature in C.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -37,7 +37,7 @@
             <option>(interface)</option>
         </term>
         <listitem>IP address for an interface, or "No Address" if
-        no address is assigned. 
+        no address is assigned.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -48,7 +48,7 @@
             <option>(interface)</option>
         </term>
         <listitem>IP addresses for an interface (if one - works
-        like addr). Linux only. 
+        like addr). Linux only.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -57,7 +57,7 @@
                 <option>adt746xcpu</option>
             </command>
         </term>
-        <listitem>CPU temperature from therm_adt746x 
+        <listitem>CPU temperature from therm_adt746x
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -66,7 +66,7 @@
                 <option>adt746xfan</option>
             </command>
         </term>
-        <listitem>Fan speed from therm_adt746x 
+        <listitem>Fan speed from therm_adt746x
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -76,7 +76,7 @@
             </command>
             <option>(num)</option>
         </term>
-        <listitem>Align text to centre 
+        <listitem>Align text to centre
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -86,7 +86,7 @@
             </command>
             <option>(num)</option>
         </term>
-        <listitem>Right-justify text, with space of N 
+        <listitem>Right-justify text, with space of N
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -98,7 +98,7 @@
             <option>port</option>
         </term>
         <listitem>Sets up the connection to apcupsd daemon. Prints
-        nothing, defaults to localhost:3551 
+        nothing, defaults to localhost:3551
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -107,7 +107,7 @@
                 <option>apcupsd_cable</option>
             </command>
         </term>
-        <listitem>Prints the UPS connection type. 
+        <listitem>Prints the UPS connection type.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -116,7 +116,7 @@
                 <option>apcupsd_charge</option>
             </command>
         </term>
-        <listitem>Current battery capacity in percent. 
+        <listitem>Current battery capacity in percent.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -125,7 +125,7 @@
                 <option>apcupsd_lastxfer</option>
             </command>
         </term>
-        <listitem>Reason for last transfer from line to battery. 
+        <listitem>Reason for last transfer from line to battery.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -134,7 +134,7 @@
                 <option>apcupsd_linev</option>
             </command>
         </term>
-        <listitem>Nominal input voltage. 
+        <listitem>Nominal input voltage.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -143,7 +143,7 @@
                 <option>apcupsd_load</option>
             </command>
         </term>
-        <listitem>Current load in percent. 
+        <listitem>Current load in percent.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -152,7 +152,7 @@
                 <option>apcupsd_loadbar</option>
             </command>
         </term>
-        <listitem>Bar showing current load. 
+        <listitem>Bar showing current load.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -162,7 +162,7 @@
             </command>
             <option>(height),(width)</option>
         </term>
-        <listitem>Gauge that shows current load. 
+        <listitem>Gauge that shows current load.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -173,7 +173,7 @@
             <option>(height),(width) (gradient colour 1) (gradient
             colour 2) (scale) (-t) (-l)</option>
         </term>
-        <listitem>History graph of current load. 
+        <listitem>History graph of current load.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -182,7 +182,7 @@
                 <option>apcupsd_model</option>
             </command>
         </term>
-        <listitem>Prints the model of the UPS. 
+        <listitem>Prints the model of the UPS.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -191,7 +191,7 @@
                 <option>apcupsd_name</option>
             </command>
         </term>
-        <listitem>Prints the UPS user-defined name. 
+        <listitem>Prints the UPS user-defined name.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -200,7 +200,7 @@
                 <option>apcupsd_status</option>
             </command>
         </term>
-        <listitem>Prints current status (on-line, on-battery). 
+        <listitem>Prints current status (on-line, on-battery).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -209,7 +209,7 @@
                 <option>apcupsd_temp</option>
             </command>
         </term>
-        <listitem>Current internal temperature. 
+        <listitem>Current internal temperature.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -218,7 +218,7 @@
                 <option>apcupsd_timeleft</option>
             </command>
         </term>
-        <listitem>Time left to run on battery. 
+        <listitem>Time left to run on battery.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -227,7 +227,7 @@
                 <option>apcupsd_upsmode</option>
             </command>
         </term>
-        <listitem>Prints the UPS mode (e.g. standalone). 
+        <listitem>Prints the UPS mode (e.g. standalone).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -236,7 +236,7 @@
                 <option>apm_adapter</option>
             </command>
         </term>
-        <listitem>Display APM AC adapter status (FreeBSD, OpenBSD only) 
+        <listitem>Display APM AC adapter status (FreeBSD, OpenBSD only)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -246,7 +246,7 @@
             </command>
         </term>
         <listitem>Display APM battery life in percent (FreeBSD, OpenBSD
-        only) 
+        only)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -257,7 +257,7 @@
         </term>
         <listitem>Display remaining APM battery life in hh:mm:ss or
         "unknown" if AC adapterstatus is on-line or charging
-        (FreeBSD, OpenBSD only) 
+        (FreeBSD, OpenBSD only)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -267,7 +267,7 @@
             </command>
             <option>(height),(width)</option>
         </term>
-        <listitem>Progress bar 
+        <listitem>Progress bar
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -276,7 +276,7 @@
                 <option>audacious_bitrate</option>
             </command>
         </term>
-        <listitem>Bitrate of current tune 
+        <listitem>Bitrate of current tune
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -285,7 +285,7 @@
                 <option>audacious_channels</option>
             </command>
         </term>
-        <listitem>Number of audio channels of current tune 
+        <listitem>Number of audio channels of current tune
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -294,7 +294,7 @@
                 <option>audacious_filename</option>
             </command>
         </term>
-        <listitem>Full path and filename of current tune 
+        <listitem>Full path and filename of current tune
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -303,7 +303,7 @@
                 <option>audacious_frequency</option>
             </command>
         </term>
-        <listitem>Sampling frequency of current tune 
+        <listitem>Sampling frequency of current tune
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -312,7 +312,7 @@
                 <option>audacious_length</option>
             </command>
         </term>
-        <listitem>Total length of current tune as MM:SS 
+        <listitem>Total length of current tune as MM:SS
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -321,7 +321,7 @@
                 <option>audacious_length_seconds</option>
             </command>
         </term>
-        <listitem>Total length of current tune in seconds 
+        <listitem>Total length of current tune in seconds
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -330,7 +330,7 @@
                 <option>audacious_main_volume</option>
             </command>
         </term>
-        <listitem>The current volume fetched from Audacious 
+        <listitem>The current volume fetched from Audacious
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -339,7 +339,7 @@
                 <option>audacious_playlist_length</option>
             </command>
         </term>
-        <listitem>Number of tunes in playlist 
+        <listitem>Number of tunes in playlist
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -348,7 +348,7 @@
                 <option>audacious_playlist_position</option>
             </command>
         </term>
-        <listitem>Playlist position of current tune 
+        <listitem>Playlist position of current tune
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -357,7 +357,7 @@
                 <option>audacious_position</option>
             </command>
         </term>
-        <listitem>Position of current tune (MM:SS) 
+        <listitem>Position of current tune (MM:SS)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -366,7 +366,7 @@
                 <option>audacious_position_seconds</option>
             </command>
         </term>
-        <listitem>Position of current tune in seconds 
+        <listitem>Position of current tune in seconds
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -376,7 +376,7 @@
             </command>
         </term>
         <listitem>Player status (Playing/Paused/Stopped/Not
-        running) 
+        running)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -387,7 +387,7 @@
             <option>(max length)</option>
         </term>
         <listitem>Title of current tune with optional maximum
-        length specifier 
+        length specifier
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -399,7 +399,7 @@
         </term>
         <listitem>Battery status and remaining percentage capacity
         of ACPI or APM battery. ACPI battery number can be given as
-        argument (default is BAT0). 
+        argument (default is BAT0).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -440,7 +440,7 @@
         argument (default is BAT0). This mode display a short
         status, which means that C is displayed instead of
         charging, D for discharging, F for full, N for not present,
-        E for empty and U for unknown. 
+        E for empty and U for unknown.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -452,7 +452,7 @@
         </term>
         <listitem>Battery charge/discharge time remaining of ACPI
         battery. ACPI battery number can be given as argument
-        (default is BAT0). 
+        (default is BAT0).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -463,7 +463,7 @@
             <option>text_and_other_conky_vars</option>
         </term>
         <listitem>Let 'text_and_other_conky_vars' blink on and off.
-        
+
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -472,7 +472,7 @@
                 <option>bmpx_album</option>
             </command>
         </term>
-        <listitem>Album in current BMPx track 
+        <listitem>Album in current BMPx track
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -481,7 +481,7 @@
                 <option>bmpx_artist</option>
             </command>
         </term>
-        <listitem>Artist in current BMPx track 
+        <listitem>Artist in current BMPx track
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -490,7 +490,7 @@
                 <option>bmpx_bitrate</option>
             </command>
         </term>
-        <listitem>Bitrate of the current BMPx track 
+        <listitem>Bitrate of the current BMPx track
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -499,7 +499,7 @@
                 <option>bmpx_title</option>
             </command>
         </term>
-        <listitem>Title of the current BMPx track 
+        <listitem>Title of the current BMPx track
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -508,7 +508,7 @@
                 <option>bmpx_track</option>
             </command>
         </term>
-        <listitem>Track number of the current BMPx track 
+        <listitem>Track number of the current BMPx track
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -517,7 +517,7 @@
                 <option>bmpx_uri</option>
             </command>
         </term>
-        <listitem>URI of the current BMPx track 
+        <listitem>URI of the current BMPx track
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -526,7 +526,7 @@
                 <option>buffers</option>
             </command>
         </term>
-        <listitem>Amount of memory buffered 
+        <listitem>Amount of memory buffered
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -535,7 +535,7 @@
                 <option>cached</option>
             </command>
         </term>
-        <listitem>Amount of memory cached 
+        <listitem>Amount of memory cached
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -741,7 +741,7 @@
             </command>
         </term>
         <listitem>Change drawing color to colorN configuration
-        option, where N is a digit between 0 and 9, inclusively. 
+        option, where N is a digit between 0 and 9, inclusively.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -757,7 +757,7 @@
         2} - ${head /proc/meminfo 1}} gives as output
         "cpuinfo_line1 - meminfo_line1" on line 1 and
         "cpuinfo_line2 -" on line 2. $combine vars can also be
-        nested to place more vars next to each other. 
+        nested to place more vars next to each other.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -766,7 +766,7 @@
                 <option>conky_build_arch</option>
             </command>
         </term>
-        <listitem>CPU architecture Conky was built for 
+        <listitem>CPU architecture Conky was built for
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -775,7 +775,7 @@
                 <option>conky_build_date</option>
             </command>
         </term>
-        <listitem>Date Conky was built 
+        <listitem>Date Conky was built
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -784,7 +784,7 @@
                 <option>conky_version</option>
             </command>
         </term>
-        <listitem>Conky version 
+        <listitem>Conky version
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -797,7 +797,7 @@
         <listitem>CPU usage in percents. For SMP machines, the CPU
         number can be provided as an argument. ${cpu cpu0} is the
         total usage, and ${cpu cpuX} (X &gt;= 1) are individual
-        CPUs. 
+        CPUs.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -808,7 +808,7 @@
             <option>(cpuN) (height),(width)</option>
         </term>
         <listitem>Bar that shows CPU usage, height is bar's height
-        in pixels. See $cpu for more info on SMP. 
+        in pixels. See $cpu for more info on SMP.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -820,7 +820,7 @@
         </term>
         <listitem>Elliptical gauge that shows CPU usage, height and
         width are gauge's vertical and horizontal axis
-        respectively. See $cpu for more info on SMP. 
+        respectively. See $cpu for more info on SMP.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -837,7 +837,7 @@
         -l switch. Takes the switch '-t' to use a temperature
         gradient, which makes the gradient values change depending
         on the amplitude of a particular graph value (try it and
-        see). 
+        see).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -865,7 +865,7 @@
             </command>
         </term>
         <listitem>Number of the desktop on which conky is running
-        or the message "Not running in X" if this is the case. 
+        or the message "Not running in X" if this is the case.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -875,7 +875,7 @@
             </command>
         </term>
         <listitem>Name of the desktop on which conky is running or
-        the message "Not running in X" if this is the case. 
+        the message "Not running in X" if this is the case.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -885,7 +885,7 @@
             </command>
         </term>
         <listitem>Number of desktops or the message "Not running in
-        X" if this is the case. 
+        X" if this is the case.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -897,7 +897,7 @@
         </term>
         <listitem>Disk protection status, if supported (needs
         kernel-patch). Prints either "frozen" or "free " (note the
-        padding). 
+        padding).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -921,7 +921,7 @@
             <option>(device)</option>
         </term>
         <listitem>Displays current disk IO for reads. Device as in
-        diskio. 
+        diskio.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -932,7 +932,7 @@
             <option>(device)</option>
         </term>
         <listitem>Displays current disk IO for writes. Device as in
-        diskio. 
+        diskio.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -949,7 +949,7 @@
         you use -l switch. Takes the switch '-t' to use a
         temperature gradient, which makes the gradient values
         change depending on the amplitude of a particular graph
-        value (try it and see). 
+        value (try it and see).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -966,7 +966,7 @@
         (to see small numbers) when you use -l switch. Takes the
         switch '-t' to use a temperature gradient, which makes the
         gradient values change depending on the amplitude of a
-        particular graph value (try it and see). 
+        particular graph value (try it and see).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -983,7 +983,7 @@
         (to see small numbers) when you use -l switch. Takes the
         switch '-t' to use a temperature gradient, which makes the
         gradient values change depending on the amplitude of a
-        particular graph value (try it and see). 
+        particular graph value (try it and see).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1009,7 +1009,7 @@
             </command>
             <option>(net)</option>
         </term>
-        <listitem>Download speed in suitable IEC units 
+        <listitem>Download speed in suitable IEC units
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1019,7 +1019,7 @@
             </command>
             <option>(net)</option>
         </term>
-        <listitem>Download speed in KiB with one decimal 
+        <listitem>Download speed in KiB with one decimal
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1036,7 +1036,7 @@
         when you use -l switch. Takes the switch '-t' to use a
         temperature gradient, which makes the gradient values
         change depending on the amplitude of a particular graph
-        value (try it and see). 
+        value (try it and see).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1049,7 +1049,7 @@
         </term>
         <listitem>Number of mails marked as draft in the specified
         mailbox or mail spool if not. Only maildir type mailboxes
-        are supported, mbox type will return -1. 
+        are supported, mbox type will return -1.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1058,7 +1058,7 @@
                 <option>else</option>
             </command>
         </term>
-        <listitem>Text to show if any of the above are not true 
+        <listitem>Text to show if any of the above are not true
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1068,7 +1068,7 @@
             </command>
             <option />
         </term>
-        <listitem>Ends an $if block. 
+        <listitem>Ends an $if block.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1077,7 +1077,7 @@
                 <option>entropy_avail</option>
             </command>
         </term>
-        <listitem>Current entropy available for crypto freaks 
+        <listitem>Current entropy available for crypto freaks
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1088,7 +1088,7 @@
             <option>(height),(width)</option>
         </term>
         <listitem>Normalized bar of available entropy for crypto
-        freaks 
+        freaks
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1098,7 +1098,7 @@
             </command>
         </term>
         <listitem>Percentage of entropy available in comparison to
-        the poolsize 
+        the poolsize
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1108,7 +1108,7 @@
             </command>
         </term>
         <listitem>Total size of system entropy pool for crypto
-        freaks 
+        freaks
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1122,7 +1122,7 @@
         conky.text interpretation, i.e. parsing any contained text object
         specifications into their output, any occuring '$$' into a
         single '$' and so on. The output is then being parsed
-        again. 
+        again.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1328,7 +1328,7 @@
         </term>
         <listitem>Number of mails marked as flagged in the
         specified mailbox or mail spool if not. Only maildir type
-        mailboxes are supported, mbox type will return -1. 
+        mailboxes are supported, mbox type will return -1.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1341,7 +1341,7 @@
         <listitem>Specify a different font. This new font will
         apply to the current line and everything following. You can
         use a $font with no arguments to change back to the default
-        font (much like with $color) 
+        font (much like with $color)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1376,7 +1376,7 @@
         </term>
         <listitem>Number of mails marked as forwarded in the
         specified mailbox or mail spool if not. Only maildir type
-        mailboxes are supported, mbox type will return -1. 
+        mailboxes are supported, mbox type will return -1.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1387,7 +1387,7 @@
             <option>(n)</option>
         </term>
         <listitem>Returns CPU #n's frequency in MHz. CPUs are
-        counted from 1. If omitted, the parameter defaults to 1. 
+        counted from 1. If omitted, the parameter defaults to 1.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1398,7 +1398,7 @@
             <option>(n)</option>
         </term>
         <listitem>Returns CPU #n's frequency in GHz. CPUs are
-        counted from 1. If omitted, the parameter defaults to 1. 
+        counted from 1. If omitted, the parameter defaults to 1.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1410,7 +1410,7 @@
         </term>
         <listitem>Bar that shows how much space is used on a file
         system. height is the height in pixels. fs is any file on
-        that file system. 
+        that file system.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1422,7 +1422,7 @@
         </term>
         <listitem>Bar that shows how much space is free on a file
         system. height is the height in pixels. fs is any file on
-        that file system. 
+        that file system.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1432,7 +1432,7 @@
             </command>
             <option>(fs)</option>
         </term>
-        <listitem>Free space on a file system available for users. 
+        <listitem>Free space on a file system available for users.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1443,7 +1443,7 @@
             <option>(fs)</option>
         </term>
         <listitem>Free percentage of space on a file system
-        available for users. 
+        available for users.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1453,7 +1453,7 @@
             </command>
             <option>(fs)</option>
         </term>
-        <listitem>File system size. 
+        <listitem>File system size.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1463,7 +1463,7 @@
             </command>
             <option>(fs)</option>
         </term>
-        <listitem>File system type. 
+        <listitem>File system type.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1473,7 +1473,7 @@
             </command>
             <option>(fs)</option>
         </term>
-        <listitem>File system used space. 
+        <listitem>File system used space.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1483,7 +1483,7 @@
             </command>
             <option>(fs)</option>
         </term>
-        <listitem>Percent of file system used space. 
+        <listitem>Percent of file system used space.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1494,7 +1494,7 @@
             <option>x</option>
         </term>
         <listitem>The next element will be printed at position 'x'.
-        
+
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1504,7 +1504,7 @@
             </command>
         </term>
         <listitem>Displays the default route's interface or
-        "multiple"/"none" accordingly. 
+        "multiple"/"none" accordingly.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1514,7 +1514,7 @@
             </command>
         </term>
         <listitem>Displays the default gateway's IP or
-        "multiple"/"none" accordingly. 
+        "multiple"/"none" accordingly.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1541,7 +1541,7 @@
         <listitem>Displays first N lines of supplied text file. The
         file is checked every 'next_check' update. If next_check is
         not supplied, Conky defaults to 2. Max of 30 lines can be
-        displayed, or until the text buffer is filled. 
+        displayed, or until the text buffer is filled.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1551,7 +1551,7 @@
             </command>
             <option>(height)</option>
         </term>
-        <listitem>Horizontal line, height is the height in pixels 
+        <listitem>Horizontal line, height is the height in pixels
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1570,7 +1570,7 @@
         'offset' allow precalculation of the raw input, which is
         being modified as follows: 'input = input * factor +
         offset'. Note that they have to be given as decimal values
-        (i.e. contain at least one decimal place). 
+        (i.e. contain at least one decimal place).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1589,7 +1589,7 @@
         allow precalculation of the raw input, which is being
         modified as follows: 'input = input * factor + offset'.
         Note that they have to be given as decimal values (i.e.
-        contain at least one decimal place). 
+        contain at least one decimal place).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1602,7 +1602,7 @@
         <listitem>If running the i8k kernel driver for Inspiron
         laptops, displays whether ac power is on, as listed in
         /proc/i8k (translated to human-readable). Beware that this
-        is by default not enabled by i8k itself. 
+        is by default not enabled by i8k itself.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1613,7 +1613,7 @@
             <option />
         </term>
         <listitem>If running the i8k kernel driver for Inspiron
-        laptops, displays the bios version as listed in /proc/i8k. 
+        laptops, displays the bios version as listed in /proc/i8k.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1625,7 +1625,7 @@
         </term>
         <listitem>If running the i8k kernel driver for Inspiron
         laptops, displays the volume buttons status as listed in
-        /proc/i8k. 
+        /proc/i8k.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1637,7 +1637,7 @@
         </term>
         <listitem>If running the i8k kernel driver for Inspiron
         laptops, displays the cpu temperature in Celsius, as
-        reported by /proc/i8k. 
+        reported by /proc/i8k.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1650,7 +1650,7 @@
         <listitem>If running the i8k kernel driver for Inspiron
         laptops, displays the left fan's rate of rotation, in
         revolutions per minute as listed in /proc/i8k. Beware, some
-        laptops i8k reports these fans in reverse order. 
+        laptops i8k reports these fans in reverse order.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1663,7 +1663,7 @@
         <listitem>If running the i8k kernel driver for Inspiron
         laptops, displays the left fan status as listed in
         /proc/i8k (translated to human-readable). Beware, some
-        laptops i8k reports these fans in reverse order. 
+        laptops i8k reports these fans in reverse order.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1676,7 +1676,7 @@
         <listitem>If running the i8k kernel driver for Inspiron
         laptops, displays the right fan's rate of rotation, in
         revolutions per minute as listed in /proc/i8k. Beware, some
-        laptops i8k reports these fans in reverse order. 
+        laptops i8k reports these fans in reverse order.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1689,7 +1689,7 @@
         <listitem>If running the i8k kernel driver for Inspiron
         laptops, displays the right fan status as listed in
         /proc/i8k (translated to human-readable). Beware, some
-        laptops i8k reports these fans in reverse order. 
+        laptops i8k reports these fans in reverse order.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1701,7 +1701,7 @@
         </term>
         <listitem>If running the i8k kernel driver for Inspiron
         laptops, displays your laptop serial number as listed in
-        /proc/i8k. 
+        /proc/i8k.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1712,7 +1712,7 @@
             <option />
         </term>
         <listitem>If running the i8k kernel driver for Inspiron
-        laptops, displays the version formatting of /proc/i8k. 
+        laptops, displays the version formatting of /proc/i8k.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1722,7 +1722,7 @@
             </command>
         </term>
         <listitem>If running the IBM ACPI, displays the brigtness
-        of the laptops's LCD (0-7). 
+        of the laptops's LCD (0-7).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1731,7 +1731,7 @@
                 <option>ibm_fan</option>
             </command>
         </term>
-        <listitem>If running the IBM ACPI, displays the fan speed. 
+        <listitem>If running the IBM ACPI, displays the fan speed.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1743,7 +1743,7 @@
         </term>
         <listitem>If running the IBM ACPI, displays the
         temperatures from the IBM temperature sensors (N=0..7)
-        Sensor 0 is on the CPU, 3 is on the GPU. 
+        Sensor 0 is on the CPU, 3 is on the GPU.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1763,7 +1763,7 @@
             </command>
         </term>
         <listitem>If running the IBM ACPI, displays the "master"
-        volume, controlled by the volume keys (0-14). 
+        volume, controlled by the volume keys (0-14).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1801,7 +1801,7 @@
             <option>codeset_from codeset_to</option>
         </term>
         <listitem>Convert text from one codeset to another using
-        GNU iconv. Needs to be stopped with iconv_stop. 
+        GNU iconv. Needs to be stopped with iconv_stop.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1811,7 +1811,7 @@
             </command>
             <option />
         </term>
-        <listitem>Stop iconv codeset conversion. 
+        <listitem>Stop iconv codeset conversion.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1822,7 +1822,7 @@
             <option>(var)</option>
         </term>
         <listitem>if conky variable VAR is empty, display
-        everything between $if_empty and the matching $endif 
+        everything between $if_empty and the matching $endif
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1836,7 +1836,7 @@
         if_existing and the matching $endif. The optional second
         parameter checks for FILE containing the specified string
         and prints everything between $if_existing and the matching
-        $endif. 
+        $endif.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1846,7 +1846,7 @@
             </command>
         </term>
         <listitem>if there is at least one default gateway, display
-        everything between $if_gw and the matching $endif 
+        everything between $if_gw and the matching $endif
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1862,7 +1862,7 @@
         Valid expressions consist of a left side, an operator and a
         right side. Left and right sides are being parsed for
         contained text objects before evaluation. Recognised left
-        and right side types are: 
+        and right side types are:
         <simplelist>
             <member>
             <command>double</command>Argument consists of only
@@ -1874,7 +1874,7 @@
             <command>string</command>Argument is enclosed in
             quotation marks (")</member>
         </simplelist>Valid operands are: '&gt;', '&lt;', '&gt;=',
-        '&lt;=', '==', '!='. 
+        '&lt;=', '==', '!='.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1886,7 +1886,7 @@
         </term>
         <listitem>If mixer exists, display everything between
         $if_mixer_mute and the matching $endif. If no mixer is
-        specified, "Vol" is used. 
+        specified, "Vol" is used.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1897,7 +1897,7 @@
             <option>(mountpoint)</option>
         </term>
         <listitem>if MOUNTPOINT is mounted, display everything
-        between $if_mounted and the matching $endif 
+        between $if_mounted and the matching $endif
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1907,7 +1907,7 @@
             </command>
         </term>
         <listitem>if mpd is playing or paused, display everything
-        between $if_mpd_playing and the matching $endif 
+        between $if_mpd_playing and the matching $endif
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1917,9 +1917,9 @@
             </command>
         </term>
         <listitem>If Pulseaudio's default sink is muted, display everything
-        between $if_pa_sink_muted and the corresponding $else or $endif. 
+        between $if_pa_sink_muted and the corresponding $else or $endif.
          <para /></listitem>
-     </varlistentry>   
+     </varlistentry>
     <varlistentry>
         <term>
             <command>
@@ -1953,7 +1953,7 @@
         </term>
         <listitem>when using smapi, if the battery with index INDEX
         is installed, display everything between
-        $if_smapi_bat_installed and the matching $endif 
+        $if_smapi_bat_installed and the matching $endif
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1964,7 +1964,7 @@
             <option>(interface)</option>
         </term>
         <listitem>if INTERFACE exists and is up, display everything
-        between $if_up and the matching $endif 
+        between $if_up and the matching $endif
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1980,7 +1980,7 @@
         reached. Example : "{$if_updatenr 1}foo$endif{$if_updatenr
         2}bar$endif{$if_updatenr 4}$endif" shows foo 25% of the
         time followed by bar 25% of the time followed by nothing
-        the other half of the time. 
+        the other half of the time.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1990,7 +1990,7 @@
             </command>
         </term>
         <listitem>Display everything between $if_xmms2_connected
-        and the matching $endif if xmms2 is running. 
+        and the matching $endif if xmms2 is running.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2016,7 +2016,7 @@
         rendered as per the arguments passed. The only reason
         $image is part of the conky.text section, is to allow for runtime
         modifications, through $execp $lua_parse, or some other
-        method. 
+        method.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2034,7 +2034,7 @@
         port is 143, default folder is 'INBOX', default interval is
         5 minutes, and default number of retries before giving up
         is 5. If the password is supplied as '*', you will be
-        prompted to enter the password when Conky starts. 
+        prompted to enter the password when Conky starts.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2052,7 +2052,7 @@
         Default port is 143, default folder is 'INBOX', default
         interval is 5 minutes, and default number of retries before
         giving up is 5. If the password is supplied as '*', you
-        will be prompted to enter the password when Conky starts. 
+        will be prompted to enter the password when Conky starts.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2063,7 +2063,7 @@
             <option>disk</option>
         </term>
         <listitem>Prints the current ioscheduler used for the given
-        disk name (i.e. e.g. "hda" or "sdb") 
+        disk name (i.e. e.g. "hda" or "sdb")
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2086,7 +2086,7 @@
                 <option>kernel</option>
             </command>
         </term>
-        <listitem>Kernel version 
+        <listitem>Kernel version
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2104,7 +2104,7 @@
                 <option>laptop_mode</option>
             </command>
         </term>
-        <listitem>The value of /proc/sys/vm/laptop_mode 
+        <listitem>The value of /proc/sys/vm/laptop_mode
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2114,7 +2114,7 @@
             </command>
             <option>textfile</option>
         </term>
-        <listitem>Displays the number of lines in the given file 
+        <listitem>Displays the number of lines in the given file
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2142,7 +2142,7 @@
         scale (to see small numbers) when you use the -l switch.
         Takes the switch '-t' to use a temperature gradient, which
         makes the gradient values change depending on the amplitude
-        of a particular graph value (try it and see). 
+        of a particular graph value (try it and see).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2157,7 +2157,7 @@
         to load scripts. Conky puts 'conky_' in front of
         function_name to prevent accidental calls to the wrong
         function unless you put you place 'conky_' in front of it
-        yourself. 
+        yourself.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2173,7 +2173,7 @@
         0 and 100. See also 'lua_load' on how to load scripts.
         Conky puts 'conky_' in front of function_name to prevent
         accidental calls to the wrong function unless you put you
-        place 'conky_' in front of it yourself. 
+        place 'conky_' in front of it yourself.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2189,7 +2189,7 @@
         between 0 and 100. See also 'lua_load' on how to load
         scripts. Conky puts 'conky_' in front of function_name to
         prevent accidental calls to the wrong function unless you
-        put you place 'conky_' in front of it yourself. 
+        put you place 'conky_' in front of it yourself.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2208,7 +2208,7 @@
         on the amplitude of a particular graph value (try it and
         see). Conky puts 'conky_' in front of function_name to
         prevent accidental calls to the wrong function unless you
-        put you place 'conky_' in front of it yourself. 
+        put you place 'conky_' in front of it yourself.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2224,7 +2224,7 @@
         how to load scripts. Conky puts 'conky_' in front of
         function_name to prevent accidental calls to the wrong
         function unless you put you place 'conky_' in front of it
-        yourself. 
+        yourself.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2233,7 +2233,7 @@
                 <option>machine</option>
             </command>
         </term>
-        <listitem>Machine, i686 for example 
+        <listitem>Machine, i686 for example
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2248,7 +2248,7 @@
         spool if not. Both mbox and maildir type mailboxes are
         supported. You can use a program like fetchmail to get
         mails from some server using your favourite protocol. See
-        also new_mails. 
+        also new_mails.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2262,7 +2262,7 @@
         <listitem>Print a summary of recent messages in an mbox
         format mailbox. mbox parameter is the filename of the
         mailbox (can be encapsulated using '"', ie. ${mboxscan -n
-        10 "/home/brenden/some box"} 
+        10 "/home/brenden/some box"}
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2271,7 +2271,7 @@
                 <option>mem</option>
             </command>
         </term>
-        <listitem>Amount of memory in use 
+        <listitem>Amount of memory in use
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2290,7 +2290,7 @@
             </command>
             <option>(height),(width)</option>
         </term>
-        <listitem>Bar that shows amount of memory in use 
+        <listitem>Bar that shows amount of memory in use
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2319,7 +2319,7 @@
             </command>
         </term>
         <listitem>Amount of free memory including the memory that
-        is very easily freed (buffers/cache) 
+        is very easily freed (buffers/cache)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2328,7 +2328,7 @@
                 <option>memfree</option>
             </command>
         </term>
-        <listitem>Amount of free memory 
+        <listitem>Amount of free memory
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2339,7 +2339,7 @@
             <option>(height),(width)</option>
         </term>
         <listitem>Gauge that shows amount of memory in use (see
-        cpugauge) 
+        cpugauge)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2354,7 +2354,7 @@
         see small numbers) when you use the -l switch. Takes the
         switch '-t' to use a temperature gradient, which makes the
         gradient values change depending on the amplitude of a
-        particular graph value (try it and see). 
+        particular graph value (try it and see).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2363,7 +2363,7 @@
                 <option>memmax</option>
             </command>
         </term>
-        <listitem>Total amount of memory 
+        <listitem>Total amount of memory
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2372,7 +2372,7 @@
                 <option>memperc</option>
             </command>
         </term>
-        <listitem>Percentage of memory in use 
+        <listitem>Percentage of memory in use
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2401,7 +2401,7 @@
             <option>(device)</option>
         </term>
         <listitem>Displays mixer value in a bar as reported by the
-        OS. See docs for $mixer for details on arguments. 
+        OS. See docs for $mixer for details on arguments.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2412,7 +2412,7 @@
             <option>(device)</option>
         </term>
         <listitem>Prints the left channel mixer value as reported
-        by the OS. See docs for $mixer for details on arguments. 
+        by the OS. See docs for $mixer for details on arguments.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2424,7 +2424,7 @@
         </term>
         <listitem>Displays the left channel mixer value in a bar as
         reported by the OS. See docs for $mixer for details on
-        arguments. 
+        arguments.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2435,7 +2435,7 @@
             <option>(device)</option>
         </term>
         <listitem>Prints the right channel mixer value as reported
-        by the OS. See docs for $mixer for details on arguments. 
+        by the OS. See docs for $mixer for details on arguments.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2447,7 +2447,7 @@
         </term>
         <listitem>Displays the right channel mixer value in a bar
         as reported by the OS. See docs for $mixer for details on
-        arguments. 
+        arguments.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2456,7 +2456,7 @@
                 <option>moc_album</option>
             </command>
         </term>
-        <listitem>Album of the current MOC song 
+        <listitem>Album of the current MOC song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2465,7 +2465,7 @@
                 <option>moc_artist</option>
             </command>
         </term>
-        <listitem>Artist of the current MOC song 
+        <listitem>Artist of the current MOC song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2474,7 +2474,7 @@
                 <option>moc_bitrate</option>
             </command>
         </term>
-        <listitem>Bitrate in the current MOC song 
+        <listitem>Bitrate in the current MOC song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2483,7 +2483,7 @@
                 <option>moc_curtime</option>
             </command>
         </term>
-        <listitem>Current time of the current MOC song 
+        <listitem>Current time of the current MOC song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2492,7 +2492,7 @@
                 <option>moc_file</option>
             </command>
         </term>
-        <listitem>File name of the current MOC song 
+        <listitem>File name of the current MOC song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2501,7 +2501,7 @@
                 <option>moc_rate</option>
             </command>
         </term>
-        <listitem>Rate of the current MOC song 
+        <listitem>Rate of the current MOC song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2510,7 +2510,7 @@
                 <option>moc_song</option>
             </command>
         </term>
-        <listitem>The current song name being played in MOC. 
+        <listitem>The current song name being played in MOC.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2519,7 +2519,7 @@
                 <option>moc_state</option>
             </command>
         </term>
-        <listitem>Current state of MOC; playing, stopped etc. 
+        <listitem>Current state of MOC; playing, stopped etc.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2528,7 +2528,7 @@
                 <option>moc_timeleft</option>
             </command>
         </term>
-        <listitem>Time left in the current MOC song 
+        <listitem>Time left in the current MOC song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2537,7 +2537,7 @@
                 <option>moc_title</option>
             </command>
         </term>
-        <listitem>Title of the current MOC song 
+        <listitem>Title of the current MOC song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2546,7 +2546,7 @@
                 <option>moc_totaltime</option>
             </command>
         </term>
-        <listitem>Total length of the current MOC song 
+        <listitem>Total length of the current MOC song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2556,7 +2556,7 @@
             </command>
         </term>
         <listitem>Number of the monitor on which conky is running
-        or the message "Not running in X" if this is the case. 
+        or the message "Not running in X" if this is the case.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2566,7 +2566,7 @@
             </command>
         </term>
         <listitem>Number of monitors or the message "Not running in
-        X" if this is the case. 
+        X" if this is the case.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2575,7 +2575,7 @@
                 <option>mpd_album</option>
             </command>
         </term>
-        <listitem>Album in current MPD song 
+        <listitem>Album in current MPD song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2585,7 +2585,7 @@
             </command>
         </term>
         <listitem>Artist in current MPD song must be enabled at
-        compile 
+        compile
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2594,7 +2594,7 @@
                 <option>mpd_albumartist</option>
             </command>
         </term>
-        <listitem>Artist of the album of the current MPD song. 
+        <listitem>Artist of the album of the current MPD song.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2604,7 +2604,7 @@
             </command>
             <option>(height),(width)</option>
         </term>
-        <listitem>Bar of mpd's progress 
+        <listitem>Bar of mpd's progress
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2613,7 +2613,7 @@
                 <option>mpd_bitrate</option>
             </command>
         </term>
-        <listitem>Bitrate of current song 
+        <listitem>Bitrate of current song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2631,7 +2631,7 @@
                 <option>mpd_elapsed</option>
             </command>
         </term>
-        <listitem>Song's elapsed time 
+        <listitem>Song's elapsed time
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2640,7 +2640,7 @@
                 <option>mpd_file</option>
             </command>
         </term>
-        <listitem>Prints the file name of the current MPD song 
+        <listitem>Prints the file name of the current MPD song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2649,7 +2649,7 @@
                 <option>mpd_length</option>
             </command>
         </term>
-        <listitem>Song's length 
+        <listitem>Song's length
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2658,7 +2658,7 @@
                 <option>mpd_name</option>
             </command>
         </term>
-        <listitem>Prints the MPD name field 
+        <listitem>Prints the MPD name field
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2667,7 +2667,7 @@
                 <option>mpd_percent</option>
             </command>
         </term>
-        <listitem>Percent of song's progress 
+        <listitem>Percent of song's progress
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2676,7 +2676,7 @@
                 <option>mpd_random</option>
             </command>
         </term>
-        <listitem>Random status (On/Off) 
+        <listitem>Random status (On/Off)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2685,7 +2685,7 @@
                 <option>mpd_repeat</option>
             </command>
         </term>
-        <listitem>Repeat status (On/Off) 
+        <listitem>Repeat status (On/Off)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2696,7 +2696,7 @@
             <option>(max length)</option>
         </term>
         <listitem>Prints the song name in either the form "artist -
-        title" or file name, depending on whats available 
+        title" or file name, depending on whats available
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2705,7 +2705,7 @@
                 <option>mpd_status</option>
             </command>
         </term>
-        <listitem>Playing, stopped, et cetera. 
+        <listitem>Playing, stopped, et cetera.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2715,7 +2715,7 @@
             </command>
             <option>(max length)</option>
         </term>
-        <listitem>Title of current MPD song 
+        <listitem>Title of current MPD song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2724,7 +2724,7 @@
                 <option>mpd_track</option>
             </command>
         </term>
-        <listitem>Prints the MPD track field 
+        <listitem>Prints the MPD track field
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2733,7 +2733,7 @@
                 <option>mpd_vol</option>
             </command>
         </term>
-        <listitem>MPD's volume 
+        <listitem>MPD's volume
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2755,7 +2755,7 @@
             <option>(index)</option>
         </term>
         <listitem>Print a nameserver from /etc/resolv.conf. Index
-        starts at and defaults to 0. 
+        starts at and defaults to 0.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2768,7 +2768,7 @@
         </term>
         <listitem>Unread mail count in the specified mailbox or
         mail spool if not. Both mbox and maildir type mailboxes are
-        supported. 
+        supported.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2777,7 +2777,7 @@
                 <option>nodename</option>
             </command>
         </term>
-        <listitem>Hostname 
+        <listitem>Hostname
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3079,7 +3079,7 @@
             </command>
             <option>(pixels)</option>
         </term>
-        <listitem>Move text over by N pixels. See also $voffset. 
+        <listitem>Move text over by N pixels. See also $voffset.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3089,7 +3089,7 @@
             </command>
             <option>(color)</option>
         </term>
-        <listitem>Change outline color 
+        <listitem>Change outline color
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3098,7 +3098,7 @@
                 <option>pa_sink_volume</option>
             </command>
         </term>
-        <listitem>Pulseaudio's default sink volume percentage. 
+        <listitem>Pulseaudio's default sink volume percentage.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3107,7 +3107,7 @@
                 <option>pa_sink_volumebar</option>
             </command>
         </term>
-        <listitem>Pulseaudio's default sink volume bar. 
+        <listitem>Pulseaudio's default sink volume bar.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3116,7 +3116,7 @@
                 <option>pa_sink_description</option>
             </command>
         </term>
-        <listitem>Pulseaudio's default sink description. 
+        <listitem>Pulseaudio's default sink description.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3125,7 +3125,7 @@
                 <option>pa_sink_active_port_name</option>
             </command>
         </term>
-        <listitem>Pulseaudio's default sink active port name. 
+        <listitem>Pulseaudio's default sink active port name.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3134,7 +3134,7 @@
                 <option>pa_sink_active_port_description</option>
             </command>
         </term>
-        <listitem>Pulseaudio's default sink active port description. 
+        <listitem>Pulseaudio's default sink active port description.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3143,7 +3143,7 @@
                 <option>pa_card_name</option>
             </command>
         </term>
-        <listitem>Pulseaudio's default card name. 
+        <listitem>Pulseaudio's default card name.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3152,7 +3152,7 @@
                 <option>pa_card_active_profile</option>
             </command>
         </term>
-        <listitem>Pulseaudio's default card active profile. 
+        <listitem>Pulseaudio's default card active profile.
          <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3165,7 +3165,7 @@
         <listitem>If running on Apple powerbook/ibook, display
         information on battery status. The item parameter
         specifies, what information to display. Exactly one item
-        must be specified. Valid items are: 
+        must be specified. Valid items are:
         <simplelist>
             <member>
                 <command>status</command>
@@ -3610,7 +3610,7 @@
         'offset' allow precalculation of the raw input, which is
         being modified as follows: 'input = input * factor +
         offset'. Note that they have to be given as decimal values
-        (i.e. contain at least one decimal place). 
+        (i.e. contain at least one decimal place).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3628,7 +3628,7 @@
         port is 110, default interval is 5 minutes, and default
         number of retries before giving up is 5. If the password is
         supplied as '*', you will be prompted to enter the password
-        when Conky starts. 
+        when Conky starts.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3646,7 +3646,7 @@
         port is 110, default interval is 5 minutes, and default
         number of retries before giving up is 5. If the password is
         supplied as '*', you will be prompted to enter the password
-        when Conky starts. 
+        when Conky starts.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3655,7 +3655,7 @@
                 <option>processes</option>
             </command>
         </term>
-        <listitem>Total processes (sleeping and running) 
+        <listitem>Total processes (sleeping and running)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3692,7 +3692,7 @@
         </term>
         <listitem>Number of mails marked as replied in the
         specified mailbox or mail spool if not. Only maildir type
-        mailboxes are supported, mbox type will return -1. 
+        mailboxes are supported, mbox type will return -1.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3723,7 +3723,7 @@
             </command>
         </term>
         <listitem>Running processes (not sleeping), requires Linux
-        2.6 
+        2.6
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3768,7 +3768,7 @@
         </term>
         <listitem>Number of mails marked as seen in the specified
         mailbox or mail spool if not. Only maildir type mailboxes
-        are supported, mbox type will return -1. 
+        are supported, mbox type will return -1.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3779,12 +3779,12 @@
             <option>(switch)</option>
         </term>
         <listitem>Prints info regarding System Integrity Protection (SIP) on macOS.
-            
+
             If no switch is provided, prints SIP status (enabled / disabled),  else,
             status of the specific SIP feature corresponding to the switch provided.
-            
+
             Below are shown the available switches:
-            
+
             SWITCH--------------------------RESULT--------------------------STATUS
             0                           apple internal                      YES/NO
             1                           forbid untrusted kexts              YES/NO
@@ -3797,15 +3797,15 @@
             8                           forbid any-recovery-os              YES/NO
             9                           forbid user-approved-kexts          YES/NO
             a                           uses unsupported configuration?        (*)
-            
+
             (*):    If yes, prints "unsupported configuration, beware!"
                     Else, prints "configuration is ok".
             ----------------------------------------------------------------------
-            
+
             USAGE:
             conky -t '${sip_status}'    # print SIP status
             conky -t '${sip_status 0}'  # print allows apple-internal?  Yes or No?
-            
+
             NOTES:
                 * Available for all macOS versions (even the ones prior El Capitan
                   where SIP was first introduced)
@@ -3820,7 +3820,7 @@
             </command>
             <option>(color)</option>
         </term>
-        <listitem>Change shading color 
+        <listitem>Change shading color
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3835,7 +3835,7 @@
         '(FILENAME)' or 'bat (INDEX) (FILENAME)' to display the
         corresponding files' content. This is a very raw method of
         accessing the smapi values. When available, better use one
-        of the smapi_* variables instead. 
+        of the smapi_* variables instead.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3846,7 +3846,7 @@
             <option>(INDEX),(height),(width)</option>
         </term>
         <listitem>when using smapi, display the remaining capacity
-        of the battery with index INDEX as a bar. 
+        of the battery with index INDEX as a bar.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3859,7 +3859,7 @@
         <listitem>when using smapi, display the remaining capacity
         in percent of the battery with index INDEX. This is a
         separate variable because it supports the 'use_spacer'
-        configuration option. 
+        configuration option.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3873,7 +3873,7 @@
         the battery with index INDEX in watt. This is a separate
         variable because the original read out value is being
         converted from mW. The sign of the output reflects charging
-        (positive) or discharging (negative) state. 
+        (positive) or discharging (negative) state.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3886,7 +3886,7 @@
         <listitem>when using smapi, display the current temperature
         of the battery with index INDEX in degree Celsius. This is
         a separate variable because the original read out value is
-        being converted from milli degree Celsius. 
+        being converted from milli degree Celsius.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3896,7 +3896,7 @@
             </command>
         </term>
         <listitem>Displays the Sony VAIO fanspeed information if
-        sony-laptop kernel support is enabled. Linux only. 
+        sony-laptop kernel support is enabled. Linux only.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3906,7 +3906,7 @@
             </command>
             <option>(space)</option>
         </term>
-        <listitem>Stippled (dashed) horizontal line 
+        <listitem>Stippled (dashed) horizontal line
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3926,7 +3926,7 @@
                 <option>swap</option>
             </command>
         </term>
-        <listitem>Amount of swap in use 
+        <listitem>Amount of swap in use
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3936,7 +3936,7 @@
             </command>
             <option>(height),(width)</option>
         </term>
-        <listitem>Bar that shows amount of swap in use 
+        <listitem>Bar that shows amount of swap in use
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3945,7 +3945,7 @@
                 <option>swapfree</option>
             </command>
         </term>
-        <listitem>Amount of free swap 
+        <listitem>Amount of free swap
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3954,7 +3954,7 @@
                 <option>swapmax</option>
             </command>
         </term>
-        <listitem>Total amount of swap 
+        <listitem>Total amount of swap
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3963,7 +3963,7 @@
                 <option>swapperc</option>
             </command>
         </term>
-        <listitem>Percentage of swap in use 
+        <listitem>Percentage of swap in use
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3972,7 +3972,7 @@
                 <option>sysname</option>
             </command>
         </term>
-        <listitem>System name, Linux for example 
+        <listitem>System name, Linux for example
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3983,7 +3983,7 @@
             <option>(width, (start))</option>
         </term>
         <listitem>Puts a tab of the specified width, starting from
-        column 'start'. The unit is pixels for both arguments. 
+        column 'start'. The unit is pixels for both arguments.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3996,7 +3996,7 @@
         <listitem>Displays last N lines of supplied text file. The
         file is checked every 'next_check' update. If next_check is
         not supplied, Conky defaults to 2. Max of 30 lines can be
-        displayed, or until the text buffer is filled. 
+        displayed, or until the text buffer is filled.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4235,7 +4235,7 @@
             <option>(format)</option>
         </term>
         <listitem>Local time, see man strftime to get more
-        information about format 
+        information about format
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4247,7 +4247,7 @@
         </term>
         <listitem>If 'size' is a number followed by a size-unit
         (kilobyte,mb,GiB,...) then it converts the size to bytes
-        and shows it without unit, otherwise it just shows 'size'. 
+        and shows it without unit, otherwise it just shows 'size'.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4262,7 +4262,7 @@
         lowest in terms of cpu usage, which is what (num)
         represents. The types are: "name", "pid", "cpu", "mem",
         "mem_res", "mem_vsize", "time", "uid", "user", "io_perc", "io_read" and
-        "io_write". There can be a max of 10 processes listed. 
+        "io_write". There can be a max of 10 processes listed.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4273,7 +4273,7 @@
             <option>type num</option>
         </term>
         <listitem>Same as top, except sorted by the amount of I/O
-        the process has done during the update interval 
+        the process has done during the update interval
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4284,7 +4284,7 @@
             <option>type num</option>
         </term>
         <listitem>Same as top, except sorted by mem usage instead
-        of cpu 
+        of cpu
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4295,7 +4295,7 @@
             <option>type num</option>
         </term>
         <listitem>Same as top, except sorted by total CPU time
-        instead of current CPU usage 
+        instead of current CPU usage
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4308,7 +4308,7 @@
         <listitem>Total download, overflows at 4 GB on Linux with
         32-bit arch and there doesn't seem to be a way to know how
         many times it has already done that before conky has
-        started. 
+        started.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4318,7 +4318,7 @@
             </command>
             <option>(net)</option>
         </term>
-        <listitem>Total upload, this one too, may overflow 
+        <listitem>Total upload, this one too, may overflow
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4331,7 +4331,7 @@
         </term>
         <listitem>Number of mails marked as trashed in the
         specified mailbox or mail spool if not. Only maildir type
-        mailboxes are supported, mbox type will return -1. 
+        mailboxes are supported, mbox type will return -1.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4345,7 +4345,7 @@
         strftime to get more information about format. The timezone
         argument is specified in similar fashion as TZ environment
         variable. For hints, look in /usr/share/zoneinfo. e.g.
-        US/Pacific, Europe/Zurich, etc. 
+        US/Pacific, Europe/Zurich, etc.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4378,7 +4378,7 @@
         </term>
         <listitem>Number of mails not marked as flagged in the
         specified mailbox or mail spool if not. Only maildir type
-        mailboxes are supported, mbox type will return -1. 
+        mailboxes are supported, mbox type will return -1.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4391,7 +4391,7 @@
         </term>
         <listitem>Number of mails not marked as forwarded in the
         specified mailbox or mail spool if not. Only maildir type
-        mailboxes are supported, mbox type will return -1. 
+        mailboxes are supported, mbox type will return -1.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4404,7 +4404,7 @@
         </term>
         <listitem>Number of mails not marked as replied in the
         specified mailbox or mail spool if not. Only maildir type
-        mailboxes are supported, mbox type will return -1. 
+        mailboxes are supported, mbox type will return -1.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4417,7 +4417,7 @@
         </term>
         <listitem>Number of new or unseen mails in the specified
         mailbox or mail spool if not. Only maildir type mailboxes
-        are supported, mbox type will return -1. 
+        are supported, mbox type will return -1.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4427,7 +4427,7 @@
             </command>
             <option>Number of updates</option>
         </term>
-        <listitem>for debugging 
+        <listitem>for debugging
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4437,7 +4437,7 @@
             </command>
             <option>(net)</option>
         </term>
-        <listitem>Upload speed in suitable IEC units 
+        <listitem>Upload speed in suitable IEC units
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4447,7 +4447,7 @@
             </command>
             <option>(net)</option>
         </term>
-        <listitem>Upload speed in KiB with one decimal 
+        <listitem>Upload speed in KiB with one decimal
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4464,7 +4464,7 @@
         you use the -l switch. Takes the switch '-t' to use a
         temperature gradient, which makes the gradient values
         change depending on the amplitude of a particular graph
-        value (try it and see). 
+        value (try it and see).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4473,7 +4473,7 @@
                 <option>uptime</option>
             </command>
         </term>
-        <listitem>Uptime 
+        <listitem>Uptime
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4482,7 +4482,7 @@
                 <option>uptime_short</option>
             </command>
         </term>
-        <listitem>Uptime in a shorter format 
+        <listitem>Uptime in a shorter format
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4491,7 +4491,7 @@
                 <option>user_names</option>
             </command>
         </term>
-        <listitem>Lists the names of the users logged in 
+        <listitem>Lists the names of the users logged in
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4500,7 +4500,7 @@
                 <option>user_number</option>
             </command>
         </term>
-        <listitem>Number of users logged in 
+        <listitem>Number of users logged in
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4509,7 +4509,7 @@
                 <option>user_terms</option>
             </command>
         </term>
-        <listitem>Lists the consoles in use 
+        <listitem>Lists the consoles in use
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4518,7 +4518,7 @@
                 <option>user_times</option>
             </command>
         </term>
-        <listitem>Lists how long users have been logged in for 
+        <listitem>Lists how long users have been logged in for
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4539,7 +4539,7 @@
             </command>
             <option>(format)</option>
         </term>
-        <listitem>Display time in UTC (universal coordinate time). 
+        <listitem>Display time in UTC (universal coordinate time).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4563,7 +4563,7 @@
             <option>(pixels)</option>
         </term>
         <listitem>Change vertical offset by N pixels. Negative
-        values will cause text to overlap. See also $offset. 
+        values will cause text to overlap. See also $offset.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4574,7 +4574,7 @@
             <option>(n)</option>
         </term>
         <listitem>Returns CPU #n's voltage in mV. CPUs are counted
-        from 1. If omitted, the parameter defaults to 1. 
+        from 1. If omitted, the parameter defaults to 1.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4585,7 +4585,7 @@
             <option>(n)</option>
         </term>
         <listitem>Returns CPU #n's voltage in V. CPUs are counted
-        from 1. If omitted, the parameter defaults to 1. 
+        from 1. If omitted, the parameter defaults to 1.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4598,19 +4598,11 @@
         </term>
         <listitem>
             <para>Download, parse and display METAR data.</para>
-            <para>For the 'URI', there are two
-            possibilities:</para>
+            <para>'URI' must be a valid METAR URI.</para>
             <simplelist>
                 <member>
-                http://weather.noaa.gov/pub/data/observations/metar/stations/</member>
-                <member>
-                http://xoap.weather.com/weather/local/</member>
+                http://tgftp.nws.noaa.gov/data/observations/metar/stations/</member>
             </simplelist>
-            <para>The first one is free to use but the second
-            requires you to register and obtain your partner ID and
-            license key. These two must be written, separated by a
-            space, into a file called .xoaprc which needs to be
-            placed into your home directory.</para>
             <para>'locID' must be a valid location identifier for
             the required uri. For the NOAA site this must be a
             valid ICAO (see for instance
@@ -4694,9 +4686,10 @@
         <listitem>
             <para>Download, parse and display weather forecast data
 	    for a given day (daytime only).</para>
-            <para>For the 'URI', for the time being only
-            http://xoap.weather.com/weather/local/ is
-	    supported. See 'weather' above for details of usage</para>
+            <para>For the 'URI', http://xoap.weather.com/weather/local/ is
+            deprecated. Please suggest a new URI in
+            https://github.com/brndnmtthws/conky/issues/313. See 'weather'
+            above for details of usage</para>
             <para>'locID', see 'weather' above.</para>
             <para>'day' is a number from 0 (today) to 4 (3 days
             after tomorrow).</para>
@@ -4871,7 +4864,7 @@
             </command>
             <option>textfile</option>
         </term>
-        <listitem>Displays the number of words in the given file 
+        <listitem>Displays the number of words in the given file
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4880,7 +4873,7 @@
                 <option>xmms2_album</option>
             </command>
         </term>
-        <listitem>Album in current XMMS2 song 
+        <listitem>Album in current XMMS2 song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4889,7 +4882,7 @@
                 <option>xmms2_artist</option>
             </command>
         </term>
-        <listitem>Artist in current XMMS2 song 
+        <listitem>Artist in current XMMS2 song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4899,7 +4892,7 @@
             </command>
             <option>(height),(width)</option>
         </term>
-        <listitem>Bar of XMMS2's progress 
+        <listitem>Bar of XMMS2's progress
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4908,7 +4901,7 @@
                 <option>xmms2_bitrate</option>
             </command>
         </term>
-        <listitem>Bitrate of current song 
+        <listitem>Bitrate of current song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4917,7 +4910,7 @@
                 <option>xmms2_comment</option>
             </command>
         </term>
-        <listitem>Comment in current XMMS2 song 
+        <listitem>Comment in current XMMS2 song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4926,7 +4919,7 @@
                 <option>xmms2_date</option>
             </command>
         </term>
-        <listitem>Returns song's date. 
+        <listitem>Returns song's date.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4935,7 +4928,7 @@
                 <option>xmms2_duration</option>
             </command>
         </term>
-        <listitem>Duration of current song 
+        <listitem>Duration of current song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4944,7 +4937,7 @@
                 <option>xmms2_elapsed</option>
             </command>
         </term>
-        <listitem>Song's elapsed time 
+        <listitem>Song's elapsed time
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4953,7 +4946,7 @@
                 <option>xmms2_genre</option>
             </command>
         </term>
-        <listitem>Genre in current XMMS2 song 
+        <listitem>Genre in current XMMS2 song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4962,7 +4955,7 @@
                 <option>xmms2_id</option>
             </command>
         </term>
-        <listitem>XMMS2 id of current song 
+        <listitem>XMMS2 id of current song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4971,7 +4964,7 @@
                 <option>xmms2_percent</option>
             </command>
         </term>
-        <listitem>Percent of song's progress 
+        <listitem>Percent of song's progress
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4980,7 +4973,7 @@
                 <option>xmms2_playlist</option>
             </command>
         </term>
-        <listitem>Returns the XMMS2 playlist. 
+        <listitem>Returns the XMMS2 playlist.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4989,7 +4982,7 @@
                 <option>xmms2_size</option>
             </command>
         </term>
-        <listitem>Size of current song 
+        <listitem>Size of current song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4999,7 +4992,7 @@
             </command>
         </term>
         <listitem>Prints the song name in either the form "artist -
-        title" or file name, depending on whats available 
+        title" or file name, depending on whats available
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -5009,7 +5002,7 @@
             </command>
         </term>
         <listitem>XMMS2 status (Playing, Paused, Stopped, or
-        Disconnected) 
+        Disconnected)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -5018,7 +5011,7 @@
                 <option>xmms2_timesplayed</option>
             </command>
         </term>
-        <listitem>Number of times a song was played (presumably). 
+        <listitem>Number of times a song was played (presumably).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -5027,7 +5020,7 @@
                 <option>xmms2_title</option>
             </command>
         </term>
-        <listitem>Title in current XMMS2 song 
+        <listitem>Title in current XMMS2 song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -5036,7 +5029,7 @@
                 <option>xmms2_tracknr</option>
             </command>
         </term>
-        <listitem>Track number in current XMMS2 song 
+        <listitem>Track number in current XMMS2 song
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -5045,7 +5038,7 @@
                 <option>xmms2_url</option>
             </command>
         </term>
-        <listitem>Full path to current song 
+        <listitem>Full path to current song
         <para /></listitem>
     </varlistentry>
 </variablelist>

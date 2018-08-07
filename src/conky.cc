@@ -39,6 +39,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <vector>
 #include "common.h"
 #include "config.h"
 #include "conky.h"
@@ -746,7 +747,7 @@ void human_readable(long long num, char *buf, int size) {
   float fnum;
   int precision;
   int width;
-  const char *format;
+  static const char *const format = "%.*f%.1s";
 
   /* Possibly just output as usual, for example for stdout usage */
   if (!format_human_readable.get(*state)) {
@@ -755,10 +756,8 @@ void human_readable(long long num, char *buf, int size) {
   }
   if (short_units.get(*state)) {
     width = 5;
-    format = "%.*f%.1s";
   } else {
     width = 7;
-    format = "%.*f%-3s";
   }
 
   if (llabs(num) < 1000LL) {
@@ -1991,21 +1990,28 @@ static void update_text() {
 int inotify_fd = -1;
 #endif
 
+template<typename Out>
+void split(const std::string &s, char delim, Out result) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        *(result++) = item;
+    }
+}
+ std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    split(s, delim, std::back_inserter(elems));
+    return elems;
+}
+
 bool is_on_battery() {  // checks if at least one battery specified in
                         // "detect_battery" is discharging
   char buf[64];
-  std::string detect_battery_str;
-  std::string str_buf = str_buf;
-  detect_battery_str.assign(detect_battery.get(*state));
-  detect_battery_str += ',';
+  std::vector<std::string> b_items = split(detect_battery.get(*state), ',');
 
-  for (char i : detect_battery_str) {  // parse using ',' as delimiter
-    if ((i != ',') && (i != ' ')) { str_buf += i; }
-    if ((i == ',') && !str_buf.empty()) {
-      get_battery_short_status(buf, 64, str_buf.c_str());
-      if (buf[0] == 'D') { return true; }
-      str_buf = "";
-    }
+   for(auto const& value: b_items) {
+    get_battery_short_status(buf, 64, value.c_str());
+    if (buf[0] == 'D') { return true; }
   }
   return false;
 }
@@ -2391,10 +2397,13 @@ static void main_loop() {
       }
     } else {
 #endif /* BUILD_X11 */
-      struct timespec ts1, ts2;
-      ts1.tv_sec = 0;
-      ts1.tv_nsec = (next_update_time - get_time()) * 1000000000L;
-      nanosleep(&ts1, &ts2);
+      struct timespec req, rem;
+      auto time_to_sleep = next_update_time - get_time();
+      auto seconds = (time_t)std::floor(time_to_sleep);
+      auto nanos = (time_to_sleep - seconds) * 1000000000L;
+      req.tv_sec = seconds;
+      req.tv_nsec = nanos;
+      nanosleep(&req, &rem);
       update_text();
       draw_stuff();
 #ifdef BUILD_NCURSES
@@ -2694,7 +2703,9 @@ void load_config_file() {
     } else {
 #endif
       l.loadfile(current_config.c_str());
+#ifdef BUILD_BUILTIN_CONFIG
     }
+#endif
   } catch (lua::syntax_error &e) {
 #define SYNTAX_ERR_READ_CONF "Syntax error (%s) while reading config file. "
 #ifdef BUILD_OLD_CONFIG

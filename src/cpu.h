@@ -1,5 +1,4 @@
-/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=cpp
+/*
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -10,8 +9,8 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
- *   (see AUTHORS)
+ * Copyright (c) 2005-2018 Brenden Matthews, Philip Kovacs, et. al.
+ *	(see AUTHORS)
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,12 +27,14 @@
  *
  */
 
-#ifndef _CAT_H
-#define _CAT_H
+#ifndef _CPU_H
+#define _CPU_H
 
-#include "text_object.h"
+#ifdef __x86_64__
+uintmax_t rdtsc(void);
+void get_cpu_clock_speed(char *, int);
+uint8_t has_tsc_reg(void);
+void print_freq2(struct text_object *, char *, int);
+#endif /* __x86_64__ */
 
-void print_cat(struct text_object *, char *, int);
-void print_catp(struct text_object *, char *, int);
-
-#endif /* _CAT_H */
+#endif /* _CPU_H */

@@ -135,10 +135,10 @@ void print_tcp_ping(struct text_object *obj, char *p, int p_max_size) {
         usecdiff =
             ((tv2.tv_sec - tv1.tv_sec) * 1000000) + tv2.tv_usec - tv1.tv_usec;
         if (usecdiff <= TCP_PING_TIMEOUT * 1000000) {
-          snprintf(p, p_max_size, "%llu", usecdiff);
+          snprintf(p, p_max_size, "%llu", (usecdiff / 1000U));
         } else {
 #define TCP_PING_FAILED "down"
-          snprintf(p, p_max_size, TCP_PING_FAILED);
+          snprintf(p, p_max_size, "%s", TCP_PING_FAILED);
         }
       } else {
         NORM_ERR("tcp_ping: Couldn't wait on the 'pong'");
@@ -169,7 +169,7 @@ void print_read_tcpip(struct text_object *obj, char *p, int p_max_size,
   hints.ai_socktype = protocol == IPPROTO_TCP ? SOCK_STREAM : SOCK_DGRAM;
   hints.ai_flags = 0;
   hints.ai_protocol = protocol;
-  snprintf(portbuf, 8, "%d", rtd->port);
+  snprintf(portbuf, 8, "%u", rtd->port);
   if (getaddrinfo(rtd->host, portbuf, &hints, &airesult) != 0) {
     NORM_ERR("%s: Problem with resolving the hostname",
              protocol == IPPROTO_TCP ? "read_tcp" : "read_udp");

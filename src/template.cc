@@ -184,7 +184,7 @@ char *find_and_replace_templates(const char *inbuf) {
     if (*(p + 1) == '{') {
       p += 2;
       templ = p;
-      while ((*p != 0) && (isspace(*p) == 0) && *p != '{' && *p != '}') { p++; }
+      while ((*p != 0) && (isspace((unsigned char)*p) == 0) && *p != '{' && *p != '}') { p++; }
       if (*p == '}') {
         args = nullptr;
       } else {
@@ -211,7 +211,7 @@ char *find_and_replace_templates(const char *inbuf) {
     } else {
       templ = p + 1;
       p += strlen("$template");
-      while ((*p != 0) && (isdigit(*p) != 0)) { p++; }
+      while ((*p != 0) && (isdigit((unsigned char)*p) != 0)) { p++; }
       args = nullptr;
     }
     tmpl_out = handle_template(templ, args);

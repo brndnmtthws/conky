@@ -147,7 +147,7 @@ enum arg_type get_arg_type(const char *arg) {
     p++;
   }
   while (p <= e) {
-    if (isdigit(*p) == 0) {
+    if (isdigit((unsigned char)*p) == 0) {
       break;
     }
     p++;
@@ -158,7 +158,7 @@ enum arg_type get_arg_type(const char *arg) {
   if (*p == '.') {
     p++;
     while (p <= e) {
-      if (isdigit(*p) == 0) {
+      if (isdigit((unsigned char)*p) == 0) {
         return ARG_BAD;
       }
       p++;

@@ -192,9 +192,9 @@ std::string variable_substitute(std::string s) {
       std::string var;
       std::string::size_type l = 0;
 
-      if (isalpha(s[pos + 1]) != 0) {
+      if (isalpha((unsigned char)s[pos + 1]) != 0) {
         l = 1;
-        while (pos + l < s.size() && (isalnum(s[pos + l]) != 0)) {
+        while (pos + l < s.size() && (isalnum((unsigned char)s[pos + l]) != 0)) {
           ++l;
         }
         var = s.substr(pos + 1, l - 1);
@@ -307,10 +307,7 @@ void update_stuff() {
 
 /* Ohkie to return negative values for temperatures */
 int round_to_int_temp(float f) {
-  if (f >= 0.0) {
-    return static_cast<int>(f + 0.5);
-  }
-  return static_cast<int>(f - 0.5);
+  return static_cast<int>(f);
 }
 /* Don't return negative values for cpugraph, bar, gauge, percentage.
  * Causes unreasonable numbers to show */
@@ -323,7 +320,7 @@ unsigned int round_to_int(float f) {
 
 void scan_loadavg_arg(struct text_object *obj, const char *arg) {
   obj->data.i = 0;
-  if ((arg != nullptr) && (arg[1] == 0) && (isdigit(arg[0]) != 0)) {
+  if ((arg != nullptr) && (arg[1] == 0) && (isdigit((unsigned char)arg[0]) != 0)) {
     obj->data.i = atoi(arg);
     if (obj->data.i > 3 || obj->data.i < 1) {
       NORM_ERR("loadavg arg needs to be in range (1,3)");
@@ -588,7 +585,7 @@ int if_running_iftest(struct text_object *obj) {
 
 #ifndef __OpenBSD__
 void print_acpitemp(struct text_object *obj, char *p, int p_max_size) {
-  temp_print(p, p_max_size, get_acpi_temperature(obj->data.i), TEMP_CELSIUS);
+  temp_print(p, p_max_size, get_acpi_temperature(obj->data.i), TEMP_CELSIUS, 1);
 }
 
 void free_acpitemp(struct text_object *obj) { close(obj->data.i); }

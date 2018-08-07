@@ -1,4 +1,5 @@
-/*
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -9,8 +10,8 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2018 Brenden Matthews, Philip Kovacs, et. al.
- *	(see AUTHORS)
+ * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
+ *   (see AUTHORS)
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,15 +28,13 @@
  *
  */
 
-#ifndef _ENTROPY_H
-#define _ENTROPY_H
+#ifndef _MISC_H
+#define _MISC_H
 
-int update_entropy(void);
+#include "text_object.h"
 
-void print_entropy_avail(struct text_object *, char *, int);
-uint8_t entropy_percentage(struct text_object *);
-void print_entropy_poolsize(struct text_object *, char *, int);
-double entropy_barval(struct text_object *);
-void print_password(struct text_object *, char *, int);
+void print_cat(struct text_object *, char *, int);
+void print_catp(struct text_object *, char *, int);
+void print_cap(struct text_object *, char *, int);
 
-#endif /* _ENTROPY_H */
+#endif /* _MISC_H */

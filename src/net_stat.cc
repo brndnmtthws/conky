@@ -48,6 +48,12 @@
 #define SOCK_CLOEXEC O_CLOEXEC
 #endif /* SOCK_CLOEXEC */
 
+#if defined(__linux__)
+#include "linux.h"
+#else
+char e_iface[50] = "empty";
+#endif /* __linux__ */
+
 /* network interface stuff */
 
 enum if_up_strictness_ { IFUP_UP, IFUP_LINK, IFUP_ADDR };
@@ -117,6 +123,11 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
 
   if (arg == nullptr) { arg = DEFAULTNETDEV; }
 
+  if (0 == (strcmp("$gw_iface", arg)) ||
+      0 == (strcmp("${gw_iface}", arg))) {
+    arg = e_iface;
+  }
+
   while (sscanf(arg + i, " %20s", nextarg) == 1) {
     if (strcmp(nextarg, "-n") == 0 || strcmp(nextarg, "--netmask") == 0) {
       shownetmask = true;
@@ -131,7 +142,7 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
       netstat = get_net_stat(nextarg, obj, free_at_crash);
     }
     i += strlen(nextarg);  // skip this arg
-    while (!((isspace(arg[i]) != 0) || arg[i] == 0)) {
+    while (!((isspace((unsigned char)arg[i]) != 0) || arg[i] == 0)) {
       i++;  // and skip the spaces in front of it
     }
   }
@@ -214,7 +225,7 @@ void print_addr(struct text_object *obj, char *p, int p_max_size) {
 
   if ((ns->addr.sa_data[2] & 255) == 0 && (ns->addr.sa_data[3] & 255) == 0 &&
       (ns->addr.sa_data[4] & 255) == 0 && (ns->addr.sa_data[5] & 255) == 0) {
-    snprintf(p, p_max_size, "No Address");
+    snprintf(p, p_max_size, "%s", "No Address");
   } else {
     snprintf(p, p_max_size, "%u.%u.%u.%u", ns->addr.sa_data[2] & 255,
              ns->addr.sa_data[3] & 255, ns->addr.sa_data[4] & 255,
@@ -244,7 +255,7 @@ void print_v6addrs(struct text_object *obj, char *p, int p_max_size) {
 
   if (p_max_size == 0) return;
   if (!ns->v6addrs) {
-    snprintf(p, p_max_size, "No Address");
+    snprintf(p, p_max_size, "%s", "No Address");
     return;
   }
   *p = 0;
@@ -348,7 +359,7 @@ void print_wireless_channel(struct text_object *obj, char *p, int p_max_size) {
   if (ns->channel != 0) {
     snprintf(p, p_max_size, "%i", ns->channel);
   } else {
-    snprintf(p, p_max_size, "/");
+    snprintf(p, p_max_size, "%s", "/");
   }
 }
 void print_wireless_frequency(struct text_object *obj, char *p,
