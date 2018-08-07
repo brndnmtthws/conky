@@ -389,10 +389,10 @@ double cpu_barval(struct text_object *obj) {
 
 #define PRINT_HR_GENERATOR(name)                                        \
   void print_##name(struct text_object *obj, char *p, int p_max_size) { \
-  int base = 1024; \
-  if (0 == (strcmp(obj->data.s, "si"))) { \
-    base = 1000; \
-  } \
+    int base = 1024; \
+    if (0 == (strcmp(obj->data.s, "si"))) { \
+      base = 1000; \
+    } \
     human_readable(info.name * base, p, p_max_size);                    \
   }
 
