@@ -4784,7 +4784,7 @@
             </command>
             <option>(net)</option>
         </term>
-        <listitem>WLAN channel on which device 'net' is listening (Linux only)
+        <listitem>WLAN channel on which device 'net' is listening
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4804,7 +4804,7 @@
             </command>
             <option>(net)</option>
         </term>
-        <listitem>Frequency on which device 'net' is listening (Linux only)
+        <listitem>Frequency on which device 'net' is listening
         <para /></listitem>
     </varlistentry>
     <varlistentry>

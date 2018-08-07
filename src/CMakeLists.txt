@@ -135,7 +135,7 @@ endif(OS_HAIKU)
 
 if(OS_DARWIN)
   set(darwin
-    darwin.cc darwin.h
+    darwin.mm darwin.h
     darwin_sip.h
     i18n.h
   )

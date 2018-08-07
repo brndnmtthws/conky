@@ -158,6 +158,8 @@ uint8_t battery_percentage(struct text_object *);
 void print_battery_short(struct text_object *, char *, int);
 #endif /* !__OpenBSD__ */
 
+void free_cpu(struct text_object *);
+
 void print_blink(struct text_object *, char *, int);
 void print_include(struct text_object *, char *, int);
 
