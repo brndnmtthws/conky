@@ -50,7 +50,6 @@ void update_bmpx() {
   GHashTable *metadata;
 
   if (connected == 0) {
-    g_type_init();
     dbus_g_type_specialized_init();
 
     bus = dbus_g_bus_get(DBUS_BUS_SESSION, &error);

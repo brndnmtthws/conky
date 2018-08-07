@@ -96,11 +96,11 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
 }
 
 int parseTrainingXml(char *data, Character *s) {
-  char *skill = "0";
-  char *level = "0";
-  char *ends = "";
-  char *cache = "";
-  char *isTraining = "0";
+  char *skill = nullptr;
+  char *level = nullptr;
+  char ends[20] = "";
+  char cache[20] = "";
+  char *isTraining = nullptr;
   xmlNodePtr n;
   xmlDocPtr doc = 0;
   xmlNodePtr root = 0;
@@ -126,7 +126,7 @@ int parseTrainingXml(char *data, Character *s) {
           if (!strcasecmp((const char *)c->name, "SkillInTraining")) {
             isTraining = (char *)c->children->content;
           } else if (!strcasecmp((const char *)c->name, "trainingEndTime")) {
-            ends = (char *)c->children->content;
+            strncpy(ends, (const char *)c->children->content, 20);
           } else if (!strcasecmp((const char *)c->name, "trainingTypeID")) {
             if (c->children->content) skill = (char *)c->children->content;
           } else if (!strcasecmp((const char *)c->name, "trainingToLevel")) {
@@ -134,14 +134,14 @@ int parseTrainingXml(char *data, Character *s) {
           }
         }
       } else if (!strcasecmp((const char *)n->name, "cachedUntil")) {
-        cache = (char *)n->children->content;
+        strncpy(cache, (const char*)n->children->content, 20);
       }
     }
   }
 
-  s->isTraining = atoi(isTraining);
-  s->skill = atoi(skill);
-  s->level = atoi(level);
+  if(isTraining == nullptr) s->isTraining = 0; else s->isTraining = atoi(isTraining);
+  if(skill == nullptr) s->skill = 0; else s->skill = atoi(skill);
+  if(level == nullptr) s->level = 0; else s->level = atoi(level);
 
   strptime(cache, "%Y-%m-%d %H:%M:%S", &cache_tm);
   s->cache = cache_tm;

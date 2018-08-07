@@ -100,7 +100,6 @@ class audacious_cb : public conky::callback<aud_result> {
  public:
   audacious_cb(uint32_t period) : Base(period, false, Tuple()) {
 #ifdef NEW_AUDACIOUS_FOUND
-    g_type_init();
     DBusGConnection *connection = dbus_g_bus_get(DBUS_BUS_SESSION, nullptr);
     if (!connection)
       throw std::runtime_error("unable to establish dbus connection");
