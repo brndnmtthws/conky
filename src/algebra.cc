@@ -155,7 +155,7 @@ enum arg_type get_arg_type(const char *arg) {
   if (p == e + 1) {
     return ARG_LONG;
   }
-  if (*p == '.') {
+  if (*p == '.' || *p == ',') {
     p++;
     while (p <= e) {
       if (isdigit((unsigned char)*p) == 0) {
