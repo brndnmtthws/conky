@@ -37,6 +37,7 @@
 #include "logging.h"
 #include "specials.h"
 #include "text_object.h"
+#include "misc.h"
 
 #ifdef HAVE_SYS_STATFS_H
 #include <sys/statfs.h>
@@ -255,7 +256,7 @@ uint8_t fs_used_percentage(struct text_object *obj) {
 #define HUMAN_PRINT_FS_GENERATOR(name, expr)                               \
   void print_fs_##name(struct text_object *obj, char *p, int p_max_size) { \
     struct fs_stat *fs = (struct fs_stat *)obj->data.opaque;               \
-    if (fs) human_readable(0, obj->data.s, expr, p, p_max_size);                           \
+    if (fs) human_readable(apply_base_multiplier(0, obj->data.s, expr), p, p_max_size);                           \
   }
 
 HUMAN_PRINT_FS_GENERATOR(free, fs->avail)
