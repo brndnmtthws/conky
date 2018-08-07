@@ -102,6 +102,8 @@
 
 #cmakedefine BUILD_IOSTATS 1
 
+#cmakedefine BUILD_IPGFREQ 0
+
 #cmakedefine BUILD_WLAN 1
 
 #cmakedefine BUILD_ICAL 1

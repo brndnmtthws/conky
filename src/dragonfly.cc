@@ -126,9 +126,7 @@ int check_mount(char *s) {
 
   mntsize = getmntinfo(&mntbuf, MNT_NOWAIT);
   for (i = mntsize - 1; i >= 0; i--) {
-    if (strcmp(mntbuf[i].f_mntonname, s) == 0) {
-      return 1;
-    }
+    if (strcmp(mntbuf[i].f_mntonname, s) == 0) { return 1; }
   }
 
   return 0;
@@ -178,13 +176,9 @@ int update_net_stats(void) {
 
   /* get delta */
   delta = current_update_time - last_update_time;
-  if (delta <= 0.0001) {
-    return 0;
-  }
+  if (delta <= 0.0001) { return 0; }
 
-  if (getifaddrs(&ifap) < 0) {
-    return 0;
-  }
+  if (getifaddrs(&ifap) < 0) { return 0; }
 
   for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
     ns = get_net_stat((const char *)ifa->ifa_name, nullptr, NULL);
@@ -196,9 +190,7 @@ int update_net_stats(void) {
       last_recv = ns->recv;
       last_trans = ns->trans;
 
-      if (ifa->ifa_addr->sa_family != AF_LINK) {
-        continue;
-      }
+      if (ifa->ifa_addr->sa_family != AF_LINK) { continue; }
 
       for (iftmp = ifa->ifa_next;
            iftmp != nullptr && strcmp(ifa->ifa_name, iftmp->ifa_name) == 0;
@@ -286,9 +278,7 @@ void get_cpu_count(void) {
   }
 
   info.cpu_usage = (float *)malloc((info.cpu_count + 1) * sizeof(float));
-  if (info.cpu_usage == nullptr) {
-    CRIT_ERR(nullptr, NULL, "malloc");
-  }
+  if (info.cpu_usage == nullptr) { CRIT_ERR(nullptr, NULL, "malloc"); }
 }
 
 struct cpu_info {
@@ -356,6 +346,8 @@ int update_cpu_usage(void) {
 
   return 0;
 }
+
+void free_cpu(struct text_object *) { /* no-op */ }
 
 int update_load_average(void) {
   double v[3];
@@ -489,9 +481,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
 
   (void)adapter;  // only linux uses this
 
-  if (!p_client_buffer || client_buffer_size <= 0) {
-    return;
-  }
+  if (!p_client_buffer || client_buffer_size <= 0) { return; }
 
   if (GETSYSCTL("hw.acpi.acline", state)) {
     fprintf(stderr, "Cannot read sysctl \"hw.acpi.acline\"\n");
@@ -711,9 +701,7 @@ void get_top_info(void) {
 #define APM_UNKNOWN 255
 
 int apm_getinfo(int fd, apm_info_t aip) {
-  if (ioctl(fd, APMIO_GETINFO, aip) == -1) {
-    return -1;
-  }
+  if (ioctl(fd, APMIO_GETINFO, aip) == -1) { return -1; }
 
   return 0;
 }

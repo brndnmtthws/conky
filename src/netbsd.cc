@@ -286,6 +286,8 @@ void update_cpu_usage() {
   oldtotal = total;
 }
 
+void free_cpu(struct text_object *) { /* no-op */ }
+
 void update_load_average() {
   double v[3];
 

@@ -63,6 +63,12 @@ if (NOT LIB_INSTALL_DIR)
 endif (NOT LIB_INSTALL_DIR)
 set(PACKAGE_LIBRARY_DIR "${LIB_INSTALL_DIR}/conky" CACHE STRING "Package library path (where Lua bindings are installed" FORCE)
 set(DEFAULTNETDEV "eth0" CACHE STRING "Default networkdevice")
+
+# Mac only override
+if(OS_DARWIN)
+	set(DEFAULTNETDEV "en0" CACHE STRING "Default networkdevice" FORCE)
+endif(OS_DARWIN)
+
 set(XDG_CONFIG_FILE "$HOME/.config/conky/conky.conf" CACHE STRING "Configfile of the user (XDG)")
 set(CONFIG_FILE "$HOME/.conkyrc" CACHE STRING "Configfile of the user")
 set(MAX_USER_TEXT_DEFAULT "16384" CACHE STRING "Default maximum size of config TEXT buffer, i.e. below TEXT line.")
@@ -76,7 +82,6 @@ if(OS_LINUX)
 	option(BUILD_PORT_MONITORS "Build TCP portmon support" true)
 	option(BUILD_IBM "Support for IBM/Lenovo notebooks" true)
 	option(BUILD_HDDTEMP "Support for hddtemp" true)
-	option(BUILD_WLAN "Enable wireless support" false)
 	# nvidia may also work on FreeBSD, not sure
 	option(BUILD_NVIDIA "Enable nvidia support" false)
 	option(BUILD_IPV6 "Enable if you want IPv6 support" true)
@@ -84,13 +89,19 @@ else(OS_LINUX)
 	set(BUILD_PORT_MONITORS false)
 	set(BUILD_IBM false)
 	set(BUILD_HDDTEMP false)
-	set(BUILD_WLAN false)
 	set(BUILD_NVIDIA false)
 	set(BUILD_IPV6 false)
 endif(OS_LINUX)
 
+# macOS Only
+if(OS_DARWIN)
+	option(BUILD_IPGFREQ "Enable cpu freq calculation based on Intel® Power Gadget; otherwise use constant factory value" false)
+endif(OS_DARWIN)
+
 # Optional features etc
 #
+
+option(BUILD_WLAN "Enable wireless support" false)
 
 option(BUILD_BUILTIN_CONFIG "Enable builtin default configuration" true)
 
@@ -110,7 +121,14 @@ endif(BUILD_NCURSES)
 option(BUILD_X11 "Build X11 support" true)
 if(BUILD_X11)
 	option(OWN_WINDOW "Enable own_window support" true)
-	option(BUILD_XDAMAGE "Build Xdamage support" true)
+
+	# Mac Fix
+	if(OS_DARWIN)
+		option(BUILD_XDAMAGE "Build Xdamage support" false)
+	else(OS_DARWIN)
+		option(BUILD_XDAMAGE "Build Xdamage support" true)
+	endif(OS_DARWIN)
+
 	option(BUILD_XINERAMA "Build Xinerama support" true)
 	option(BUILD_XDBE "Build Xdbe (double-buffer) support" true)
 	option(BUILD_XFT "Build Xft (freetype fonts) support" true)
