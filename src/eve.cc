@@ -126,7 +126,7 @@ int parseTrainingXml(char *data, Character *s) {
           if (!strcasecmp((const char *)c->name, "SkillInTraining")) {
             isTraining = (char *)c->children->content;
           } else if (!strcasecmp((const char *)c->name, "trainingEndTime")) {
-            strcpy(ends, (const char *)c->children->content);
+            strncpy(ends, (const char *)c->children->content, 20);
           } else if (!strcasecmp((const char *)c->name, "trainingTypeID")) {
             if (c->children->content) skill = (char *)c->children->content;
           } else if (!strcasecmp((const char *)c->name, "trainingToLevel")) {
@@ -134,7 +134,7 @@ int parseTrainingXml(char *data, Character *s) {
           }
         }
       } else if (!strcasecmp((const char *)n->name, "cachedUntil")) {
-        strcpy(cache, (const char*)n->children->content);
+        strncpy(cache, (const char*)n->children->content, 20);
       }
     }
   }
