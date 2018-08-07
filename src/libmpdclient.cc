@@ -1371,14 +1371,14 @@ void mpd_sendFindCommand(mpd_Connection *connection, int table,
 
 void mpd_sendListCommand(mpd_Connection *connection, int table,
                          const char *arg1) {
-  char st[10];
+  char st[7];
   int len;
   char *string;
 
   if (table == MPD_TABLE_ARTIST) {
-    strncpy(st, "artist", MPD_BUFFER_MAX_LENGTH);
+    strcpy(st, "artist");
   } else if (table == MPD_TABLE_ALBUM) {
-    strncpy(st, "album", MPD_BUFFER_MAX_LENGTH);
+    strcpy(st, "album");
   } else {
     connection->error = 1;
     strncpy(connection->errorStr, "unknown table for list",
