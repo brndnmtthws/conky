@@ -38,7 +38,6 @@
 #include "logging.h"
 #include "specials.h"
 #include "text_object.h"
-#include "misc.h"
 
 /* this is the root of all per disk stats,
  * also containing the totals. */
@@ -148,7 +147,7 @@ static void print_diskio_dir(struct text_object *obj, int dir, char *p,
 
   /* TODO: move this correction from kB to kB/s elsewhere
    * (or get rid of it??) */
-  human_readable(apply_base_multiplier(0, obj->data.s, (val / active_update_interval()) * 1024LL), p, p_max_size);
+  human_readable((val / active_update_interval()) * 1024LL, p, p_max_size);
 }
 
 void print_diskio(struct text_object *obj, char *p, int p_max_size) {

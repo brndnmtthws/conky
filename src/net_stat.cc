@@ -36,7 +36,6 @@
 #include "net/if.h"
 #include "net_stat.h"
 #include "specials.h"
-#include "misc.h"
 #include "text_object.h"
 #if defined(__sun)
 #include <sys/sockio.h>
@@ -176,7 +175,7 @@ void print_downspeed(struct text_object *obj, char *p, int p_max_size) {
 
   if (ns == nullptr) { return; }
 
-  human_readable(apply_base_multiplier(0, obj->data.s, ns->recv_speed), p, p_max_size);
+  human_readable(ns->recv_speed, p, p_max_size);
 }
 
 void print_downspeedf(struct text_object *obj, char *p, int p_max_size) {
@@ -192,7 +191,7 @@ void print_upspeed(struct text_object *obj, char *p, int p_max_size) {
 
   if (ns == nullptr) { return; }
 
-  human_readable(apply_base_multiplier(0, obj->data.s, ns->trans_speed), p, p_max_size);
+  human_readable(ns->trans_speed, p, p_max_size);
 }
 
 void print_upspeedf(struct text_object *obj, char *p, int p_max_size) {
@@ -208,7 +207,7 @@ void print_totaldown(struct text_object *obj, char *p, int p_max_size) {
 
   if (ns == nullptr) { return; }
 
-  human_readable(apply_base_multiplier(0, obj->data.s, ns->recv), p, p_max_size);
+  human_readable(ns->recv, p, p_max_size);
 }
 
 void print_totalup(struct text_object *obj, char *p, int p_max_size) {
@@ -216,7 +215,7 @@ void print_totalup(struct text_object *obj, char *p, int p_max_size) {
 
   if (ns == nullptr) { return; }
 
-  human_readable(apply_base_multiplier(0, obj->data.s, ns->trans), p, p_max_size);
+  human_readable(ns->trans, p, p_max_size);
 }
 
 void print_addr(struct text_object *obj, char *p, int p_max_size) {
