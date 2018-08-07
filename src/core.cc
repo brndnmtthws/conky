@@ -660,8 +660,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(obsd_vendor, 0) obj->callbacks.print = &get_obsd_vendor;
   END OBJ(obsd_product, 0) obj->callbacks.print = &get_obsd_product;
 #endif /* __OpenBSD__ */
-  END OBJ(buffers, &update_meminfo) obj->callbacks.print = &print_buffers;
-  END OBJ(cached, &update_meminfo) obj->callbacks.print = &print_cached;
+  END OBJ(buffers, &update_meminfo)  obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  obj->callbacks.print = &print_buffers;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(cached, &update_meminfo) obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  obj->callbacks.print = &print_cached;
+  obj->callbacks.free = &gen_free_opaque;
 #define SCAN_CPU(__arg, __var)                                          \
   {                                                                     \
     int __offset = 0;                                                   \
@@ -1109,16 +1113,26 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(mboxscan, nullptr) parse_mboxscan_arg(obj, arg);
   obj->callbacks.print = &print_mboxscan;
   obj->callbacks.free = &free_mboxscan;
-  END OBJ(mem, &update_meminfo) obj->callbacks.print = &print_mem;
-  END OBJ(memwithbuffers, &update_meminfo) obj->callbacks.print =
-      &print_memwithbuffers;
-  END OBJ(memeasyfree, &update_meminfo) obj->callbacks.print =
-      &print_memeasyfree;
-  END OBJ(memfree, &update_meminfo) obj->callbacks.print = &print_memfree;
-  END OBJ(memmax, &update_meminfo) obj->callbacks.print = &print_memmax;
+  END OBJ(mem, &update_meminfo) obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  obj->callbacks.print = &print_mem;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(memwithbuffers, &update_meminfo) obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  obj->callbacks.print = &print_memwithbuffers;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(memeasyfree, &update_meminfo) obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  obj->callbacks.print = &print_memeasyfree;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(memfree, &update_meminfo) obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  obj->callbacks.print = &print_memfree;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(memmax, &update_meminfo) obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  obj->callbacks.print = &print_memmax;
+  obj->callbacks.free = &gen_free_opaque;
   END OBJ(memperc, &update_meminfo) obj->callbacks.percentage = &mem_percentage;
 #ifdef __linux__
-  END OBJ(memdirty, &update_meminfo) obj->callbacks.print = &print_memdirty;
+  END OBJ(memdirty, &update_meminfo) obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  obj->callbacks.print = &print_memdirty;
+  obj->callbacks.free = &gen_free_opaque;
 #endif
 #ifdef BUILD_X11
   END OBJ(memgauge, &update_meminfo) scan_gauge(obj, arg, 1);
@@ -1345,9 +1359,15 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       scan_stippled_hr(obj, arg);
   obj->callbacks.print = &new_stippled_hr;
 #endif /* BUILD_X11 */
-  END OBJ(swap, &update_meminfo) obj->callbacks.print = &print_swap;
-  END OBJ(swapfree, &update_meminfo) obj->callbacks.print = &print_swapfree;
-  END OBJ(swapmax, &update_meminfo) obj->callbacks.print = &print_swapmax;
+  END OBJ(swap, &update_meminfo) obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  obj->callbacks.print = &print_swap;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(swapfree, &update_meminfo) obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  obj->callbacks.print = &print_swapfree;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(swapmax, &update_meminfo) obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
+  obj->callbacks.print = &print_swapmax;
+  obj->callbacks.free = &gen_free_opaque;
   END OBJ(swapperc, &update_meminfo) obj->callbacks.percentage =
       &swap_percentage;
   END OBJ(swapbar, &update_meminfo) scan_bar(obj, arg, 1);
