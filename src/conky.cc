@@ -742,16 +742,24 @@ int percent_print(char *buf, int size, unsigned value) {
  * The algorithm always divides by 1024, as unit-conversion of byte
  * counts suggests. But for output length determination we need to
  * compare with 1000 here, as we print in decimal form. */
-void human_readable(long long num, char *buf, int size) {
+void human_readable(int use_base, const char *s, long long num, char *buf, int size) {
   const char **suffix = suffixes;
   float fnum;
   int precision;
   int width;
   static const char *const format = "%.*f%.1s";
+  int base = 1024;
+
+  if (1 == use_base) {
+    if (*s && (0 == (strcmp(s, "si")))) {
+      base = 1000;
+    }
+    num *= base;
+  }
 
   /* Possibly just output as usual, for example for stdout usage */
   if (!format_human_readable.get(*state)) {
-    spaced_print(buf, size, "%lld", 6, num);
+    spaced_print(buf, size, "%lld", 6, num * base);
     return;
   }
   if (short_units.get(*state)) {

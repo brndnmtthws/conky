@@ -389,11 +389,7 @@ double cpu_barval(struct text_object *obj) {
 
 #define PRINT_HR_GENERATOR(name)                                        \
   void print_##name(struct text_object *obj, char *p, int p_max_size) { \
-    int base = 1024; \
-    if (0 == (strcmp(obj->data.s, "si"))) { \
-      base = 1000; \
-    } \
-    human_readable(info.name * base, p, p_max_size);                    \
+    human_readable(1, obj->data.s, info.name, p, p_max_size);                    \
   }
 
 PRINT_HR_GENERATOR(mem)
@@ -509,19 +505,11 @@ void print_threads(struct text_object *obj, char *p, int p_max_size) {
 }
 
 void print_buffers(struct text_object *obj, char *p, int p_max_size) {
-  int base = 1024;
-  if (0 == (strcmp(obj->data.s, "si"))) {
-    base = 1000;
-  }
-  human_readable(info.buffers * base, p, p_max_size);
+  human_readable(1, obj->data.s, info.buffers, p, p_max_size);
 }
 
 void print_cached(struct text_object *obj, char *p, int p_max_size) {
-  int base = 1024;
-  if (0 == (strcmp(obj->data.s, "si"))) {
-    base = 1000;
-  }
-  human_readable(info.cached * base, p, p_max_size);
+  human_readable(1, obj->data.s, info.cached, p, p_max_size);
 }
 
 void print_evaluate(struct text_object *obj, char *p, int p_max_size) {

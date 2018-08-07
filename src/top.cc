@@ -563,7 +563,7 @@ static void print_top_user(struct text_object *obj, char *p, int p_max_size) {
                                int p_max_size) {                       \
     struct top_data *td = (struct top_data *)obj->data.opaque;         \
     if (!td || !td->list || !td->list[td->num]) return;                \
-    human_readable(td->list[td->num]->field / (denom), p, p_max_size); \
+    human_readable(0, obj->data.s, td->list[td->num]->field / (denom), p, p_max_size); \
   }
 
 PRINT_TOP_GENERATOR(cpu, 7, "%6.2f", amount)
