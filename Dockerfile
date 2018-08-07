@@ -94,6 +94,6 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
        libxml2-dev \
        tolua++ \
   && rm -rf /var/lib/apt/lists/* \
-  && rm -rf /conky \
+  && rm -rf /conky
 
 CMD conky
