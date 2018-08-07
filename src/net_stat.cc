@@ -476,7 +476,11 @@ int interface_up(struct text_object *obj) {
 
   if (dev == nullptr) { return 0; }
 
+#if defined(__APPLE__) && defined(__MACH__)
+  if ((fd = socket(PF_INET, SOCK_DGRAM, 0)) < 0) {
+#else
   if ((fd = socket(PF_INET, SOCK_DGRAM | SOCK_CLOEXEC, 0)) < 0) {
+#endif
     CRIT_ERR(nullptr, nullptr, "could not create sockfd");
     return 0;
   }

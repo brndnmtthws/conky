@@ -121,6 +121,12 @@
 #include "darwin.h"
 #endif
 
+#if defined (__APPLE__) && defined (__MACH__)
+#define DARWIN_DEALLOCATE_CPU_SAMPLE obj->callbacks.free = &deallocate_cpu_sample;
+#else
+#define DARWIN_DEALLOCATE_CPU_SAMPLE
+#endif
+
 #include <cctype>
 #include <cstring>
 
@@ -484,42 +490,43 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
     obj->data.i = atoi(&arg[0]);
   }
   obj->callbacks.print = &print_voltage_v;
-
-#ifdef BUILD_WLAN
-  END OBJ(wireless_essid, &update_net_stats) obj->data.opaque =
-      get_net_stat(arg, obj, free_at_crash);
-  obj->callbacks.print = &print_wireless_essid;
-  END OBJ(wireless_channel, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_wireless_channel;
-  END OBJ(wireless_freq, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_wireless_frequency;
-  END OBJ(wireless_mode, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_wireless_mode;
-  END OBJ(wireless_bitrate, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_wireless_bitrate;
-  END OBJ(wireless_ap, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_wireless_ap;
-  END OBJ(wireless_link_qual, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_wireless_link_qual;
-  END OBJ(wireless_link_qual_max, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_wireless_link_qual_max;
-  END OBJ(wireless_link_qual_perc, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_wireless_link_qual_perc;
-  END OBJ(wireless_link_bar, &update_net_stats)
-      parse_net_stat_bar_arg(obj, arg, free_at_crash);
-  obj->callbacks.barval = &wireless_link_barval;
-#endif /* BUILD_WLAN */
-
+    
 #endif /* __linux__ */
 
+#ifdef BUILD_WLAN
+    END OBJ(wireless_essid, &update_net_stats) obj->data.opaque =
+    get_net_stat(arg, obj, free_at_crash);
+    parse_net_stat_arg(obj, arg, free_at_crash);
+    obj->callbacks.print = &print_wireless_essid;
+    END OBJ(wireless_channel, &update_net_stats)
+    parse_net_stat_arg(obj, arg, free_at_crash);
+    obj->callbacks.print = &print_wireless_channel;
+    END OBJ(wireless_freq, &update_net_stats)
+    parse_net_stat_arg(obj, arg, free_at_crash);
+    obj->callbacks.print = &print_wireless_frequency;
+    END OBJ(wireless_mode, &update_net_stats)
+    parse_net_stat_arg(obj, arg, free_at_crash);
+    obj->callbacks.print = &print_wireless_mode;
+    END OBJ(wireless_bitrate, &update_net_stats)
+    parse_net_stat_arg(obj, arg, free_at_crash);
+    obj->callbacks.print = &print_wireless_bitrate;
+    END OBJ(wireless_ap, &update_net_stats)
+    parse_net_stat_arg(obj, arg, free_at_crash);
+    obj->callbacks.print = &print_wireless_ap;
+    END OBJ(wireless_link_qual, &update_net_stats)
+    parse_net_stat_arg(obj, arg, free_at_crash);
+    obj->callbacks.print = &print_wireless_link_qual;
+    END OBJ(wireless_link_qual_max, &update_net_stats)
+    parse_net_stat_arg(obj, arg, free_at_crash);
+    obj->callbacks.print = &print_wireless_link_qual_max;
+    END OBJ(wireless_link_qual_perc, &update_net_stats)
+    parse_net_stat_arg(obj, arg, free_at_crash);
+    obj->callbacks.print = &print_wireless_link_qual_perc;
+    END OBJ(wireless_link_bar, &update_net_stats)
+    parse_net_stat_bar_arg(obj, arg, free_at_crash);
+    obj->callbacks.barval = &wireless_link_barval;
+#endif /* BUILD_WLAN */
+    
 #ifndef __OpenBSD__
   END OBJ(acpifan, nullptr) obj->callbacks.print = &print_acpifan;
   END OBJ(battery, nullptr) char bat[64];
@@ -673,18 +680,21 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(cpu, &update_cpu_usage) get_cpu_count();
   SCAN_CPU(arg, obj->data.i);
   obj->callbacks.percentage = &cpu_percentage;
+  DARWIN_DEALLOCATE_CPU_SAMPLE
   DBGP2("Adding $cpu for CPU %d", obj->data.i);
 #ifdef BUILD_X11
   END OBJ(cpugauge, &update_cpu_usage) get_cpu_count();
   SCAN_CPU(arg, obj->data.i);
   scan_gauge(obj, arg, 1);
   obj->callbacks.gaugeval = &cpu_barval;
+  DARWIN_DEALLOCATE_CPU_SAMPLE
   DBGP2("Adding $cpugauge for CPU %d", obj->data.i);
 #endif
   END OBJ(cpubar, &update_cpu_usage) get_cpu_count();
   SCAN_CPU(arg, obj->data.i);
   scan_bar(obj, arg, 1);
   obj->callbacks.barval = &cpu_barval;
+  DARWIN_DEALLOCATE_CPU_SAMPLE
   DBGP2("Adding $cpubar for CPU %d", obj->data.i);
 #ifdef BUILD_X11
   END OBJ(cpugraph, &update_cpu_usage) get_cpu_count();
@@ -694,6 +704,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   DBGP2("Adding $cpugraph for CPU %d", obj->data.i);
   free_and_zero(buf);
   obj->callbacks.graphval = &cpu_barval;
+  DARWIN_DEALLOCATE_CPU_SAMPLE
   END OBJ(loadgraph, &update_load_average) scan_loadgraph_arg(obj, arg);
   obj->callbacks.graphval = &loadgraphval;
 #endif /* BUILD_X11 */

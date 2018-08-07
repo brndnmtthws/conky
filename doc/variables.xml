@@ -4764,7 +4764,7 @@
             </command>
             <option>(net)</option>
         </term>
-        <listitem>Wireless access point MAC address (Linux only)
+        <listitem>Wireless access point MAC address
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4774,7 +4774,7 @@
             </command>
             <option>(net)</option>
         </term>
-        <listitem>Wireless bitrate (ie 11 Mb/s) (Linux only)
+        <listitem>Wireless bitrate (ie 11 Mb/s)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4784,7 +4784,7 @@
             </command>
             <option>(net)</option>
         </term>
-        <listitem>WLAN channel on which device 'net' is listening (Linux only)
+        <listitem>WLAN channel on which device 'net' is listening
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4794,7 +4794,7 @@
             </command>
             <option>(net)</option>
         </term>
-        <listitem>Wireless access point ESSID (Linux only)
+        <listitem>Wireless access point ESSID
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4804,7 +4804,7 @@
             </command>
             <option>(net)</option>
         </term>
-        <listitem>Frequency on which device 'net' is listening (Linux only)
+        <listitem>Frequency on which device 'net' is listening
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4814,7 +4814,7 @@
             </command>
             <option>(height),(width) (net)</option>
         </term>
-        <listitem>Wireless link quality bar (Linux only)
+        <listitem>Wireless link quality bar
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4824,7 +4824,7 @@
             </command>
             <option>(net)</option>
         </term>
-        <listitem>Wireless link quality (Linux only)
+        <listitem>Wireless link quality
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4834,7 +4834,7 @@
             </command>
             <option>(net)</option>
         </term>
-        <listitem>Wireless link quality maximum value (Linux only)
+        <listitem>Wireless link quality maximum value
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4844,7 +4844,7 @@
             </command>
             <option>(net)</option>
         </term>
-        <listitem>Wireless link quality in percents (Linux only)
+        <listitem>Wireless link quality in percents
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4854,8 +4854,7 @@
             </command>
             <option>(net)</option>
         </term>
-        <listitem>Wireless mode (Managed/Ad-Hoc/Master) (Linux
-        only)
+        <listitem>Wireless mode (Managed/Ad-Hoc/Master)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
