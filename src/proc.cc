@@ -607,12 +607,13 @@ void print_pid_time(struct text_object *obj, char *p, int p_max_size) {
   }
 }
 
-#define UID_ENTRY "Uid:\t"
-void print_pid_uid(struct text_object *obj, char *p, int p_max_size) {
-#define UIDNOTFOUND "Can't find the process real uid in '%s'"
+enum idtype {egid, euid, fsgid, fsuid, gid, sgid, suid, uid};
+
+void print_pid_Xid(struct text_object *obj, char *p, int p_max_size, idtype type) {
   char *begin, *end, *buf = nullptr;
   int bytes_read;
   std::ostringstream pathstream;
+  std::string errorstring;
   std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
 
   generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
@@ -620,239 +621,144 @@ void print_pid_uid(struct text_object *obj, char *p, int p_max_size) {
 
   buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
   if (buf != nullptr) {
-    begin = strstr(buf, UID_ENTRY);
-    if (begin != nullptr) {
-      begin += strlen(UID_ENTRY);
-      end = strchr(begin, '\t');
-      if (end != nullptr) {
-        *(end) = 0;
-      }
-      snprintf(p, p_max_size, "%s", begin);
-    } else {
-      NORM_ERR(UIDNOTFOUND, pathstream.str().c_str());
+    switch(type) {
+    case egid:
+      begin = strstr(buf, "Gid:\t");
+      break;
+    case euid:
+      begin = strstr(buf, "Uid:\t");
+      break;
+    case fsgid:
+      begin = strstr(buf, "Gid:\t");
+      break;
+    case fsuid:
+      begin = strstr(buf, "Uid:\t");
+      break;
+    case gid:
+      begin = strstr(buf, "Gid:\t");
+      break;
+    case sgid:
+      begin = strstr(buf, "Gid:\t");
+      break;
+    case suid:
+      begin = strstr(buf, "Uid:\t");
+      break;
+    case uid:
+      begin = strstr(buf, "Uid:\t");
+      break;
+    default:
+      break;
     }
-    free(buf);
-  }
-}
-
-void print_pid_euid(struct text_object *obj, char *p, int p_max_size) {
-#define EUIDNOTFOUND "Can't find the process effective uid in '%s'"
-  char *begin, *end, *buf = nullptr;
-  int bytes_read;
-  std::ostringstream pathstream;
-  std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
-
-  generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
-  pathstream << PROCDIR "/" << objbuf.get() << "/status";
-
-  buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
-  if (buf != nullptr) {
-    begin = strstr(buf, UID_ENTRY);
     if (begin != nullptr) {
-      begin = strchr(begin, '\t');
-      begin++;
-      begin = strchr(begin, '\t');
-      begin++;
-      end = strchr(begin, '\t');
+      switch(type) {
+      case gid:
+        begin += strlen("Gid:\t");
+        break;
+      case uid:
+        begin += strlen("Uid:\t");
+        break;
+      case egid:
+      case euid:
+        begin = strchr(begin, '\t');
+	begin++;
+        begin = strchr(begin, '\t');
+	begin++;
+        break;
+      case sgid:
+      case suid:
+        begin = strchr(begin, '\t');
+	begin++;
+        begin = strchr(begin, '\t');
+        begin++;
+        begin = strchr(begin, '\t');
+        begin++;
+        break;
+      case fsgid:
+      case fsuid:
+        begin = strchr(begin, '\t');
+        begin++;
+        begin = strchr(begin, '\t');
+        begin++;
+        begin = strchr(begin, '\t');
+        begin++;
+        begin = strchr(begin, '\t');
+        begin++;
+	break;
+      default:
+        break;
+      }
+      if(type == fsgid || type == fsuid) end = strchr(begin, '\n'); else end = strchr(begin, '\t');
       if (end != nullptr) {
         *(end) = 0;
       }
       snprintf(p, p_max_size, "%s", begin);
     } else {
-      NORM_ERR(EUIDNOTFOUND, pathstream.str().c_str());
-    }
-    free(buf);
-  }
-}
-
-void print_pid_suid(struct text_object *obj, char *p, int p_max_size) {
-#define SUIDNOTFOUND "Can't find the process saved set uid in '%s'"
-  char *begin, *end, *buf = nullptr;
-  int bytes_read;
-  std::ostringstream pathstream;
-  std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
-
-  generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
-  pathstream << PROCDIR "/" << objbuf.get() << "/status";
-
-  buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
-  if (buf != nullptr) {
-    begin = strstr(buf, UID_ENTRY);
-    if (begin != nullptr) {
-      begin = strchr(begin, '\t');
-      begin++;
-      begin = strchr(begin, '\t');
-      begin++;
-      begin = strchr(begin, '\t');
-      begin++;
-      end = strchr(begin, '\t');
-      if (end != nullptr) {
-        *(end) = 0;
+      errorstring = "Can't find the process ";
+      switch(type) {
+      case egid:
+        errorstring.append("effective gid");
+        break;
+      case euid:
+        errorstring.append("effective uid");
+        break;
+      case fsgid:
+        errorstring.append("process file system gid");
+        break;
+      case fsuid:
+        errorstring.append("process file system uid");
+        break;
+      case gid:
+        errorstring.append("real gid");
+        break;
+      case sgid:
+        errorstring.append("saved set gid");
+        break;
+      case suid:
+        errorstring.append("saved set uid");
+        break;
+      case uid:
+        errorstring.append("real uid");
+        break;
+      default:
+        break;
       }
-      snprintf(p, p_max_size, "%s", begin);
-    } else {
-      NORM_ERR(SUIDNOTFOUND, pathstream.str().c_str());
-    }
-    free(buf);
-  }
-}
-
-void print_pid_fsuid(struct text_object *obj, char *p, int p_max_size) {
-#define FSUIDNOTFOUND "Can't find the process file system uid in '%s'"
-  char *begin, *end, *buf = nullptr;
-  int bytes_read;
-  std::ostringstream pathstream;
-  std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
-
-  generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
-  pathstream << PROCDIR "/" << objbuf.get() << "/status";
-
-  buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
-  if (buf != nullptr) {
-    begin = strstr(buf, UID_ENTRY);
-    if (begin != nullptr) {
-      begin = strchr(begin, '\t');
-      begin++;
-      begin = strchr(begin, '\t');
-      begin++;
-      begin = strchr(begin, '\t');
-      begin++;
-      begin = strchr(begin, '\t');
-      begin++;
-      end = strchr(begin, '\n');
-      if (end != nullptr) {
-        *(end) = 0;
-      }
-      snprintf(p, p_max_size, "%s", begin);
-    } else {
-      NORM_ERR(FSUIDNOTFOUND, pathstream.str().c_str());
-    }
-    free(buf);
-  }
-}
-
-#define GID_ENTRY "Gid:\t"
-void print_pid_gid(struct text_object *obj, char *p, int p_max_size) {
-#define GIDNOTFOUND "Can't find the process real gid in '%s'"
-  char *begin, *end, *buf = nullptr;
-  int bytes_read;
-  std::ostringstream pathstream;
-  std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
-
-  generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
-  pathstream << PROCDIR "/" << objbuf.get() << "/status";
-
-  buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
-  if (buf != nullptr) {
-    begin = strstr(buf, GID_ENTRY);
-    if (begin != nullptr) {
-      begin += strlen(GID_ENTRY);
-      end = strchr(begin, '\t');
-      if (end != nullptr) {
-        *(end) = 0;
-      }
-      snprintf(p, p_max_size, "%s", begin);
-    } else {
-      NORM_ERR(GIDNOTFOUND, pathstream.str().c_str());
+      errorstring.append(" in '%s'");
+      NORM_ERR(errorstring.c_str(), pathstream.str().c_str());
     }
     free(buf);
   }
 }
 
 void print_pid_egid(struct text_object *obj, char *p, int p_max_size) {
-#define EGIDNOTFOUND "Can't find the process effective gid in '%s'"
-  char *begin, *end, *buf = nullptr;
-  int bytes_read;
-  std::ostringstream pathstream;
-  std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
-
-  generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
-  pathstream << PROCDIR "/" << objbuf.get() << "/status";
-
-  buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
-  if (buf != nullptr) {
-    begin = strstr(buf, GID_ENTRY);
-    if (begin != nullptr) {
-      begin = strchr(begin, '\t');
-      begin++;
-      begin = strchr(begin, '\t');
-      begin++;
-      end = strchr(begin, '\t');
-      if (end != nullptr) {
-        *(end) = 0;
-      }
-      snprintf(p, p_max_size, "%s", begin);
-    } else {
-      NORM_ERR(EGIDNOTFOUND, pathstream.str().c_str());
-    }
-    free(buf);
-  }
+ print_pid_Xid(obj, p, p_max_size, egid);
 }
 
-void print_pid_sgid(struct text_object *obj, char *p, int p_max_size) {
-#define SGIDNOTFOUND "Can't find the process saved set gid in '%s'"
-  char *begin, *end, *buf = nullptr;
-  int bytes_read;
-  std::ostringstream pathstream;
-  std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
-
-  generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
-  pathstream << PROCDIR "/" << objbuf.get() << "/status";
-
-  buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
-  if (buf != nullptr) {
-    begin = strstr(buf, GID_ENTRY);
-    if (begin != nullptr) {
-      begin = strchr(begin, '\t');
-      begin++;
-      begin = strchr(begin, '\t');
-      begin++;
-      begin = strchr(begin, '\t');
-      begin++;
-      end = strchr(begin, '\t');
-      if (end != nullptr) {
-        *(end) = 0;
-      }
-      snprintf(p, p_max_size, "%s", begin);
-    } else {
-      NORM_ERR(SGIDNOTFOUND, pathstream.str().c_str());
-    }
-    free(buf);
-  }
+void print_pid_euid(struct text_object *obj, char *p, int p_max_size) {
+  print_pid_Xid(obj, p, p_max_size, euid);
 }
 
 void print_pid_fsgid(struct text_object *obj, char *p, int p_max_size) {
-#define FSGIDNOTFOUND "Can't find the process file system gid in '%s'"
-  char *begin, *end, *buf = nullptr;
-  int bytes_read;
-  std::ostringstream pathstream;
-  std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
+  print_pid_Xid(obj, p, p_max_size, fsgid);
+}
 
-  generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
-  pathstream << PROCDIR "/" << objbuf.get() << "/status";
+void print_pid_fsuid(struct text_object *obj, char *p, int p_max_size) {
+ print_pid_Xid(obj, p, p_max_size, fsuid);
+}
 
-  buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
-  if (buf != nullptr) {
-    begin = strstr(buf, GID_ENTRY);
-    if (begin != nullptr) {
-      begin = strchr(begin, '\t');
-      begin++;
-      begin = strchr(begin, '\t');
-      begin++;
-      begin = strchr(begin, '\t');
-      begin++;
-      begin = strchr(begin, '\t');
-      begin++;
-      end = strchr(begin, '\n');
-      if (end != nullptr) {
-        *(end) = 0;
-      }
-      snprintf(p, p_max_size, "%s", begin);
-    } else {
-      NORM_ERR(FSGIDNOTFOUND, pathstream.str().c_str());
-    }
-    free(buf);
-  }
+void print_pid_gid(struct text_object *obj, char *p, int p_max_size) {
+ print_pid_Xid(obj, p, p_max_size, gid);
+}
+
+void print_pid_sgid(struct text_object *obj, char *p, int p_max_size) {
+  print_pid_Xid(obj, p, p_max_size, sgid);
+}
+
+void print_pid_suid(struct text_object *obj, char *p, int p_max_size) {
+ print_pid_Xid(obj, p, p_max_size, suid);
+}
+
+void print_pid_uid(struct text_object *obj, char *p, int p_max_size) {
+  print_pid_Xid(obj, p, p_max_size, uid);
 }
 
 void internal_print_pid_vm(struct text_object *obj, char *p, int p_max_size,
