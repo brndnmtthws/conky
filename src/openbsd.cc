@@ -400,7 +400,7 @@ void update_cpu_usage() {
 #endif
 }
 
-void free_cpu(struct text_object *) {
+void free_cpu(struct text_object *) { /* no-op */
 }
 
 void update_load_average() {

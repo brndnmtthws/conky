@@ -371,8 +371,7 @@ int update_cpu_usage(void) {
   return 0;
 }
 
-void free_cpu(struct text_object *) {
-}
+void free_cpu(struct text_object *) { /* no-op */ }
 
 int update_load_average(void) {
   double v[3];
@@ -644,9 +643,7 @@ int update_diskio(void) {
     free(dev_select);
   }
 
-  if (statinfo_cur.dinfo->mem_ptr) {
-    free(statinfo_cur.dinfo->mem_ptr);
-  }
+  if (statinfo_cur.dinfo->mem_ptr) { free(statinfo_cur.dinfo->mem_ptr); }
   free(statinfo_cur.dinfo);
   return 0;
 }
