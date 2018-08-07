@@ -134,20 +134,6 @@ void free_tztime(struct text_object *obj) {
   free_and_zero(obj->data.opaque);
 }
 
-/* a safer asprintf()
- * - no need to check for errors
- * - exit conky on memory allocation failure
- * - XXX: no return value at all, otherwise this
- *        could be used globally */
-#define safe_asprintf(bufp, ...)                                   \
-  {                                                                \
-    int __v;                                                       \
-    if ((__v = asprintf(bufp, __VA_ARGS__)) == -1) {               \
-      fprintf(stderr, "%s: memory allocation failed\n", __func__); \
-      exit(__v);                                                   \
-    }                                                              \
-  }
-
 // all chars after the ending " and between the seconds and the starting " are
 // silently ignored, this is wanted behavior, not a bug, so don't "fix" this.
 static void do_format_time(struct text_object *obj, char *p,
