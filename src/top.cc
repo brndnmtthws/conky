@@ -31,6 +31,7 @@
 #include "top.h"
 #include "logging.h"
 #include "prioqueue.h"
+#include "misc.h"
 
 /* hash table size - always a power of 2 */
 #define HTABSIZE 256
@@ -563,7 +564,7 @@ static void print_top_user(struct text_object *obj, char *p, int p_max_size) {
                                int p_max_size) {                       \
     struct top_data *td = (struct top_data *)obj->data.opaque;         \
     if (!td || !td->list || !td->list[td->num]) return;                \
-    human_readable(0, obj->data.s, td->list[td->num]->field / (denom), p, p_max_size); \
+    human_readable(apply_base_multiplier(0, obj->data.s, td->list[td->num]->field / (denom)), p, p_max_size); \
   }
 
 PRINT_TOP_GENERATOR(cpu, 7, "%6.2f", amount)

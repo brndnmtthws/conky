@@ -334,7 +334,7 @@ void extract_object_args_to_sub(struct text_object *, const char *);
 void generate_text_internal(char *, int, struct text_object);
 
 int percent_print(char *, int, unsigned);
-void human_readable(int, const char *, long long, char *, int);
+void human_readable(long long, char *, int);
 
 #ifdef BUILD_X11
 

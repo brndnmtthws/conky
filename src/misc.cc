@@ -113,3 +113,17 @@ void print_cap(struct text_object *obj, char *p, int p_max_size) {
   *dest = '\0';
   snprintf(p, p_max_size, "%s", buf);
 }
+
+
+long long int apply_base_multiplier(int use_base, const char *s, long long int num) {
+  long long int base = 1024LL;
+
+  if (1 == use_base) {
+    if (*s && (0 == (strcmp(s, "si")))) {
+      base = 1000LL;
+    }
+    num *= base;
+  }
+
+  return num;
+}
