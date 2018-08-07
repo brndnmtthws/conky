@@ -21,7 +21,7 @@ Conky can display more than 300 built-in objects, including support for:
    own scripts and programs ([more](Lua Interface)).
  * Built-in [**Imlib2**][Imlib2] and [**Cairo**][cairo] bindings for arbitrary drawing
    with Lua ([more](wiki/Lua-API)).
- * Supports Linux, FreeBSD, OpenBSD, and macOS!
+ * Runs on Linux, FreeBSD, OpenBSD, DragonFlyBSD, NetBSD, SunOS, Haiku OS, and macOS!
 
 ... and much much more.
 
