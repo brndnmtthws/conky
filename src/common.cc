@@ -48,6 +48,7 @@
 #include "temphelper.h"
 #include "timeinfo.h"
 #include "top.h"
+#include "misc.h"
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
@@ -389,8 +390,7 @@ double cpu_barval(struct text_object *obj) {
 
 #define PRINT_HR_GENERATOR(name)                                        \
   void print_##name(struct text_object *obj, char *p, int p_max_size) { \
-    (void)obj;                                                          \
-    human_readable(info.name * 1024, p, p_max_size);                    \
+    human_readable(apply_base_multiplier(obj->data.s, info.name), p, p_max_size);                    \
   }
 
 PRINT_HR_GENERATOR(mem)
@@ -506,13 +506,11 @@ void print_threads(struct text_object *obj, char *p, int p_max_size) {
 }
 
 void print_buffers(struct text_object *obj, char *p, int p_max_size) {
-  (void)obj;
-  human_readable(info.buffers * 1024, p, p_max_size);
+  human_readable(apply_base_multiplier(obj->data.s, info.buffers), p, p_max_size);
 }
 
 void print_cached(struct text_object *obj, char *p, int p_max_size) {
-  (void)obj;
-  human_readable(info.cached * 1024, p, p_max_size);
+  human_readable(apply_base_multiplier(obj->data.s, info.cached), p, p_max_size);
 }
 
 void print_evaluate(struct text_object *obj, char *p, int p_max_size) {
