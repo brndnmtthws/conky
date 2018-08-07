@@ -102,7 +102,7 @@ void init_journal(const char *type, const char *arg, struct text_object *obj,
 }
 
 static int print_field(sd_journal *jh, const char *field, char spacer,
-                       size_t *read, char *p, int p_max_size) {
+                       size_t *read, char *p, unsigned int p_max_size) {
   const void *get;
   size_t length;
   size_t fieldlen = strlen(field) + 1;

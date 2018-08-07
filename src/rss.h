@@ -26,7 +26,7 @@
 #define RSS_H_
 
 void rss_scan_arg(struct text_object *, const char *);
-void rss_print_info(struct text_object *, char *, int);
+void rss_print_info(struct text_object *, char *, unsigned int);
 void rss_free_obj_info(struct text_object *);
 
 #endif /*RSS_H_*/

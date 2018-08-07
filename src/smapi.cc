@@ -110,7 +110,7 @@ static char *smapi_get_val(const char *args) {
   return smapi_get_str(str);
 }
 
-void print_smapi(struct text_object *obj, char *p, int p_max_size) {
+void print_smapi(struct text_object *obj, char *p, unsigned int p_max_size) {
   char *s;
 
   if (!obj->data.s) return;
@@ -132,7 +132,7 @@ uint8_t smapi_bat_percentage(struct text_object *obj) {
   return val;
 }
 
-void print_smapi_bat_temp(struct text_object *obj, char *p, int p_max_size) {
+void print_smapi_bat_temp(struct text_object *obj, char *p, unsigned int p_max_size) {
   int idx, val;
   if (obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
     val = smapi_bat_installed_internal(idx)
@@ -144,7 +144,7 @@ void print_smapi_bat_temp(struct text_object *obj, char *p, int p_max_size) {
     NORM_ERR("argument to smapi_bat_temp must be an integer");
 }
 
-void print_smapi_bat_power(struct text_object *obj, char *p, int p_max_size) {
+void print_smapi_bat_power(struct text_object *obj, char *p, unsigned int p_max_size) {
   int idx, val;
   if (obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
     val = smapi_bat_installed_internal(idx)

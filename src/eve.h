@@ -32,7 +32,7 @@
 #define TRAINING_INACTIVE ""
 
 void scan_eve(struct text_object *, const char *);
-void print_eve(struct text_object *, char *, int);
+void print_eve(struct text_object *, char *, unsigned int);
 void free_eve(struct text_object *);
 
 #endif /* _EVE_H */

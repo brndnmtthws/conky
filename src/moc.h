@@ -23,16 +23,16 @@
 #ifndef MOC_H_
 #define MOC_H_
 
-void print_moc_state(struct text_object *, char *, int);
-void print_moc_file(struct text_object *, char *, int);
-void print_moc_title(struct text_object *, char *, int);
-void print_moc_artist(struct text_object *, char *, int);
-void print_moc_song(struct text_object *, char *, int);
-void print_moc_album(struct text_object *, char *, int);
-void print_moc_totaltime(struct text_object *, char *, int);
-void print_moc_timeleft(struct text_object *, char *, int);
-void print_moc_curtime(struct text_object *, char *, int);
-void print_moc_bitrate(struct text_object *, char *, int);
-void print_moc_rate(struct text_object *, char *, int);
+void print_moc_state(struct text_object *, char *, unsigned int);
+void print_moc_file(struct text_object *, char *, unsigned int);
+void print_moc_title(struct text_object *, char *, unsigned int);
+void print_moc_artist(struct text_object *, char *, unsigned int);
+void print_moc_song(struct text_object *, char *, unsigned int);
+void print_moc_album(struct text_object *, char *, unsigned int);
+void print_moc_totaltime(struct text_object *, char *, unsigned int);
+void print_moc_timeleft(struct text_object *, char *, unsigned int);
+void print_moc_curtime(struct text_object *, char *, unsigned int);
+void print_moc_bitrate(struct text_object *, char *, unsigned int);
+void print_moc_rate(struct text_object *, char *, unsigned int);
 
 #endif /* MOC_H_ */

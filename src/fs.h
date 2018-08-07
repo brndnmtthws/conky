@@ -52,10 +52,10 @@ double fs_free_barval(struct text_object *);
 void init_fs(struct text_object *, const char *);
 uint8_t fs_free_percentage(struct text_object *);
 uint8_t fs_used_percentage(struct text_object *);
-void print_fs_free(struct text_object *, char *, int);
-void print_fs_size(struct text_object *, char *, int);
-void print_fs_used(struct text_object *, char *, int);
-void print_fs_type(struct text_object *, char *, int);
+void print_fs_free(struct text_object *, char *, unsigned int);
+void print_fs_size(struct text_object *, char *, unsigned int);
+void print_fs_used(struct text_object *, char *, unsigned int);
+void print_fs_type(struct text_object *, char *, unsigned int);
 
 int update_fs_stats(void);
 struct fs_stat *prepare_fs_stat(const char *s);

@@ -122,7 +122,7 @@ int tcp_portmon_init(struct text_object *obj, const char *arg) {
   return 0;
 }
 
-void tcp_portmon_action(struct text_object *obj, char *p, int p_max_size) {
+void tcp_portmon_action(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct tcp_port_monitor_data *pmd = (tcp_port_monitor_data *)obj->data.opaque;
   tcp_port_monitor_t *p_monitor;
 

@@ -41,11 +41,11 @@ int gen_false_iftest(struct text_object *) {
   return 0;
 }
 
-void gen_print_nothing(struct text_object *, char *, int) {
+void gen_print_nothing(struct text_object *, char *, unsigned int) {
   // literally does nothing
 }
 
-void gen_print_obj_data_s(struct text_object *obj, char *p, int p_max_size) {
+void gen_print_obj_data_s(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (obj->data.s == nullptr) {
     return;
   }

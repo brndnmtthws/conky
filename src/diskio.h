@@ -68,9 +68,9 @@ void clear_diskio_stats(void);
 void update_diskio_values(struct diskio_stat *, unsigned int, unsigned int);
 
 void parse_diskio_arg(struct text_object *, const char *);
-void print_diskio(struct text_object *, char *, int);
-void print_diskio_read(struct text_object *, char *, int);
-void print_diskio_write(struct text_object *, char *, int);
+void print_diskio(struct text_object *, char *, unsigned int);
+void print_diskio_read(struct text_object *, char *, unsigned int);
+void print_diskio_write(struct text_object *, char *, unsigned int);
 #ifdef BUILD_X11
 void parse_diskiograph_arg(struct text_object *, const char *);
 double diskiographval(struct text_object *);

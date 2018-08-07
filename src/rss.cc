@@ -172,7 +172,7 @@ void rss_scan_arg(struct text_object *obj, const char *arg) {
   obj->data.opaque = rd;
 }
 
-void rss_print_info(struct text_object *obj, char *p, int p_max_size) {
+void rss_print_info(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct rss_data *rd = (struct rss_data *)obj->data.opaque;
 
   if (!rd) {

@@ -92,22 +92,22 @@ void scan_tab(struct text_object *, const char *);
 void scan_stippled_hr(struct text_object *, const char *);
 
 /* printing specials */
-void new_font(struct text_object *, char *, int);
+void new_font(struct text_object *, char *, unsigned int);
 void new_graph(struct text_object *, char *, int, double);
-void new_hr(struct text_object *, char *, int);
-void new_stippled_hr(struct text_object *, char *, int);
+void new_hr(struct text_object *, char *, unsigned int);
+void new_stippled_hr(struct text_object *, char *, unsigned int);
 #endif /* BUILD_X11 */
 void new_gauge(struct text_object *, char *, int, double);
 void new_bar(struct text_object *, char *, int, double);
-void new_fg(struct text_object *, char *, int);
-void new_bg(struct text_object *, char *, int);
-void new_outline(struct text_object *, char *, int);
-void new_offset(struct text_object *, char *, int);
-void new_voffset(struct text_object *, char *, int);
-void new_alignr(struct text_object *, char *, int);
-void new_alignc(struct text_object *, char *, int);
-void new_goto(struct text_object *, char *, int);
-void new_tab(struct text_object *, char *, int);
+void new_fg(struct text_object *, char *, unsigned int);
+void new_bg(struct text_object *, char *, unsigned int);
+void new_outline(struct text_object *, char *, unsigned int);
+void new_offset(struct text_object *, char *, unsigned int);
+void new_voffset(struct text_object *, char *, unsigned int);
+void new_alignr(struct text_object *, char *, unsigned int);
+void new_alignc(struct text_object *, char *, unsigned int);
+void new_goto(struct text_object *, char *, unsigned int);
+void new_tab(struct text_object *, char *, unsigned int);
 
 struct special_t *new_special(char *buf, enum special_types t);
 

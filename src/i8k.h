@@ -32,15 +32,15 @@
 #define _I8K_H
 
 int update_i8k(void);
-void print_i8k_left_fan_status(struct text_object *, char *, int);
-void print_i8k_cpu_temp(struct text_object *, char *, int);
-void print_i8k_right_fan_status(struct text_object *, char *, int);
-void print_i8k_ac_status(struct text_object *, char *, int);
-void print_i8k_version(struct text_object *, char *, int);
-void print_i8k_bios(struct text_object *, char *, int);
-void print_i8k_serial(struct text_object *, char *, int);
-void print_i8k_left_fan_rpm(struct text_object *, char *, int);
-void print_i8k_right_fan_rpm(struct text_object *, char *, int);
-void print_i8k_buttons_status(struct text_object *, char *, int);
+void print_i8k_left_fan_status(struct text_object *, char *, unsigned int);
+void print_i8k_cpu_temp(struct text_object *, char *, unsigned int);
+void print_i8k_right_fan_status(struct text_object *, char *, unsigned int);
+void print_i8k_ac_status(struct text_object *, char *, unsigned int);
+void print_i8k_version(struct text_object *, char *, unsigned int);
+void print_i8k_bios(struct text_object *, char *, unsigned int);
+void print_i8k_serial(struct text_object *, char *, unsigned int);
+void print_i8k_left_fan_rpm(struct text_object *, char *, unsigned int);
+void print_i8k_right_fan_rpm(struct text_object *, char *, unsigned int);
+void print_i8k_buttons_status(struct text_object *, char *, unsigned int);
 
 #endif /* _I8K_H */

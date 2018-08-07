@@ -58,7 +58,7 @@ char *readfile(const char *filename, int *total_read, char showerror) {
   return buf;
 }
 
-void pid_readlink(const char *file, char *p, int p_max_size) {
+void pid_readlink(const char *file, char *p, unsigned int p_max_size) {
   std::unique_ptr<char[]> buf(new char[p_max_size]);
 
   memset(buf.get(), 0, p_max_size);
@@ -106,7 +106,7 @@ int inlist(struct ll_string *front, char *string) {
   return 0;
 }
 
-void print_pid_chroot(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_chroot(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::ostringstream pathstream;
   std::unique_ptr<char[]> buf(new char[max_user_text.get(*state)]);
 
@@ -115,7 +115,7 @@ void print_pid_chroot(struct text_object *obj, char *p, int p_max_size) {
   pid_readlink(pathstream.str().c_str(), p, p_max_size);
 }
 
-void print_pid_cmdline(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_cmdline(struct text_object *obj, char *p, unsigned int p_max_size) {
   char *buf;
   int i, bytes_read;
   std::ostringstream pathstream;
@@ -140,7 +140,7 @@ void print_pid_cmdline(struct text_object *obj, char *p, int p_max_size) {
   }
 }
 
-void print_pid_cwd(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_cwd(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::unique_ptr<char[]> buf(new char[p_max_size]);
   int bytes_read;
   std::ostringstream pathstream;
@@ -157,7 +157,7 @@ void print_pid_cwd(struct text_object *obj, char *p, int p_max_size) {
   }
 }
 
-void print_pid_environ(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_environ(struct text_object *obj, char *p, unsigned int p_max_size) {
   int i, total_read;
   pid_t pid;
   std::ostringstream pathstream;
@@ -189,7 +189,7 @@ void print_pid_environ(struct text_object *obj, char *p, int p_max_size) {
   free(var);
 }
 
-void print_pid_environ_list(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_environ_list(struct text_object *obj, char *p, unsigned int p_max_size) {
   char *buf = nullptr;
   char *buf2;
   int bytes_read, total_read;
@@ -215,7 +215,7 @@ void print_pid_environ_list(struct text_object *obj, char *p, int p_max_size) {
   }
 }
 
-void print_pid_exe(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_exe(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::ostringstream pathstream;
   std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
 
@@ -224,7 +224,7 @@ void print_pid_exe(struct text_object *obj, char *p, int p_max_size) {
   pid_readlink(pathstream.str().c_str(), p, p_max_size);
 }
 
-void print_pid_nice(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_nice(struct text_object *obj, char *p, unsigned int p_max_size) {
   char *buf = nullptr;
   int bytes_read;
   long int nice_value;
@@ -249,7 +249,7 @@ void print_pid_nice(struct text_object *obj, char *p, int p_max_size) {
   }
 }
 
-void print_pid_openfiles(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_openfiles(struct text_object *obj, char *p, unsigned int p_max_size) {
   DIR *dir;
   struct dirent *entry;
   std::unique_ptr<char[]> buf(new char[p_max_size]);
@@ -286,7 +286,7 @@ void print_pid_openfiles(struct text_object *obj, char *p, int p_max_size) {
   }
 }
 
-void print_pid_parent(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_parent(struct text_object *obj, char *p, unsigned int p_max_size) {
 #define PARENT_ENTRY "PPid:\t"
 #define PARENTNOTFOUND "Can't find the process parent in '%s'"
   char *begin, *end, *buf = nullptr;
@@ -314,7 +314,7 @@ void print_pid_parent(struct text_object *obj, char *p, int p_max_size) {
   }
 }
 
-void print_pid_priority(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_priority(struct text_object *obj, char *p, unsigned int p_max_size) {
   char *buf = nullptr;
   int bytes_read;
   long int priority;
@@ -339,7 +339,7 @@ void print_pid_priority(struct text_object *obj, char *p, int p_max_size) {
   }
 }
 
-void print_pid_state(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_state(struct text_object *obj, char *p, unsigned int p_max_size) {
 #define STATE_ENTRY "State:\t"
 #define STATENOTFOUND "Can't find the process state in '%s'"
   char *begin, *end, *buf = nullptr;
@@ -369,7 +369,7 @@ void print_pid_state(struct text_object *obj, char *p, int p_max_size) {
   }
 }
 
-void print_pid_state_short(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_state_short(struct text_object *obj, char *p, unsigned int p_max_size) {
   char *begin, *buf = nullptr;
   int bytes_read;
   std::ostringstream pathstream;
@@ -391,7 +391,7 @@ void print_pid_state_short(struct text_object *obj, char *p, int p_max_size) {
   }
 }
 
-void print_pid_stderr(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_stderr(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::ostringstream pathstream;
   std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
 
@@ -401,7 +401,7 @@ void print_pid_stderr(struct text_object *obj, char *p, int p_max_size) {
   pid_readlink(pathstream.str().c_str(), p, p_max_size);
 }
 
-void print_pid_stdin(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_stdin(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
   std::ostringstream pathstream;
 
@@ -411,7 +411,7 @@ void print_pid_stdin(struct text_object *obj, char *p, int p_max_size) {
   pid_readlink(pathstream.str().c_str(), p, p_max_size);
 }
 
-void print_pid_stdout(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_stdout(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::ostringstream pathstream;
   std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
 
@@ -445,7 +445,7 @@ void scan_cmdline_to_pid_arg(struct text_object *obj, const char *arg,
   }
 }
 
-void print_cmdline_to_pid(struct text_object *obj, char *p, int p_max_size) {
+void print_cmdline_to_pid(struct text_object *obj, char *p, unsigned int p_max_size) {
   DIR *dir;
   struct dirent *entry;
   char *buf;
@@ -479,7 +479,7 @@ void print_cmdline_to_pid(struct text_object *obj, char *p, int p_max_size) {
   }
 }
 
-void print_pid_threads(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_threads(struct text_object *obj, char *p, unsigned int p_max_size) {
 #define THREADS_ENTRY "Threads:\t"
 #define THREADSNOTFOUND \
   "Can't find the number of the threads of the process in '%s'"
@@ -508,7 +508,7 @@ void print_pid_threads(struct text_object *obj, char *p, int p_max_size) {
   }
 }
 
-void print_pid_thread_list(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_thread_list(struct text_object *obj, char *p, unsigned int p_max_size) {
   DIR *dir;
   struct dirent *entry;
   int totallength = 0;
@@ -537,7 +537,7 @@ void print_pid_thread_list(struct text_object *obj, char *p, int p_max_size) {
 }
 
 void print_pid_time_kernelmode(struct text_object *obj, char *p,
-                               int p_max_size) {
+                               unsigned int p_max_size) {
   char *buf = nullptr;
   int bytes_read;
   unsigned long int umtime;
@@ -560,7 +560,7 @@ void print_pid_time_kernelmode(struct text_object *obj, char *p,
   }
 }
 
-void print_pid_time_usermode(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_time_usermode(struct text_object *obj, char *p, unsigned int p_max_size) {
   char *buf = nullptr;
   int bytes_read;
   unsigned long int kmtime;
@@ -583,7 +583,7 @@ void print_pid_time_usermode(struct text_object *obj, char *p, int p_max_size) {
   }
 }
 
-void print_pid_time(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_time(struct text_object *obj, char *p, unsigned int p_max_size) {
   char *buf = nullptr;
   int bytes_read;
   unsigned long int umtime, kmtime;
@@ -729,35 +729,35 @@ void print_pid_Xid(struct text_object *obj, char *p, int p_max_size, idtype type
   }
 }
 
-void print_pid_egid(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_egid(struct text_object *obj, char *p, unsigned int p_max_size) {
  print_pid_Xid(obj, p, p_max_size, egid);
 }
 
-void print_pid_euid(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_euid(struct text_object *obj, char *p, unsigned int p_max_size) {
   print_pid_Xid(obj, p, p_max_size, euid);
 }
 
-void print_pid_fsgid(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_fsgid(struct text_object *obj, char *p, unsigned int p_max_size) {
   print_pid_Xid(obj, p, p_max_size, fsgid);
 }
 
-void print_pid_fsuid(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_fsuid(struct text_object *obj, char *p, unsigned int p_max_size) {
  print_pid_Xid(obj, p, p_max_size, fsuid);
 }
 
-void print_pid_gid(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_gid(struct text_object *obj, char *p, unsigned int p_max_size) {
  print_pid_Xid(obj, p, p_max_size, gid);
 }
 
-void print_pid_sgid(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_sgid(struct text_object *obj, char *p, unsigned int p_max_size) {
   print_pid_Xid(obj, p, p_max_size, sgid);
 }
 
-void print_pid_suid(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_suid(struct text_object *obj, char *p, unsigned int p_max_size) {
  print_pid_Xid(obj, p, p_max_size, suid);
 }
 
-void print_pid_uid(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_uid(struct text_object *obj, char *p, unsigned int p_max_size) {
   print_pid_Xid(obj, p, p_max_size, uid);
 }
 
@@ -791,55 +791,55 @@ void internal_print_pid_vm(struct text_object *obj, char *p, int p_max_size,
   }
 }
 
-void print_pid_vmpeak(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_vmpeak(struct text_object *obj, char *p, unsigned int p_max_size) {
   internal_print_pid_vm(
       obj, p, p_max_size, "VmPeak:\t",
       "Can't find the process peak virtual memory size in '%s'");
 }
 
-void print_pid_vmsize(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_vmsize(struct text_object *obj, char *p, unsigned int p_max_size) {
   internal_print_pid_vm(obj, p, p_max_size, "VmSize:\t",
                         "Can't find the process virtual memory size in '%s'");
 }
 
-void print_pid_vmlck(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_vmlck(struct text_object *obj, char *p, unsigned int p_max_size) {
   internal_print_pid_vm(obj, p, p_max_size, "VmLck:\t",
                         "Can't find the process locked memory size in '%s'");
 }
 
-void print_pid_vmhwm(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_vmhwm(struct text_object *obj, char *p, unsigned int p_max_size) {
   internal_print_pid_vm(
       obj, p, p_max_size, "VmHWM:\t",
       "Can't find the process peak resident set size in '%s'");
 }
 
-void print_pid_vmrss(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_vmrss(struct text_object *obj, char *p, unsigned int p_max_size) {
   internal_print_pid_vm(obj, p, p_max_size, "VmHWM:\t",
                         "Can't find the process resident set size in '%s'");
 }
 
-void print_pid_vmdata(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_vmdata(struct text_object *obj, char *p, unsigned int p_max_size) {
   internal_print_pid_vm(obj, p, p_max_size, "VmData:\t",
                         "Can't find the process data segment size in '%s'");
 }
 
-void print_pid_vmstk(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_vmstk(struct text_object *obj, char *p, unsigned int p_max_size) {
   internal_print_pid_vm(obj, p, p_max_size, "VmData:\t",
                         "Can't find the process stack segment size in '%s'");
 }
 
-void print_pid_vmexe(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_vmexe(struct text_object *obj, char *p, unsigned int p_max_size) {
   internal_print_pid_vm(obj, p, p_max_size, "VmData:\t",
                         "Can't find the process text segment size in '%s'");
 }
 
-void print_pid_vmlib(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_vmlib(struct text_object *obj, char *p, unsigned int p_max_size) {
   internal_print_pid_vm(
       obj, p, p_max_size, "VmLib:\t",
       "Can't find the process shared library code size in '%s'");
 }
 
-void print_pid_vmpte(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_vmpte(struct text_object *obj, char *p, unsigned int p_max_size) {
   internal_print_pid_vm(
       obj, p, p_max_size, "VmPTE:\t",
       "Can't find the process page table entries size in '%s'");
@@ -847,7 +847,7 @@ void print_pid_vmpte(struct text_object *obj, char *p, int p_max_size) {
 
 #define READ_ENTRY "read_bytes: "
 #define READNOTFOUND "Can't find the amount of bytes read in '%s'"
-void print_pid_read(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_read(struct text_object *obj, char *p, unsigned int p_max_size) {
   char *begin, *end, *buf = nullptr;
   int bytes_read;
   std::ostringstream pathstream;
@@ -874,7 +874,7 @@ void print_pid_read(struct text_object *obj, char *p, int p_max_size) {
 
 #define WRITE_ENTRY "write_bytes: "
 #define WRITENOTFOUND "Can't find the amount of bytes written in '%s'"
-void print_pid_write(struct text_object *obj, char *p, int p_max_size) {
+void print_pid_write(struct text_object *obj, char *p, unsigned int p_max_size) {
   char *begin, *end, *buf = nullptr;
   int bytes_read;
   std::ostringstream pathstream;

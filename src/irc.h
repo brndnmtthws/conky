@@ -26,7 +26,7 @@
 #define IRC_H_
 
 void parse_irc_args(struct text_object *, const char *);
-void print_irc(struct text_object *, char *, int);
+void print_irc(struct text_object *, char *, unsigned int);
 void free_irc(struct text_object *);
 
 #endif /*IRC_H_*/

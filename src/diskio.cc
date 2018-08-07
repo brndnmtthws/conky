@@ -129,7 +129,7 @@ void parse_diskio_arg(struct text_object *obj, const char *arg) {
  *  1: write
  */
 static void print_diskio_dir(struct text_object *obj, int dir, char *p,
-                             int p_max_size) {
+                             unsigned int p_max_size) {
   auto *diskio = static_cast<struct diskio_stat *>(obj->data.opaque);
   double val;
 
@@ -150,15 +150,15 @@ static void print_diskio_dir(struct text_object *obj, int dir, char *p,
   human_readable((val / active_update_interval()) * 1024LL, p, p_max_size);
 }
 
-void print_diskio(struct text_object *obj, char *p, int p_max_size) {
+void print_diskio(struct text_object *obj, char *p, unsigned int p_max_size) {
   print_diskio_dir(obj, 0, p, p_max_size);
 }
 
-void print_diskio_read(struct text_object *obj, char *p, int p_max_size) {
+void print_diskio_read(struct text_object *obj, char *p, unsigned int p_max_size) {
   print_diskio_dir(obj, -1, p, p_max_size);
 }
 
-void print_diskio_write(struct text_object *obj, char *p, int p_max_size) {
+void print_diskio_write(struct text_object *obj, char *p, unsigned int p_max_size) {
   print_diskio_dir(obj, 1, p, p_max_size);
 }
 

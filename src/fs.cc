@@ -253,7 +253,8 @@ uint8_t fs_used_percentage(struct text_object *obj) {
 }
 
 #define HUMAN_PRINT_FS_GENERATOR(name, expr)                               \
-  void print_fs_##name(struct text_object *obj, char *p, int p_max_size) { \
+  void print_fs_##name(struct text_object *obj, char *p,                   \
+		                                unsigned int p_max_size) { \
     struct fs_stat *fs = (struct fs_stat *)obj->data.opaque;               \
     if (fs) human_readable(expr, p, p_max_size);                           \
   }
@@ -262,7 +263,7 @@ HUMAN_PRINT_FS_GENERATOR(free, fs->avail)
 HUMAN_PRINT_FS_GENERATOR(size, fs->size)
 HUMAN_PRINT_FS_GENERATOR(used, fs->size - fs->free)
 
-void print_fs_type(struct text_object *obj, char *p, int p_max_size) {
+void print_fs_type(struct text_object *obj, char *p, unsigned int p_max_size) {
   auto *fs = static_cast<struct fs_stat *>(obj->data.opaque);
 
   if (fs != nullptr) { snprintf(p, p_max_size, "%s", fs->type); }

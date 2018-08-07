@@ -95,7 +95,7 @@ void parse_combine_arg(struct text_object *obj, const char *arg) {
   }
 }
 
-void print_combine(struct text_object *obj, char *p, int p_max_size) {
+void print_combine(struct text_object *obj, char *p, unsigned int p_max_size) {
   auto *cd = static_cast<struct combine_data *>(obj->data.opaque);
   std::vector<std::vector<char>> buf;
   buf.resize(2);

@@ -302,29 +302,29 @@ int puau_muted(struct text_object *obj) {
 }
 
 void print_puau_sink_description(struct text_object *obj, char *p,
-                                 int p_max_size) {
+                                 unsigned int p_max_size) {
   snprintf(p, p_max_size, "%s", get_pulseaudio(obj).sink_description.c_str());
 }
 
 void print_puau_sink_active_port_name(struct text_object *obj, char *p,
-                                      int p_max_size) {
+                                      unsigned int p_max_size) {
   snprintf(p, p_max_size, "%s",
            get_pulseaudio(obj).sink_active_port_name.c_str());
 }
 
 void print_puau_sink_active_port_description(struct text_object *obj, char *p,
-                                             int p_max_size) {
+                                             unsigned int p_max_size) {
   snprintf(p, p_max_size, "%s",
            get_pulseaudio(obj).sink_active_port_description.c_str());
 }
 
 void print_puau_card_active_profile(struct text_object *obj, char *p,
-                                    int p_max_size) {
+                                    unsigned int p_max_size) {
   snprintf(p, p_max_size, "%s",
            get_pulseaudio(obj).card_active_profile_description.c_str());
 }
 
-void print_puau_card_name(struct text_object *obj, char *p, int p_max_size) {
+void print_puau_card_name(struct text_object *obj, char *p, unsigned int p_max_size) {
   snprintf(p, p_max_size, "%s", get_pulseaudio(obj).card_name.c_str());
 }
 

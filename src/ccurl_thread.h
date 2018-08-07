@@ -84,7 +84,7 @@ void ccurl_process_info(char *p, int p_max_size, const std::string &uri,
                         int interval);
 
 void curl_parse_arg(struct text_object *, const char *);
-void curl_print(struct text_object *, char *, int);
+void curl_print(struct text_object *, char *, unsigned int);
 void curl_obj_free(struct text_object *);
 
 /* $curl exports end */
