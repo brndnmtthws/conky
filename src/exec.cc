@@ -55,6 +55,27 @@ struct execi_data {
 static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
   int ends[2];
   int parentend, childend;
+  char cmd[256];
+  char *str1 = cmd;
+  const char *str2 = command;
+  int skip = 0;
+
+  for (; *str2; str2++) {
+    if (0 == skip) {
+      if (*str2 == '"' || *str2 == '\'') {
+        skip = 1;
+        continue;
+      }
+    }
+    if ('\0' == *(str2+1)) {
+      if (*str2 == '"' || *str2 == '\'') {
+        continue;
+      }
+    }
+    *str1++ = *str2;
+  }
+  *str1 = '\0';
+
 
   // by running pipe after the strcmp's we make sure that we don't have to
   // create a pipe and close the ends if mode is something illegal
@@ -92,7 +113,7 @@ static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
     if (fcntl(childend, F_DUPFD, 0) == -1) { perror("fcntl()"); }
     close(childend);
 
-    execl("/bin/sh", "sh", "-c", command, (char *)nullptr);
+    execl("/bin/sh", "sh", "-c", cmd, (char *)nullptr);
     _exit(EXIT_FAILURE);  // child should die here, (normally execl will take
                           // care of this but it can fail)
   }
