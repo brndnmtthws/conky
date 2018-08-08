@@ -192,18 +192,21 @@ aud_result get_res() {
 }
 }  // namespace
 
-void print_audacious_status(struct text_object *, char *p, unsigned int p_max_size) {
+void print_audacious_status(struct text_object *, char *p,
+                            unsigned int p_max_size) {
   const aud_result &res = get_res();
   snprintf(p, p_max_size, "%s", as_message[res.status]);
 }
 
-void print_audacious_title(struct text_object *obj, char *p, unsigned int p_max_size) {
-  snprintf(p, std::min((unsigned int) obj->data.i, p_max_size), "%s", get_res().title.c_str());
+void print_audacious_title(struct text_object *obj, char *p,
+                           unsigned int p_max_size) {
+  snprintf(p, std::min((unsigned int)obj->data.i, p_max_size), "%s",
+           get_res().title.c_str());
 }
 
 void print_audacious_filename(struct text_object *obj, char *p,
                               unsigned int p_max_size) {
-  snprintf(p, std::min((unsigned int) obj->data.i, p_max_size), "%s",
+  snprintf(p, std::min((unsigned int)obj->data.i, p_max_size), "%s",
            get_res().filename.c_str());
 }
 
@@ -212,39 +215,56 @@ double audacious_barval(struct text_object *) {
   return (double)res.position / res.length;
 }
 
-#define AUDACIOUS_TIME_GENERATOR(name)                                         \
-  void print_audacious_##name(struct text_object *, char *p,                   \
-		                                    unsigned int p_max_size) { \
-    const aud_result &res = get_res();                                         \
-    int sec = res.name / 1000;                                                 \
-    snprintf(p, p_max_size, "%d:%.2d", sec / 60, sec % 60);                    \
-  }                                                                            \
-                                                                               \
-  void print_audacious_##name##_seconds(struct text_object *, char *p,         \
-                                        unsigned int p_max_size) {             \
-    snprintf(p, p_max_size, "%d", get_res().name);                             \
-  }
+void print_audacious_length(struct text_object *, char *p,
+                            unsigned int p_max_size) {
+  const aud_result &res = get_res();
+  int sec = res.length / 1000;
+  snprintf(p, p_max_size, "%d:%.2d", sec / 60, sec % 60);
+}
 
-AUDACIOUS_TIME_GENERATOR(length)
-AUDACIOUS_TIME_GENERATOR(position)
+void print_audacious_length_seconds(struct text_object *, char *p,
+                                    unsigned int p_max_size) {
+  snprintf(p, p_max_size, "%d", get_res().length);
+}
 
-#define AUDACIOUS_INT_GENERATOR_0(name)                                        \
-  void print_audacious_##name(struct text_object *, char *p,                   \
-		                                    unsigned int p_max_size) { \
-    snprintf(p, p_max_size, "%d", get_res().name);                             \
-  }
+void print_audacious_position(struct text_object *, char *p,
+                              unsigned int p_max_size) {
+  const aud_result &res = get_res();
+  int sec = res.position / 1000;
+  snprintf(p, p_max_size, "%d:%.2d", sec / 60, sec % 60);
+}
 
-#define AUDACIOUS_INT_GENERATOR_1(name)                                        \
-  void print_audacious_##name(struct text_object *, char *p,                   \
-		                                    unsigned int p_max_size) { \
-    snprintf(p, p_max_size, "%d", get_res().name + 1);                         \
-  }
+void print_audacious_position_seconds(struct text_object *, char *p,
+                                      unsigned int p_max_size) {
+  snprintf(p, p_max_size, "%d", get_res().position);
+}
 
-AUDACIOUS_INT_GENERATOR_0(bitrate)
-AUDACIOUS_INT_GENERATOR_0(frequency)
-AUDACIOUS_INT_GENERATOR_0(channels)
-AUDACIOUS_INT_GENERATOR_0(playlist_length)
-AUDACIOUS_INT_GENERATOR_1(playlist_position)
-AUDACIOUS_INT_GENERATOR_0(main_volume)
+void print_audacious_bitrate(struct text_object *, char *p,
+                             unsigned int p_max_size) {
+  snprintf(p, p_max_size, "%d", get_res().bitrate);
+}
 
-#undef AUDACIOUS_PRINT_GENERATOR
+void print_audacious_frequency(struct text_object *, char *p,
+                               unsigned int p_max_size) {
+  snprintf(p, p_max_size, "%d", get_res().frequency);
+}
+
+void print_audacious_channels(struct text_object *, char *p,
+                              unsigned int p_max_size) {
+  snprintf(p, p_max_size, "%d", get_res().channels);
+}
+
+void print_audacious_playlist_length(struct text_object *, char *p,
+                                     unsigned int p_max_size) {
+  snprintf(p, p_max_size, "%d", get_res().playlist_length);
+}
+
+void print_audacious_playlist_position(struct text_object *, char *p,
+                                       unsigned int p_max_size) {
+  snprintf(p, p_max_size, "%d", get_res().playlist_position + 1);
+}
+
+void print_audacious_main_volume(struct text_object *, char *p,
+                                 unsigned int p_max_size) {
+  snprintf(p, p_max_size, "%d", get_res().main_volume);
+}
