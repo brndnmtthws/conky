@@ -273,7 +273,7 @@ std::pair<uint16_t, bool> window_hints_traits::convert(
     if (newpos > pos) {
       l.pushstring(hints.substr(pos, newpos - pos));
       auto t = conky::lua_traits<window_hints>::convert(l, -1, name);
-      if (!t.second) { return {0, false}; };
+      if (!t.second) { return {0, false}; }
       SET_HINT(ret, t.first);
       l.pop();
     }
