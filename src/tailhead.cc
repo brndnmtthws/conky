@@ -175,7 +175,7 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
               endofstring = strlen(p);
             }
           } else if (strcmp(type, "tail") == 0) {
-            fseek(fp, (long) -p_max_size, SEEK_END);
+            fseek(fp, - (long) p_max_size, SEEK_END);
             i = fread(p, 1, p_max_size - 1, fp);
             tailstring(p, i, ht->wantedlines);
           } else {
