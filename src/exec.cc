@@ -62,7 +62,7 @@ static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
   int x = 0;
 
   for (; *str2; str2++, x++) {
-    if (0 == skip) {
+    if (0 == skip && 0 == x) {
       if (*str2 == '"' || *str2 == '\'') {
         skip = 1;
         continue;
