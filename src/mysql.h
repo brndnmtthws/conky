@@ -25,6 +25,6 @@
 #ifndef MYSQL_H_
 #define MYSQL_H_
 
-void print_mysql(struct text_object *, char *, int);
+void print_mysql(struct text_object *, char *, unsigned int);
 
 #endif /*MYSQL_H_*/

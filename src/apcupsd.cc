@@ -266,7 +266,7 @@ double apcupsd_loadbarval(struct text_object *obj) {
 
 #define APCUPSD_PRINT_GENERATOR(name, idx)                       \
   void print_apcupsd_##name(struct text_object *obj, char *p,    \
-                            int p_max_size) {                    \
+                            unsigned int p_max_size) {           \
     (void)obj;                                                   \
     snprintf(p, p_max_size, "%s", apcupsd.items[APCUPSD_##idx]); \
   }

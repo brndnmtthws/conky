@@ -37,7 +37,7 @@
 /* text object callbacks */
 struct obj_cb {
   /* text object: print obj's output to p */
-  void (*print)(struct text_object *obj, char *p, int p_max_size);
+  void (*print)(struct text_object *obj, char *p, unsigned int p_max_size);
 
   /* ifblock object: return zero to trigger jumping */
   int (*iftest)(struct text_object *obj);
@@ -69,11 +69,11 @@ int gen_false_iftest(struct text_object *);
 
 /* generic nothing printer callback printing nothing
  * used for the endif object */
-void gen_print_nothing(struct text_object *, char *, int);
+void gen_print_nothing(struct text_object *, char *, unsigned int);
 
 /* generic obj->data.s printer
  * used by the $text object */
-void gen_print_obj_data_s(struct text_object *, char *, int);
+void gen_print_obj_data_s(struct text_object *, char *, unsigned int);
 
 class legacy_cb : public conky::callback<void *, int (*)()> {
   typedef conky::callback<void *, int (*)()> Base;

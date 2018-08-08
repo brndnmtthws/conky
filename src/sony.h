@@ -31,6 +31,6 @@
 #ifndef _SONY_H
 #define _SONY_H
 
-void get_sony_fanspeed(struct text_object *, char *, int);
+void get_sony_fanspeed(struct text_object *, char *, unsigned int);
 
 #endif /* _SONY_H */

@@ -135,7 +135,7 @@ void init_iconv_start(struct text_object *obj, void *free_at_crash,
 
 void init_iconv_stop(void) { iconv_converting = 0; }
 
-void print_iconv_start(struct text_object *obj, char *p, int p_max_size) {
+void print_iconv_start(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)p;
   (void)p_max_size;
 
@@ -143,7 +143,7 @@ void print_iconv_start(struct text_object *obj, char *p, int p_max_size) {
   iconv_selected = obj->data.i;
 }
 
-void print_iconv_stop(struct text_object *obj, char *p, int p_max_size) {
+void print_iconv_stop(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   (void)p;
   (void)p_max_size;

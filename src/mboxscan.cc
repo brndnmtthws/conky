@@ -395,7 +395,7 @@ void parse_mboxscan_arg(struct text_object *obj, const char *arg) {
   obj->data.opaque = msd;
 }
 
-void print_mboxscan(struct text_object *obj, char *p, int p_max_size) {
+void print_mboxscan(struct text_object *obj, char *p, unsigned int p_max_size) {
   auto *msd = static_cast<mboxscan_data *>(obj->data.opaque);
 
   if (msd == nullptr) {

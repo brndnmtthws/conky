@@ -286,6 +286,6 @@ void cimlib_render(int x, int y, int width, int height) {
 }
 
 void print_image_callback(struct text_object *obj, char *,
-                          int) {
+                          unsigned int) {
   cimlib_add_image(obj->data.s);
 }

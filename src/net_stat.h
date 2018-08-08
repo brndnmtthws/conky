@@ -89,17 +89,17 @@ struct net_stat *get_net_stat(const char *, void *, void *);
 
 void parse_net_stat_arg(struct text_object *, const char *, void *);
 void parse_net_stat_bar_arg(struct text_object *, const char *, void *);
-void print_downspeed(struct text_object *, char *, int);
-void print_downspeedf(struct text_object *, char *, int);
-void print_upspeed(struct text_object *, char *, int);
-void print_upspeedf(struct text_object *, char *, int);
-void print_totaldown(struct text_object *, char *, int);
-void print_totalup(struct text_object *, char *, int);
-void print_addr(struct text_object *, char *, int);
+void print_downspeed(struct text_object *, char *, unsigned int);
+void print_downspeedf(struct text_object *, char *, unsigned int);
+void print_upspeed(struct text_object *, char *, unsigned int);
+void print_upspeedf(struct text_object *, char *, unsigned int);
+void print_totaldown(struct text_object *, char *, unsigned int);
+void print_totalup(struct text_object *, char *, unsigned int);
+void print_addr(struct text_object *, char *, unsigned int);
 #ifdef __linux__
-void print_addrs(struct text_object *, char *, int);
+void print_addrs(struct text_object *, char *, unsigned int);
 #ifdef BUILD_IPV6
-void print_v6addrs(struct text_object *, char *, int);
+void print_v6addrs(struct text_object *, char *, unsigned int);
 #endif /* BUILD_IPV6 */
 #endif /* __linux__ */
 #ifdef BUILD_X11
@@ -108,15 +108,15 @@ double downspeedgraphval(struct text_object *);
 double upspeedgraphval(struct text_object *);
 #endif /* BUILD_X11 */
 #ifdef BUILD_WLAN
-void print_wireless_essid(struct text_object *, char *, int);
-void print_wireless_channel(struct text_object *, char *, int);
-void print_wireless_frequency(struct text_object *, char *, int);
-void print_wireless_mode(struct text_object *, char *, int);
-void print_wireless_bitrate(struct text_object *, char *, int);
-void print_wireless_ap(struct text_object *, char *, int);
-void print_wireless_link_qual(struct text_object *, char *, int);
-void print_wireless_link_qual_max(struct text_object *, char *, int);
-void print_wireless_link_qual_perc(struct text_object *, char *, int);
+void print_wireless_essid(struct text_object *, char *, unsigned int);
+void print_wireless_channel(struct text_object *, char *, unsigned int);
+void print_wireless_frequency(struct text_object *, char *, unsigned int);
+void print_wireless_mode(struct text_object *, char *, unsigned int);
+void print_wireless_bitrate(struct text_object *, char *, unsigned int);
+void print_wireless_ap(struct text_object *, char *, unsigned int);
+void print_wireless_link_qual(struct text_object *, char *, unsigned int);
+void print_wireless_link_qual_max(struct text_object *, char *, unsigned int);
+void print_wireless_link_qual_perc(struct text_object *, char *, unsigned int);
 double wireless_link_barval(struct text_object *);
 #endif /* BUILD_WLAN */
 
@@ -130,6 +130,6 @@ void free_if_up(struct text_object *);
 void free_dns_data(struct text_object *);
 int update_dns_data(void);
 void parse_nameserver_arg(struct text_object *, const char *);
-void print_nameserver(struct text_object *, char *, int);
+void print_nameserver(struct text_object *, char *, unsigned int);
 
 #endif /* _NET_STAT_H */

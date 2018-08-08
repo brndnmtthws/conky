@@ -198,7 +198,7 @@ void curl_parse_arg(struct text_object *obj, const char *arg) {
   obj->data.opaque = cd;
 }
 
-void curl_print(struct text_object *obj, char *p, int p_max_size) {
+void curl_print(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct curl_data *cd = (struct curl_data *)obj->data.opaque;
 
   if (!cd || !cd->uri) {

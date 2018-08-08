@@ -102,7 +102,7 @@ void init_journal(const char *type, const char *arg, struct text_object *obj,
 }
 
 static int print_field(sd_journal *jh, const char *field, char spacer,
-                       size_t *read, char *p, int p_max_size) {
+                       size_t *read, char *p, unsigned int p_max_size) {
   const void *get;
   size_t length;
   size_t fieldlen = strlen(field) + 1;
@@ -127,7 +127,7 @@ out:
 }
 
 bool read_log(size_t *read, size_t *length, time_t *time, uint64_t *timestamp,
-              sd_journal *jh, char *p, int p_max_size) {
+              sd_journal *jh, char *p, unsigned int p_max_size) {
   struct tm tm;
   if (sd_journal_get_realtime_usec(jh, timestamp) < 0) return false;
   *time = *timestamp / 1000000;
@@ -167,7 +167,7 @@ bool read_log(size_t *read, size_t *length, time_t *time, uint64_t *timestamp,
   return true;
 }
 
-void print_journal(struct text_object *obj, char *p, int p_max_size) {
+void print_journal(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct journal *j = (struct journal *)obj->data.opaque;
   sd_journal *jh = nullptr;
   size_t read = 0;

@@ -189,7 +189,7 @@ void parse_irc_args(struct text_object *obj, const char *arg) {
   obj->data.opaque = opaque;
 }
 
-void print_irc(struct text_object *obj, char *p, int p_max_size) {
+void print_irc(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct obj_irc *ircobj = (struct obj_irc *)obj->data.opaque;
   struct ctx *ctxptr;
   struct ll_text *nextmsg, *curmsg;

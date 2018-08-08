@@ -33,8 +33,8 @@
 
 #include "text_object.h"
 
-void print_cat(struct text_object *, char *, int);
-void print_catp(struct text_object *, char *, int);
-void print_cap(struct text_object *, char *, int);
+void print_cat(struct text_object *, char *, unsigned int);
+void print_catp(struct text_object *, char *, unsigned int);
+void print_cap(struct text_object *, char *, unsigned int);
 long long apply_base_multiplier(const char *, long long int);
 #endif /* _MISC_H */

@@ -156,7 +156,7 @@ void parse_ical_args(struct text_object *obj, const char *arg,
   obj->data.opaque = opaque;
 }
 
-void print_ical(struct text_object *obj, char *p, int p_max_size) {
+void print_ical(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct obj_ical *ical_obj = (struct obj_ical *)obj->data.opaque;
   struct ical_event *ll_current;
 

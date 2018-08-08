@@ -75,7 +75,7 @@ enum {
 void scan_exec_arg(struct text_object *, const char *, unsigned int);
 void register_exec(struct text_object *);
 void register_execi(struct text_object *);
-void print_exec(struct text_object *, char *, int);
+void print_exec(struct text_object *, char *, unsigned int);
 double execbarval(struct text_object *);
 void free_exec(struct text_object *);
 void free_execi(struct text_object *);

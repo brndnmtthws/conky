@@ -32,6 +32,6 @@
 
 void free_journal(struct text_object *);
 void init_journal(const char *, const char *, struct text_object *, void *);
-void print_journal(struct text_object *, char *, int);
+void print_journal(struct text_object *, char *, unsigned int);
 
 #endif /* _JOURNAL_H */

@@ -288,16 +288,8 @@
 	<refsect1>
 		<title>See Also</title>
 		<para>
-			<ulink url="http://conky.sourceforge.net/">
-				http://conky.sourceforge.net/</ulink>
-		</para>
-		<para>
-			<ulink url="http://www.sourceforge.net/projects/conky">
-				http://www.sourceforge.net/projects/conky</ulink>
-		</para>
-		<para>
-			<ulink url="http://wiki.conky.be">
-				http://wiki.conky.be</ulink>
+			<ulink url="https://github.com/brndnmtthws/conky">
+				https://github.com/brndnmtthws/conky</ulink>
 		</para>
 		<para>#conky on irc.freenode.net</para>
 	</refsect1>

@@ -223,7 +223,7 @@ int update_meminfo(void) {
   return 0;
 }
 
-void print_laptop_mode(struct text_object *obj, char *p, int p_max_size) {
+void print_laptop_mode(struct text_object *obj, char *p, unsigned int p_max_size) {
   FILE *fp;
   int val = -1;
 
@@ -240,7 +240,7 @@ void print_laptop_mode(struct text_object *obj, char *p, int p_max_size) {
  * # cat /sys/block/sda/queue/scheduler
  * noop [anticipatory] cfq
  */
-void print_ioscheduler(struct text_object *obj, char *p, int p_max_size) {
+void print_ioscheduler(struct text_object *obj, char *p, unsigned int p_max_size) {
   FILE *fp;
   char buf[128];
 
@@ -339,13 +339,13 @@ int gateway_exists(struct text_object *obj) {
   return !!gw_info.count;
 }
 
-void print_gateway_iface(struct text_object *obj, char *p, int p_max_size) {
+void print_gateway_iface(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
 
   snprintf(p, p_max_size, "%s", gw_info.iface);
 }
 
-void print_gateway_ip(struct text_object *obj, char *p, int p_max_size) {
+void print_gateway_ip(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
 
   snprintf(p, p_max_size, "%s", gw_info.ip);
@@ -1233,7 +1233,7 @@ PARSER_GENERATOR(i2c, "/sys/bus/i2c/devices/")
 PARSER_GENERATOR(hwmon, "/sys/class/hwmon/")
 PARSER_GENERATOR(platform, "/sys/bus/platform/devices/")
 
-void print_sysfs_sensor(struct text_object *obj, char *p, int p_max_size) {
+void print_sysfs_sensor(struct text_object *obj, char *p, unsigned int p_max_size) {
   double r;
   struct sysfs *sf = (struct sysfs *)obj->data.opaque;
 
@@ -1423,12 +1423,12 @@ static char get_voltage(char *p_client_buffer, size_t client_buffer_size,
   return 1;
 }
 
-void print_voltage_mv(struct text_object *obj, char *p, int p_max_size) {
+void print_voltage_mv(struct text_object *obj, char *p, unsigned int p_max_size) {
   static int ok = 1;
   if (ok) { ok = get_voltage(p, p_max_size, "%.0f", 1, obj->data.i); }
 }
 
-void print_voltage_v(struct text_object *obj, char *p, int p_max_size) {
+void print_voltage_v(struct text_object *obj, char *p, unsigned int p_max_size) {
   static int ok = 1;
   if (ok) { ok = get_voltage(p, p_max_size, "%'.3f", 1000, obj->data.i); }
 }
@@ -2253,7 +2253,7 @@ static char pb_battery_info[3][32];
 static double pb_battery_info_update;
 
 #define PMU_PATH "/proc/pmu"
-void get_powerbook_batt_info(struct text_object *obj, char *buffer, int n) {
+void get_powerbook_batt_info(struct text_object *obj, char *buffer, unsigned int n) {
   static int rep = 0;
   const char *batt_path = PMU_PATH "/battery_0";
   const char *info_path = PMU_PATH "/info";
@@ -2380,7 +2380,7 @@ int get_entropy_poolsize(unsigned int *val) {
 }
 
 void print_disk_protect_queue(struct text_object *obj, char *p,
-                              int p_max_size) {
+                              unsigned int p_max_size) {
   FILE *fp;
   char path[128];
   int state;
@@ -2466,7 +2466,7 @@ int update_diskio(void) {
   return 0;
 }
 
-void print_distribution(struct text_object *obj, char *p, int p_max_size) {
+void print_distribution(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   int i, bytes_read;
   char *buf;
@@ -2585,7 +2585,6 @@ static void process_parse_stat(struct process *process) {
   unsigned long user_time = 0;
   unsigned long kernel_time = 0;
   int rc;
-  char *r, *q;
   int endl;
   int nice_val;
   char *lparen, *rparen;

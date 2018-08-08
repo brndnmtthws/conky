@@ -1332,7 +1332,7 @@ int get_sip_status() {
  *  Protection: ${sip_status 1} You should not write: "Allow Untrusted Kexts",
  *  this is wrong.
  */
-void print_sip_status(struct text_object *obj, char *p, int p_max_size) {
+void print_sip_status(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (csr_get_active_config ==
       nullptr) /*  check if weakly linked symbol exists    */
   {

@@ -77,12 +77,12 @@ static inline unsigned int file_buffer_size(const char *data, const unsigned int
         return buf.st_size + 1;
 }
 
-void print_cat(struct text_object *obj, char *p, int p_max_size)
+void print_cat(struct text_object *obj, char *p, unsigned int p_max_size)
 {
 	read_file(obj->data.s, p, p_max_size);
 }
 
-void print_catp(struct text_object *obj, char *p, int p_max_size)
+void print_catp(struct text_object *obj, char *p, unsigned int p_max_size)
 {
 	const unsigned int sz = file_buffer_size(obj->data.s, text_buffer_size.get(*state));
 	char * buf = new char[sz];
@@ -94,8 +94,8 @@ void print_catp(struct text_object *obj, char *p, int p_max_size)
 	delete[] buf;
 }
 
-void print_cap(struct text_object *obj, char *p, int p_max_size) {
-  int x = 0;
+void print_cap(struct text_object *obj, char *p, unsigned int p_max_size) {
+  unsigned int x = 0;
   int z = 0;
   char buf[p_max_size];
   char *src = obj->data.s;

@@ -192,18 +192,18 @@ aud_result get_res() {
 }
 }  // namespace
 
-void print_audacious_status(struct text_object *, char *p, int p_max_size) {
+void print_audacious_status(struct text_object *, char *p, unsigned int p_max_size) {
   const aud_result &res = get_res();
   snprintf(p, p_max_size, "%s", as_message[res.status]);
 }
 
-void print_audacious_title(struct text_object *obj, char *p, int p_max_size) {
-  snprintf(p, std::min(obj->data.i, p_max_size), "%s", get_res().title.c_str());
+void print_audacious_title(struct text_object *obj, char *p, unsigned int p_max_size) {
+  snprintf(p, std::min((unsigned int) obj->data.i, p_max_size), "%s", get_res().title.c_str());
 }
 
 void print_audacious_filename(struct text_object *obj, char *p,
-                              int p_max_size) {
-  snprintf(p, std::min(obj->data.i, p_max_size), "%s",
+                              unsigned int p_max_size) {
+  snprintf(p, std::min((unsigned int) obj->data.i, p_max_size), "%s",
            get_res().filename.c_str());
 }
 
@@ -213,14 +213,15 @@ double audacious_barval(struct text_object *) {
 }
 
 #define AUDACIOUS_TIME_GENERATOR(name)                                         \
-  void print_audacious_##name(struct text_object *, char *p, int p_max_size) { \
+  void print_audacious_##name(struct text_object *, char *p,                   \
+		                                    unsigned int p_max_size) { \
     const aud_result &res = get_res();                                         \
     int sec = res.name / 1000;                                                 \
     snprintf(p, p_max_size, "%d:%.2d", sec / 60, sec % 60);                    \
   }                                                                            \
                                                                                \
   void print_audacious_##name##_seconds(struct text_object *, char *p,         \
-                                        int p_max_size) {                      \
+                                        unsigned int p_max_size) {             \
     snprintf(p, p_max_size, "%d", get_res().name);                             \
   }
 
@@ -228,7 +229,8 @@ AUDACIOUS_TIME_GENERATOR(length)
 AUDACIOUS_TIME_GENERATOR(position)
 
 #define AUDACIOUS_INT_GENERATOR(name, offset)                                  \
-  void print_audacious_##name(struct text_object *, char *p, int p_max_size) { \
+  void print_audacious_##name(struct text_object *, char *p,                   \
+		                                    unsigned int p_max_size) { \
     snprintf(p, p_max_size, "%d", get_res().name + offset);                    \
   }
 
