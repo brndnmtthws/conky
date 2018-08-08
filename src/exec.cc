@@ -48,14 +48,11 @@ struct execi_data {
   execi_data() = default;
 };
 
-// our own implementation of popen, the difference : the value of 'childpid'
-// will be filled with the pid of the running 'command'. This is useful if want
-// to kill it when it hangs while reading or writing to it. We have to kill it
-// because pclose will wait until the process dies by itself
-static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
-  int ends[2];
-  int parentend, childend;
-  char cmd[256];
+const int cmd_len = 256;
+char cmd[cmd_len];
+
+static char *escape_quotes(const char *);
+static char *escape_quotes(const char *command) {
   char *str1 = cmd;
   const char *str2 = command;
   int skip = 0;
@@ -73,12 +70,21 @@ static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
         continue;
       }
     }
-    if (254 > x) {
+    if ((cmd_len - 1) > x) {
       *str1++ = *str2;
     }
   }
   *str1 = '\0';
+  return cmd;
+}
 
+// our own implementation of popen, the difference : the value of 'childpid'
+// will be filled with the pid of the running 'command'. This is useful if want
+// to kill it when it hangs while reading or writing to it. We have to kill it
+// because pclose will wait until the process dies by itself
+static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
+  int ends[2];
+  int parentend, childend;
 
   // by running pipe after the strcmp's we make sure that we don't have to
   // create a pipe and close the ends if mode is something illegal
@@ -116,7 +122,7 @@ static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
     if (fcntl(childend, F_DUPFD, 0) == -1) { perror("fcntl()"); }
     close(childend);
 
-    execl("/bin/sh", "sh", "-c", cmd, (char *)nullptr);
+    execl("/bin/sh", "sh", "-c", escape_quotes(command), (char *)nullptr);
     _exit(EXIT_FAILURE);  // child should die here, (normally execl will take
                           // care of this but it can fail)
   }
