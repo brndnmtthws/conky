@@ -168,6 +168,7 @@ class own_window_setting : public conky::simple_config_setting<bool> {
   own_window_setting() : Base("own_window", false, false) {}
 };
 
+#ifdef BUILD_XDBE
 class use_xdbe_setting : public conky::simple_config_setting<bool> {
   typedef conky::simple_config_setting<bool> Base;
 
@@ -180,6 +181,7 @@ class use_xdbe_setting : public conky::simple_config_setting<bool> {
   use_xdbe_setting() : Base("double_buffer", false, false) {}
 };
 
+#else
 class use_xpmdb_setting : public conky::simple_config_setting<bool> {
   typedef conky::simple_config_setting<bool> Base;
 
@@ -191,6 +193,7 @@ class use_xpmdb_setting : public conky::simple_config_setting<bool> {
  public:
   use_xpmdb_setting() : Base("double_buffer", false, false) {}
 };
+#endif
 
 struct colour_traits {
   static const lua::Type type = lua::TSTRING;
