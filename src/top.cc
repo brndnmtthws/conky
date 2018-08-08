@@ -484,7 +484,7 @@ static conky::range_config_setting<unsigned int> top_name_width(
 static conky::simple_config_setting<bool> top_name_verbose("top_name_verbose",
                                                            false, true);
 
-static void print_top_name(struct text_object *obj, char *p, int p_max_size) {
+static void print_top_name(struct text_object *obj, char *p, unsigned int p_max_size) {
   auto *td = static_cast<struct top_data *>(obj->data.opaque);
   int width;
 
@@ -503,7 +503,7 @@ static void print_top_name(struct text_object *obj, char *p, int p_max_size) {
   }
 }
 
-static void print_top_mem(struct text_object *obj, char *p, int p_max_size) {
+static void print_top_mem(struct text_object *obj, char *p, unsigned int p_max_size) {
   auto *td = static_cast<struct top_data *>(obj->data.opaque);
   int width;
 
@@ -517,7 +517,7 @@ static void print_top_mem(struct text_object *obj, char *p, int p_max_size) {
            (static_cast<float>(td->list[td->num]->rss) / info.memmax) / 10);
 }
 
-static void print_top_time(struct text_object *obj, char *p, int p_max_size) {
+static void print_top_time(struct text_object *obj, char *p, unsigned int p_max_size) {
   auto *td = static_cast<struct top_data *>(obj->data.opaque);
   int width;
   char *timeval;
@@ -533,7 +533,7 @@ static void print_top_time(struct text_object *obj, char *p, int p_max_size) {
   free(timeval);
 }
 
-static void print_top_user(struct text_object *obj, char *p, int p_max_size) {
+static void print_top_user(struct text_object *obj, char *p, unsigned int p_max_size) {
   auto *td = static_cast<struct top_data *>(obj->data.opaque);
   struct passwd *pw;
 
@@ -552,7 +552,7 @@ static void print_top_user(struct text_object *obj, char *p, int p_max_size) {
 
 #define PRINT_TOP_GENERATOR(name, width, fmt, field)                    \
   static void print_top_##name(struct text_object *obj, char *p,        \
-                               int p_max_size) {                        \
+                               unsigned int p_max_size) {               \
     struct top_data *td = (struct top_data *)obj->data.opaque;          \
     if (!td || !td->list || !td->list[td->num]) return;                 \
     snprintf(p, MIN(p_max_size, width), fmt, td->list[td->num]->field); \
@@ -560,7 +560,7 @@ static void print_top_user(struct text_object *obj, char *p, int p_max_size) {
 
 #define PRINT_TOP_HR_GENERATOR(name, field, denom)                     \
   static void print_top_##name(struct text_object *obj, char *p,       \
-                               int p_max_size) {                       \
+                               unsigned int p_max_size) {              \
     struct top_data *td = (struct top_data *)obj->data.opaque;         \
     if (!td || !td->list || !td->list[td->num]) return;                \
     human_readable(td->list[td->num]->field / (denom), p, p_max_size); \

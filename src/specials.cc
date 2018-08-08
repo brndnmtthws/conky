@@ -677,7 +677,7 @@ void new_bg(struct text_object *obj, char *p, unsigned int p_max_size) {
 #endif /* BUILD_X11 */
 
 static void new_bar_in_shell(struct text_object *obj, char *buffer,
-                             int buf_max_size, double usage) {
+                             unsigned int buf_max_size, double usage) {
   auto *b = static_cast<struct bar *>(obj->special_data);
   int width, i, scaledusage;
 
