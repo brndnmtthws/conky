@@ -1296,17 +1296,33 @@ void xpmdb_swap_buffers(void) {
 }
 #endif /* BUILD_XDBE */
 
-#define LOCK_TEMPLATE(func, num) \
+#define LOCK_TEMPLATE_1(func) \
 void print_##func(struct text_object *obj, char *p, unsigned int p_max_size) { \
   (void)obj; \
   XKeyboardState x; \
   XGetKeyboardControl(display, &x); \
-  snprintf(p, p_max_size, "%s", (x.led_mask & num ? "On" : "Off")); \
+  snprintf(p, p_max_size, "%s", (x.led_mask & 1 ? "On" : "Off")); \
 }
 
-LOCK_TEMPLATE(num_led, 2)
-LOCK_TEMPLATE(caps_led, 1)
-LOCK_TEMPLATE(scroll_led, 4)
+#define LOCK_TEMPLATE_2(func) \
+void print_##func(struct text_object *obj, char *p, unsigned int p_max_size) { \
+  (void)obj; \
+  XKeyboardState x; \
+  XGetKeyboardControl(display, &x); \
+  snprintf(p, p_max_size, "%s", (x.led_mask & 2 ? "On" : "Off")); \
+}
+
+#define LOCK_TEMPLATE_4(func) \
+void print_##func(struct text_object *obj, char *p, unsigned int p_max_size) { \
+  (void)obj; \
+  XKeyboardState x; \
+  XGetKeyboardControl(display, &x); \
+  snprintf(p, p_max_size, "%s", (x.led_mask & 4 ? "On" : "Off")); \
+}
+
+LOCK_TEMPLATE_2(num_led)
+LOCK_TEMPLATE_1(caps_led)
+LOCK_TEMPLATE_4(scroll_led)
 
 void print_kb_layout(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
