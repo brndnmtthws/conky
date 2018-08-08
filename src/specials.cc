@@ -432,7 +432,7 @@ void new_gauge(struct text_object *obj, char *p, unsigned int p_max_size, double
 #ifdef BUILD_X11
 void new_font(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct special_t *s;
-  int tmp = selected_font;
+  unsigned int tmp = selected_font;
 
   if (not out_to_x.get(*state)) {
     return;
@@ -679,7 +679,7 @@ void new_bg(struct text_object *obj, char *p, unsigned int p_max_size) {
 static void new_bar_in_shell(struct text_object *obj, char *buffer,
                              unsigned int buf_max_size, double usage) {
   auto *b = static_cast<struct bar *>(obj->special_data);
-  int width, i, scaledusage;
+  unsigned int width, i, scaledusage;
 
   if (b == nullptr) {
     return;

@@ -266,7 +266,6 @@ conky::lua_traits<window_hints>::Map conky::lua_traits<window_hints>::map = {
 
 std::pair<uint16_t, bool> window_hints_traits::convert(
     lua::state &l, int index, const std::string &name) {
-  using Traits = conky::lua_traits<window_hints>;
 
   lua::stack_sentry s(l);
   l.checkstack(1);

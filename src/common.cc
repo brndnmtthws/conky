@@ -371,7 +371,7 @@ double loadgraphval(struct text_object *obj) {
 #endif /* BUILD_X11 */
 
 uint8_t cpu_percentage(struct text_object *obj) {
-  if (obj->data.i > info.cpu_count) {
+  if ((unsigned int) obj->data.i > info.cpu_count) {
     NORM_ERR("obj->data.i %i info.cpu_count %i", obj->data.i, info.cpu_count);
     CRIT_ERR(nullptr, nullptr, "attempting to use more CPUs than you have!");
   }
