@@ -59,20 +59,23 @@ static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
   char *str1 = cmd;
   const char *str2 = command;
   int skip = 0;
+  int x = 0;
 
-  for (; *str2; str2++) {
+  for (; *str2; str2++, x++) {
     if (0 == skip) {
       if (*str2 == '"' || *str2 == '\'') {
         skip = 1;
         continue;
       }
     }
-    if ('\0' == *(str2+1)) {
+    if ('\0' == *(str2+1) && 1 == skip) {
       if (*str2 == '"' || *str2 == '\'') {
         continue;
       }
     }
-    *str1++ = *str2;
+    if (254 > x) {
+      *str1++ = *str2;
+    }
   }
   *str1 = '\0';
 
