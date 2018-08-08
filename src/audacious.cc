@@ -228,17 +228,23 @@ double audacious_barval(struct text_object *) {
 AUDACIOUS_TIME_GENERATOR(length)
 AUDACIOUS_TIME_GENERATOR(position)
 
-#define AUDACIOUS_INT_GENERATOR(name, offset)                                  \
+#define AUDACIOUS_INT_GENERATOR_0(name)                                        \
   void print_audacious_##name(struct text_object *, char *p,                   \
 		                                    unsigned int p_max_size) { \
-    snprintf(p, p_max_size, "%d", get_res().name + offset);                    \
+    snprintf(p, p_max_size, "%d", get_res().name);                             \
   }
 
-AUDACIOUS_INT_GENERATOR(bitrate, 0)
-AUDACIOUS_INT_GENERATOR(frequency, 0)
-AUDACIOUS_INT_GENERATOR(channels, 0)
-AUDACIOUS_INT_GENERATOR(playlist_length, 0)
-AUDACIOUS_INT_GENERATOR(playlist_position, 1)
-AUDACIOUS_INT_GENERATOR(main_volume, 0)
+#define AUDACIOUS_INT_GENERATOR_1(name)                                        \
+  void print_audacious_##name(struct text_object *, char *p,                   \
+		                                    unsigned int p_max_size) { \
+    snprintf(p, p_max_size, "%d", get_res().name + 1);                         \
+  }
+
+AUDACIOUS_INT_GENERATOR_0(bitrate)
+AUDACIOUS_INT_GENERATOR_0(frequency)
+AUDACIOUS_INT_GENERATOR_0(channels)
+AUDACIOUS_INT_GENERATOR_0(playlist_length)
+AUDACIOUS_INT_GENERATOR_1(playlist_position)
+AUDACIOUS_INT_GENERATOR_0(main_volume)
 
 #undef AUDACIOUS_PRINT_GENERATOR
