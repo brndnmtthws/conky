@@ -95,7 +95,7 @@ void print_catp(struct text_object *obj, char *p, unsigned int p_max_size)
 }
 
 void print_cap(struct text_object *obj, char *p, unsigned int p_max_size) {
-  int x = 0;
+  unsigned int x = 0;
   int z = 0;
   char buf[p_max_size];
   char *src = obj->data.s;

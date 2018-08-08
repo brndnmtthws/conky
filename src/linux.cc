@@ -2585,7 +2585,6 @@ static void process_parse_stat(struct process *process) {
   unsigned long user_time = 0;
   unsigned long kernel_time = 0;
   int rc;
-  char *r, *q;
   int endl;
   int nice_val;
   char *lparen, *rparen;

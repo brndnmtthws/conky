@@ -157,12 +157,9 @@ int parseTrainingXml(char *data, Character *s) {
 
 static char *getXmlFromAPI(const char *apiKeyID, const char *apiVCode,
                            const char *charid, const char *url) {
-  struct curl_httppost *post = nullptr;
-  struct curl_httppost *last = nullptr;
   struct xmlData chr;
   char *content;
   CURL *curl_handle;
-  int rc = 0;
 
   chr.data = nullptr;
   chr.size = 0;
@@ -185,7 +182,7 @@ static char *getXmlFromAPI(const char *apiKeyID, const char *apiVCode,
 
   curl_easy_setopt(curl_handle, CURLOPT_URL, real_url.c_str());
 
-  rc = curl_easy_perform(curl_handle);
+  curl_easy_perform(curl_handle);
 
   if (chr.data == nullptr) { return nullptr; }
 
@@ -426,13 +423,12 @@ static char *eve(char *apiKeyID, char *apiVCode, char *charid) {
 }
 
 void scan_eve(struct text_object *obj, const char *arg) {
-  int argc;
   struct eve_data *ed;
 
   ed = (struct eve_data *)malloc(sizeof(struct eve_data));
   memset(ed, 0, sizeof(struct eve_data));
 
-  argc = sscanf(arg, "%20s %64s %20s", ed->apiKeyID, ed->apiVCode, ed->charid);
+  sscanf(arg, "%20s %64s %20s", ed->apiKeyID, ed->apiVCode, ed->charid);
 
   init_eve();
   obj->data.opaque = ed;

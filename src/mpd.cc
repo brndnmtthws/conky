@@ -358,7 +358,7 @@ double mpd_barval(struct text_object *obj) {
 void print_mpd_smart(struct text_object *obj, char *p, unsigned int p_max_size) {
   const mpd_result &mpd_info = get_mpd();
   int len = obj->data.i;
-  if (len == 0 || len > p_max_size) {
+  if (len == 0 || (unsigned int) len > p_max_size) {
     len = p_max_size;
   }
 
@@ -386,7 +386,7 @@ int check_mpd_playing(struct text_object *obj) {
 #define MPD_PRINT_GENERATOR(name, fmt, acc)                                 \
   void print_mpd_##name(struct text_object *obj, char *p,                   \
 		                                 unsigned int p_max_size) { \
-    if (obj->data.i && obj->data.i < p_max_size) p_max_size = obj->data.i;  \
+    if (obj->data.i && (unsigned int) obj->data.i < p_max_size) p_max_size = obj->data.i;  \
     snprintf(p, p_max_size, fmt, get_mpd().name acc);                       \
   }
 
