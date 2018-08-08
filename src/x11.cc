@@ -377,7 +377,6 @@ imlib_cache_size_setting imlib_cache_size;
 #endif
 /******************** </SETTINGS> ************************/
 
-#ifdef DEBUG
 /* WARNING, this type not in Xlib spec */
 static int __attribute__((noreturn))
 x11_error_handler(Display *d, XErrorEvent *err) {
@@ -394,7 +393,6 @@ static int __attribute__((noreturn)) x11_ioerror_handler(Display *d) {
   NORM_ERR("X Error: Display %lx\n", (long unsigned)d);
   exit(1);
 }
-#endif /* DEBUG */
 
 /* X11 initializer */
 static void init_X11() {
@@ -425,12 +423,9 @@ static void init_X11() {
 
   update_workarea();
 
-#ifdef DEBUG
-  _Xdebug = 1;
   /* WARNING, this type not in Xlib spec */
   XSetErrorHandler(&x11_error_handler);
   XSetIOErrorHandler(&x11_ioerror_handler);
-#endif /* DEBUG */
 }
 
 static void deinit_X11() {
