@@ -228,17 +228,23 @@ double audacious_barval(struct text_object *) {
 AUDACIOUS_TIME_GENERATOR(length)
 AUDACIOUS_TIME_GENERATOR(position)
 
-#define AUDACIOUS_INT_GENERATOR(name, offset)                                  \
-  void print_audacious_##name(struct text_object *, char *p,                   \
-		                                    unsigned int p_max_size) { \
-    snprintf(p, p_max_size, "%d", get_res().name + offset);                    \
-  }
-
-AUDACIOUS_INT_GENERATOR(bitrate, 0)
-AUDACIOUS_INT_GENERATOR(frequency, 0)
-AUDACIOUS_INT_GENERATOR(channels, 0)
-AUDACIOUS_INT_GENERATOR(playlist_length, 0)
-AUDACIOUS_INT_GENERATOR(playlist_position, 1)
-AUDACIOUS_INT_GENERATOR(main_volume, 0)
+void print_audacious_bitrate(struct text_object *, char *p, unsigned int p_max_size) {
+  snprintf(p, p_max_size, "%d", get_res().name);
+}
+void print_audacious_frequency(struct text_object *, char *p, unsigned int p_max_size) {
+  snprintf(p, p_max_size, "%d", get_res().name);
+}
+void print_audacious_channels(struct text_object *, char *p, unsigned int p_max_size) {
+  snprintf(p, p_max_size, "%d", get_res().name);
+}
+void print_audacious_playlist_length(struct text_object *, char *p, unsigned int p_max_size) {
+  snprintf(p, p_max_size, "%d", get_res().name);
+}
+void print_audacious_playlist_position(struct text_object *, char *p, unsigned int p_max_size) {
+  snprintf(p, p_max_size, "%d", get_res().name + 1);
+}
+void print_audacious_main_volume(struct text_object *, char *p, unsigned int p_max_size) {
+  snprintf(p, p_max_size, "%d", get_res().name);
+}
 
 #undef AUDACIOUS_PRINT_GENERATOR
