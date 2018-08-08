@@ -54,7 +54,7 @@ int get_entropy_poolsize(const unsigned int *);
 
 /* System Integrity Protection */
 int get_sip_status(void);
-void print_sip_status(struct text_object *obj, char *p, int p_max_size);
+void print_sip_status(struct text_object *obj, char *p, unsigned int p_max_size);
 
 void deallocate_cpu_sample(struct text_object *obj);
 
