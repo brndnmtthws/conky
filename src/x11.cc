@@ -126,7 +126,7 @@ void own_window_setting::lua_setter(lua::state &l, bool init) {
 #ifdef BUILD_XDBE
 bool use_xdbe_setting::set_up(lua::state &l) {
   // double_buffer makes no sense when not drawing to X
-  if (not out_to_x.get(l)) { return false; }
+  if (!out_to_x.get(l)) { return false; }
 
   int major, minor;
 
@@ -154,7 +154,7 @@ void use_xdbe_setting::lua_setter(lua::state &l, bool init) {
   Base::lua_setter(l, init);
 
   if (init && do_convert(l, -1).first) {
-    if (not set_up(l)) {
+    if (!set_up(l)) {
       l.pop();
       l.pushboolean(false);
     }
@@ -169,7 +169,7 @@ void use_xdbe_setting::lua_setter(lua::state &l, bool init) {
 #else
 bool use_xpmdb_setting::set_up(lua::state &l) {
   // double_buffer makes no sense when not drawing to X
-  if (not out_to_x.get(l)) return false;
+  if (!out_to_x.get(l)) return false;
 
   window.back_buffer =
       XCreatePixmap(display, window.window, window.width + 1, window.height + 1,
@@ -191,7 +191,7 @@ void use_xpmdb_setting::lua_setter(lua::state &l, bool init) {
   Base::lua_setter(l, init);
 
   if (init && do_convert(l, -1).first) {
-    if (not set_up(l)) {
+    if (!set_up(l)) {
       l.pop();
       l.pushboolean(false);
     }
@@ -207,7 +207,7 @@ void use_xpmdb_setting::lua_setter(lua::state &l, bool init) {
 void colour_setting::lua_setter(lua::state &l, bool init) {
   lua::stack_sentry s(l, -2);
 
-  if (not out_to_x.get(l)) {
+  if (!out_to_x.get(l)) {
     // ignore if we're not using X
     l.replace(-2);
   } else {
@@ -273,7 +273,7 @@ std::pair<uint16_t, bool> window_hints_traits::convert(
     if (newpos > pos) {
       l.pushstring(hints.substr(pos, newpos - pos));
       auto t = conky::lua_traits<window_hints>::convert(l, -1, name);
-      if (not t.second) { return {0, false}; };
+      if (!t.second) { return {0, false}; };
       SET_HINT(ret, t.first);
       l.pop();
     }
@@ -633,7 +633,7 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
     int depth = 0, flags = CWOverrideRedirect | CWBackingStore;
     Visual *visual = nullptr;
 
-    if (find_desktop_window(&window.root, &window.desktop) == 0u) { return; }
+    if (find_desktop_window(&window.root, &window.desktop) == 0U) { return; }
 
 #ifdef BUILD_ARGB
     if (use_argb_visual.get(l) && (get_argb_visual(&visual, &depth) != 0)) {
