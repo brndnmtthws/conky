@@ -2253,7 +2253,7 @@ static char pb_battery_info[3][32];
 static double pb_battery_info_update;
 
 #define PMU_PATH "/proc/pmu"
-void get_powerbook_batt_info(struct text_object *obj, char *buffer, int n) {
+void get_powerbook_batt_info(struct text_object *obj, char *buffer, unsigned int n) {
   static int rep = 0;
   const char *batt_path = PMU_PATH "/battery_0";
   const char *info_path = PMU_PATH "/info";
