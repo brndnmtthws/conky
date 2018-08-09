@@ -1706,14 +1706,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_weather;
   obj->callbacks.free = &free_weather;
 #endif /* BUILD_WEATHER_METAR */
-#ifdef BUILD_WEATHER_XOAP
-  END OBJ_ARG(weather_forecast, 0,
-              "weather_forecast needs arguments: <uri> <locID> <day> "
-              "<data_type> [interval in minutes]")
-      scan_weather_forecast_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_weather_forecast;
-  obj->callbacks.free = &free_weather;
-#endif /* BUILD_WEATHER_XOAP */
   END OBJ_ARG(lua, nullptr,
               "lua needs arguments: <function name> [function parameters]")
       obj->data.s = STRNDUP_ARG;

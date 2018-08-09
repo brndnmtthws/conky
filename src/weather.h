@@ -30,12 +30,6 @@
 #ifndef WEATHER_H_
 #define WEATHER_H_
 
-#ifdef BUILD_WEATHER_XOAP
-void load_xoap_keys(void);
-void scan_weather_forecast_arg(struct text_object *, const char *, void *);
-void print_weather_forecast(struct text_object *, char *, unsigned int);
-#endif /* BUILD_WEATHER_XOAP */
-
 void scan_weather_arg(struct text_object *, const char *, void *);
 void print_weather(struct text_object *, char *, unsigned int);
 void free_weather(struct text_object *);

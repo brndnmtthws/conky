@@ -35,25 +35,13 @@
 #include "temphelper.h"
 #include "text_object.h"
 #include "weather.h"
-#ifdef BUILD_WEATHER_XOAP
-#include <libxml/parser.h>
-#include <libxml/xpath.h>
-#endif /* BUILD_WEATHER_XOAP */
 
 /* WEATHER data */
 class weather {
   void parse_token(const char *token);
-#ifdef BUILD_WEATHER_XOAP
-  void parse_cc(xmlXPathContextPtr xpathCtx);
-  void parse_weather_xml(const std::string &data);
-#endif
 
  public:
   std::string lastupd;
-#ifdef BUILD_WEATHER_XOAP
-  std::string xoap_t;
-  std::string icon;
-#endif /* BUILD_WEATHER_XOAP */
   int temp;
   int dew;
   int cc;
@@ -68,55 +56,6 @@ class weather {
 
   weather(const std::string &);
 };
-
-#ifdef BUILD_WEATHER_XOAP
-#define FORECAST_DAYS 5
-struct weather_forecast_day {
-  std::string icon;
-  std::string xoap_t;
-  std::string day;
-  std::string date;
-  int hi;
-  int low;
-  int wind_s;
-  int wind_d;
-  int hmid;
-  int ppcp;
-
-  weather_forecast_day()
-      : hi(0), low(0), wind_s(0), wind_d(0), hmid(0), ppcp(0) {}
-};
-
-class weather_forecast
-    : public std::array<weather_forecast_day, FORECAST_DAYS> {
-  void parse_df(xmlXPathContextPtr xpathCtx);
-
- public:
-  weather_forecast() = default;
-
-  weather_forecast(const std::string &);
-};
-
-/* Xpath expressions for BUILD_WEATHER_XOAP xml parsing */
-#define NUM_XPATH_EXPRESSIONS_CC 8
-const char *xpath_expression_cc[NUM_XPATH_EXPRESSIONS_CC] = {
-    "/weather/cc/lsup",  "/weather/cc/tmp",    "/weather/cc/t",
-    "/weather/cc/bar/r", "/weather/cc/wind/s", "/weather/cc/wind/d",
-    "/weather/cc/hmid",  "/weather/cc/icon"};
-
-#define NUM_XPATH_EXPRESSIONS_DF 10
-const char *xpath_expression_df[NUM_XPATH_EXPRESSIONS_DF] = {
-    "/weather/dayf/day[*]/hi",
-    "/weather/dayf/day[*]/low",
-    "/weather/dayf/day[*]/part[1]/icon",
-    "/weather/dayf/day[*]/part[1]/t",
-    "/weather/dayf/day[*]/part[1]/wind/s",
-    "/weather/dayf/day[*]/part[1]/wind/d",
-    "/weather/dayf/day[*]/part[1]/ppcp",
-    "/weather/dayf/day[*]/part[1]/hmid",
-    "/weather/dayf/day[*]/@t",
-    "/weather/dayf/day[*]/@dt"};
-#endif /* BUILD_WEATHER_XOAP */
 
 /* Possible sky conditions */
 #define NUM_CC_CODES 6
@@ -139,15 +78,6 @@ struct weather_data {
   int interval;
 };
 
-#ifdef BUILD_WEATHER_XOAP
-struct weather_forecast_data {
-  char uri[128];
-  unsigned int day;
-  char data_type[32];
-  int interval;
-};
-#endif
-
 int rel_humidity(int dew_point, int air) {
   const float a = 17.27f;
   const float b = 237.7f;
@@ -159,174 +89,6 @@ int rel_humidity(int dew_point, int air) {
   return (int)(16.666667163372f * (6.f + diff * (6.f + diff * (3.f + diff))));
 #endif /* BUILD_MATH */
 }
-
-#ifdef BUILD_WEATHER_XOAP
-void weather_forecast::parse_df(xmlXPathContextPtr xpathCtx) {
-  int i, j, k;
-  char *content = nullptr;
-  xmlXPathObjectPtr xpathObj;
-
-  xpathObj = xmlXPathEvalExpression((const xmlChar *)"/error/err", xpathCtx);
-  if (xpathObj && xpathObj->nodesetval && xpathObj->nodesetval->nodeNr > 0 &&
-      xpathObj->nodesetval->nodeTab[0]->type == XML_ELEMENT_NODE) {
-    content = (char *)xmlNodeGetContent(xpathObj->nodesetval->nodeTab[0]);
-    NORM_ERR("XOAP error: %s", content);
-    xmlFree(content);
-    xmlXPathFreeObject(xpathObj);
-    return;
-  }
-  xmlXPathFreeObject(xpathObj);
-
-  for (i = 0; i < NUM_XPATH_EXPRESSIONS_DF; i++) {
-    xpathObj = xmlXPathEvalExpression((const xmlChar *)xpath_expression_df[i],
-                                      xpathCtx);
-    if (xpathObj != nullptr) {
-      xmlNodeSetPtr nodes = xpathObj->nodesetval;
-      k = 0;
-      for (j = 0; j < nodes->nodeNr; ++j) {
-        if (nodes->nodeTab[j]->type == XML_ELEMENT_NODE) {
-          content = (char *)xmlNodeGetContent(nodes->nodeTab[k]);
-          switch (i) {
-            case 0:
-              (*this)[k].hi = atoi(content);
-              break;
-            case 1:
-              (*this)[k].low = atoi(content);
-              break;
-            case 2:
-              (*this)[k].icon = content;
-            case 3:
-              (*this)[k].xoap_t = content;
-              break;
-            case 4:
-              (*this)[k].wind_s = atoi(content);
-              break;
-            case 5:
-              (*this)[k].wind_d = atoi(content);
-              break;
-            case 6:
-              (*this)[k].ppcp = atoi(content);
-              break;
-            case 7:
-              (*this)[k].hmid = atoi(content);
-          }
-        } else if (nodes->nodeTab[j]->type == XML_ATTRIBUTE_NODE) {
-          content = (char *)xmlNodeGetContent(nodes->nodeTab[k]);
-          switch (i) {
-            case 8:
-              (*this)[k].day = content;
-              break;
-            case 9:
-              (*this)[k].date = content;
-          }
-        }
-        xmlFree(content);
-        if (++k == FORECAST_DAYS) break;
-      }
-    }
-    xmlXPathFreeObject(xpathObj);
-  }
-  return;
-}
-
-weather_forecast::weather_forecast(const std::string &data) {
-  xmlDocPtr doc;
-  xmlXPathContextPtr xpathCtx;
-
-  if (!(doc = xmlReadMemory(data.c_str(), data.length(), "", nullptr, 0))) {
-    NORM_ERR("weather_forecast: can't read xml data");
-    return;
-  }
-
-  xpathCtx = xmlXPathNewContext(doc);
-  if (xpathCtx == nullptr) {
-    NORM_ERR("weather_forecast: unable to create new XPath context");
-    xmlFreeDoc(doc);
-    return;
-  }
-
-  parse_df(xpathCtx);
-  xmlXPathFreeContext(xpathCtx);
-  xmlFreeDoc(doc);
-  return;
-}
-
-void weather::parse_cc(xmlXPathContextPtr xpathCtx) {
-  int i;
-  char *content;
-  xmlXPathObjectPtr xpathObj;
-
-  xpathObj = xmlXPathEvalExpression((const xmlChar *)"/error/err", xpathCtx);
-  if (xpathObj && xpathObj->nodesetval && xpathObj->nodesetval->nodeNr > 0 &&
-      xpathObj->nodesetval->nodeTab[0]->type == XML_ELEMENT_NODE) {
-    content = (char *)xmlNodeGetContent(xpathObj->nodesetval->nodeTab[0]);
-    NORM_ERR("XOAP error: %s", content);
-    xmlFree(content);
-    xmlXPathFreeObject(xpathObj);
-    return;
-  }
-  xmlXPathFreeObject(xpathObj);
-
-  for (i = 0; i < NUM_XPATH_EXPRESSIONS_CC; i++) {
-    xpathObj = xmlXPathEvalExpression((const xmlChar *)xpath_expression_cc[i],
-                                      xpathCtx);
-    if (xpathObj && xpathObj->nodesetval && xpathObj->nodesetval->nodeNr > 0 &&
-        xpathObj->nodesetval->nodeTab[0]->type == XML_ELEMENT_NODE) {
-      content = (char *)xmlNodeGetContent(xpathObj->nodesetval->nodeTab[0]);
-      switch (i) {
-        case 0:
-          lastupd = content;
-          break;
-        case 1:
-          temp = atoi(content);
-          break;
-        case 2:
-          xoap_t = content;
-          break;
-        case 3:
-          bar = atoi(content);
-          break;
-        case 4:
-          wind_s = atoi(content);
-          break;
-        case 5:
-          wind_d = atoi(content);
-          break;
-        case 6:
-          hmid = atoi(content);
-          break;
-        case 7:
-          icon = content;
-      }
-      xmlFree(content);
-    }
-    xmlXPathFreeObject(xpathObj);
-  }
-  return;
-}
-
-void weather::parse_weather_xml(const std::string &data) {
-  xmlDocPtr doc;
-  xmlXPathContextPtr xpathCtx;
-
-  if (!(doc = xmlReadMemory(data.c_str(), data.length(), "", nullptr, 0))) {
-    NORM_ERR("weather: can't read xml data");
-    return;
-  }
-
-  xpathCtx = xmlXPathNewContext(doc);
-  if (xpathCtx == nullptr) {
-    NORM_ERR("weather: unable to create new XPath context");
-    xmlFreeDoc(doc);
-    return;
-  }
-
-  parse_cc(xpathCtx);
-  xmlXPathFreeContext(xpathCtx);
-  xmlFreeDoc(doc);
-  return;
-}
-#endif /* BUILD_WEATHER_XOAP */
 
 /*
  * Horrible hack to avoid using regexes
@@ -617,13 +379,6 @@ void weather::parse_token(const char *token) {
 
 weather::weather(const std::string &data)
     : temp(0), dew(0), cc(0), bar(0), wind_s(0), wind_d(0), hmid(0), wc(0) {
-#ifdef BUILD_WEATHER_XOAP
-  // Check if it is an xml file
-  if (strncmp(data.c_str(), "<?xml ", 6) == 0) {
-    parse_weather_xml(data);
-  } else
-#endif /* BUILD_WEATHER_XOAP */
-  {
     // We assume its a text file
     char s_tmp[256];
     char lastupd_[32];
@@ -651,7 +406,6 @@ weather::weather(const std::string &data)
     } else {
       return;
     }
-  }
 }
 
 namespace {
@@ -709,43 +463,6 @@ void wind_deg_to_dir(char *p, int p_max_size, int wind_deg) {
   };
 }
 
-#ifdef BUILD_WEATHER_XOAP
-static void weather_forecast_process_info(char *p, int p_max_size,
-                                          const std::string &uri,
-                                          unsigned int day, char *data_type,
-                                          int interval) {
-  uint32_t period = std::max(lround(interval / active_update_interval()), 1l);
-
-  auto cb = conky::register_cb<weather_cb<weather_forecast>>(period, uri);
-
-  std::lock_guard<std::mutex> lock(cb->result_mutex);
-  const weather_forecast &data = cb->get_result();
-  if (strcmp(data_type, "hi") == EQUAL) {
-    temp_print(p, p_max_size, data[day].hi, TEMP_CELSIUS, 1);
-  } else if (strcmp(data_type, "low") == EQUAL) {
-    temp_print(p, p_max_size, data[day].low, TEMP_CELSIUS, 1);
-  } else if (strcmp(data_type, "icon") == EQUAL) {
-    strncpy(p, data[day].icon.c_str(), p_max_size);
-  } else if (strcmp(data_type, "forecast") == EQUAL) {
-    strncpy(p, data[day].xoap_t.c_str(), p_max_size);
-  } else if (strcmp(data_type, "wind_speed") == EQUAL) {
-    snprintf(p, p_max_size, "%d", data[day].wind_s);
-  } else if (strcmp(data_type, "wind_dir") == EQUAL) {
-    wind_deg_to_dir(p, p_max_size, data[day].wind_d);
-  } else if (strcmp(data_type, "wind_dir_DEG") == EQUAL) {
-    snprintf(p, p_max_size, "%d", data[day].wind_d);
-  } else if (strcmp(data_type, "humidity") == EQUAL) {
-    snprintf(p, p_max_size, "%d", data[day].hmid);
-  } else if (strcmp(data_type, "precipitation") == EQUAL) {
-    snprintf(p, p_max_size, "%d", data[day].ppcp);
-  } else if (strcmp(data_type, "day") == EQUAL) {
-    strncpy(p, data[day].day.c_str(), p_max_size);
-  } else if (strcmp(data_type, "date") == EQUAL) {
-    strncpy(p, data[day].date.c_str(), p_max_size);
-  }
-}
-#endif /* BUILD_WEATHER_XOAP */
-
 static void weather_process_info(char *p, int p_max_size,
                                  const std::string &uri, char *data_type,
                                  int interval) {
@@ -779,17 +496,7 @@ static void weather_process_info(char *p, int p_max_size,
   } else if (strcmp(data_type, "temperature") == EQUAL) {
     temp_print(p, p_max_size, data->temp, TEMP_CELSIUS, 1);
   } else if (strcmp(data_type, "cloud_cover") == EQUAL) {
-#ifdef BUILD_WEATHER_XOAP
-    if (data->xoap_t[0] != '\0') {
-      char *s = p;
-      strncpy(p, data->xoap_t.c_str(), p_max_size);
-      while (*s) {
-        *s = tolower(*s);
-        s++;
-      }
-    } else
-#endif /* BUILD_WEATHER_XOAP */
-        if (data->cc == 0) {
+    if (data->cc == 0) {
       strncpy(p, "", p_max_size);
     } else if (data->cc < 3) {
       strncpy(p, "clear", p_max_size);
@@ -804,10 +511,6 @@ static void weather_process_info(char *p, int p_max_size,
     } else {
       strncpy(p, "cumulonimbus", p_max_size);
     }
-#ifdef BUILD_WEATHER_XOAP
-  } else if (strcmp(data_type, "icon") == EQUAL) {
-    strncpy(p, data->icon.c_str(), p_max_size);
-#endif /* BUILD_WEATHER_XOAP */
   } else if (strcmp(data_type, "pressure") == EQUAL) {
     snprintf(p, p_max_size, "%d", data->bar);
   } else if (strcmp(data_type, "wind_speed") == EQUAL) {
@@ -816,21 +519,12 @@ static void weather_process_info(char *p, int p_max_size,
     wind_deg_to_dir(p, p_max_size, data->wind_d);
   } else if (strcmp(data_type, "wind_dir_DEG") == EQUAL) {
     snprintf(p, p_max_size, "%d", data->wind_d);
-
   } else if (strcmp(data_type, "humidity") == EQUAL) {
     snprintf(p, p_max_size, "%d", data->hmid);
   } else if (strcmp(data_type, "weather") == EQUAL) {
     strncpy(p, wc[data->wc], p_max_size);
   }
 }
-
-#ifdef BUILD_WEATHER_XOAP
-/* xoap suffix for weather from weather.com */
-namespace {
-std::string xoap_cc;
-std::string xoap_df;
-}  // namespace
-#endif /* BUILD_WEATHER_XOAP */
 
 static int process_weather_uri(char *uri, char *locID, int dayf UNUSED_ATTR) {
   /* locID MUST BE upper-case */
@@ -843,24 +537,7 @@ static int process_weather_uri(char *uri, char *locID, int dayf UNUSED_ATTR) {
 
   /* Construct complete uri */
   int len_remaining = 128;
-#ifdef BUILD_WEATHER_XOAP
-  if (strstr(uri, "xoap.weather.com")) {
-    if ((dayf == 0) && (xoap_cc.length() != 0)) {
-      strncat(uri, locID, len_remaining);
-      len_remaining -= strlen(locID);
-      strncat(uri, xoap_cc.c_str(), len_remaining);
-      len_remaining -= strlen(xoap_cc.c_str());
-    } else if ((dayf == 1) && (xoap_df.length() != 0)) {
-      strncat(uri, locID, len_remaining);
-      len_remaining -= strlen(locID);
-      strncat(uri, xoap_df.c_str(), len_remaining);
-      len_remaining -= strlen(xoap_df.c_str());
-    } else {
-      return 0;
-    }
-  } else
-#endif /* BUILD_WEATHER_XOAP */
-      if (strstr(uri, "tgftp.nws.noaa.gov")) {
+  if (strstr(uri, "tgftp.nws.noaa.gov")) {
     strncat(uri, locID, len_remaining);
     len_remaining -= strlen(locID);
     strncat(uri, ".TXT", len_remaining);
@@ -870,93 +547,6 @@ static int process_weather_uri(char *uri, char *locID, int dayf UNUSED_ATTR) {
   }
   return 0;
 }
-
-#ifdef BUILD_WEATHER_XOAP
-
-/*
- * TODO: make the xoap keys file readable from the config file
- *       make the keys directly readable from the config file
- *       make the xoap keys file giveable as a command line option
- */
-void load_xoap_keys(void) {
-  FILE *fp;
-  char *par = (char *)malloc(11 * sizeof(char));
-  char *key = (char *)malloc(17 * sizeof(char));
-
-  std::string xoap = to_real_path(XOAP_FILE);
-  fp = fopen(xoap.c_str(), "r");
-  if (fp != nullptr) {
-    if (fscanf(fp, "%10s %16s", par, key) == 2) {
-      xoap_cc = std::string("?cc=*&link=xoap&prod=xoap&par=") + par +
-                "&key=" + key + "&unit=m";
-
-      /* TODO: Use FORECAST_DAYS instead of 5 */
-      xoap_df = std::string("?dayf=5&link=xoap&prod=xoap&par=") + par +
-                "&key=" + key + "&unit=m";
-    }
-    fclose(fp);
-  }
-  free(par);
-  free(key);
-}
-
-void scan_weather_forecast_arg(struct text_object *obj, const char *arg,
-                               void *free_at_crash) {
-  int argc;
-  struct weather_forecast_data *wfd;
-  float interval = 0;
-  char *locID = (char *)malloc(9 * sizeof(char));
-
-  wfd = (struct weather_forecast_data *)malloc(
-      sizeof(struct weather_forecast_data));
-  memset(wfd, 0, sizeof(struct weather_forecast_data));
-
-  argc = sscanf(arg, "%119s %8s %1u %31s %f", wfd->uri, locID, &wfd->day,
-                wfd->data_type, &interval);
-
-  if (argc < 4) {
-    free(locID);
-    free(wfd);
-    CRIT_ERR(obj, free_at_crash,
-             "wrong number of arguments for $weather_forecast");
-  }
-  if (process_weather_uri(wfd->uri, locID, 1)) {
-    free(locID);
-    free(wfd);
-    CRIT_ERR(obj, free_at_crash,
-             "could not recognize the weather forecast uri");
-  }
-
-  /* Limit the day between 0 (today) and FORECAST_DAYS */
-  if (wfd->day >= FORECAST_DAYS) { wfd->day = FORECAST_DAYS - 1; }
-
-  /* Limit the data retrieval interval to 3 hours and an half */
-  if (interval < 210) { interval = 210; }
-
-  /* Convert to seconds */
-  wfd->interval = interval * 60;
-  free(locID);
-
-  DBGP("weather_forecast: fetching %s for day %d from %s every %d seconds",
-       wfd->data_type, wfd->day, wfd->uri, wfd->interval);
-
-  obj->data.opaque = wfd;
-}
-
-void print_weather_forecast(struct text_object *obj, char *p, unsigned int p_max_size) {
-  struct weather_forecast_data *wfd =
-      (struct weather_forecast_data *)obj->data.opaque;
-
-  if (!wfd || !wfd->uri) {
-    NORM_ERR(
-        "error processing weather forecast data, check that you have a valid "
-        "XOAP key if using XOAP.");
-    return;
-  }
-  weather_forecast_process_info(p, p_max_size, wfd->uri, wfd->day,
-                                wfd->data_type, wfd->interval);
-}
-#endif /* BUILD_WEATHER_XOAP */
 
 void scan_weather_arg(struct text_object *obj, const char *arg,
                       void *free_at_crash) {
@@ -999,9 +589,7 @@ void print_weather(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct weather_data *wd = (struct weather_data *)obj->data.opaque;
 
   if (!wd || !wd->uri) {
-    NORM_ERR(
-        "error processing weather data, check that you have a valid XOAP key "
-        "if using XOAP.");
+    NORM_ERR("error processing weather data");
     return;
   }
   weather_process_info(p, p_max_size, wd->uri, wd->data_type, wd->interval);

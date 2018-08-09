@@ -74,7 +74,7 @@
 #include <netinet/in.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#if defined BUILD_WEATHER_XOAP || defined BUILD_RSS
+#if defined BUILD_RSS
 #include <libxml/parser.h>
 #endif
 #ifdef BUILD_CURL
@@ -301,9 +301,6 @@ static void print_version() {
 #ifdef BUILD_WEATHER_METAR
             << _("  * Weather (METAR)\n")
 #endif /* BUILD_WEATHER_METAR */
-#ifdef BUILD_WEATHER_XOAP
-            << _("  * Weather (XOAP)\n")
-#endif /* BUILD_WEATHER_XOAP */
 #ifdef BUILD_WLAN
             << _("  * wireless\n")
 #endif /* BUILD_WLAN */
@@ -2598,7 +2595,7 @@ void clean_up_without_threads(void *memtofree1, void *memtofree2) {
   tcp_portmon_clear();
 #endif
   llua_shutdown_hook();
-#if defined BUILD_WEATHER_XOAP || defined BUILD_RSS
+#if defined BUILD_RSS
   xmlCleanupParser();
 #endif
 
@@ -3049,9 +3046,6 @@ void initialisation(int argc, char **argv) {
   X11_create_window();
 #endif /* BUILD_X11 */
   llua_setup_info(&info, active_update_interval());
-#ifdef BUILD_WEATHER_XOAP
-  xmlInitParser();
-#endif /* BUILD_WEATHER_XOAP */
 
   /* Set signal handlers */
   act.sa_handler = signal_handler;
@@ -3149,11 +3143,6 @@ int main(int argc, char **argv) {
     state = std::make_unique<lua::state>();
 
     conky::export_symbols(*state);
-
-#ifdef BUILD_WEATHER_XOAP
-    /* Load xoap keys, if existing */
-    load_xoap_keys();
-#endif /* BUILD_WEATHER_XOAP */
 
 #ifdef HAVE_SYS_INOTIFY_H
     // the file descriptor will be automatically closed on exit
