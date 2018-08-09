@@ -32,9 +32,9 @@
 
 #ifdef __x86_64__
 uintmax_t rdtsc(void);
-void get_cpu_clock_speed(char *, int);
+void get_cpu_clock_speed(char *, unsigned int);
 uint8_t has_tsc_reg(void);
-void print_freq2(struct text_object *, char *, int);
+void print_freq2(struct text_object *, char *, unsigned int);
 #endif /* __x86_64__ */
 
 #endif /* _CPU_H */

@@ -109,20 +109,20 @@ void set_transparent_background(Window win);
 void get_x11_desktop_info(Display *current_display, Atom atom);
 void set_struts(int);
 
-void print_monitor(struct text_object *, char *, int);
-void print_monitor_number(struct text_object *, char *, int);
-void print_desktop(struct text_object *, char *, int);
-void print_desktop_number(struct text_object *, char *, int);
-void print_desktop_name(struct text_object *, char *, int);
+void print_monitor(struct text_object *, char *, unsigned int);
+void print_monitor_number(struct text_object *, char *, unsigned int);
+void print_desktop(struct text_object *, char *, unsigned int);
+void print_desktop_number(struct text_object *, char *, unsigned int);
+void print_desktop_name(struct text_object *, char *, unsigned int);
 
 /* Num lock, Scroll lock, Caps Lock */
-void print_num_led(struct text_object *, char *, int);
-void print_caps_led(struct text_object *, char *, int);
-void print_scroll_led(struct text_object *, char *, int);
+void print_num_led(struct text_object *, char *, unsigned int);
+void print_caps_led(struct text_object *, char *, unsigned int);
+void print_scroll_led(struct text_object *, char *, unsigned int);
 
 /* Keyboard layout and mouse speed in percentage */
-void print_kb_layout(struct text_object *, char *, int);
-void print_mouse_speed(struct text_object *, char *, int);
+void print_kb_layout(struct text_object *, char *, unsigned int);
+void print_mouse_speed(struct text_object *, char *, unsigned int);
 
 #ifdef BUILD_XDBE
 void xdbe_swap_buffers(void);
@@ -168,6 +168,7 @@ class own_window_setting : public conky::simple_config_setting<bool> {
   own_window_setting() : Base("own_window", false, false) {}
 };
 
+#ifdef BUILD_XDBE
 class use_xdbe_setting : public conky::simple_config_setting<bool> {
   typedef conky::simple_config_setting<bool> Base;
 
@@ -180,6 +181,7 @@ class use_xdbe_setting : public conky::simple_config_setting<bool> {
   use_xdbe_setting() : Base("double_buffer", false, false) {}
 };
 
+#else
 class use_xpmdb_setting : public conky::simple_config_setting<bool> {
   typedef conky::simple_config_setting<bool> Base;
 
@@ -191,6 +193,7 @@ class use_xpmdb_setting : public conky::simple_config_setting<bool> {
  public:
   use_xpmdb_setting() : Base("double_buffer", false, false) {}
 };
+#endif
 
 struct colour_traits {
   static const lua::Type type = lua::TSTRING;

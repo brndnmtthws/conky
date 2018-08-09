@@ -84,7 +84,7 @@ struct font_list {
 
 /* direct access to registered fonts (FIXME: bad encapsulation) */
 extern std::vector<font_list> fonts;
-extern int selected_font;
+extern unsigned int selected_font;
 
 void setup_fonts(void);
 void set_font(void);

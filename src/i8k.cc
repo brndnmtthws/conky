@@ -102,12 +102,12 @@ static void print_i8k_fan_status(char *p, int p_max_size, const char *status) {
 }
 
 void print_i8k_left_fan_status(struct text_object *obj, char *p,
-                               int p_max_size) {
+                               unsigned int p_max_size) {
   (void)obj;
   print_i8k_fan_status(p, p_max_size, i8k.left_fan_status);
 }
 
-void print_i8k_cpu_temp(struct text_object *obj, char *p, int p_max_size) {
+void print_i8k_cpu_temp(struct text_object *obj, char *p, unsigned int p_max_size) {
   int cpu_temp;
 
   (void)obj;
@@ -117,12 +117,12 @@ void print_i8k_cpu_temp(struct text_object *obj, char *p, int p_max_size) {
 }
 
 void print_i8k_right_fan_status(struct text_object *obj, char *p,
-                                int p_max_size) {
+                                unsigned int p_max_size) {
   (void)obj;
   print_i8k_fan_status(p, p_max_size, i8k.right_fan_status);
 }
 
-void print_i8k_ac_status(struct text_object *obj, char *p, int p_max_size) {
+void print_i8k_ac_status(struct text_object *obj, char *p, unsigned int p_max_size) {
   int ac_status;
 
   (void)obj;
@@ -140,7 +140,8 @@ void print_i8k_ac_status(struct text_object *obj, char *p, int p_max_size) {
 }
 
 #define I8K_PRINT_GENERATOR(name)                                           \
-  void print_i8k_##name(struct text_object *obj, char *p, int p_max_size) { \
+  void print_i8k_##name(struct text_object *obj, char *p,                   \
+		                                 unsigned int p_max_size) { \
     (void)obj;                                                              \
     snprintf(p, p_max_size, "%s", i8k.name);                                \
   }

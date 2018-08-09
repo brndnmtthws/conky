@@ -332,7 +332,7 @@ void scan_loadavg_arg(struct text_object *obj, const char *arg) {
   obj->data.i--;
 }
 
-void print_loadavg(struct text_object *obj, char *p, int p_max_size) {
+void print_loadavg(struct text_object *obj, char *p, unsigned int p_max_size) {
   float *v = info.loadavg;
 
   if (obj->data.i < 0) {
@@ -351,7 +351,7 @@ void scan_no_update(struct text_object *obj, const char *arg) {
 
 void free_no_update(struct text_object *obj) { free(obj->data.s); }
 
-void print_no_update(struct text_object *obj, char *p, int p_max_size) {
+void print_no_update(struct text_object *obj, char *p, unsigned int p_max_size) {
   snprintf(p, p_max_size, "%s", obj->data.s);
 }
 
@@ -371,7 +371,7 @@ double loadgraphval(struct text_object *obj) {
 #endif /* BUILD_X11 */
 
 uint8_t cpu_percentage(struct text_object *obj) {
-  if (obj->data.i > info.cpu_count) {
+  if ((unsigned int) obj->data.i > info.cpu_count) {
     NORM_ERR("obj->data.i %i info.cpu_count %i", obj->data.i, info.cpu_count);
     CRIT_ERR(nullptr, nullptr, "attempting to use more CPUs than you have!");
   }
@@ -389,8 +389,10 @@ double cpu_barval(struct text_object *obj) {
 }
 
 #define PRINT_HR_GENERATOR(name)                                        \
-  void print_##name(struct text_object *obj, char *p, int p_max_size) { \
-    human_readable(apply_base_multiplier(obj->data.s, info.name), p, p_max_size);                    \
+  void print_##name(struct text_object *obj, char *p,                   \
+		                             unsigned int p_max_size) { \
+    human_readable(apply_base_multiplier(obj->data.s, info.name), p,    \
+		                                           p_max_size); \
   }
 
 PRINT_HR_GENERATOR(mem)
@@ -437,22 +439,22 @@ double swap_barval(struct text_object *obj) {
                             : 0;
 }
 
-void print_kernel(struct text_object *obj, char *p, int p_max_size) {
+void print_kernel(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   snprintf(p, p_max_size, "%s", info.uname_s.release);
 }
 
-void print_machine(struct text_object *obj, char *p, int p_max_size) {
+void print_machine(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   snprintf(p, p_max_size, "%s", info.uname_s.machine);
 }
 
-void print_nodename(struct text_object *obj, char *p, int p_max_size) {
+void print_nodename(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   snprintf(p, p_max_size, "%s", info.uname_s.nodename);
 }
 
-void print_nodename_short(struct text_object *obj, char *p, int p_max_size) {
+void print_nodename_short(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   snprintf(p, p_max_size, "%s", info.uname_s.nodename);
   for (int i = 0; p[i] != 0; i++) {
@@ -463,57 +465,57 @@ void print_nodename_short(struct text_object *obj, char *p, int p_max_size) {
   }
 }
 
-void print_sysname(struct text_object *obj, char *p, int p_max_size) {
+void print_sysname(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   snprintf(p, p_max_size, "%s", info.uname_s.sysname);
 }
 
 #if defined(__DragonFly__)
-void print_version(struct text_object *obj, char *p, int p_max_size) {
+void print_version(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   snprintf(p, p_max_size, "%s", info.uname_v);
 }
 #endif
 
-void print_uptime(struct text_object *obj, char *p, int p_max_size) {
+void print_uptime(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   format_seconds(p, p_max_size, static_cast<int>(info.uptime));
 }
 
-void print_uptime_short(struct text_object *obj, char *p, int p_max_size) {
+void print_uptime_short(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   format_seconds_short(p, p_max_size, static_cast<int>(info.uptime));
 }
 
-void print_processes(struct text_object *obj, char *p, int p_max_size) {
+void print_processes(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   spaced_print(p, p_max_size, "%hu", 4, info.procs);
 }
 
-void print_running_processes(struct text_object *obj, char *p, int p_max_size) {
+void print_running_processes(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   spaced_print(p, p_max_size, "%hu", 4, info.run_procs);
 }
 
-void print_running_threads(struct text_object *obj, char *p, int p_max_size) {
+void print_running_threads(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   spaced_print(p, p_max_size, "%hu", 4, info.run_threads);
 }
 
-void print_threads(struct text_object *obj, char *p, int p_max_size) {
+void print_threads(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   spaced_print(p, p_max_size, "%hu", 4, info.threads);
 }
 
-void print_buffers(struct text_object *obj, char *p, int p_max_size) {
+void print_buffers(struct text_object *obj, char *p, unsigned int p_max_size) {
   human_readable(apply_base_multiplier(obj->data.s, info.buffers), p, p_max_size);
 }
 
-void print_cached(struct text_object *obj, char *p, int p_max_size) {
+void print_cached(struct text_object *obj, char *p, unsigned int p_max_size) {
   human_readable(apply_base_multiplier(obj->data.s, info.cached), p, p_max_size);
 }
 
-void print_evaluate(struct text_object *obj, char *p, int p_max_size) {
+void print_evaluate(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::vector<char> buf(text_buffer_size.get(*state));
   evaluate(obj->data.s, &buf[0], buf.size());
   evaluate(&buf[0], p, p_max_size);
@@ -582,21 +584,21 @@ int if_running_iftest(struct text_object *obj) {
 }
 
 #ifndef __OpenBSD__
-void print_acpitemp(struct text_object *obj, char *p, int p_max_size) {
+void print_acpitemp(struct text_object *obj, char *p, unsigned int p_max_size) {
   temp_print(p, p_max_size, get_acpi_temperature(obj->data.i), TEMP_CELSIUS, 1);
 }
 
 void free_acpitemp(struct text_object *obj) { close(obj->data.i); }
 #endif /* !__OpenBSD__ */
 
-void print_freq(struct text_object *obj, char *p, int p_max_size) {
+void print_freq(struct text_object *obj, char *p, unsigned int p_max_size) {
   static int ok = 1;
   if (ok != 0) {
     ok = get_freq(p, p_max_size, "%.0f", 1, obj->data.i);
   }
 }
 
-void print_freq_g(struct text_object *obj, char *p, int p_max_size) {
+void print_freq_g(struct text_object *obj, char *p, unsigned int p_max_size) {
   static int ok = 1;
   if (ok != 0) {
 #ifndef __OpenBSD__
@@ -609,21 +611,21 @@ void print_freq_g(struct text_object *obj, char *p, int p_max_size) {
 }
 
 #ifndef __OpenBSD__
-void print_acpifan(struct text_object *obj, char *p, int p_max_size) {
+void print_acpifan(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   get_acpi_fan(p, p_max_size);
 }
 
-void print_acpiacadapter(struct text_object *obj, char *p, int p_max_size) {
+void print_acpiacadapter(struct text_object *obj, char *p, unsigned int p_max_size) {
   get_acpi_ac_adapter(p, p_max_size,
                       static_cast<const char *>(obj->data.opaque));
 }
 
-void print_battery(struct text_object *obj, char *p, int p_max_size) {
+void print_battery(struct text_object *obj, char *p, unsigned int p_max_size) {
   get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_STATUS);
 }
 
-void print_battery_time(struct text_object *obj, char *p, int p_max_size) {
+void print_battery_time(struct text_object *obj, char *p, unsigned int p_max_size) {
   get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_TIME);
 }
 
@@ -631,12 +633,12 @@ uint8_t battery_percentage(struct text_object *obj) {
   return get_battery_perct(obj->data.s);
 }
 
-void print_battery_short(struct text_object *obj, char *p, int p_max_size) {
+void print_battery_short(struct text_object *obj, char *p, unsigned int p_max_size) {
   get_battery_short_status(p, p_max_size, obj->data.s);
 }
 #endif /* !__OpenBSD__ */
 
-void print_blink(struct text_object *obj, char *p, int p_max_size) {
+void print_blink(struct text_object *obj, char *p, unsigned int p_max_size) {
   // blinking like this can look a bit ugly if the chars in the font don't have
   // the same width
   std::vector<char> buf(max_user_text.get(*state));
@@ -657,7 +659,7 @@ void print_blink(struct text_object *obj, char *p, int p_max_size) {
   visible = static_cast<int>(static_cast<int>(visible) == 0);
 }
 
-void print_include(struct text_object *obj, char *p, int p_max_size) {
+void print_include(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::vector<char> buf(max_user_text.get(*state));
 
   if (obj->sub == nullptr) {
@@ -669,7 +671,7 @@ void print_include(struct text_object *obj, char *p, int p_max_size) {
 }
 
 #ifdef BUILD_CURL
-void print_stock(struct text_object *obj, char *p, int p_max_size) {
+void print_stock(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (!obj->data.s) {
     p[0] = 0;
     return;
@@ -680,7 +682,7 @@ void print_stock(struct text_object *obj, char *p, int p_max_size) {
 void free_stock(struct text_object *obj) { free(obj->data.s); }
 #endif /* BUILD_CURL */
 
-void print_to_bytes(struct text_object *obj, char *p, int p_max_size) {
+void print_to_bytes(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::vector<char> buf(max_user_text.get(*state));
   long double bytes;
   char unit[16];  // 16 because we can also have long names (like mega-bytes)
@@ -705,7 +707,7 @@ void print_to_bytes(struct text_object *obj, char *p, int p_max_size) {
   snprintf(p, p_max_size, "%s", &(buf[0]));
 }
 
-void print_updates(struct text_object *obj, char *p, int p_max_size) {
+void print_updates(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   snprintf(p, p_max_size, "%d", get_total_updates());
 }

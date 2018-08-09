@@ -72,7 +72,7 @@ speed:          2944
 commands:       enable, disable
  * Peter Tarjan (ptarjan@citromail.hu) */
 
-void get_ibm_acpi_fan(struct text_object *obj, char *p, int p_max_size) {
+void get_ibm_acpi_fan(struct text_object *obj, char *p, unsigned int p_max_size) {
   FILE *fp;
   unsigned int speed = 0;
   char fan[128];
@@ -171,7 +171,7 @@ commands:       up, down, mute
 commands:       level <level> (<level> is 0-15)
  * Peter Tarjan (ptarjan@citromail.hu) */
 
-void get_ibm_acpi_volume(struct text_object *obj, char *p, int p_max_size) {
+void get_ibm_acpi_volume(struct text_object *obj, char *p, unsigned int p_max_size) {
   FILE *fp;
   char volume[128];
   unsigned int vol = -1;
@@ -226,7 +226,7 @@ commands:       up, down
 commands:       level <level> (<level> is 0-7)
  * Peter Tarjan (ptarjan@citromail.hu) */
 
-void get_ibm_acpi_brightness(struct text_object *obj, char *p, int p_max_size) {
+void get_ibm_acpi_brightness(struct text_object *obj, char *p, unsigned int p_max_size) {
   FILE *fp;
   unsigned int brightness = 0;
   char filename[128];
@@ -271,7 +271,7 @@ commands:       on, off
  * get "unknown" for a few models that do not make the status available.
  * Lluis Esquerda (eskerda@gmail.com) */
 
-void get_ibm_acpi_thinklight(struct text_object *obj, char *p, int p_max_size) {
+void get_ibm_acpi_thinklight(struct text_object *obj, char *p, unsigned int p_max_size) {
   FILE *fp;
   char thinklight[8];
   char filename[128];
@@ -317,6 +317,6 @@ void parse_ibm_temps_arg(struct text_object *obj, const char *arg) {
     obj->data.l = atoi(arg);
 }
 
-void print_ibm_temps(struct text_object *obj, char *p, int p_max_size) {
+void print_ibm_temps(struct text_object *obj, char *p, unsigned int p_max_size) {
   temp_print(p, p_max_size, ibm_acpi_temps[obj->data.l], TEMP_CELSIUS, 1);
 }

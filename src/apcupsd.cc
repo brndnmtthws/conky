@@ -161,7 +161,7 @@ static int fill_items(int sock, PAPCUPSD_S apc) {
     FILL("MODEL", APCUPSD_MODEL, FALSE);
     FILL("UPSMODE", APCUPSD_UPSMODE, FALSE);
     FILL("CABLE", APCUPSD_CABLE, FALSE);
-    FILL("STATUS", APCUPSD_STATUS, FALSE);
+    FILL("STATUS", APCUPSD_STATUS, TRUE);
     FILL("LINEV", APCUPSD_LINEV, TRUE);
     FILL("LOADPCT", APCUPSD_LOAD, TRUE);
     FILL("BCHARGE", APCUPSD_CHARGE, TRUE);
@@ -266,7 +266,7 @@ double apcupsd_loadbarval(struct text_object *obj) {
 
 #define APCUPSD_PRINT_GENERATOR(name, idx)                       \
   void print_apcupsd_##name(struct text_object *obj, char *p,    \
-                            int p_max_size) {                    \
+                            unsigned int p_max_size) {           \
     (void)obj;                                                   \
     snprintf(p, p_max_size, "%s", apcupsd.items[APCUPSD_##idx]); \
   }

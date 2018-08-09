@@ -131,7 +131,7 @@ seeya:
 }
 
 void
-get_cpu_clock_speed(char *str1, int p_max_size) {
+get_cpu_clock_speed(char *str1, unsigned int p_max_size) {
   uintmax_t x = 0;
   uintmax_t z = 0;
   struct timespec tc = {0L, 0L};
@@ -147,7 +147,7 @@ get_cpu_clock_speed(char *str1, int p_max_size) {
   snprintf(str1, p_max_size, FMT_UINT " MHz", ((z - x) / 100000U));
 }
 
-void print_freq2(struct text_object *obj, char *p, int p_max_size) {
+void print_freq2(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   get_cpu_clock_speed(p, p_max_size);
 }

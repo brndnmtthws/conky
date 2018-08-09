@@ -32,12 +32,12 @@
 #include "conky.h"
 #include "logging.h"
 
-#include "x11.h"
+#include <X11/XKBlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>
 #include <X11/Xutil.h>
-#include <X11/XKBlib.h>
+#include "x11.h"
 #ifdef BUILD_IMLIB2
 #include "imlib2.h"
 #endif /* BUILD_IMLIB2 */
@@ -83,9 +83,7 @@ void out_to_x_setting::lua_setter(lua::state &l, bool init) {
 
   Base::lua_setter(l, init);
 
-  if (init && do_convert(l, -1).first) {
-    init_X11();
-  }
+  if (init && do_convert(l, -1).first) { init_X11(); }
 
   ++s;
 }
@@ -93,9 +91,7 @@ void out_to_x_setting::lua_setter(lua::state &l, bool init) {
 void out_to_x_setting::cleanup(lua::state &l) {
   lua::stack_sentry s(l, -1);
 
-  if (do_convert(l, -1).first) {
-    deinit_X11();
-  }
+  if (do_convert(l, -1).first) { deinit_X11(); }
 
   l.pop();
 }
@@ -130,9 +126,7 @@ void own_window_setting::lua_setter(lua::state &l, bool init) {
 #ifdef BUILD_XDBE
 bool use_xdbe_setting::set_up(lua::state &l) {
   // double_buffer makes no sense when not drawing to X
-  if (not out_to_x.get(l)) {
-    return false;
-  }
+  if (!out_to_x.get(l)) { return false; }
 
   int major, minor;
 
@@ -160,7 +154,7 @@ void use_xdbe_setting::lua_setter(lua::state &l, bool init) {
   Base::lua_setter(l, init);
 
   if (init && do_convert(l, -1).first) {
-    if (not set_up(l)) {
+    if (!set_up(l)) {
       l.pop();
       l.pushboolean(false);
     }
@@ -175,7 +169,7 @@ void use_xdbe_setting::lua_setter(lua::state &l, bool init) {
 #else
 bool use_xpmdb_setting::set_up(lua::state &l) {
   // double_buffer makes no sense when not drawing to X
-  if (not out_to_x.get(l)) return false;
+  if (!out_to_x.get(l)) return false;
 
   window.back_buffer =
       XCreatePixmap(display, window.window, window.width + 1, window.height + 1,
@@ -197,7 +191,7 @@ void use_xpmdb_setting::lua_setter(lua::state &l, bool init) {
   Base::lua_setter(l, init);
 
   if (init && do_convert(l, -1).first) {
-    if (not set_up(l)) {
+    if (!set_up(l)) {
       l.pop();
       l.pushboolean(false);
     }
@@ -213,7 +207,7 @@ void use_xpmdb_setting::lua_setter(lua::state &l, bool init) {
 void colour_setting::lua_setter(lua::state &l, bool init) {
   lua::stack_sentry s(l, -2);
 
-  if (not out_to_x.get(l)) {
+  if (!out_to_x.get(l)) {
     // ignore if we're not using X
     l.replace(-2);
   } else {
@@ -266,8 +260,6 @@ conky::lua_traits<window_hints>::Map conky::lua_traits<window_hints>::map = {
 
 std::pair<uint16_t, bool> window_hints_traits::convert(
     lua::state &l, int index, const std::string &name) {
-  using Traits = conky::lua_traits<window_hints>;
-
   lua::stack_sentry s(l);
   l.checkstack(1);
 
@@ -281,9 +273,7 @@ std::pair<uint16_t, bool> window_hints_traits::convert(
     if (newpos > pos) {
       l.pushstring(hints.substr(pos, newpos - pos));
       auto t = conky::lua_traits<window_hints>::convert(l, -1, name);
-      if (not t.second) {
-        return {0, false};
-      };
+      if (!t.second) { return {0, false}; }
       SET_HINT(ret, t.first);
       l.pop();
     }
@@ -455,7 +445,8 @@ static void update_workarea() {
   XineramaScreenInfo *si = XineramaQueryScreens(display, &heads);
   if (si == nullptr) {
     NORM_ERR(
-        "warning: XineramaQueryScreen returned nullptr, ignoring head settings");
+        "warning: XineramaQueryScreen returned nullptr, ignoring head "
+        "settings");
     return; /* queryscreens failed? */
   }
 
@@ -491,9 +482,7 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop) {
   Window troot, parent, *children;
   unsigned char *buf = nullptr;
 
-  if ((p_root == nullptr) || (p_desktop == nullptr)) {
-    return 0;
-  }
+  if ((p_root == nullptr) || (p_desktop == nullptr)) { return 0; }
 
   /* some window managers set __SWM_VROOT to some child of root window */
 
@@ -627,13 +616,9 @@ static int get_argb_visual(Visual **visual, int *depth) {
 
 void destroy_window() {
 #ifdef BUILD_XFT
-  if (window.xftdraw != nullptr) {
-    XftDrawDestroy(window.xftdraw);
-  }
+  if (window.xftdraw != nullptr) { XftDrawDestroy(window.xftdraw); }
 #endif /* BUILD_XFT */
-  if (window.gc != nullptr) {
-    XFreeGC(display, window.gc);
-  }
+  if (window.gc != nullptr) { XFreeGC(display, window.gc); }
   memset(&window, 0, sizeof(struct conky_window));
 }
 
@@ -648,9 +633,7 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
     int depth = 0, flags = CWOverrideRedirect | CWBackingStore;
     Visual *visual = nullptr;
 
-    if (find_desktop_window(&window.root, &window.desktop) == 0u) {
-      return;
-    }
+    if (find_desktop_window(&window.root, &window.desktop) == 0U) { return; }
 
 #ifdef BUILD_ARGB
     if (use_argb_visual.get(l) && (get_argb_visual(&visual, &depth) != 0)) {
@@ -672,9 +655,7 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
             border_outer_margin.get(l);
 
     /* Sanity check to avoid making an invalid 0x0 window */
-    if (b == 0) {
-      b = 1;
-    }
+    if (b == 0) { b = 1; }
 
     if (own_window_type.get(l) == TYPE_OVERRIDE) {
       /* An override_redirect True window.
@@ -750,9 +731,7 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
       }
 #endif /* BUILD_ARGB */
 
-      if (own_window_type.get(l) == TYPE_DOCK) {
-        window.x = window.y = 0;
-      }
+      if (own_window_type.get(l) == TYPE_DOCK) { window.x = window.y = 0; }
       /* Parent is root window so WM can take control */
       window.window =
           XCreateWindow(display, window.root, window.x, window.y, b, b, 0,
@@ -1003,9 +982,7 @@ static Window find_subwindow(Window win, int w, int h) {
     }
 
     XFree(children);
-    if (j == n) {
-      break;
-    }
+    if (j == n) { break; }
   }
 
   return win;
@@ -1030,9 +1007,7 @@ static inline void get_x11_desktop_current(Display *current_display,
   unsigned char *prop = nullptr;
   struct information *current_info = &info;
 
-  if (atom == None) {
-    return;
-  }
+  if (atom == None) { return; }
 
   if ((XGetWindowProperty(current_display, root, atom, 0, 1L, False,
                           XA_CARDINAL, &actual_type, &actual_format, &nitems,
@@ -1040,9 +1015,7 @@ static inline void get_x11_desktop_current(Display *current_display,
       (actual_type == XA_CARDINAL) && (nitems == 1L) && (actual_format == 32)) {
     current_info->x11.desktop.current = prop[0] + 1;
   }
-  if (prop != nullptr) {
-    XFree(prop);
-  }
+  if (prop != nullptr) { XFree(prop); }
 }
 
 // Get total number of available desktops
@@ -1055,9 +1028,7 @@ static inline void get_x11_desktop_number(Display *current_display, Window root,
   unsigned char *prop = nullptr;
   struct information *current_info = &info;
 
-  if (atom == None) {
-    return;
-  }
+  if (atom == None) { return; }
 
   if ((XGetWindowProperty(current_display, root, atom, 0, 1L, False,
                           XA_CARDINAL, &actual_type, &actual_format, &nitems,
@@ -1065,9 +1036,7 @@ static inline void get_x11_desktop_number(Display *current_display, Window root,
       (actual_type == XA_CARDINAL) && (nitems == 1L) && (actual_format == 32)) {
     current_info->x11.desktop.number = prop[0];
   }
-  if (prop != nullptr) {
-    XFree(prop);
-  }
+  if (prop != nullptr) { XFree(prop); }
 }
 
 // Get all desktop names
@@ -1080,9 +1049,7 @@ static inline void get_x11_desktop_names(Display *current_display, Window root,
   unsigned char *prop = nullptr;
   struct information *current_info = &info;
 
-  if (atom == None) {
-    return;
-  }
+  if (atom == None) { return; }
 
   if ((XGetWindowProperty(current_display, root, atom, 0, (~0L), False,
                           ATOM(UTF8_STRING), &actual_type, &actual_format,
@@ -1092,9 +1059,7 @@ static inline void get_x11_desktop_names(Display *current_display, Window root,
     current_info->x11.desktop.all_names.assign(
         reinterpret_cast<const char *>(prop), nitems);
   }
-  if (prop != nullptr) {
-    XFree(prop);
-  }
+  if (prop != nullptr) { XFree(prop); }
 }
 
 // Get current desktop name
@@ -1156,7 +1121,7 @@ void get_x11_desktop_info(Display *current_display, Atom atom) {
 
 static const char NOT_IN_X[] = "Not running in X";
 
-void print_monitor(struct text_object *obj, char *p, int p_max_size) {
+void print_monitor(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
 
   if (not out_to_x.get(*state)) {
@@ -1166,7 +1131,8 @@ void print_monitor(struct text_object *obj, char *p, int p_max_size) {
   snprintf(p, p_max_size, "%d", XDefaultScreen(display));
 }
 
-void print_monitor_number(struct text_object *obj, char *p, int p_max_size) {
+void print_monitor_number(struct text_object *obj, char *p,
+                          unsigned int p_max_size) {
   (void)obj;
 
   if (not out_to_x.get(*state)) {
@@ -1176,7 +1142,7 @@ void print_monitor_number(struct text_object *obj, char *p, int p_max_size) {
   snprintf(p, p_max_size, "%d", XScreenCount(display));
 }
 
-void print_desktop(struct text_object *obj, char *p, int p_max_size) {
+void print_desktop(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
 
   if (not out_to_x.get(*state)) {
@@ -1186,7 +1152,8 @@ void print_desktop(struct text_object *obj, char *p, int p_max_size) {
   snprintf(p, p_max_size, "%d", info.x11.desktop.current);
 }
 
-void print_desktop_number(struct text_object *obj, char *p, int p_max_size) {
+void print_desktop_number(struct text_object *obj, char *p,
+                          unsigned int p_max_size) {
   (void)obj;
 
   if (not out_to_x.get(*state)) {
@@ -1196,7 +1163,8 @@ void print_desktop_number(struct text_object *obj, char *p, int p_max_size) {
   snprintf(p, p_max_size, "%d", info.x11.desktop.number);
 }
 
-void print_desktop_name(struct text_object *obj, char *p, int p_max_size) {
+void print_desktop_name(struct text_object *obj, char *p,
+                        unsigned int p_max_size) {
   (void)obj;
 
   if (not out_to_x.get(*state)) {
@@ -1250,13 +1218,9 @@ void set_struts(int sidenum) {
         sizes[i] = 0;
       } else {
         if (i <= 1 || i >= 8) {
-          if (sizes[i] > display_width) {
-            sizes[i] = display_width;
-          }
+          if (sizes[i] > display_width) { sizes[i] = display_width; }
         } else {
-          if (sizes[i] > display_height) {
-            sizes[i] = display_height;
-          }
+          if (sizes[i] > display_height) { sizes[i] = display_height; }
         }
       }
     }
@@ -1297,19 +1261,29 @@ void xpmdb_swap_buffers(void) {
 }
 #endif /* BUILD_XDBE */
 
-#define LOCK_TEMPLATE(func, num) \
-void print_##func(struct text_object *obj, char *p, int p_max_size) { \
-  (void)obj; \
-  XKeyboardState x; \
-  XGetKeyboardControl(display, &x); \
-  snprintf(p, p_max_size, "%s", (x.led_mask & num ? "On" : "Off")); \
+void print_kdb_led(const int keybit, char *p, unsigned int p_max_size) {
+  XKeyboardState x;
+  XGetKeyboardControl(display, &x);
+  snprintf(p, p_max_size, "%s", (x.led_mask & keybit ? "On" : "Off"));
+}
+void print_caps_led(struct text_object *obj, char *p, unsigned int p_max_size) {
+  (void)obj;
+  print_kdb_led(1, p, p_max_size);
 }
 
-LOCK_TEMPLATE(num_led, 2)
-LOCK_TEMPLATE(caps_led, 1)
-LOCK_TEMPLATE(scroll_led, 4)
+void print_num_led(struct text_object *obj, char *p, unsigned int p_max_size) {
+  (void)obj;
+  print_kdb_led(2, p, p_max_size);
+}
 
-void print_kb_layout(struct text_object *obj, char *p, int p_max_size) {
+void print_scroll_led(struct text_object *obj, char *p,
+                      unsigned int p_max_size) {
+  (void)obj;
+  print_kdb_led(4, p, p_max_size);
+}
+
+void print_kb_layout(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   (void)obj;
 
   char *group = NULL;
@@ -1324,7 +1298,8 @@ void print_kb_layout(struct text_object *obj, char *p, int p_max_size) {
   XFree(group);
 }
 
-void print_mouse_speed(struct text_object *obj, char *p, int p_max_size) {
+void print_mouse_speed(struct text_object *obj, char *p,
+                       unsigned int p_max_size) {
   (void)obj;
   int acc_num = 0;
   int acc_denom = 0;

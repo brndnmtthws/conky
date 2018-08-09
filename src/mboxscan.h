@@ -31,7 +31,7 @@
 #define _MBOXSCAN_H_
 
 void parse_mboxscan_arg(struct text_object *, const char *);
-void print_mboxscan(struct text_object *, char *, int);
+void print_mboxscan(struct text_object *, char *, unsigned int);
 void free_mboxscan(struct text_object *);
 
 #endif /* _MBOXSCAN_H_ */

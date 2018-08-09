@@ -91,7 +91,7 @@ struct scroll_data {
 static unsigned int scroll_count_characters_to_right(
     struct scroll_data *sd, const std::vector<char> &buf) {
   unsigned int n = 0;
-  int offset = sd->start;
+  unsigned int offset = sd->start;
 
   while ('\0' != buf[offset] && offset < buf.size()) {
     offset += scroll_character_length(buf[offset]);
@@ -104,19 +104,19 @@ static unsigned int scroll_count_characters_to_right(
 static void scroll_scroll_left(struct scroll_data *sd,
                                const std::vector<char> &buf,
                                unsigned int amount) {
-  for (int i = 0;
-       (i < amount) && (buf[sd->start] != '\0') && (sd->start < buf.size());
+  for (unsigned int i = 0;
+       (i < amount) && (buf[sd->start] != '\0') && ((unsigned int) sd->start < buf.size());
        ++i) {
     sd->start += scroll_character_length(buf[sd->start]);
   }
 
-  if (buf[sd->start] == 0 || sd->start > strlen(buf.data())) { sd->start = 0; }
+  if (buf[sd->start] == 0 || (unsigned int) sd->start > strlen(buf.data())) { sd->start = 0; }
 }
 
 static void scroll_scroll_right(struct scroll_data *sd,
                                 const std::vector<char> &buf,
                                 unsigned int amount) {
-  for (int i = 0; i < amount; ++i) {
+  for (unsigned int i = 0; i < amount; ++i) {
     if (sd->start <= 0) { sd->start = static_cast<int>(strlen(&(buf[0]))); }
 
     while (--(sd->start) >= 0) {
@@ -199,7 +199,7 @@ void parse_scroll_arg(struct text_object *obj, const char *arg,
 #endif /* BUILD_X11 */
 }
 
-void print_scroll(struct text_object *obj, char *p, int p_max_size) {
+void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
   auto *sd = static_cast<struct scroll_data *>(obj->data.opaque);
   unsigned int j, colorchanges = 0, frontcolorchanges = 0,
                   visibcolorchanges = 0, strend;
@@ -229,7 +229,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size) {
   }
   // if length of text changed to shorter so the (sd->start) is already
   // outside of actual text then reset (sd->start)
-  if (sd->start >= strlen(&(buf[0]))) { sd->start = 0; }
+  if ((unsigned int) sd->start >= strlen(&(buf[0]))) { sd->start = 0; }
   // make sure a colorchange at the front is not part of the string we are going
   // to show
   while (buf[sd->start] == SPECIAL_CHAR) { sd->start++; }

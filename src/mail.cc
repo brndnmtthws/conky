@@ -470,7 +470,8 @@ void parse_local_mail_args(struct text_object *obj, const char *arg) {
 }
 
 #define PRINT_MAILS_GENERATOR(x)                                            \
-  void print_##x##mails(struct text_object *obj, char *p, int p_max_size) { \
+  void print_##x##mails(struct text_object *obj, char *p,                   \
+		                                 unsigned int p_max_size) { \
     struct local_mail_s *locmail = (struct local_mail_s *)obj->data.opaque; \
     if (!locmail) return;                                                   \
     update_mail_count(locmail);                                             \
@@ -947,7 +948,7 @@ void imap_cb::work() {
   }
 }
 
-void print_imap_unseen(struct text_object *obj, char *p, int p_max_size) {
+void print_imap_unseen(struct text_object *obj, char *p, unsigned int p_max_size) {
   auto *mail = static_cast<struct mail_param_ex *>(obj->data.opaque);
 
   if (mail == nullptr) {
@@ -959,7 +960,7 @@ void print_imap_unseen(struct text_object *obj, char *p, int p_max_size) {
   snprintf(p, p_max_size, "%lu", cb->get_result_copy().unseen);
 }
 
-void print_imap_messages(struct text_object *obj, char *p, int p_max_size) {
+void print_imap_messages(struct text_object *obj, char *p, unsigned int p_max_size) {
   auto *mail = static_cast<struct mail_param_ex *>(obj->data.opaque);
 
   if (mail == nullptr) {
@@ -1031,7 +1032,7 @@ void pop3_cb::work() {
   }
 }
 
-void print_pop3_unseen(struct text_object *obj, char *p, int p_max_size) {
+void print_pop3_unseen(struct text_object *obj, char *p, unsigned int p_max_size) {
   auto *mail = static_cast<struct mail_param_ex *>(obj->data.opaque);
 
   if (mail == nullptr) {
@@ -1043,7 +1044,7 @@ void print_pop3_unseen(struct text_object *obj, char *p, int p_max_size) {
   snprintf(p, p_max_size, "%lu", cb->get_result_copy().unseen);
 }
 
-void print_pop3_used(struct text_object *obj, char *p, int p_max_size) {
+void print_pop3_used(struct text_object *obj, char *p, unsigned int p_max_size) {
   auto *mail = static_cast<struct mail_param_ex *>(obj->data.opaque);
 
   if (mail == nullptr) {

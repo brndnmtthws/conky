@@ -190,7 +190,7 @@ struct information {
 
   float *cpu_usage;
   /* struct cpu_stat cpu_summed; what the hell is this? */
-  int cpu_count;
+  unsigned int cpu_count;
 
   float loadavg[3];
 

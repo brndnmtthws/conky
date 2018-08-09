@@ -431,7 +431,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(freq, nullptr) get_cpu_count();
   if ((arg == nullptr) || (isdigit((unsigned char)arg[0]) == 0) ||
       strlen(arg) >= 3 || atoi(&arg[0]) == 0 ||
-      atoi(&arg[0]) > info.cpu_count) {
+      (unsigned int) atoi(&arg[0]) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("freq: Invalid CPU number or you don't have that many CPUs! "
       "Displaying the clock for CPU 1."); */
@@ -442,7 +442,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(freq_g, nullptr) get_cpu_count();
   if ((arg == nullptr) || (isdigit((unsigned char)arg[0]) == 0) ||
       strlen(arg) >= 3 || atoi(&arg[0]) == 0 ||
-      atoi(&arg[0]) > info.cpu_count) {
+      (unsigned int) atoi(&arg[0]) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("freq_g: Invalid CPU number or you don't have that many "
       "CPUs! Displaying the clock for CPU 1."); */
@@ -468,7 +468,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #if defined(__linux__)
   END OBJ(voltage_mv, 0) get_cpu_count();
   if (!arg || !isdigit((unsigned char)arg[0]) || strlen(arg) >= 3 ||
-      atoi(&arg[0]) == 0 || atoi(&arg[0]) > info.cpu_count) {
+      atoi(&arg[0]) == 0 || (unsigned int) atoi(&arg[0]) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("voltage_mv: Invalid CPU number or you don't have that many "
       "CPUs! Displaying voltage for CPU 1."); */
@@ -478,7 +478,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_voltage_mv;
   END OBJ(voltage_v, 0) get_cpu_count();
   if (!arg || !isdigit((unsigned char)arg[0]) || strlen(arg) >= 3 ||
-      atoi(&arg[0]) == 0 || atoi(&arg[0]) > info.cpu_count) {
+      atoi(&arg[0]) == 0 || (unsigned int) atoi(&arg[0]) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("voltage_v: Invalid CPU number or you don't have that many "
       "CPUs! Displaying voltage for CPU 1."); */
