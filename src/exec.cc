@@ -48,33 +48,33 @@ struct execi_data {
   execi_data() = default;
 };
 
-const int cmd_len = 256;
-char cmd[cmd_len];
+static const int cmd_len = 256;
+static char cmd[cmd_len];
 
-static char *escape_quotes(const char *);
-static char *escape_quotes(const char *command) {
-  char *str1 = cmd;
-  const char *str2 = command;
+static char *remove_excess_quotes(const char *);
+static char *remove_excess_quotes(const char *command) {
+  char *cmd_ptr = cmd;
+  const char *command_ptr = command;
   int skip = 0;
-  int x = 0;
 
-  for (; *str2; str2++, x++) {
-    if (0 == skip && 0 == x) {
-      if (*str2 == '"' || *str2 == '\'') {
-        skip = 1;
-        continue;
-      }
-    }
-    if ('\0' == *(str2+1) && 1 == skip) {
-      if (*str2 == '"' || *str2 == '\'') {
-        continue;
-      }
-    }
-    if ((cmd_len - 1) > x) {
-      *str1++ = *str2;
-    }
+  if ((cmd_len - 1) < (strlen(command) - 1)) {
+    snprintf(cmd, cmd_len - 1, "%s", command);
+    return cmd;
   }
-  *str1 = '\0';
+
+  if (*command_ptr == '"' || *command_ptr == '\'') {
+    skip = 1;
+    command_ptr++;
+  }
+
+  for (; *command_ptr; command_ptr++) {
+    if ('\0' == *(command_ptr+1) && 1 == skip &&
+        (*command_ptr == '"' || *command_ptr == '\'')) {
+      continue;
+    }
+    *cmd_ptr++ = *command_ptr;
+  }
+  *cmd_ptr = '\0';
   return cmd;
 }
 
@@ -122,7 +122,7 @@ static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
     if (fcntl(childend, F_DUPFD, 0) == -1) { perror("fcntl()"); }
     close(childend);
 
-    execl("/bin/sh", "sh", "-c", escape_quotes(command), (char *)nullptr);
+    execl("/bin/sh", "sh", "-c", remove_excess_quotes(command), (char *)nullptr);
     _exit(EXIT_FAILURE);  // child should die here, (normally execl will take
                           // care of this but it can fail)
   }
