@@ -30,8 +30,6 @@
 #ifndef WEATHER_H_
 #define WEATHER_H_
 
-void scan_weather_arg(struct text_object *, const char *, void *);
 void print_weather(struct text_object *, char *, unsigned int);
-void free_weather(struct text_object *);
 
 #endif /* WEATHER_H_ */
