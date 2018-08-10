@@ -105,10 +105,9 @@ struct diskio_stat *prepare_diskio_stat(const char *s) {
     if ((stat(&(stat_name[0]), &sb) != 0) || !S_ISBLK(sb.st_mode)) {
       NORM_ERR("diskio device '%s' does not exist", &device_s[0]);
     }
-  } else if (0 == (strncmp(s, "partuuid:", 9))) {
-    if ((stat(rpbuf2, &sb) != 0) || !S_ISBLK(sb.st_mode)) {
+  } else if ((0 == (strncmp(s, "partuuid:", 9))) &&
+        ((stat(rpbuf2, &sb) != 0) || !S_ISBLK(sb.st_mode))) {
       NORM_ERR("diskio device '%s' does not exist", &device_s[0]);
-    }
   }
 
 #endif
