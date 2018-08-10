@@ -60,6 +60,7 @@ struct diskio_stat *prepare_diskio_stat(const char *s) {
       device_s(text_buffer_size.get(*state));
   struct diskio_stat *cur = &stats;
   char *rpbuf;
+  char rpbuf2[256];
 
   if (s == nullptr) {
     return &stats;
@@ -68,7 +69,12 @@ struct diskio_stat *prepare_diskio_stat(const char *s) {
   if (strncmp(s, "label:", 6) == 0) {
     snprintf(&(device_name[0]), text_buffer_size.get(*state),
              "/dev/disk/by-label/%s", s + 6);
+    rpbuf = realpath(&(device_name[0]), nullptr);
+  } else if (0 == (strncmp(s, "partuuid:", 9))) {
+    snprintf(&(device_name[0]), text_buffer_size.get(*state),
+             "/dev/disk/by-partuuid/%s", s + 9);
     rpbuf = realpath(&device_name[0], nullptr);
+    snprintf(rpbuf2, 255, "%s", rpbuf);
   } else {
     rpbuf = realpath(s, nullptr);
   }
@@ -92,12 +98,19 @@ struct diskio_stat *prepare_diskio_stat(const char *s) {
    * On Solaris we currently don't use the name of disk's special file so
    * this test is useless.
    */
-  snprintf(&(stat_name[0]), text_buffer_size.get(*state), "/dev/%s",
-           &(device_name[0]));
 
-  if ((stat(&(stat_name[0]), &sb) != 0) || !S_ISBLK(sb.st_mode)) {
-    NORM_ERR("diskio device '%s' does not exist", &device_s[0]);
+  if (strncmp(s, "label:", 6) == 0) {
+    snprintf(&(stat_name[0]), text_buffer_size.get(*state), "/dev/%s",
+           &(device_name[0]));
+    if ((stat(&(stat_name[0]), &sb) != 0) || !S_ISBLK(sb.st_mode)) {
+      NORM_ERR("diskio device '%s' does not exist", &device_s[0]);
+    }
+  } else if (0 == (strncmp(s, "partuuid:", 9))) {
+    if ((stat(rpbuf2, &sb) != 0) || !S_ISBLK(sb.st_mode)) {
+      NORM_ERR("diskio device '%s' does not exist", &device_s[0]);
+    }
   }
+
 #endif
 
   /* lookup existing */
