@@ -1576,6 +1576,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>iface</option>
+            </command>
+            <option>(number)</option>
+        </term>
+        <listitem>Display interface names starting from 1, eg ${iface 1}.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>i2c</option>
             </command>
             <option>(dev) type n (factor offset)</option>
