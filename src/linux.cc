@@ -300,6 +300,8 @@ int update_gateway_info2(const char *s) {
   unsigned long mask;
   unsigned int flags;
   unsigned int x = 1;
+  unsigned int z = 1;
+  unsigned int skip = 0;
 
   if ((fp = fopen("/proc/net/route", "r")) == nullptr) {
     update_gateway_info_failure("fopen()");
@@ -327,7 +329,16 @@ int update_gateway_info2(const char *s) {
     } else if (0 == strcmp(iface, interfaces_arr[x - 1])) {
       continue;
     }
-    snprintf(interfaces_arr[x++], 63, "%s", iface);
+    for (z = 1; z < 63; z++) {
+      if (0 == strcmp(iface, interfaces_arr[z])) {
+        skip = 1;
+        break;
+      }
+    }
+    if (0 == skip) {
+      snprintf(interfaces_arr[x++], 63, "%s", iface);
+    }
+    skip = 0;
   }
   fclose(fp);
   return 0;
