@@ -292,7 +292,7 @@ void update_gateway_info_failure(const char *reason) {
 /* Iface Destination Gateway Flags RefCnt Use Metric Mask MTU Window IRTT */
 #define RT_ENTRY_FORMAT "%63s %lx %lx %x %*d %*d %*d %lx %*d %*d %*d\n"
 
-int update_gateway_info2(const char *s) {
+int update_gateway_info2(void) {
   FILE *fp;
   char iface[64];
   unsigned long dest;
@@ -322,7 +322,6 @@ int update_gateway_info2(const char *s) {
     if (!(dest || mask) && ((flags & RTF_GATEWAY) || !gate)) {
       snprintf(e_iface, 49, "%s", iface);
     }
-    if (0 == (strcmp(s, ""))) {continue;}
     if (1U == x) {
       snprintf(interfaces_arr[x++], 63, "%s", iface);
       continue;
@@ -397,10 +396,31 @@ int gateway_exists(struct text_object *obj) {
 }
 
 void print_gateway_iface(struct text_object *obj, char *p, unsigned int p_max_size) {
-  long int z = 0;
+  (void)obj;
+  snprintf(p, p_max_size, "%s", gw_info.iface);
 
-  if (!obj->data.s || (0 == (strcmp(obj->data.s, "")))) {
-    snprintf(p, p_max_size, "%s", gw_info.iface);
+}
+
+void print_gateway_iface2(struct text_object *obj, char *p, unsigned int p_max_size) {
+  long int z = 0;
+  unsigned int x = 1;
+  unsigned int found = 0;
+  char buf[64*64] = {""};
+  char *buf_ptr = buf;
+
+  if (0 == strcmp(obj->data.s, "")) {
+    for (; x < 63; x++) {
+      if (0 == strcmp("", interfaces_arr[x])) {
+        break;
+      }
+      buf_ptr += snprintf(buf_ptr, 63, "%s, ", interfaces_arr[x]);
+      found = 1;
+    }
+    if (1 == found) {
+      --buf_ptr;
+      *(--buf_ptr) = '\0';
+    }
+    snprintf(p, p_max_size, "%s", buf);
     return;
   }
 
