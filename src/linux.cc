@@ -295,7 +295,9 @@ void update_gateway_info_failure(const char *reason) {
 int update_gateway_info2(const char *s) {
   FILE *fp;
   char iface[64];
-  unsigned long dest, gate, mask;
+  unsigned long dest;
+  unsigned long gate;
+  unsigned long mask;
   unsigned int flags;
   unsigned int x = 1;
 
@@ -322,7 +324,7 @@ int update_gateway_info2(const char *s) {
     if (1U == x) {
       snprintf(interfaces_arr[x++], 63, "%s", iface);
       continue;
-    } else if (0 == (strcmp(iface, interfaces_arr[(x-1)]))) {
+    } else if (0 == strcmp(iface, interfaces_arr[x - 1])) {
       continue;
     }
     snprintf(interfaces_arr[x++], 63, "%s", iface);
