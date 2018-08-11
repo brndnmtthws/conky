@@ -33,6 +33,7 @@ void print_ioscheduler(struct text_object *, char *, unsigned int);
 void print_laptop_mode(struct text_object *, char *, unsigned int);
 
 int update_gateway_info(void);
+int update_gateway_info2(const char *);
 void free_gateway_info(struct text_object *obj);
 int gateway_exists(struct text_object *);
 void print_gateway_iface(struct text_object *, char *, unsigned int);

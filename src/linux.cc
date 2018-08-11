@@ -94,7 +94,12 @@ struct sysfs {
   float factor, offset;
 };
 
+/* To be used inside upspeed/f downspeed/f as ${gw_iface} variable */
 char e_iface[50];
+
+/* To use ${iface X} where X is a number and will
+ * return the current X NIC name */
+static char interfaces_arr[64][64] = {""};
 
 #define SHORTSTAT_TEMPL "%*s %llu %llu %llu"
 #define LONGSTAT_TEMPL "%*s %llu %llu %llu "
@@ -287,6 +292,45 @@ void update_gateway_info_failure(const char *reason) {
 /* Iface Destination Gateway Flags RefCnt Use Metric Mask MTU Window IRTT */
 #define RT_ENTRY_FORMAT "%63s %lx %lx %x %*d %*d %*d %lx %*d %*d %*d\n"
 
+int update_gateway_info2(const char *s) {
+  FILE *fp;
+  char iface[64];
+  unsigned long dest, gate, mask;
+  unsigned int flags;
+  unsigned int x = 1;
+
+  if ((fp = fopen("/proc/net/route", "r")) == nullptr) {
+    update_gateway_info_failure("fopen()");
+    return 0;
+  }
+
+  /* skip over the table header line, which is always present */
+  if (fscanf(fp, "%*[^\n]\n") < 0) {
+    fclose(fp);
+    return 0;
+  }
+
+  while (!feof(fp)) {
+    if (fscanf(fp, RT_ENTRY_FORMAT, iface, &dest, &gate, &flags, &mask) != 5) {
+      update_gateway_info_failure("fscanf()");
+      break;
+    }
+    if (!(dest || mask) && ((flags & RTF_GATEWAY) || !gate)) {
+      snprintf(e_iface, 49, "%s", iface);
+    }
+    if (0 == (strcmp(s, ""))) {continue;}
+    if (1U == x) {
+      snprintf(interfaces_arr[x++], 63, "%s", iface);
+      continue;
+    } else if (0 == (strcmp(iface, interfaces_arr[(x-1)]))) {
+      continue;
+    }
+    snprintf(interfaces_arr[x++], 63, "%s", iface);
+  }
+  fclose(fp);
+  return 0;
+}
+
 int update_gateway_info(void) {
   FILE *fp;
   struct in_addr ina;
@@ -340,9 +384,17 @@ int gateway_exists(struct text_object *obj) {
 }
 
 void print_gateway_iface(struct text_object *obj, char *p, unsigned int p_max_size) {
-  (void)obj;
+  long int z = 0;
 
-  snprintf(p, p_max_size, "%s", gw_info.iface);
+  if (!obj->data.s || (0 == (strcmp(obj->data.s, "")))) {
+    snprintf(p, p_max_size, "%s", gw_info.iface);
+    return;
+  }
+
+  z = strtol(obj->data.s, (char **)NULL, 10);
+  if (63 > z) {
+    snprintf(p, p_max_size, "%s", interfaces_arr[z]);
+  }
 }
 
 void print_gateway_ip(struct text_object *obj, char *p, unsigned int p_max_size) {

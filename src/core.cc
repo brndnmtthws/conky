@@ -1449,9 +1449,13 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(gw_iface, &update_gateway_info) obj->callbacks.print =
       &print_gateway_iface;
   obj->callbacks.free = &free_gateway_info;
+  END OBJ(iface, 0) obj->data.s = STRNDUP_ARG;
+  update_gateway_info2(obj->data.s);
+  obj->callbacks.print = &print_gateway_iface;
+  obj->callbacks.free = &gen_free_opaque;
   END OBJ(gw_ip, &update_gateway_info) obj->callbacks.print = &print_gateway_ip;
   obj->callbacks.free = &free_gateway_info;
-#endif /* !__linux__ */
+#endif /* __linux__ */
 #if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
      defined(__DragonFly__) || defined(__OpenBSD__)) &&     \
     (defined(i386) || defined(__i386__))
