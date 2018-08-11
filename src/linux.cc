@@ -99,7 +99,8 @@ char e_iface[50];
 
 /* To use ${iface X} where X is a number and will
  * return the current X NIC name */
-static char interfaces_arr[64][64] = {""};
+static const unsigned int iface_len = 64U;
+static char interfaces_arr[iface_len][iface_len] = {""};
 
 #define SHORTSTAT_TEMPL "%*s %llu %llu %llu"
 #define LONGSTAT_TEMPL "%*s %llu %llu %llu "
@@ -292,9 +293,9 @@ void update_gateway_info_failure(const char *reason) {
 /* Iface Destination Gateway Flags RefCnt Use Metric Mask MTU Window IRTT */
 #define RT_ENTRY_FORMAT "%63s %lx %lx %x %*d %*d %*d %lx %*d %*d %*d\n"
 
-int update_gateway_info2(void) {
+int update_gateway_info2(const char *s) {
   FILE *fp;
-  char iface[64];
+  char iface[iface_len];
   unsigned long dest;
   unsigned long gate;
   unsigned long mask;
@@ -323,19 +324,19 @@ int update_gateway_info2(void) {
       snprintf(e_iface, 49, "%s", iface);
     }
     if (1U == x) {
-      snprintf(interfaces_arr[x++], 63, "%s", iface);
+      snprintf(interfaces_arr[x++], iface_len - 1, "%s", iface);
       continue;
     } else if (0 == strcmp(iface, interfaces_arr[x - 1])) {
       continue;
     }
-    for (z = 1; z < 63; z++) {
+    for (z = 1; z < iface_len - 1; z++) {
       if (0 == strcmp(iface, interfaces_arr[z])) {
         skip = 1;
         break;
       }
     }
     if (0 == skip) {
-      snprintf(interfaces_arr[x++], 63, "%s", iface);
+      snprintf(interfaces_arr[x++], iface_len - 1, "%s", iface);
     }
     skip = 0;
   }
@@ -346,7 +347,7 @@ int update_gateway_info2(void) {
 int update_gateway_info(void) {
   FILE *fp;
   struct in_addr ina;
-  char iface[64];
+  char iface[iface_len];
   unsigned long dest, gate, mask;
   unsigned int flags;
 
@@ -398,22 +399,21 @@ int gateway_exists(struct text_object *obj) {
 void print_gateway_iface(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   snprintf(p, p_max_size, "%s", gw_info.iface);
-
 }
 
 void print_gateway_iface2(struct text_object *obj, char *p, unsigned int p_max_size) {
   long int z = 0;
   unsigned int x = 1;
   unsigned int found = 0;
-  char buf[64*64] = {""};
+  char buf[iface_len * iface_len] = {""};
   char *buf_ptr = buf;
 
   if (0 == strcmp(obj->data.s, "")) {
-    for (; x < 63; x++) {
+    for (; x < iface_len - 1; x++) {
       if (0 == strcmp("", interfaces_arr[x])) {
         break;
       }
-      buf_ptr += snprintf(buf_ptr, 63, "%s, ", interfaces_arr[x]);
+      buf_ptr += snprintf(buf_ptr, iface_len - 1, "%s, ", interfaces_arr[x]);
       found = 1;
     }
     if (1 == found) {
@@ -425,7 +425,7 @@ void print_gateway_iface2(struct text_object *obj, char *p, unsigned int p_max_s
   }
 
   z = strtol(obj->data.s, (char **)NULL, 10);
-  if (63 > z) {
+  if ((iface_len - 1) > z) {
     snprintf(p, p_max_size, "%s", interfaces_arr[z]);
   }
 }
