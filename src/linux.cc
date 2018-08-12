@@ -293,7 +293,7 @@ void update_gateway_info_failure(const char *reason) {
 /* Iface Destination Gateway Flags RefCnt Use Metric Mask MTU Window IRTT */
 #define RT_ENTRY_FORMAT "%63s %lx %lx %x %*d %*d %*d %lx %*d %*d %*d\n"
 
-int update_gateway_info2(const char *s) {
+int update_gateway_info2(void) {
   FILE *fp;
   char iface[iface_len];
   unsigned long dest;
