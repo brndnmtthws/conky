@@ -293,6 +293,22 @@ void update_gateway_info_failure(const char *reason) {
 /* Iface Destination Gateway Flags RefCnt Use Metric Mask MTU Window IRTT */
 #define RT_ENTRY_FORMAT "%63s %lx %lx %x %*d %*d %*d %lx %*d %*d %*d\n"
 
+FILE *check_procroute() {
+  FILE *fp;
+  if ((fp = fopen("/proc/net/route", "r")) == nullptr) {
+    update_gateway_info_failure("fopen()");
+    return nullptr;
+  }
+
+  /* skip over the table header line, which is always present */
+  if (fscanf(fp, "%*[^\n]\n") < 0) {
+    fclose(fp);
+    return nullptr;
+  }
+
+  return fp;
+}
+
 int update_gateway_info2(void) {
   FILE *fp;
   char iface[iface_len];
@@ -302,45 +318,36 @@ int update_gateway_info2(void) {
   unsigned int flags;
   unsigned int x = 1;
   unsigned int z = 1;
-  unsigned int skip = 0;
+  int skip = 0;
 
-  if ((fp = fopen("/proc/net/route", "r")) == nullptr) {
-    update_gateway_info_failure("fopen()");
-    return 0;
-  }
-
-  /* skip over the table header line, which is always present */
-  if (fscanf(fp, "%*[^\n]\n") < 0) {
-    fclose(fp);
-    return 0;
-  }
-
-  while (!feof(fp)) {
-    if (fscanf(fp, RT_ENTRY_FORMAT, iface, &dest, &gate, &flags, &mask) != 5) {
-      update_gateway_info_failure("fscanf()");
-      break;
-    }
-    if (!(dest || mask) && ((flags & RTF_GATEWAY) || !gate)) {
-      snprintf(e_iface, 49, "%s", iface);
-    }
-    if (1U == x) {
-      snprintf(interfaces_arr[x++], iface_len - 1, "%s", iface);
-      continue;
-    } else if (0 == strcmp(iface, interfaces_arr[x - 1])) {
-      continue;
-    }
-    for (z = 1; z < iface_len - 1; z++) {
-      if (0 == strcmp(iface, interfaces_arr[z])) {
-        skip = 1;
+  if((fp = check_procroute()) != nullptr) {
+    while (!feof(fp)) {
+      if (fscanf(fp, RT_ENTRY_FORMAT, iface, &dest, &gate, &flags, &mask) != 5) {
+        update_gateway_info_failure("fscanf()");
         break;
       }
+      if (!(dest || mask) && ((flags & RTF_GATEWAY) || !gate)) {
+        snprintf(e_iface, 49, "%s", iface);
+      }
+      if (1U == x) {
+        snprintf(interfaces_arr[x++], iface_len - 1, "%s", iface);
+        continue;
+      } else if (0 == strcmp(iface, interfaces_arr[x - 1])) {
+        continue;
+      }
+      for (z = 1; z < iface_len - 1; z++) {
+        if (0 == strcmp(iface, interfaces_arr[z])) {
+          skip = 1;
+          break;
+        }
+      }
+      if (0 == skip) {
+        snprintf(interfaces_arr[x++], iface_len - 1, "%s", iface);
+      }
+      skip = 0;
     }
-    if (0 == skip) {
-      snprintf(interfaces_arr[x++], iface_len - 1, "%s", iface);
-    }
-    skip = 0;
+    fclose(fp);
   }
-  fclose(fp);
   return 0;
 }
 
@@ -355,31 +362,22 @@ int update_gateway_info(void) {
   free_and_zero(gw_info.ip);
   gw_info.count = 0;
 
-  if ((fp = fopen("/proc/net/route", "r")) == nullptr) {
-    update_gateway_info_failure("fopen()");
-    return 0;
-  }
-
-  /* skip over the table header line, which is always present */
-  if (fscanf(fp, "%*[^\n]\n") < 0) {
+  if((fp = check_procroute()) != nullptr) {
+    while (!feof(fp)) {
+      if (fscanf(fp, RT_ENTRY_FORMAT, iface, &dest, &gate, &flags, &mask) != 5) {
+        update_gateway_info_failure("fscanf()");
+        break;
+      }
+      if (!(dest || mask) && ((flags & RTF_GATEWAY) || !gate)) {
+        gw_info.count++;
+        snprintf(e_iface, 49, "%s", iface);
+        SAVE_SET_STRING(gw_info.iface, iface)
+        ina.s_addr = gate;
+        SAVE_SET_STRING(gw_info.ip, inet_ntoa(ina))
+      }
+    }
     fclose(fp);
-    return 0;
   }
-
-  while (!feof(fp)) {
-    if (fscanf(fp, RT_ENTRY_FORMAT, iface, &dest, &gate, &flags, &mask) != 5) {
-      update_gateway_info_failure("fscanf()");
-      break;
-    }
-    if (!(dest || mask) && ((flags & RTF_GATEWAY) || !gate)) {
-      gw_info.count++;
-      snprintf(e_iface, 49, "%s", iface);
-      SAVE_SET_STRING(gw_info.iface, iface)
-      ina.s_addr = gate;
-      SAVE_SET_STRING(gw_info.ip, inet_ntoa(ina))
-    }
-  }
-  fclose(fp);
   return 0;
 }
 

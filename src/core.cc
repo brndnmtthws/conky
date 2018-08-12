@@ -611,9 +611,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   /* information from sony_laptop kernel module
    * /sys/devices/platform/sony-laptop */
   END OBJ(sony_fanspeed, 0) obj->callbacks.print = &get_sony_fanspeed;
-  END OBJ_IF(if_gw, &update_gateway_info) obj->callbacks.iftest =
-      &gateway_exists;
-  obj->callbacks.free = &free_gateway_info;
   END OBJ_ARG(ioscheduler, 0, "get_ioscheduler needs an argument (e.g. hda)")
       obj->data.s = strndup(dev_name(arg), text_buffer_size.get(*state));
   obj->callbacks.print = &print_ioscheduler;
@@ -1449,11 +1446,14 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(gw_iface, &update_gateway_info) obj->callbacks.print =
       &print_gateway_iface;
   obj->callbacks.free = &free_gateway_info;
+  END OBJ_IF(if_gw, &update_gateway_info) obj->callbacks.iftest =
+      &gateway_exists;
+  obj->callbacks.free = &free_gateway_info;
+  END OBJ(gw_ip, &update_gateway_info) obj->callbacks.print = &print_gateway_ip;
+  obj->callbacks.free = &free_gateway_info;
   END OBJ(iface, &update_gateway_info2) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_gateway_iface2;
   obj->callbacks.free = &gen_free_opaque;
-  END OBJ(gw_ip, &update_gateway_info) obj->callbacks.print = &print_gateway_ip;
-  obj->callbacks.free = &free_gateway_info;
 #endif /* __linux__ */
 #if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
      defined(__DragonFly__) || defined(__OpenBSD__)) &&     \
