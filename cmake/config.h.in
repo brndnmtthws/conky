@@ -82,10 +82,7 @@
 
 #cmakedefine BUILD_CURL 1
 
-#cmakedefine BUILD_WEATHER_XOAP 1
 #cmakedefine BUILD_WEATHER_METAR 1
-
-#define XOAP_FILE "@XOAP_FILE@"
 
 #cmakedefine BUILD_IMLIB2 1
 

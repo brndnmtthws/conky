@@ -173,13 +173,9 @@ option(BUILD_CURL "Enable if you want Curl support" false)
 option(BUILD_RSS "Enable if you want RSS support" false)
 
 option(BUILD_WEATHER_METAR "Enable METAR weather support" true)
-option(BUILD_WEATHER_XOAP "Enable XOAP weather support" true)
-if(BUILD_WEATHER_METAR OR BUILD_WEATHER_XOAP OR BUILD_RSS)
+if(BUILD_WEATHER_METAR OR BUILD_RSS)
 	set(BUILD_CURL true)
-endif(BUILD_WEATHER_METAR OR BUILD_WEATHER_XOAP OR BUILD_RSS)
-if(BUILD_WEATHER_XOAP)
-	set(XOAP_FILE "$HOME/.xoaprc" CACHE STRING "Path of XOAP file for weather" FORCE)
-endif(BUILD_WEATHER_XOAP)
+endif(BUILD_WEATHER_METAR OR BUILD_RSS)
 
 option(BUILD_APCUPSD "Enable APCUPSD support" true)
 

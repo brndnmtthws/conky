@@ -93,12 +93,6 @@ struct text_object;
 #include "mysql.h"
 #endif /* BUILD_MYSQL */
 
-#ifdef BUILD_WEATHER_XOAP
-#ifndef BUILD_WEATHER_METAR
-#error "BUILD_WEATHER_METAR needs to be defined if XOAP is defined"
-#endif /* BUILD_WEATHER_METAR */
-#endif /* BUILD_WEATHER_XOAP */
-
 #ifdef BUILD_PORT_MONITORS
 #include "tcp-portmon.h"
 #endif

@@ -4686,10 +4686,6 @@
         <listitem>
             <para>Download, parse and display weather forecast data
 	    for a given day (daytime only).</para>
-            <para>For the 'URI', http://xoap.weather.com/weather/local/ is
-            deprecated. Please suggest a new URI in
-            https://github.com/brndnmtthws/conky/issues/313. See 'weather'
-            above for details of usage</para>
             <para>'locID', see 'weather' above.</para>
             <para>'day' is a number from 0 (today) to 4 (3 days
             after tomorrow).</para>
