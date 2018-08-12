@@ -318,10 +318,11 @@ int update_gateway_info2(void) {
   unsigned int flags;
   unsigned int x = 1;
   unsigned int z = 1;
-  int skip = 0;
+  int strcmpreturn;
 
   if((fp = check_procroute()) != nullptr) {
     while (!feof(fp)) {
+      strcmpreturn = 1;
       if (fscanf(fp, RT_ENTRY_FORMAT, iface, &dest, &gate, &flags, &mask) != 5) {
         update_gateway_info_failure("fscanf()");
         break;
@@ -335,16 +336,12 @@ int update_gateway_info2(void) {
       } else if (0 == strcmp(iface, interfaces_arr[x - 1])) {
         continue;
       }
-      for (z = 1; z < iface_len - 1; z++) {
-        if (0 == strcmp(iface, interfaces_arr[z])) {
-          skip = 1;
-          break;
-        }
+      for (z = 1; z < iface_len - 1 && strcmpreturn == 1; z++) {
+        strcmpreturn = strcmp(iface, interfaces_arr[z]);
       }
-      if (0 == skip) {
+      if (strcmpreturn == 1) {
         snprintf(interfaces_arr[x++], iface_len - 1, "%s", iface);
       }
-      skip = 0;
     }
     fclose(fp);
   }
