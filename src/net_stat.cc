@@ -54,7 +54,7 @@
 #include "linux.h"
 #else
 static char e_iface[50] = "empty";
-static char interfaces_arr[iface_len][iface_len] = {""};
+static char interfaces_arr[64][64] = {""};
 #endif /* __linux__ */
 
 /* network interface stuff */
