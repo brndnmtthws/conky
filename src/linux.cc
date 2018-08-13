@@ -100,7 +100,7 @@ char e_iface[50];
 /* To use ${iface X} where X is a number and will
  * return the current X NIC name */
 static const unsigned int iface_len = 64U;
-static char interfaces_arr[iface_len][iface_len] = {""};
+char interfaces_arr[iface_len][iface_len] = {""};
 
 #define SHORTSTAT_TEMPL "%*s %llu %llu %llu"
 #define LONGSTAT_TEMPL "%*s %llu %llu %llu "
@@ -441,6 +441,7 @@ void print_gateway_ip(struct text_object *obj, char *p, unsigned int p_max_size)
  **/
 int update_net_stats(void) {
   update_gateway_info();
+  update_gateway_info2();
   FILE *net_dev_fp;
   static int rep = 0;
   /* variably to notify the parts averaging the download speed, that this
@@ -451,8 +452,10 @@ int update_net_stats(void) {
   static char first = 1;
 
   // FIXME: arbitrary size chosen to keep code simple.
-  int i, i2;
-  unsigned int curtmp1, curtmp2;
+  int i;
+  int i2;
+  unsigned int curtmp1;
+  unsigned int curtmp2;
   unsigned int k;
   struct ifconf conf;
   char buf[256];
