@@ -876,7 +876,7 @@ static int get_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token,
 }
 
 // Perform query and print result
-void print_nvidia_value(struct text_object *obj, char *p, int p_max_size) {
+void print_nvidia_value(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct nvidia_s *nvs = static_cast<nvidia_s *>(obj->data.opaque);
   int value, temp1, temp2;
   char *str;

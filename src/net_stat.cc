@@ -137,10 +137,12 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
   }
 
   if (0 == strncmp(arg, "${iface", 7)) {
-    for (; *arg_ptr; arg_ptr++) {
-      if (isdigit((unsigned char)*arg_ptr)) {
-        *buf_ptr++ = *arg_ptr;
-        found = 1;
+    if (nullptr != arg_ptr) {
+      for (; *arg_ptr; arg_ptr++) {
+        if (isdigit((unsigned char)*arg_ptr)) {
+          *buf_ptr++ = *arg_ptr;
+          found = 1;
+        }
       }
     }
     if (1U == found) {

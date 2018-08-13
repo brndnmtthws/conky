@@ -31,7 +31,7 @@
 #define NVIDIA_CONKY_H
 
 int set_nvidia_query(struct text_object *, const char *, unsigned int);
-void print_nvidia_value(struct text_object *, char *, int);
+void print_nvidia_value(struct text_object *, char *,unsigned int);
 double get_nvidia_barval(struct text_object *);
 void free_nvidia(struct text_object *);
 
