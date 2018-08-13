@@ -31,6 +31,8 @@
 #include <unistd.h>
 #include <cerrno>
 #include <cstring>
+#include <string.h>
+#include <ctype.h>
 #include "conky.h"
 #include "logging.h"
 #include "net/if.h"
@@ -51,7 +53,8 @@
 #if defined(__linux__)
 #include "linux.h"
 #else
-char e_iface[50] = "empty";
+static char e_iface[50] = "empty";
+static char interfaces_arr[64][64] = {""};
 #endif /* __linux__ */
 
 /* network interface stuff */
@@ -120,12 +123,35 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
   char nextarg[21];  // longest arg possible is a devname (max 20 chars)
   int i = 0;
   struct net_stat *netstat = nullptr;
+  long int x = 0;
+  unsigned int found = 0;
+  char *arg_ptr = (char *)arg;
+  char buf[64];
+  char *buf_ptr = buf;
 
   if (arg == nullptr) { arg = DEFAULTNETDEV; }
 
   if (0 == (strcmp("$gw_iface", arg)) ||
       0 == (strcmp("${gw_iface}", arg))) {
     arg = e_iface;
+  }
+
+  if (0 == strncmp(arg, "${iface", 7)) {
+    if (nullptr != arg_ptr) {
+      for (; *arg_ptr; arg_ptr++) {
+        if (isdigit((unsigned char)*arg_ptr)) {
+          *buf_ptr++ = *arg_ptr;
+          found = 1;
+        }
+      }
+    }
+    if (1U == found) {
+      *buf_ptr = '\0';
+      x = strtol(buf, (char **)NULL, 10);
+      if (63L > x) {
+        arg = interfaces_arr[x];
+      }
+    }
   }
 
   while (sscanf(arg + i, " %20s", nextarg) == 1) {
