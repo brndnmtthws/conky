@@ -9,9 +9,13 @@ Keep in mind that there is no guarantee that the output will work correctly
 with conky, or that it will be able to convert every conkyrc. However, it
 should provide a good starting point.
 
-Altough you can use this script with only 1 arg and let it overwrite the old
+Although you can use this script with only 1 arg and let it overwrite the old
 config, it's suggested to use 2 args so that the new config is written in a new
 file (so that you have backup if something went wrong).
+
+Optional: Install dos2unix. We will attempt to use this if it is available
+because Conky configs downloaded from Internet sometimes are created on DOS/Windows
+machines with different line endings than Conky configs created on Unix/Linux.
 
 For more information about the new format, read the wiki page
 <https://github.com/brndnmtthws/conky/wiki>
@@ -120,6 +124,9 @@ if conky == nil then --> standalone program
     -- 2 args: 1st is inputfile, 2nd is outputfile
     -- 0, 3 or more args: print usage to STDERR and quit
     if #arg == 1 or #arg == 2 then
+        if os.execute('command -v dos2unix 2&>1') then
+            os.execute('dos2unix ' .. arg[1]);
+        end
         input = io.input(arg[1]);
     else
         io.stderr:write(usage);
