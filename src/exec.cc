@@ -245,6 +245,7 @@ void scan_exec_arg(struct text_object *obj, const char *arg,
                    unsigned int execflag) {
   const char *cmd = arg;
   struct execi_data *ed;
+  unsigned int free_cmd = 0;
 
   /* in case we have an execi object, we need to parse out the interval */
   if ((execflag & EF_EXECI) != 0u) {
@@ -261,6 +262,7 @@ void scan_exec_arg(struct text_object *obj, const char *arg,
 
     /* set cmd to everything after the interval */
     cmd = strndup(arg + n, text_buffer_size.get(*state));
+    free_cmd = 1;
   }
 
   /* parse any special options for the graphical exec types */
@@ -285,6 +287,9 @@ void scan_exec_arg(struct text_object *obj, const char *arg,
   } else if ((execflag & EF_EXECI) != 0u) {
     ed->cmd = strndup(cmd != nullptr ? cmd : "", text_buffer_size.get(*state));
     obj->data.opaque = ed;
+  }
+  if (cmd != nullptr && 1 == free_cmd) {
+    free((char *)cmd);
   }
 }
 
