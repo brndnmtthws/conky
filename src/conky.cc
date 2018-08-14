@@ -1081,7 +1081,7 @@ static void update_text_area() {
     case TOP_LEFT:
     case TOP_RIGHT:
     case TOP_MIDDLE:
-      y = gap_y.get(*state);
+      y = workarea[1] + gap_y.get(*state);
       break;
 
     case BOTTOM_LEFT:
@@ -1094,7 +1094,7 @@ static void update_text_area() {
     case MIDDLE_LEFT:
     case MIDDLE_RIGHT:
     case MIDDLE_MIDDLE:
-      y = workarea[3] / 2 - text_height / 2 - gap_y.get(*state);
+      y =  workarea[1] + (workarea[3] - workarea[1]) / 2 - text_height / 2 - gap_y.get(*state);
       break;
   }
   switch (align) {
@@ -1102,7 +1102,7 @@ static void update_text_area() {
     case BOTTOM_LEFT:
     case MIDDLE_LEFT:
     default:
-      x = gap_x.get(*state);
+      x = workarea[0] + gap_x.get(*state);
       break;
 
     case TOP_RIGHT:
@@ -1114,7 +1114,7 @@ static void update_text_area() {
     case TOP_MIDDLE:
     case BOTTOM_MIDDLE:
     case MIDDLE_MIDDLE:
-      x = workarea[2] / 2 - text_width / 2 - gap_x.get(*state);
+      x = workarea[0] + (workarea[2] - workarea[0]) / 2 - text_width / 2 - gap_x.get(*state);
       break;
   }
 #ifdef OWN_WINDOW
@@ -1129,9 +1129,6 @@ static void update_text_area() {
 #ifdef OWN_WINDOW
 
   if (own_window.get(*state) && (fixed_pos == 0)) {
-    x += workarea[0];
-    y += workarea[1];
-
     int border_total = get_border_total();
     text_start_x = text_start_y = border_total;
     window.x = x - border_total;
@@ -1139,14 +1136,6 @@ static void update_text_area() {
   } else
 #endif
   {
-    /* If window size doesn't match to workarea's size,
-     * then window probably includes panels (gnome).
-     * Blah, doesn't work on KDE. */
-    if (workarea[2] != window.width || workarea[3] != window.height) {
-      y += workarea[1];
-      x += workarea[0];
-    }
-
     text_start_x = x;
     text_start_y = y;
   }
