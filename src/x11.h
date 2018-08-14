@@ -220,6 +220,7 @@ class colour_setting
 
 extern priv::out_to_x_setting out_to_x;
 extern conky::simple_config_setting<std::string> display_name;
+extern conky::simple_config_setting<int> head_index;
 extern priv::colour_setting color[10];
 extern priv::colour_setting default_color;
 extern priv::colour_setting default_shade_color;
