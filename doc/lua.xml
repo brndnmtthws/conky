@@ -118,10 +118,6 @@
                     <option>Conky's update interval (in
                     seconds).</option>
                 </member>
-                <member>
-                    <command>uptime</command>
-                    <option>System uptime, in seconds.</option>
-                </member>
             </simplelist>
         </listitem>
     </varlistentry>
