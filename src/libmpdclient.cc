@@ -1876,7 +1876,7 @@ void mpd_startFieldSearch(mpd_Connection *connection, int type) {
   len = 5 + strlen(strtype) + 1;
   connection->request = static_cast<char *>(malloc(len));
 
-  snprintf(connection->request, len, "list %c%s", tolower(strtype[0]),
+  snprintf(connection->request, len, "list %c%s", tolower((unsigned char)strtype[0]),
            strtype + 1);
 }
 
@@ -1914,7 +1914,7 @@ void mpd_addConstraintSearch(mpd_Connection *connection, int type,
   len = strlen(string) + 1 + strlen(strtype) + 2 + strlen(arg) + 2;
   connection->request = static_cast<char *>(realloc(connection->request, len));
   snprintf(connection->request, len, "%s %c%s \"%s\"", string,
-           tolower(strtype[0]), strtype + 1, arg);
+           tolower((unsigned char)strtype[0]), strtype + 1, arg);
 
   free(string);
   free(arg);
