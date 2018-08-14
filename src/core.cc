@@ -2076,7 +2076,7 @@ int extract_variable_text_internal(struct text_object *retval,
         /* lowercase variable name */
         tmp_p = buf;
         while (*tmp_p != 0) {
-          *tmp_p = tolower(*tmp_p);
+          *tmp_p = tolower((unsigned char)*tmp_p);
           tmp_p++;
         }
 

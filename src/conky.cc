@@ -951,7 +951,7 @@ static void generate_text() {
 
     tmp_p = text_buffer;
     while (*tmp_p != 0) {
-      *tmp_p = toupper(*tmp_p);
+      *tmp_p = toupper((unsigned char)*tmp_p);
       tmp_p++;
     }
   }

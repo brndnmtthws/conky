@@ -168,7 +168,7 @@ void print_pid_environ(struct text_object *obj, char *p, unsigned int p_max_size
   generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
   if (sscanf(objbuf.get(), "%d %s", &pid, var) == 2) {
     for (i = 0; var[i] != 0; i++) {
-      var[i] = toupper(var[i]);
+      var[i] = toupper((unsigned char)var[i]);
     }
     pathstream << PROCDIR "/"  << pid << "/cwd";
     buf = readfile(pathstream.str().c_str(), &total_read, 1);
