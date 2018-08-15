@@ -146,38 +146,9 @@ const char *scan_gauge(struct text_object *obj, const char *args,
 
 const char *scan_bar(struct text_object *obj, const char *args, double scale) {
   struct bar *b;
-
-  b = static_cast<struct bar *>(malloc(sizeof(struct bar)));
-  memset(b, 0, sizeof(struct bar));
-
-  /* zero width means all space that is available */
-  b->width = default_bar_width.get(*state);
-  b->height = default_bar_height.get(*state);
-
-  if (scale != 0.0) {
-    b->scale = scale;
-  } else {
-    b->flags |= SF_SCALED;
-  }
-
-  /* bar's argument is either height or height,width */
-  if (args != nullptr) {
-    int n = 0;
-
-    if (sscanf(args, "%d,%d %n", &b->height, &b->width, &n) <= 1) {
-      sscanf(args, "%d %n", &b->height, &n);
-    }
-    args += n;
-  }
-
-  obj->special_data = b;
-  return args;
-}
-
-const char *scan_bar2(struct text_object *obj, const char *args, double scale) {
-  struct bar *b;
   char *ptr = (char *)args;
   unsigned int saw_comma = 0;
+
   b = static_cast<struct bar *>(malloc(sizeof(struct bar)));
   memset(b, 0, sizeof(struct bar));
 
@@ -722,7 +693,7 @@ void new_bg(struct text_object *obj, char *p, unsigned int p_max_size) {
 }
 #endif /* BUILD_X11 */
 
-static void new_bar_in_shell(unsigned int custom_chars, struct text_object *obj,
+static void new_bar_in_shell(struct text_object *obj,
                               char *buffer, unsigned int buf_max_size, double usage) {
   auto *b = static_cast<struct bar *>(obj->special_data);
   unsigned int width, i, scaledusage;
@@ -742,24 +713,13 @@ static void new_bar_in_shell(unsigned int custom_chars, struct text_object *obj,
 
   scaledusage = round_to_int(usage * width / b->scale);
 
-  if (1 == custom_chars) {
-    for (i = 0; i < scaledusage; i++) {
-      buffer[i] = b->c1;
-    }
-
-    for (; i < width; i++) {
-      buffer[i] = b->c2;
-    }
-  } else {
-    for (i = 0; i < scaledusage; i++) {
-      buffer[i] = '#';
-    }
-
-    for (; i < width; i++) {
-      buffer[i] = '_';
-    }
+  for (i = 0; i < scaledusage; i++) {
+    buffer[i] = b->c1;
   }
 
+  for (; i < width; i++) {
+    buffer[i] = b->c2;
+  }
   buffer[i] = 0;
 }
 
@@ -786,7 +746,7 @@ static void new_bar_in_x11(struct text_object *obj, char *buf, double usage) {
 #endif /* BUILD_X11 */
 
 /* usage is in range [0,255] */
-void new_bar(unsigned int custom_chars, struct text_object *obj, char *p, unsigned int p_max_size, double usage) {
+void new_bar(struct text_object *obj, char *p, unsigned int p_max_size, double usage) {
   auto *b = static_cast<struct bar *>(obj->special_data);
 
   if ((p_max_size == 0) || (b == nullptr)) {
@@ -803,10 +763,10 @@ void new_bar(unsigned int custom_chars, struct text_object *obj, char *p, unsign
   if (out_to_x.get(*state)) {
     new_bar_in_x11(obj, p, usage);
   } else {
-    new_bar_in_shell(custom_chars, obj, p, p_max_size, usage);
+    new_bar_in_shell(obj, p, p_max_size, usage);
   }
 #else /* BUILD_X11 */
-  new_bar_in_shell(custom_chars, obj, p, p_max_size, usage);
+  new_bar_in_shell(obj, p, p_max_size, usage);
 #endif /* BUILD_X11 */
 }
 

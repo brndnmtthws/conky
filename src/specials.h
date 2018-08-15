@@ -84,7 +84,6 @@ struct text_object;
 
 /* scanning special arguments */
 const char *scan_bar(struct text_object *, const char *, double);
-const char *scan_bar2(struct text_object *, const char *, double);
 const char *scan_gauge(struct text_object *, const char *, double);
 #ifdef BUILD_X11
 void scan_font(struct text_object *, const char *);
@@ -99,7 +98,7 @@ void new_hr(struct text_object *, char *, unsigned int);
 void new_stippled_hr(struct text_object *, char *, unsigned int);
 #endif /* BUILD_X11 */
 void new_gauge(struct text_object *, char *, unsigned int, double);
-void new_bar(unsigned int, struct text_object *, char *, unsigned int, double);
+void new_bar(struct text_object *, char *, unsigned int, double);
 void new_fg(struct text_object *, char *, unsigned int);
 void new_bg(struct text_object *, char *, unsigned int);
 void new_outline(struct text_object *, char *, unsigned int);

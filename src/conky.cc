@@ -862,9 +862,7 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root) {
         if (obj->ifblock_next != nullptr) { obj = obj->ifblock_next; }
       }
     } else if (obj->callbacks.barval != nullptr) {
-      new_bar(0, obj, p, p_max_size, (*obj->callbacks.barval)(obj));
-    } else if (obj->callbacks.barval2 != nullptr) {
-      new_bar(1, obj, p, p_max_size, (*obj->callbacks.barval2)(obj));
+      new_bar(obj, p, p_max_size, (*obj->callbacks.barval)(obj));
     } else if (obj->callbacks.gaugeval != nullptr) {
       new_gauge(obj, p, p_max_size, (*obj->callbacks.gaugeval)(obj));
 #ifdef BUILD_X11

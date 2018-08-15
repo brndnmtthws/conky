@@ -268,8 +268,6 @@ void scan_exec_arg(struct text_object *obj, const char *arg,
   /* parse any special options for the graphical exec types */
   if ((execflag & EF_BAR) != 0u) {
     cmd = scan_bar(obj, cmd, 100);
-  } else if (execflag & EF_BAR2) {
-    cmd = scan_bar2(obj, cmd, 100);
 #ifdef BUILD_X11
   } else if ((execflag & EF_GAUGE) != 0u) {
     cmd = scan_gauge(obj, cmd, 100);

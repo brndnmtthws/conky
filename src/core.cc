@@ -882,12 +882,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   register_exec(obj);
   obj->callbacks.barval = &execbarval;
   obj->callbacks.free = &free_exec;
-  END OBJ_ARG(bar, nullptr,
-              "bar needs arguments: [height],[width] <command>")
-      scan_exec_arg(obj, arg, EF_EXEC | EF_BAR2);
-  register_exec(obj);
-  obj->callbacks.barval2 = &execbarval;
-  obj->callbacks.free = &free_exec;
   END OBJ_ARG(execibar, nullptr,
               "execibar needs arguments: <interval> [height],[width] <command>")
       scan_exec_arg(obj, arg, EF_EXECI | EF_BAR);

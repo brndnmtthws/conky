@@ -69,8 +69,7 @@ enum {
   EF_EXECI = (1 << 1),
   EF_BAR = (1 << 2),
   EF_GRAPH = (1 << 3),
-  EF_GAUGE = (1 << 4),
-  EF_BAR2 = (1 << 5)
+  EF_GAUGE = (1 << 4)
 };
 
 void scan_exec_arg(struct text_object *, const char *, unsigned int);
@@ -78,7 +77,6 @@ void register_exec(struct text_object *);
 void register_execi(struct text_object *);
 void print_exec(struct text_object *, char *, unsigned int);
 double execbarval(struct text_object *);
-double execbar(struct text_object *);
 void free_exec(struct text_object *);
 void free_execi(struct text_object *);
 
