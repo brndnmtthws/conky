@@ -79,8 +79,8 @@ struct bar {
   char flags;
   int width, height;
   double scale;
-  char c1;
-  char c2;
+  char c1 = '#';
+  char c2 = '_';
 };
 
 struct gauge {
