@@ -49,6 +49,7 @@ struct obj_cb {
    * a value of 0, make use of auto-scaling (i.e., scaling to the
    * maximum value seen so far). */
   double (*barval)(struct text_object *obj);
+  double (*barval2)(struct text_object *obj);
   double (*gaugeval)(struct text_object *obj);
   double (*graphval)(struct text_object *obj);
 
