@@ -79,6 +79,8 @@ struct bar {
   char flags;
   int width, height;
   double scale;
+  char c1 = '#';
+  char c2 = '_';
 };
 
 struct gauge {
@@ -144,6 +146,8 @@ const char *scan_gauge(struct text_object *obj, const char *args,
 
 const char *scan_bar(struct text_object *obj, const char *args, double scale) {
   struct bar *b;
+  char *ptr = (char *)args;
+  unsigned int saw_comma = 0;
 
   b = static_cast<struct bar *>(malloc(sizeof(struct bar)));
   memset(b, 0, sizeof(struct bar));
@@ -162,8 +166,21 @@ const char *scan_bar(struct text_object *obj, const char *args, double scale) {
   if (args != nullptr) {
     int n = 0;
 
-    if (sscanf(args, "%d,%d %n", &b->height, &b->width, &n) <= 1) {
-      sscanf(args, "%d %n", &b->height, &n);
+    for (; *ptr; ptr++) {
+      if (',' == *ptr) {
+        saw_comma = 1;
+        break;
+      }
+    }
+
+    if (sscanf(args, "%d,%d %c,%c %n", &b->height, &b->width, &b->c1, &b->c2, &n) <= 1) {
+      if (1 == saw_comma) {
+        sscanf(args, "%c,%c %n", &b->c1, &b->c2, &n);
+      } else {
+        b->c1 = '#';
+        b->c2 = '_';
+        sscanf(args, "%n", &n);
+      }
     }
     args += n;
   }
@@ -676,8 +693,8 @@ void new_bg(struct text_object *obj, char *p, unsigned int p_max_size) {
 }
 #endif /* BUILD_X11 */
 
-static void new_bar_in_shell(struct text_object *obj, char *buffer,
-                             unsigned int buf_max_size, double usage) {
+static void new_bar_in_shell(struct text_object *obj,
+                              char *buffer, unsigned int buf_max_size, double usage) {
   auto *b = static_cast<struct bar *>(obj->special_data);
   unsigned int width, i, scaledusage;
 
@@ -697,13 +714,12 @@ static void new_bar_in_shell(struct text_object *obj, char *buffer,
   scaledusage = round_to_int(usage * width / b->scale);
 
   for (i = 0; i < scaledusage; i++) {
-    buffer[i] = '#';
+    buffer[i] = b->c1;
   }
 
   for (; i < width; i++) {
-    buffer[i] = '_';
+    buffer[i] = b->c2;
   }
-
   buffer[i] = 0;
 }
 
