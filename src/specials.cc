@@ -74,13 +74,13 @@ conky::simple_config_setting<std::string> console_graph_ticks(
 /*
  * Special data typedefs
  */
+char c1 = '#';
+char c2 = '_';
 
 struct bar {
   char flags;
   int width, height;
   double scale;
-  char c1 = '#';
-  char c2 = '_';
 };
 
 struct gauge {
@@ -173,12 +173,12 @@ const char *scan_bar(struct text_object *obj, const char *args, double scale) {
       }
     }
 
-    if (sscanf(args, "%d,%d %c,%c %n", &b->height, &b->width, &b->c1, &b->c2, &n) <= 1) {
+    if (sscanf(args, "%d,%d %c,%c %n", &b->height, &b->width, &c1, &c2, &n) <= 1) {
       if (1 == saw_comma) {
-        sscanf(args, "%c,%c %n", &b->c1, &b->c2, &n);
+        sscanf(args, "%c,%c %n", &c1, &c2, &n);
       } else {
-        b->c1 = '#';
-        b->c2 = '_';
+        c1 = '#';
+        c2 = '_';
         sscanf(args, "%n", &n);
       }
     }
@@ -714,11 +714,11 @@ static void new_bar_in_shell(struct text_object *obj,
   scaledusage = round_to_int(usage * width / b->scale);
 
   for (i = 0; i < scaledusage; i++) {
-    buffer[i] = b->c1;
+    buffer[i] = c1;
   }
 
   for (; i < width; i++) {
-    buffer[i] = b->c2;
+    buffer[i] = c2;
   }
   buffer[i] = 0;
 }
