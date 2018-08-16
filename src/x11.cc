@@ -304,7 +304,7 @@ conky::simple_config_setting<alignment> text_alignment("alignment", BOTTOM_LEFT,
                                                        false);
 conky::simple_config_setting<std::string> display_name("display", std::string(),
                                                        false);
-static conky::simple_config_setting<int> head_index("xinerama_head", 0, true);
+conky::simple_config_setting<int> head_index("xinerama_head", 0, true);
 priv::out_to_x_setting out_to_x;
 
 priv::colour_setting color[10] = {{"color0", 0xffffff}, {"color1", 0xffffff},

@@ -2772,8 +2772,9 @@ static void print_help(const char *prog_name) {
 #ifdef BUILD_X11
          "   -a, --alignment=ALIGNMENT text alignment on screen, "
          "{top,bottom,middle}_{left,right,middle}\n"
-         "   -f, --font=FONT           font to use\n"
          "   -X, --display=DISPLAY     X11 display to use\n"
+         "   -m, --xinerama-head=N     Xinerama monitor index (0=first)\n"
+         "   -f, --font=FONT           font to use\n"
 #ifdef OWN_WINDOW
          "   -o, --own-window          create own window to draw\n"
 #endif
@@ -2805,7 +2806,7 @@ inline void reset_optind() {
 static const char *getopt_string =
     "vVqdDSs:t:u:i:hc:p:"
 #ifdef BUILD_X11
-    "x:y:w:a:f:X:"
+    "x:y:w:a:X:m:f:"
 #ifdef OWN_WINDOW
     "o"
 #endif
@@ -2825,8 +2826,8 @@ static const struct option longopts[] = {
 #endif
     {"daemonize", 0, nullptr, 'd'},
 #ifdef BUILD_X11
-    {"alignment", 1, nullptr, 'a'},     {"font", 1, nullptr, 'f'},
-    {"display", 1, nullptr, 'X'},
+    {"alignment", 1, nullptr, 'a'},     {"display", 1, nullptr, 'X'},
+    {"xinerama-head", 1, nullptr, 'm'}, {"font", 1, nullptr, 'f'},
 #ifdef OWN_WINDOW
     {"own-window", 0, nullptr, 'o'},
 #endif
@@ -2912,6 +2913,13 @@ void initialisation(int argc, char **argv) {
       case 'a':
         state->pushstring(optarg);
         text_alignment.lua_set(*state);
+        break;
+      case 'm':
+        state->pushinteger(strtol(optarg, &conv_end, 10));
+        if (*conv_end != 0) {
+          CRIT_ERR(nullptr, nullptr, "'%s' is a wrong xinerama-head index", optarg);
+        }
+        head_index.lua_set(*state);
         break;
       case 'X':
         state->pushstring(optarg);
