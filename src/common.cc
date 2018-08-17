@@ -273,6 +273,8 @@ void format_seconds_short(char *buf, unsigned int n, long seconds) {
 }
 
 conky::simple_config_setting<bool> no_buffers("no_buffers", true, true);
+conky::simple_config_setting<std::string> bar_fill("console_bar_fill", "#", false);
+conky::simple_config_setting<std::string> bar_unfill("console_bar_unfill", ".", false);
 
 void update_stuff() {
   /* clear speeds, addresses and up status in case device was removed and
