@@ -40,6 +40,7 @@
 #include "colours.h"
 #include <algorithm>
 #include <sstream>
+#include "common.h"
 
 struct special_t *specials = nullptr;
 
@@ -697,11 +698,11 @@ static void new_bar_in_shell(struct text_object *obj, char *buffer,
   scaledusage = round_to_int(usage * width / b->scale);
 
   for (i = 0; i < scaledusage; i++) {
-    buffer[i] = '#';
+    buffer[i] = *(bar_fill.get(*state).c_str());
   }
 
   for (; i < width; i++) {
-    buffer[i] = '_';
+    buffer[i] = *(bar_unfill.get(*state).c_str());
   }
 
   buffer[i] = 0;
