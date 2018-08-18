@@ -76,6 +76,7 @@ unsigned int round_to_int(float);
 extern conky::simple_config_setting<bool> no_buffers;
 extern conky::simple_config_setting<std::string> bar_fill;
 extern conky::simple_config_setting<std::string> bar_unfill;
+extern conky::simple_config_setting<std::string> exclude_iface;
 
 int open_acpi_temperature(const char *name);
 double get_acpi_temperature(int fd);

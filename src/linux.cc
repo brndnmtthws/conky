@@ -318,17 +318,13 @@ int update_gateway_info2(void) {
   unsigned int flags;
   unsigned int x = 1;
   unsigned int z = 1;
-  int strcmpreturn;
+  unsigned int skip = 0;
 
   if((fp = check_procroute()) != nullptr) {
     while (!feof(fp)) {
-      strcmpreturn = 1;
       if (fscanf(fp, RT_ENTRY_FORMAT, iface, &dest, &gate, &flags, &mask) != 5) {
         update_gateway_info_failure("fscanf()");
         break;
-      }
-      if (!(dest || mask) && ((flags & RTF_GATEWAY) || !gate)) {
-        snprintf(e_iface, 49, "%s", iface);
       }
       if (1U == x) {
         snprintf(interfaces_arr[x++], iface_len - 1, "%s", iface);
@@ -336,12 +332,16 @@ int update_gateway_info2(void) {
       } else if (0 == strcmp(iface, interfaces_arr[x - 1])) {
         continue;
       }
-      for (z = 1; z < iface_len - 1 && strcmpreturn == 1; z++) {
-        strcmpreturn = strcmp(iface, interfaces_arr[z]);
+      for (z = 1; z < iface_len - 1; z++) {
+        if (0 == strcmp(iface, interfaces_arr[z])) {
+          skip = 1;
+          break;
+        }
       }
-      if (strcmpreturn == 1) {
+      if (0 == skip) {
         snprintf(interfaces_arr[x++], iface_len - 1, "%s", iface);
       }
+      skip = 0;
     }
     fclose(fp);
   }
@@ -386,6 +386,13 @@ void free_gateway_info(struct text_object *obj) {
   memset(&gw_info, 0, sizeof(gw_info));
 }
 
+void free_gateway_iface(struct text_object *obj) {
+  if (obj->data.s) {
+    free(obj->data.s);
+  }
+  memset(interfaces_arr, 0, sizeof(interfaces_arr));
+}
+
 int gateway_exists(struct text_object *obj) {
   (void)obj;
   return !!gw_info.count;
@@ -402,6 +409,7 @@ void print_gateway_iface2(struct text_object *obj, char *p, unsigned int p_max_s
   unsigned int found = 0;
   char buf[iface_len * iface_len] = {""};
   char *buf_ptr = buf;
+  char *skip_iface = (char *)exclude_iface.get(*state).c_str();
 
   if (0 == strcmp(obj->data.s, "")) {
     for (; x < iface_len - 1; x++) {
@@ -420,6 +428,17 @@ void print_gateway_iface2(struct text_object *obj, char *p, unsigned int p_max_s
   }
 
   z = strtol(obj->data.s, (char **)NULL, 10);
+  if (0 != strcmp(skip_iface, "") &&
+      0 == strcmp(skip_iface, interfaces_arr[z])) {
+    if (0L == z) {
+      snprintf(p, p_max_size, "%s", interfaces_arr[z + 1L]);
+    } else if (0 == strcmp(interfaces_arr[z - 1L], "")) {
+      snprintf(p, p_max_size, "%s", interfaces_arr[z + 1L]);
+    } else {
+      snprintf(p, p_max_size, "%s", interfaces_arr[z - 1L]);
+    }
+    return;
+  }
   if ((iface_len - 1) > z) {
     snprintf(p, p_max_size, "%s", interfaces_arr[z]);
   }

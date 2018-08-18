@@ -34,7 +34,8 @@ void print_laptop_mode(struct text_object *, char *, unsigned int);
 
 int update_gateway_info(void);
 int update_gateway_info2(void);
-void free_gateway_info(struct text_object *obj);
+void free_gateway_info(struct text_object *);
+void free_gateway_iface(struct text_object *);
 int gateway_exists(struct text_object *);
 void print_gateway_iface(struct text_object *, char *, unsigned int);
 void print_gateway_iface2(struct text_object *, char *, unsigned int);

@@ -1453,7 +1453,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &free_gateway_info;
   END OBJ(iface, &update_gateway_info2) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_gateway_iface2;
-  obj->callbacks.free = &gen_free_opaque;
+  obj->callbacks.free = &free_gateway_iface;
 #endif /* __linux__ */
 #if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
      defined(__DragonFly__) || defined(__OpenBSD__)) &&     \
