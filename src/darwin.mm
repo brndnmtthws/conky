@@ -652,10 +652,24 @@ int update_meminfo() {
 #ifdef BUILD_WLAN
 
 void update_wlan_stats(struct net_stat *ns) {
+  CWWiFiClient *client = [CWWiFiClient sharedWiFiClient];
+  CWInterface *interface = [client interfaceWithName:[NSString stringWithUTF8String:ns->dev]];
   
+  if (!interface)
+    return;
+
+  const char *essid = [interface ssid].UTF8String;
+
+  if (essid == nullptr)
+    return;
+
+  /*
+   * Setup
+   */
+  memcpy(ns->essid, essid, sizeof(char)*strlen(essid));
 }
 
-#endif
+#endif /* BUILD_WLAN */
 
 int update_net_stats() {
   struct net_stat *ns;
