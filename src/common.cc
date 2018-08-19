@@ -638,6 +638,25 @@ uint8_t battery_percentage(struct text_object *obj) {
 void print_battery_short(struct text_object *obj, char *p, unsigned int p_max_size) {
   get_battery_short_status(p, p_max_size, obj->data.s);
 }
+
+void print_battery_status(struct text_object *obj, char *p, unsigned int p_max_size) {
+  get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_STATUS);
+  if (0 == strncmp("charging", p, 8)) {
+    snprintf(p, p_max_size, "%s", "charging");
+  } else if (0 == strncmp("discharging", p, 11) ||
+      0 == strncmp("remaining", p, 9)) {
+    snprintf(p, p_max_size, "%s", "discharging");
+  } else if (0 == strncmp("charged", p, 7)) {
+    snprintf(p, p_max_size, "%s", "charged");
+  } else if (0 == strncmp("not present", p, 11) ||
+      0 == strncmp("absent/on AC", p, 12)) {
+    snprintf(p, p_max_size, "%s", "not present");
+  } else if (0 == strncmp("empty", p, 5)) {
+    snprintf(p, p_max_size, "%s", "empty");
+  } else if (0 == strncmp("unknown", p, 7)) {
+    snprintf(p, p_max_size, "%s", "unknown");
+  }
+}
 #endif /* !__OpenBSD__ */
 
 void print_blink(struct text_object *obj, char *p, unsigned int p_max_size) {

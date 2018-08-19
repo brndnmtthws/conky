@@ -545,6 +545,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->data.s = strndup(bat, text_buffer_size.get(*state));
   obj->callbacks.print = &print_battery_short;
   obj->callbacks.free = &gen_free_opaque;
+
+  END OBJ(battery_status, 0) obj->data.s = strndup(arg ? arg : "BAT0", text_buffer_size.get(*state));
+  obj->callbacks.print = &print_battery_status;
+  obj->callbacks.free = &gen_free_opaque;
   END OBJ(battery_time, nullptr) char bat[64];
 
   if (arg != nullptr) {
