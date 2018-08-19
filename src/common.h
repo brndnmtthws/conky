@@ -158,6 +158,7 @@ void print_battery(struct text_object *, char *, unsigned int);
 void print_battery_time(struct text_object *, char *, unsigned int);
 uint8_t battery_percentage(struct text_object *);
 void print_battery_short(struct text_object *, char *, unsigned int);
+void print_battery_status(struct text_object *, char *, unsigned int);
 #endif /* !__OpenBSD__ */
 
 void free_cpu(struct text_object *);
