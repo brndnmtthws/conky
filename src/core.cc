@@ -42,28 +42,28 @@
 #include "text_object.h"
 #ifdef BUILD_IMLIB2
 #include "imlib2.h"
-#endif
+#endif /* BUILD_IMLIB2 */
 #include "proc.h"
 #ifdef BUILD_MYSQL
 #include "mysql.h"
-#endif
+#endif /* BUILD_MYSQL */
 #ifdef BUILD_ICAL
 #include "ical.h"
-#endif
+#endif /* BUILD_ICAL */
 #ifdef BUILD_IRC
 #include "irc.h"
-#endif
+#endif /* BUILD_IRC */
 #ifdef BUILD_X11
 #include "fonts.h"
-#endif
+#endif /* BUILD_X11 */
 #include "fs.h"
 #ifdef BUILD_IBM
 #include "ibm.h"
 #include "smapi.h"
-#endif
+#endif /* BUILD_IBM */
 #ifdef BUILD_ICONV
 #include "iconv_tools.h"
-#endif
+#endif /* BUILD_ICONV */
 #include "llua.h"
 #include "logging.h"
 #include "mail.h"
@@ -73,7 +73,7 @@
 #include "net_stat.h"
 #ifdef BUILD_NVIDIA
 #include "nvidia.h"
-#endif
+#endif /* BUILD_NVIDIA */
 #include <inttypes.h>
 #include "cpu.h"
 #include "read_tcpip.h"
@@ -97,16 +97,16 @@
 #endif /* BUILD_RSS */
 #ifdef BUILD_AUDACIOUS
 #include "audacious.h"
-#endif
+#endif /* BUILD_AUDACIOUS */
 #ifdef BUILD_CMUS
 #include "cmus.h"
-#endif
+#endif /* BUILD_CMUS */
 #ifdef BUILD_JOURNAL
 #include "journal.h"
-#endif
+#endif /* BUILD_JOURNAL */
 #ifdef BUILD_PULSEAUDIO
 #include "pulseaudio.h"
-#endif
+#endif /* BUILD_PULSEAUDIO */
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)

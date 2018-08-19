@@ -41,6 +41,7 @@
 #include <algorithm>
 #include <sstream>
 #include "common.h"
+#include "conky.h"
 
 struct special_t *specials = nullptr;
 
@@ -422,7 +423,8 @@ void new_gauge(struct text_object *obj, char *p, unsigned int p_max_size, double
 #ifdef BUILD_X11
   if (out_to_x.get(*state)) {
     new_gauge_in_x11(obj, p, usage);
-  } else {
+  }
+  if (out_to_stdout.get(*state)) {
     new_gauge_in_shell(obj, p, p_max_size, usage);
   }
 #else /* BUILD_X11 */
@@ -591,7 +593,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
 #endif
   graph_append(s, val, g->flags);
 
-  if (not out_to_x.get(*state)) {
+  if (out_to_stdout.get(*state)) {
     new_graph_in_shell(s, buf, buf_max_size);
   }
 }
@@ -747,7 +749,8 @@ void new_bar(struct text_object *obj, char *p, unsigned int p_max_size, double u
 #ifdef BUILD_X11
   if (out_to_x.get(*state)) {
     new_bar_in_x11(obj, p, usage);
-  } else {
+  }
+  if (out_to_stdout.get(*state)) {
     new_bar_in_shell(obj, p, p_max_size, usage);
   }
 #else /* BUILD_X11 */
