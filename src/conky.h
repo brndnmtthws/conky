@@ -363,4 +363,6 @@ extern std::unique_ptr<lua::state> state;
 extern int argc_copy;
 extern char **argv_copy;
 
+extern conky::simple_config_setting<bool> out_to_stdout;
+
 #endif /* _conky_h_ */

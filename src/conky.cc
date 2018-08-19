@@ -128,10 +128,10 @@
 #include "dragonfly.h"
 #elif defined(__OpenBSD__)
 #include "openbsd.h"
-#endif
+#endif /* __OpenBSD__ */
 #ifdef BUILD_HTTP
 #include <microhttpd.h>
-#endif
+#endif /* BUILD_HTTP */
 
 #if defined(__FreeBSD_kernel__)
 #include <bsd/bsd.h>
@@ -185,7 +185,7 @@ static conky::simple_config_setting<bool> short_units("short_units", false,
 static conky::simple_config_setting<bool> format_human_readable(
     "format_human_readable", true, true);
 
-static conky::simple_config_setting<bool> out_to_stdout("out_to_console",
+conky::simple_config_setting<bool> out_to_stdout("out_to_console",
 // Default value is false, unless we are building without X
 #ifdef BUILD_X11
                                                         false,
@@ -276,7 +276,7 @@ static void print_version() {
 #endif /* BUILD_PORT_MONITORS */
 #ifdef BUILD_HTTP
             << _("  * HTTP\n")
-#endif
+#endif /* BUILD_HTTP */
 #ifdef BUILD_IPV6
             << _("  * IPv6\n")
 #endif /* BUILD_IPV6 */
@@ -408,10 +408,10 @@ static void print_version() {
             << "  * Local configfile: " CONFIG_FILE "\n"
 #ifdef BUILD_I18N
             << "  * Localedir: " LOCALE_DIR "\n"
-#endif
+#endif /* BUILD_I18N */
 #ifdef BUILD_HTTP
             << "  * HTTP-port: " << HTTPPORT << "\n"
-#endif
+#endif /* BUILD_HTTP */
             << "  * Maximum netdevices: " << MAX_NET_INTERFACES << "\n"
             << "  * Maximum text size: " << MAX_USER_TEXT_DEFAULT << "\n"
             << "  * Size text buffer: " << DEFAULT_TEXT_BUFFER_SIZE << "\n";
@@ -532,7 +532,7 @@ class out_to_http_setting : public conky::simple_config_setting<bool> {
   out_to_http_setting() : Base("out_to_http", false, false) {}
 };
 static out_to_http_setting out_to_http;
-#endif
+#endif /* BUILD_HTTP */
 
 #ifdef BUILD_X11
 
@@ -1273,7 +1273,7 @@ static void draw_string(const char *s) {
   }
 #ifdef BUILD_NCURSES
   if (out_to_ncurses.get(*state) && draw_mode == FG) { printw("%s", s); }
-#endif
+#endif /* BUILD_NCURSES */
 #ifdef BUILD_HTTP
   if (out_to_http.get(*state) && draw_mode == FG) {
     std::string::size_type origlen = webpage.length();
@@ -1283,7 +1283,7 @@ static void draw_string(const char *s) {
     webpage = string_replace_all(webpage, "&nbsp; ", "&nbsp;&nbsp;", origlen);
     webpage.append("<br />");
   }
-#endif
+#endif /* BUILD_HTTP */
   int tbs = text_buffer_size.get(*state);
   memset(tmpstring1, 0, tbs);
   memset(tmpstring2, 0, tbs);
@@ -1823,7 +1823,7 @@ static void draw_text() {
     }
     webpage.append(WEBPAGE_START2);
   }
-#endif
+#endif /* BUILD_HTTP */
 #ifdef BUILD_X11
   if (out_to_x.get(*state)) {
     cur_y = text_start_y;
@@ -1860,7 +1860,7 @@ static void draw_text() {
   for_each_line(text_buffer, draw_line);
 #ifdef BUILD_HTTP
   if (out_to_http.get(*state)) { webpage.append(WEBPAGE_END); }
-#endif
+#endif /* BUILD_HTTP */
 }
 
 static void draw_stuff() {
