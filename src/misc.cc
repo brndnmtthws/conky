@@ -101,6 +101,11 @@ void print_cap(struct text_object *obj, char *p, unsigned int p_max_size) {
   char *src = obj->data.s;
   char *dest = buf;
 
+  evaluate(obj->data.s, p, p_max_size);
+  if (0 != strcmp(p, "")) {
+    src = p;
+  }
+
   for (; *src && p_max_size-1 > x; src++, x++) {
     if (0 == z) {
       *dest++ = (toupper((unsigned char) *src));
