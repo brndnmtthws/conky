@@ -3925,6 +3925,15 @@
     <varlistentry>
         <term>
             <command>
+                <option>start_case</option>
+            </command>
+            <option>text</option>
+        </term>
+        <listitem>All words capitalized regardless.<para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>stippled_hr</option>
             </command>
             <option>(space)</option>
