@@ -1,4 +1,4 @@
-# Conky
+<p align="center"><img src="logo/logotype-horizontal-violet.png"></p>
 
 [![Build Status](https://travis-ci.org/brndnmtthws/conky.png)](https://travis-ci.org/brndnmtthws/conky) [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=conky&metric=alert_status)](https://sonarcloud.io/dashboard/index/conky)
 
