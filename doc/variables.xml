@@ -446,6 +446,19 @@
     <varlistentry>
         <term>
             <command>
+                <option>battery_status</option>
+            </command>
+            <option>(num)</option>
+        </term>
+        <listitem>Battery status for ACPI battery.
+            ACPI battery number can be given as argument
+            (default is BAT0).
+        <para /></listitem>
+    </varlistentry>
+
+    <varlistentry>
+        <term>
+            <command>
                 <option>battery_time</option>
             </command>
             <option>(num)</option>
