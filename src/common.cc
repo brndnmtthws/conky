@@ -275,6 +275,7 @@ void format_seconds_short(char *buf, unsigned int n, long seconds) {
 conky::simple_config_setting<bool> no_buffers("no_buffers", true, true);
 conky::simple_config_setting<std::string> bar_fill("console_bar_fill", "#", false);
 conky::simple_config_setting<std::string> bar_unfill("console_bar_unfill", ".", false);
+conky::simple_config_setting<std::string> github_token("github_token", "", false);
 
 void update_stuff() {
   /* clear speeds, addresses and up status in case device was removed and
@@ -692,6 +693,105 @@ void print_include(struct text_object *obj, char *p, unsigned int p_max_size) {
 }
 
 #ifdef BUILD_CURL
+#define NEW_TOKEN "https://github.com/settings/tokens/new?scopes=notifications&description=conky-query-github\n"
+static size_t read_github_data_cb(char *, size_t, size_t, char *);
+static size_t read_github_data_cb(char *data, size_t size, size_t nmemb, char *p) {
+  char *ptr = data;
+  size_t sz = nmemb * size;
+  size_t z = 0;
+  static size_t x = 0;
+  unsigned int skip = 0;
+
+  for (; *ptr; ptr++, z++) {
+    if (z+4 < sz) { /* Verifying up to *(ptr+4) */
+      if ('u' == *ptr && 'n' == *(ptr+1) &&
+          'r' == *(ptr+2) && 'e' == *(ptr+3)) { /* "unread" */
+        ++x;
+      }
+      if ('m' == *ptr && 'e' == *(ptr+1) &&
+          's' == *(ptr+2) && 's' == *(ptr+3) && z+13 < sz) { /* "message": */
+        if ('B' == *(ptr+10) && 'a' == *(ptr+11) &&
+            'd' == *(ptr+12)) { /* "Bad credentials" */
+          NORM_ERR("Bad credentials: generate a new token:\n" NEW_TOKEN);
+          snprintf(p, 80, "%s", "GitHub: Bad credentials, generate a new token.");
+          skip = 1U;
+          break;
+        }
+        if ('M' == *(ptr+10) && 'i' == *(ptr+11) &&
+            's' == *(ptr+12)) { /* Missing the 'notifications' scope. */
+          NORM_ERR("Missing 'notifications' scope. Generate a new token\n" NEW_TOKEN);
+          snprintf(p, 80, "%s", "GitHub: Missing the notifications scope. Generate a new token.");
+          skip = 1U;
+          break;
+        }
+      }
+    }
+  }
+  if (0U == skip) {
+    snprintf(p, 49, "%zu", x);
+  }
+  return sz;
+}
+
+void print_github(struct text_object *obj, char *p, unsigned int p_max_size) {
+  (void)obj;
+  char github_url[256] = {""};
+  char user_agent[30] = {""};
+  static char cached_result[256] = {""};
+  static unsigned int last_update = 1U;
+  CURL *curl = nullptr;
+  CURLcode res;
+
+  if (0 == strcmp(github_token.get(*state).c_str(), "")) {
+    NORM_ERR("${github_notifications} requires token. "
+    "Go ahead and generate one "
+    NEW_TOKEN
+    "Insert it in conky.config = { github_token='TOKEN_SHA' }\n");
+    snprintf(p, p_max_size, "%s", "GitHub notifications requires token, generate a new one.");
+    return;
+  }
+
+  if (1U != last_update) {
+    --last_update;
+    snprintf(p, p_max_size, "%s", cached_result);
+    return;
+  }
+
+  snprintf(github_url, 255, "%s%s",
+    "https://api.github.com/notifications?access_token=", github_token.get(*state).c_str());
+  /* unique string for each conky user, so we dont hit any query limits */
+  snprintf(user_agent, 29, "conky/%s", github_token.get(*state).c_str());
+
+  curl_global_init(CURL_GLOBAL_ALL);
+  if (nullptr == (curl = curl_easy_init())) {
+    goto error;
+  }
+  curl_easy_setopt(curl, CURLOPT_URL, github_url);
+  curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "gzip");
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, user_agent);
+  curl_easy_setopt(curl, CURLOPT_USE_SSL, (long)CURLUSESSL_ALL);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20L);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, read_github_data_cb);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, p);
+
+  res = curl_easy_perform(curl);
+  if (CURLE_OK != res) {
+    goto error;
+  }
+  snprintf(cached_result, 255, "%s", p);
+  last_update = 60U;
+
+error:
+  if (nullptr != curl) {
+    curl_easy_cleanup(curl);
+  }
+  curl_global_cleanup();
+
+  if (!isdigit((unsigned char)*p)) {
+    last_update = 1U;
+  }
+}
+
 void print_stock(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (!obj->data.s) {
     p[0] = 0;
