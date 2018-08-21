@@ -1697,6 +1697,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       curl_parse_arg(obj, arg);
   obj->callbacks.print = &curl_print;
   obj->callbacks.free = &curl_obj_free;
+  END OBJ(github_notifications, 0) obj->callbacks.print = &print_github;
 #endif /* BUILD_CURL */
 #ifdef BUILD_RSS
   END OBJ_ARG(rss, 0,
