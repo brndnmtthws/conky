@@ -700,13 +700,14 @@ static size_t read_github_data_cb(char *data, size_t size, size_t nmemb, char *p
   size_t sz = nmemb * size;
   size_t z = 0;
   static size_t x = 0;
-  unsigned int skip = 0;
+  static unsigned int skip = 0U;
 
   for (; *ptr; ptr++, z++) {
     if (z+4 < sz) { /* Verifying up to *(ptr+4) */
       if ('u' == *ptr && 'n' == *(ptr+1) &&
           'r' == *(ptr+2) && 'e' == *(ptr+3)) { /* "unread" */
         ++x;
+        skip = 0U;
       }
       if ('m' == *ptr && 'e' == *(ptr+1) &&
           's' == *(ptr+2) && 's' == *(ptr+3) && z+13 < sz) { /* "message": */
