@@ -3125,6 +3125,51 @@
     <varlistentry>
         <term>
             <command>
+                <option>owm_temp</option>
+            </command>
+        </term>
+        <listitem>Temperature reading from OpenWeatherMap. (default: '')
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>owm_desc</option>
+            </command>
+        </term>
+        <listitem>Weather description from OpenWeatherMap.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>owm_wind</option>
+            </command>
+        </term>
+        <listitem>Wind reading from OpenWeatherMap.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>owm_pressure</option>
+            </command>
+        </term>
+        <listitem>Pressure reading from OpenWeatherMap.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>owm_humidity</option>
+            </command>
+        </term>
+        <listitem>Humidity reading from OpenWeatherMap.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>pa_sink_volume</option>
             </command>
         </term>

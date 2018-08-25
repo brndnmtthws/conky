@@ -760,6 +760,44 @@
     <varlistentry>
         <term>
             <command>
+                <option>owm_api</option>
+            </command>
+        </term>
+        <listitem>Specify API token for OpenWeatherMap. (default: '')
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>owm_town</option>
+            </command>
+        </term>
+        <listitem>Specify location for OpenWeatherMap. (default: '')
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>owm_units</option>
+            </command>
+        </term>
+        <listitem>Specify unit for OpenWeatherMap
+            : 'metric', 'imperial'. (default: 'metric')
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>owm_updates</option>
+            </command>
+        </term>
+        <listitem>Specify number of seconds for OpenWeatherMap interval.
+            (default: 1200)
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>own_window</option>
             </command>
         </term>
