@@ -1502,12 +1502,19 @@
     <varlistentry>
         <term>
             <command>
+                <option>github_notifications</option>
+            </command>
+        </term>
+        <listitem>Number of GitHub notifications.<para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>goto</option>
             </command>
             <option>x</option>
         </term>
         <listitem>The next element will be printed at position 'x'.
-
         <para /></listitem>
     </varlistentry>
     <varlistentry>
