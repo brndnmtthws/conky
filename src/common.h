@@ -77,6 +77,10 @@ extern conky::simple_config_setting<bool> no_buffers;
 extern conky::simple_config_setting<std::string> bar_fill;
 extern conky::simple_config_setting<std::string> bar_unfill;
 extern conky::simple_config_setting<std::string> github_token;
+extern conky::simple_config_setting<std::string> owm_weather_api;
+extern conky::simple_config_setting<std::string> owm_weather_town;
+extern conky::simple_config_setting<std::string> owm_weather_units;
+extern conky::simple_config_setting<unsigned int> owm_weather_update;
 
 int open_acpi_temperature(const char *name);
 double get_acpi_temperature(int fd);

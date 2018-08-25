@@ -276,6 +276,10 @@ conky::simple_config_setting<bool> no_buffers("no_buffers", true, true);
 conky::simple_config_setting<std::string> bar_fill("console_bar_fill", "#", false);
 conky::simple_config_setting<std::string> bar_unfill("console_bar_unfill", ".", false);
 conky::simple_config_setting<std::string> github_token("github_token", "", false);
+conky::simple_config_setting<std::string> owm_weather_api("owm_api", "", false);
+conky::simple_config_setting<std::string> owm_weather_town("owm_town", "", false);
+conky::simple_config_setting<std::string> owm_weather_units("owm_units", "metric", false);
+conky::simple_config_setting<unsigned int> owm_weather_update("owm_update", 1200, false);
 
 void update_stuff() {
   /* clear speeds, addresses and up status in case device was removed and

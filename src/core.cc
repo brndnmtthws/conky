@@ -1713,7 +1713,11 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &rss_free_obj_info;
 #endif /* BUILD_RSS */
 #ifdef BUILD_WEATHER_METAR
-  END OBJ_ARG(weather, 0, "weather still needs to written...") obj->callbacks.print = &print_weather;
+  END OBJ(owm_temp, 0) obj->callbacks.print = &print_owm_weather_temp;
+  END OBJ(owm_desc, 0) obj->callbacks.print = &print_owm_weather_desc;
+  END OBJ(owm_wind, 0) obj->callbacks.print = &print_owm_weather_wind;
+  END OBJ(owm_pressure, 0) obj->callbacks.print = &print_owm_weather_pressure;
+  END OBJ(owm_humidity, 0) obj->callbacks.print = &print_owm_weather_humidity;
 #endif /* BUILD_WEATHER_METAR */
   END OBJ_ARG(lua, nullptr,
               "lua needs arguments: <function name> [function parameters]")

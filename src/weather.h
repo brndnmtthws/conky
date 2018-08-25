@@ -30,6 +30,10 @@
 #ifndef WEATHER_H_
 #define WEATHER_H_
 
-void print_weather(struct text_object *, char *, unsigned int);
+void print_owm_weather_temp(struct text_object *, char *, unsigned int);
+void print_owm_weather_desc(struct text_object *, char *, unsigned int);
+void print_owm_weather_wind(struct text_object *, char *, unsigned int);
+void print_owm_weather_pressure(struct text_object *, char *, unsigned int);
+void print_owm_weather_humidity(struct text_object *, char *, unsigned int);
 
 #endif /* WEATHER_H_ */
