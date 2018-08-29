@@ -2411,7 +2411,7 @@ static void main_loop() {
 
     if (g_sighup_pending != 0) {
       g_sighup_pending = 0;
-      NORM_ERR("received SIGHUP or SIGUSR1. reloading the config file.");
+      NORM_ERR("received SIGUSR1. reloading the config file.");
 
       reload_config();
     }
@@ -2432,7 +2432,7 @@ static void main_loop() {
 
     if (g_sigterm_pending != 0) {
       g_sigterm_pending = 0;
-      NORM_ERR("received SIGINT or SIGTERM to terminate. bye!");
+      NORM_ERR("received SIGHUP, SIGINT, or SIGTERM to terminate. bye!");
       terminate = 1;
 #ifdef BUILD_X11
       if (out_to_x.get(*state)) {
@@ -3185,11 +3185,11 @@ static void signal_handler(int sig) {
    * and do any signal processing there, NOT here */
 
   switch (sig) {
+    case SIGHUP:
     case SIGINT:
     case SIGTERM:
       g_sigterm_pending = 1;
       break;
-    case SIGHUP:
     case SIGUSR1:
       g_sighup_pending = 1;
       break;
