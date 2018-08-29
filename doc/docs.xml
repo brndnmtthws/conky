@@ -145,9 +145,8 @@
 			going to consume.
 		</para>
 		<para>An easy way to force Conky to reload your ~/.config/conky/conky.conf:
-			"killall -SIGUSR1 conky". Saves you the trouble of having
-			to kill and then restart. You can now also do the same with
-			SIGHUP.
+			"killall -SIGUSR1 conky". Saves you the trouble of having to kill
+			and then restart.
 		</para>
 	</refsect1>
 	<refsect1>
@@ -173,7 +172,7 @@
 	<refsect1>
 		<title>Objects/Variables</title>
 		<para>Colours are parsed using XParsecolor(), there might be a
-			list of them: /usr/share/X11/rgb.txt. 
+			list of them: /usr/share/X11/rgb.txt.
 			Colour can be also in
 			#rrggbb format (hex).
 		</para>
