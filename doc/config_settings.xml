@@ -784,9 +784,9 @@
             <option>colour</option>
         </term>
         <listitem>If own_window_transparent no, set a specified
-        background colour (defaults to black). Takes either a hex
-        value (e.g. ffffff, note the lack of '#') or a valid RGB
-        name (see /usr/lib/X11/rgb.txt)
+            background colour (defaults to black). Takes either a hex value
+            (e.g. '#ffffff'), a shorthand hex value (e.g. '#fff'), or a valid
+            RGB name (see /usr/lib/X11/rgb.txt)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
