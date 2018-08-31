@@ -1417,6 +1417,17 @@
     <varlistentry>
         <term>
             <command>
+                <option>freq2</option>
+            </command>
+            <option>(n)</option>
+        </term>
+        <listitem>Returns CPU #n's clock speed from assembly in MHz. CPUs are
+        counted from 1. If omitted, the parameter defaults to 1.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>fs_bar</option>
             </command>
             <option>(height),(width) fs</option>
@@ -2122,6 +2133,15 @@
     <varlistentry>
         <term>
             <command>
+                <option>keyboard_layout</option>
+            </command>
+        </term>
+        <listitem>Display keyboard layout.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>version</option>
             </command>
         </term>
@@ -2597,6 +2617,15 @@
         </term>
         <listitem>Number of monitors or the message "Not running in
         X" if this is the case.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>mouse_speed</option>
+            </command>
+        </term>
+        <listitem>Display mouse speed.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3120,6 +3149,16 @@
             <option>(color)</option>
         </term>
         <listitem>Change outline color
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>password</option>
+            </command>
+            <option>(length)</option>
+        </term>
+        <listitem>Generate random passwords.
         <para /></listitem>
     </varlistentry>
     <varlistentry>

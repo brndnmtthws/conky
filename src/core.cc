@@ -833,11 +833,11 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(num_led, 0) obj->callbacks.print = &print_num_led;
   END OBJ(caps_led, 0) obj->callbacks.print = &print_caps_led;
   END OBJ(scroll_led, 0) obj->callbacks.print = &print_scroll_led;
-  END OBJ(kb_layout, 0) obj->callbacks.print = &print_kb_layout;
+  END OBJ(keyboard_layout, 0) obj->callbacks.print = &print_keyboard_layout;
   END OBJ(mouse_speed, 0) obj->callbacks.print = &print_mouse_speed;
 #endif /* BUILD_X11 */
 
-  END OBJ(password, 0) obj->data.s = STRNDUP_ARG;
+  END OBJ(password, 0) obj->data.s = strndup(arg ? arg : "20", text_buffer_size.get(*state));
   obj->callbacks.print = &print_password;
   obj->callbacks.free = &gen_free_opaque;
 

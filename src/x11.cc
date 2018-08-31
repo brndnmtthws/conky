@@ -1282,7 +1282,7 @@ void print_scroll_led(struct text_object *obj, char *p,
   print_kdb_led(4, p, p_max_size);
 }
 
-void print_kb_layout(struct text_object *obj, char *p,
+void print_keyboard_layout(struct text_object *obj, char *p,
                      unsigned int p_max_size) {
   (void)obj;
 
