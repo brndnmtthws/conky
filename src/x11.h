@@ -121,7 +121,7 @@ void print_caps_led(struct text_object *, char *, unsigned int);
 void print_scroll_led(struct text_object *, char *, unsigned int);
 
 /* Keyboard layout and mouse speed in percentage */
-void print_kb_layout(struct text_object *, char *, unsigned int);
+void print_keyboard_layout(struct text_object *, char *, unsigned int);
 void print_mouse_speed(struct text_object *, char *, unsigned int);
 
 #ifdef BUILD_XDBE
