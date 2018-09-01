@@ -837,6 +837,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(mouse_speed, 0) obj->callbacks.print = &print_mouse_speed;
 #endif /* BUILD_X11 */
 
+#ifdef __FreeBSD__
+  END OBJ(sysctlbyname, 0) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_sysctlbyname;
+  obj->callbacks.free = &gen_free_opaque;
+#endif /* __FreeBSD__ */
+
   END OBJ(password, 0) obj->data.s = strndup(arg ? arg : "20", text_buffer_size.get(*state));
   obj->callbacks.print = &print_password;
   obj->callbacks.free = &gen_free_opaque;
