@@ -830,9 +830,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &gen_free_opaque;
 
 #ifdef BUILD_X11
-  END OBJ(num_led, 0) obj->callbacks.print = &print_num_led;
-  END OBJ(caps_led, 0) obj->callbacks.print = &print_caps_led;
-  END OBJ(scroll_led, 0) obj->callbacks.print = &print_scroll_led;
+  END OBJ(key_num_lock, 0) obj->callbacks.print = &print_key_num_lock;
+  END OBJ(key_caps_lock, 0) obj->callbacks.print = &print_key_caps_lock;
+  END OBJ(key_scroll_lock, 0) obj->callbacks.print = &print_key_scroll_lock;
   END OBJ(keyboard_layout, 0) obj->callbacks.print = &print_keyboard_layout;
   END OBJ(mouse_speed, 0) obj->callbacks.print = &print_mouse_speed;
 #endif /* BUILD_X11 */
