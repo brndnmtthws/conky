@@ -4056,6 +4056,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>sysctlbyname</option>
+            </command>
+            <option>(name)</option>
+        </term>
+        <listitem>Print sysctl value by name. For FreeBSD only.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>tab</option>
             </command>
             <option>(width, (start))</option>
