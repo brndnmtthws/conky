@@ -2133,6 +2133,33 @@
     <varlistentry>
         <term>
             <command>
+                <option>key_caps_lock</option>
+            </command>
+        </term>
+        <listitem>An indicator for Capital Lock key.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>key_num_lock</option>
+            </command>
+        </term>
+        <listitem>An indicator for Number Lock key.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>key_scroll_lock</option>
+            </command>
+        </term>
+        <listitem>An indicator for Scrolling Lock key.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>keyboard_layout</option>
             </command>
         </term>

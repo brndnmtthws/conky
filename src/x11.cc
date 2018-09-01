@@ -1266,17 +1266,17 @@ void print_kdb_led(const int keybit, char *p, unsigned int p_max_size) {
   XGetKeyboardControl(display, &x);
   snprintf(p, p_max_size, "%s", (x.led_mask & keybit ? "On" : "Off"));
 }
-void print_caps_led(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_key_caps_lock(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   print_kdb_led(1, p, p_max_size);
 }
 
-void print_num_led(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_key_num_lock(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
   print_kdb_led(2, p, p_max_size);
 }
 
-void print_scroll_led(struct text_object *obj, char *p,
+void print_key_scroll_lock(struct text_object *obj, char *p,
                       unsigned int p_max_size) {
   (void)obj;
   print_kdb_led(4, p, p_max_size);
