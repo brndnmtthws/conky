@@ -25,7 +25,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 #include "config.h"
 
 #include <sys/dkstat.h>
@@ -34,9 +33,9 @@
 #include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <sys/sysctl.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/sysctl.h>
 #include <sys/user.h>
 
 #include <net/if.h>
@@ -703,4 +702,29 @@ int get_entropy_poolsize(unsigned int *val) {
   /* Not applicable for FreeBSD as it uses the yarrow prng. */
   (void)val;
   return 1;
+}
+
+void print_sysctlbyname(struct text_object *obj, char *p, unsigned int p_max_size) {
+  u_int val[3] = {0};
+  char buf[256] = {""};
+  size_t len = sizeof(val);
+  size_t len2 = sizeof(buf);
+
+  if (0 == strcmp(obj->data.s, "")) {
+    snprintf(p, p_max_size, "%s", "sysctlbyname takes an argument");
+    return;
+  }
+
+  if (0 != sysctlbyname(obj->data.s, &val, &len, NULL, 0)) {
+    if (0 != sysctlbyname(obj->data.s, &buf, &len2, NULL, 0)) {
+      snprintf(p, p_max_size, "%s", "");
+      return;
+    }
+  }
+
+  if (0 != strcmp(buf, "")) {
+    snprintf(p, p_max_size, "%s", buf);
+  } else {
+    snprintf(p, p_max_size, "%lu", (unsigned long)val[0]);
+  }
 }
