@@ -346,6 +346,20 @@
     <varlistentry>
         <term>
             <command>
+                <option>github_token</option>
+            </command>
+        </term>
+        <listitem>Specify API token for GitHub notifications.
+        <simplelist>
+            <member>
+        https://github.com/settings/tokens/new?scopes=notifications&amp;description=conky
+            </member>
+        </simplelist>
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>hddtemp_host</option>
             </command>
         </term>
