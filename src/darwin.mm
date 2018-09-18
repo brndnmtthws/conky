@@ -654,7 +654,7 @@ int update_meminfo() {
 void update_wlan_stats(struct net_stat *ns) {
   CWWiFiClient *client = [CWWiFiClient sharedWiFiClient];
   CWInterface *interface = [client interfaceWithName:[NSString stringWithUTF8String:ns->dev]];
-
+  
   if (!interface)
     return;
 
@@ -681,10 +681,6 @@ void update_wlan_stats(struct net_stat *ns) {
     default:
       break;
   }
-  
-  /*
-   * Bitrate
-   */
 
   /*
    * Mode
