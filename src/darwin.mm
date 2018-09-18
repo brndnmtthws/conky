@@ -658,15 +658,48 @@ void update_wlan_stats(struct net_stat *ns) {
   if (!interface)
     return;
 
-  const char *essid = [interface ssid].UTF8String;
+  const char *essid = (ns->up) ? [interface ssid].UTF8String : "off/any";
+  const char *freq = "";
+  const char *bitrate = "";
+  const char *mode = "Unknown";
+  const char *ap = [interface hardwareAddress].UTF8String;
 
-  if (essid == nullptr)
+  if (essid == nullptr || freq == nullptr || bitrate == nullptr || mode == nullptr || ap == nullptr)
     return;
+  
+  /*
+   * Bitrate
+   */
 
+  /*
+   * Mode
+   */
+  switch ([interface interfaceMode]) {
+    case kCWInterfaceModeStation:
+      mode = "Managed";
+      break;
+    case kCWInterfaceModeIBSS:
+      mode = "Ad-Hoc";
+      break;
+    case kCWInterfaceModeHostAP:
+      mode = "Master";
+      break;
+    case kCWInterfaceModeNone:
+    default:
+      break;
+  }
+  
   /*
    * Setup
    */
   memcpy(ns->essid, essid, sizeof(char)*strlen(essid));
+  ns->channel = interface.wlanChannel.channelNumber;
+  memcpy(ns->freq, freq, sizeof(char)*strlen(freq));
+  memcpy(ns->bitrate, bitrate, sizeof(char)*strlen(bitrate));
+  memcpy(ns->mode, mode, sizeof(char)*strlen(mode));
+  ns->link_qual = 0;
+  ns->link_qual_max = 0;
+  memcpy(ns->ap, ap, sizeof(char)*strlen(ap));
 }
 
 #endif /* BUILD_WLAN */
