@@ -654,18 +654,33 @@ int update_meminfo() {
 void update_wlan_stats(struct net_stat *ns) {
   CWWiFiClient *client = [CWWiFiClient sharedWiFiClient];
   CWInterface *interface = [client interfaceWithName:[NSString stringWithUTF8String:ns->dev]];
-  
+
   if (!interface)
     return;
 
   const char *essid = (ns->up) ? [interface ssid].UTF8String : "off/any";
-  const char *freq = "";
-  const char *bitrate = "";
+  const char *freq = "Unknown";
+  const char *bitrate = [NSString stringWithFormat:@"%f", [interface transmitRate]].UTF8String;
   const char *mode = "Unknown";
   const char *ap = [interface hardwareAddress].UTF8String;
 
-  if (essid == nullptr || freq == nullptr || bitrate == nullptr || mode == nullptr || ap == nullptr)
+  if (essid == nullptr || bitrate == nullptr || ap == nullptr)
     return;
+
+  /*
+   * Freq
+   */
+  switch ([interface wlanChannel].channelBand) {
+    case kCWChannelBand2GHz:
+      freq = "2 GHz";
+      break;
+    case kCWChannelBand5GHz:
+      freq = "5 GHz";
+      break;
+    case kCWChannelBandUnknown:
+    default:
+      break;
+  }
   
   /*
    * Bitrate
