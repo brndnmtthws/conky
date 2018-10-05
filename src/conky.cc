@@ -166,10 +166,6 @@ static conky::simple_config_setting<bool> disable_auto_reload(
 /* two strings for internal use */
 static char *tmpstring1, *tmpstring2;
 
-#ifdef BUILD_NCURSES
-extern WINDOW *ncurses_window;
-#endif
-
 enum spacer_state { NO_SPACER = 0, LEFT_SPACER, RIGHT_SPACER };
 template <>
 conky::lua_traits<spacer_state>::Map conky::lua_traits<spacer_state>::map = {
@@ -1175,9 +1171,8 @@ static inline void set_foreground_color(long c) {
     XSetForeground(display, window.gc, current_color);
   }
 #endif /* BUILD_X11 */
-#ifdef BUILD_NCURSES
-  if (out_to_ncurses.get(*state)) { attron(COLOR_PAIR(c)); }
-#endif /* BUILD_NCURSES */
+  for (auto output : conky::active_display_outputs)
+    output->set_foreground_color(c);
   UNUSED(c);
 }
 
@@ -1204,9 +1199,6 @@ static void draw_string(const char *s) {
   if (draw_mode == FG && (append_fpointer != nullptr)) {
     fprintf(append_fpointer, "%s\n", s);
   }
-#ifdef BUILD_NCURSES
-  if (out_to_ncurses.get(*state) && draw_mode == FG) { printw("%s", s); }
-#endif /* BUILD_NCURSES */
   if (conky::active_display_outputs.size() && draw_mode == FG)
     for (auto output : conky::active_display_outputs)
       output->draw_string(s, width_of_s);
@@ -1674,13 +1666,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             // make sure shades are 1 pixel to the right of the text
             if (draw_mode == BG) { cur_x++; }
 #endif /* BUILD_X11 */
-#ifdef BUILD_NCURSES
-            if (out_to_ncurses.get(*state)) {
-              int x, y;
-              getyx(ncurses_window, y, x);
-              move(y, cur_x);
-            }
-#endif /* BUILD_NCURSES */
+            for (auto output : conky::active_display_outputs)
+              output->gotox(cur_x);
           }
           break;
       }
@@ -1703,9 +1690,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
   cur_y += cur_y_add;
 #endif /* BUILD_X11 */
   draw_string(s);
-#ifdef BUILD_NCURSES
-  if (out_to_ncurses.get(*state)) { printw("\n"); }
-#endif /* BUILD_NCURSES */
+  for (auto output : display_outputs())
+    output->line_inner_done();
 #ifdef BUILD_X11
   if (out_to_x.get(*state)) { cur_y += font_descent(); }
 #endif /* BUILD_X11 */
@@ -1718,11 +1704,10 @@ static int draw_line(char *s, int special_index) {
     return draw_each_line_inner(s, special_index, -1);
   }
 #endif /* BUILD_X11 */
-#ifdef BUILD_NCURSES
-  if (out_to_ncurses.get(*state)) {
+
+  if (display_output() && display_output()->draw_line_inner_required()) {
     return draw_each_line_inner(s, special_index, -1);
   }
-#endif /* BUILD_NCURSES */
   draw_string(s);
   UNUSED(special_index);
   return 0;
@@ -1760,10 +1745,6 @@ static void draw_text() {
   }
   setup_fonts();
 #endif /* BUILD_X11 */
-#ifdef BUILD_NCURSES
-  init_pair(COLOR_WHITE, COLOR_WHITE, COLOR_BLACK);
-  attron(COLOR_PAIR(COLOR_WHITE));
-#endif /* BUILD_NCURSES */
   for_each_line(text_buffer, draw_line);
   for (auto output : conky::active_display_outputs)
     output->end_draw_text();
@@ -2298,12 +2279,8 @@ static void main_loop() {
       nanosleep(&req, &rem);
       update_text();
       draw_stuff();
-#ifdef BUILD_NCURSES
-      if (out_to_ncurses.get(*state)) {
-        refresh();
-        clear();
-      }
-#endif
+      for (auto output : conky::active_display_outputs)
+        output->flush();
 #ifdef BUILD_X11
     }
 #endif /* BUILD_X11 */
@@ -2328,12 +2305,8 @@ static void main_loop() {
       NORM_ERR("recieved SIGUSR2. refreshing.");
       update_text();
       draw_stuff();
-#ifdef BUILD_NCURSES
-      if (out_to_ncurses.get(*state)) {
-        refresh();
-        clear();
-      }
-#endif
+      for (auto output : conky::active_display_outputs)
+        output->flush();
     }
 
     if (g_sigterm_pending != 0) {

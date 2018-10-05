@@ -29,6 +29,13 @@
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
+#ifdef BUILD_NCURSES
+#include <ncurses.h>
+#endif
+
+#ifdef BUILD_NCURSES
+extern WINDOW *ncurses_window;
+#endif
 
 namespace conky {
 namespace {
@@ -41,10 +48,10 @@ conky::disabled_display_output ncurses_output_disabled("ncurses", "BUILD_NCURSES
 
 }  // namespace
 
-namespace priv {
+//namespace priv {
 
 
-}  // namespace priv
+//}  // namespace priv
 
 #ifdef BUILD_NCURSES
 
@@ -62,12 +69,74 @@ bool display_output_ncurses::detect() {
 }
 
 bool display_output_ncurses::initialize() {
-  return false;
+  return (ncurses_window != nullptr);
 }
 
 bool display_output_ncurses::shutdown() {
   return false;
 }
+
+bool display_output_ncurses::set_foreground_color(long c) {
+  attron(COLOR_PAIR(c));
+  return true;
+}
+
+bool display_output_ncurses::begin_draw_text() {
+  init_pair(COLOR_WHITE, COLOR_WHITE, COLOR_BLACK);
+  attron(COLOR_PAIR(COLOR_WHITE));
+  return true;
+}
+
+bool display_output_ncurses::end_draw_text() {
+  return true;
+}
+
+bool display_output_ncurses::draw_string(const char *s, int w) {
+  printw("%s", s);
+  return true;
+}
+
+void display_output_ncurses::line_inner_done() {
+  printw("\n");
+}
+
+int display_output_ncurses::getx() {
+  int x, y;
+  getyx(ncurses_window, y, x);
+  return x;
+}
+
+int display_output_ncurses::gety() {
+  int x, y;
+  getyx(ncurses_window, y, x);
+  return y;
+}
+
+bool display_output_ncurses::gotox(int x) {
+  int y, old_x;
+  getyx(ncurses_window, y, old_x);
+  move(y, x);
+  return true;
+}
+
+bool display_output_ncurses::gotoy(int y) {
+  int x, old_y;
+  getyx(ncurses_window, old_y, x);
+  move(y, x);
+  return true;
+}
+
+bool display_output_ncurses::gotoxy(int x, int y) {
+  move(y, x);
+  return true;
+}
+
+bool display_output_ncurses::flush() {
+  refresh();
+  clear();
+  return true;
+}
+
 
 #endif /* BUILD_NCURSES */
 
