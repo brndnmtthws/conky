@@ -72,12 +72,24 @@ class display_output_base {
   virtual bool initialize() { return false; };
   virtual bool shutdown() { return false; };
 
+  // drawing primitives
+  virtual bool begin_draw_text() { return false; };
+  virtual bool end_draw_text() { return false; };
+  virtual bool draw_string(const char *s, int w) { return false; };
+
+
   friend bool conky::initialize_display_outputs();
   friend bool conky::shutdown_display_outputs();
 
 protected:
   virtual bool active() { return is_active; };
 };
+
+/*
+ * The selected and active display output.
+ * XXX: do we want to support multiple outputs???
+ */
+extern display_output_base *active_display_output;
 
 /*
  * Use this to declare a display output that has been disabled during compilation.
