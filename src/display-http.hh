@@ -47,7 +47,16 @@ class display_output_http : public display_output_base {
   virtual bool initialize();
   virtual bool shutdown();
 
+  // drawing primitives
+  virtual bool begin_draw_text();
+  virtual bool end_draw_text();
+  virtual bool draw_string(const char *s, int w);
+
+
   // HTTP-specific
+ private:
+  //std::string webpage;
+  //struct MHD_Daemon *httpd;
 };
 
 }  // namespace conky
