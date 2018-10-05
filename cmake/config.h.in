@@ -113,6 +113,8 @@
 
 #cmakedefine BUILD_HTTP 1
 
+#cmakedefine BUILD_GUI 1
+
 #cmakedefine BUILD_ICONV 1
 
 #cmakedefine BUILD_LUA_CAIRO 1
