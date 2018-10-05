@@ -118,6 +118,7 @@
 
 #include "lua-config.hh"
 #include "setting.hh"
+#include "display-output.hh"
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
@@ -3038,6 +3039,10 @@ void initialisation(int argc, char **argv) {
   tmpstring2 = new char [text_buffer_size.get(*state)];
   memset(tmpstring2, 0, text_buffer_size.get(*state));
 
+  if (!conky::initialize_display_outputs()) {
+    CRIT_ERR(nullptr, nullptr, "initialize_display_outputs() failed.");
+  }
+
 #ifdef BUILD_X11
   X11_create_window();
 #endif /* BUILD_X11 */
@@ -3167,6 +3172,8 @@ int main(int argc, char **argv) {
     std::cerr << PACKAGE_NAME ": " << e.what() << std::endl;
     return EXIT_FAILURE;
   }
+
+  conky::shutdown_display_outputs();
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   kvm_close(kd);
