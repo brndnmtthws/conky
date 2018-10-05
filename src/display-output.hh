@@ -74,9 +74,20 @@ class display_output_base {
   virtual bool shutdown() { return false; };
 
   // drawing primitives
+  virtual bool set_foreground_color(long c) { return false; }
+
   virtual bool begin_draw_text() { return false; };
   virtual bool end_draw_text() { return false; };
   virtual bool draw_string(const char *s, int w) { return false; };
+  virtual void line_inner_done() { }
+
+  virtual int getx() { return 0; };
+  virtual int gety() { return 0; };
+  virtual bool gotox(int x) { return false; };
+  virtual bool gotoy(int y) { return false; };
+  virtual bool gotoxy(int x, int y) { return false; };
+
+  virtual bool flush() { return false; };
 
 
   friend bool conky::initialize_display_outputs();
