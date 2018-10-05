@@ -23,6 +23,7 @@
 #include <config.h>
 
 #include "conky.h"
+#include "nc.h"
 #include "display-console.hh"
 
 #include <iostream>
@@ -48,7 +49,7 @@ display_output_console::display_output_console(const std::string &name_)
 }
 
 bool display_output_console::detect() {
-  if (out_to_stdout.get(*state) || out_to_stderr.get(*state)) {
+  if ((out_to_stdout.get(*state) || out_to_stderr.get(*state)) && !out_to_ncurses.get(*state)) {
     std::cerr << "Display output '" << name << "' enabled in config." << std::endl;
     return true;
   }
