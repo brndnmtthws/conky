@@ -207,6 +207,11 @@ else(BUILD_X11)
   set(BUILD_NVIDIA false)
 endif(BUILD_X11)
 
+# if we build with any GUI support
+if(BUILD_X11)
+  set(BUILD_GUI true)
+endif(BUILD_X11)
+
 if(OWN_WINDOW)
   option(BUILD_ARGB "Build ARGB (real transparency) support" true)
 else(OWN_WINDOW)
