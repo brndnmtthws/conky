@@ -121,6 +121,7 @@
 #include "weather.h"
 #endif /* BUILD_WEATHER_METAR */
 
+#include "display-output.hh"
 #include "lua-config.hh"
 #include "setting.hh"
 
@@ -2910,6 +2911,10 @@ void initialisation(int argc, char **argv) {
   memset(tmpstring1, 0, text_buffer_size.get(*state));
   tmpstring2 = new char[text_buffer_size.get(*state)];
   memset(tmpstring2, 0, text_buffer_size.get(*state));
+
+  if (!conky::initialize_display_outputs()) {
+    CRIT_ERR(nullptr, nullptr, "initialize_display_outputs() failed.");
+  }
 
 #ifdef BUILD_X11
   X11_create_window();
