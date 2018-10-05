@@ -106,6 +106,16 @@ set(conky_sources
     luamm.hh
     data-source.cc
     data-source.hh
+    display-output.cc
+    display-output.hh
+    display-console.cc
+    display-console.hh
+    display-ncurses.cc
+    display-ncurses.hh
+    display-http.cc
+    display-http.hh
+    display-x11.cc
+    display-x11.hh
     lua-config.cc
     lua-config.hh
     setting.cc
