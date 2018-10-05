@@ -55,6 +55,7 @@ class display_output_base {
  public:
   const std::string name;
   bool is_active;
+  bool is_graphical;
   int priority;
 
   explicit display_output_base(const std::string &name_);
@@ -83,6 +84,7 @@ class display_output_base {
 
 protected:
   virtual bool active() { return is_active; };
+  virtual bool graphical() { return is_graphical; };
 };
 
 /*

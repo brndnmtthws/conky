@@ -71,7 +71,7 @@ void do_register_display_output(const std::string &name,
 }  // namespace priv
 
 display_output_base::display_output_base(const std::string &name_)
-    : name(name_), is_active(false), priority(-1) {
+    : name(name_), is_active(false), is_graphical(false), priority(-1) {
   priv::do_register_display_output(name, this);
 }
 
