@@ -85,10 +85,9 @@ class display_output_base {
 };
 
 /*
- * The selected and active display output.
- * XXX: do we want to support multiple outputs???
+ * The selected and active display outputs.
  */
-extern display_output_base *active_display_output;
+extern std::vector<display_output_base *> active_display_outputs;
 
 /*
  * Use this to declare a display output that has been disabled during
