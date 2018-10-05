@@ -1207,8 +1207,9 @@ static void draw_string(const char *s) {
 #ifdef BUILD_NCURSES
   if (out_to_ncurses.get(*state) && draw_mode == FG) { printw("%s", s); }
 #endif /* BUILD_NCURSES */
-  if (conky::active_display_output != nullptr && draw_mode == FG)
-    conky::active_display_output->draw_string(s, width_of_s);
+  if (conky::active_display_outputs.size() && draw_mode == FG)
+    for (auto output : conky::active_display_outputs)
+      output->draw_string(s, width_of_s);
   int tbs = text_buffer_size.get(*state);
   memset(tmpstring1, 0, tbs);
   memset(tmpstring2, 0, tbs);
@@ -1728,8 +1729,8 @@ static int draw_line(char *s, int special_index) {
 }
 
 static void draw_text() {
-  if (conky::active_display_output)
-    conky::active_display_output->begin_draw_text();
+  for (auto output : conky::active_display_outputs)
+    output->begin_draw_text();
 #ifdef BUILD_X11
   if (out_to_x.get(*state)) {
     cur_y = text_start_y;
@@ -1764,8 +1765,8 @@ static void draw_text() {
   attron(COLOR_PAIR(COLOR_WHITE));
 #endif /* BUILD_NCURSES */
   for_each_line(text_buffer, draw_line);
-  if (conky::active_display_output)
-    conky::active_display_output->end_draw_text();
+  for (auto output : conky::active_display_outputs)
+    output->end_draw_text();
 }
 
 static void draw_stuff() {

@@ -27,6 +27,7 @@
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
+#include <vector>
 
 namespace conky {
 namespace {
@@ -45,9 +46,8 @@ display_outputs_t *display_outputs;
 
 /*
  * The selected and active display output.
- * XXX: do we want to support multiple outputs???
  */
-display_output_base *active_display_output = nullptr;
+std::vector<display_output_base *> active_display_outputs;
 
 namespace priv {
 void do_register_display_output(const std::string &name,
@@ -98,6 +98,8 @@ bool initialize_display_outputs() {
 
 
   for (auto output : outputs) {
+    if (output->priority < 0)
+      continue;
     std::cerr << "Testing display output '" << output->name
               << "'... " << std::endl;
     if (output->detect()) {
@@ -107,20 +109,22 @@ bool initialize_display_outputs() {
         std::cerr << "Initialized display output '" << output->name
                   << "'... " << std::endl;
         output->is_active = true;
-        active_display_output = output;
-		return true;
+        active_display_outputs.push_back(output);
       }
     }
   }
+  if (active_display_outputs.size())
+    return true;
+
   std::cerr << "Unable to find a usable display output." << std::endl;
   return true;//false;
 }
 
 bool shutdown_display_outputs() {
-  if (active_display_output) {
-    return active_display_output->shutdown();
-  }
-  return false;
+  bool ret = true;
+  for (auto output : active_display_outputs)
+    ret = output->shutdown();
+  return ret;
 }
 
 }  // namespace conky
