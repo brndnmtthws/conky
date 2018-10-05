@@ -193,7 +193,7 @@ conky::simple_config_setting<bool> out_to_stdout("out_to_console",
                                                         true,
 #endif
                                                         false);
-static conky::simple_config_setting<bool> out_to_stderr("out_to_stderr", false,
+conky::simple_config_setting<bool> out_to_stderr("out_to_stderr", false,
                                                         false);
 
 int top_cpu, top_mem, top_time;

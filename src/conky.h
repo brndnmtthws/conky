@@ -372,5 +372,6 @@ extern int argc_copy;
 extern char **argv_copy;
 
 extern conky::simple_config_setting<bool> out_to_stdout;
+extern conky::simple_config_setting<bool> out_to_stderr;
 
 #endif /* _conky_h_ */
