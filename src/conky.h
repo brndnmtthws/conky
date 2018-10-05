@@ -380,4 +380,7 @@ extern char **argv_copy;
 extern const char *getopt_string;
 extern const struct option longopts[];
 
+extern conky::simple_config_setting<bool> out_to_stdout;
+extern conky::simple_config_setting<bool> out_to_stderr;
+
 #endif /* _conky_h_ */
