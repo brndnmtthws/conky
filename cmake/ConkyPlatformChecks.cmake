@@ -139,7 +139,9 @@ endif(BUILD_NCURSES AND OS_DARWIN)
 
 if(BUILD_WLAN AND OS_DARWIN)
   find_library(CW CoreWLAN)
+  find_library(NS Foundation)
   set(conky_libs ${conky_libs} ${CW})
+  set(conky_libs ${conky_libs} ${NS})
 endif(BUILD_WLAN AND OS_DARWIN)
 
 if(OS_DARWIN AND BUILD_IPGFREQ)
