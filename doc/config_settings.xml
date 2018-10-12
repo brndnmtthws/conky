@@ -313,6 +313,18 @@
     <varlistentry>
         <term>
             <command>
+                <option>fontN</option>
+            </command>
+        </term>
+        <listitem>Predefine a font to be used in conky.text segments.
+        Substitute N by a number between 0 and 9 inclusive. Use the same
+        format as a font variable.
+        <para /></listitem>
+    </varlistentry>
+
+    <varlistentry>
+        <term>
+            <command>
                 <option>format_human_readable</option>
             </command>
         </term>

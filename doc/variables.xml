@@ -1360,6 +1360,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>fontN</option>
+            </command>
+        </term>
+        <listitem>Change font to fontN configuration
+        option, where N is a digit between 0 and 9, inclusively. 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>format_time</option>
             </command>
             <option>seconds format</option>
