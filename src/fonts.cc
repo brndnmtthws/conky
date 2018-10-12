@@ -49,6 +49,12 @@ void font_setting::lua_setter(lua::state &l, bool init) {
 
 font_setting font;
 
+conky::simple_config_setting<std::string> font_template[10] = {{"font0", ""}, {"font1", ""},
+                                                               {"font2", ""}, {"font3", ""},
+                                                               {"font4", ""}, {"font5", ""},
+                                                               {"font6", ""}, {"font7", ""},
+                                                               {"font8", ""}, {"font9", ""}};
+
 #ifdef BUILD_XFT
 namespace {
 class xftalpha_setting : public conky::simple_config_setting<float> {
