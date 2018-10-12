@@ -104,4 +104,6 @@ class font_setting : public conky::simple_config_setting<std::string> {
 
 extern font_setting font;
 
+extern conky::simple_config_setting<std::string> font_template[10];
+
 #endif /* _FONTS_H */
