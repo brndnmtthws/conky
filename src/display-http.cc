@@ -150,8 +150,7 @@ bool display_output_http::initialize() {
 
 bool display_output_http::shutdown() { return true; }
 
-bool display_output_http::begin_draw_text() {
-#ifdef BUILD_HTTP
+void display_output_http::begin_draw_text() {
 #define WEBPAGE_START1                                             \
   "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" "    \
   "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html " \
@@ -171,25 +170,19 @@ bool display_output_http::begin_draw_text() {
     }
     webpage.append(WEBPAGE_START2);
   }
-#endif /* BUILD_HTTP */
-  return true;
 }
 
-bool display_output_http::end_draw_text() {
-  webpage.append(WEBPAGE_END);
-  return true;
-}
+void display_output_http::end_draw_text() { webpage.append(WEBPAGE_END); }
 
-bool display_output_http::draw_string(const char *s, int w) {
+void display_output_http::draw_string(const char *s, int w) {
   std::string::size_type origlen = webpage.length();
   webpage.append(s);
   webpage = string_replace_all(webpage, "\n", "<br />", origlen);
   webpage = string_replace_all(webpage, "  ", "&nbsp;&nbsp;", origlen);
   webpage = string_replace_all(webpage, "&nbsp; ", "&nbsp;&nbsp;", origlen);
   webpage.append("<br />");
-  return true;
 }
 
-#endif
+#endif /* BUILD_HTTP */
 
 }  // namespace conky

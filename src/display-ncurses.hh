@@ -46,22 +46,23 @@ class display_output_ncurses : public display_output_console {
   // connect to DISPLAY and other stuff
   virtual bool initialize();
   virtual bool shutdown();
+  virtual bool draw_line_inner_required() { return true; }
 
   // drawing primitives
-  virtual bool set_foreground_color(long c);
+  virtual void set_foreground_color(long c);
 
-  virtual bool begin_draw_text();
-  virtual bool end_draw_text();
-  virtual bool draw_string(const char *s, int w);
+  virtual void begin_draw_text();
+  virtual void end_draw_text();
+  virtual void draw_string(const char *s, int w);
   virtual void line_inner_done();
 
   virtual int getx();
   virtual int gety();
-  virtual bool gotox(int x);
-  virtual bool gotoy(int y);
-  virtual bool gotoxy(int x, int y);
+  virtual void gotox(int x);
+  virtual void gotoy(int y);
+  virtual void gotoxy(int x, int y);
 
-  virtual bool flush();
+  virtual void flush();
 
   // ncurses-specific
 };
