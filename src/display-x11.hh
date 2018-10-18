@@ -47,6 +47,31 @@ class display_output_x11 : public display_output_base {
   virtual bool initialize();
   virtual bool shutdown();
 
+  virtual bool main_loop_wait(double t);
+
+  virtual void sigterm_cleanup();
+  virtual void cleanup();
+
+  // drawing primitives
+  virtual void set_foreground_color(long c);
+
+  virtual int calc_text_width(const char *s);
+
+  // GUI interface
+  virtual void draw_string_at(int x, int y, const char *s, int w);
+  // X11 lookalikes
+  virtual void set_line_style(int w, bool solid);
+  virtual void set_dashes(char *s);
+  virtual void draw_line(int x1, int y1, int x2, int y2);
+  virtual void draw_rect(int x, int y, int w, int h);
+  virtual void fill_rect(int x, int y, int w, int h);
+  virtual void draw_arc(int x, int y, int w, int h, int a1, int a2);
+  virtual void move_win(int x, int y);
+
+  virtual void end_draw_stuff();
+  virtual void clear_text(int exposures);
+  virtual void load_fonts(bool utf8);
+
   // X11-specific
 };
 
