@@ -24,10 +24,10 @@
 
 #include "display-output.hh"
 
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
-#include <vector>
 
 namespace conky {
 namespace {
@@ -100,8 +100,10 @@ bool initialize_display_outputs() {
   for (auto &output : *display_outputs) {
     outputs.push_back(output.second);
   }
+  // Sort display outputs by descending priority, to try graphical ones first.
   sort(outputs.begin(), outputs.end(), &display_output_base::priority_compare);
 
+  int graphical_count = 0;
 
   for (auto output : outputs) {
     if (output->priority < 0)
@@ -111,11 +113,29 @@ bool initialize_display_outputs() {
     if (output->detect()) {
       std::cerr << "Detected display output '" << output->name
                 << "'... " << std::endl;
+
+      if (graphical_count && output->graphical())
+        continue;
+
+      // X11 init needs to draw, so we must add it to the list first.
+      active_display_outputs.push_back(output);
+
       if (output->initialize()) {
         std::cerr << "Initialized display output '" << output->name
                   << "'... " << std::endl;
+
         output->is_active = true;
-        active_display_outputs.push_back(output);
+        if (output->graphical())
+          graphical_count++;
+        /*
+         * We only support a single graphical display for now.
+         * More than one text display (ncurses + http, ...) should be ok.
+         */
+        //if (graphical_count)
+          //return true;
+      } else {
+        // failed, so remove from list
+        active_display_outputs.pop_back();
       }
     }
   }
@@ -123,13 +143,16 @@ bool initialize_display_outputs() {
     return true;
 
   std::cerr << "Unable to find a usable display output." << std::endl;
-  return true;//false;
+  return false;
 }
 
 bool shutdown_display_outputs() {
   bool ret = true;
-  for (auto output : active_display_outputs)
+  for (auto output : active_display_outputs) {
+    output->is_active = false;
     ret = output->shutdown();
+  }
+  active_display_outputs.clear();
   return ret;
 }
 
