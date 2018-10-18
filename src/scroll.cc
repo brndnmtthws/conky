@@ -39,7 +39,7 @@
  * @param c first byte of the character
  */
 inline int scroll_character_length(char c) {
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   if (utf8_mode.get(*state)) {
     auto uc = static_cast<unsigned char>(c);
     int len = 0;
@@ -62,7 +62,7 @@ inline int scroll_character_length(char c) {
  * right.
  */
 inline bool scroll_check_skip_byte(char c) {
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   // Check if byte matches UTF-8 continuation byte pattern (0b10xxxxxx)
   if (utf8_mode.get(*state) && (c & 0xC0) == 0x80) { return true; }
 #endif
@@ -152,7 +152,7 @@ void parse_scroll_arg(struct text_object *obj, const char *arg,
 
   if ((arg == nullptr) || sscanf(arg + n1, "%u %n", &sd->show, &n2) <= 0) {
     free(sd);
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
     free(obj->next);
 #endif
     free(free_at_crash2);
@@ -194,9 +194,9 @@ void parse_scroll_arg(struct text_object *obj, const char *arg,
 
   obj->data.opaque = sd;
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   /* add a color object right after scroll to reset any color changes */
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 }
 
 void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
@@ -301,7 +301,7 @@ void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
   } else {
     scroll_scroll_right(sd, buf, sd->step);
   }
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   // reset color when scroll is finished
   if (out_to_x.get(*state)) {
     new_special(p + strlen(p), FG)->arg = sd->resetcolor;

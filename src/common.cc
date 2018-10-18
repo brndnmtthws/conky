@@ -358,7 +358,7 @@ void print_no_update(struct text_object *obj, char *p, unsigned int p_max_size) 
   snprintf(p, p_max_size, "%s", obj->data.s);
 }
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 void scan_loadgraph_arg(struct text_object *obj, const char *arg) {
   char *buf = nullptr;
 
@@ -371,7 +371,7 @@ double loadgraphval(struct text_object *obj) {
 
   return info.loadavg[0];
 }
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 
 uint8_t cpu_percentage(struct text_object *obj) {
   if ((unsigned int) obj->data.i > info.cpu_count) {

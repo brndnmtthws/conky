@@ -309,7 +309,7 @@ void print_v6addrs(struct text_object *obj, char *p, unsigned int p_max_size) {
 
 #endif /* __linux__ */
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 
 /**
  * This function is called periodically to update the download and upload graphs
@@ -352,7 +352,7 @@ double upspeedgraphval(struct text_object *obj) {
 
   return (ns != nullptr ? (ns->trans_speed / 1024.0) : 0);
 }
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 
 #ifdef BUILD_WLAN
 void print_wireless_essid(struct text_object *obj, char *p, unsigned int p_max_size) {

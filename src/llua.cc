@@ -91,7 +91,7 @@ conky::simple_config_setting<std::string> lua_startup_hook("lua_startup_hook",
 conky::simple_config_setting<std::string> lua_shutdown_hook("lua_shutdown_hook",
                                                             std::string(),
                                                             true);
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 conky::simple_config_setting<std::string> lua_draw_hook_pre("lua_draw_hook_pre",
                                                             std::string(),
                                                             true);
@@ -463,7 +463,7 @@ void llua_shutdown_hook() {
   llua_do_call(lua_shutdown_hook.get(*state).c_str(), 0);
 }
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 void llua_draw_pre_hook() {
   if ((lua_L == nullptr) || lua_draw_hook_pre.get(*state).empty()) { return; }
   llua_do_call(lua_draw_hook_pre.get(*state).c_str(), 0);
@@ -529,7 +529,7 @@ void llua_update_window_table(int text_start_x, int text_start_y,
 
   lua_setglobal(lua_L, "conky_window");
 }
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 
 void llua_setup_info(struct information *i, double u_interval) {
   if (lua_L == nullptr) { return; }
