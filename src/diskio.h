@@ -71,11 +71,11 @@ void parse_diskio_arg(struct text_object *, const char *);
 void print_diskio(struct text_object *, char *, unsigned int);
 void print_diskio_read(struct text_object *, char *, unsigned int);
 void print_diskio_write(struct text_object *, char *, unsigned int);
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 void parse_diskiograph_arg(struct text_object *, const char *);
 double diskiographval(struct text_object *);
 double diskiographval_read(struct text_object *);
 double diskiographval_write(struct text_object *);
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 
 #endif /* DISKIO_H_ */

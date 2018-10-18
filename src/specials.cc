@@ -27,9 +27,9 @@
  *
  */
 #include "conky.h"
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 #include "fonts.h"
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 #include <cmath>
 #include "logging.h"
 #include "nc.h"
@@ -53,7 +53,7 @@ conky::range_config_setting<int> default_bar_width(
 conky::range_config_setting<int> default_bar_height(
     "default_bar_height", 0, std::numeric_limits<int>::max(), 6, false);
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 conky::range_config_setting<int> default_graph_width(
     "default_graph_width", 0, std::numeric_limits<int>::max(), 0, false);
 conky::range_config_setting<int> default_graph_height(
@@ -63,7 +63,7 @@ conky::range_config_setting<int> default_gauge_width(
     "default_gauge_width", 0, std::numeric_limits<int>::max(), 40, false);
 conky::range_config_setting<int> default_gauge_height(
     "default_gauge_height", 0, std::numeric_limits<int>::max(), 25, false);
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 
 conky::simple_config_setting<std::string> console_graph_ticks(
     "console_graph_ticks", " ,_,=,#", false);
@@ -109,7 +109,7 @@ struct tab {
  * Scanning arguments to various special text objects
  */
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 const char *scan_gauge(struct text_object *obj, const char *args,
                        double scale) {
   struct gauge *g;
@@ -174,7 +174,7 @@ const char *scan_bar(struct text_object *obj, const char *args, double scale) {
   return args;
 }
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 void scan_font(struct text_object *obj, const char *args) {
   if ((args != nullptr) && (*args != 0)) {
     obj->data.s = strndup(args, DEFAULT_TEXT_BUFFER_SIZE);
@@ -335,7 +335,7 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
 
   return nullptr;
 }
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 
 /*
  * Printing various special text objects
@@ -385,7 +385,7 @@ void new_gauge_in_shell(struct text_object *obj, char *p, unsigned int p_max_siz
   snprintf(p, p_max_size, "%s", gaugevals[round_to_int(usage * 4 / g->scale)]);
 }
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 void new_gauge_in_x11(struct text_object *obj, char *buf, double usage) {
   struct special_t *s = nullptr;
   auto *g = static_cast<struct gauge *>(obj->special_data);
@@ -405,7 +405,7 @@ void new_gauge_in_x11(struct text_object *obj, char *buf, double usage) {
   s->height = g->height;
   s->scale = g->scale;
 }
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 
 void new_gauge(struct text_object *obj, char *p, unsigned int p_max_size, double usage) {
   auto *g = static_cast<struct gauge *>(obj->special_data);
@@ -420,19 +420,19 @@ void new_gauge(struct text_object *obj, char *p, unsigned int p_max_size, double
     usage = MIN(g->scale, usage);
   }
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   if (out_to_x.get(*state)) {
     new_gauge_in_x11(obj, p, usage);
   }
   if (out_to_stdout.get(*state)) {
     new_gauge_in_shell(obj, p, p_max_size, usage);
   }
-#else /* BUILD_X11 */
+#else /* BUILD_GUI */
   new_gauge_in_shell(obj, p, p_max_size, usage);
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 }
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 void new_font(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct special_t *s;
   unsigned int tmp = selected_font;
@@ -647,14 +647,14 @@ void new_stippled_hr(struct text_object *obj, char *p, unsigned int p_max_size) 
   s->height = sh->height;
   s->arg = sh->arg;
 }
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 
 void new_fg(struct text_object *obj, char *p, unsigned int p_max_size) {
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   if (out_to_x.get(*state)) {
     new_special(p, FG)->arg = obj->data.l;
   }
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 #ifdef BUILD_NCURSES
   if (out_to_ncurses.get(*state)) {
     new_special(p, FG)->arg = obj->data.l;
@@ -665,7 +665,7 @@ void new_fg(struct text_object *obj, char *p, unsigned int p_max_size) {
   UNUSED(p_max_size);
 }
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 void new_bg(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (not out_to_x.get(*state)) {
     return;
@@ -677,7 +677,7 @@ void new_bg(struct text_object *obj, char *p, unsigned int p_max_size) {
 
   new_special(p, BG)->arg = obj->data.l;
 }
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 
 static void new_bar_in_shell(struct text_object *obj, char *buffer,
                              unsigned int buf_max_size, double usage) {
@@ -710,7 +710,7 @@ static void new_bar_in_shell(struct text_object *obj, char *buffer,
   buffer[i] = 0;
 }
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 static void new_bar_in_x11(struct text_object *obj, char *buf, double usage) {
   struct special_t *s = nullptr;
   auto *b = static_cast<struct bar *>(obj->special_data);
@@ -730,7 +730,7 @@ static void new_bar_in_x11(struct text_object *obj, char *buf, double usage) {
   s->height = b->height;
   s->scale = b->scale;
 }
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 
 /* usage is in range [0,255] */
 void new_bar(struct text_object *obj, char *p, unsigned int p_max_size, double usage) {
@@ -746,16 +746,16 @@ void new_bar(struct text_object *obj, char *p, unsigned int p_max_size, double u
     usage = MIN(b->scale, usage);
   }
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   if (out_to_x.get(*state)) {
     new_bar_in_x11(obj, p, usage);
   }
   if (out_to_stdout.get(*state)) {
     new_bar_in_shell(obj, p, p_max_size, usage);
   }
-#else /* BUILD_X11 */
+#else /* BUILD_GUI */
   new_bar_in_shell(obj, p, p_max_size, usage);
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 }
 
 void new_outline(struct text_object *obj, char *p, unsigned int p_max_size) {

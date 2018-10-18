@@ -174,7 +174,7 @@ void print_diskio_write(struct text_object *obj, char *p, unsigned int p_max_siz
   print_diskio_dir(obj, 1, p, p_max_size);
 }
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 void parse_diskiograph_arg(struct text_object *obj, const char *arg) {
   char *buf = nullptr;
   buf = scan_graph(obj, arg, 0);
@@ -200,7 +200,7 @@ double diskiographval_write(struct text_object *obj) {
 
   return (diskio != nullptr ? diskio->current_write : 0);
 }
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 
 void update_diskio_values(struct diskio_stat *ds, unsigned int reads,
                           unsigned int writes) {
