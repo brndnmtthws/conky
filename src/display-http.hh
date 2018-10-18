@@ -4,7 +4,7 @@
  *
  * Please see COPYING for details
  *
- * Copyright (C) 2010 Pavel Labath et al.
+ * Copyright (C) 2018 François Revol et al.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
