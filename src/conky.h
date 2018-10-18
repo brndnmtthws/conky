@@ -302,7 +302,15 @@ extern conky::range_config_setting<double> update_interval;
 extern conky::range_config_setting<double> update_interval_on_battery;
 double active_update_interval();
 
+extern conky::simple_config_setting<bool> show_graph_scale;
+extern conky::simple_config_setting<bool> show_graph_range;
+extern conky::simple_config_setting<int> gap_x;
+extern conky::simple_config_setting<int> gap_y;
+extern conky::simple_config_setting<bool> draw_borders;
+extern conky::simple_config_setting<bool> draw_graph_borders;
 extern conky::range_config_setting<char> stippled_borders;
+extern conky::simple_config_setting<bool> draw_shades;
+extern conky::simple_config_setting<bool> draw_outline;
 
 void set_current_text_color(long colour);
 long get_current_text_color(void);
@@ -326,6 +334,9 @@ void parse_conky_vars(struct text_object *, const char *, char *, int);
 void extract_object_args_to_sub(struct text_object *, const char *);
 
 void generate_text_internal(char *, int, struct text_object);
+
+void update_text_area();
+void draw_stuff();
 
 int percent_print(char *, int, unsigned);
 void human_readable(long long, char *, int);

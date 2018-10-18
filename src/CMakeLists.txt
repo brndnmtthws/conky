@@ -230,10 +230,16 @@ if(BUILD_PORT_MONITORS)
   set(optional_sources ${optional_sources} ${port_monitors})
 endif(BUILD_PORT_MONITORS)
 
+if(BUILD_GUI)
+  set(gui
+    fonts.cc fonts.h
+  )
+  set(optional_sources ${optional_sources} ${gui})
+endif(BUILD_GUI)
+
 if(BUILD_X11)
   set(x11
     x11.cc x11.h
-    fonts.cc fonts.h
   )
   set(optional_sources ${optional_sources} ${x11})
 

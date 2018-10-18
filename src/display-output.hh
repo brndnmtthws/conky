@@ -27,6 +27,7 @@
 #include <string>
 #include <type_traits>
 #include <string.h>
+#include <vector>
 
 #include "luamm.hh"
 
@@ -105,7 +106,6 @@ class display_output_base {
 
   virtual void begin_draw_stuff() { }
   virtual void end_draw_stuff() { }
-  virtual void swap_buffers() { }
   virtual void clear_text(int exposures) { }
   virtual void load_fonts(bool utf8) { }
 
