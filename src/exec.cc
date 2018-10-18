@@ -269,7 +269,7 @@ void scan_exec_arg(struct text_object *obj, const char *arg,
   /* parse any special options for the graphical exec types */
   if ((execflag & EF_BAR) != 0u) {
     cmd = scan_bar(obj, cmd, 100);
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   } else if ((execflag & EF_GAUGE) != 0u) {
     cmd = scan_gauge(obj, cmd, 100);
   } else if ((execflag & EF_GRAPH) != 0u) {
@@ -277,7 +277,7 @@ void scan_exec_arg(struct text_object *obj, const char *arg,
     if (cmd == nullptr) {
       NORM_ERR("error parsing arguments to execgraph object");
     }
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
   }
 
   /* finally, store the resulting command, or an empty string if something went

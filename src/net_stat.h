@@ -102,11 +102,11 @@ void print_addrs(struct text_object *, char *, unsigned int);
 void print_v6addrs(struct text_object *, char *, unsigned int);
 #endif /* BUILD_IPV6 */
 #endif /* __linux__ */
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 void parse_net_stat_graph_arg(struct text_object *, const char *, void *);
 double downspeedgraphval(struct text_object *);
 double upspeedgraphval(struct text_object *);
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 #ifdef BUILD_WLAN
 void print_wireless_essid(struct text_object *, char *, unsigned int);
 void print_wireless_channel(struct text_object *, char *, unsigned int);
