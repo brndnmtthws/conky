@@ -396,8 +396,8 @@ void new_gauge_in_x11(struct text_object *obj, char *buf, double usage) {
   s = new_special(buf, GAUGE);
 
   s->arg = usage;
-  s->width = xft_dpi_scale(g->width);
-  s->height = xft_dpi_scale(g->height);
+  s->width = dpi_scale(g->width);
+  s->height = dpi_scale(g->height);
   s->scale = g->scale;
 }
 #endif /* BUILD_GUI */
@@ -551,7 +551,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
   s = new_special(buf, GRAPH);
 
   /* set graph (special) width to width in obj */
-  s->width = xft_dpi_scale(g->width);
+  s->width = dpi_scale(g->width);
   if (s->width != 0) { s->graph_width = s->width; }
 
   if (s->graph_width != s->graph_allocated) {
@@ -576,7 +576,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
     s->graph_allocated = s->graph_width;
     graphs[g->id] = graph;
   }
-  s->height = xft_dpi_scale(g->height);
+  s->height = dpi_scale(g->height);
   s->first_colour = adjust_colours(g->first_colour);
   s->last_colour = adjust_colours(g->last_colour);
   if (g->scale != 0) {
@@ -610,7 +610,7 @@ void new_hr(struct text_object *obj, char *p, unsigned int p_max_size) {
 
   if (p_max_size == 0) { return; }
 
-  new_special(p, HORIZONTAL_LINE)->height = xft_dpi_scale(obj->data.l);
+  new_special(p, HORIZONTAL_LINE)->height = dpi_scale(obj->data.l);
 }
 
 void scan_stippled_hr(struct text_object *obj, const char *arg) {
@@ -642,8 +642,8 @@ void new_stippled_hr(struct text_object *obj, char *p,
 
   s = new_special(p, STIPPLED_HR);
 
-  s->height = xft_dpi_scale(sh->height);
-  s->arg = xft_dpi_scale(sh->arg);
+  s->height = dpi_scale(sh->height);
+  s->arg = dpi_scale(sh->arg);
 }
 #endif /* BUILD_GUI */
 
@@ -704,8 +704,8 @@ static void new_bar_in_x11(struct text_object *obj, char *buf, double usage) {
   s = new_special(buf, BAR);
 
   s->arg = usage;
-  s->width = xft_dpi_scale(b->width);
-  s->height = xft_dpi_scale(b->height);
+  s->width = dpi_scale(b->width);
+  s->height = dpi_scale(b->height);
   s->scale = b->scale;
 }
 #endif /* BUILD_GUI */
@@ -740,12 +740,12 @@ void new_outline(struct text_object *obj, char *p, unsigned int p_max_size) {
 
 void new_offset(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, OFFSET)->arg = xft_dpi_scale(obj->data.l);
+  new_special(p, OFFSET)->arg = dpi_scale(obj->data.l);
 }
 
 void new_voffset(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, VOFFSET)->arg = xft_dpi_scale(obj->data.l);
+  new_special(p, VOFFSET)->arg = dpi_scale(obj->data.l);
 }
 
 void new_save_coordinates(struct text_object *obj, char *p,
@@ -756,18 +756,18 @@ void new_save_coordinates(struct text_object *obj, char *p,
 
 void new_alignr(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, ALIGNR)->arg = xft_dpi_scale(obj->data.l);
+  new_special(p, ALIGNR)->arg = dpi_scale(obj->data.l);
 }
 
 // A positive offset pushes the text further left
 void new_alignc(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, ALIGNC)->arg = xft_dpi_scale(obj->data.l);
+  new_special(p, ALIGNC)->arg = dpi_scale(obj->data.l);
 }
 
 void new_goto(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, GOTO)->arg = xft_dpi_scale(obj->data.l);
+  new_special(p, GOTO)->arg = dpi_scale(obj->data.l);
 }
 
 void scan_tab(struct text_object *obj, const char *arg) {
@@ -795,8 +795,8 @@ void new_tab(struct text_object *obj, char *p, unsigned int p_max_size) {
   if ((t == nullptr) || (p_max_size == 0)) { return; }
 
   s = new_special(p, TAB);
-  s->width = xft_dpi_scale(t->width);
-  s->arg = xft_dpi_scale(t->arg);
+  s->width = dpi_scale(t->width);
+  s->arg = dpi_scale(t->arg);
 }
 
 void clear_stored_graphs() {
