@@ -26,6 +26,7 @@
 #include <limits>
 #include <string>
 #include <type_traits>
+#include <string.h>
 
 #include "luamm.hh"
 
@@ -68,34 +69,61 @@ class display_output_base {
   }
 
   // check if available and enabled in settings
-  virtual bool detect() { return false; };
+  virtual bool detect() { return false; }
   // connect to DISPLAY and other stuff
-  virtual bool initialize() { return false; };
-  virtual bool shutdown() { return false; };
+  virtual bool initialize() { return false; }
+  virtual bool shutdown() { return false; }
+
+  virtual bool graphical() { return is_graphical; };
+  virtual bool draw_line_inner_required() { return is_graphical; }
+
+  virtual bool main_loop_wait(double t) { return false; }
+
+  virtual void sigterm_cleanup() { }
+  virtual void cleanup() { }
 
   // drawing primitives
-  virtual bool set_foreground_color(long c) { return false; }
+  virtual void set_foreground_color(long c) { }
 
-  virtual bool begin_draw_text() { return false; };
-  virtual bool end_draw_text() { return false; };
-  virtual bool draw_string(const char *s, int w) { return false; };
+  virtual int calc_text_width(const char *s) { return strlen(s); }
+
+  virtual void begin_draw_text() { }
+  virtual void end_draw_text() { }
+  virtual void draw_string(const char *s, int w) { }
   virtual void line_inner_done() { }
 
-  virtual int getx() { return 0; };
-  virtual int gety() { return 0; };
-  virtual bool gotox(int x) { return false; };
-  virtual bool gotoy(int y) { return false; };
-  virtual bool gotoxy(int x, int y) { return false; };
+  // GUI interface
+  virtual void draw_string_at(int x, int y, const char *s, int w) { }
+  // X11 lookalikes
+  virtual void set_line_style(int w, bool solid) { }
+  virtual void set_dashes(char *s) { }
+  virtual void draw_line(int x1, int y1, int x2, int y2) { }
+  virtual void draw_rect(int x, int y, int w, int h) { }
+  virtual void fill_rect(int x, int y, int w, int h) { }
+  virtual void draw_arc(int x, int y, int w, int h, int a1, int a2) { }
+  virtual void move_win(int x, int y) { }
 
-  virtual bool flush() { return false; };
+  virtual void begin_draw_stuff() { }
+  virtual void end_draw_stuff() { }
+  virtual void swap_buffers() { }
+  virtual void clear_text(int exposures) { }
+  virtual void load_fonts(bool utf8) { }
+
+  // tty interface
+  virtual int getx() { return 0; }
+  virtual int gety() { return 0; }
+  virtual void gotox(int x) { }
+  virtual void gotoy(int y) { }
+  virtual void gotoxy(int x, int y) { }
+
+  virtual void flush() { }
 
 
   friend bool conky::initialize_display_outputs();
   friend bool conky::shutdown_display_outputs();
 
 protected:
-  virtual bool active() { return is_active; };
-  virtual bool graphical() { return is_graphical; };
+  virtual bool active() { return is_active; }
 };
 
 /*
