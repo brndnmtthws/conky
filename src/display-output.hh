@@ -27,6 +27,7 @@
 #include <limits>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 #include "luamm.hh"
 
@@ -102,10 +103,10 @@ class display_output_base {
   virtual void fill_rect(int x, int y, int w, int h) {}
   virtual void draw_arc(int x, int y, int w, int h, int a1, int a2) {}
   virtual void move_win(int x, int y) {}
+  virtual int dpi_scale(int value) { return value; }
 
   virtual void begin_draw_stuff() {}
   virtual void end_draw_stuff() {}
-  virtual void swap_buffers() {}
   virtual void clear_text(int exposures) {}
   virtual void load_fonts(bool utf8) {}
 
