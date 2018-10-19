@@ -195,8 +195,6 @@ int top_cpu, top_mem, top_time;
 int top_io;
 #endif
 int top_running;
-static conky::simple_config_setting<bool> extra_newline("extra_newline", false,
-                                                        false);
 static volatile sig_atomic_t g_sigterm_pending, g_sighup_pending,
     g_sigusr2_pending;
 
@@ -1184,15 +1182,6 @@ static void draw_string(const char *s) {
   if (s[0] == '\0') { return; }
 
   width_of_s = get_string_width(s);
-  if (out_to_stdout.get(*state) && draw_mode == FG) {
-    printf("%s\n", s);
-    if (extra_newline.get(*state)) { fputc('\n', stdout); }
-    fflush(stdout); /* output immediately, don't buffer */
-  }
-  if (out_to_stderr.get(*state) && draw_mode == FG) {
-    fprintf(stderr, "%s\n", s);
-    fflush(stderr); /* output immediately, don't buffer */
-  }
   if (draw_mode == FG && (overwrite_fpointer != nullptr)) {
     fprintf(overwrite_fpointer, "%s\n", s);
   }
