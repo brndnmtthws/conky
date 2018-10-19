@@ -132,6 +132,12 @@ protected:
 extern std::vector<display_output_base *> active_display_outputs;
 
 /*
+ * the list of the only current output, when inside draw_text,
+ * else we iterate over each active outputs.
+ */
+extern std::vector<conky::display_output_base *> current_display_outputs;
+
+/*
  * Use this to declare a display output that has been disabled during compilation.
  * We can then print a nice error message telling the used which setting to
  * enable.
@@ -144,5 +150,31 @@ class disabled_display_output : public display_output_base {
 };
 
 }  // namespace conky
+
+// XXX: move to namespace?
+
+static inline std::vector<conky::display_output_base *> &display_outputs() {
+  if (conky::current_display_outputs.size())
+    return conky::current_display_outputs;
+  return conky::active_display_outputs;
+}
+
+static inline conky::display_output_base *display_output() {
+  if (conky::current_display_outputs.size())
+    return conky::current_display_outputs[0];
+//XXX; not really what intended yet...
+  return conky::active_display_outputs[0];
+  //return nullptr;
+}
+
+static inline void unset_display_output() {
+  conky::current_display_outputs.clear();
+}
+
+static inline void set_display_output(conky::display_output_base *output) {
+  conky::current_display_outputs.clear();
+  conky::current_display_outputs.push_back(output);
+}
+
 
 #endif /* DISPLAY_OUTPUT_HH */
