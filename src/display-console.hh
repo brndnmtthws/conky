@@ -47,6 +47,8 @@ class display_output_console : public display_output_base {
   virtual bool initialize();
   virtual bool shutdown();
 
+  virtual void draw_string(const char *s, int w);
+
   // console-specific
 };
 
