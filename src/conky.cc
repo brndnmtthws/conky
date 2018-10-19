@@ -465,15 +465,6 @@ conky::range_config_setting<int> net_avg_samples("net_avg_samples", 1, 14, 2,
 conky::range_config_setting<int> diskio_avg_samples("diskio_avg_samples", 1, 14,
                                                     2, true);
 
-/* filenames for output */
-static conky::simple_config_setting<std::string> overwrite_file(
-    "overwrite_file", std::string(), true);
-static FILE *overwrite_fpointer = nullptr;
-static conky::simple_config_setting<std::string> append_file("append_file",
-                                                             std::string(),
-                                                             true);
-static FILE *append_fpointer = nullptr;
-
 #ifdef BUILD_X11
 
 static conky::simple_config_setting<bool> show_graph_scale("show_graph_scale",
@@ -1182,12 +1173,6 @@ static void draw_string(const char *s) {
   if (s[0] == '\0') { return; }
 
   width_of_s = get_string_width(s);
-  if (draw_mode == FG && (overwrite_fpointer != nullptr)) {
-    fprintf(overwrite_fpointer, "%s\n", s);
-  }
-  if (draw_mode == FG && (append_fpointer != nullptr)) {
-    fprintf(append_fpointer, "%s\n", s);
-  }
   if (conky::active_display_outputs.size() && draw_mode == FG)
     for (auto output : conky::active_display_outputs)
       output->draw_string(s, width_of_s);
@@ -1745,18 +1730,8 @@ static void draw_stuff() {
 #ifdef BUILD_IMLIB2
   cimlib_render(text_start_x, text_start_y, window.width, window.height);
 #endif /* BUILD_IMLIB2 */
-  if (static_cast<unsigned int>(!overwrite_file.get(*state).empty()) != 0u) {
-    overwrite_fpointer = fopen(overwrite_file.get(*state).c_str(), "we");
-    if (overwrite_fpointer == nullptr) {
-      NORM_ERR("Cannot overwrite '%s'", overwrite_file.get(*state).c_str());
-    }
-  }
-  if (static_cast<unsigned int>(!append_file.get(*state).empty()) != 0u) {
-    append_fpointer = fopen(append_file.get(*state).c_str(), "ae");
-    if (append_fpointer == nullptr) {
-      NORM_ERR("Cannot append to '%s'", append_file.get(*state).c_str());
-    }
-  }
+  for (auto output : display_outputs())
+    output->begin_draw_stuff();
 #ifdef BUILD_X11
   llua_draw_pre_hook();
   if (out_to_x.get(*state)) {
@@ -1797,14 +1772,8 @@ static void draw_stuff() {
   if (out_to_x.get(*state)) { xpmdb_swap_buffers(); }
 #endif
 #endif /* BUILD_X11 && BUILD_XDBE */
-  if (overwrite_fpointer != nullptr) {
-    fclose(overwrite_fpointer);
-    overwrite_fpointer = nullptr;
-  }
-  if (append_fpointer != nullptr) {
-    fclose(append_fpointer);
-    append_fpointer = nullptr;
-  }
+  for (auto output : display_outputs())
+    output->end_draw_stuff();
 }
 
 #ifdef BUILD_X11
