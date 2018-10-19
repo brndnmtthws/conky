@@ -49,6 +49,12 @@ display_outputs_t *display_outputs;
  */
 std::vector<display_output_base *> active_display_outputs;
 
+/*
+ * the list of the only current output, when inside draw_text,
+ * else we iterate over each active outputs.
+ */
+std::vector<conky::display_output_base *> current_display_outputs;
+
 namespace priv {
 void do_register_display_output(const std::string &name,
                                 display_output_base *output) {
