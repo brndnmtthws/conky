@@ -34,6 +34,9 @@
 #include <sstream>
 #include <unordered_map>
 
+static conky::simple_config_setting<bool> extra_newline("extra_newline", false,
+                                                        false);
+
 namespace conky {
 namespace {
 
@@ -62,5 +65,17 @@ bool display_output_console::detect() {
 bool display_output_console::initialize() { return true; }
 
 bool display_output_console::shutdown() { return true; }
+
+void display_output_console::draw_string(const char *s, int w) {
+  if (out_to_stdout.get(*state)) {
+    printf("%s\n", s);
+    if (extra_newline.get(*state)) { fputc('\n', stdout); }
+    fflush(stdout); /* output immediately, don't buffer */
+  }
+  if (out_to_stderr.get(*state)) {
+    fprintf(stderr, "%s\n", s);
+    fflush(stderr); /* output immediately, don't buffer */
+  }
+}
 
 }  // namespace conky
