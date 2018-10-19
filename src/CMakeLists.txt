@@ -110,6 +110,8 @@ set(conky_sources
     display-output.hh
     display-console.cc
     display-console.hh
+    display-file.cc
+    display-file.hh
     display-ncurses.cc
     display-ncurses.hh
     display-http.cc
