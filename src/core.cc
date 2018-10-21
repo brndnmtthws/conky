@@ -1181,9 +1181,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #ifdef BUILD_X11
   END OBJ(memgraph, &update_meminfo) char *buf = nullptr;
   buf = scan_graph(obj, arg, 1);
-
   free_and_zero(buf);
   obj->callbacks.graphval = &mem_barval;
+  END OBJ(memwithbuffersgraph, &update_meminfo) char *buf = nullptr;
+  buf = scan_graph(obj, arg, 1);
+  free_and_zero(buf);
+  obj->callbacks.graphval = &mem_with_buffers_barval;
 #endif /* BUILD_X11*/
 #ifdef HAVE_SOME_SOUNDCARD_H
   END OBJ(mixer, 0) parse_mixer_arg(obj, arg);
