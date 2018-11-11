@@ -1170,7 +1170,6 @@ static void draw_string(const char *s) {
     }
   }
 #ifdef BUILD_GUI
-  //if (out_to_x.get(*state)) {
   if (display_output() && display_output()->graphical()) {
     int mw = maximum_width.get(*state);
     if (text_width == mw) {
@@ -1185,7 +1184,6 @@ static void draw_string(const char *s) {
 #endif /* BUILD_GUI */
   s = tmpstring2;
 #ifdef BUILD_GUI
-  //if (out_to_x.get(*state)) {
   if (display_output() && display_output()->graphical()) {
     display_output()->draw_string_at(
                           text_offset_x + cur_x, text_offset_y + cur_y,
@@ -1210,7 +1208,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
   int orig_special_index = special_index;
 
 #ifdef BUILD_GUI
-  //if (out_to_x.get(*state)) {
   if (display_output() && display_output()->graphical()) {
     font_h = font_height();
     cur_y += font_ascent();
