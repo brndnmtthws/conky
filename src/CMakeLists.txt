@@ -73,7 +73,6 @@ set(conky_sources
   display-file.cc display-file.hh
   display-ncurses.cc display-ncurses.hh
   display-http.cc display-http.hh
-  display-x11.cc display-x11.hh
   lua-config.cc lua-config.hh
   setting.cc setting.hh
   llua.cc llua.h
@@ -230,16 +229,11 @@ if(BUILD_PORT_MONITORS)
   set(optional_sources ${optional_sources} ${port_monitors})
 endif(BUILD_PORT_MONITORS)
 
-if(BUILD_GUI)
-  set(gui
-    fonts.cc fonts.h
-  )
-  set(optional_sources ${optional_sources} ${gui})
-endif(BUILD_GUI)
-
 if(BUILD_X11)
   set(x11
+    display-x11.cc display-x11.hh
     x11.cc x11.h
+    fonts.cc fonts.h
   )
   set(optional_sources ${optional_sources} ${x11})
 
