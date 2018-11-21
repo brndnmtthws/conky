@@ -88,6 +88,8 @@
 
 #cmakedefine BUILD_MATH 1
 
+#cmakedefine BUILD_METAL 1
+
 #cmakedefine BUILD_BUILTIN_CONFIG 1
 
 #cmakedefine BUILD_OLD_CONFIG 1
