@@ -28,7 +28,7 @@
  */
 #include "conky.h"
 #ifdef BUILD_GUI
-#include "fonts.h"
+//#include "fonts.h"    // XXX disable until we get fonts stuff fixed
 #endif /* BUILD_GUI */
 #include <cmath>
 #include "logging.h"

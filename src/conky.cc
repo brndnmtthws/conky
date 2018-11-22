@@ -52,6 +52,10 @@
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
 #endif /* HAVE_SYS_INOTIFY_H */
+#ifdef BUILD_METAL
+#include "fonts-metal.h"
+#include "x11.h"
+#endif
 #ifdef BUILD_X11
 #include <X11/Xutil.h>
 #include "x11.h"
@@ -88,7 +92,7 @@
 #include "diskio.h"
 #include "exec.h"
 #ifdef BUILD_GUI
-#include "fonts.h"
+//#include "fonts.h"    // XXX disable until we get proper font support
 #endif
 #include "fs.h"
 #ifdef BUILD_ICONV

@@ -229,6 +229,15 @@ if(BUILD_PORT_MONITORS)
   set(optional_sources ${optional_sources} ${port_monitors})
 endif(BUILD_PORT_MONITORS)
 
+if(BUILD_METAL)
+  set(metal
+    display-metal.cc display-metal.hh
+    fonts-metal.cc fonts-metal.h
+    x11.cc x11.h
+  )
+  set(optional_sources ${optional_sources} ${metal})
+endif(BUILD_METAL)
+
 if(BUILD_X11)
   set(x11
     display-x11.cc display-x11.hh
