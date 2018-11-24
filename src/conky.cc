@@ -1749,6 +1749,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             if (draw_mode == BG) { cur_x++; }
 #endif /* BUILD_X11 */
 #ifdef BUILD_NCURSES
+            cur_x = static_cast<int>(current->arg);
             if (out_to_ncurses.get(*state)) {
               int x, y;
               getyx(ncurses_window, y, x);
