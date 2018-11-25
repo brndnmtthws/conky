@@ -33,6 +33,7 @@
 #include "specials.h"
 #include "text_object.h"
 #include "x11.h"
+#include "display-output.hh"  // XXX npyl
 
 /**
  * Length of a character in bytes.

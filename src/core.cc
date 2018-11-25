@@ -56,6 +56,9 @@
 #ifdef BUILD_GUI
 #include "display-output.hh"
 #endif /* BUILD_GUI */
+#ifdef BUILD_METAL
+#include "fonts-metal.h"
+#endif /* BUILD_METAL */
 #include "fs.h"
 #ifdef BUILD_IBM
 #include "ibm.h"

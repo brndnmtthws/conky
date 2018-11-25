@@ -341,7 +341,7 @@ void draw_stuff();
 int percent_print(char *, int, unsigned);
 void human_readable(long long, char *, int);
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 
 /* UTF-8 */
 extern conky::simple_config_setting<bool> utf8_mode;
