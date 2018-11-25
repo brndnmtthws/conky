@@ -31,8 +31,67 @@
 
 #include "luamm.hh"
 
-namespace conky {
+/* alignments */
+enum alignment {
+  TOP_LEFT,
+  TOP_RIGHT,
+  TOP_MIDDLE,
+  BOTTOM_LEFT,
+  BOTTOM_RIGHT,
+  BOTTOM_MIDDLE,
+  MIDDLE_LEFT,
+  MIDDLE_MIDDLE,
+  MIDDLE_RIGHT,
+  NONE
+};
 
+extern int display_width;
+extern int display_height;
+extern int screen;
+
+extern int workarea[4];
+
+extern struct conky_window window;
+extern char window_created;
+
+extern conky::simple_config_setting<alignment> text_alignment;
+
+namespace conky {
+namespace priv {
+  class out_to_x_setting : public conky::simple_config_setting<bool> {
+    typedef conky::simple_config_setting<bool> Base;
+    
+  protected:
+    virtual void lua_setter(lua::state &l, bool init);
+    virtual void cleanup(lua::state &l);
+    
+  public:
+    out_to_x_setting() : Base("out_to_x", true, false) {}
+  };
+  
+  struct colour_traits {
+    static const lua::Type type = lua::TSTRING;
+    typedef unsigned long Type;
+    
+    static inline std::pair<Type, bool> convert(lua::state &l, int index,
+                                                const std::string &) {
+      return {get_x11_color(l.tostring(index)), true};
+    }
+  };
+
+  class colour_setting
+  : public conky::simple_config_setting<unsigned long, colour_traits> {
+    typedef conky::simple_config_setting<unsigned long, colour_traits> Base;
+    
+  protected:
+    virtual void lua_setter(lua::state &l, bool init);
+    
+  public:
+    colour_setting(const std::string &name_, unsigned long default_value_ = 0)
+    : Base(name_, default_value_, true) {}
+  };
+}
+  
 bool initialize_display_outputs();
 
 bool shutdown_display_outputs();
@@ -176,5 +235,16 @@ static inline void set_display_output(conky::display_output_base *output) {
   conky::current_display_outputs.push_back(output);
 }
 
+extern conky::priv::out_to_x_setting out_to_x;
+extern conky::simple_config_setting<std::string> display_name;
+extern conky::simple_config_setting<int> head_index;
+extern conky::priv::colour_setting color[10];
+extern conky::priv::colour_setting default_color;
+extern conky::priv::colour_setting default_shade_color;
+extern conky::priv::colour_setting default_outline_color;
+
+extern conky::range_config_setting<int> border_inner_margin;
+extern conky::range_config_setting<int> border_outer_margin;
+extern conky::range_config_setting<int> border_width;
 
 #endif /* DISPLAY_OUTPUT_HH */

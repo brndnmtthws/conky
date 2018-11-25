@@ -78,24 +78,6 @@ static void init_window(lua::state &l, bool own);
 
 /********************* <SETTINGS> ************************/
 namespace priv {
-void out_to_x_setting::lua_setter(lua::state &l, bool init) {
-  lua::stack_sentry s(l, -2);
-
-  Base::lua_setter(l, init);
-
-  if (init && do_convert(l, -1).first) { init_X11(); }
-
-  ++s;
-}
-
-void out_to_x_setting::cleanup(lua::state &l) {
-  lua::stack_sentry s(l, -1);
-
-  if (do_convert(l, -1).first) { deinit_X11(); }
-
-  l.pop();
-}
-
 void own_window_setting::lua_setter(lua::state &l, bool init) {
   lua::stack_sentry s(l, -2);
 
@@ -204,18 +186,6 @@ void use_xpmdb_setting::lua_setter(lua::state &l, bool init) {
 }
 #endif
 
-void colour_setting::lua_setter(lua::state &l, bool init) {
-  lua::stack_sentry s(l, -2);
-
-  if (!out_to_x.get(l)) {
-    // ignore if we're not using X
-    l.replace(-2);
-  } else {
-    Base::lua_setter(l, init);
-  }
-
-  ++s;
-}
 }  // namespace priv
 
 template <>
@@ -291,38 +261,6 @@ std::string gethostnamecxx() {
 }
 }  // namespace
 
-/*
- * The order of these settings cannot be completely arbitrary. Some of them
- * depend on others, and the setters are called in the order in which they are
- * defined. The order should be: display_name -> out_to_x -> everything colour
- * related
- *                          -> border_*, own_window_*, etc -> own_window ->
- * double_buffer ->  imlib_cache_size
- */
-
-conky::simple_config_setting<alignment> text_alignment("alignment", BOTTOM_LEFT,
-                                                       false);
-conky::simple_config_setting<std::string> display_name("display", std::string(),
-                                                       false);
-conky::simple_config_setting<int> head_index("xinerama_head", 0, true);
-priv::out_to_x_setting out_to_x;
-
-priv::colour_setting color[10] = {{"color0", 0xffffff}, {"color1", 0xffffff},
-                                  {"color2", 0xffffff}, {"color3", 0xffffff},
-                                  {"color4", 0xffffff}, {"color5", 0xffffff},
-                                  {"color6", 0xffffff}, {"color7", 0xffffff},
-                                  {"color8", 0xffffff}, {"color9", 0xffffff}};
-priv::colour_setting default_color("default_color", 0xffffff);
-priv::colour_setting default_shade_color("default_shade_color", 0x000000);
-priv::colour_setting default_outline_color("default_outline_color", 0x000000);
-
-conky::range_config_setting<int> border_inner_margin(
-    "border_inner_margin", 0, std::numeric_limits<int>::max(), 3, true);
-conky::range_config_setting<int> border_outer_margin(
-    "border_outer_margin", 0, std::numeric_limits<int>::max(), 1, true);
-conky::range_config_setting<int> border_width("border_width", 0,
-                                              std::numeric_limits<int>::max(),
-                                              1, true);
 #ifdef BUILD_XFT
 conky::simple_config_setting<bool> use_xft("use_xft", false, false);
 #endif
