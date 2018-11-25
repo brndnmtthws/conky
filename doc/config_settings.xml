@@ -955,6 +955,18 @@
     <varlistentry>
         <term>
             <command>
+                <option>render_draw_blended</option>
+            </command>
+        </term>
+        <listitem>Boolean, blend when rendering drawn image?
+        Some images blend incorrectly breaking alpha with ARBG visuals. This
+        provides a possible work around by disabling blending. Defaults to
+        true.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>temperature_unit</option>
             </command>
         </term>
