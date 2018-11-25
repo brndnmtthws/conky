@@ -101,21 +101,6 @@ void set_transparent_background(Window win);
 void get_x11_desktop_info(Display *current_display, Atom atom);
 void set_struts(int);
 
-void print_monitor(struct text_object *, char *, unsigned int);
-void print_monitor_number(struct text_object *, char *, unsigned int);
-void print_desktop(struct text_object *, char *, unsigned int);
-void print_desktop_number(struct text_object *, char *, unsigned int);
-void print_desktop_name(struct text_object *, char *, unsigned int);
-
-/* Num lock, Scroll lock, Caps Lock */
-void print_key_num_lock(struct text_object *, char *, unsigned int);
-void print_key_caps_lock(struct text_object *, char *, unsigned int);
-void print_key_scroll_lock(struct text_object *, char *, unsigned int);
-
-/* Keyboard layout and mouse speed in percentage */
-void print_keyboard_layout(struct text_object *, char *, unsigned int);
-void print_mouse_speed(struct text_object *, char *, unsigned int);
-
 #ifdef BUILD_XDBE
 void xdbe_swap_buffers(void);
 #else
