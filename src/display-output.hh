@@ -90,7 +90,8 @@ namespace priv {
     
     static inline std::pair<Type, bool> convert(lua::state &l, int index,
                                                 const std::string &) {
-      return {get_x11_color(l.tostring(index)), true};
+      //return {get_x11_color(l.tostring(index)), true};
+      return {0, false};
     }
   };
 

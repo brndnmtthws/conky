@@ -28,8 +28,11 @@
  */
 #include "conky.h"
 #ifdef BUILD_GUI
-//#include "fonts.h"    // XXX disable until we get fonts stuff fixed
+#include "display-output.hh"
 #endif /* BUILD_GUI */
+#ifdef BUILD_METAL
+#include "fonts-metal.h"
+#endif /* BUILD_METAL */
 #include <cmath>
 #include "logging.h"
 #include "nc.h"
