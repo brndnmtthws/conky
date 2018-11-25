@@ -27,8 +27,6 @@
  *
  */
 
-#include "x11.h" // XXX patch
-
 /* local headers */
 #include "algebra.h"
 #include "bsdapm.h"
@@ -56,7 +54,7 @@
 #include "irc.h"
 #endif /* BUILD_IRC */
 #ifdef BUILD_GUI
-//#include "fonts.h"    // XXX disable until we get fonts stuff fixed
+#include "display-output.hh"
 #endif /* BUILD_GUI */
 #include "fs.h"
 #ifdef BUILD_IBM
