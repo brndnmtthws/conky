@@ -806,9 +806,9 @@ long get_current_text_color() { return current_text_color; }
 
 static void extract_variable_text(const char *p) {
   free_text_objects(&global_root_object);
-  free_and_zero(tmpstring1);
-  free_and_zero(tmpstring2);
-  free_and_zero(text_buffer);
+  delete_block_and_zero(tmpstring1);
+  delete_block_and_zero(tmpstring2);
+  delete_block_and_zero(text_buffer);
 
   extract_variable_text_internal(&global_root_object, p);
 }
@@ -2574,9 +2574,9 @@ void clean_up_without_threads(void *memtofree1, void *memtofree2) {
   }
 
   free_text_objects(&global_root_object);
-  free_and_zero(tmpstring1);
-  free_and_zero(tmpstring2);
-  free_and_zero(text_buffer);
+  delete_block_and_zero(tmpstring1);
+  delete_block_and_zero(tmpstring2);
+  delete_block_and_zero(text_buffer);
   free_and_zero(global_text);
 
 #ifdef BUILD_PORT_MONITORS
@@ -3031,11 +3031,11 @@ void initialisation(int argc, char **argv) {
     }
   }
 
-  text_buffer = static_cast<char *>(malloc(max_user_text.get(*state)));
+  text_buffer = new char[max_user_text.get(*state)];
   memset(text_buffer, 0, max_user_text.get(*state));
-  tmpstring1 = static_cast<char *>(malloc(text_buffer_size.get(*state)));
+  tmpstring1 = new char [text_buffer_size.get(*state)];
   memset(tmpstring1, 0, text_buffer_size.get(*state));
-  tmpstring2 = static_cast<char *>(malloc(text_buffer_size.get(*state)));
+  tmpstring2 = new char [text_buffer_size.get(*state)];
   memset(tmpstring2, 0, text_buffer_size.get(*state));
 
 #ifdef BUILD_X11

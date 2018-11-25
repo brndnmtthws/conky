@@ -358,6 +358,14 @@ void free_and_zero(T *&ptr) {
   }
 }
 
+template <class T>
+void delete_block_and_zero(T *&ptr) {
+  if (ptr) {
+    delete [] ptr;
+    ptr = nullptr;
+  }
+}
+
 extern std::unique_ptr<lua::state> state;
 
 extern int argc_copy;
