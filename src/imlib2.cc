@@ -62,8 +62,8 @@ conky::range_config_setting<unsigned int> imlib_cache_flush_interval(
 
 unsigned int cimlib_cache_flush_last = 0;
 
-conky::simple_config_setting<bool> render_draw_blended(
-    "render_draw_blended", true, true);
+conky::simple_config_setting<bool> draw_blended(
+    "draw_blended", true, true);
 }  // namespace
 
 void imlib_cache_size_setting::lua_setter(lua::state &l, bool init) {
@@ -264,7 +264,7 @@ void cimlib_render(int x, int y, int width, int height) {
   imlib_image_clear();
 
   /* check if we should blend when rendering */
-  if (render_draw_blended.get(*state)) {
+  if (draw_blended.get(*state)) {
     /* we can blend stuff now */
     imlib_context_set_blend(1);
   } else {

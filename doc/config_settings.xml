@@ -257,6 +257,18 @@
     <varlistentry>
         <term>
             <command>
+                <option>draw_blended</option>
+            </command>
+        </term>
+        <listitem>Boolean, blend when rendering drawn image?
+        Some images blend incorrectly breaking alpha with ARBG visuals. This
+        provides a possible work around by disabling blending. Defaults to
+        true.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>draw_borders</option>
             </command>
         </term>
@@ -913,18 +925,6 @@
         minutes, and default number of retries before giving up is
         5. If the password is supplied as '*', you will be prompted
         to enter the password when Conky starts.
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
-                <option>render_draw_blended</option>
-            </command>
-        </term>
-        <listitem>Boolean, blend when rendering drawn image?
-        Some images blend incorrectly breaking alpha with ARBG visuals. This
-        provides a possible work around by disabling blending. Defaults to
-        true.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
