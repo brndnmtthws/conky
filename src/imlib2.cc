@@ -123,7 +123,7 @@ void cimlib_add_image(const char *args) {
         "Invalid args for $image.  Format is: '<path to image> (-p"
         "x,y) (-s WxH) (-n) (-f interval)' (got '%s')",
         args);
-    free(cur);
+    delete [] cur;
     return;
   }
   strncpy(cur->name, to_real_path(cur->name).c_str(), 1024);
