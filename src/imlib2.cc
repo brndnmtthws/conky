@@ -61,6 +61,9 @@ conky::range_config_setting<unsigned int> imlib_cache_flush_interval(
     0, true);
 
 unsigned int cimlib_cache_flush_last = 0;
+
+conky::simple_config_setting<bool> draw_blended(
+    "draw_blended", true, true);
 }  // namespace
 
 void imlib_cache_size_setting::lua_setter(lua::state &l, bool init) {
@@ -112,7 +115,7 @@ void cimlib_add_image(const char *args) {
   struct image_list_s *cur = nullptr;
   const char *tmp;
 
-  cur = static_cast<struct image_list_s *>(malloc(sizeof(struct image_list_s)));
+  cur = new struct image_list_s[sizeof(struct image_list_s)];
   memset(cur, 0, sizeof(struct image_list_s));
 
   if (sscanf(args, "%1023s", cur->name) == 0) {
@@ -120,7 +123,7 @@ void cimlib_add_image(const char *args) {
         "Invalid args for $image.  Format is: '<path to image> (-p"
         "x,y) (-s WxH) (-n) (-f interval)' (got '%s')",
         args);
-    free(cur);
+    delete [] cur;
     return;
   }
   strncpy(cur->name, to_real_path(cur->name).c_str(), 1024);
@@ -259,8 +262,15 @@ void cimlib_render(int x, int y, int width, int height) {
   /* clear our buffer */
   imlib_context_set_image(buffer);
   imlib_image_clear();
-  /* we can blend stuff now */
-  imlib_context_set_blend(1);
+
+  /* check if we should blend when rendering */
+  if (draw_blended.get(*state)) {
+    /* we can blend stuff now */
+    imlib_context_set_blend(1);
+  } else {
+    imlib_context_set_blend(0);
+  }
+
   /* turn alpha channel on */
   imlib_image_set_has_alpha(1);
 
