@@ -39,7 +39,8 @@ local bool_setting = {
     out_to_ncurses = true, out_to_stderr = true, out_to_x = true, override_utf8_locale = true,
     own_window = true, own_window_argb_visual = true, own_window_transparent = true,
     short_units = true, show_graph_range = true, show_graph_scale = true,
-    times_in_seconds = true, top_cpu_separate = true, uppercase = true, use_xft = true
+    times_in_seconds = true, top_cpu_separate = true, uppercase = true, use_xft = true,
+    draw_blended = true
 };
 
 local num_setting = {
