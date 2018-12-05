@@ -1,4 +1,5 @@
 /*
+ad_
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -49,11 +50,9 @@ void font_setting::lua_setter(lua::state &l, bool init) {
 
 font_setting font;
 
-conky::simple_config_setting<std::string> font_template[10] = {{"font0", ""}, {"font1", ""},
-                                                               {"font2", ""}, {"font3", ""},
-                                                               {"font4", ""}, {"font5", ""},
-                                                               {"font6", ""}, {"font7", ""},
-                                                               {"font8", ""}, {"font9", ""}};
+conky::simple_config_setting<std::string> font_template[10] = {
+    {"font0", ""}, {"font1", ""}, {"font2", ""}, {"font3", ""}, {"font4", ""},
+    {"font5", ""}, {"font6", ""}, {"font7", ""}, {"font8", ""}, {"font9", ""}};
 
 #ifdef BUILD_XFT
 namespace {
@@ -196,3 +195,60 @@ void load_fonts(bool utf8) {
     }
   }
 }
+
+#ifdef BUILD_XFT
+
+int font_height() {
+  if (!out_to_x.get(*state)) { return 0; }
+  assert(selected_font < fonts.size());
+  if (use_xft.get(*state)) {
+    return fonts[selected_font].xftfont->ascent +
+           fonts[selected_font].xftfont->descent;
+  } else {
+    return fonts[selected_font].font->max_bounds.ascent +
+           fonts[selected_font].font->max_bounds.descent;
+  }
+}
+
+int font_ascent() {
+  if (!out_to_x.get(*state)) { return 0; }
+  assert(selected_font < fonts.size());
+  if (use_xft.get(*state)) {
+    return fonts[selected_font].xftfont->ascent;
+  } else {
+    return fonts[selected_font].font->max_bounds.ascent;
+  }
+}
+
+int font_descent() {
+  if (!out_to_x.get(*state)) { return 0; }
+  assert(selected_font < fonts.size());
+  if (use_xft.get(*state)) {
+    return fonts[selected_font].xftfont->descent;
+  } else {
+    return fonts[selected_font].font->max_bounds.descent;
+  }
+}
+
+#else
+
+int font_height() {
+  if (!out_to_x.get(*state)) { return 0; }
+  assert(selected_font < fonts.size());
+  return fonts[selected_font].font->max_bounds.ascent +
+         fonts[selected_font].font->max_bounds.descent;
+}
+
+int font_ascent() {
+  if (!out_to_x.get(*state)) { return 0; }
+  assert(selected_font < fonts.size());
+  return fonts[selected_font].font->max_bounds.ascent;
+}
+
+int font_descent() {
+  if (!out_to_x.get(*state)) { return 0; }
+  assert(selected_font < fonts.size());
+  return fonts[selected_font].font->max_bounds.descent;
+}
+
+#endif

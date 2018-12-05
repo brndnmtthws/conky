@@ -24,6 +24,7 @@
  *
  */
 
+#include "linux.h"
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
@@ -34,7 +35,6 @@
 #include "common.h"
 #include "conky.h"
 #include "diskio.h"
-#include "linux.h"
 #include "logging.h"
 #include "net_stat.h"
 #include "proc.h"
@@ -62,6 +62,8 @@
 #include <linux/route.h>
 #include <math.h>
 #include <pthread.h>
+#include <atomic>
+#include <mutex>
 
 /* The following ifdefs were adapted from gkrellm */
 #include <linux/major.h>
@@ -229,7 +231,8 @@ int update_meminfo(void) {
   return 0;
 }
 
-void print_laptop_mode(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_laptop_mode(struct text_object *obj, char *p,
+                       unsigned int p_max_size) {
   FILE *fp;
   int val = -1;
 
@@ -246,7 +249,8 @@ void print_laptop_mode(struct text_object *obj, char *p, unsigned int p_max_size
  * # cat /sys/block/sda/queue/scheduler
  * noop [anticipatory] cfq
  */
-void print_ioscheduler(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_ioscheduler(struct text_object *obj, char *p,
+                       unsigned int p_max_size) {
   FILE *fp;
   char buf[128];
 
@@ -269,23 +273,38 @@ out_fail:
   return;
 }
 
-static struct {
+class gw_info_s {
+ public:
+  gw_info_s() : iface(nullptr), ip(nullptr), count(0) {}
   char *iface;
   char *ip;
-  int count;
-} gw_info;
+  std::atomic<int> count;
+  std::mutex mutex;
 
-#define SAVE_SET_STRING(x, y)                              \
-  if (x && strcmp((char *)x, (char *)y)) {                 \
-    free(x);                                               \
-    x = strndup("multiple", text_buffer_size.get(*state)); \
-  } else if (!x) {                                         \
-    x = strndup(y, text_buffer_size.get(*state));          \
+  void reset() {
+    std::lock_guard<std::mutex> lock(mutex);
+    free_and_zero(iface);
+    free_and_zero(ip);
   }
+};
+static gw_info_s gw_info;
+
+char *save_set_string(char *x, char *y) {
+  if (x != nullptr && strcmp((char *)x, (char *)y)) {
+    free_and_zero(x);
+    x = strndup("multiple", text_buffer_size.get(*state));
+  } else if (x == nullptr && y != nullptr) {
+    x = strndup(y, text_buffer_size.get(*state));
+  }
+  return x;
+}
 
 void update_gateway_info_failure(const char *reason) {
   if (reason != nullptr) { perror(reason); }
   // 2 pointers to 1 location causes a crash when we try to free them both
+  std::unique_lock lock(gw_info.mutex);
+  free_and_zero(gw_info.iface);
+  free_and_zero(gw_info.ip);
   gw_info.iface = strndup("failed", text_buffer_size.get(*state));
   gw_info.ip = strndup("failed", text_buffer_size.get(*state));
 }
@@ -320,10 +339,11 @@ int update_gateway_info2(void) {
   unsigned int z = 1;
   int strcmpreturn;
 
-  if((fp = check_procroute()) != nullptr) {
+  if ((fp = check_procroute()) != nullptr) {
     while (!feof(fp)) {
       strcmpreturn = 1;
-      if (fscanf(fp, RT_ENTRY_FORMAT, iface, &dest, &gate, &flags, &mask) != 5) {
+      if (fscanf(fp, RT_ENTRY_FORMAT, iface, &dest, &gate, &flags, &mask) !=
+          5) {
         update_gateway_info_failure("fscanf()");
         break;
       }
@@ -355,22 +375,23 @@ int update_gateway_info(void) {
   unsigned long dest, gate, mask;
   unsigned int flags;
 
-  free_and_zero(gw_info.iface);
-  free_and_zero(gw_info.ip);
+  gw_info.reset();
   gw_info.count = 0;
 
-  if((fp = check_procroute()) != nullptr) {
+  if ((fp = check_procroute()) != nullptr) {
     while (!feof(fp)) {
-      if (fscanf(fp, RT_ENTRY_FORMAT, iface, &dest, &gate, &flags, &mask) != 5) {
+      if (fscanf(fp, RT_ENTRY_FORMAT, iface, &dest, &gate, &flags, &mask) !=
+          5) {
         update_gateway_info_failure("fscanf()");
         break;
       }
       if (!(dest || mask) && ((flags & RTF_GATEWAY) || !gate)) {
         gw_info.count++;
         snprintf(e_iface, 49, "%s", iface);
-        SAVE_SET_STRING(gw_info.iface, iface)
+        std::unique_lock lock(gw_info.mutex);
+        gw_info.iface = save_set_string(gw_info.iface, iface);
         ina.s_addr = gate;
-        SAVE_SET_STRING(gw_info.ip, inet_ntoa(ina))
+        gw_info.ip = save_set_string(gw_info.ip, inet_ntoa(ina));
       }
     }
     fclose(fp);
@@ -380,10 +401,7 @@ int update_gateway_info(void) {
 
 void free_gateway_info(struct text_object *obj) {
   (void)obj;
-
-  free_and_zero(gw_info.iface);
-  free_and_zero(gw_info.ip);
-  memset(&gw_info, 0, sizeof(gw_info));
+  gw_info.reset();
 }
 
 int gateway_exists(struct text_object *obj) {
@@ -391,12 +409,15 @@ int gateway_exists(struct text_object *obj) {
   return !!gw_info.count;
 }
 
-void print_gateway_iface(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_gateway_iface(struct text_object *obj, char *p,
+                         unsigned int p_max_size) {
   (void)obj;
+  std::lock_guard<std::mutex> lock(gw_info.mutex);
   snprintf(p, p_max_size, "%s", gw_info.iface);
 }
 
-void print_gateway_iface2(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_gateway_iface2(struct text_object *obj, char *p,
+                          unsigned int p_max_size) {
   long int z = 0;
   unsigned int x = 1;
   unsigned int found = 0;
@@ -405,9 +426,7 @@ void print_gateway_iface2(struct text_object *obj, char *p, unsigned int p_max_s
 
   if (0 == strcmp(obj->data.s, "")) {
     for (; x < iface_len - 1; x++) {
-      if (0 == strcmp("", interfaces_arr[x])) {
-        break;
-      }
+      if (0 == strcmp("", interfaces_arr[x])) { break; }
       buf_ptr += snprintf(buf_ptr, iface_len - 1, "%s, ", interfaces_arr[x]);
       found = 1;
     }
@@ -420,14 +439,13 @@ void print_gateway_iface2(struct text_object *obj, char *p, unsigned int p_max_s
   }
 
   z = strtol(obj->data.s, (char **)NULL, 10);
-  if ((iface_len - 1) > z) {
-    snprintf(p, p_max_size, "%s", interfaces_arr[z]);
-  }
+  if ((iface_len - 1) > z) { snprintf(p, p_max_size, "%s", interfaces_arr[z]); }
 }
 
-void print_gateway_ip(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_gateway_ip(struct text_object *obj, char *p,
+                      unsigned int p_max_size) {
   (void)obj;
-
+  std::lock_guard<std::mutex> lock(gw_info.mutex);
   snprintf(p, p_max_size, "%s", gw_info.ip);
 }
 
@@ -1025,7 +1043,8 @@ int update_cpu_usage(void) {
   return 0;
 }
 
-void free_cpu(struct text_object *) { /* no-op */ }
+void free_cpu(struct text_object *) { /* no-op */
+}
 
 // fscanf() that reads floats with points even if you are using a locale where
 // floats are with commas
@@ -1322,7 +1341,8 @@ PARSER_GENERATOR(i2c, "/sys/bus/i2c/devices/")
 PARSER_GENERATOR(hwmon, "/sys/class/hwmon/")
 PARSER_GENERATOR(platform, "/sys/bus/platform/devices/")
 
-void print_sysfs_sensor(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_sysfs_sensor(struct text_object *obj, char *p,
+                        unsigned int p_max_size) {
   double r;
   struct sysfs *sf = (struct sysfs *)obj->data.opaque;
 
@@ -1512,12 +1532,14 @@ static char get_voltage(char *p_client_buffer, size_t client_buffer_size,
   return 1;
 }
 
-void print_voltage_mv(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_voltage_mv(struct text_object *obj, char *p,
+                      unsigned int p_max_size) {
   static int ok = 1;
   if (ok) { ok = get_voltage(p, p_max_size, "%.0f", 1, obj->data.i); }
 }
 
-void print_voltage_v(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_voltage_v(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   static int ok = 1;
   if (ok) { ok = get_voltage(p, p_max_size, "%'.3f", 1000, obj->data.i); }
 }
@@ -2341,8 +2363,14 @@ static FILE *pmu_info_fp;
 static char pb_battery_info[3][32];
 static double pb_battery_info_update;
 
+void powerbook_update_status(unsigned int flags, int ac);
+void powerbook_update_percentage(long timeval, unsigned int flags, int ac,
+                                 int charge, int max_charge);
+void powerbook_update_time(long timeval);
+
 #define PMU_PATH "/proc/pmu"
-void get_powerbook_batt_info(struct text_object *obj, char *buffer, unsigned int n) {
+void get_powerbook_batt_info(struct text_object *obj, char *buffer,
+                             unsigned int n) {
   static int rep = 0;
   const char *batt_path = PMU_PATH "/battery_0";
   const char *info_path = PMU_PATH "/info";
@@ -2364,38 +2392,41 @@ void get_powerbook_batt_info(struct text_object *obj, char *buffer, unsigned int
     if (pmu_battery_fp == nullptr) { return; }
   }
 
-  if (pmu_battery_fp != nullptr) {
-    rewind(pmu_battery_fp);
-    while (!feof(pmu_battery_fp)) {
-      char buf[32];
+  rewind(pmu_battery_fp);
+  while (!feof(pmu_battery_fp)) {
+    char buf[32];
 
-      if (fgets(buf, sizeof(buf), pmu_battery_fp) == nullptr) { break; }
+    if (fgets(buf, sizeof(buf), pmu_battery_fp) == nullptr) { break; }
 
-      if (buf[0] == 'f') {
-        sscanf(buf, "flags      : %8x", &flags);
-      } else if (buf[0] == 'c' && buf[1] == 'h') {
-        sscanf(buf, "charge     : %d", &charge);
-      } else if (buf[0] == 'm') {
-        sscanf(buf, "max_charge : %d", &max_charge);
-      } else if (buf[0] == 't') {
-        sscanf(buf, "time rem.  : %ld", &timeval);
-      }
+    if (buf[0] == 'f') {
+      sscanf(buf, "flags      : %8x", &flags);
+    } else if (buf[0] == 'c' && buf[1] == 'h') {
+      sscanf(buf, "charge     : %d", &charge);
+    } else if (buf[0] == 'm') {
+      sscanf(buf, "max_charge : %d", &max_charge);
+    } else if (buf[0] == 't') {
+      sscanf(buf, "time rem.  : %ld", &timeval);
     }
   }
-  if (pmu_info_fp == nullptr) {
-    pmu_info_fp = open_file(info_path, &rep);
-    if (pmu_info_fp == nullptr) { return; }
+  pmu_info_fp = open_file(info_path, &rep);
+  if (pmu_info_fp == nullptr) { return; }
+
+  rewind(pmu_info_fp);
+  while (!feof(pmu_info_fp)) {
+    char buf[32];
+
+    if (fgets(buf, sizeof(buf), pmu_info_fp) == nullptr) { break; }
+    if (buf[0] == 'A') { sscanf(buf, "AC Power               : %d", &ac); }
   }
 
-  if (pmu_info_fp != nullptr) {
-    rewind(pmu_info_fp);
-    while (!feof(pmu_info_fp)) {
-      char buf[32];
+  powerbook_update_status(flags, ac);
+  powerbook_update_percentage(timeval, flags, ac, charge, max_charge);
+  powerbook_update_time(timeval);
 
-      if (fgets(buf, sizeof(buf), pmu_info_fp) == nullptr) { break; }
-      if (buf[0] == 'A') { sscanf(buf, "AC Power               : %d", &ac); }
-    }
-  }
+  snprintf(buffer, n, "%s", pb_battery_info[obj->data.i]);
+}
+
+void powerbook_update_status(unsigned int flags, int ac) {
   /* update status string */
   if ((ac && !(flags & PMU_BATT_PRESENT))) {
     strncpy(pb_battery_info[PB_BATT_STATUS], "AC",
@@ -2410,7 +2441,10 @@ void get_powerbook_batt_info(struct text_object *obj, char *buffer, unsigned int
     strncpy(pb_battery_info[PB_BATT_STATUS], "discharging",
             sizeof(pb_battery_info[PB_BATT_STATUS]));
   }
+}
 
+void powerbook_update_percentage(long timeval, unsigned int flags, int ac,
+                                 int charge, int max_charge) {
   /* update percentage string */
   if (timeval == 0 && ac && (flags & PMU_BATT_PRESENT) &&
       !(flags & PMU_BATT_CHARGING)) {
@@ -2424,7 +2458,9 @@ void get_powerbook_batt_info(struct text_object *obj, char *buffer, unsigned int
              sizeof(pb_battery_info[PB_BATT_PERCENT]), "%d%%",
              (charge * 100) / max_charge);
   }
+}
 
+void powerbook_update_time(long timeval) {
   /* update time string */
   if (timeval == 0) { /* fully charged or battery not present */
     snprintf(pb_battery_info[PB_BATT_TIME],
@@ -2436,8 +2472,6 @@ void get_powerbook_batt_info(struct text_object *obj, char *buffer, unsigned int
     format_seconds(pb_battery_info[PB_BATT_TIME],
                    sizeof(pb_battery_info[PB_BATT_TIME]), timeval);
   }
-
-  snprintf(buffer, n, "%s", pb_battery_info[obj->data.i]);
 }
 
 #define ENTROPY_AVAIL_PATH "/proc/sys/kernel/random/entropy_avail"
@@ -2555,7 +2589,8 @@ int update_diskio(void) {
   return 0;
 }
 
-void print_distribution(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_distribution(struct text_object *obj, char *p,
+                        unsigned int p_max_size) {
   (void)obj;
   int i, bytes_read;
   char *buf;

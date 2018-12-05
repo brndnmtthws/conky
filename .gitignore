@@ -19,3 +19,7 @@ lua/libimlib2.c
 *.so
 *.a
 /config.h
+
+# Ignore vscode stuff
+.vscode
+*.code-workspace
