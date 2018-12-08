@@ -2,7 +2,7 @@ language: cpp
 matrix:
   include:
     - os: linux
-      dist: trusty
+      dist: xenial
       addons:
         apt:
           sources:
@@ -35,21 +35,21 @@ matrix:
             - libpulse-dev
             - libcurl4-gnutls-dev
             - audacious-dev
-            - libsystemd-journal-dev
+            - libsystemd-dev
             - libxml2-dev
             - tolua++
             - gawk
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
     - os: linux
-      dist: trusty
+      dist: xenial
       addons:
         apt:
           sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-6.0
+            - llvm-toolchain-xenial-7
           packages:
-            - clang-6.0
+            - clang-7
+            - libc++-7-dev
             - cmake
             - libxdamage-dev
             - libx11-dev
@@ -76,7 +76,7 @@ matrix:
             - libpulse-dev
             - libcurl4-gnutls-dev
             - audacious-dev
-            - libsystemd-journal-dev
+            - libsystemd-dev
             - libxml2-dev
             - tolua++
             - gawk
@@ -85,9 +85,9 @@ matrix:
           token:
             secure: "KikPusy+HXcEVLr0Dqb6mkrefDU5jm7EGQ5fwO4sBG7bRMcnHV3V14s5yB4Ol8btpUC0nkNn/41+f37lkG+oT4y9ZeIH2ZrhsSEHxOgH6DF9ZSVJwtpLrF9siWgfZ0m5c5V7U5rzVYL3jlO1hQfXKCfMNAcwlKcEUrfpk7jVEZc="
       env:
-        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+        - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
     - os: osx
-      osx_image: xcode9.4
+      osx_image: xcode10.1
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then eval "${MATRIX_EVAL}" ; fi
 
@@ -148,13 +148,13 @@ before_script:
     fi
 script:
   - cd build
-  - if [ "$CXX" = "clang++-6.0" ] ; then build-wrapper-linux-x86-64 --out-dir bw-output make -j4 ; fi
+  - if [ "$CXX" = "clang++-7" ] ; then build-wrapper-linux-x86-64 --out-dir bw-output make -j4 ; fi
   - if [ "$CXX" = "g++-8" ] ; then make -j4 ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make -j4 ; fi
   - cd ../build-no-x11
   - make -j4
   - cd ..
-  - if [ "$CXX" = "clang++-6.0" -a ! -z "$SONAR_TOKEN" ] ; then sonar-scanner ; fi
+  - if [ "$CXX" = "clang++-7" -a ! -z "$SONAR_TOKEN" ] ; then sonar-scanner ; fi
 branches:
   only:
     - master
