@@ -27,6 +27,7 @@
  *
  */
 
+#include "conky.h"
 #include <algorithm>
 #include <cerrno>
 #include <climits>
@@ -42,7 +43,6 @@
 #include <vector>
 #include "common.h"
 #include "config.h"
-#include "conky.h"
 #include "text_object.h"
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
@@ -188,11 +188,11 @@ static conky::simple_config_setting<bool> format_human_readable(
 conky::simple_config_setting<bool> out_to_stdout("out_to_console",
 // Default value is false, unless we are building without X
 #ifdef BUILD_X11
-                                                        false,
+                                                 false,
 #else
-                                                        true,
+                                                 true,
 #endif
-                                                        false);
+                                                 false);
 static conky::simple_config_setting<bool> out_to_stderr("out_to_stderr", false,
                                                         false);
 
@@ -722,7 +722,7 @@ int spaced_print(char *buf, int size, const char *format, int width, ...) {
       len = snprintf(buf, size, "%-*s", width, tempbuf);
       break;
   }
-  delete [] tempbuf;
+  delete[] tempbuf;
   return len;
 }
 
@@ -888,7 +888,7 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root) {
   load_fonts(utf8_mode.get(*state));
 #endif /* BUILD_X11 */
 #ifdef BUILD_ICONV
-  delete [] buff_in;
+  delete[] buff_in;
 #endif /* BUILD_ICONV */
 }
 
@@ -1094,7 +1094,8 @@ static void update_text_area() {
     case MIDDLE_LEFT:
     case MIDDLE_RIGHT:
     case MIDDLE_MIDDLE:
-      y =  workarea[1] + (workarea[3] - workarea[1]) / 2 - text_height / 2 - gap_y.get(*state);
+      y = workarea[1] + (workarea[3] - workarea[1]) / 2 - text_height / 2 -
+          gap_y.get(*state);
       break;
   }
   switch (align) {
@@ -1114,7 +1115,8 @@ static void update_text_area() {
     case TOP_MIDDLE:
     case BOTTOM_MIDDLE:
     case MIDDLE_MIDDLE:
-      x = workarea[0] + (workarea[2] - workarea[0]) / 2 - text_width / 2 - gap_x.get(*state);
+      x = workarea[0] + (workarea[2] - workarea[0]) / 2 - text_width / 2 -
+          gap_x.get(*state);
       break;
   }
 #ifdef OWN_WINDOW
@@ -1412,267 +1414,262 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
       for (int i = 0; i < special_index; i++) { current = current->next; }
       switch (current->type) {
 #ifdef BUILD_X11
-        case HORIZONTAL_LINE: {
-          int h = current->height;
-          int mid = font_ascent() / 2;
+        case HORIZONTAL_LINE:
+          if (out_to_x.get(*state)) {
+            int h = current->height;
+            int mid = font_ascent() / 2;
 
-          w = text_start_x + text_width - cur_x;
+            w = text_start_x + text_width - cur_x;
 
-          XSetLineAttributes(display, window.gc, h, LineSolid, CapButt,
-                             JoinMiter);
-          XDrawLine(display, window.drawable, window.gc, text_offset_x + cur_x,
-                    text_offset_y + cur_y - mid / 2, text_offset_x + cur_x + w,
-                    text_offset_y + cur_y - mid / 2);
-          break;
-        }
-
-        case STIPPLED_HR: {
-          int h = current->height;
-          char tmp_s = current->arg;
-          int mid = font_ascent() / 2;
-          char ss[2] = {tmp_s, tmp_s};
-
-          w = text_start_x + text_width - cur_x - 1;
-          XSetLineAttributes(display, window.gc, h, LineOnOffDash, CapButt,
-                             JoinMiter);
-          XSetDashes(display, window.gc, 0, ss, 2);
-          XDrawLine(display, window.drawable, window.gc, text_offset_x + cur_x,
-                    text_offset_y + cur_y - mid / 2, text_offset_x + cur_x + w,
-                    text_offset_x + cur_y - mid / 2);
-          break;
-        }
-
-        case BAR: {
-          int h, by;
-          double bar_usage, scale;
-          if (cur_x - text_start_x > mw && mw > 0) { break; }
-          h = current->height;
-          bar_usage = current->arg;
-          scale = current->scale;
-          by = cur_y - (font_ascent() / 2) - 1;
-
-          if (h < font_h) { by -= h / 2 - 1; }
-          w = current->width;
-          if (w == 0) { w = text_start_x + text_width - cur_x - 1; }
-          if (w < 0) { w = 0; }
-
-          XSetLineAttributes(display, window.gc, 1, LineSolid, CapButt,
-                             JoinMiter);
-
-          XDrawRectangle(display, window.drawable, window.gc,
-                         text_offset_x + cur_x, text_offset_y + by, w, h);
-          XFillRectangle(display, window.drawable, window.gc,
-                         text_offset_x + cur_x, text_offset_y + by,
-                         w * bar_usage / scale, h);
-          if (h > cur_y_add && h > font_h) { cur_y_add = h; }
-          break;
-        }
-
-        case GAUGE: /* new GAUGE  */
-        {
-          int h, by = 0;
-          unsigned long last_colour = current_color;
-#ifdef BUILD_MATH
-          float angle, px, py;
-          double usage, scale;
-#endif /* BUILD_MATH */
-
-          if (cur_x - text_start_x > mw && mw > 0) { break; }
-
-          h = current->height;
-          by = cur_y - (font_ascent() / 2) - 1;
-
-          if (h < font_h) { by -= h / 2 - 1; }
-          w = current->width;
-          if (w == 0) { w = text_start_x + text_width - cur_x - 1; }
-          if (w < 0) { w = 0; }
-
-          XSetLineAttributes(display, window.gc, 1, LineSolid, CapButt,
-                             JoinMiter);
-
-          XDrawArc(display, window.drawable, window.gc, text_offset_x + cur_x,
-                   text_offset_y + by, w, h * 2, 0, 180 * 64);
-
-#ifdef BUILD_MATH
-          usage = current->arg;
-          scale = current->scale;
-          angle = M_PI * usage / scale;
-          px = static_cast<float>(cur_x + (w / 2.)) -
-               static_cast<float>(w / 2.) * cos(angle);
-          py =
-              static_cast<float>(by + (h)) - static_cast<float>(h) * sin(angle);
-
-          XDrawLine(display, window.drawable, window.gc,
-                    text_offset_x + cur_x + (w / 2.), text_offset_y + by + (h),
-                    text_offset_x + static_cast<int>(px),
-                    text_offset_y + static_cast<int>(py));
-#endif /* BUILD_MATH */
-
-          if (h > cur_y_add && h > font_h) { cur_y_add = h; }
-
-          set_foreground_color(last_colour);
-
-          break;
-        }
-
-        case GRAPH: {
-          int h, by, i = 0, j = 0;
-          int colour_idx = 0;
-          unsigned long last_colour = current_color;
-          if (cur_x - text_start_x > mw && mw > 0) { break; }
-          h = current->height;
-          by = cur_y - (font_ascent() / 2) - 1;
-
-          if (h < font_h) { by -= h / 2 - 1; }
-          w = current->width;
-          if (w == 0) {
-            w = text_start_x + text_width - cur_x - 1;
-            current->graph_width = MAX(w - 1, 0);
-            if (current->graph_width != current->graph_allocated) {
-              w = current->graph_allocated + 1;
-            }
+            XSetLineAttributes(display, window.gc, h, LineSolid, CapButt,
+                               JoinMiter);
+            XDrawLine(display, window.drawable, window.gc,
+                      text_offset_x + cur_x, text_offset_y + cur_y - mid / 2,
+                      text_offset_x + cur_x + w,
+                      text_offset_y + cur_y - mid / 2);
           }
-          if (w < 0) { w = 0; }
-          if (draw_graph_borders.get(*state)) {
+          break;
+
+        case STIPPLED_HR:
+          if (out_to_x.get(*state)) {
+            int h = current->height;
+            char tmp_s = current->arg;
+            int mid = font_ascent() / 2;
+            char ss[2] = {tmp_s, tmp_s};
+
+            w = text_start_x + text_width - cur_x - 1;
+            XSetLineAttributes(display, window.gc, h, LineOnOffDash, CapButt,
+                               JoinMiter);
+            XSetDashes(display, window.gc, 0, ss, 2);
+            XDrawLine(display, window.drawable, window.gc,
+                      text_offset_x + cur_x, text_offset_y + cur_y - mid / 2,
+                      text_offset_x + cur_x + w,
+                      text_offset_x + cur_y - mid / 2);
+          }
+          break;
+
+        case BAR:
+          if (out_to_x.get(*state)) {
+            int h, by;
+            double bar_usage, scale;
+            if (cur_x - text_start_x > mw && mw > 0) { break; }
+            h = current->height;
+            bar_usage = current->arg;
+            scale = current->scale;
+            by = cur_y - (font_ascent() / 2) - 1;
+
+            if (h < font_h) { by -= h / 2 - 1; }
+            w = current->width;
+            if (w == 0) { w = text_start_x + text_width - cur_x - 1; }
+            if (w < 0) { w = 0; }
+
             XSetLineAttributes(display, window.gc, 1, LineSolid, CapButt,
                                JoinMiter);
+
             XDrawRectangle(display, window.drawable, window.gc,
                            text_offset_x + cur_x, text_offset_y + by, w, h);
+            XFillRectangle(display, window.drawable, window.gc,
+                           text_offset_x + cur_x, text_offset_y + by,
+                           w * bar_usage / scale, h);
+            if (h > cur_y_add && h > font_h) { cur_y_add = h; }
           }
-          XSetLineAttributes(display, window.gc, 1, LineSolid, CapButt,
-                             JoinMiter);
+          break;
 
-          /* in case we don't have a graph yet */
-          if (current->graph != nullptr) {
-            unsigned long *tmpcolour = nullptr;
-
-            if (current->last_colour != 0 || current->first_colour != 0) {
-              tmpcolour = do_gradient(w - 1, current->last_colour,
-                                      current->first_colour);
-            }
-            colour_idx = 0;
-            for (i = w - 2; i > -1; i--) {
-              if (current->last_colour != 0 || current->first_colour != 0) {
-                if (current->tempgrad != 0) {
-#ifdef DEBUG_lol
-                  assert((int)((float)(w - 2) - current->graph[j] * (w - 2) /
-                                                    (float)current->scale) <
-                         w - 1);
-                  assert((int)((float)(w - 2) - current->graph[j] * (w - 2) /
-                                                    (float)current->scale) >
-                         -1);
-                  if (current->graph[j] == current->scale) {
-                    assert((int)((float)(w - 2) - current->graph[j] * (w - 2) /
-                                                      (float)current->scale) ==
-                           0);
-                  }
-#endif /* DEBUG_lol */
-                  set_foreground_color(tmpcolour[static_cast<int>(
-                      static_cast<float>(w - 2) -
-                      current->graph[j] * (w - 2) /
-                          std::max(static_cast<float>(current->scale), 1.0f))]);
-                } else {
-                  set_foreground_color(tmpcolour[colour_idx++]);
-                }
-              }
-              /* this is mugfugly, but it works */
-              XDrawLine(
-                  display, window.drawable, window.gc,
-                  text_offset_x + cur_x + i + 1, text_offset_y + by + h,
-                  text_offset_x + cur_x + i + 1,
-                  text_offset_y + round_to_int(static_cast<double>(by) + h -
-                                               current->graph[j] * (h - 1) /
-                                                   current->scale));
-              ++j;
-            }
-            free_and_zero(tmpcolour);
-          }
-          if (h > cur_y_add && h > font_h) { cur_y_add = h; }
-          if (show_graph_range.get(*state)) {
-            int tmp_x = cur_x;
-            int tmp_y = cur_y;
-            unsigned short int seconds = active_update_interval() * w;
-            char *tmp_day_str;
-            char *tmp_hour_str;
-            char *tmp_min_str;
-            char *tmp_sec_str;
-            char *tmp_str;
-            unsigned short int timeunits;
-            if (seconds != 0) {
-              timeunits = seconds / 86400;
-              seconds %= 86400;
-              if (timeunits <= 0 ||
-                  asprintf(&tmp_day_str, _("%dd"), timeunits) == -1) {
-                tmp_day_str = strdup("");
-              }
-              timeunits = seconds / 3600;
-              seconds %= 3600;
-              if (timeunits <= 0 ||
-                  asprintf(&tmp_hour_str, _("%dh"), timeunits) == -1) {
-                tmp_hour_str = strdup("");
-              }
-              timeunits = seconds / 60;
-              seconds %= 60;
-              if (timeunits <= 0 ||
-                  asprintf(&tmp_min_str, _("%dm"), timeunits) == -1) {
-                tmp_min_str = strdup("");
-              }
-              if (seconds <= 0 ||
-                  asprintf(&tmp_sec_str, _("%ds"), seconds) == -1) {
-                tmp_sec_str = strdup("");
-              }
-              if (asprintf(&tmp_str, "%s%s%s%s", tmp_day_str, tmp_hour_str,
-                           tmp_min_str, tmp_sec_str) == -1) {
-                tmp_str = strdup("");
-              }
-              free(tmp_day_str);
-              free(tmp_hour_str);
-              free(tmp_min_str);
-              free(tmp_sec_str);
-            } else {
-              tmp_str =
-                  strdup(_("Range not possible"));  // should never happen, but
-                                                    // better safe then sorry
-            }
-            cur_x += (w / 2) - (font_ascent() * (strlen(tmp_str) / 2));
-            cur_y += font_h / 2;
-            draw_string(tmp_str);
-            free(tmp_str);
-            cur_x = tmp_x;
-            cur_y = tmp_y;
-          }
+        case GAUGE: /* new GAUGE  */
+          if (out_to_x.get(*state)) {
+            int h, by = 0;
+            unsigned long last_colour = current_color;
 #ifdef BUILD_MATH
-          if (show_graph_scale.get(*state) && (current->show_scale == 1)) {
-            int tmp_x = cur_x;
-            int tmp_y = cur_y;
-            char *tmp_str;
-            cur_x += font_ascent() / 2;
-            cur_y += font_h / 2;
-            asprintf(&tmp_str, "%.1f", current->scale);
-            draw_string(tmp_str);
-            free(tmp_str);
-            cur_x = tmp_x;
-            cur_y = tmp_y;
+            float angle, px, py;
+            double usage, scale;
+#endif /* BUILD_MATH */
+
+            if (cur_x - text_start_x > mw && mw > 0) { break; }
+
+            h = current->height;
+            by = cur_y - (font_ascent() / 2) - 1;
+
+            if (h < font_h) { by -= h / 2 - 1; }
+            w = current->width;
+            if (w == 0) { w = text_start_x + text_width - cur_x - 1; }
+            if (w < 0) { w = 0; }
+
+            XSetLineAttributes(display, window.gc, 1, LineSolid, CapButt,
+                               JoinMiter);
+
+            XDrawArc(display, window.drawable, window.gc, text_offset_x + cur_x,
+                     text_offset_y + by, w, h * 2, 0, 180 * 64);
+
+#ifdef BUILD_MATH
+            usage = current->arg;
+            scale = current->scale;
+            angle = M_PI * usage / scale;
+            px = static_cast<float>(cur_x + (w / 2.)) -
+                 static_cast<float>(w / 2.) * cos(angle);
+            py = static_cast<float>(by + (h)) -
+                 static_cast<float>(h) * sin(angle);
+
+            XDrawLine(display, window.drawable, window.gc,
+                      text_offset_x + cur_x + (w / 2.),
+                      text_offset_y + by + (h),
+                      text_offset_x + static_cast<int>(px),
+                      text_offset_y + static_cast<int>(py));
+#endif /* BUILD_MATH */
+
+            if (h > cur_y_add && h > font_h) { cur_y_add = h; }
+
+            set_foreground_color(last_colour);
           }
+          break;
+
+        case GRAPH:
+          if (out_to_x.get(*state)) {
+            int h, by, i = 0, j = 0;
+            int colour_idx = 0;
+            unsigned long last_colour = current_color;
+            if (cur_x - text_start_x > mw && mw > 0) { break; }
+            h = current->height;
+            by = cur_y - (font_ascent() / 2) - 1;
+
+            if (h < font_h) { by -= h / 2 - 1; }
+            w = current->width;
+            if (w == 0) {
+              w = text_start_x + text_width - cur_x - 1;
+              current->graph_width = MAX(w - 1, 0);
+              if (current->graph_width != current->graph_allocated) {
+                w = current->graph_allocated + 1;
+              }
+            }
+            if (w < 0) { w = 0; }
+            if (draw_graph_borders.get(*state)) {
+              XSetLineAttributes(display, window.gc, 1, LineSolid, CapButt,
+                                 JoinMiter);
+              XDrawRectangle(display, window.drawable, window.gc,
+                             text_offset_x + cur_x, text_offset_y + by, w, h);
+            }
+            XSetLineAttributes(display, window.gc, 1, LineSolid, CapButt,
+                               JoinMiter);
+
+            /* in case we don't have a graph yet */
+            if (current->graph != nullptr) {
+              unsigned long *tmpcolour = nullptr;
+
+              if (current->last_colour != 0 || current->first_colour != 0) {
+                tmpcolour = do_gradient(w - 1, current->last_colour,
+                                        current->first_colour);
+              }
+              colour_idx = 0;
+              for (i = w - 2; i > -1; i--) {
+                if (current->last_colour != 0 || current->first_colour != 0) {
+                  if (current->tempgrad != 0) {
+                    set_foreground_color(tmpcolour[static_cast<int>(
+                        static_cast<float>(w - 2) -
+                        current->graph[j] * (w - 2) /
+                            std::max(static_cast<float>(current->scale),
+                                     1.0F))]);
+                  } else {
+                    set_foreground_color(tmpcolour[colour_idx++]);
+                  }
+                }
+                /* this is mugfugly, but it works */
+                XDrawLine(
+                    display, window.drawable, window.gc,
+                    text_offset_x + cur_x + i + 1, text_offset_y + by + h,
+                    text_offset_x + cur_x + i + 1,
+                    text_offset_y + round_to_int(static_cast<double>(by) + h -
+                                                 current->graph[j] * (h - 1) /
+                                                     current->scale));
+                ++j;
+              }
+              free_and_zero(tmpcolour);
+            }
+            if (h > cur_y_add && h > font_h) { cur_y_add = h; }
+            if (show_graph_range.get(*state)) {
+              int tmp_x = cur_x;
+              int tmp_y = cur_y;
+              unsigned short int seconds = active_update_interval() * w;
+              char *tmp_day_str;
+              char *tmp_hour_str;
+              char *tmp_min_str;
+              char *tmp_sec_str;
+              char *tmp_str;
+              unsigned short int timeunits;
+              if (seconds != 0) {
+                timeunits = seconds / 86400;
+                seconds %= 86400;
+                if (timeunits <= 0 ||
+                    asprintf(&tmp_day_str, _("%dd"), timeunits) == -1) {
+                  tmp_day_str = strdup("");
+                }
+                timeunits = seconds / 3600;
+                seconds %= 3600;
+                if (timeunits <= 0 ||
+                    asprintf(&tmp_hour_str, _("%dh"), timeunits) == -1) {
+                  tmp_hour_str = strdup("");
+                }
+                timeunits = seconds / 60;
+                seconds %= 60;
+                if (timeunits <= 0 ||
+                    asprintf(&tmp_min_str, _("%dm"), timeunits) == -1) {
+                  tmp_min_str = strdup("");
+                }
+                if (seconds <= 0 ||
+                    asprintf(&tmp_sec_str, _("%ds"), seconds) == -1) {
+                  tmp_sec_str = strdup("");
+                }
+                if (asprintf(&tmp_str, "%s%s%s%s", tmp_day_str, tmp_hour_str,
+                             tmp_min_str, tmp_sec_str) == -1) {
+                  tmp_str = strdup("");
+                }
+                free(tmp_day_str);
+                free(tmp_hour_str);
+                free(tmp_min_str);
+                free(tmp_sec_str);
+              } else {
+                tmp_str = strdup(
+                    _("Range not possible"));  // should never happen, but
+                                               // better safe then sorry
+              }
+              cur_x += (w / 2) - (font_ascent() * (strlen(tmp_str) / 2));
+              cur_y += font_h / 2;
+              draw_string(tmp_str);
+              free(tmp_str);
+              cur_x = tmp_x;
+              cur_y = tmp_y;
+            }
+#ifdef BUILD_MATH
+            if (show_graph_scale.get(*state) && (current->show_scale == 1)) {
+              int tmp_x = cur_x;
+              int tmp_y = cur_y;
+              char *tmp_str;
+              cur_x += font_ascent() / 2;
+              cur_y += font_h / 2;
+              asprintf(&tmp_str, "%.1f", current->scale);
+              draw_string(tmp_str);
+              free(tmp_str);
+              cur_x = tmp_x;
+              cur_y = tmp_y;
+            }
 #endif
-          set_foreground_color(last_colour);
-          break;
-        }
-
-        case FONT: {
-          int old = font_ascent();
-
-          cur_y -= font_ascent();
-          selected_font = current->font_added;
-          set_font();
-          if (cur_y + font_ascent() < cur_y + old) {
-            cur_y += old;
-          } else {
-            cur_y += font_ascent();
+            set_foreground_color(last_colour);
           }
-          font_h = font_height();
           break;
-        }
+
+        case FONT:
+          if (out_to_x.get(*state)) {
+            int old = font_ascent();
+
+            cur_y -= font_ascent();
+            selected_font = current->font_added;
+            set_font();
+            if (cur_y + font_ascent() < cur_y + old) {
+              cur_y += old;
+            } else {
+              cur_y += font_ascent();
+            }
+            font_h = font_height();
+          }
+          break;
 #endif /* BUILD_X11 */
         case FG:
           if (draw_mode == FG) { set_foreground_color(current->arg); }
@@ -1975,18 +1972,16 @@ static void update_text() {
 int inotify_fd = -1;
 #endif
 
-template<typename Out>
+template <typename Out>
 void split(const std::string &s, char delim, Out result) {
-    std::stringstream ss(s);
-    std::string item;
-    while (std::getline(ss, item, delim)) {
-        *(result++) = item;
-    }
+  std::stringstream ss(s);
+  std::string item;
+  while (std::getline(ss, item, delim)) { *(result++) = item; }
 }
- std::vector<std::string> split(const std::string &s, char delim) {
-    std::vector<std::string> elems;
-    split(s, delim, std::back_inserter(elems));
-    return elems;
+std::vector<std::string> split(const std::string &s, char delim) {
+  std::vector<std::string> elems;
+  split(s, delim, std::back_inserter(elems));
+  return elems;
 }
 
 bool is_on_battery() {  // checks if at least one battery specified in
@@ -1994,7 +1989,7 @@ bool is_on_battery() {  // checks if at least one battery specified in
   char buf[64];
   std::vector<std::string> b_items = split(detect_battery.get(*state), ',');
 
-   for(auto const& value: b_items) {
+  for (auto const &value : b_items) {
     get_battery_short_status(buf, 64, value.c_str());
     if (buf[0] == 'D') { return true; }
   }
@@ -2701,11 +2696,11 @@ void load_config_file() {
     l.pushstring(current_config.c_str());
     l.call(1, 1);
 #else
-  char *syntaxerr;
-  asprintf(&syntaxerr, _(SYNTAX_ERR_READ_CONF), e.what());
-  std::string syntaxerrobj(syntaxerr);
-  free(syntaxerr);
-  throw conky::error(syntaxerrobj);
+    char *syntaxerr;
+    asprintf(&syntaxerr, _(SYNTAX_ERR_READ_CONF), e.what());
+    std::string syntaxerrobj(syntaxerr);
+    free(syntaxerr);
+    throw conky::error(syntaxerrobj);
 #endif
   }
   l.call(0, 0);
@@ -2916,7 +2911,8 @@ void initialisation(int argc, char **argv) {
       case 'm':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR(nullptr, nullptr, "'%s' is a wrong xinerama-head index", optarg);
+          CRIT_ERR(nullptr, nullptr, "'%s' is a wrong xinerama-head index",
+                   optarg);
         }
         head_index.lua_set(*state);
         break;
@@ -3033,9 +3029,9 @@ void initialisation(int argc, char **argv) {
 
   text_buffer = new char[max_user_text.get(*state)];
   memset(text_buffer, 0, max_user_text.get(*state));
-  tmpstring1 = new char [text_buffer_size.get(*state)];
+  tmpstring1 = new char[text_buffer_size.get(*state)];
   memset(tmpstring1, 0, text_buffer_size.get(*state));
-  tmpstring2 = new char [text_buffer_size.get(*state)];
+  tmpstring2 = new char[text_buffer_size.get(*state)];
   memset(tmpstring2, 0, text_buffer_size.get(*state));
 
 #ifdef BUILD_X11

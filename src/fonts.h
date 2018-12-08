@@ -58,34 +58,13 @@ struct font_list {
   }
 };
 
-#ifdef BUILD_XFT
-
-#define font_height()                                                    \
-  (use_xft.get(*state) ? (fonts[selected_font].xftfont->ascent +         \
-                          fonts[selected_font].xftfont->descent)         \
-                       : (fonts[selected_font].font->max_bounds.ascent + \
-                          fonts[selected_font].font->max_bounds.descent))
-#define font_ascent()                                         \
-  (use_xft.get(*state) ? fonts[selected_font].xftfont->ascent \
-                       : fonts[selected_font].font->max_bounds.ascent)
-#define font_descent()                                         \
-  (use_xft.get(*state) ? fonts[selected_font].xftfont->descent \
-                       : fonts[selected_font].font->max_bounds.descent)
-
-#else
-
-#define font_height()                             \
-  (fonts[selected_font].font->max_bounds.ascent + \
-   fonts[selected_font].font->max_bounds.descent)
-#define font_ascent() fonts[selected_font].font->max_bounds.ascent
-#define font_descent() fonts[selected_font].font->max_bounds.descent
-
-#endif
-
 /* direct access to registered fonts (FIXME: bad encapsulation) */
 extern std::vector<font_list> fonts;
 extern unsigned int selected_font;
 
+int font_height();
+int font_ascent();
+int font_descent();
 void setup_fonts(void);
 void set_font(void);
 int add_font(const char *);
