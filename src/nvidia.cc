@@ -91,7 +91,9 @@
  */
 
 #include "nvidia.h"
-#include <NVCtrl/NVCtrlLib.h>
+#include <X11/Xlib.h>
+#include "NVCtrl/NVCtrl.h"
+#include "NVCtrl/NVCtrlLib.h"
 #include "conky.h"
 #include "logging.h"
 #include "temphelper.h"
