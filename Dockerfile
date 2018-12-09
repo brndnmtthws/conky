@@ -1,6 +1,7 @@
 FROM ubuntu:latest
 RUN apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -qy \
+  && DEBIAN_FRONTEND=noninteractive \
+       apt-get install -qy --no-install-recommends \
        cmake \
        git \
        g++ \
@@ -24,6 +25,7 @@ RUN apt-get update \
        audacious-dev \
        libsystemd-dev \
        libxml2-dev \
+       libxnvctrl-dev \
        tolua++
 
 COPY . /conky
@@ -46,6 +48,7 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
         -DBUILD_PULSEAUDIO=ON \
         -DBUILD_JOURNAL=ON \
         -DBUILD_RSS=ON \
+        -DBUILD_NVIDIA=ON \
         ../ \
       ; else \
     cmake \
