@@ -54,6 +54,9 @@
 #ifdef BUILD_XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif
+#ifdef BUILD_XSHAPE
+#include <X11/extensions/shape.h>
+#endif /* BUILD_XSHAPE */
 
 #ifdef BUILD_ARGB
 bool have_argb_visual;
@@ -390,6 +393,7 @@ static int __attribute__((noreturn)) x11_ioerror_handler(Display *d) {
 
 /* X11 initializer */
 static void init_X11() {
+  DBGP("enter init_X11()");
   if (display == nullptr) {
     const std::string &dispstr = display_name.get(*state);
     // passing nullptr to XOpenDisplay should open the default display
@@ -420,9 +424,12 @@ static void init_X11() {
   /* WARNING, this type not in Xlib spec */
   XSetErrorHandler(&x11_error_handler);
   XSetIOErrorHandler(&x11_ioerror_handler);
+
+  DBGP("leave init_X11()");
 }
 
 static void deinit_X11() {
+  DBGP("deinit_X11()");
   XCloseDisplay(display);
   display = nullptr;
 }
@@ -627,6 +634,7 @@ void destroy_window() {
 }
 
 static void init_window(lua::state &l __attribute__((unused)), bool own) {
+  DBGP("enter init_window()");
   // own is unused if OWN_WINDOW is not defined
   (void)own;
 
@@ -756,6 +764,24 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
       wmHint.flags = InputHint | StateHint;
       /* allow decorated windows to be given input focus by WM */
       wmHint.input = TEST_HINT(hints, HINT_UNDECORATED) ? False : True;
+#ifdef BUILD_XSHAPE
+      if (!wmHint.input) {
+        /* allow only decorated windows to be given mouse input */
+        int major_version;
+        int minor_version;
+        if (XShapeQueryVersion(display, &major_version, &minor_version) == 0) {
+          NORM_ERR("Input shapes are not supported");
+        } else {
+          if (own_window.get(*state) &&
+              (own_window_type.get(*state) != TYPE_NORMAL ||
+               ((TEST_HINT(own_window_hints.get(*state), HINT_UNDECORATED)) !=
+                0))) {
+            XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0,
+                                    nullptr, 0, ShapeSet, Unsorted);
+          }
+        }
+      }
+#endif /* BUILD_XSHAPE */
       if (own_window_type.get(l) == TYPE_DOCK ||
           own_window_type.get(l) == TYPE_PANEL) {
         wmHint.initial_state = WithdrawnState;
@@ -958,6 +984,7 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
                                         : 0)
 #endif
   );
+  DBGP("leave init_window()");
 }
 
 static Window find_subwindow(Window win, int w, int h) {

@@ -95,6 +95,7 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
        libcurl4-gnutls-dev \
        libsystemd-dev \
        libxml2-dev \
+       libxnvctrl-dev \
        tolua++ \
   && rm -rf /var/lib/apt/lists/* \
   && rm -rf /conky

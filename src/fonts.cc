@@ -91,7 +91,7 @@ void set_font() {
 }
 
 void setup_fonts() {
-  DBGP("setting up fonts");
+  DBGP2("setting up fonts");
   if (!out_to_x.get(*state)) { return; }
 #ifdef BUILD_XFT
   if (use_xft.get(*state)) {
@@ -146,7 +146,7 @@ void free_fonts(bool utf8) {
 }
 
 void load_fonts(bool utf8) {
-  DBGP("loading fonts");
+  DBGP2("loading fonts");
   if (!out_to_x.get(*state)) { return; }
   for (auto &font : fonts) {
 #ifdef BUILD_XFT
