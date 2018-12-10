@@ -61,9 +61,6 @@
 #ifdef BUILD_IMLIB2
 #include "imlib2.h"
 #endif /* BUILD_IMLIB2 */
-#ifdef BUILD_XSHAPE
-#include <X11/extensions/shape.h>
-#endif /* BUILD_XSHAPE */
 #endif /* BUILD_X11 */
 #ifdef BUILD_NCURSES
 #include <ncurses.h>
@@ -2016,26 +2013,6 @@ static void main_loop() {
   sigaddset(&newmask, SIGUSR1);
 #endif
 
-#ifdef BUILD_X11
-#ifdef BUILD_XSHAPE
-  if (out_to_x.get(*state)) {
-    /* allow only decorated windows to be given mouse input */
-    int major_version, minor_version;
-    if (XShapeQueryVersion(display, &major_version, &minor_version) == 0) {
-      NORM_ERR("Input shapes are not supported");
-    } else {
-      if (own_window.get(*state) &&
-          (own_window_type.get(*state) != TYPE_NORMAL ||
-           ((TEST_HINT(own_window_hints.get(*state), HINT_UNDECORATED)) !=
-            0))) {
-        XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0,
-                                nullptr, 0, ShapeSet, Unsorted);
-      }
-    }
-  }
-#endif /* BUILD_XSHAPE */
-#endif /* BUILD_X11 */
-
   last_update_time = 0.0;
   next_update_time = get_time() - fmod(get_time(), active_update_interval());
   info.looped = 0;
@@ -2055,8 +2032,6 @@ static void main_loop() {
 
 #ifdef BUILD_X11
     if (out_to_x.get(*state)) {
-      XFlush(display);
-
       /* wait for X event or timeout */
 
       if (XPending(display) == 0) {
@@ -2210,6 +2185,7 @@ static void main_loop() {
             r.width = ev.xexpose.width;
             r.height = ev.xexpose.height;
             XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
+            XSync(display, False);
             break;
           }
 
@@ -2339,8 +2315,10 @@ static void main_loop() {
       }
 
 #ifdef BUILD_XDAMAGE
-      XDamageSubtract(display, x11_stuff.damage, x11_stuff.region2, None);
-      XFixesSetRegion(display, x11_stuff.region2, nullptr, 0);
+      if (x11_stuff.damage) {
+        XDamageSubtract(display, x11_stuff.damage, x11_stuff.region2, None);
+        XFixesSetRegion(display, x11_stuff.region2, nullptr, 0);
+      }
 #endif /* BUILD_XDAMAGE */
 
       /* XDBE doesn't seem to provide a way to clear the back buffer
@@ -2433,9 +2411,11 @@ static void main_loop() {
         XDestroyRegion(x11_stuff.region);
         x11_stuff.region = nullptr;
 #ifdef BUILD_XDAMAGE
-        XDamageDestroy(display, x11_stuff.damage);
-        XFixesDestroyRegion(display, x11_stuff.region2);
-        XFixesDestroyRegion(display, x11_stuff.part);
+        if (x11_stuff.damage) {
+          XDamageDestroy(display, x11_stuff.damage);
+          XFixesDestroyRegion(display, x11_stuff.region2);
+          XFixesDestroyRegion(display, x11_stuff.part);
+        }
 #endif /* BUILD_XDAMAGE */
       }
 #endif /* BUILD_X11 */
@@ -2654,11 +2634,14 @@ static void X11_create_window() {
     if (XDamageQueryExtension(display, &x11_stuff.event_base,
                               &x11_stuff.error_base) == 0) {
       NORM_ERR("Xdamage extension unavailable");
+      x11_stuff.damage = 0;
+    } else {
+      x11_stuff.damage =
+          XDamageCreate(display, window.window, XDamageReportNonEmpty);
+      x11_stuff.region2 =
+          XFixesCreateRegionFromWindow(display, window.window, 0);
+      x11_stuff.part = XFixesCreateRegionFromWindow(display, window.window, 0);
     }
-    x11_stuff.damage =
-        XDamageCreate(display, window.window, XDamageReportNonEmpty);
-    x11_stuff.region2 = XFixesCreateRegionFromWindow(display, window.window, 0);
-    x11_stuff.part = XFixesCreateRegionFromWindow(display, window.window, 0);
 #endif /* BUILD_XDAMAGE */
 
     selected_font = 0;
