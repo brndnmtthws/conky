@@ -1,6 +1,0 @@
-1.x   - implement _XROOTPMAP_ID and ESETROOT_PMAP_ID alterative for pseudo-transperency.
-
-2.0.0 - schedule TBD
-	* rewrite core of Conky in C++
-	* implement new features like a cairo backend, network transparency, and whatever else
-	* distributed functionality
