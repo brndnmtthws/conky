@@ -2120,7 +2120,7 @@ static void main_loop() {
           if ((changed != 0) && own_window_type.get(*state) == TYPE_PANEL) {
             int sidenum = -1;
 
-            fprintf(stderr, "%s", _(PACKAGE_NAME ": defining struts\n"));
+            DBGP("%s", _(PACKAGE_NAME ": defining struts\n"));
             fflush(stderr);
 
             switch (text_alignment.get(*state)) {
