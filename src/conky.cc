@@ -741,7 +741,7 @@ void human_readable(long long num, char *buf, int size) {
   float fnum;
   int precision;
   int width;
-  static const char *const format = "%.*f%.1s";
+  const char *format;
 
   /* Possibly just output as usual, for example for stdout usage */
   if (!format_human_readable.get(*state)) {
@@ -750,8 +750,10 @@ void human_readable(long long num, char *buf, int size) {
   }
   if (short_units.get(*state)) {
     width = 5;
+    format = "%.*f%.1s";
   } else {
     width = 7;
+    format = "%.*f%-3s";
   }
 
   if (llabs(num) < 1000LL) {
