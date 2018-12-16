@@ -753,7 +753,7 @@ void human_readable(long long num, char *buf, int size) {
     format = "%.*f%.1s";
   } else {
     width = 7;
-    format = "%.*f%-3s";
+    format = "%.*f%-.3s";
   }
 
   if (llabs(num) < 1000LL) {
