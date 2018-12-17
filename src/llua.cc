@@ -139,8 +139,8 @@ static int llua_conky_set_update_interval(lua_State *L) {
 }
 
 void llua_init() {
-  const char *libs = PACKAGE_LIBDIR "/lib?.so;";
-  char *old_path, *new_path;
+  std::string libs(PACKAGE_LIBDIR "/lib?.so;");
+  std::string old_path, new_path;
   if (lua_L != nullptr) { return; }
   lua_L = luaL_newstate();
 
@@ -148,15 +148,13 @@ void llua_init() {
   luaL_openlibs(lua_L);
   lua_getglobal(lua_L, "package");
   lua_getfield(lua_L, -1, "cpath");
-  old_path = strdup(lua_tostring(lua_L, -1));
-  new_path = static_cast<char *>(malloc(strlen(old_path) + strlen(libs) + 1));
-  strncpy(new_path, libs, strlen(libs));
-  strncat(new_path, old_path, strlen(old_path));
-  lua_pushstring(lua_L, new_path);
+
+  old_path = std::string(lua_tostring(lua_L, -1));
+  new_path = libs + old_path;
+
+  lua_pushstring(lua_L, new_path.c_str());
   lua_setfield(lua_L, -3, "cpath");
   lua_pop(lua_L, 2);
-  free(old_path);
-  free(new_path);
 
   lua_pushstring(lua_L, PACKAGE_NAME " " VERSION " compiled " BUILD_DATE
                                      " for " BUILD_ARCH);
