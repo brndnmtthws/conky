@@ -10,8 +10,8 @@ include ( cmake/dist.cmake )
 
 include(FindPkgConfig)
 
-pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52 lua5.1 lua-5.1 lua51)
-include_directories ( include src/lib ${LUA_INCLUDE_DIR} )
+pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52 lua5.1 lua-5.1 lua51       lua>=5.1 luajit)
+include_directories ( include src/lib ${LUA_INCLUDE_DIRS} )
 
 # Build lib
 file ( GLOB SRC_LIBTOLUAPP src/lib/*.c )
