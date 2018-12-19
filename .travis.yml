@@ -91,7 +91,11 @@ matrix:
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then eval "${MATRIX_EVAL}" ; fi
 
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install freetype gettext lua imlib2 ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      brew update;
+      brew install freetype gettext lua imlib2 ccache;
+      export PATH="/usr/local/opt/ccache/libexec:$PATH";
+    fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link gettext --force ; fi
 before_script:
   - |
@@ -99,6 +103,7 @@ before_script:
       mkdir build && cd build
 
       cmake                   \
+        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
         -DBUILD_MYSQL=ON      \
         -DBUILD_LUA_CAIRO=ON  \
         -DBUILD_LUA_IMLIB2=ON \
@@ -119,6 +124,7 @@ before_script:
       cd build-no-x11
 
       cmake                   \
+        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
         -DBUILD_X11=OFF       \
         -DBUILD_MYSQL=ON      \
         -DBUILD_LUA_CAIRO=ON  \
@@ -138,12 +144,17 @@ before_script:
       cd ..
     elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       mkdir build && cd build
-      cmake ..
+      cmake \
+        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+        ..
       cd ..
 
       mkdir build-no-x11
       cd build-no-x11
-      cmake -DBUILD_X11=OFF ..
+      cmake \
+        -DBUILD_X11=OFF \
+        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+        ..
       cd ..
     fi
 script:
@@ -160,5 +171,6 @@ branches:
     - master
 sudo: false
 cache:
-  directories:
+  - ccache
+  - directories:
     - '$HOME/.sonar/cache'
