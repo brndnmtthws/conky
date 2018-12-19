@@ -1,42 +1,98 @@
-#
-# LuaDist Travis-CI Hook
-#
-
-# We assume C build environments
-language: C
+language: cpp
 cache: ccache
-
-# Try using multiple Lua Implementations
-env:
-  - TOOL="gcc"                  # Use native compiler (GCC usually)
-  - TOOL="clang"                # Use clang
-  - TOOL="i686-w64-mingw32"     # 32bit MinGW
-  - TOOL="x86_64-w64-mingw32"   # 64bit MinGW
-  - TOOL="arm-linux-gnueabihf"  # ARM hard-float (hf), linux
-
-# Crosscompile builds may fail
+dist: xenial
 matrix:
-  allow_failures:
-    - env: TOOL="i686-w64-mingw32"
-    - env: TOOL="x86_64-w64-mingw32"
-    - env: TOOL="arm-linux-gnueabihf"
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - liblua5.3-dev
+      env:
+         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+            - liblua5.3-dev
+      env:
+        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+            - liblua5.3-dev
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - liblua5.3-dev
+      env:
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-xenial-6.0
+          packages:
+            - clang-6.0
+            - liblua5.3-dev
+      env:
+        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-xenial-7
+          packages:
+            - clang-7
+            - liblua5.3-dev
+      env:
+        - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
+    - os: osx
+      osx_image: xcode9.4
+    - os: osx
+      osx_image: xcode10
+    - os: osx
+      osx_image: xcode10.1
 
-# Install dependencies
+before_install:
+    - |
+     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+       brew update;
+       brew install lua ccache;
+       export PATH="/usr/local/opt/ccache/libexec:$PATH";
+     fi
+    - eval "${MATRIX_EVAL}"
+    # Combine global build options with OS/compiler-dependent options
+    - export CMAKE_OPTIONS="${CMAKE_OPTIONS} ${ENV_CMAKE_OPTIONS} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+    - export CXX_FLAGS="${CXX_FLAGS} ${ENV_CXX_FLAGS}"
+
 install:
-  - git clone git://github.com/LuaDist/Tools.git ~/_tools
-  - ~/_tools/travis/travis install
+    - echo ${PATH}
+    - echo ${CXX}
+    - ${CXX} --version
+    - ${CXX} -v
 
-# Bootstap
-before_script:
-  - ~/_tools/travis/travis bootstrap
-
-# Build the module
 script:
-  - ~/_tools/travis/travis build
-
-# Execute additional tests or commands
-after_script:
-  - ~/_tools/travis/travis test
+     - mkdir -p build
+     - cd build
+     - cmake ${CMAKE_OPTIONS} -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ..
+     - make -j4
 
 # Only watch the master branch
 branches:
