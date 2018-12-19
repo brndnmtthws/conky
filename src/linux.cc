@@ -302,7 +302,7 @@ char *save_set_string(char *x, char *y) {
 void update_gateway_info_failure(const char *reason) {
   if (reason != nullptr) { perror(reason); }
   // 2 pointers to 1 location causes a crash when we try to free them both
-  std::unique_lock lock(gw_info.mutex);
+  std::unique_lock<std::mutex> lock(gw_info.mutex);
   free_and_zero(gw_info.iface);
   free_and_zero(gw_info.ip);
   gw_info.iface = strndup("failed", text_buffer_size.get(*state));
@@ -388,7 +388,7 @@ int update_gateway_info(void) {
       if (!(dest || mask) && ((flags & RTF_GATEWAY) || !gate)) {
         gw_info.count++;
         snprintf(e_iface, 49, "%s", iface);
-        std::unique_lock lock(gw_info.mutex);
+        std::unique_lock<std::mutex> lock(gw_info.mutex);
         gw_info.iface = save_set_string(gw_info.iface, iface);
         ina.s_addr = gate;
         gw_info.ip = save_set_string(gw_info.ip, inet_ntoa(ina));
