@@ -16,7 +16,7 @@ RUN apt-get update \
       libcairo2-dev \
       libmicrohttpd-dev \
       ncurses-dev \
-      liblua5.1-dev \
+      liblua5.3-dev \
       librsvg2-dev \
       libaudclient-dev \
       libxmmsclient-dev \
@@ -26,8 +26,7 @@ RUN apt-get update \
       libsystemd-dev \
       libxml2-dev \
       libxnvctrl-dev \
-      libiw-dev \
-      tolua++
+      libiw-dev
 
 COPY . /conky
 WORKDIR /conky/build
@@ -89,7 +88,7 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
       libcairo2-dev \
       libmicrohttpd-dev \
       ncurses-dev \
-      liblua5.1-dev \
+      liblua5.3-dev \
       librsvg2-dev \
       audacious-dev \
       libaudclient-dev \
@@ -99,7 +98,6 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
       libsystemd-dev \
       libxml2-dev \
       libxnvctrl-dev \
-      tolua++ \
   && rm -rf /var/lib/apt/lists/* \
   && rm -rf /conky
 

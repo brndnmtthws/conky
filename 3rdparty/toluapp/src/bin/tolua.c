@@ -116,7 +116,7 @@ int main (int argc, char* argv[])
   lua_pushvalue(L,-1);
   lua_setglobal(L,"flags");
   t = lua_gettop(L);
-  for (i=1; i<argc; ++i)
+  for (i=1; i<argc - 1; ++i)
   {
    if (*argv[i] == '-')
    {
@@ -157,8 +157,12 @@ int main (int argc, char* argv[])
  }
 #else
  {
-  lua_pushstring(L, "/usr/share/toluapp/luapp/"); lua_setglobal(L,"path");
-  if (luaL_loadfile(L, "/usr/share/toluapp/luapp/all.lua") != 0) {
+  char *pkg_path = argv[argc - 1];
+  char full_path[1024];
+  strcpy(full_path, pkg_path);
+  strcat(full_path, "all.lua");
+  lua_pushstring(L, pkg_path); lua_setglobal(L,"path");
+  if (luaL_loadfile(L, full_path) != 0) {
     fprintf(stderr, "luaL_loadfile failed\n");
     return 1;
   }
