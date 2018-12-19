@@ -1,0 +1,28 @@
+$#include "lualib.h"
+$#include "lauxlib.h"
+
+$int a;
+$extern int a;
+
+$int main (void)
+${
+$ lua_State* L = lua_open();
+$	luaopen_base(L);
+$ tolua_tdirective_open(L);
+$	lua_dofile(L,"tdirective.lua");
+$	lua_close(L);
+$ return 0;
+$}
+
+$pfile "tdirectivepkg.pkg"
+
+$<
+ a = 3;
+$>
+
+$[
+A = 4
+$]
+
+$lfile "tdirectivelua.lua"
+ 

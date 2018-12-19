@@ -1,0 +1,97 @@
+$#include "tclass.h"
+
+$Test::Tst_A* Test::Tst_A::last;
+$Test::Tst_B* Test::Tst_B::last;
+$Test::Tst_C* Test::Tst_C::last;
+
+
+$renaming ^Tst_ @
+
+namespace Test {
+
+class Tst_Dummy;
+
+class Tst_A
+{
+	static Tst_A* last;
+	Tst_A ();
+	virtual char* a ();
+	class Tst_AA
+	{
+		Tst_AA () {}
+		~Tst_AA () {}
+		char* aa () { return "AA"; }
+	};
+	class Tst_BB : public Tst_AA
+	{
+		Tst_BB () {}
+		~Tst_BB () {}
+		Tst_AA* Base () { return this; }
+	};
+	
+	tolua_property int number;
+};
+
+class Tst_E {
+public:
+	typedef enum{
+		ONE,
+		TWO,
+	} Pete;
+	Pete pete;
+
+	float get_t<float>();
+
+	void get_pete(Pete p);
+
+	Tst_E& operator+(const Tst_E& rvalue);
+
+	void pars(int a=0xa, int b=GetNumber(GetNumber(1,2)));
+	void get_pointer(void* a=NULL);
+
+	void set_ptr(void* p_ptr) {
+		printf("this is %p, ptr is %p\n", this, p_ptr);
+		ptr = p_ptr;
+	};
+	void* get_ptr() {return ptr;};
+
+	Tst_A a;
+	Tst_E(int);
+	//~Tst_E();
+};
+
+
+class Tst_B : public Tst_A
+{
+	static Tst_B* last;
+	Tst_B ();
+	virtual char* b ();
+	static Tst_A* create();
+	static void* create_void() {return new Tst_B;};
+};
+
+class Tst_C@luaC : public Tst_B
+{
+	static Tst_C* last;
+	Tst_C (int n);
+	~Tst_C ();
+	virtual char* c ();
+};
+
+Tst_A::Tst_AA* Tst_create_aa ();
+bool Tst_is_aa (Tst_A::Tst_AA* obj);
+
+class Tst_Outside {
+
+
+	tolua_outside void outside_func@outside(lua_State* ls);
+
+	static tolua_outside void outside_func@outside_static(Tst_Outside* instance, lua_State* ls);
+
+	Tst_Outside() {};
+};
+
+
+}; // end of namespace
+
+

@@ -1,0 +1,13 @@
+Source: tolua++
+Section: unknown
+Priority: optional
+Maintainer: Ariel Manzur <puntob@gmail.com>
+Build-Depends: debhelper (>= 4.0.0), scons, liblua50-dev, liblualib50-dev
+Standards-Version: 3.6.1
+
+Package: tolua++
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, liblua50-dev, liblualib50-dev
+Description: tolua++
+ tolua++ is an extended version of tolua, a tool to integrate C/C++ code with
+ Lua. tolua++ includes new features oriented to c++.
