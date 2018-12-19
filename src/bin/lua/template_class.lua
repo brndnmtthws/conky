@@ -22,7 +22,7 @@ function classTemplateClass:throw(types, local_scope)
 	for i =1 , types.n do
 
 		local Il = split_c_tokens(types[i], " ")
-		if table.getn(Il) ~= table.getn(self.args) then
+		if #Il ~= #self.args then
 			error("#invalid parameter count for "..types[i])
 		end
 		local bI = self.body
@@ -31,16 +31,16 @@ function classTemplateClass:throw(types, local_scope)
 			--Tl[j] = findtype(Tl[j]) or Tl[j]
 			bI = string.gsub(bI, "([^_%w])"..self.args[j].."([^_%w])", "%1"..Il[j].."%2")
 			if self.parents then
-				for i=1,table.getn(self.parents) do
+				for i=1,#self.parents do
 					pI[i] = string.gsub(self.parents[i], "([^_%w]?)"..self.args[j].."([^_%w]?)", "%1"..Il[j].."%2")
 				end
 			end
 		end
 		--local append = "<"..string.gsub(types[i], "%s+", ",")..">"
-		local append = "<"..concat(Il, 1, table.getn(Il), ",")..">"
+		local append = "<"..concat(Il, 1, #Il, ",")..">"
 		append = string.gsub(append, "%s*,%s*", ",")
 		append = string.gsub(append, ">>", "> >")
-		for i=1,table.getn(pI) do
+		for i=1,#pI do
 			--pI[i] = string.gsub(pI[i], ">>", "> >")
 			pI[i] = resolve_template_types(pI[i])
 		end

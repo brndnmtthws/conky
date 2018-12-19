@@ -92,7 +92,7 @@ function classClass:decltype ()
 	self.btype = typevar(self.base)
 	self.ctype = 'const '..self.type
 	if self.extra_bases then
-		for i=1,table.getn(self.extra_bases) do
+		for i=1,#self.extra_bases do
 			self.extra_bases[i] = typevar(self.extra_bases[i])
 		end
 	end
@@ -138,9 +138,9 @@ end
 -- Expects the name, the base (array) and the body of the class.
 function Class (n,p,b)
 
-	if table.getn(p) > 1 then
+	if #p > 1 then
 		b = string.sub(b, 1, -2)
-		for i=2,table.getn(p),1 do
+		for i=2,#p,1 do
 			b = b.."\n tolua_inherits "..p[i].." __"..p[i].."__;\n"
 		end
 		b = b.."\n}"

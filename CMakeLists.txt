@@ -5,10 +5,12 @@
 # Please note that the package source code is licensed under its own license.
 
 project ( toluapp C )
-cmake_minimum_required ( VERSION 2.8 )
+cmake_minimum_required ( VERSION 3.4 )
 include ( cmake/dist.cmake )
 
-find_package ( Lua REQUIRED )
+include(FindPkgConfig)
+
+pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52 lua5.1 lua-5.1 lua51)
 include_directories ( include src/lib ${LUA_INCLUDE_DIR} )
 
 # Build lib
@@ -19,7 +21,7 @@ endif ( )
 
 add_library ( toluapp_lib ${SRC_LIBTOLUAPP} ${DEF_FILE} )
 target_link_libraries ( toluapp_lib ${LUA_LIBRARIES} )
-set_target_properties ( toluapp_lib PROPERTIES OUTPUT_NAME toluapp CLEAN_DIRECT_OUTPUT 
+set_target_properties ( toluapp_lib PROPERTIES OUTPUT_NAME toluapp CLEAN_DIRECT_OUTPUT
   1 )
 
 # Build app

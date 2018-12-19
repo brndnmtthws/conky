@@ -19,14 +19,14 @@ MASK = { -- the substitution order is important
 }
 
 function mask (s)
- for i = 1,getn(MASK)  do
+ for i = 1,#MASK  do
   s = gsub(s,MASK[i][2],MASK[i][1])
  end
  return s
 end
 
 function unmask (s)
- for i = 1,getn(MASK)  do
+ for i = 1,#MASK  do
   s = gsub(s,MASK[i][1],MASK[i][2])
  end
  return s

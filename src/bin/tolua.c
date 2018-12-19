@@ -67,7 +67,11 @@ static void setfield (lua_State* L, int table, char* f, char* v)
 static void add_extra (lua_State* L, char* value) {
 	int len;
 	lua_getglobal(L, "_extra_parameters");
+#if LUA_VERSION_NUM > 501
+	len = lua_rawlen(L, -1);
+#else
 	len = luaL_getn(L, -1);
+#endif
 	lua_pushstring(L, value);
 	lua_rawseti(L, -2, len+1);
 	lua_pop(L, 1);
@@ -145,7 +149,7 @@ int main (int argc, char* argv[])
   }
   lua_pop(L,1);
  }
-/* #define TOLUA_SCRIPT_RUN */
+#define TOLUA_SCRIPT_RUN
 #ifndef TOLUA_SCRIPT_RUN
  {
   int tolua_tolua_open (lua_State* L);
@@ -153,16 +157,17 @@ int main (int argc, char* argv[])
  }
 #else
  {
-  char* p;
-  char  path[BUFSIZ];
-  strcpy(path,argv[0]);
-  p = strrchr(path,'/');
-  if (p==NULL) p = strrchr(path,'\\');
-  p = (p==NULL) ? path : p+1;
-  sprintf(p,"%s","../src/bin/lua/");
-  lua_pushstring(L,path); lua_setglobal(L,"path");
-		strcat(path,"all.lua");
-  lua_dofile(L,path);
+  lua_pushstring(L, "/usr/share/toluapp/luapp/"); lua_setglobal(L,"path");
+  if (luaL_loadfile(L, "/usr/share/toluapp/luapp/all.lua") != 0) {
+    fprintf(stderr, "luaL_loadfile failed\n");
+    return 1;
+  }
+  if (lua_pcall(L, 0,0,0) != 0) {
+    const char *errmsg = lua_tostring(L, -1);
+    fprintf(stderr, "lua_pcall failed: %s\n", errmsg);
+    lua_pop(L, 1);
+    return 1;
+  }
  }
 #endif
  return 0;

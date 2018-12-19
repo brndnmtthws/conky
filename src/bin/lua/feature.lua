@@ -132,7 +132,7 @@ function classFeature:cfuncname (n)
  if not fname or fname == '' then
  	fname = self.name
  end
-  n = string.gsub(n..'_'.. (fname), "[<>:, \.%*&]", "_")
+  n = string.gsub(n..'_'.. (fname), "[<>:, \\.%*&]", "_")
 
   return n
 end

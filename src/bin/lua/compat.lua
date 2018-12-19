@@ -40,15 +40,13 @@ function do_ (f, err)
   end
 end
 
-function dostring(s) return do_(loadstring(s)) end
+function dostring(s) return do_(load(s)) end
 -- function dofile(s) return do_(loadfile(s)) end
 
 -------------------------------------------------------------------
 -- Table library
 local tab = table
-foreach = tab.foreach
-foreachi = tab.foreachi
-getn = tab.getn
+getn = function (tab) return #tab end
 tinsert = tab.insert
 tremove = tab.remove
 sort = tab.sort
@@ -78,7 +76,7 @@ floor = math.floor
 frexp = math.frexp
 ldexp = math.ldexp
 log = math.log
-log10 = math.log10
+log10 = function(val) return math.log(10, val) end
 max = math.max
 min = math.min
 mod = math.mod
@@ -177,17 +175,19 @@ end
 
 function read (...)
   local f = _INPUT
+  local arg = {...}
   if rawtype(arg[1]) == 'userdata' then
     f = tab.remove(arg, 1)
   end
-  return f:read(unpack(arg))
+  return f:read(table.unpack(arg))
 end
 
 function write (...)
   local f = _OUTPUT
+  local arg = {...}
   if rawtype(arg[1]) == 'userdata' then
     f = tab.remove(arg, 1)
   end
-  return f:write(unpack(arg))
+  return f:write(table.unpack(arg))
 end
 

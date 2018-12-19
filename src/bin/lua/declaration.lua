@@ -137,7 +137,7 @@ function resolve_template_types(type)
 	if b then
 
 		m = split_c_tokens(string.sub(m, 2, -2), ",")
-		for i=1, table.getn(m) do
+		for i=1, #m do
 			m[i] = string.gsub(m[i],"%s*([%*&])", "%1")
 			if not isbasic(m[i]) then
 				if not isenum(m[i]) then _, m[i] = applytypedef("", m[i]) end
@@ -522,7 +522,7 @@ function Declaration (s,kind,is_parameter)
  end
 
  -- check the form: mod type* name
- local s1 = gsub(s,"(%b\[\])",function (n) return gsub(n,'%*','\1') end)
+ local s1 = gsub(s,"(%b%[%])",function (n) return gsub(n,'%*','\1') end)
  t = split_c_tokens(s1,'%*')
  if t.n == 2 then
   t[2] = gsub(t[2],'\1','%*') -- restore * in dimension expression

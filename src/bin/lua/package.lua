@@ -39,7 +39,7 @@ function classPackage:preprocess ()
  self.code = gsub(self.code,"\n%s*%$%]","\2")
  self.code = gsub(self.code,"(%b\1\2)",       function (c)
                                                tinsert(L,c)
-                                               return "\n#["..getn(L).."]#"
+                                               return "\n#[".. #L .."]#"
                                               end)
  -- avoid preprocessing embedded C code
  local C = {}
@@ -47,14 +47,14 @@ function classPackage:preprocess ()
  self.code = gsub(self.code,"\n%s*%$%>","\4")
  self.code = gsub(self.code,"(%b\3\4)",       function (c)
                                                tinsert(C,c)
-                                               return "\n#<"..getn(C)..">#"
+                                               return "\n#<".. #C ..">#"
                                               end)
  -- avoid preprocessing embedded C code
  self.code = gsub(self.code,"\n%s*%$%{","\5") -- deal with embedded C code
  self.code = gsub(self.code,"\n%s*%$%}","\6")
  self.code = gsub(self.code,"(%b\5\6)",       function (c)
                                                tinsert(C,c)
-                                               return "\n#<"..getn(C)..">#"
+                                               return "\n#<".. #C..">#"
                                               end)
 
  --self.code = gsub(self.code,"\n%s*#[^d][^\n]*\n", "\n\n") -- eliminate preprocessor directives that don't start with 'd'
@@ -64,7 +64,7 @@ function classPackage:preprocess ()
  local V = {}
  self.code = gsub(self.code,"\n(%s*%$[^%[%]][^\n]*)",function (v)
                                                tinsert(V,v)
-                                               return "\n#"..getn(V).."#"
+                                               return "\n#".. #V .."#"
                                               end)
 
  -- perform global substitution
@@ -152,14 +152,14 @@ function classPackage:preamble ()
 	if flags.t then
 		output("#ifndef Mtolua_typeid\n#define Mtolua_typeid(L,TI,T)\n#endif\n")
 	end
-	foreach(_usertype,function(n,v)
+	for n,v in pairs(_usertype) do
 		if (not _global_classes[v]) or _global_classes[v]:check_public_access() then
 			output(' tolua_usertype(tolua_S,"',v,'");')
 			if flags.t then
 				output(' Mtolua_typeid(tolua_S,typeid(',v,'), "',v,'");')
 			end
 		end
-	 end)
+	 end
  output('}')
  output('\n')
 end
@@ -288,7 +288,7 @@ function Package (name,fn)
 				local t = {code=s}
 				extra = string.gsub(extra, "^%s*,%s*", "")
 				local pars = split_c_tokens(extra, ",")
-				include_file_hook(t, fn, unpack(pars))
+				include_file_hook(t, fn, table.unpack(pars))
 				return "\n\n" .. t.code
 			else
 				error('#Invalid include directive (use $cfile, $pfile, $lfile or $ifile)')
@@ -322,7 +322,7 @@ function prep(file)
       table.insert(chunk, string.sub(line, 3) .. "\n")
      else
       local last = 1
-      for text, expr, index in string.gfind(line, "(.-)$(%b())()") do 
+      for text, expr, index in string.gmatch(line, "(.-)$(%b())()") do 
         last = index
         if text ~= "" then
           table.insert(chunk, string.format('table.insert(__ret, %q )', text))
@@ -334,10 +334,9 @@ function prep(file)
     end
   end
   table.insert(chunk, '\nreturn table.concat(__ret)\n')
-  local f,e = loadstring(table.concat(chunk))
+  local f,e = load(table.concat(chunk), nil, "t", _extra_parameters)
   if e then
   	error("#"..e)
   end
-  setfenv(f, _extra_parameters)
   return f()
 end

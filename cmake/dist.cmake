@@ -81,19 +81,6 @@ if ( MSVC )
   add_definitions ( -D_CRT_SECURE_NO_WARNINGS )
 endif ()
 
-# RPath and relative linking
-option ( USE_RPATH "Use relative linking." ON)
-if ( USE_RPATH )
-  string ( REGEX REPLACE "[^!/]+" ".." UP_DIR ${INSTALL_BIN} )
-  set ( CMAKE_SKIP_BUILD_RPATH FALSE CACHE STRING "" FORCE )
-  set ( CMAKE_BUILD_WITH_INSTALL_RPATH FALSE CACHE STRING "" FORCE )
-  set ( CMAKE_INSTALL_RPATH $ORIGIN/${UP_DIR}/${INSTALL_LIB}
-        CACHE STRING "" FORCE )
-  set ( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE CACHE STRING "" FORCE )
-  set ( CMAKE_INSTALL_NAME_DIR @executable_path/${UP_DIR}/${INSTALL_LIB}
-        CACHE STRING "" FORCE )
-endif ()
-
 ## MACROS
 # Parser macro
 macro ( parse_arguments prefix arg_names option_names)

@@ -82,6 +82,8 @@ def make_tolua_code(self, target, source, pkgname = None, bootstrap = False, use
 	header = target[:-2] + '.h'
 	pheader = Dir('.').path + '/' + header
 
+	print("Generating ", target, " from ", source)
+
 	tolua = ""
 	if bootstrap:
 		if os.name == 'nt':
