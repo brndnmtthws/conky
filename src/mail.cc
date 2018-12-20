@@ -36,11 +36,6 @@
 #include "logging.h"
 #include "text_object.h"
 
-#include <cerrno>
-#include <cinttypes>
-#include <climits>
-#include <cstdio>
-#include <cstring>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/param.h>
@@ -48,6 +43,11 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <cerrno>
+#include <cinttypes>
+#include <climits>
+#include <cstdio>
+#include <cstring>
 
 #include <dirent.h>
 #include <termios.h>
@@ -79,12 +79,15 @@ struct local_mail_s {
   double last_update;
 };
 
+class mail_fail : public std::runtime_error {
+ public:
+  explicit mail_fail(const std::string &what_arg) : runtime_error(what_arg) {}
+};
+
 std::pair<std::string, bool> priv::current_mail_spool_setting::do_convert(
     lua::state &l, int index) {
   auto ret = Base::do_convert(l, index);
-  if (ret.second) {
-    ret.first = variable_substitute(ret.first);
-  }
+  if (ret.second) { ret.first = variable_substitute(ret.first); }
   return ret;
 }
 
@@ -127,23 +130,20 @@ class mail_cb
     snprintf(portbuf, 8, "%" SCNu16, get<MP_PORT>());
 
     if (int res = getaddrinfo(get<MP_HOST>().c_str(), portbuf, &hints, &ai)) {
-      throw std::runtime_error(std::string("IMAP getaddrinfo: ") +
-                               gai_strerror(res));
+      throw mail_fail(std::string("IMAP getaddrinfo: ") + gai_strerror(res));
     }
   }
 
   int connect() {
     for (struct addrinfo *rp = ai; rp != nullptr; rp = rp->ai_next) {
       int sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-      if (sockfd == -1) {
-        continue;
-      }
+      if (sockfd == -1) { continue; }
       if (::connect(sockfd, rp->ai_addr, rp->ai_addrlen) != -1) {
         return sockfd;
       }
       close(sockfd);
     }
-    throw std::runtime_error("Unable to connect to mail server");
+    throw mail_fail("Unable to connect to mail server");
   }
 
   void merge(callback_base &&other) override {
@@ -163,9 +163,7 @@ class mail_cb
         retries(retries_) {}
 
   ~mail_cb() override {
-    if (ai != nullptr) {
-      freeaddrinfo(ai);
-    }
+    if (ai != nullptr) { freeaddrinfo(ai); }
   }
 };
 
@@ -207,26 +205,22 @@ struct mail_param_ex *global_mail;
 static void update_mail_count(struct local_mail_s *mail) {
   struct stat st {};
 
-  if (mail == nullptr) {
-    return;
-  }
+  if (mail == nullptr) { return; }
 
   /* TODO: use that fine file modification notify on Linux 2.4 */
 
   /* don't check mail so often (9.5s is minimum interval) */
-  if (current_update_time - mail->last_update < 9.5) {
+  if (current_update_time - mail->last_update < 9.5) { return; }
+  mail->last_update = current_update_time;
+
+  if (stat(mail->mbox, &st) != 0) {
+    static int rep = 0;
+
+    if (rep == 0) {
+      NORM_ERR("can't stat %s: %s", mail->mbox, strerror(errno));
+      rep = 1;
+    }
     return;
-  }
-    mail->last_update = current_update_time;
-
-    if (stat(mail->mbox, &st) != 0) {
-      static int rep = 0;
-
-      if (rep == 0) {
-        NORM_ERR("can't stat %s: %s", mail->mbox, strerror(errno));
-        rep = 1;
-      }
-      return;
   }
 #if HAVE_DIRENT_H
   /* maildir format */
@@ -235,6 +229,7 @@ static void update_mail_count(struct local_mail_s *mail) {
     char *dirname;
     struct dirent *dirent;
     char *mailflags;
+    size_t dirname_len = strlen(mail->mbox) + 5;
 
     mail->mail_count = mail->new_mail_count = 0;
     mail->seen_mail_count = mail->unseen_mail_count = 0;
@@ -242,8 +237,7 @@ static void update_mail_count(struct local_mail_s *mail) {
     mail->forwarded_mail_count = mail->unforwarded_mail_count = 0;
     mail->replied_mail_count = mail->unreplied_mail_count = 0;
     mail->draft_mail_count = mail->trashed_mail_count = 0;
-    dirname =
-        static_cast<char *>(malloc(sizeof(char) * (strlen(mail->mbox) + 5)));
+    dirname = static_cast<char *>(malloc(sizeof(char) * dirname_len));
     if (dirname == nullptr) {
       NORM_ERR("malloc");
       return;
@@ -308,7 +302,7 @@ static void update_mail_count(struct local_mail_s *mail) {
     }
     closedir(dir);
 
-    dirname[strlen(dirname) - 3] = '\0';
+    dirname[std::max(0UL, strnlen(dirname, dirname_len - 1) - 3)] = '\0';
     strcat(dirname, "new");
 
     dir = opendir(dirname);
@@ -353,25 +347,19 @@ static void update_mail_count(struct local_mail_s *mail) {
     mail->draft_mail_count = mail->trashed_mail_count = -1;
 
     fp = open_file(mail->mbox, &rep);
-    if (fp == nullptr) {
-      return;
-    }
+    if (fp == nullptr) { return; }
 
     /* NOTE: adds mail as new if there isn't Status-field at all */
 
     while (feof(fp) == 0) {
       char buf[128];
-      int was_new = 0;
 
-      if (fgets(buf, 128, fp) == nullptr) {
-        break;
-      }
+      if (fgets(buf, 128, fp) == nullptr) { break; }
 
       if (strncmp(buf, "From ", 5) == 0) {
         /* ignore MAILER-DAEMON */
         if (strncmp(buf + 5, "MAILER-DAEMON ", 14) != 0) {
           mail->mail_count++;
-          was_new = 0;
 
           if (reading_status == 1) {
             mail->new_mail_count++;
@@ -390,10 +378,7 @@ static void update_mail_count(struct local_mail_s *mail) {
             continue;
           }
           /* check that mail isn't already read */
-          if ((xms & 0x0001) == 0) {
-            mail->new_mail_count++;
-            was_new = 1;
-          }
+          if ((xms & 0x0001) == 0) { mail->new_mail_count++; }
 
           /* check for an additional X-Status header */
           reading_status = 2;
@@ -401,24 +386,14 @@ static void update_mail_count(struct local_mail_s *mail) {
         }
         if (reading_status == 1 && strncmp(buf, "Status:", 7) == 0) {
           /* check that mail isn't already read */
-          if (strchr(buf + 7, 'R') == nullptr) {
-            mail->new_mail_count++;
-            was_new = 1;
-          }
+          if (strchr(buf + 7, 'R') == nullptr) { mail->new_mail_count++; }
 
           reading_status = 2;
           continue;
         }
         if (reading_status >= 1 && strncmp(buf, "X-Status:", 9) == 0) {
           /* check that mail isn't marked for deletion */
-          if (strchr(buf + 9, 'D') != nullptr) {
-            mail->trashed_mail_count++;
-            /* If the mail was previously detected as new,
-               subtract it from the new mail count */
-            if (was_new != 0) {
-              mail->new_mail_count--;
-            }
-          }
+          if (strchr(buf + 9, 'D') != nullptr) { mail->trashed_mail_count++; }
 
           reading_status = 0;
           continue;
@@ -427,17 +402,13 @@ static void update_mail_count(struct local_mail_s *mail) {
 
       /* skip until \n */
       while (strchr(buf, '\n') == nullptr && (feof(fp) == 0)) {
-        if (fgets(buf, 128, fp) == nullptr) {
-          break;
-        }
+        if (fgets(buf, 128, fp) == nullptr) { break; }
       }
     }
 
     fclose(fp);
 
-    if (reading_status != 0) {
-      mail->new_mail_count++;
-    }
+    if (reading_status != 0) { mail->new_mail_count++; }
 
     mail->last_mtime = st.st_mtime;
     mail->last_ctime = st.st_ctime;
@@ -471,7 +442,7 @@ void parse_local_mail_args(struct text_object *obj, const char *arg) {
 
 #define PRINT_MAILS_GENERATOR(x)                                            \
   void print_##x##mails(struct text_object *obj, char *p,                   \
-		                                 unsigned int p_max_size) { \
+                        unsigned int p_max_size) {                          \
     struct local_mail_s *locmail = (struct local_mail_s *)obj->data.opaque; \
     if (!locmail) return;                                                   \
     update_mail_count(locmail);                                             \
@@ -494,9 +465,7 @@ PRINT_MAILS_GENERATOR(trashed_)
 void free_local_mails(struct text_object *obj) {
   auto *locmail = static_cast<struct local_mail_s *>(obj->data.opaque);
 
-  if (locmail == nullptr) {
-    return;
-  }
+  if (locmail == nullptr) { return; }
 
   free_and_zero(locmail->mbox);
   free_and_zero(obj->data.opaque);
@@ -536,9 +505,7 @@ std::unique_ptr<mail_param_ex> parse_mail_args(mail_type type,
     term.c_lflag &= ~ECHO;
     tcsetattr(fp, TCSANOW, &term);
     printf("Enter mailbox password (%s@%s): ", user, host);
-    if (scanf("%128s", pass) != 1) {
-      pass[0] = 0;
-    }
+    if (scanf("%128s", pass) != 1) { pass[0] = 0; }
     printf("\n");
     term.c_lflag |= ECHO;
     tcsetattr(fp, TCSANOW, &term);
@@ -596,9 +563,7 @@ std::unique_ptr<mail_param_ex> parse_mail_args(mail_type type,
     int len = 0;
     tmp += 3;
 
-    if (tmp[0] == '\'') {
-      len = strstr(tmp + 1, "'") - tmp - 1;
-    }
+    if (tmp[0] == '\'') { len = strstr(tmp + 1, "'") - tmp - 1; }
     get<MP_COMMAND>(*mail).assign(tmp + 1, len);
   }
 
@@ -688,9 +653,7 @@ mail_setting pop3("pop3", POP3_TYPE);
 }  // namespace
 
 void free_mail_obj(struct text_object *obj) {
-  if (obj->data.opaque == nullptr) {
-    return;
-  }
+  if (obj->data.opaque == nullptr) { return; }
 
   if (obj->data.opaque != global_mail) {
     auto *mail = static_cast<mail_param_ex *>(obj->data.opaque);
@@ -707,7 +670,7 @@ static void command(int sockfd, const std::string &cmd, char *response,
   int numbytes = 0;
 
   if (send(sockfd, cmd.c_str(), cmd.length(), 0) == -1) {
-    throw std::runtime_error("send: " + strerror_r(errno));
+    throw mail_fail("send: " + strerror_r(errno));
   }
   DBGP2("command()  command: %s", cmd.c_str());
 
@@ -718,25 +681,21 @@ static void command(int sockfd, const std::string &cmd, char *response,
     FD_SET(sockfd, &fdset);
 
     if (select(sockfd + 1, &fdset, nullptr, nullptr, &fetchtimeout) == 0) {
-      throw std::runtime_error("select: read timeout");
+      throw mail_fail("select: read timeout");
     }
 
     if ((numbytes = recv(sockfd, response + total, MAXDATASIZE - 1 - total,
                          0)) == -1) {
-      throw std::runtime_error("recv: " + strerror_r(errno));
+      throw mail_fail("recv: " + strerror_r(errno));
     }
 
     total += numbytes;
     response[total] = '\0';
     DBGP2("command() received: %s", response);
 
-    if (strstr(response, verify) != nullptr) {
-      return;
-    }
+    if (strstr(response, verify) != nullptr) { return; }
 
-    if (numbytes == 0) {
-      throw std::runtime_error("Unexpected response from server");
-    }
+    if (numbytes == 0) { throw mail_fail("Unexpected response from server"); }
   }
 }
 
@@ -744,7 +703,7 @@ void imap_cb::check_status(char *recvbuf) {
   char *reply;
   reply = strstr(recvbuf, " (MESSAGES ");
   if ((reply == nullptr) || strlen(reply) < 2) {
-    std::runtime_error("Unexpected response from server");
+    throw mail_fail("Unexpected response from server");
   }
 
   reply += 2;
@@ -753,7 +712,7 @@ void imap_cb::check_status(char *recvbuf) {
   std::lock_guard<std::mutex> lock(result_mutex);
   if (sscanf(reply, "MESSAGES %lu UNSEEN %lu", &result.messages,
              &result.unseen) != 2) {
-    throw std::runtime_error(std::string("Error parsing response: ") + recvbuf);
+    throw mail_fail(std::string("Error parsing response: ") + recvbuf);
   }
 }
 
@@ -761,10 +720,9 @@ void imap_cb::unseen_command(unsigned long old_unseen,
                              unsigned long old_messages) {
   if (!get<MP_COMMAND>().empty() &&
       (result.unseen > old_unseen ||
-       (result.messages > old_messages && result.unseen > 0))) {
-    if (system(get<MP_COMMAND>().c_str()) == -1) {
-      perror("system()");
-    }
+       (result.messages > old_messages && result.unseen > 0)) &&
+      system(get<MP_COMMAND>().c_str()) == -1) {
+    perror("system()");
   }
 }
 
@@ -780,9 +738,7 @@ void imap_cb::work() {
     int res;
     fd_set fdset;
 
-    if (ai == nullptr) {
-      resolve_host();
-    }
+    if (ai == nullptr) { resolve_host(); }
 
     try {
       sockfd = connect();
@@ -790,9 +746,7 @@ void imap_cb::work() {
       command(sockfd, "", recvbuf, "* OK");
 
       command(sockfd, "abc CAPABILITY\r\n", recvbuf, "abc OK");
-      if (strstr(recvbuf, " IDLE ") != nullptr) {
-        has_idle = true;
-      }
+      if (strstr(recvbuf, " IDLE ") != nullptr) { has_idle = true; }
 
       std::ostringstream str;
       str << "a1 login " << get<MP_USER>() << " {" << get<MP_PASS>().length()
@@ -811,10 +765,11 @@ void imap_cb::work() {
       old_unseen = result.unseen;
       old_messages = result.messages;
 
-      if (not has_idle) {
+      if (!has_idle) {
         try {
           command(sockfd, "a3 LOGOUT\r\n", recvbuf, "a3 OK");
-        } catch (std::runtime_error &) {
+        } catch (mail_fail &e) {
+          NORM_ERR("Error while communicating with IMAP server: %s", e.what());
         }
         close(sockfd);
         return;
@@ -843,17 +798,19 @@ void imap_cb::work() {
           try {
             command(sockfd, "DONE\r\n", recvbuf, "a5 OK");
             command(sockfd, "a3 LOGOUT\r\n", recvbuf, "a3 OK");
-          } catch (std::runtime_error &) {
+          } catch (mail_fail &e) {
+            NORM_ERR("Error while communicating with IMAP server: %s",
+                     e.what());
           }
           close(sockfd);
           return;
         }
         if (res > 0) {
           if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-            throw std::runtime_error("recv idling");
+            throw mail_fail("recv idling");
           }
         } else {
-          throw std::runtime_error("");
+          throw mail_fail("");
         }
 
         recvbuf[numbytes] = '\0';
@@ -869,9 +826,7 @@ void imap_cb::work() {
           }
           if (buf != nullptr) {
             // back up until we reach '*'
-            while (buf >= recvbuf && buf[0] != '*') {
-              buf--;
-            }
+            while (buf >= recvbuf && buf[0] != '*') { buf--; }
             if (sscanf(buf, "* %lu EXISTS\r\n", &messages) == 1) {
               std::lock_guard<std::mutex> lock(result_mutex);
               if (result.messages != messages) {
@@ -888,18 +843,14 @@ void imap_cb::work() {
           }
           if (buf != nullptr) {
             // back up until we reach '*'
-            while (buf >= recvbuf && buf[0] != '*') {
-              buf--;
-            }
-            if (sscanf(buf, "* %lu RECENT\r\n", &recent) != 1) {
-              recent = 0;
-            }
+            while (buf >= recvbuf && buf[0] != '*') { buf--; }
+            if (sscanf(buf, "* %lu RECENT\r\n", &recent) != 1) { recent = 0; }
           }
         }
         /* check if we got a BYE from server */
         if (strstr(recvbuf, "* BYE") != nullptr) {
           // need to re-connect
-          throw std::runtime_error("");
+          throw mail_fail("");
         }
 
         /*
@@ -925,10 +876,8 @@ void imap_cb::work() {
         old_unseen = result.unseen;
         old_messages = result.messages;
       }
-    } catch (std::runtime_error &e) {
-      if (sockfd != -1) {
-        close(sockfd);
-      }
+    } catch (mail_fail &e) {
+      if (sockfd != -1) { close(sockfd); }
       freeaddrinfo(ai);
       ai = nullptr;
 
@@ -942,30 +891,26 @@ void imap_cb::work() {
       sleep(fail); /* sleep more for the more failures we have */
     }
 
-    if (is_done()) {
-      return;
-    }
+    if (is_done()) { return; }
   }
 }
 
-void print_imap_unseen(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_imap_unseen(struct text_object *obj, char *p,
+                       unsigned int p_max_size) {
   auto *mail = static_cast<struct mail_param_ex *>(obj->data.opaque);
 
-  if (mail == nullptr) {
-    return;
-  }
+  if (mail == nullptr) { return; }
 
   auto cb = conky::register_cb<imap_cb>(mail->period, *mail, mail->retries);
 
   snprintf(p, p_max_size, "%lu", cb->get_result_copy().unseen);
 }
 
-void print_imap_messages(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_imap_messages(struct text_object *obj, char *p,
+                         unsigned int p_max_size) {
   auto *mail = static_cast<struct mail_param_ex *>(obj->data.opaque);
 
-  if (mail == nullptr) {
-    return;
-  }
+  if (mail == nullptr) { return; }
 
   auto cb = conky::register_cb<imap_cb>(mail->period, *mail, mail->retries);
 
@@ -979,9 +924,7 @@ void pop3_cb::work() {
   unsigned long old_unseen = ULONG_MAX;
 
   while (fail < retries) {
-    if (ai == nullptr) {
-      resolve_host();
-    }
+    if (ai == nullptr) { resolve_host(); }
 
     try {
       sockfd = connect();
@@ -1000,19 +943,14 @@ void pop3_cb::work() {
 
       command(sockfd, "QUIT\r\n", recvbuf, "+OK");
 
-      if (get<MP_COMMAND>().length() > 1 && result.unseen > old_unseen) {
-        // new mail goodie
-        if (system(get<MP_COMMAND>().c_str()) == -1) {
-          perror("system()");
-        }
+      if (get<MP_COMMAND>().length() > 1 && result.unseen > old_unseen &&
+          system(get<MP_COMMAND>().c_str()) == -1) {
+        perror("system()");
       }
       fail = 0;
-      old_unseen = result.unseen;
       return;
-    } catch (std::runtime_error &e) {
-      if (sockfd != -1) {
-        close(sockfd);
-      }
+    } catch (mail_fail &e) {
+      if (sockfd != -1) { close(sockfd); }
       freeaddrinfo(ai);
       ai = nullptr;
 
@@ -1026,30 +964,26 @@ void pop3_cb::work() {
       sleep(fail); /* sleep more for the more failures we have */
     }
 
-    if (is_done()) {
-      return;
-    }
+    if (is_done()) { return; }
   }
 }
 
-void print_pop3_unseen(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pop3_unseen(struct text_object *obj, char *p,
+                       unsigned int p_max_size) {
   auto *mail = static_cast<struct mail_param_ex *>(obj->data.opaque);
 
-  if (mail == nullptr) {
-    return;
-  }
+  if (mail == nullptr) { return; }
 
   auto cb = conky::register_cb<pop3_cb>(mail->period, *mail, mail->retries);
 
   snprintf(p, p_max_size, "%lu", cb->get_result_copy().unseen);
 }
 
-void print_pop3_used(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pop3_used(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   auto *mail = static_cast<struct mail_param_ex *>(obj->data.opaque);
 
-  if (mail == nullptr) {
-    return;
-  }
+  if (mail == nullptr) { return; }
 
   auto cb = conky::register_cb<pop3_cb>(mail->period, *mail, mail->retries);
 

@@ -54,7 +54,7 @@ data_source_base &get_data_source(lua::state *l) {
   }
 
   l->rawgetfield(lua::REGISTRYINDEX, priv::data_source_metatable);
-  if (not l->getmetatable(-2) or not l->rawequal(-1, -2)) {
+  if (!l->getmetatable(-2) || !l->rawequal(-1, -2)) {
     throw std::runtime_error("Invalid parameter");
   }
 
@@ -98,7 +98,7 @@ void do_register_data_source(const std::string &name,
   static data_source_constructor constructor;
 
   bool inserted = data_sources->insert({name, fn}).second;
-  if (not inserted) {
+  if (!inserted) {
     throw std::logic_error("Data source with name '" + name +
                            "' already registered");
   }
