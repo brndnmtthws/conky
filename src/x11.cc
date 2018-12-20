@@ -489,7 +489,7 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop) {
   unsigned long nitems, bytes;
   unsigned int n;
   Window root = RootWindow(display, screen);
-  Window win = root;
+  Window win;
   Window troot, parent, *children;
   unsigned char *buf = nullptr;
 

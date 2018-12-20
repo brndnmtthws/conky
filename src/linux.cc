@@ -851,8 +851,8 @@ void determine_longstat_file(void) {
   char buf[MAX_PROCSTAT_LINELEN + 1];
 
   if (!(stat_fp = open_file("/proc/stat", &rep))) return;
-  while (!feof(stat_fp)) {
-    if (fgets(buf, MAX_PROCSTAT_LINELEN, stat_fp) == nullptr) break;
+  while (!feof(stat_fp) &&
+         fgets(buf, MAX_PROCSTAT_LINELEN, stat_fp) != nullptr) {
     if (strncmp(buf, "cpu", 3) == 0) {
       determine_longstat(buf);
       break;
@@ -915,7 +915,7 @@ void get_cpu_count(void) {
 int update_stat(void) {
   FILE *stat_fp;
   static int rep = 0;
-  static struct cpu_info *cpu = nullptr;
+  struct cpu_info *cpu = nullptr;
   char buf[256];
   int i;
   unsigned int idx;
@@ -955,6 +955,8 @@ int update_stat(void) {
     cpu = (struct cpu_info *)malloc(malloc_cpu_size);
     memset(cpu, 0, malloc_cpu_size);
     global_cpu = cpu;
+  } else {
+    cpu = global_cpu;
   }
 
   if (!(stat_fp = open_file("/proc/stat", &rep))) {
@@ -1150,7 +1152,7 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
     if (*buf) {
       /* buf holds result from get_first_file_in_a_directory() above,
        * e.g. "hwmon0" -- append "/device" */
-      strncat(buf, "/device", 256);
+      strncat(buf, "/device", 255 - strnlen(buf, 255));
     } else {
       /* dev holds device number N as a string,
        * e.g. "0", -- convert to "hwmon0/device" */
@@ -1175,7 +1177,7 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
   fd = open(path, O_RDONLY);
   if (fd < 0) {
     /* if it fails, strip the /device from dev and attempt again */
-    buf[strlen(buf) - 7] = 0;
+    buf[strnlen(buf, 255) - 7] = 0;
     snprintf(path, 255, "%s%s/%s%d_input", dir, dev, type, n);
     fd = open(path, O_RDONLY);
     if (fd < 0) {
@@ -1297,6 +1299,8 @@ static void parse_sysfs_sensor(struct text_object *obj, const char *arg,
   float factor, offset;
   int n, found = 0;
   struct sysfs *sf;
+  memset(buf1, 0, 64);
+  memset(buf2, 0, 64);
 
   if (sscanf(arg, "%63s %d %f %f", buf2, &n, &factor, &offset) == 4)
     found = 1;
