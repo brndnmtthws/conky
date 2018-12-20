@@ -102,7 +102,7 @@ namespace priv {
 config_setting_base::config_setting_base(std::string name_)
     : name(std::move(name_)), seq_no(get_next_seq_no()) {
   bool inserted = settings->insert({name, this}).second;
-  if (not inserted) {
+  if (!inserted) {
     throw std::logic_error("Setting with name '" + name +
                            "' already registered");
   }

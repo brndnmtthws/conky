@@ -21,10 +21,10 @@
  *
  */
 
+#include "llua.h"
 #include <config.h>
 #include "build.h"
 #include "conky.h"
-#include "llua.h"
 #include "logging.h"
 
 extern "C" {
@@ -55,7 +55,7 @@ class lua_load_setting : public conky::simple_config_setting<std::string> {
 
     if (init) {
       std::string files = do_convert(l, -1).first;
-      while (not files.empty()) {
+      while (!files.empty()) {
         std::string::size_type pos = files.find(' ');
         if (pos > 0) {
           std::string file(files, 0, pos);
@@ -557,7 +557,8 @@ void print_lua(struct text_object *obj, char *p, unsigned int p_max_size) {
   }
 }
 
-void print_lua_parse(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_lua_parse(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   char *str = llua_getstring(obj->data.s);
   if (str != nullptr) {
     evaluate(str, p, p_max_size);

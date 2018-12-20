@@ -489,7 +489,7 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop) {
   unsigned long nitems, bytes;
   unsigned int n;
   Window root = RootWindow(display, screen);
-  Window win = root;
+  Window win;
   Window troot, parent, *children;
   unsigned char *buf = nullptr;
 
@@ -1155,7 +1155,7 @@ static const char NOT_IN_X[] = "Not running in X";
 void print_monitor(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
 
-  if (not out_to_x.get(*state)) {
+  if (!out_to_x.get(*state)) {
     strncpy(p, NOT_IN_X, p_max_size);
     return;
   }
@@ -1166,7 +1166,7 @@ void print_monitor_number(struct text_object *obj, char *p,
                           unsigned int p_max_size) {
   (void)obj;
 
-  if (not out_to_x.get(*state)) {
+  if (!out_to_x.get(*state)) {
     strncpy(p, NOT_IN_X, p_max_size);
     return;
   }
@@ -1176,7 +1176,7 @@ void print_monitor_number(struct text_object *obj, char *p,
 void print_desktop(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
 
-  if (not out_to_x.get(*state)) {
+  if (!out_to_x.get(*state)) {
     strncpy(p, NOT_IN_X, p_max_size);
     return;
   }
@@ -1187,7 +1187,7 @@ void print_desktop_number(struct text_object *obj, char *p,
                           unsigned int p_max_size) {
   (void)obj;
 
-  if (not out_to_x.get(*state)) {
+  if (!out_to_x.get(*state)) {
     strncpy(p, NOT_IN_X, p_max_size);
     return;
   }
@@ -1198,7 +1198,7 @@ void print_desktop_name(struct text_object *obj, char *p,
                         unsigned int p_max_size) {
   (void)obj;
 
-  if (not out_to_x.get(*state)) {
+  if (!out_to_x.get(*state)) {
     strncpy(p, NOT_IN_X, p_max_size);
   } else {
     strncpy(p, info.x11.desktop.name.c_str(), p_max_size);
