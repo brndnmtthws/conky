@@ -51,6 +51,11 @@ set(conky_sources
 add_subdirectory(lua)
 add_subdirectory(data)
 add_subdirectory(doc)
+
+# Include 3rdparty toluapp
+add_subdirectory(3rdparty/toluapp)
+set(conky_libs ${conky_libs} toluapp_lib_static)
+
 add_subdirectory(src)
 
 IF(NOT DEFINED DOC_PATH)

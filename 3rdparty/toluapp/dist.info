@@ -1,0 +1,14 @@
+--- This file is part of LuaDist project
+
+name = "toluapp"
+version = "1.0.93"
+
+desc = "tolua++ is an extension of toLua, a tool to integrate C/Cpp code with Lua."
+author = "Waldemar Celes, Ariel Manzur"
+license = "as-is"
+url = "http://www.codenix.com/~tolua/"
+maintainer = "Peter Kapec"
+
+depends = {
+	"lua ~> 5.1"
+}

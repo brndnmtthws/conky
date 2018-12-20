@@ -1008,7 +1008,7 @@ int update_stat(void) {
       }
       curtmp = 0;
 
-      int samples = cpu_avg_samples.get(*state);
+      int samples = std::min(cpu_avg_samples.get(*state), CPU_SAMPLE_COUNT);
       for (i = 0; i < samples; i++) { curtmp = curtmp + cpu[idx].cpu_val[i]; }
       info.cpu_usage[idx] = curtmp / samples;
 

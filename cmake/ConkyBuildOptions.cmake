@@ -32,8 +32,8 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 # -std options for all build types
-set(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}" CACHE STRING "Flags used by the C compiler during all build types." FORCE)
-set(CMAKE_CXX_FLAGS "-std=c++17 ${CMAKE_CXX_FLAGS}" CACHE STRING "Flags used by the C++ compiler during all build types." FORCE)
+set(CMAKE_C_FLAGS "-std=c99" CACHE STRING "Flags used by the C compiler during all build types.")
+set(CMAKE_CXX_FLAGS "-std=c++17" CACHE STRING "Flags used by the C++ compiler during all build types.")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 

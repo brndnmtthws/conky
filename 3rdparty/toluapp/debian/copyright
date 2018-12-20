@@ -1,0 +1,16 @@
+This package is maintained by Ariel Manzur <puntob@gmail.com> on
+Sat, 08 Jan 2005 06:11:22 -0300
+
+Latest version can be found on http://www.codenix.com/~tolua/
+
+Upstream Author(s): Waldemar Celes <celes@tecgraf.puc-rio.br>,
+ Ariel Manzur <puntob@gmail.com>
+
+Copyright:
+
+Quoted from the README file accompanying tolua:
+
+ 'tolua is freely available; you can redistribute it and/or modify it.
+  The software provided hereunder is on an "as is" basis, and
+  the author has no obligation to provide maintenance, support,
+  updates, enhancements, or modifications.'

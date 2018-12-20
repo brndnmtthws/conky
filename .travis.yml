@@ -17,8 +17,7 @@ matrix:
             - libglib2.0-dev
             - libxml2-dev
             - libcurl4-gnutls-dev
-            - liblua5.1-0-dev
-            - libtolua++5.1-dev
+            - liblua5.3-dev
             - libcairo2-dev
             - libimlib2-dev
             - libxinerama-dev
@@ -28,7 +27,6 @@ matrix:
             - libcairo2-dev
             - libmicrohttpd-dev
             - ncurses-dev
-            - liblua5.1-dev
             - librsvg2-dev
             - libaudclient-dev
             - libxmmsclient-dev
@@ -37,7 +35,6 @@ matrix:
             - audacious-dev
             - libsystemd-dev
             - libxml2-dev
-            - tolua++
             - gawk
       env:
         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
@@ -57,8 +54,7 @@ matrix:
             - libglib2.0-dev
             - libxml2-dev
             - libcurl4-gnutls-dev
-            - liblua5.1-0-dev
-            - libtolua++5.1-dev
+            - liblua5.3-dev
             - libcairo2-dev
             - libimlib2-dev
             - libxinerama-dev
@@ -68,7 +64,6 @@ matrix:
             - libcairo2-dev
             - libmicrohttpd-dev
             - ncurses-dev
-            - liblua5.1-dev
             - librsvg2-dev
             - libaudclient-dev
             - libxmmsclient-dev
@@ -77,7 +72,6 @@ matrix:
             - audacious-dev
             - libsystemd-dev
             - libxml2-dev
-            - tolua++
             - gawk
       env:
         - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
@@ -97,8 +91,7 @@ matrix:
             - libglib2.0-dev
             - libxml2-dev
             - libcurl4-gnutls-dev
-            - liblua5.1-0-dev
-            - libtolua++5.1-dev
+            - liblua5.3-dev
             - libcairo2-dev
             - libimlib2-dev
             - libxinerama-dev
@@ -108,7 +101,6 @@ matrix:
             - libcairo2-dev
             - libmicrohttpd-dev
             - ncurses-dev
-            - liblua5.1-dev
             - librsvg2-dev
             - libaudclient-dev
             - libxmmsclient-dev
@@ -117,7 +109,6 @@ matrix:
             - audacious-dev
             - libsystemd-dev
             - libxml2-dev
-            - tolua++
             - gawk
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
@@ -137,8 +128,7 @@ matrix:
             - libglib2.0-dev
             - libxml2-dev
             - libcurl4-gnutls-dev
-            - liblua5.1-0-dev
-            - libtolua++5.1-dev
+            - liblua5.3-dev
             - libcairo2-dev
             - libimlib2-dev
             - libxinerama-dev
@@ -148,7 +138,6 @@ matrix:
             - libcairo2-dev
             - libmicrohttpd-dev
             - ncurses-dev
-            - liblua5.1-dev
             - librsvg2-dev
             - libaudclient-dev
             - libxmmsclient-dev
@@ -157,7 +146,6 @@ matrix:
             - audacious-dev
             - libsystemd-dev
             - libxml2-dev
-            - tolua++
             - gawk
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
@@ -177,8 +165,7 @@ matrix:
             - libglib2.0-dev
             - libxml2-dev
             - libcurl4-gnutls-dev
-            - liblua5.1-0-dev
-            - libtolua++5.1-dev
+            - liblua5.3-dev
             - libcairo2-dev
             - libimlib2-dev
             - libxinerama-dev
@@ -188,7 +175,6 @@ matrix:
             - libcairo2-dev
             - libmicrohttpd-dev
             - ncurses-dev
-            - liblua5.1-dev
             - librsvg2-dev
             - libaudclient-dev
             - libxmmsclient-dev
@@ -197,7 +183,6 @@ matrix:
             - audacious-dev
             - libsystemd-dev
             - libxml2-dev
-            - tolua++
             - gawk
       env:
         - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
@@ -218,8 +203,7 @@ matrix:
             - libglib2.0-dev
             - libxml2-dev
             - libcurl4-gnutls-dev
-            - liblua5.1-0-dev
-            - libtolua++5.1-dev
+            - liblua5.3-dev
             - libcairo2-dev
             - libimlib2-dev
             - libxinerama-dev
@@ -229,7 +213,6 @@ matrix:
             - libcairo2-dev
             - libmicrohttpd-dev
             - ncurses-dev
-            - liblua5.1-dev
             - librsvg2-dev
             - libaudclient-dev
             - libxmmsclient-dev
@@ -238,7 +221,6 @@ matrix:
             - audacious-dev
             - libsystemd-dev
             - libxml2-dev
-            - tolua++
             - gawk
         sonarcloud:
           organization: "brndnmtthws-github"
@@ -256,8 +238,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then eval "${MATRIX_EVAL}" ; fi
   -  |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      brew update;
-      brew install freetype gettext lua imlib2 ccache;
+      HOMEBREW_NO_AUTO_UPDATE=1 brew install freetype gettext lua imlib2 librsvg ccache;
       export PATH="/usr/local/opt/ccache/libexec:$PATH";
     fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link gettext --force ; fi
@@ -266,58 +247,60 @@ before_script:
     if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       mkdir build && cd build
 
-      cmake                   \
+      cmake                                  \
         -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-        -DBUILD_MYSQL=ON      \
-        -DBUILD_LUA_CAIRO=ON  \
-        -DBUILD_LUA_IMLIB2=ON \
-        -DBUILD_LUA_RSVG=ON   \
-        -DBUILD_LUA_CAIRO=ON  \
-        -DBUILD_AUDACIOUS=ON  \
-        -DBUILD_XMMS2=ON      \
-        -DBUILD_ICAL=ON       \
-        -DBUILD_IRC=ON        \
-        -DBUILD_HTTP=ON       \
-        -DBUILD_ICONV=ON      \
-        -DBUILD_PULSEAUDIO=ON \
-        -DBUILD_JOURNAL=ON    \
-        -DBUILD_RSS=ON        \
+        -DBUILD_MYSQL=ON                     \
+        -DBUILD_LUA_IMLIB2=ON                \
+        -DBUILD_LUA_RSVG=ON                  \
+        -DBUILD_LUA_CAIRO=ON                 \
+        -DBUILD_AUDACIOUS=ON                 \
+        -DBUILD_XMMS2=ON                     \
+        -DBUILD_ICAL=ON                      \
+        -DBUILD_IRC=ON                       \
+        -DBUILD_HTTP=ON                      \
+        -DBUILD_ICONV=ON                     \
+        -DBUILD_PULSEAUDIO=ON                \
+        -DBUILD_JOURNAL=ON                   \
+        -DBUILD_RSS=ON                       \
         ..
       cd ..
       mkdir build-no-x11
       cd build-no-x11
 
-      cmake                   \
+      cmake                                  \
         -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-        -DBUILD_X11=OFF       \
-        -DBUILD_MYSQL=ON      \
-        -DBUILD_LUA_CAIRO=ON  \
-        -DBUILD_LUA_IMLIB2=ON \
-        -DBUILD_LUA_RSVG=ON   \
-        -DBUILD_LUA_CAIRO=ON  \
-        -DBUILD_AUDACIOUS=ON  \
-        -DBUILD_XMMS2=ON      \
-        -DBUILD_ICAL=ON       \
-        -DBUILD_IRC=ON        \
-        -DBUILD_HTTP=ON       \
-        -DBUILD_ICONV=ON      \
-        -DBUILD_PULSEAUDIO=ON \
-        -DBUILD_JOURNAL=ON    \
-        -DBUILD_RSS=ON        \
+        -DBUILD_X11=OFF                      \
+        -DBUILD_MYSQL=ON                     \
+        -DBUILD_LUA_CAIRO=ON                 \
+        -DBUILD_LUA_IMLIB2=ON                \
+        -DBUILD_LUA_RSVG=ON                  \
+        -DBUILD_AUDACIOUS=ON                 \
+        -DBUILD_XMMS2=ON                     \
+        -DBUILD_ICAL=ON                      \
+        -DBUILD_IRC=ON                       \
+        -DBUILD_HTTP=ON                      \
+        -DBUILD_ICONV=ON                     \
+        -DBUILD_PULSEAUDIO=ON                \
+        -DBUILD_JOURNAL=ON                   \
+        -DBUILD_RSS=ON                       \
         ..
       cd ..
     elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       mkdir build && cd build
-      cmake \
+      cmake                                  \
         -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+        -DBUILD_LUA_RSVG=ON                  \
+        -DBUILD_LUA_IMLIB2=ON                \
         ..
       cd ..
 
       mkdir build-no-x11
       cd build-no-x11
-      cmake \
-        -DBUILD_X11=OFF \
+      cmake                                  \
         -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+        -DBUILD_X11=OFF                      \
+        -DBUILD_LUA_RSVG=ON                  \
+        -DBUILD_LUA_IMLIB2=ON                \
         ..
       cd ..
     fi

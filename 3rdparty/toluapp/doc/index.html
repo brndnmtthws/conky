@@ -1,0 +1,226 @@
+<head>
+<title>toLua++ - binding c/c++ code to lua</title>
+</head>
+
+<body bgcolor="white">
+
+<h1>
+<img src="toluapp.gif">tolua++ - Home</h1>
+<p>
+
+<a href="#news">news</a> -
+<a href="#download">download</a> - <a href="#documentation">documentation</a> - <a href="#installing">installing</a> -
+<a href="mailto:tolua@codenix.com">contact</a> - <a href="lua_qt/">lua_qt</a> - <a href="http://www.codenix.com">Codenix</a>
+<br>
+
+<hr>
+
+<b>tolua++</b> is an extended version of <a href="http://www.tecgraf.puc-rio.br/~celes/tolua/">tolua</a>, a tool to integrate
+C/C++ code with <A HREF="http://www.tecgraf.puc-rio.br/lua">Lua</A>. <b>tolua++</b>
+includes new features oriented to c++ such as:
+<p>
+
+<ul>
+<li> Support for <b>std::string</b> as a <a href="#basics">basic type</a> (this can be turned off by a command line option).</li>
+<li> Support for <a href="#templates">class templates</a></li>
+</ul>
+<p>
+
+As well as other features and bugfixes.
+
+<hr>
+<a name="news"></a>
+<h3>News:</h3>
+<p>
+
+<b>15/02/09</b>: Version <b><a href="tolua++-1.0.93.tar.bz2">1.0.93</a></b> released. Some bugfixes and new features:
+<p>
+<ul>
+<li> Build process bootstraps.
+<li> Added hooks to handle custom types.
+<li> Added hooks to handle exceptions.
+<li> Fixed issues with newer GCC compilers.
+<li> Changed to MIT license. See <a href="COPYRIGHT">COPYRIGHT</a> file for details.
+</ul>
+
+<b>27/04/06</b>: Version <b><a href="tolua++-1.0.92.tar.bz2">1.0.92</a></b> released. Some bugfixes and new features:
+<p>
+<ul>
+<li> Fixed garbage collector bug for C objects.
+<li> Fixed problems with C compilers (including microsoft's)
+<li> Added a .proj file to build with Visual Studio 7 (contributed by Makoto Hamanaka).
+<li> New command line option: <tt>-E</tt> to define extra values
+<li> New command line option: <tt>-t</tt> to associate C++ types with their lua names  (see the <a href="tolua++.html">manual</a> for details)
+</ul>
+
+<b>25/02/06</b>: Version <b><a href="tolua++-1.0.91.tar.bz2">1.0.91</a></b> released. This version contains a small garbage collection bugfix for 1.0.90 (thanks to Rolf E. Thorup for the report), everyone should upgrade.
+<p>
+
+<b>18/02/06</b>: Version <b><a href="tolua++-1.0.90.tar.bz2">1.0.90</a></b> released. Some bugfixes and new features:
+<p>
+<ul>
+<li> <b>lua 5.1</b> support (see <tt>README-5.1</tt>)
+<li> Support for casting operators (for example <tt>operator const char();</tt>)
+<li> New utility functions, <tt>tolua.setpeer</tt> and <tt>tolua.getpeer</tt>, for easier (and faster) inheritance from C/C++ objects (only for lua 5.1)
+<li> Some small API changes (see the <a href="tolua++.html#compatibility">compatibility section</a> of the manual)
+</ul>
+<p>
+
+<b>18/10/05</b>: Version <b><a href="tolua++_1.0.7-1.tar.gz">1.0.7</a></b> released. Some bugfixes and new features:
+<p>
+<ul>
+<li> New command line option: -C, to disable the cleanup of included lua code (for easier debugging).
+<li> Merged <a href="http://lua-users.org/lists/lua-l/2005-09/msg00227.html">Mildred's</a> patch: embedded lua chunks have better names, code on package initializer function is nested.
+<li> New hook: <tt>parser_hook</tt>, allows modifications to the behavior of the main parser.
+<li> Objects can be private (or protected). This doesn't affect the normal usage (everything is public by default), but it's useful to declare types that don't export any code, but serve
+as 'support' for other declarations.
+<li> Misc bugfixes.
+</ul>
+<p>
+
+<b>01/9/05</b>: Version <b><a href="tolua++_1.0.6-1.tar.gz">1.0.6</a></b> released. Several bugfixes and new features:
+<p>
+<ul>
+<li> Classes can have properties, using the 'tolua_property' keyboard. Property types are customizable.
+<li> Added a command line flag -D, to disable automatic generation of destructors for all classes with constructors (for compatibility with tolua5)
+<li> Classes with protected or private destructors can be tagged individually using the "TOLUA_PROTECTED_DESTRUCTOR" macro.
+<li> Added utility function "tolua.inherit", to allow a lua table to "inherit" from an instance of a C/C++ class
+<li> Fixed class constructor bug (it is now possible to use 'ClassName()' to create a lua-owned instance of the class without problems)
+<li> Misc bugfixes.
+</ul>
+<p>
+
+<b>10/4/05</b>: Version <b><a href="tolua++_1.0.5-1.tar.gz">1.0.5</a></b> released. This version contains some minor bugfixes and a new feature,
+the <b>tolua_outside</b> keyword, used to specify regular functions as methods of classes or structs. This release is also paired with <a href="lua_qt/">lua_qt</a>
+version 0.0.1a.
+<p>
+
+<b>1/2/05</b>: version <b><a href="tolua++-1.0.4.tar.bz2">1.0.4</a></b> released. This version contains some bugfixes and new features:
+<p>
+<ul>
+<li> Ability to customize tolua++'s behaviour to add functionality.
+<li> Basic support for multiple inheritance.
+<li> Several bugfixes on the parser.
+<li> <a href="tolua++_1.0.4-3_i386.deb">Debian package</a> available for download.
+</ul>
+<p>
+
+Most of the changes on this version were added for <a href="lua_qt/">lua_qt</a>, a package
+to bind the <a href="http://www.trolltech.com/products/qt/index.html">Qt</a> toolkit to lua.
+<p>
+
+<b>20/9/04</b>: version <b><a href="tolua++-1.0.3.tar.bz2">1.0.3</a></b> released. This version contains major bugfixes:
+<p>
+<ul>
+<li> Fixed bugs in object tracking (the 'memory address' bug; there's still some work left, but people should be able to use <tt>union</tt>s with no problems)</li>
+<li> Fixed parser bugs, functions with template parameters should work, also functions with default parameters that call constructos and with commas on them should work.</li>
+<li> Added a <tt>__call</tt> method for class names, to replace <tt>new_local</tt> to create instances owned by lua.
+<li> Fixed other minor bugs.</li>
+<li> Removed the link to win32 binaries, since I aparently don't know what the hell I'm doing with a microsoft compiler ;-)</li>
+</ul>
+<p>
+
+Everyone should upgrade.
+<p>
+
+<b>23/10/03</b>: version <b><a href="tolua++-1.0.2.tar.bz2">1.0.2</a></b> released. This version contains major bugfixes:
+<p>
+<ul>
+<li> Fixed bugs in gargabe collection (thanks to <b>Christian Vogler</b> for doing all the work :-)</li>
+<li> <tt>namespace</tt>s and nested types are now fully supported.</li>
+<li> Fixed other minor bugs.</li>
+</ul>
+<p>
+
+Everyone should upgrade.
+
+<hr>
+
+<a name="download"></a>
+<h3>Downloading</B></H3>
+
+The latest development version of the code is available through SVN from tolua++'s BerliOS project page. You can checkout using: 
+
+svn checkout svn://svn.berlios.de/toluapp/trunk
+
+The <B>tolua++</B> source is freely available by http.
+The software provided under the terms of the MIT license. See the <a href="COPYRIGHT">COPYRIGHT</a> file distributed
+with the source.
+<p>
+
+Current version is <b><a href="tolua++-1.0.93.tar.bz2">1.0.93</a></b>, older versions:
+<p>
+<li> <a href="tolua++-1.0.93.tar.bz2">tolua++-1.0.93.tar.bz2</a>
+<li> <a href="tolua++-1.0.92.tar.bz2">tolua++-1.0.92.tar.bz2</a>
+<li> <a href="tolua++-1.0.91.tar.bz2">tolua++-1.0.91.tar.bz2</a>
+<li> <a href="tolua++_1.0.7-1.tar.gz">tolua++_1.0.7-1.tar.gz</a> [<a href="tolua++_1.0.7-1_i386.deb">deb</a>]
+<li> <a href="tolua++_1.0.6-1.tar.gz">tolua++_1.0.6-1.tar.gz</a> [<a href="tolua++_1.0.6-1_i386.deb">deb</a>]
+<li> <a href="tolua++_1.0.5-1.tar.gz">tolua++_1.0.5-1.tar.gz</a> [<a href="tolua++_1.0.5-1_i386.deb">deb</a>]
+<li> <a href="tolua++-1.0.4.tar.bz2">tolua++-1.0.4.tar.bz2</a> [<a href="tolua++_1.0.4-3_i386.deb">deb</a>]
+<li> <a href="tolua++-1.0.3.tar.bz2">tolua++-1.0.3.tar.bz2</a>
+<li> <a href="tolua++-1.0.2.tar.bz2">tolua++-1.0.2.tar.bz2</a>
+<li> <a href="tolua++-1.0.tar.bz2">tolua++-1.0.tar.bz2</a>
+
+<hr>
+
+<a name="documentation"></a>
+<h3>Documentation</h3>
+<p>
+You can find the manual <a href="tolua++.html">here</a> or under the doc/ directory
+on the distribution.
+<p>
+
+I'll also be adding interesting addons/examples to <a href="http://lua-users.org/wiki/ArielManzur">my page</a>
+on the <a href="http://lua-users.org/">lua-users wiki</a>.
+
+<hr>
+
+<a name="installing"></a>
+<h3>Instalation</h3>
+<p>
+
+tolua++ uses <a href="http://www.scons.org">SCons</a> to build. SCons is based on
+python, you can get a stand-alone version on <a href="http://www.scons.org">
+their website</a>. After you have SCons, follow this simple instructions:
+<p>
+
+<li> Type '<b>scons all</b>' to compile.</li>
+<li> Type '<b>scons install</b>'. The default install prefix is /usr/local, so if you are
+on a POSIX system, it should work. On other systems, you can change it with the
+'<b>prefix</b>' option on command line.
+<p>
+
+<b>scons prefix=/usr install</b>
+<p>
+<i>or on windows</i>
+<p>
+<b>scons "prefix=c:\Program Files\Visual C" install</b>
+<p>
+
+Use <b>scons -h</b> to see a list of available command line options.
+
+<p>
+The files you need (in case you want to do a <b>manual install</b>) are:
+<ul>
+	<li> bin/tolua++[.exe] - the main binary
+	<li> include/tolua++.h - the header file
+	<li> lib/libtolua++.a <i>or</i> lib/tolua++.lib - the library
+</ul>
+
+<li> See INSTALL for instructions on how to install without SCons. There are also instructions on how
+to build without scons at the <a href="http://lua-users.org/wiki/CompilingToluappWithoutScons">lua-users wiki</a>
+(if you know the author of this, <a href="mailto:tolua@codenix.com">contact me</a>)</li>
+
+<li> For <b>lua 5.1</b>, see <tt>README-5.1</tt>
+
+<hr>
+
+<b>tolua++</b> and this website are maintained by Ariel Manzur.<br>
+<a href="http://www.codenix.com/index.php?section=contact">Contact us</a> with any
+bugs, fixes, suggestions, or questions about this package.
+
+<hr>
+
+
+</body>
+
