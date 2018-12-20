@@ -302,7 +302,7 @@ static void update_mail_count(struct local_mail_s *mail) {
     }
     closedir(dir);
 
-    dirname[std::max(0ul, strnlen(dirname, dirname_len - 1) - 3)] = '\0';
+    dirname[std::max(0UL, strnlen(dirname, dirname_len - 1) - 3)] = '\0';
     strcat(dirname, "new");
 
     dir = opendir(dirname);
@@ -826,7 +826,7 @@ void imap_cb::work() {
           }
           if (buf != nullptr) {
             // back up until we reach '*'
-            while (buf > recvbuf && buf[0] != '*') { buf--; }
+            while (buf >= recvbuf && buf[0] != '*') { buf--; }
             if (sscanf(buf, "* %lu EXISTS\r\n", &messages) == 1) {
               std::lock_guard<std::mutex> lock(result_mutex);
               if (result.messages != messages) {
@@ -843,7 +843,7 @@ void imap_cb::work() {
           }
           if (buf != nullptr) {
             // back up until we reach '*'
-            while (buf > recvbuf && buf[0] != '*') { buf--; }
+            while (buf >= recvbuf && buf[0] != '*') { buf--; }
             if (sscanf(buf, "* %lu RECENT\r\n", &recent) != 1) { recent = 0; }
           }
         }
@@ -943,12 +943,11 @@ void pop3_cb::work() {
 
       command(sockfd, "QUIT\r\n", recvbuf, "+OK");
 
-      if (get<MP_COMMAND>().length() > 1 && result.unseen > old_unseen) {
-        // new mail goodie
-        if (system(get<MP_COMMAND>().c_str()) == -1) { perror("system()"); }
+      if (get<MP_COMMAND>().length() > 1 && result.unseen > old_unseen &&
+          system(get<MP_COMMAND>().c_str()) == -1) {
+        perror("system()");
       }
       fail = 0;
-      old_unseen = result.unseen;
       return;
     } catch (mail_fail &e) {
       if (sockfd != -1) { close(sockfd); }

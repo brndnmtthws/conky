@@ -1009,18 +1009,12 @@ int update_stat(void) {
       curtmp = 0;
 
       int samples = cpu_avg_samples.get(*state);
-#ifdef HAVE_OPENMP
-#pragma omp parallel for reduction(+ : curtmp) schedule(dynamic, 10)
-#endif /* HAVE_OPENMP */
       for (i = 0; i < samples; i++) { curtmp = curtmp + cpu[idx].cpu_val[i]; }
       info.cpu_usage[idx] = curtmp / samples;
 
       cpu[idx].cpu_last_total = cpu[idx].cpu_total;
       cpu[idx].cpu_last_active_total = cpu[idx].cpu_active_total;
-#ifdef HAVE_OPENMP
-#pragma omp parallel for schedule(dynamic, 10)
-#endif /* HAVE_OPENMP */
-      for (i = samples - 1; i > 0; i--) {
+      for (i = samples - 1; i > 1; i--) {
         cpu[idx].cpu_val[i] = cpu[idx].cpu_val[i - 1];
       }
     }
@@ -1177,7 +1171,7 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
   fd = open(path, O_RDONLY);
   if (fd < 0) {
     /* if it fails, strip the /device from dev and attempt again */
-    buf[std::max(0ul, strnlen(buf, 255) - 7)] = 0;
+    buf[std::max(0UL, strnlen(buf, 255) - 7)] = 0;
     snprintf(path, 255, "%s%s/%s%d_input", dir, dev, type, n);
     fd = open(path, O_RDONLY);
     if (fd < 0) {
