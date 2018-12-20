@@ -950,13 +950,13 @@ int update_stat(void) {
         KFLAG_ISSET(KFLAG_IS_LONGSTAT) ? TMPL_LONGSTAT : TMPL_SHORTSTAT;
   }
 
-  if (!global_cpu) {
+  if (global_cpu) {
+    cpu = reinterpret_cast<struct cpu_info *>(global_cpu);
+  } else {
     malloc_cpu_size = (info.cpu_count + 1) * sizeof(struct cpu_info);
     cpu = (struct cpu_info *)malloc(malloc_cpu_size);
     memset(cpu, 0, malloc_cpu_size);
     global_cpu = cpu;
-  } else {
-    cpu = reinterpret_cast<struct cpu_info *>(global_cpu);
   }
 
   if (!(stat_fp = open_file("/proc/stat", &rep))) {
