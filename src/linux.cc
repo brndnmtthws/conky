@@ -956,7 +956,7 @@ int update_stat(void) {
     memset(cpu, 0, malloc_cpu_size);
     global_cpu = cpu;
   } else {
-    cpu = global_cpu;
+    cpu = reinterpret_cast<struct cpu_info *>(global_cpu);
   }
 
   if (!(stat_fp = open_file("/proc/stat", &rep))) {
