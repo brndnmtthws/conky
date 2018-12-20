@@ -10,6 +10,7 @@ matrix:
           packages:
             - g++-5
             - cmake
+            - docbook2x
             - libxdamage-dev
             - libx11-dev
             - libxft-dev
@@ -47,6 +48,7 @@ matrix:
           packages:
             - g++-6
             - cmake
+            - docbook2x
             - libxdamage-dev
             - libx11-dev
             - libxft-dev
@@ -84,6 +86,7 @@ matrix:
           packages:
             - g++-7
             - cmake
+            - docbook2x
             - libxdamage-dev
             - libx11-dev
             - libxft-dev
@@ -121,6 +124,7 @@ matrix:
           packages:
             - g++-8
             - cmake
+            - docbook2x
             - libxdamage-dev
             - libx11-dev
             - libxft-dev
@@ -158,6 +162,7 @@ matrix:
           packages:
             - clang-6.0
             - cmake
+            - docbook2x
             - libxdamage-dev
             - libx11-dev
             - libxft-dev
@@ -196,6 +201,7 @@ matrix:
             - clang-7
             - libc++-7-dev
             - cmake
+            - docbook2x
             - libxdamage-dev
             - libx11-dev
             - libxft-dev
@@ -238,7 +244,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then eval "${MATRIX_EVAL}" ; fi
   -  |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      HOMEBREW_NO_AUTO_UPDATE=1 brew install freetype gettext lua imlib2 librsvg ccache;
+      HOMEBREW_NO_AUTO_UPDATE=1 brew install freetype gettext lua imlib2 librsvg ccache docbook2x ;
       export PATH="/usr/local/opt/ccache/libexec:$PATH";
     fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link gettext --force ; fi
@@ -248,6 +254,7 @@ before_script:
       mkdir build && cd build
 
       cmake                                  \
+        -DMAINTAINER_MODE=ON                 \
         -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
         -DBUILD_MYSQL=ON                     \
         -DBUILD_LUA_IMLIB2=ON                \
@@ -268,6 +275,7 @@ before_script:
       cd build-no-x11
 
       cmake                                  \
+        -DMAINTAINER_MODE=ON                 \
         -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
         -DBUILD_X11=OFF                      \
         -DBUILD_MYSQL=ON                     \
@@ -288,6 +296,7 @@ before_script:
     elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       mkdir build && cd build
       cmake                                  \
+        -DMAINTAINER_MODE=ON                 \
         -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
         -DBUILD_LUA_RSVG=ON                  \
         -DBUILD_LUA_IMLIB2=ON                \
@@ -297,6 +306,8 @@ before_script:
       mkdir build-no-x11
       cd build-no-x11
       cmake                                  \
+        -DMAINTAINER_MODE=ON                 \
+        -DBUILD_X11=OFF                      \
         -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
         -DBUILD_X11=OFF                      \
         -DBUILD_LUA_RSVG=ON                  \
