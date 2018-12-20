@@ -850,8 +850,8 @@ void determine_longstat_file(void) {
   static int rep = 0;
   char buf[MAX_PROCSTAT_LINELEN + 1];
 
-  if (not(stat_fp = open_file("/proc/stat", &rep))) return;
-  while (not feof(stat_fp)) {
+  if (!(stat_fp = open_file("/proc/stat", &rep))) return;
+  while (!feof(stat_fp)) {
     if (fgets(buf, MAX_PROCSTAT_LINELEN, stat_fp) == nullptr) break;
     if (strncmp(buf, "cpu", 3) == 0) {
       determine_longstat(buf);

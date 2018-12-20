@@ -159,7 +159,7 @@ static void do_format_time(struct text_object *obj, char *p,
   char show_minutes = 0, show_hours = 0, show_days = 0, show_weeks = 0,
        hidestring;
 
-  if (not times_in_seconds.get(*state)) {
+  if (!times_in_seconds.get(*state)) {
     NORM_ERR("Enable \"times_in_seconds\" to use $format_time");
     return;
   }

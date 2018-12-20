@@ -75,7 +75,7 @@ size_t curl_internal::write_cb(void *ptr, size_t size, size_t nmemb,
 }
 
 curl_internal::curl_internal(const std::string &url) : curl(curl_easy_init()) {
-  if (not curl) throw std::runtime_error("curl_easy_init() failed");
+  if (!curl) throw std::runtime_error("curl_easy_init() failed");
 
   curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);
   curl_easy_setopt(curl, CURLOPT_HEADERDATA, this);
@@ -105,12 +105,12 @@ void curl_internal::do_work() {
 
   data.clear();
 
-  if (not last_modified.empty()) {
+  if (!last_modified.empty()) {
     headers.h = curl_slist_append(
         headers.h, ("If-Modified-Since: " + last_modified).c_str());
     last_modified.clear();
   }
-  if (not etag.empty()) {
+  if (!etag.empty()) {
     headers.h =
         curl_slist_append(headers.h, ("If-None-Match: " + etag).c_str());
     etag.clear();

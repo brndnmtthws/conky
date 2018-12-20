@@ -97,7 +97,7 @@ callback_base::handle callback_base::do_register_cb(const handle &h) {
   const auto &p = callbacks.insert(h);
 
   /* insertion failed; callback already exists */
-  if (not p.second) {
+  if (!p.second) {
     (*p.first)->merge(std::move(*h));
   }
 

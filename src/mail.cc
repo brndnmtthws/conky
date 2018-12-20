@@ -811,7 +811,7 @@ void imap_cb::work() {
       old_unseen = result.unseen;
       old_messages = result.messages;
 
-      if (not has_idle) {
+      if (!has_idle) {
         try {
           command(sockfd, "a3 LOGOUT\r\n", recvbuf, "a3 OK");
         } catch (std::runtime_error &) {
