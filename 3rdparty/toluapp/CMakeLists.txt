@@ -6,6 +6,7 @@
 
 project ( toluapp C )
 cmake_minimum_required ( VERSION 3.4 )
+# Disable dist stuff, we're not installing this as a lib
 # include ( cmake/dist.cmake )
 
 include(FindPkgConfig)
@@ -22,7 +23,7 @@ endif ( )
 # add_library ( toluapp_lib SHARED ${SRC_LIBTOLUAPP} ${DEF_FILE} )
 add_library ( toluapp_lib_static STATIC ${SRC_LIBTOLUAPP} ${DEF_FILE} )
 target_link_libraries ( toluapp_lib_static ${LUA_LIBRARIES} )
-set_target_properties ( toluapp_lib_static PROPERTIES COMPILE_FLAGS -fPIC)
+set_target_properties ( toluapp_lib_static PROPERTIES COMPILE_FLAGS -fPIC) # -fPIC required for static linking
 set_target_properties ( toluapp_lib_static PROPERTIES OUTPUT_NAME toluapp CLEAN_DIRECT_OUTPUT
   1 )
 
@@ -32,6 +33,7 @@ set ( SRC_TOLUA src/bin/tolua.c src/bin/toluabind.c )
 add_executable ( toluapp ${SRC_TOLUA} )
 target_link_libraries ( toluapp toluapp_lib_static ${LUA_LIBRARIES} )
 
+# Disable installation, we don't need these at runtime for Conky
 # Install
 #install_library ( toluapp_lib )
 #install_executable ( toluapp )

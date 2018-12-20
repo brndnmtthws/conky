@@ -40,6 +40,8 @@ else()
 	SET(TOLUA_OUT ${CMAKE_CURRENT_BINARY_DIR}/lib${FIL_WE}.c)
 endif(DEFINED ARGV2)
 
+# Call toluapp from 3rdparty/ path directly.
+# The last argument to toluapp is the path to the tolua Lua sources.
 ADD_CUSTOM_COMMAND( OUTPUT ${TOLUA_OUT} ${INCL} COMMAND
     toluapp -n
 	${FIL_WE} -o ${TOLUA_OUT} ${ABS_FIL}
