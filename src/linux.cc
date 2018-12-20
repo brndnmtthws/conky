@@ -1177,7 +1177,7 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
   fd = open(path, O_RDONLY);
   if (fd < 0) {
     /* if it fails, strip the /device from dev and attempt again */
-    buf[strnlen(buf, 255) - 7] = 0;
+    buf[std::max(0ul, strnlen(buf, 255) - 7)] = 0;
     snprintf(path, 255, "%s%s/%s%d_input", dir, dev, type, n);
     fd = open(path, O_RDONLY);
     if (fd < 0) {
