@@ -1,0 +1,74 @@
+$#include "tfunction.h"
+
+typedef enum {
+ FIRST = 1,
+	SECOND = 2
+} Order;
+
+class Point
+{
+	enum Error {
+		SUCCESS = 0,
+		ERROR = 1
+	};
+
+	Point (float x=0, float y=0);
+	virtual ~Point ();
+
+	void set (float x, float y);
+	void set (float v[2]=0);
+	void setpointer (Point* p);
+	void setref (Point& p);
+	void setvalue (Point p);
+	void setconst (const Point* p);
+	void setname (const char* s);
+
+	void get (float* x=0, float* y=0) const;
+	void get (float v[2]=0) const;
+	Point* getpointer ();
+	Point& getref ();
+	Point getvalue ();
+	const Point* getconst () const;
+	const char* getname () const;
+
+	Point operator+ (const Point& p) const;
+	Point operator- (const Point& p) const;
+	Point operator* (const Point& p) const;
+	Point operator/ (float n) const;
+	bool operator< (const Point& p) const;
+	bool operator<= (const Point& p) const;
+	bool operator== (const Point& p) const;
+
+ float operator[] (int i) const;
+	float& operator[] (int i);
+
+	static Error echo (Error e);
+};
+
+module alg
+{
+ Point add (const Point& p1, const Point& p2);
+ Point sub (const Point& p1, const Point& p2);
+ Point mult (const Point& p1, const Point& p2);
+ Point div (const Point& p1, float n);
+}
+
+void getpoint (const Point* p, float* x=0, float* y=0);
+void setpoint (Point* p, float x=0, float y=0);
+inline Point average (int n, Point v[n]);
+inline	Point averagepointer (int n, Point* v[n]);
+inline	void copyvector (int n, const Point v[n], Point u[n]=(u+i));
+
+inline Order invert (Order o);
+
+$cfile "tfunction.h"
+
+/*
+class ColorPoint : public Point
+{
+ ColorPoint (float px, float py, float cr=0.0f, float cg=0.0f, float cb=0.0f);
+ virtual ~ColorPoint ();
+	virtual void getcolor (float* red, float *green, float *blue) const;
+ static const Point* MakeRed (float x, float y);
+};
+*/

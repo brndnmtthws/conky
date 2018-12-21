@@ -1,0 +1,29 @@
+$#include "tarray.h"
+
+struct Point
+{
+	float x;
+	float y;
+};
+
+
+extern int a[10];
+extern const Point p[10]; 
+extern Point* pp[10];
+
+
+module M {
+extern int ma[10]@a;
+extern const Point mp[10]@p; 
+extern Point* mpp[10]@pp;
+}
+
+struct Array
+{
+ int a[10];
+ Point p[10]; 
+ Point* pp[10];
+};
+
+extern Array array;
+extern Array* parray;
