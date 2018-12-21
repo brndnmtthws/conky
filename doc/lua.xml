@@ -190,9 +190,12 @@
             <option>function</option>
         </term>
         <listitem>
-			<para>
-				Call this function to return a new cairo_text_extents_t structure.  A creation function for this structure is not provided by the cairo API.  After calling this, you should use tolua.takeownership() on the return value to ensure ownership is passed properly.
-			</para>
+            <para>Call this function to return a new
+            cairo_text_extents_t structure. A creation function for
+            this structure is not provided by the cairo API. After
+            calling this, you should use tolua.takeownership() on
+            the return value to ensure ownership is passed
+            properly.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -203,9 +206,12 @@
             <option>function</option>
         </term>
         <listitem>
-			<para>
-				Call this function to return a new cairo_font_extents_t structure.  A creation function for this structure is not provided by the cairo API.  After calling this, you should use tolua.takeownership() on the return value to ensure ownership is passed properly.
-			</para>
+            <para>Call this function to return a new
+            cairo_font_extents_t structure. A creation function for
+            this structure is not provided by the cairo API. After
+            calling this, you should use tolua.takeownership() on
+            the return value to ensure ownership is passed
+            properly.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -216,9 +222,11 @@
             <option>function</option>
         </term>
         <listitem>
-			<para>
-				Call this function to return a new cairo_matrix_t structure.  A creation function for this structure is not provided by the cairo API.  After calling this, you should use tolua.takeownership() on the return value to ensure ownership is passed properly.
-			</para>
+            <para>Call this function to return a new cairo_matrix_t
+            structure. A creation function for this structure is
+            not provided by the cairo API. After calling this, you
+            should use tolua.takeownership() on the return value to
+            ensure ownership is passed properly.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
