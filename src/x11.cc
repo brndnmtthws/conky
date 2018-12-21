@@ -32,11 +32,12 @@
 #include "conky.h"
 #include "logging.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-register"
-#pragma clang diagnostic ignored "-Wregister"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-register"
+#pragma GCC diagnostic ignored "-Wregister"
+#pragma GCC diagnostic ignored "-Wvariadic-macros"
 #include <X11/XKBlib.h>
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>

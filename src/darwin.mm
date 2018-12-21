@@ -989,8 +989,8 @@ int update_cpu_usage() {
   /*
    * Setup conky's structs for-each core
    */
-  for (int i = 1; i < info.cpu_count + 1; i++) {
-    int j = i - 1;
+  for (unsigned int i = 1; i < info.cpu_count + 1; i++) {
+    unsigned int j = i - 1;
 
     total = sample[i].totalUserTime + sample[i].totalIdleTime + sample[i].totalSystemTime;
     used = total - sample[i].totalIdleTime;
@@ -1062,6 +1062,7 @@ void get_acpi_fan(char * /*p_client_buffer*/, size_t /*client_buffer_size*/) {
 /* void */
 char get_freq(char *p_client_buffer, size_t client_buffer_size,
               const char *p_format, int divisor, unsigned int cpu) {
+  (void)cpu;
   
   if ((p_client_buffer == nullptr) || client_buffer_size <= 0 ||
       (p_format == nullptr) || divisor <= 0) {

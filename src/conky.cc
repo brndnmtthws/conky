@@ -53,7 +53,10 @@
 #include <sys/inotify.h>
 #endif /* HAVE_SYS_INOTIFY_H */
 #ifdef BUILD_X11
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvariadic-macros"
 #include <X11/Xutil.h>
+#pragma GCC diagnostic pop
 #include "x11.h"
 #ifdef BUILD_XDAMAGE
 #include <X11/extensions/Xdamage.h>
@@ -1305,13 +1308,13 @@ static void draw_string(const char *s) {
       i2 = 0;
       for (i2 = 0; i2 < (8 - (1 + pos) % 8) && added <= max; i2++) {
         /* guard against overrun */
-        tmpstring2[MIN(pos + i2, tbs - 1)] = ' ';
+        tmpstring2[std::min(pos + i2, tbs - 1)] = ' ';
         added++;
       }
       pos += i2;
     } else {
       /* guard against overrun */
-      tmpstring2[MIN(pos, tbs - 1)] = tmpstring1[i];
+      tmpstring2[std::min(pos, tbs - 1)] = tmpstring1[i];
       pos++;
     }
   }
@@ -1534,7 +1537,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             w = current->width;
             if (w == 0) {
               w = text_start_x + text_width - cur_x - 1;
-              current->graph_width = MAX(w - 1, 0);
+              current->graph_width = std::max(w - 1, 0);
               if (current->graph_width != current->graph_allocated) {
                 w = current->graph_allocated + 1;
               }

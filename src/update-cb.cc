@@ -25,8 +25,8 @@
 
 #include "update-cb.hh"
 
-#include <typeinfo>
 #include <unistd.h>
+#include <typeinfo>
 
 namespace conky {
 namespace {
@@ -64,13 +64,12 @@ void callback_base::stop() {
 inline size_t callback_base::get_hash(const handle &h) { return h->hash; }
 
 inline bool callback_base::is_equal(const handle &a, const handle &b) {
-  if (a->hash != b->hash) {
-    return false;
-  }
+  if (a->hash != b->hash) { return false; }
 
-  if (typeid(*a) != typeid(*b)) {
-    return false;
-  }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpotentially-evaluated-expression"
+  if (typeid(*a) != typeid(*b)) { return false; }
+#pragma GCC diagnostic pop
 
   return *a == *b;
 }
@@ -97,9 +96,7 @@ callback_base::handle callback_base::do_register_cb(const handle &h) {
   const auto &p = callbacks.insert(h);
 
   /* insertion failed; callback already exists */
-  if (!p.second) {
-    (*p.first)->merge(std::move(*h));
-  }
+  if (!p.second) { (*p.first)->merge(std::move(*h)); }
 
   return *p.first;
 }
@@ -115,20 +112,14 @@ void callback_base::run() {
 void callback_base::start_routine() {
   for (;;) {
     sem_start.wait();
-    if (done) {
-      return;
-    }
+    if (done) { return; }
 
     // clear any remaining posts in case the previous iteration was very slow
     // (this should only happen if wait == false)
-    while (sem_start.trywait()) {
-      ;
-    }
+    while (sem_start.trywait()) { ; }
 
     work();
-    if (wait) {
-      sem_wait.post();
-    }
+    if (wait) { sem_wait.post(); }
   }
 }
 
@@ -150,9 +141,7 @@ void run_all_callbacks() {
       if (!i->unique() || ++cb.unused < UNUSED_MAX) {
         cb.remaining = cb.period - 1;
         cb.run();
-        if (cb.wait) {
-          ++wait;
-        }
+        if (cb.wait) { ++wait; }
       }
     }
     if (cb.unused == UNUSED_MAX) {
@@ -164,8 +153,6 @@ void run_all_callbacks() {
     }
   }
 
-  while (wait-- > 0) {
-    sem_wait.wait();
-  }
+  while (wait-- > 0) { sem_wait.wait(); }
 }
 }  // namespace conky

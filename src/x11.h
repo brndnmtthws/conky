@@ -27,8 +27,10 @@
 #define X11_H_
 
 #include <X11/Xatom.h>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvariadic-macros"
 #include <X11/Xlib.h>
-
+#pragma GCC diagnostic pop
 #ifdef BUILD_XFT
 #include <X11/Xft/Xft.h>
 #endif
