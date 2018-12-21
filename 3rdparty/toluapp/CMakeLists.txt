@@ -6,11 +6,12 @@
 
 project ( toluapp C )
 cmake_minimum_required ( VERSION 3.4 )
-include ( cmake/dist.cmake )
+# Disable dist stuff, we're not installing this as a lib
+# include ( cmake/dist.cmake )
 
 include(FindPkgConfig)
 
-pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52)
+pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52 luajit)
 include_directories ( include src/lib ${LUA_INCLUDE_DIRS} )
 
 # Build lib
@@ -19,21 +20,23 @@ if ( MSVC )
   set ( DEF_FILE libtoluapp.def )
 endif ( )
 
-add_library ( toluapp_lib SHARED ${SRC_LIBTOLUAPP} ${DEF_FILE} )
+# add_library ( toluapp_lib SHARED ${SRC_LIBTOLUAPP} ${DEF_FILE} )
 add_library ( toluapp_lib_static STATIC ${SRC_LIBTOLUAPP} ${DEF_FILE} )
-target_link_libraries ( toluapp_lib ${LUA_LIBRARIES} )
-set_target_properties ( toluapp_lib PROPERTIES OUTPUT_NAME toluapp CLEAN_DIRECT_OUTPUT
+target_link_libraries ( toluapp_lib_static ${LUA_LIBRARIES} )
+set_target_properties ( toluapp_lib_static PROPERTIES COMPILE_FLAGS -fPIC) # -fPIC required for static linking
+set_target_properties ( toluapp_lib_static PROPERTIES OUTPUT_NAME toluapp CLEAN_DIRECT_OUTPUT
   1 )
 
 # Build app
 include_directories ( src/bin )
 set ( SRC_TOLUA src/bin/tolua.c src/bin/toluabind.c )
 add_executable ( toluapp ${SRC_TOLUA} )
-target_link_libraries ( toluapp toluapp_lib ${LUA_LIBRARIES} )
+target_link_libraries ( toluapp toluapp_lib_static ${LUA_LIBRARIES} )
 
+# Disable installation, we don't need these at runtime for Conky
 # Install
-install_library ( toluapp_lib )
-install_executable ( toluapp )
-install_header ( include/ )
-install_data ( README INSTALL )
-install_doc ( doc/ )
+#install_library ( toluapp_lib )
+#install_executable ( toluapp )
+#install_header ( include/ )
+#install_data ( README INSTALL )
+#install_doc ( doc/ )
