@@ -1,0 +1,27 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "toluapp", "toluapp.vcproj", "{71891C1A-E328-4258-AC3F-6F9698C6D8B4}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		withLua50_Debug = withLua50_Debug
+		withLua50_Release = withLua50_Release
+		withLua51_Debug = withLua51_Debug
+		withLua51_Release = withLua51_Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{71891C1A-E328-4258-AC3F-6F9698C6D8B4}.withLua50_Debug.ActiveCfg = withLua51_Release|Win32
+		{71891C1A-E328-4258-AC3F-6F9698C6D8B4}.withLua50_Debug.Build.0 = withLua51_Release|Win32
+		{71891C1A-E328-4258-AC3F-6F9698C6D8B4}.withLua50_Release.ActiveCfg = withLua50_Release|Win32
+		{71891C1A-E328-4258-AC3F-6F9698C6D8B4}.withLua50_Release.Build.0 = withLua50_Release|Win32
+		{71891C1A-E328-4258-AC3F-6F9698C6D8B4}.withLua51_Debug.ActiveCfg = withLua51_Debug|Win32
+		{71891C1A-E328-4258-AC3F-6F9698C6D8B4}.withLua51_Debug.Build.0 = withLua51_Debug|Win32
+		{71891C1A-E328-4258-AC3F-6F9698C6D8B4}.withLua51_Release.ActiveCfg = withLua51_Release|Win32
+		{71891C1A-E328-4258-AC3F-6F9698C6D8B4}.withLua51_Release.Build.0 = withLua51_Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,42 @@
+This version of tolua++ uses SCons to compile (http://www.scons.org). SCons uses
+pythin. If you don't want to install python, check "Installation without scons"
+below.
+
+* Installation
+
+	1. Edit the "config" file for your platform to suit your environment,
+	   if at all necessary (for cygwin, mingw, BSD and mac OSX use
+	   'config_posix')
+	2. Then, type "scons".
+	
+  You can use 'scons -h' to see a list of available command line options.
+
+* What you get
+
+  If "scons" succeeds, you get:
+	* an executable to generate binding code in ./bin;
+	* the C library to be linked in your application in ./lib;
+	* the include file needed to compile your application in ./include.
+  These are the only directories you need for development, besides Lua.
+
+  You can use 'scons install' to install the files, see the 'prefix' option.
+
+* Installation without scons
+
+  The instructions for building tolua++ without scons depend on the particular
+  compiler you are using.
+  The simplest way is to create a folder with all .c and .h files except
+  'toluabind_default.c', and then create a project for the executable and the
+  library, as follows:
+
+  tolua.exe: all *.c *.h in src/bin (except toluabind_default.c)
+  tolua.lib: all *.c *.h in src/lib.
+
+* Installation with Microsoft Visual Studio
+
+  The directory 'win32' contains project files for Microsoft Visual Studio 7
+  (contributed by Makoto Hamanaka). The project has 4 different build options:
+  withLua50_Release, withLua51_Release, withLua50_Debug and withLua51_Debug.
+  They all expect the lua library names used by the LuaBinaries packages
+  (http://luabinaries.luaforge.net/). The resulting files are built on /lib and
+  /bin (for the library and tolua++.exe).

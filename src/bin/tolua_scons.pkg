@@ -1,0 +1,31 @@
+$lfile "src/bin/lua/compat-5.1.lua"
+$lfile "src/bin/lua/compat.lua"
+$lfile "src/bin/lua/basic.lua"
+$lfile "src/bin/lua/feature.lua"
+$lfile "src/bin/lua/verbatim.lua"
+$lfile "src/bin/lua/code.lua"
+$lfile "src/bin/lua/typedef.lua"
+$lfile "src/bin/lua/container.lua"
+$lfile "src/bin/lua/package.lua"
+$lfile "src/bin/lua/module.lua"
+$lfile "src/bin/lua/namespace.lua"
+$lfile "src/bin/lua/define.lua"
+$lfile "src/bin/lua/enumerate.lua"
+$lfile "src/bin/lua/declaration.lua"
+$lfile "src/bin/lua/variable.lua"
+$lfile "src/bin/lua/array.lua"
+$lfile "src/bin/lua/function.lua"
+$lfile "src/bin/lua/operator.lua"
+$lfile "src/bin/lua/template_class.lua"
+$lfile "src/bin/lua/class.lua"
+$lfile "src/bin/lua/clean.lua"
+$lfile "src/bin/lua/doit.lua"
+
+$[
+local err,msg = pcall(doit)
+if not err then
+ local _,_,label,msg = strfind(msg,"(.-:.-:%s*)(.*)")
+ tolua_error(msg,label)
+ print(debug.traceback())
+end
+$]

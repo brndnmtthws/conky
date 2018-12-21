@@ -1,0 +1,100 @@
+language: cpp
+cache: ccache
+dist: xenial
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - liblua5.3-dev
+      env:
+         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+            - liblua5.3-dev
+      env:
+        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+            - liblua5.3-dev
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - liblua5.3-dev
+      env:
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-xenial-6.0
+          packages:
+            - clang-6.0
+            - liblua5.3-dev
+      env:
+        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-xenial-7
+          packages:
+            - clang-7
+            - liblua5.3-dev
+      env:
+        - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
+    - os: osx
+      osx_image: xcode9.4
+    - os: osx
+      osx_image: xcode10
+    - os: osx
+      osx_image: xcode10.1
+
+before_install:
+    - |
+     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+       brew update;
+       brew install lua ccache;
+       export PATH="/usr/local/opt/ccache/libexec:$PATH";
+     fi
+    - eval "${MATRIX_EVAL}"
+    # Combine global build options with OS/compiler-dependent options
+    - export CMAKE_OPTIONS="${CMAKE_OPTIONS} ${ENV_CMAKE_OPTIONS} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+    - export CXX_FLAGS="${CXX_FLAGS} ${ENV_CXX_FLAGS}"
+
+install:
+    - echo ${PATH}
+    - echo ${CXX}
+    - ${CXX} --version
+    - ${CXX} -v
+
+script:
+     - mkdir -p build
+     - cd build
+     - cmake ${CMAKE_OPTIONS} -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ..
+     - make -j4
+
+# Only watch the master branch
+branches:
+  only:
+    - master

@@ -1,0 +1,121 @@
+tolua++ (1.0.92pre1-1) unstable; urgency=low
+
+  * fixed array bound check bug
+  * moved parsing of 'extern' keyword to the parser
+  * fixed bug in module name generation from package filename
+  * added -E command line option
+
+ -- Ariel Manzur <puntob@gmail.com>  Mon, 13 Mar 2006 19:28:14 -0300
+
+tolua++ (1.0.8pre3-1) unstable; urgency=low
+
+  * changed tolua_touserdata
+  * fixed bugs
+
+ -- Ariel Manzur <puntob@gmail.com>  Tue, 13 Dec 2005 01:46:33 +0100
+
+tolua++ (1.0.7-1) unstable; urgency=low
+
+  * added -C flag
+  * added object access
+  * added parser_hook
+  * merged Mildred's patch (sorry, no last name): code on open function is
+    nested, embedded lua chunks have better names
+
+ -- Ariel Manzur <puntob@gmail.com>  Tue, 18 Oct 2005 22:51:04 -0300
+
+tolua++ (1.0.6-1) unstable; urgency=low
+
+  * fixed parser bugs
+  * added tolua_property
+  * added TOLUA_PROTECTED_DESTRUCTOR
+  * added inheritance from C objects by lua objects
+  * fixed class constructor bug (calling the class name directly works)
+
+ -- Ariel Manzur <puntob@gmail.com>  Sat,  6 Aug 2005 09:24:10 -0300
+
+tolua++ (1.0.6pre3-1) unstable; urgency=low
+
+  * fixed tolua_tocppstring
+
+ -- Ariel Manzur <puntob@gmail.com>  Sun, 26 Jun 2005 21:01:50 -0300
+
+tolua++ (1.0.6pre2-1) unstable; urgency=low
+
+  * fixed c compilation bug
+  * added -D flag
+  * fixed tolua.releaseownership?
+  
+ -- Ariel Manzur <puntob@gmail.com>  Mon,  2 May 2005 20:56:04 -0300
+
+tolua++ (1.0.6pre1-1) unstable; urgency=low
+
+  * something
+
+ -- Ariel Manzur <puntob@gmail.com>  Wed, 27 Apr 2005 00:09:41 -0300
+
+tolua++ (1.0.5-1) unstable; urgency=low
+
+  * fixed missed inheritance bug.
+  * ready for 1.0.5
+
+ -- Ariel Manzur <puntob@gmail.com>  Fri,  8 Apr 2005 23:15:19 -0300
+
+tolua++ (1.0.5~pre6-1) unstable; urgency=low
+
+  * fixed bug in tolua.cast (introduced on previous version)
+
+ -- Ariel Manzur <puntob@gmail.com>  Sat,  2 Apr 2005 00:36:45 -0300
+
+tolua++ (1.0.5~pre5-1) unstable; urgency=low
+
+  * fixed bug in tolua.cast
+
+ -- Ariel Manzur <puntob@gmail.com>  Fri, 18 Mar 2005 01:13:55 -0300
+
+tolua++ (1.0.5~pre4-1) unstable; urgency=low
+
+  * fixed support for overloading methods across multiple class definitions
+
+ -- Ariel Manzur <puntob@gmail.com>  Thu,  3 Mar 2005 19:03:04 -0300
+
+tolua++ (1.0.5~pre3-1) unstable; urgency=low
+
+  * fixed bugs in parser
+
+ -- Ariel Manzur <puntob@gmail.com>  Sun, 20 Feb 2005 19:56:32 -0300
+
+tolua++ (1.0.5~pre2-1) unstable; urgency=low
+
+  * added tolua_outside
+
+ -- Ariel Manzur <puntob@gmail.com>  Fri, 11 Feb 2005 02:50:45 -0300
+
+tolua++ (1.0.5~pre1-1) unstable; urgency=low
+
+  * fixed bug in type detection
+  * fixed bug in code output for static variables
+
+ -- Ariel Manzur <puntob@gmail.com>  Thu,  3 Feb 2005 02:05:43 -0300
+
+tolua++ (1.0.4-3) unstable; urgency=low
+
+  * jumped the gun on the previous release
+
+ -- Ariel Manzur <puntob@gmail.com>  Thu, 20 Jan 2005 23:20:17 -0300
+
+tolua++ (1.0.4-2) unstable; urgency=low
+
+  * added optimize flags for binary package 
+
+ -- Ariel Manzur <puntob@gmail.com>  Fri, 14 Jan 2005 00:43:09 -0300
+
+tolua++ (1.0.4-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Ariel Manzur <puntob@gmail.com>  Thu, 30 Dec 2004 11:59:14 -0300
+
+Local variables:
+mode: debian-changelog
+End:

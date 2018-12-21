@@ -1,0 +1,34 @@
+$#include "tconstant.h"
+
+#define FIRST 1
+#define SECOND 2
+
+enum {
+	ONE = 1,
+	TWO = 2
+};
+
+module M {
+
+#define M_FIRST@FIRST 1
+#define M_SECOND@SECOND 2
+
+enum {
+	M_ONE@ONE = 1,
+	M_TWO@TWO = 2
+};
+}
+
+class A {
+public:
+
+ #define FIRST 1
+ #define SECOND 2
+
+ enum {
+	 ONE = 1,
+	 TWO = 2
+ };
+};
+
+
