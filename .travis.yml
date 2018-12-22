@@ -244,8 +244,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then eval "${MATRIX_EVAL}" ; fi
   - |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      HOMEBREW_NO_AUTO_UPDATE=1 brew install freetype gettext lua imlib2 librsvg ccache docbook2x ;
-      export PATH="/usr/local/opt/ccache/libexec:$PATH";
+      HOMEBREW_NO_AUTO_UPDATE=1 brew install freetype gettext lua imlib2 librsvg docbook2x ;
     fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link gettext --force ; fi
 before_script:
@@ -255,7 +254,6 @@ before_script:
 
       cmake                                  \
         -DMAINTAINER_MODE=ON                 \
-        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
         -DBUILD_MYSQL=ON                     \
         -DBUILD_LUA_IMLIB2=ON                \
         -DBUILD_LUA_RSVG=ON                  \
@@ -276,7 +274,6 @@ before_script:
 
       cmake                                  \
         -DMAINTAINER_MODE=ON                 \
-        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
         -DBUILD_X11=OFF                      \
         -DBUILD_MYSQL=ON                     \
         -DBUILD_LUA_CAIRO=ON                 \
@@ -297,7 +294,6 @@ before_script:
       mkdir build && cd build
       cmake                                  \
         -DMAINTAINER_MODE=ON                 \
-        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
         -DBUILD_LUA_RSVG=ON                  \
         -DBUILD_LUA_IMLIB2=ON                \
         ..
@@ -308,7 +304,6 @@ before_script:
       cmake                                  \
         -DMAINTAINER_MODE=ON                 \
         -DBUILD_X11=OFF                      \
-        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
         -DBUILD_X11=OFF                      \
         -DBUILD_LUA_RSVG=ON                  \
         -DBUILD_LUA_IMLIB2=ON                \
@@ -332,6 +327,5 @@ branches:
     - master
 sudo: false
 cache:
-  - ccache: true
   - directories:
       - "$HOME/.sonar/cache"
