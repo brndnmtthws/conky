@@ -140,13 +140,13 @@ static inline const char* tolua_tocppstring (lua_State* L, int narg, const char*
 
 	const char* s = tolua_tostring(L, narg, def);
 	return s?s:"";
-};
+}
 
 static inline const char* tolua_tofieldcppstring (lua_State* L, int lo, int index, const char* def) {
 
 	const char* s = tolua_tofieldstring(L, lo, index, def);
 	return s?s:"";
-};
+}
 
 #else
 #define tolua_tocppstring tolua_tostring
