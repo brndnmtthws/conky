@@ -178,12 +178,14 @@ void subscribe_cb(pa_context *c, pa_subscription_event_type_t t, uint32_t index,
   }
 }
 
-#define PULSEAUDIO_WAIT(COMMAND)                               \
-  op = COMMAND;                                                \
-  while (pa_operation_get_state(op) == PA_OPERATION_RUNNING) { \
-    pa_threaded_mainloop_wait(pulseaudio->mainloop);           \
-  }                                                            \
-  pa_operation_unref(op);
+#define PULSEAUDIO_WAIT(COMMAND)                                 \
+  {                                                              \
+    op = COMMAND;                                                \
+    while (pa_operation_get_state(op) == PA_OPERATION_RUNNING) { \
+      pa_threaded_mainloop_wait(pulseaudio->mainloop);           \
+    }                                                            \
+    pa_operation_unref(op);                                      \
+  }
 
 void init_pulseaudio(struct text_object *obj) {
   // already initialized
@@ -219,9 +221,7 @@ void init_pulseaudio(struct text_object *obj) {
   }
   pa_threaded_mainloop_start(pulseaudio->mainloop);
 
-  while (pulseaudio->cstate != PULSE_CONTEXT_READY) {
-    usleep(200);
-  }
+  while (pulseaudio->cstate != PULSE_CONTEXT_READY) { usleep(200); }
 
   // Initial parameters update
 
@@ -324,7 +324,8 @@ void print_puau_card_active_profile(struct text_object *obj, char *p,
            get_pulseaudio(obj).card_active_profile_description.c_str());
 }
 
-void print_puau_card_name(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_puau_card_name(struct text_object *obj, char *p,
+                          unsigned int p_max_size) {
   snprintf(p, p_max_size, "%s", get_pulseaudio(obj).card_name.c_str());
 }
 

@@ -50,7 +50,7 @@ ADD_CUSTOM_COMMAND( OUTPUT ${TOLUA_OUT} ${INCL} COMMAND
 	VERBATIM )
 
 SET_SOURCE_FILES_PROPERTIES(${${VAR}} ${INCL} PROPERTIES GENERATED TRUE)
-SET_SOURCE_FILES_PROPERTIES(${${VAR}} PROPERTIES COMPILE_FLAGS "-Wno-bad-function-cast -Wno-unused-parameter -Wno-cast-qual")
+SET_SOURCE_FILES_PROPERTIES(${${VAR}} PROPERTIES COMPILE_FLAGS "-Wno-bad-function-cast -Wno-unused-parameter -Wno-cast-qual -Wno-error=pedantic")
 
 
 SET(${VAR} ${${VAR}} PARENT_SCOPE)

@@ -37,18 +37,15 @@ void gen_free_opaque(struct text_object *obj) {
   free_and_zero(obj->data.opaque);
 }
 
-int gen_false_iftest(struct text_object *) {
-  return 0;
-}
+int gen_false_iftest(struct text_object *) { return 0; }
 
 void gen_print_nothing(struct text_object *, char *, unsigned int) {
   // literally does nothing
 }
 
-void gen_print_obj_data_s(struct text_object *obj, char *p, unsigned int p_max_size) {
-  if (obj->data.s == nullptr) {
-    return;
-  }
+void gen_print_obj_data_s(struct text_object *obj, char *p,
+                          unsigned int p_max_size) {
+  if (obj->data.s == nullptr) { return; }
   snprintf(p, p_max_size, "%s", obj->data.s);
 }
 
@@ -83,9 +80,7 @@ int append_object(struct text_object *root, struct text_object *obj) {
   }
 
   /* find end of appended list to point root->prev there */
-  while (obj->next != nullptr) {
-    obj = obj->next;
-  }
+  while (obj->next != nullptr) { obj = obj->next; }
   root->prev = obj;
 
   return 0;
@@ -145,7 +140,7 @@ static int push_ifblock(struct ifblock_stack_obj **ifblock_stack_top,
       if ((*ifblock_stack_top) == nullptr)
         CRIT_ERR(nullptr, nullptr, "got an else without matching if");
       (*ifblock_stack_top)->obj->ifblock_next = obj;
-      /* fall through */
+      /* falls through */
     case IFBLOCK_IF:
       stackobj = static_cast<ifblock_stack_obj *>(
           malloc(sizeof(struct ifblock_stack_obj)));

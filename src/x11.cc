@@ -32,12 +32,12 @@
 #include "conky.h"
 #include "logging.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-register"
-#pragma clang diagnostic ignored "-Wregister"
-#pragma clang diagnostic ignored "-Wvariadic-macros"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvariadic-macros"
+#pragma GCC diagnostic ignored "-Wdeprecated-register"
+#pragma GCC diagnostic ignored "-Wregister"
 #include <X11/XKBlib.h>
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>
@@ -294,7 +294,7 @@ std::pair<uint16_t, bool> window_hints_traits::convert(
 #ifdef OWN_WINDOW
 namespace {
 // used to set the default value for own_window_title
-std::string ethostnamecxx() {
+std::string gethostnamecxx() {
   update_uname();
   return info.uname_s.nodename;
 }

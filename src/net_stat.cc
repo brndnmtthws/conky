@@ -27,16 +27,16 @@
  *
  */
 
+#include "net_stat.h"
+#include <ctype.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <cerrno>
 #include <cstring>
-#include <string.h>
-#include <ctype.h>
 #include "conky.h"
 #include "logging.h"
 #include "net/if.h"
-#include "net_stat.h"
 #include "specials.h"
 #include "text_object.h"
 #if defined(__sun)
@@ -131,8 +131,7 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
 
   if (arg == nullptr) { arg = DEFAULTNETDEV; }
 
-  if (0 == (strcmp("$gw_iface", arg)) ||
-      0 == (strcmp("${gw_iface}", arg))) {
+  if (0 == (strcmp("$gw_iface", arg)) || 0 == (strcmp("${gw_iface}", arg))) {
     arg = e_iface;
   }
 
@@ -148,9 +147,7 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
     if (1U == found) {
       *buf_ptr = '\0';
       x = strtol(buf, (char **)NULL, 10);
-      if (63L > x) {
-        arg = interfaces_arr[x];
-      }
+      if (63L > x) { arg = interfaces_arr[x]; }
     }
   }
 
@@ -196,7 +193,8 @@ void parse_net_stat_bar_arg(struct text_object *obj, const char *arg,
   }
 }
 
-void print_downspeed(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_downspeed(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
   if (ns == nullptr) { return; }
@@ -204,7 +202,8 @@ void print_downspeed(struct text_object *obj, char *p, unsigned int p_max_size) 
   human_readable(ns->recv_speed, p, p_max_size);
 }
 
-void print_downspeedf(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_downspeedf(struct text_object *obj, char *p,
+                      unsigned int p_max_size) {
   auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
   if (ns == nullptr) { return; }
@@ -228,7 +227,8 @@ void print_upspeedf(struct text_object *obj, char *p, unsigned int p_max_size) {
   spaced_print(p, p_max_size, "%.1f", 8, ns->trans_speed / 1024.0);
 }
 
-void print_totaldown(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_totaldown(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
   if (ns == nullptr) { return; }
@@ -355,7 +355,8 @@ double upspeedgraphval(struct text_object *obj) {
 #endif /* BUILD_X11 */
 
 #ifdef BUILD_WLAN
-void print_wireless_essid(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_wireless_essid(struct text_object *obj, char *p,
+                          unsigned int p_max_size) {
   struct net_stat *ns = (struct net_stat *)obj->data.opaque;
 
   if (!ns) {
@@ -370,14 +371,16 @@ void print_wireless_essid(struct text_object *obj, char *p, unsigned int p_max_s
 
   snprintf(p, p_max_size, "%s", ns->essid);
 }
-void print_wireless_mode(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_wireless_mode(struct text_object *obj, char *p,
+                         unsigned int p_max_size) {
   struct net_stat *ns = (struct net_stat *)obj->data.opaque;
 
   if (!ns) return;
 
   snprintf(p, p_max_size, "%s", ns->mode);
 }
-void print_wireless_channel(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_wireless_channel(struct text_object *obj, char *p,
+                            unsigned int p_max_size) {
   struct net_stat *ns = (struct net_stat *)obj->data.opaque;
 
   if (!ns) return;
@@ -388,7 +391,8 @@ void print_wireless_channel(struct text_object *obj, char *p, unsigned int p_max
     snprintf(p, p_max_size, "%s", "/");
   }
 }
-void print_wireless_frequency(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_wireless_frequency(struct text_object *obj, char *p,
+                              unsigned int p_max_size) {
   struct net_stat *ns = (struct net_stat *)obj->data.opaque;
 
   if (!ns) return;
@@ -399,35 +403,40 @@ void print_wireless_frequency(struct text_object *obj, char *p, unsigned int p_m
     snprintf(p, p_max_size, "/");
   }
 }
-void print_wireless_bitrate(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_wireless_bitrate(struct text_object *obj, char *p,
+                            unsigned int p_max_size) {
   struct net_stat *ns = (struct net_stat *)obj->data.opaque;
 
   if (!ns) return;
 
   snprintf(p, p_max_size, "%s", ns->bitrate);
 }
-void print_wireless_ap(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_wireless_ap(struct text_object *obj, char *p,
+                       unsigned int p_max_size) {
   struct net_stat *ns = (struct net_stat *)obj->data.opaque;
 
   if (!ns) return;
 
   snprintf(p, p_max_size, "%s", ns->ap);
 }
-void print_wireless_link_qual(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_wireless_link_qual(struct text_object *obj, char *p,
+                              unsigned int p_max_size) {
   struct net_stat *ns = (struct net_stat *)obj->data.opaque;
 
   if (!ns) return;
 
   spaced_print(p, p_max_size, "%d", 4, ns->link_qual);
 }
-void print_wireless_link_qual_max(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_wireless_link_qual_max(struct text_object *obj, char *p,
+                                  unsigned int p_max_size) {
   struct net_stat *ns = (struct net_stat *)obj->data.opaque;
 
   if (!ns) return;
 
   spaced_print(p, p_max_size, "%d", 4, ns->link_qual_max);
 }
-void print_wireless_link_qual_perc(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_wireless_link_qual_perc(struct text_object *obj, char *p,
+                                   unsigned int p_max_size) {
   struct net_stat *ns = (struct net_stat *)obj->data.opaque;
 
   if (!ns) return;
@@ -544,6 +553,10 @@ struct _dns_data {
   _dns_data() = default;
   int nscount{0};
   char **ns_list{nullptr};
+  void reset() {
+    nscount = 0;
+    ns_list = nullptr;
+  }
 };
 
 static _dns_data dns_data;
@@ -555,7 +568,7 @@ void free_dns_data(struct text_object *obj) {
 
   for (i = 0; i < dns_data.nscount; i++) { free(dns_data.ns_list[i]); }
   free(dns_data.ns_list);
-  memset(&dns_data, 0, sizeof(dns_data));
+  dns_data.reset();
 }
 
 int update_dns_data() {
@@ -591,7 +604,8 @@ void parse_nameserver_arg(struct text_object *obj, const char *arg) {
   obj->data.l = arg != nullptr ? atoi(arg) : 0;
 }
 
-void print_nameserver(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_nameserver(struct text_object *obj, char *p,
+                      unsigned int p_max_size) {
   if (dns_data.nscount > obj->data.l) {
     snprintf(p, p_max_size, "%s", dns_data.ns_list[obj->data.l]);
   }

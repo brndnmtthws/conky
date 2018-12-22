@@ -74,10 +74,10 @@ if(MAINTAINER_MODE)
 			COMMAND ${APP_DB2X_MANXML} --encoding=utf-8 ${FIL}.mxml --output-dir ${CMAKE_CURRENT_SOURCE_DIR}
 			COMMAND ${APP_XSLTPROC} ${CMAKE_SOURCE_DIR}/doc/docbook-xml/html/docbook.xsl ${CMAKE_CURRENT_SOURCE_DIR}/${FIL}.xml > ${CMAKE_CURRENT_SOURCE_DIR}/${FIL}.html
 			COMMAND ${APP_MAN} -P '${APP_LESS} -is' ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.1 > ${CMAKE_SOURCE_DIR}/README
-			COMMAND ${APP_SED} -i -e "s/[[:cntrl:]]\\[[0-9]*m//g" ${CMAKE_SOURCE_DIR}/README
-			COMMAND ${APP_SED} -i -e "s/\\xE2//g" ${CMAKE_SOURCE_DIR}/README
-			COMMAND ${APP_SED} -i -e "s/\\x80//g" ${CMAKE_SOURCE_DIR}/README
-			COMMAND ${APP_SED} -i -e "s/\\x90/-/g" ${CMAKE_SOURCE_DIR}/README
+			COMMAND ${APP_SED} -i'' -e 's/[[:cntrl:]]\\[[0-9]*m//g' ${CMAKE_SOURCE_DIR}/README
+			COMMAND ${APP_SED} -i'' -e 's/\\xE2//g' ${CMAKE_SOURCE_DIR}/README
+			COMMAND ${APP_SED} -i'' -e 's/\\x80//g' ${CMAKE_SOURCE_DIR}/README
+			COMMAND ${APP_SED} -i'' -e 's/\\x90/-/g' ${CMAKE_SOURCE_DIR}/README
 			DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${FIL}.xml
 			COMMENT "Proccessing man page for ${FIL}"
 			)

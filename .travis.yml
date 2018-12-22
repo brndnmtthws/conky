@@ -242,7 +242,7 @@ matrix:
       osx_image: xcode10.1
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then eval "${MATRIX_EVAL}" ; fi
-  -  |
+  - |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       HOMEBREW_NO_AUTO_UPDATE=1 brew install freetype gettext lua imlib2 librsvg ccache docbook2x ;
       export PATH="/usr/local/opt/ccache/libexec:$PATH";
@@ -317,9 +317,12 @@ before_script:
     fi
 script:
   - cd build
-  - if [ "$CXX" = "clang++-7" ] ; then build-wrapper-linux-x86-64 --out-dir bw-output make -j4 ; fi
-  - if [ "$CXX" = "g++-8" ] ; then make -j4 ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make -j4 ; fi
+  - |
+    if [ "$CXX" = "clang++-7" ] ; then
+      build-wrapper-linux-x86-64 --out-dir bw-output make -j4 ;
+    else
+      make -j4 ;
+    fi
   - cd ../build-no-x11
   - make -j4
   - cd ..
@@ -331,4 +334,4 @@ sudo: false
 cache:
   - ccache: true
   - directories:
-    - '$HOME/.sonar/cache'
+      - "$HOME/.sonar/cache"

@@ -42,10 +42,10 @@ struct diskio_stat {
         last(UINT_MAX),
         last_read(UINT_MAX),
         last_write(UINT_MAX) {
-    std::memset(sample, 0, sizeof(sample) / sizeof(sample[0]));
-    std::memset(sample_read, 0, sizeof(sample_read) / sizeof(sample_read[0]));
+    std::memset(sample, 0, sizeof(sample[0]) * sizeof(sample));
+    std::memset(sample_read, 0, sizeof(sample_read[0]) * sizeof(sample_read));
     std::memset(sample_write, 0,
-                sizeof(sample_write) / sizeof(sample_write[0]));
+                sizeof(sample_write[0]) * sizeof(sample_write));
   }
   struct diskio_stat *next;
   char *dev;

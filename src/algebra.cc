@@ -46,10 +46,8 @@ int find_match_op(const char *expr) {
     switch (expr[idx]) {
       case '=':
       case '!':
-        if (expr[idx + 1] != '=') {
-          return -1;
-        }
-        /* fall through */
+        if (expr[idx + 1] != '=') { return -1; }
+        /* falls through */
       case '<':
       case '>':
         return idx;
@@ -63,27 +61,17 @@ int get_match_type(const char *expr) {
   int idx;
   const char *str;
 
-  if ((idx = find_match_op(expr)) == -1) {
-    return -1;
-  }
+  if ((idx = find_match_op(expr)) == -1) { return -1; }
   str = expr + idx;
 
-  if (*str == '=' && *(str + 1) == '=') {
-    return OP_EQ;
-  }
-  if (*str == '!' && *(str + 1) == '=') {
-    return OP_NEQ;
-  }
+  if (*str == '=' && *(str + 1) == '=') { return OP_EQ; }
+  if (*str == '!' && *(str + 1) == '=') { return OP_NEQ; }
   if (*str == '>') {
-    if (*(str + 1) == '=') {
-      return OP_GEQ;
-    }
+    if (*(str + 1) == '=') { return OP_GEQ; }
     return OP_GT;
   }
   if (*str == '<') {
-    if (*(str + 1) == '=') {
-      return OP_LEQ;
-    }
+    if (*(str + 1) == '=') { return OP_LEQ; }
     return OP_LT;
   }
   return -1;
@@ -132,35 +120,23 @@ enum arg_type get_arg_type(const char *arg) {
   p = arg;
   e = arg + strlen(arg) - 1;
 
-  while (p != e && (*e != 0) && *e == ' ') {
-    e--;
-  }
-  while (p != e && *p == ' ') {
-    p++;
-  }
+  while (p != e && (*e != 0) && *e == ' ') { e--; }
+  while (p != e && *p == ' ') { p++; }
 
-  if (*p == '"' && *e == '"') {
-    return ARG_STRING;
-  }
+  if (*p == '"' && *e == '"') { return ARG_STRING; }
 
   if (*p == '-') {  // allow negative values
     p++;
   }
   while (p <= e) {
-    if (isdigit((unsigned char)*p) == 0) {
-      break;
-    }
+    if (isdigit((unsigned char)*p) == 0) { break; }
     p++;
   }
-  if (p == e + 1) {
-    return ARG_LONG;
-  }
+  if (p == e + 1) { return ARG_LONG; }
   if (*p == '.' || *p == ',') {
     p++;
     while (p <= e) {
-      if (isdigit((unsigned char)*p) == 0) {
-        return ARG_BAD;
-      }
+      if (isdigit((unsigned char)*p) == 0) { return ARG_BAD; }
       p++;
     }
     return ARG_DOUBLE;
@@ -174,15 +150,9 @@ char *arg_to_string(const char *arg) {
 
   start = arg;
   len = 0;
-  while ((*start != 0) && *start == ' ') {
-    start++;
-  }
-  if (!(*(start++) == '"')) {
-    return nullptr;
-  }
-  while (start[len] != '"') {
-    len++;
-  }
+  while ((*start != 0) && *start == ' ') { start++; }
+  if (!(*(start++) == '"')) { return nullptr; }
+  while (start[len] != '"') { len++; }
   return strndup(start, len);
 }
 double arg_to_double(const char *arg) {
@@ -218,9 +188,7 @@ int compare(const char *expr) {
 
   expr_dup = strdup(expr);
   expr_dup[idx] = '\0';
-  if (expr_dup[idx + 1] == '=') {
-    expr_dup[++idx] = '\0';
-  }
+  if (expr_dup[idx + 1] == '=') { expr_dup[++idx] = '\0'; }
 
   type1 = get_arg_type(expr_dup);
   type2 = get_arg_type(expr_dup + idx + 1);
@@ -229,12 +197,8 @@ int compare(const char *expr) {
     free(expr_dup);
     return -2;
   }
-  if (type1 == ARG_LONG && type2 == ARG_DOUBLE) {
-    type1 = ARG_DOUBLE;
-  }
-  if (type1 == ARG_DOUBLE && type2 == ARG_LONG) {
-    type2 = ARG_DOUBLE;
-  }
+  if (type1 == ARG_LONG && type2 == ARG_DOUBLE) { type1 = ARG_DOUBLE; }
+  if (type1 == ARG_DOUBLE && type2 == ARG_LONG) { type2 = ARG_DOUBLE; }
   if (type1 != type2) {
     NORM_ERR("trying to compare args '%s' and '%s' of different type", expr_dup,
              (expr_dup + idx + 1));

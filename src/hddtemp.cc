@@ -53,6 +53,12 @@ struct hdd_info {
   char *dev;
   short temp;
   char unit;
+  void reset() {
+    next = 0;
+    dev = 0;
+    temp = 0;
+    unit = 0;
+  }
 };
 
 struct hdd_info hdd_info_head;
@@ -77,7 +83,7 @@ static void add_hddtemp_info(char *dev, short temp, char unit) {
   while (hdi->next) hdi = hdi->next;
 
   hdi->next = new hdd_info;
-  memset(hdi->next, 0, sizeof(struct hdd_info));
+  hdi->next->reset();
   hdi->next->dev = strdup(dev);
   hdi->next->temp = temp;
   hdi->next->unit = unit;
