@@ -1378,6 +1378,7 @@ static void draw_string(const char *s) {
 int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 #ifndef BUILD_X11
   static int cur_x, cur_y; /* current x and y for drawing */
+  (void)cur_y;
 #endif
 #ifdef BUILD_X11
   int font_h = 0;
@@ -2004,7 +2005,9 @@ static void main_loop() {
 #ifdef SIGNAL_BLOCKING
   sigset_t newmask, oldmask;
 #endif
+#ifdef BUILD_X11
   double t;
+#endif /* BUILD_X11 */
 #ifdef HAVE_SYS_INOTIFY_H
   int inotify_config_wd = -1;
 #define INOTIFY_EVENT_SIZE (sizeof(struct inotify_event))
