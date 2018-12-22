@@ -1253,13 +1253,18 @@ std::string string_replace_all(std::string original, const std::string &oldpart,
 }
 
 static void draw_string(const char *s) {
-  int i, i2, pos, width_of_s;
+  int i, i2, pos;
+#ifdef BUILD_X11
+  int width_of_s;
+#endif /* BUILD_X11 */
   int max = 0;
   int added;
 
   if (s[0] == '\0') { return; }
 
+#ifdef BUILD_X11
   width_of_s = get_string_width(s);
+#endif /* BUILD_X11 */
   if (out_to_stdout.get(*state) && draw_mode == FG) {
     printf("%s\n", s);
     if (extra_newline.get(*state)) { fputc('\n', stdout); }
@@ -1864,13 +1869,12 @@ static void draw_text() {
 }
 
 static void draw_stuff() {
-#ifndef BUILD_X11
-  static int text_offset_x, text_offset_y; /* offset for start position */
-#endif
+#ifdef BUILD_X11
   text_offset_x = text_offset_y = 0;
 #ifdef BUILD_IMLIB2
   cimlib_render(text_start_x, text_start_y, window.width, window.height);
 #endif /* BUILD_IMLIB2 */
+#endif /* BUILD_X11 */
   if (static_cast<unsigned int>(!overwrite_file.get(*state).empty()) != 0u) {
     overwrite_fpointer = fopen(overwrite_file.get(*state).c_str(), "we");
     if (overwrite_fpointer == nullptr) {
