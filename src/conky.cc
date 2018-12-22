@@ -1646,9 +1646,10 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
               char *tmp_str;
               cur_x += font_ascent() / 2;
               cur_y += font_h / 2;
-              asprintf(&tmp_str, "%.1f", current->scale);
-              draw_string(tmp_str);
-              free(tmp_str);
+              if (asprintf(&tmp_str, "%.1f", current->scale)) {
+                draw_string(tmp_str);
+                free(tmp_str);
+              }
               cur_x = tmp_x;
               cur_y = tmp_y;
             }
@@ -2685,10 +2686,11 @@ void load_config_file() {
     l.call(1, 1);
 #else
     char *syntaxerr;
-    asprintf(&syntaxerr, _(SYNTAX_ERR_READ_CONF), e.what());
-    std::string syntaxerrobj(syntaxerr);
-    free(syntaxerr);
-    throw conky::error(syntaxerrobj);
+    if (asprintf(&syntaxerr, _(SYNTAX_ERR_READ_CONF), e.what())) {
+      std::string syntaxerrobj(syntaxerr);
+      free(syntaxerr);
+      throw conky::error(syntaxerrobj);
+    }
 #endif
   }
   l.call(0, 0);

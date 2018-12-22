@@ -30,9 +30,9 @@
 #ifndef _NET_STAT_H
 #define _NET_STAT_H
 
-#include "config.h"
-#include <sys/socket.h> /* struct sockaddr */
 #include <netinet/in.h> /* struct in6_addr */
+#include <sys/socket.h> /* struct sockaddr */
+#include "config.h"
 
 #ifdef BUILD_IPV6
 struct v6addr {
@@ -73,7 +73,7 @@ struct net_stat {
    * trans_speed */
   double net_rec[15], net_trans[15];
   // wireless extensions
-  char essid[32];
+  char essid[35];
   int channel;
   char freq[16];
   char bitrate[16];

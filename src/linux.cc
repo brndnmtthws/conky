@@ -680,9 +680,9 @@ int update_net_stats(void) {
       // get essid
       if (winfo->b.has_essid) {
         if (winfo->b.essid_on) {
-          snprintf(ns->essid, 32, "%s", winfo->b.essid);
+          snprintf(ns->essid, 34, "%s", winfo->b.essid);
         } else {
-          snprintf(ns->essid, 32, "%s", "off/any");
+          snprintf(ns->essid, 34, "%s", "off/any");
         }
       }
       // get channel and freq

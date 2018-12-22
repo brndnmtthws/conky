@@ -66,10 +66,10 @@ inline size_t callback_base::get_hash(const handle &h) { return h->hash; }
 inline bool callback_base::is_equal(const handle &a, const handle &b) {
   if (a->hash != b->hash) { return false; }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpotentially-evaluated-expression"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpotentially-evaluated-expression"
   if (typeid(*a) != typeid(*b)) { return false; }
-#pragma GCC diagnostic pop
+#pragma clang diagnostic pop
 
   return *a == *b;
 }
