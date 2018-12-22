@@ -51,16 +51,16 @@ static void mapsuper(lua_State *L, const char *name, const char *base)
 	/* push registry.super */
 	lua_pushstring(L, "tolua_super");
 	lua_rawget(L, LUA_REGISTRYINDEX); /* stack: super */
-	luaL_getmetatable(L, name);		  /* stack: super mt */
-	lua_rawget(L, -2);				  /* stack: super table */
+	luaL_getmetatable(L, name);				/* stack: super mt */
+	lua_rawget(L, -2);								/* stack: super table */
 	if (lua_isnil(L, -1))
 	{
 		/* create table */
 		lua_pop(L, 1);
-		lua_newtable(L);			/* stack: super table */
+		lua_newtable(L);						/* stack: super table */
 		luaL_getmetatable(L, name); /* stack: super table mt */
-		lua_pushvalue(L, -2);		/* stack: super table mt table */
-		lua_rawset(L, -4);			/* stack: super table */
+		lua_pushvalue(L, -2);				/* stack: super table mt table */
+		lua_rawset(L, -4);					/* stack: super table */
 	}
 
 	/* set base as super class */
@@ -70,7 +70,7 @@ static void mapsuper(lua_State *L, const char *name, const char *base)
 
 	/* set all super class of base as super class of name */
 	luaL_getmetatable(L, base); /* stack: super table base_mt */
-	lua_rawget(L, -3);			/* stack: super table base_table */
+	lua_rawget(L, -3);					/* stack: super table base_table */
 	if (lua_istable(L, -1))
 	{
 		/* traverse base table */
@@ -79,8 +79,8 @@ static void mapsuper(lua_State *L, const char *name, const char *base)
 		{
 			/* stack: ... base_table key value */
 			lua_pushvalue(L, -2); /* stack: ... base_table key value key */
-			lua_insert(L, -2);	/* stack: ... base_table key key value */
-			lua_rawset(L, -5);	/* stack: ... base_table key */
+			lua_insert(L, -2);		/* stack: ... base_table key key value */
+			lua_rawset(L, -5);		/* stack: ... base_table key */
 		}
 	}
 	lua_pop(L, 3); /* stack: <empty> */
@@ -121,7 +121,7 @@ static void set_ubox(lua_State *L)
 		lua_newtable(L);
 		lua_pushliteral(L, "__mode");
 		lua_pushliteral(L, "v");
-		lua_rawset(L, -3);		 /* stack: string ubox mt */
+		lua_rawset(L, -3);			 /* stack: string ubox mt */
 		lua_setmetatable(L, -2); /* stack:mt basemt string ubox */
 		lua_rawset(L, -4);
 	}
@@ -330,7 +330,7 @@ TOLUA_API void tolua_open(lua_State *L)
 		lua_newtable(L);
 		lua_pushliteral(L, "__mode");
 		lua_pushliteral(L, "k");
-		lua_rawset(L, -3);		 /* stack: string peers mt */
+		lua_rawset(L, -3);			 /* stack: string peers mt */
 		lua_setmetatable(L, -2); /* stack: string peers */
 		lua_rawset(L, LUA_REGISTRYINDEX);
 #endif
@@ -343,7 +343,7 @@ TOLUA_API void tolua_open(lua_State *L)
 		lua_newtable(L);
 		lua_pushliteral(L, "__mode");
 		lua_pushliteral(L, "v");
-		lua_rawset(L, -3);		 /* stack: string ubox mt */
+		lua_rawset(L, -3);			 /* stack: string ubox mt */
 		lua_setmetatable(L, -2); /* stack: string ubox */
 		lua_rawset(L, LUA_REGISTRYINDEX);
 
@@ -681,7 +681,7 @@ TOLUA_API void tolua_variable(lua_State *L, const char *name, lua_CFunction get,
 	lua_pushstring(L, name);
 	lua_pushcfunction(L, get);
 	lua_rawset(L, -3); /* store variable */
-	lua_pop(L, 1);	 /* pop .get table */
+	lua_pop(L, 1);		 /* pop .get table */
 
 	/* set func */
 	if (set)
@@ -700,7 +700,7 @@ TOLUA_API void tolua_variable(lua_State *L, const char *name, lua_CFunction get,
 		lua_pushstring(L, name);
 		lua_pushcfunction(L, set);
 		lua_rawset(L, -3); /* store variable */
-		lua_pop(L, 1);	 /* pop .set table */
+		lua_pop(L, 1);		 /* pop .set table */
 	}
 }
 
@@ -742,14 +742,17 @@ TOLUA_API void tolua_array(lua_State *L, const char *name, lua_CFunction get, lu
 	lua_rawset(L, -3);
 
 	lua_rawset(L, -3); /* store variable */
-	lua_pop(L, 1);	 /* pop .get table */
+	lua_pop(L, 1);		 /* pop .get table */
 }
 
 TOLUA_API void tolua_dobuffer(lua_State *L, char *B, unsigned int size, const char *name)
 {
 
 #ifdef LUA_VERSION_NUM /* lua 5.1 */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-value"
 	luaL_loadbuffer(L, B, size, name) || lua_pcall(L, 0, 0, 0);
+#pragma GCC diagnostic pop
 #else
 	lua_dobuffer(L, B, size, name);
 #endif

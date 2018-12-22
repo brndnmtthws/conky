@@ -73,15 +73,14 @@ matrix:
 before_install:
     - |
      if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-       brew update;
-       brew install lua ccache;
+       HOMEBREW_NO_AUTO_UPDATE=1 brew install lua ccache;
        export PATH="/usr/local/opt/ccache/libexec:$PATH";
      fi
     - eval "${MATRIX_EVAL}"
     # Combine global build options with OS/compiler-dependent options
     - export CMAKE_OPTIONS="${CMAKE_OPTIONS} ${ENV_CMAKE_OPTIONS} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
     - export CXX_FLAGS="${CXX_FLAGS} ${ENV_CXX_FLAGS} -Wall -Werror -Wextra -Wunused -pedantic"
-    - export C_FLAGS="${C_FLAGS} ${ENV_C_FLAGS} -Wall -Werror -Wextra -Wunused -pedantic"
+    - export C_FLAGS="${C_FLAGS} ${ENV_C_FLAGS} -Wall -Werror -Wextra -Wunused -pedantic -std=c99"
 
 install:
     - echo ${PATH}
