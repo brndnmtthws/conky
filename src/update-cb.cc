@@ -116,7 +116,7 @@ void callback_base::start_routine() {
 
     // clear any remaining posts in case the previous iteration was very slow
     // (this should only happen if wait == false)
-    while (sem_start.trywait()) { ; }
+    while (sem_start.trywait()) {}
 
     work();
     if (wait) { sem_wait.post(); }

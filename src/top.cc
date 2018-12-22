@@ -243,7 +243,11 @@ static void process_cleanup() {
 
     p = p->next;
     /* Delete processes that have died */
-    if (current->time_stamp != g_time) { delete_process(current); }
+    if (current->time_stamp != g_time) {
+      delete_process(current);
+      if (current == first_process) { first_process = nullptr; }
+      current = nullptr;
+    }
   }
 }
 
