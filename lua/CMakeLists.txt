@@ -24,8 +24,14 @@ include(ToLua)
 add_definitions(-DTOLUA_RELEASE)
 
 if(BUILD_X11)
+
 	if(BUILD_LUA_CAIRO)
 		include_directories(${luacairo_includes} ${CMAKE_CURRENT_SOURCE_DIR})
+
+		# Need the directory for -lSM
+    get_filename_component(X11_SM_LIB_PATH ${X11_SM_LIB} DIRECTORY)
+		link_directories(${X11_SM_LIB_PATH})
+
 		# cairo_set_dash() needs this special hack to work properly
 		# if you have a better solution, please let me know
 		wrap_tolua(luacairo_src cairo.pkg libcairo.patch)
