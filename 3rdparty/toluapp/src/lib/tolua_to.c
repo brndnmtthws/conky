@@ -127,8 +127,8 @@ TOLUA_API int tolua_tofieldvalue(lua_State *L, int lo, int index, int def)
 
 TOLUA_API int tolua_getfieldboolean(lua_State *L, int lo, int index, int def)
 {
-	(void)def;
 	int v;
+	(void)def;
 	lua_pushnumber(L, index);
 	lua_gettable(L, lo);
 	v = lua_isnil(L, -1) ? 0 : lua_toboolean(L, -1);
