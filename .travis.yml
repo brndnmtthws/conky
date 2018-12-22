@@ -80,7 +80,8 @@ before_install:
     - eval "${MATRIX_EVAL}"
     # Combine global build options with OS/compiler-dependent options
     - export CMAKE_OPTIONS="${CMAKE_OPTIONS} ${ENV_CMAKE_OPTIONS} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
-    - export CXX_FLAGS="${CXX_FLAGS} ${ENV_CXX_FLAGS}"
+    - export CXX_FLAGS="${CXX_FLAGS} ${ENV_CXX_FLAGS} -Wall -Werror -Wextra -Wunused -pedantic"
+    - export C_FLAGS="${C_FLAGS} ${ENV_C_FLAGS} -Wall -Werror -Wextra -Wunused -pedantic"
 
 install:
     - echo ${PATH}
@@ -91,7 +92,7 @@ install:
 script:
      - mkdir -p build
      - cd build
-     - cmake ${CMAKE_OPTIONS} -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ..
+     - cmake ${CMAKE_OPTIONS} -DCMAKE_C_FLAGS=${C_FLAGS} -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ..
      - make -j4
 
 # Only watch the master branch
