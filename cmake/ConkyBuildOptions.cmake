@@ -41,11 +41,11 @@ if(MAINTAINER_MODE)
 	# some extra debug flags when in 'maintainer mode'
 	if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0)
 		# Some flags are only supported on GCC >= 7.0, such as -Wimplicit-fallthrough=2
-		set(CMAKE_C_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -pedantic -Werror ${CMAKE_C_FLAGS_DEBUG} -Wno-unknown-pragmas -Wno-error=pragmas -Wimplicit-fallthrough=2" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
-		set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -pedantic -Werror -Wno-format ${CMAKE_CXX_FLAGS_DEBUG} -Wno-unknown-pragmas -Wno-error=pragmas -Wimplicit-fallthrough=2" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
+		set(CMAKE_C_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -pedantic -Werror -Wno-unknown-pragmas -Wno-error=pragmas -Wimplicit-fallthrough=2" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
+		set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -pedantic -Werror -Wno-format -Wno-unknown-pragmas -Wno-error=pragmas -Wimplicit-fallthrough=2" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
 	else()
-		set(CMAKE_C_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -pedantic -Werror ${CMAKE_C_FLAGS_DEBUG} -Wno-unknown-pragmas -Wno-error=pragmas" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
-		set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -pedantic -Werror -Wno-format ${CMAKE_CXX_FLAGS_DEBUG} -Wno-unknown-pragmas -Wno-error=pragmas" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
+		set(CMAKE_C_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -pedantic -Werror -Wno-unknown-pragmas -Wno-error=pragmas" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
+		set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -pedantic -Werror -Wno-format -Wno-unknown-pragmas -Wno-error=pragmas" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
 	endif()
 endif(MAINTAINER_MODE)
 
