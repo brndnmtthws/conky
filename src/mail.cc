@@ -814,7 +814,10 @@ void imap_cb::work() {
           }
           if (buf != nullptr) {
             // back up until we reach '*'
-            while (buf >= recvbuf && buf[0] != '*') { buf--; }
+            while (buf >= recvbuf && buf < (recvbuf + MAXDATASIZE) - 1 &&
+                   buf[0] != '*') {
+              buf--;
+            }
             if (sscanf(buf, "* %lu EXISTS\r\n", &messages) == 1) {
               std::lock_guard<std::mutex> lock(result_mutex);
               if (result.messages != messages) {
@@ -831,7 +834,10 @@ void imap_cb::work() {
           }
           if (buf != nullptr) {
             // back up until we reach '*'
-            while (buf >= recvbuf && buf[0] != '*') { buf--; }
+            while (buf >= recvbuf && buf < (recvbuf + MAXDATASIZE) - 1 &&
+                   buf[0] != '*') {
+              buf--;
+            }
             if (sscanf(buf, "* %lu RECENT\r\n", &recent) != 1) { recent = 0; }
           }
         }

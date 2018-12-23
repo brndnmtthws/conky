@@ -1014,7 +1014,7 @@ int update_stat(void) {
 
       cpu[idx].cpu_last_total = cpu[idx].cpu_total;
       cpu[idx].cpu_last_active_total = cpu[idx].cpu_active_total;
-      for (i = samples - 1; i > 0; i--) {
+      for (i = samples - 1; i > 0 && i < CPU_SAMPLE_COUNT; i--) {
         cpu[idx].cpu_val[i] = cpu[idx].cpu_val[i - 1];
       }
     }
