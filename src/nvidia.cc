@@ -378,9 +378,12 @@ void nvidia_display_setting::lua_setter(lua::state &l, bool init) {
   Base::lua_setter(l, init);
 
   std::string str = do_convert(l, -1).first;
-  if (!str.empty() && (nvdisplay = XOpenDisplay(str.c_str())) == nullptr) {
-    CRIT_ERR(nullptr, NULL, "can't open nvidia display: %s",
-             XDisplayName(str.c_str()));
+  if (!str.empty()) {
+    nvdisplay = XOpenDisplay(str.c_str());
+    if (nvdisplay == nullptr) {
+      CRIT_ERR(nullptr, NULL, "can't open nvidia display: %s",
+               XDisplayName(str.c_str()));
+    }
   }
 
   ++s;
@@ -464,7 +467,6 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
   nvs->command = translate_nvidia_special_type[special_type];
 
   // Evaluate parameter
-  // NOSONAR
   switch (aid) {
     case ARG_TEMP:  // GPU temperature
     case ARG_GPU_TEMP:
@@ -771,6 +773,61 @@ static char *get_nvidia_string(TARGET_ID tid, ATTR_ID aid, int gid,
   return str;
 }
 
+void cache_nvidia_string_value_update(nvidia_c_string *ac_string, char *token,
+                                      SEARCH_ID search, int *value, int gid) {
+  if (strcmp(token, (char *)"nvclockmin") == 0 &&
+      ac_string[gid].nvclockmin < 0) {
+    ac_string[gid].nvclockmin = *value;
+  } else if (strcmp(token, (char *)"nvclockmax") == 0 &&
+             ac_string[gid].nvclockmax < 0) {
+    ac_string[gid].nvclockmax = *value;
+  } else if (strcmp(token, (char *)"memclockmin") == 0 &&
+             ac_string[gid].memclockmin < 0) {
+    ac_string[gid].memclockmin = *value;
+  } else if (strcmp(token, (char *)"memclockmax") == 0 &&
+             ac_string[gid].memclockmax < 0) {
+    ac_string[gid].memclockmax = *value;
+  } else if (strcmp(token, (char *)"memTransferRatemin") == 0 &&
+             ac_string[gid].memTransferRatemin < 0) {
+    ac_string[gid].memTransferRatemin = *value;
+  } else if (strcmp(token, (char *)"memTransferRatemax") == 0 &&
+             ac_string[gid].memTransferRatemax < 0) {
+    ac_string[gid].memTransferRatemax = *value;
+
+  } else if (strcmp(token, (char *)"perf") == 0 &&
+             ac_string[gid].memTransferRatemax < 0) {
+    if (search == SEARCH_MIN) {
+      ac_string[gid].perfmin = *value;
+    } else if (search == SEARCH_MAX) {
+      ac_string[gid].perfmax = *value;
+    }
+  }
+}
+
+void cache_nvidia_string_value_noupdate(nvidia_c_string *ac_string, char *token,
+                                        SEARCH_ID search, int *value, int gid) {
+  if (strcmp(token, (char *)"nvclockmin") == 0) {
+    *value = ac_string[gid].nvclockmin;
+  } else if (strcmp(token, (char *)"nvclockmax") == 0) {
+    *value = ac_string[gid].nvclockmax;
+  } else if (strcmp(token, (char *)"memclockmin") == 0) {
+    *value = ac_string[gid].memclockmin;
+  } else if (strcmp(token, (char *)"memclockmax") == 0) {
+    *value = ac_string[gid].memclockmax;
+  } else if (strcmp(token, (char *)"memTransferRatemin") == 0) {
+    *value = ac_string[gid].memTransferRatemin;
+  } else if (strcmp(token, (char *)"memTransferRatemax") == 0) {
+    *value = ac_string[gid].memTransferRatemax;
+
+  } else if (strcmp(token, (char *)"perf") == 0) {
+    if (search == SEARCH_MIN) {
+      *value = ac_string[gid].perfmin;
+    } else if (search == SEARCH_MAX) {
+      *value = ac_string[gid].perfmax;
+    }
+  }
+}
+
 static int cache_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token,
                                      SEARCH_ID search, int *value, int update,
                                      int gid) {
@@ -779,55 +836,9 @@ static int cache_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token,
   (void)aid;
 
   if (update) {
-    if (strcmp(token, (char *)"nvclockmin") == 0 &&
-        ac_string[gid].nvclockmin < 0) {
-      ac_string[gid].nvclockmin = *value;
-    } else if (strcmp(token, (char *)"nvclockmax") == 0 &&
-               ac_string[gid].nvclockmax < 0) {
-      ac_string[gid].nvclockmax = *value;
-    } else if (strcmp(token, (char *)"memclockmin") == 0 &&
-               ac_string[gid].memclockmin < 0) {
-      ac_string[gid].memclockmin = *value;
-    } else if (strcmp(token, (char *)"memclockmax") == 0 &&
-               ac_string[gid].memclockmax < 0) {
-      ac_string[gid].memclockmax = *value;
-    } else if (strcmp(token, (char *)"memTransferRatemin") == 0 &&
-               ac_string[gid].memTransferRatemin < 0) {
-      ac_string[gid].memTransferRatemin = *value;
-    } else if (strcmp(token, (char *)"memTransferRatemax") == 0 &&
-               ac_string[gid].memTransferRatemax < 0) {
-      ac_string[gid].memTransferRatemax = *value;
-
-    } else if (strcmp(token, (char *)"perf") == 0 &&
-               ac_string[gid].memTransferRatemax < 0) {
-      if (search == SEARCH_MIN) {
-        ac_string[gid].perfmin = *value;
-      } else if (search == SEARCH_MAX) {
-        ac_string[gid].perfmax = *value;
-      }
-    }
-
+    cache_nvidia_string_value_update(ac_string, token, search, value, gid);
   } else {
-    if (strcmp(token, (char *)"nvclockmin") == 0) {
-      *value = ac_string[gid].nvclockmin;
-    } else if (strcmp(token, (char *)"nvclockmax") == 0) {
-      *value = ac_string[gid].nvclockmax;
-    } else if (strcmp(token, (char *)"memclockmin") == 0) {
-      *value = ac_string[gid].memclockmin;
-    } else if (strcmp(token, (char *)"memclockmax") == 0) {
-      *value = ac_string[gid].memclockmax;
-    } else if (strcmp(token, (char *)"memTransferRatemin") == 0) {
-      *value = ac_string[gid].memTransferRatemin;
-    } else if (strcmp(token, (char *)"memTransferRatemax") == 0) {
-      *value = ac_string[gid].memTransferRatemax;
-
-    } else if (strcmp(token, (char *)"perf") == 0) {
-      if (search == SEARCH_MIN) {
-        *value = ac_string[gid].perfmin;
-      } else if (search == SEARCH_MAX) {
-        *value = ac_string[gid].perfmax;
-      }
-    }
+    cache_nvidia_string_value_noupdate(ac_string, token, search, value, gid);
   }
 
   return 0;
@@ -879,11 +890,11 @@ static int get_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token,
     kvp = strtok_r(nullptr, NV_KVPAIR_SEPARATORS, &saveptr1);
   }
 
-  // This call updated the cache for the cacheable values;
+  // This call updated the cache for the cacheable values
   cache_nvidia_string_value(tid, aid, token, search, &value, 1, gid);
 
   // Free string, return value
-  free(str);
+  free_and_zero(str);
   return value;
 }
 
@@ -891,7 +902,10 @@ static int get_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token,
 void print_nvidia_value(struct text_object *obj, char *p,
                         unsigned int p_max_size) {
   nvidia_s *nvs = static_cast<nvidia_s *>(obj->data.opaque);
-  int value, temp1, temp2;
+  int value;
+  int temp1;
+  int temp2;
+  int result;
   char *str;
   int event_base;
   int error_base;
@@ -926,6 +940,7 @@ void print_nvidia_value(struct text_object *obj, char *p,
       case QUERY_VALUE:
         switch (nvs->attribute) {
           case ATTR_FAN_LEVEL:
+            /* falls through */
           case ATTR_FAN_SPEED:
             if (num_COOLER < 1) {
               value = -1;
@@ -953,20 +968,22 @@ void print_nvidia_value(struct text_object *obj, char *p,
                                      nvs->arg);
             switch (temp1) {
               case NV_CTRL_GPU_POWER_MIZER_MODE_ADAPTIVE:
-                temp2 = asprintf(&str, "Adaptive");
+                result = asprintf(&str, "Adaptive");
                 break;
               case NV_CTRL_GPU_POWER_MIZER_MODE_PREFER_MAXIMUM_PERFORMANCE:
-                temp2 = asprintf(&str, "Max. Perf.");
+                result = asprintf(&str, "Max. Perf.");
                 break;
               case NV_CTRL_GPU_POWER_MIZER_MODE_AUTO:
-                temp2 = asprintf(&str, "Auto");
+                result = asprintf(&str, "Auto");
                 break;
               case NV_CTRL_GPU_POWER_MIZER_MODE_PREFER_CONSISTENT_PERFORMANCE:
-                temp2 = asprintf(&str, "Consistent");
+                result = asprintf(&str, "Consistent");
                 break;
               default:
-                temp2 = asprintf(&str, "Unknown (%d)", value);
+                result = asprintf(&str, "Unknown (%d)", value);
+                break;
             }
+            if (result < 0) { str = nullptr; }
             break;
           case ATTR_MEM_FREE:
             temp1 = get_nvidia_value(nvs->target, ATTR_MEM_USED, nvs->gpu_id,
@@ -986,6 +1003,8 @@ void print_nvidia_value(struct text_object *obj, char *p,
             break;
         }
         break;
+      default:
+        break;
     }
   }
 
@@ -994,15 +1013,16 @@ void print_nvidia_value(struct text_object *obj, char *p,
     snprintf(p, p_max_size, "%d", value);
   } else if (str != nullptr) {
     snprintf(p, p_max_size, "%s", str);
-    free(str);
+    free_and_zero(str);
   } else {
     snprintf(p, p_max_size, "%s", "N/A");
   }
 }
 
 double get_nvidia_barval(struct text_object *obj) {
-  struct nvidia_s *nvs = static_cast<nvidia_s *>(obj->data.opaque);
-  int temp1, temp2;
+  nvidia_s *nvs = static_cast<nvidia_s *>(obj->data.opaque);
+  int temp1;
+  int temp2;
   double value;
 
   // Assume failure
