@@ -10,6 +10,7 @@ matrix:
           packages:
             - g++-5
             - cmake
+            - docbook2x
             - libxdamage-dev
             - libx11-dev
             - libxft-dev
@@ -47,6 +48,7 @@ matrix:
           packages:
             - g++-6
             - cmake
+            - docbook2x
             - libxdamage-dev
             - libx11-dev
             - libxft-dev
@@ -84,6 +86,7 @@ matrix:
           packages:
             - g++-7
             - cmake
+            - docbook2x
             - libxdamage-dev
             - libx11-dev
             - libxft-dev
@@ -121,6 +124,7 @@ matrix:
           packages:
             - g++-8
             - cmake
+            - docbook2x
             - libxdamage-dev
             - libx11-dev
             - libxft-dev
@@ -158,6 +162,7 @@ matrix:
           packages:
             - clang-6.0
             - cmake
+            - docbook2x
             - libxdamage-dev
             - libx11-dev
             - libxft-dev
@@ -196,6 +201,7 @@ matrix:
             - clang-7
             - libc++-7-dev
             - cmake
+            - docbook2x
             - libxdamage-dev
             - libx11-dev
             - libxft-dev
@@ -236,10 +242,9 @@ matrix:
       osx_image: xcode10.1
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then eval "${MATRIX_EVAL}" ; fi
-  -  |
+  - |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      HOMEBREW_NO_AUTO_UPDATE=1 brew install freetype gettext lua imlib2 librsvg ccache;
-      export PATH="/usr/local/opt/ccache/libexec:$PATH";
+      HOMEBREW_NO_AUTO_UPDATE=1 brew install freetype gettext lua imlib2 librsvg docbook2x ;
     fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link gettext --force ; fi
 before_script:
@@ -248,7 +253,7 @@ before_script:
       mkdir build && cd build
 
       cmake                                  \
-        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+        -DMAINTAINER_MODE=ON                 \
         -DBUILD_MYSQL=ON                     \
         -DBUILD_LUA_IMLIB2=ON                \
         -DBUILD_LUA_RSVG=ON                  \
@@ -268,7 +273,7 @@ before_script:
       cd build-no-x11
 
       cmake                                  \
-        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+        -DMAINTAINER_MODE=ON                 \
         -DBUILD_X11=OFF                      \
         -DBUILD_MYSQL=ON                     \
         -DBUILD_LUA_CAIRO=ON                 \
@@ -288,7 +293,7 @@ before_script:
     elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       mkdir build && cd build
       cmake                                  \
-        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+        -DMAINTAINER_MODE=ON                 \
         -DBUILD_LUA_RSVG=ON                  \
         -DBUILD_LUA_IMLIB2=ON                \
         ..
@@ -297,7 +302,8 @@ before_script:
       mkdir build-no-x11
       cd build-no-x11
       cmake                                  \
-        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+        -DMAINTAINER_MODE=ON                 \
+        -DBUILD_X11=OFF                      \
         -DBUILD_X11=OFF                      \
         -DBUILD_LUA_RSVG=ON                  \
         -DBUILD_LUA_IMLIB2=ON                \
@@ -306,9 +312,12 @@ before_script:
     fi
 script:
   - cd build
-  - if [ "$CXX" = "clang++-7" ] ; then build-wrapper-linux-x86-64 --out-dir bw-output make -j4 ; fi
-  - if [ "$CXX" = "g++-8" ] ; then make -j4 ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make -j4 ; fi
+  - |
+    if [ "$CXX" = "clang++-7" ] ; then
+      build-wrapper-linux-x86-64 --out-dir bw-output make -j4 ;
+    else
+      make -j4 ;
+    fi
   - cd ../build-no-x11
   - make -j4
   - cd ..
@@ -318,6 +327,5 @@ branches:
     - master
 sudo: false
 cache:
-  - ccache: true
   - directories:
-    - '$HOME/.sonar/cache'
+      - "$HOME/.sonar/cache"

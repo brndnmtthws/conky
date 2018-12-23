@@ -17,6 +17,7 @@ TOLUA_API int  tolua_tolua_open (lua_State* tolua_S);
 /* function to register type */
 static void tolua_reg_types (lua_State* tolua_S)
 {
+  (void)tolua_S;
 }
 
 /* Open function */
@@ -8067,6 +8068,6 @@ TOLUA_API int tolua_tolua_open (lua_State* tolua_S)
 #if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM >= 501
  TOLUA_API int luaopen_tolua (lua_State* tolua_S) {
  return tolua_tolua_open(tolua_S);
-};
+}
 #endif
 

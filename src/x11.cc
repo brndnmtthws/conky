@@ -32,11 +32,12 @@
 #include "conky.h"
 #include "logging.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-register"
-#pragma clang diagnostic ignored "-Wregister"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvariadic-macros"
+#pragma GCC diagnostic ignored "-Wdeprecated-register"
+#pragma GCC diagnostic ignored "-Wregister"
 #include <X11/XKBlib.h>
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>
@@ -290,6 +291,7 @@ std::pair<uint16_t, bool> window_hints_traits::convert(
 }
 #endif
 
+#ifdef OWN_WINDOW
 namespace {
 // used to set the default value for own_window_title
 std::string gethostnamecxx() {
@@ -297,6 +299,7 @@ std::string gethostnamecxx() {
   return info.uname_s.nodename;
 }
 }  // namespace
+#endif /* OWN_WINDOW */
 
 /*
  * The order of these settings cannot be completely arbitrary. Some of them
@@ -355,8 +358,8 @@ conky::simple_config_setting<bool> use_argb_visual("own_window_argb_visual",
                                                    false, false);
 conky::range_config_setting<int> own_window_argb_value("own_window_argb_value",
                                                        0, 255, 255, false);
-#endif
-#endif /*OWN_WINDOW*/
+#endif /* BUILD_ARGB */
+#endif /* OWN_WINDOW */
 priv::own_window_setting own_window;
 
 #ifdef BUILD_XDBE

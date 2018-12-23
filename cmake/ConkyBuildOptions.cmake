@@ -32,15 +32,21 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 # -std options for all build types
-set(CMAKE_C_FLAGS "-std=c99" CACHE STRING "Flags used by the C compiler during all build types.")
-set(CMAKE_CXX_FLAGS "-std=c++17" CACHE STRING "Flags used by the C++ compiler during all build types.")
+set(CMAKE_C_FLAGS "-std=c99" CACHE STRING "Flags used by the C compiler during all build types." FORCE)
+set(CMAKE_CXX_FLAGS "-std=c++17" CACHE STRING "Flags used by the C++ compiler during all build types." FORCE)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(MAINTAINER_MODE)
 	# some extra debug flags when in 'maintainer mode'
-	set(CMAKE_C_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -pedantic -Werror ${CMAKE_C_FLAGS_DEBUG}" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
-	set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -pedantic -Werror -Wno-format ${CMAKE_CXX_FLAGS_DEBUG}" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
+	if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0)
+		# Some flags are only supported on GCC >= 7.0, such as -Wimplicit-fallthrough=2
+		set(CMAKE_C_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -pedantic -Werror ${CMAKE_C_FLAGS_DEBUG} -Wno-unknown-pragmas -Wno-error=pragmas -Wimplicit-fallthrough=2" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
+		set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -pedantic -Werror -Wno-format ${CMAKE_CXX_FLAGS_DEBUG} -Wno-unknown-pragmas -Wno-error=pragmas -Wimplicit-fallthrough=2" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
+	else()
+		set(CMAKE_C_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -pedantic -Werror ${CMAKE_C_FLAGS_DEBUG} -Wno-unknown-pragmas -Wno-error=pragmas" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
+		set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -pedantic -Werror -Wno-format ${CMAKE_CXX_FLAGS_DEBUG} -Wno-unknown-pragmas -Wno-error=pragmas" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
+	endif()
 endif(MAINTAINER_MODE)
 
 option(CHECK_CODE_QUALITY "Check code formatting/quality with clang" false)
@@ -195,3 +201,20 @@ option(BUILD_CMUS "Enable support for cmus music player" true)
 option(BUILD_JOURNAL "Enable support for reading from the systemd journal" false)
 
 option(BUILD_PULSEAUDIO "Enable support for Pulseaudio's default sink and source" false)
+
+message( STATUS "CMAKE_C_FLAGS: " ${CMAKE_C_FLAGS} )
+message( STATUS "CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS} )
+
+message( STATUS "CMAKE_C_FLAGS_DEBUG: " ${CMAKE_C_FLAGS_DEBUG} )
+message( STATUS "CMAKE_CXX_FLAGS_DEBUG: " ${CMAKE_CXX_FLAGS_DEBUG} )
+
+message( STATUS "CMAKE_C_FLAGS_MINSIZEREL: " ${CMAKE_C_FLAGS_MINSIZEREL} )
+message( STATUS "CMAKE_CXX_FLAGS_MINSIZEREL: " ${CMAKE_CXX_FLAGS_MINSIZEREL} )
+
+message( STATUS "CMAKE_C_FLAGS_RELEASE: " ${CMAKE_C_FLAGS_RELEASE} )
+message( STATUS "CMAKE_CXX_FLAGS_RELEASE: " ${CMAKE_CXX_FLAGS_RELEASE} )
+
+message( STATUS "CMAKE_C_FLAGS_RELWITHDEBINFO: " ${CMAKE_C_FLAGS_RELWITHDEBINFO} )
+message( STATUS "CMAKE_CXX_FLAGS_RELWITHDEBINFO: " ${CMAKE_CXX_FLAGS_RELWITHDEBINFO} )
+
+message( STATUS "CMAKE_BUILD_TYPE: " ${CMAKE_BUILD_TYPE} )

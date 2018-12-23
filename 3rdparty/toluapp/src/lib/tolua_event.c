@@ -324,7 +324,7 @@ static int class_call_event(lua_State* L) {
 	};
 	tolua_error(L,"Attempt to call a non-callable object.",NULL);
 	return 0;
-};
+}
 
 static int do_operator (lua_State* L, const char* op)
 {

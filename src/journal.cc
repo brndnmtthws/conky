@@ -168,7 +168,7 @@ bool read_log(size_t *read, size_t *length, time_t *time, uint64_t *timestamp,
 }
 
 void print_journal(struct text_object *obj, char *p, unsigned int p_max_size) {
-  struct journal *j = (struct journal *)obj->data.opaque;
+  journal *j = (journal *)obj->data.opaque;
   sd_journal *jh = nullptr;
   size_t read = 0;
   size_t length;

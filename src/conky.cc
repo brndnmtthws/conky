@@ -53,7 +53,10 @@
 #include <sys/inotify.h>
 #endif /* HAVE_SYS_INOTIFY_H */
 #ifdef BUILD_X11
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvariadic-macros"
 #include <X11/Xutil.h>
+#pragma GCC diagnostic pop
 #include "x11.h"
 #ifdef BUILD_XDAMAGE
 #include <X11/extensions/Xdamage.h>
@@ -1250,13 +1253,20 @@ std::string string_replace_all(std::string original, const std::string &oldpart,
 }
 
 static void draw_string(const char *s) {
-  int i, i2, pos, width_of_s;
+  int i;
+  int i2;
+  int pos;
+#ifdef BUILD_X11
+  int width_of_s;
+#endif /* BUILD_X11 */
   int max = 0;
   int added;
 
   if (s[0] == '\0') { return; }
 
+#ifdef BUILD_X11
   width_of_s = get_string_width(s);
+#endif /* BUILD_X11 */
   if (out_to_stdout.get(*state) && draw_mode == FG) {
     printf("%s\n", s);
     if (extra_newline.get(*state)) { fputc('\n', stdout); }
@@ -1305,13 +1315,13 @@ static void draw_string(const char *s) {
       i2 = 0;
       for (i2 = 0; i2 < (8 - (1 + pos) % 8) && added <= max; i2++) {
         /* guard against overrun */
-        tmpstring2[MIN(pos + i2, tbs - 1)] = ' ';
+        tmpstring2[std::min(pos + i2, tbs - 1)] = ' ';
         added++;
       }
       pos += i2;
     } else {
       /* guard against overrun */
-      tmpstring2[MIN(pos, tbs - 1)] = tmpstring1[i];
+      tmpstring2[std::min(pos, tbs - 1)] = tmpstring1[i];
       pos++;
     }
   }
@@ -1375,6 +1385,7 @@ static void draw_string(const char *s) {
 int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 #ifndef BUILD_X11
   static int cur_x, cur_y; /* current x and y for drawing */
+  (void)cur_y;
 #endif
 #ifdef BUILD_X11
   int font_h = 0;
@@ -1534,7 +1545,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             w = current->width;
             if (w == 0) {
               w = text_start_x + text_width - cur_x - 1;
-              current->graph_width = MAX(w - 1, 0);
+              current->graph_width = std::max(w - 1, 0);
               if (current->graph_width != current->graph_allocated) {
                 w = current->graph_allocated + 1;
               }
@@ -1643,9 +1654,10 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
               char *tmp_str;
               cur_x += font_ascent() / 2;
               cur_y += font_h / 2;
-              asprintf(&tmp_str, "%.1f", current->scale);
-              draw_string(tmp_str);
-              free(tmp_str);
+              if (asprintf(&tmp_str, "%.1f", current->scale)) {
+                draw_string(tmp_str);
+                free(tmp_str);
+              }
               cur_x = tmp_x;
               cur_y = tmp_y;
             }
@@ -1859,13 +1871,12 @@ static void draw_text() {
 }
 
 static void draw_stuff() {
-#ifndef BUILD_X11
-  static int text_offset_x, text_offset_y; /* offset for start position */
-#endif
+#ifdef BUILD_X11
   text_offset_x = text_offset_y = 0;
 #ifdef BUILD_IMLIB2
   cimlib_render(text_start_x, text_start_y, window.width, window.height);
 #endif /* BUILD_IMLIB2 */
+#endif /* BUILD_X11 */
   if (static_cast<unsigned int>(!overwrite_file.get(*state).empty()) != 0u) {
     overwrite_fpointer = fopen(overwrite_file.get(*state).c_str(), "we");
     if (overwrite_fpointer == nullptr) {
@@ -2000,7 +2011,9 @@ static void main_loop() {
 #ifdef SIGNAL_BLOCKING
   sigset_t newmask, oldmask;
 #endif
+#ifdef BUILD_X11
   double t;
+#endif /* BUILD_X11 */
 #ifdef HAVE_SYS_INOTIFY_H
   int inotify_config_wd = -1;
 #define INOTIFY_EVENT_SIZE (sizeof(struct inotify_event))
@@ -2682,10 +2695,11 @@ void load_config_file() {
     l.call(1, 1);
 #else
     char *syntaxerr;
-    asprintf(&syntaxerr, _(SYNTAX_ERR_READ_CONF), e.what());
-    std::string syntaxerrobj(syntaxerr);
-    free(syntaxerr);
-    throw conky::error(syntaxerrobj);
+    if (asprintf(&syntaxerr, _(SYNTAX_ERR_READ_CONF), e.what())) {
+      std::string syntaxerrobj(syntaxerr);
+      free(syntaxerr);
+      throw conky::error(syntaxerrobj);
+    }
 #endif
   }
   l.call(0, 0);

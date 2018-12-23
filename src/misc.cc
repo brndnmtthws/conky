@@ -28,87 +28,76 @@
  *
  */
 
+#include <ctype.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "conky.h"
 #include "core.h"
 #include "logging.h"
 #include "specials.h"
 #include "text_object.h"
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <string.h>
-#include <ctype.h>
 
+static inline void read_file(const char *data, char *buf, const int size) {
+  FILE *fp;
 
-static inline void read_file(const char *data, char *buf, const int size)
-{
-	FILE *fp;
+  memset(buf, 0, size);
 
-	memset(buf, 0, size);
+  if (!data) return;
 
-	if (!data)
-		return;
+  fp = fopen(data, "r");
+  if (fp) {
+    int length;
 
-	fp = fopen(data, "r");
-	if(fp) {
-		int length;
-
-		length = fread(buf, 1, size - 1, fp);
-		fclose(fp);
-		buf[length] = '\0';
-		if (length > 0 && buf[length - 1] == '\n') {
-			buf[length - 1] = '\0';
-		}
-	} else {
-		buf[0] = '\0';
-	}
+    length = fread(buf, 1, size - 1, fp);
+    fclose(fp);
+    buf[length] = '\0';
+    if (length > 0 && buf[length - 1] == '\n') { buf[length - 1] = '\0'; }
+  } else {
+    buf[0] = '\0';
+  }
 }
 
-static inline unsigned int file_buffer_size(const char *data, const unsigned int maxsize)
-{
-        struct stat buf;
-        if(stat(data, &buf))
-                return maxsize;
-        if(buf.st_size < 0 || buf.st_size > maxsize)
-                return maxsize;
-        if(buf.st_size < 10)
-                return 10;
-        return buf.st_size + 1;
+static inline unsigned int file_buffer_size(const char *data,
+                                            const unsigned int maxsize) {
+  struct stat buf;
+  if (stat(data, &buf)) return maxsize;
+  if (buf.st_size < 0 || buf.st_size > maxsize) return maxsize;
+  if (buf.st_size < 10) return 10;
+  return buf.st_size + 1;
 }
 
-void print_cat(struct text_object *obj, char *p, unsigned int p_max_size)
-{
-	read_file(obj->data.s, p, p_max_size);
+void print_cat(struct text_object *obj, char *p, unsigned int p_max_size) {
+  read_file(obj->data.s, p, p_max_size);
 }
 
-void print_catp(struct text_object *obj, char *p, unsigned int p_max_size)
-{
-	const unsigned int sz = file_buffer_size(obj->data.s, text_buffer_size.get(*state));
-	char * buf = new char[sz];
+void print_catp(struct text_object *obj, char *p, unsigned int p_max_size) {
+  const unsigned int sz =
+      file_buffer_size(obj->data.s, text_buffer_size.get(*state));
+  char *buf = new char[sz];
 
-	read_file(obj->data.s, buf, sz);
+  read_file(obj->data.s, buf, sz);
 
-	evaluate(buf, p, p_max_size);
+  evaluate(buf, p, p_max_size);
 
-	delete[] buf;
+  delete[] buf;
 }
 
 void print_cap(struct text_object *obj, char *p, unsigned int p_max_size) {
   unsigned int x = 0;
   int z = 0;
-  char buf[p_max_size];
+  char buf[DEFAULT_TEXT_BUFFER_SIZE];
   char *src = obj->data.s;
   char *dest = buf;
 
   evaluate(obj->data.s, p, p_max_size);
-  if (0 != strcmp(p, "")) {
-    src = p;
-  }
+  if (0 != strcmp(p, "")) { src = p; }
 
-  for (; *src && p_max_size-1 > x; src++, x++) {
+  for (; *src && p_max_size - 1 > x; src++, x++) {
     if (0 == z) {
-      *dest++ = (toupper((unsigned char) *src));
+      *dest++ = (toupper((unsigned char)*src));
       z++;
       continue;
     }
@@ -119,11 +108,8 @@ void print_cap(struct text_object *obj, char *p, unsigned int p_max_size) {
   snprintf(p, p_max_size, "%s", buf);
 }
 
-
 long long int apply_base_multiplier(const char *s, long long int num) {
   long long int base = 1024LL;
-  if (*s && (0 == (strcmp(s, "si")))) {
-    base = 1000LL;
-  }
+  if (*s && (0 == (strcmp(s, "si")))) { base = 1000LL; }
   return (num * base);
 }

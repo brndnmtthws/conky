@@ -340,3 +340,5 @@ install(TARGETS
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
 )
+
+print_target_properties(conky)

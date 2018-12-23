@@ -62,11 +62,11 @@ void scan_tztime(struct text_object *obj, const char *arg) {
   if (arg != nullptr) {
     int nArgs = sscanf(arg, "%255s %255[^\n]", buf1, buf2);
 
-    switch (nArgs) {
-      case 2:
-        fmt = buf2;
-      case 1:
-        tz = buf1;
+    if (nArgs == 2) {
+      fmt = buf2;
+      tz = buf1;
+    } else if (nArgs == 1) {
+      tz = buf1;
     }
   }
 
@@ -312,7 +312,8 @@ static void do_format_time(struct text_object *obj, char *p,
   }
 }
 
-void print_format_time(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_format_time(struct text_object *obj, char *p,
+                       unsigned int p_max_size) {
   std::unique_ptr<char[]> buf(new char[max_user_text.get(*state)]);
 
   generate_text_internal(buf.get(), max_user_text.get(*state), *obj->sub);

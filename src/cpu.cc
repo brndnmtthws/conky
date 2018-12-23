@@ -27,41 +27,33 @@
  *
  */
 
-#include "config.h"
-#include "conky.h"
-#include "text_object.h"
-#include <time.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <inttypes.h>
+#include <time.h>
 #include <unistd.h>
+#include "config.h"
+#include "conky.h"
+#include "text_object.h"
 
 #ifdef __x86_64__
-#define CPU_FEATURE(x, z) __asm__ __volatile__("cpuid": "=a" (z) : "a" (x))
-#define CPU_REGS(x, y, z) __asm__ __volatile__ ( \
-  "cpuid": \
-  "=a" (z), \
-  "=b" (y) \
-  : "a" (x) \
-)
-#define CPU_STR2(regizter, a, b, c, d) __asm__ __volatile__ ( \
-  "cpuid": \
-    "=a" (a), \
-    "=b" (b), \
-    "=c" (c), \
-    "=d" (d) \
-    : "a" (regizter) \
-)
+#define CPU_FEATURE(x, z) __asm__ __volatile__("cpuid" : "=a"(z) : "a"(x))
+#define CPU_REGS(x, y, z) \
+  __asm__ __volatile__("cpuid" : "=a"(z), "=b"(y) : "a"(x))
+#define CPU_STR2(regizter, a, b, c, d)                      \
+  __asm__ __volatile__("cpuid"                              \
+                       : "=a"(a), "=b"(b), "=c"(c), "=d"(d) \
+                       : "a"(regizter))
 
-#define AmD    0x68747541
-#define InteL  0x756e6547
+#define AmD 0x68747541
+#define InteL 0x756e6547
 #define FMT_UINT "%" PRIuMAX
 
 #if defined(__FreeBSD__)
-# define TICKZ 100L
+#define TICKZ 100L
 #else
-# define TICKZ sysconf(_SC_CLK_TCK)
+#define TICKZ sysconf(_SC_CLK_TCK)
 #endif /* __FreeBSD__ */
 
 uint8_t has_tsc_reg(void) {
@@ -73,17 +65,11 @@ uint8_t has_tsc_reg(void) {
   uint_fast16_t ebx = 0;
 
   CPU_REGS(0x00000000, vend, leafs);
-  if (0x00000001 > leafs) {
-    return 1U;
-  }
-  if (vend != AmD && vend != InteL) {
-    return 1U;
-  }
+  if (0x00000001 > leafs) { return 1U; }
+  if ((uint32_t)vend != AmD && (uint32_t)vend != InteL) { return 1U; }
 
   CPU_STR2(0x00000001, eax, ebx, ecx, edx);
-  if (0U == (edx & (1U << 4U))) {
-    return 1U;
-  }
+  if (0U == (edx & (1U << 4U))) { return 1U; }
   return 0U;
 }
 
@@ -97,32 +83,24 @@ uintmax_t rdtsc(void) {
   uint_fast16_t regz = 0;
   uint_fast16_t x = 0;
 
-  if (0U != (has_tsc_reg())) {
-    goto seeya;
-  }
-  __asm__ __volatile__ (
-    "cpuid\n\t"
-    "rdtsc\n\t"
-    : "=a"(ticklo), "=d"(tickhi)
-    :: "%rbx", "%rcx"
-  );
+  if (0U != (has_tsc_reg())) { goto seeya; }
+  __asm__ __volatile__(
+      "cpuid\n\t"
+      "rdtsc\n\t"
+      : "=a"(ticklo), "=d"(tickhi)::"%rbx", "%rcx");
 
   CPU_FEATURE(0x80000000, regz);
-  if (0x80000001 > regz) {
-    goto seeya;
-  }
+  if (0x80000001 > (uint32_t)regz) { goto seeya; }
   CPU_STR2(0x80000001, eax, ebx, ecx, edx);
 
   if (0U != (edx & (1U << 27U))) {
     for (x = 0; x < 6U; x++) {
-      __asm__ __volatile__ (
-        "rdtscp\n\t"
-        "mov %%edx, %0\n\t"
-        "mov %%eax, %1\n\t"
-        "cpuid\n\t"
-        : "=r"(tickhi), "=r"(ticklo)
-        :: "%rax", "%rbx", "%rcx", "%rdx"
-      );
+      __asm__ __volatile__(
+          "rdtscp\n\t"
+          "mov %%edx, %0\n\t"
+          "mov %%eax, %1\n\t"
+          "cpuid\n\t"
+          : "=r"(tickhi), "=r"(ticklo)::"%rax", "%rbx", "%rcx", "%rdx");
     }
   }
 
@@ -130,8 +108,7 @@ seeya:
   return (((uintmax_t)tickhi << 32) | (uintmax_t)ticklo);
 }
 
-void
-get_cpu_clock_speed(char *str1, unsigned int p_max_size) {
+void get_cpu_clock_speed(char *str1, unsigned int p_max_size) {
   uintmax_t x = 0;
   uintmax_t z = 0;
   struct timespec tc = {0L, 0L};
@@ -139,9 +116,7 @@ get_cpu_clock_speed(char *str1, unsigned int p_max_size) {
   tc.tv_nsec = TICKZ * 1000000L;
 
   x = rdtsc();
-  if (-1 == (nanosleep(&tc, NULL))) {
-    return;
-  }
+  if (-1 == (nanosleep(&tc, NULL))) { return; }
   z = rdtsc();
 
   snprintf(str1, p_max_size, FMT_UINT " MHz", ((z - x) / 100000U));

@@ -40,7 +40,7 @@ static void user_name(char *ptr) {
   setutent();
   while ((usr = getutent()) != nullptr) {
     if (usr->ut_type == USER_PROCESS) {
-      if (strlen(ptr) + strlen(usr->ut_name) + 1 <= BUFLEN) {
+      if (strlen(ptr) + strnlen(usr->ut_name, UT_NAMESIZE - 1) + 1 <= BUFLEN) {
         strncat(ptr, usr->ut_name, UT_NAMESIZE);
       }
     }
@@ -62,7 +62,7 @@ static void user_term(char *ptr) {
   setutent();
   while ((usr = getutent()) != nullptr) {
     if (usr->ut_type == USER_PROCESS) {
-      if (strlen(ptr) + strlen(usr->ut_line) + 1 <= BUFLEN) {
+      if (strlen(ptr) + strnlen(usr->ut_line, UT_LINESIZE) + 1 <= BUFLEN) {
         strncat(ptr, usr->ut_line, UT_LINESIZE);
       }
     }
@@ -184,27 +184,32 @@ int update_users(void) {
   return 0;
 }
 
-void print_user_names(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_user_names(struct text_object *obj, char *p,
+                      unsigned int p_max_size) {
   (void)obj;
   snprintf(p, p_max_size, "%s", info.users.names);
 }
 
-void print_user_terms(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_user_terms(struct text_object *obj, char *p,
+                      unsigned int p_max_size) {
   (void)obj;
   snprintf(p, p_max_size, "%s", info.users.terms);
 }
 
-void print_user_times(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_user_times(struct text_object *obj, char *p,
+                      unsigned int p_max_size) {
   (void)obj;
   snprintf(p, p_max_size, "%s", info.users.times);
 }
 
-void print_user_time(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_user_time(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   update_user_time(obj->data.s);
   snprintf(p, p_max_size, "%s", info.users.ctime);
 }
 
-void print_user_number(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_user_number(struct text_object *obj, char *p,
+                       unsigned int p_max_size) {
   (void)obj;
   snprintf(p, p_max_size, "%d", info.users.number);
 }

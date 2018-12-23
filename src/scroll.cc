@@ -52,7 +52,9 @@ inline int scroll_character_length(char c) {
 
     return len;
   }
-#endif
+#else  /* BUILD_X11 */
+  (void)c;
+#endif /* BUILD_X11 */
 
   return 1;
 }
@@ -104,13 +106,15 @@ static unsigned int scroll_count_characters_to_right(
 static void scroll_scroll_left(struct scroll_data *sd,
                                const std::vector<char> &buf,
                                unsigned int amount) {
-  for (unsigned int i = 0;
-       (i < amount) && (buf[sd->start] != '\0') && ((unsigned int) sd->start < buf.size());
+  for (unsigned int i = 0; (i < amount) && (buf[sd->start] != '\0') &&
+                           ((unsigned int)sd->start < buf.size());
        ++i) {
     sd->start += scroll_character_length(buf[sd->start]);
   }
 
-  if (buf[sd->start] == 0 || (unsigned int) sd->start > strlen(buf.data())) { sd->start = 0; }
+  if (buf[sd->start] == 0 || (unsigned int)sd->start > strlen(buf.data())) {
+    sd->start = 0;
+  }
 }
 
 static void scroll_scroll_right(struct scroll_data *sd,
@@ -229,7 +233,7 @@ void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
   }
   // if length of text changed to shorter so the (sd->start) is already
   // outside of actual text then reset (sd->start)
-  if ((unsigned int) sd->start >= strlen(&(buf[0]))) { sd->start = 0; }
+  if ((unsigned int)sd->start >= strlen(&(buf[0]))) { sd->start = 0; }
   // make sure a colorchange at the front is not part of the string we are going
   // to show
   while (buf[sd->start] == SPECIAL_CHAR) { sd->start++; }

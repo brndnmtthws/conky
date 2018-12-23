@@ -47,17 +47,24 @@ static conky::simple_config_setting<std::string> hddtemp_host("hddtemp_host",
 static conky::simple_config_setting<std::string> hddtemp_port("hddtemp_port",
                                                               "7634", false);
 
-struct hdd_info {
+class hdd_info {
+ public:
   hdd_info() : next(0) {}
-  struct hdd_info *next;
+  hdd_info *next;
   char *dev;
   short temp;
   char unit;
+  void reset() {
+    next = 0;
+    dev = 0;
+    temp = 0;
+    unit = 0;
+  }
 };
 
-struct hdd_info hdd_info_head;
+hdd_info hdd_info_head;
 
-static void __free_hddtemp_info(struct hdd_info *hdi) {
+static void __free_hddtemp_info(hdd_info *hdi) {
   if (hdi->next) __free_hddtemp_info(hdi->next);
   free(hdi->dev);
   delete hdi;
@@ -71,13 +78,13 @@ static void free_hddtemp_info(void) {
 }
 
 static void add_hddtemp_info(char *dev, short temp, char unit) {
-  struct hdd_info *hdi = &hdd_info_head;
+  hdd_info *hdi = &hdd_info_head;
 
   DBGP("add_hddtemp_info(%s, %d, %c) being called", dev, temp, unit);
   while (hdi->next) hdi = hdi->next;
 
   hdi->next = new hdd_info;
-  memset(hdi->next, 0, sizeof(struct hdd_info));
+  hdi->next->reset();
   hdi->next->dev = strdup(dev);
   hdi->next->temp = temp;
   hdi->next->unit = unit;
@@ -206,7 +213,7 @@ void free_hddtemp(struct text_object *obj) {
 }
 
 static int get_hddtemp_info(const char *dev, short *val, char *unit) {
-  struct hdd_info *hdi = hdd_info_head.next;
+  hdd_info *hdi = hdd_info_head.next;
 
   /* if no dev is given, just use hdd_info_head->next */
   while (dev && hdi) {

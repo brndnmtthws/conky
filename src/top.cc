@@ -86,9 +86,7 @@ static void unhash_process(struct process *p) {
 }
 
 static void __unhash_all_processes(struct proc_hash_entry *phe) {
-  if (phe->next != nullptr) {
-    __unhash_all_processes(phe->next);
-  }
+  if (phe->next != nullptr) { __unhash_all_processes(phe->next); }
   free(phe->next);
 }
 
@@ -142,9 +140,7 @@ static struct process *find_process(pid_t pid) {
 
   phe = &proc_hash_table[pid & (HTABSIZE - 1)];
   while (phe->next != nullptr) {
-    if (phe->next->proc->pid == pid) {
-      return phe->next->proc;
-    }
+    if (phe->next->proc->pid == pid) { return phe->next->proc; }
     phe = phe->next;
   }
   return nullptr;
@@ -156,9 +152,7 @@ static struct process *new_process(pid_t pid) {
   /* Do stitching necessary for doubly linked list */
   p->previous = nullptr;
   p->next = first_process;
-  if (p->next != nullptr) {
-    p->next->previous = p;
-  }
+  if (p->next != nullptr) { p->next->previous = p; }
   first_process = p;
 
   p->pid = pid;
@@ -219,9 +213,7 @@ static void delete_process(struct process *p) {
   /*
    * Maintain doubly linked list.
    */
-  if (p->next != nullptr) {
-    p->next->previous = p->previous;
-  }
+  if (p->next != nullptr) { p->next->previous = p->previous; }
   if (p->previous != nullptr) {
     p->previous->next = p->next;
   } else {
@@ -253,6 +245,8 @@ static void process_cleanup() {
     /* Delete processes that have died */
     if (current->time_stamp != g_time) {
       delete_process(current);
+      if (current == first_process) { first_process = nullptr; }
+      current = nullptr;
     }
   }
 }
@@ -266,13 +260,9 @@ static int compare_cpu(void *va, void *vb) {
   auto *a = static_cast<struct process *>(va),
        *b = static_cast<struct process *>(vb);
 
-  if (b->amount > a->amount) {
-    return 1;
-  }
-  if (a->amount > b->amount) {
-    return -1;
-  }
-    return 0;
+  if (b->amount > a->amount) { return 1; }
+  if (a->amount > b->amount) { return -1; }
+  return 0;
 }
 
 /* mem comparison function for prio queue */
@@ -280,13 +270,9 @@ static int compare_mem(void *va, void *vb) {
   auto *a = static_cast<struct process *>(va),
        *b = static_cast<struct process *>(vb);
 
-  if (b->rss > a->rss) {
-    return 1;
-  }
-  if (a->rss > b->rss) {
-    return -1;
-  }
-    return 0;
+  if (b->rss > a->rss) { return 1; }
+  if (a->rss > b->rss) { return -1; }
+  return 0;
 }
 
 /* CPU time comparision function for prio queue */
@@ -294,13 +280,9 @@ static int compare_time(void *va, void *vb) {
   auto *a = static_cast<struct process *>(va),
        *b = static_cast<struct process *>(vb);
 
-  if (b->total_cpu_time > a->total_cpu_time) {
-    return 1;
-  }
-  if (b->total_cpu_time < a->total_cpu_time) {
-    return -1;
-  }
-    return 0;
+  if (b->total_cpu_time > a->total_cpu_time) { return 1; }
+  if (b->total_cpu_time < a->total_cpu_time) { return -1; }
+  return 0;
 }
 
 #ifdef BUILD_IOSTATS
@@ -309,19 +291,15 @@ static int compare_io(void *va, void *vb) {
   auto *a = static_cast<struct process *>(va),
        *b = static_cast<struct process *>(vb);
 
-  if (b->io_perc > a->io_perc) {
-    return 1;
-  }
-  if (a->io_perc > b->io_perc) {
-    return -1;
-  }
-    return 0;
+  if (b->io_perc > a->io_perc) { return 1; }
+  if (a->io_perc > b->io_perc) { return -1; }
+  return 0;
 }
 #endif /* BUILD_IOSTATS */
 
 /* ****************************************************************** *
- * Get a sorted list of the top cpu hogs and top mem hogs.			  *
- * Results are stored in the cpu,mem arrays in decreasing order[0-9]. *
+ * Get a sorted list of the top cpu hogs and top mem hogs. * Results are stored
+ * in the cpu,mem arrays in decreasing order[0-9]. *
  * ****************************************************************** */
 
 static void process_find_top(struct process **cpu, struct process **mem,
@@ -378,19 +356,11 @@ static void process_find_top(struct process **cpu, struct process **mem,
   cur_proc = first_process;
 
   while (cur_proc != nullptr) {
-    if (top_cpu != 0) {
-      insert_prio_elem(cpu_queue, cur_proc);
-    }
-    if (top_mem != 0) {
-      insert_prio_elem(mem_queue, cur_proc);
-    }
-    if (top_time != 0) {
-      insert_prio_elem(time_queue, cur_proc);
-    }
+    if (top_cpu != 0) { insert_prio_elem(cpu_queue, cur_proc); }
+    if (top_mem != 0) { insert_prio_elem(mem_queue, cur_proc); }
+    if (top_time != 0) { insert_prio_elem(time_queue, cur_proc); }
 #ifdef BUILD_IOSTATS
-    if (top_io != 0) {
-      insert_prio_elem(io_queue, cur_proc);
-    }
+    if (top_io != 0) { insert_prio_elem(io_queue, cur_proc); }
 #endif /* BUILD_IOSTATS */
     cur_proc = cur_proc->next;
   }
@@ -484,7 +454,8 @@ static conky::range_config_setting<unsigned int> top_name_width(
 static conky::simple_config_setting<bool> top_name_verbose("top_name_verbose",
                                                            false, true);
 
-static void print_top_name(struct text_object *obj, char *p, unsigned int p_max_size) {
+static void print_top_name(struct text_object *obj, char *p,
+                           unsigned int p_max_size) {
   auto *td = static_cast<struct top_data *>(obj->data.opaque);
   int width;
 
@@ -493,7 +464,7 @@ static void print_top_name(struct text_object *obj, char *p, unsigned int p_max_
     return;
   }
 
-  width = MIN(p_max_size, (int)top_name_width.get(*state) + 1);
+  width = std::min(p_max_size, (unsigned int)top_name_width.get(*state) + 1);
   if (top_name_verbose.get(*state)) {
     /* print the full command line */
     snprintf(p, width + 1, "%-*s", width, td->list[td->num]->name);
@@ -503,7 +474,8 @@ static void print_top_name(struct text_object *obj, char *p, unsigned int p_max_
   }
 }
 
-static void print_top_mem(struct text_object *obj, char *p, unsigned int p_max_size) {
+static void print_top_mem(struct text_object *obj, char *p,
+                          unsigned int p_max_size) {
   auto *td = static_cast<struct top_data *>(obj->data.opaque);
   int width;
 
@@ -512,12 +484,13 @@ static void print_top_mem(struct text_object *obj, char *p, unsigned int p_max_s
     return;
   }
 
-  width = MIN(p_max_size, 7);
+  width = std::min(p_max_size, (unsigned int)7);
   snprintf(p, width, "%6.2f",
            (static_cast<float>(td->list[td->num]->rss) / info.memmax) / 10);
 }
 
-static void print_top_time(struct text_object *obj, char *p, unsigned int p_max_size) {
+static void print_top_time(struct text_object *obj, char *p,
+                           unsigned int p_max_size) {
   auto *td = static_cast<struct top_data *>(obj->data.opaque);
   int width;
   char *timeval;
@@ -527,13 +500,14 @@ static void print_top_time(struct text_object *obj, char *p, unsigned int p_max_
     return;
   }
 
-  width = MIN(p_max_size, 10);
+  width = std::min(p_max_size, (unsigned int)10);
   timeval = format_time(td->list[td->num]->total_cpu_time, 9);
   snprintf(p, width, "%9s", timeval);
   free(timeval);
 }
 
-static void print_top_user(struct text_object *obj, char *p, unsigned int p_max_size) {
+static void print_top_user(struct text_object *obj, char *p,
+                           unsigned int p_max_size) {
   auto *td = static_cast<struct top_data *>(obj->data.opaque);
   struct passwd *pw;
 
@@ -550,12 +524,12 @@ static void print_top_user(struct text_object *obj, char *p, unsigned int p_max_
   }
 }
 
-#define PRINT_TOP_GENERATOR(name, width, fmt, field)                    \
-  static void print_top_##name(struct text_object *obj, char *p,        \
-                               unsigned int p_max_size) {               \
-    struct top_data *td = (struct top_data *)obj->data.opaque;          \
-    if (!td || !td->list || !td->list[td->num]) return;                 \
-    snprintf(p, MIN(p_max_size, width), fmt, td->list[td->num]->field); \
+#define PRINT_TOP_GENERATOR(name, width, fmt, field)                         \
+  static void print_top_##name(struct text_object *obj, char *p,             \
+                               unsigned int p_max_size) {                    \
+    struct top_data *td = (struct top_data *)obj->data.opaque;               \
+    if (!td || !td->list || !td->list[td->num]) return;                      \
+    snprintf(p, std::min(p_max_size, width), fmt, td->list[td->num]->field); \
   }
 
 #define PRINT_TOP_HR_GENERATOR(name, field, denom)                     \
@@ -566,23 +540,21 @@ static void print_top_user(struct text_object *obj, char *p, unsigned int p_max_
     human_readable(td->list[td->num]->field / (denom), p, p_max_size); \
   }
 
-PRINT_TOP_GENERATOR(cpu, 7, "%6.2f", amount)
-PRINT_TOP_GENERATOR(pid, 6, "%5i", pid)
-PRINT_TOP_GENERATOR(uid, 6, "%5i", uid)
+PRINT_TOP_GENERATOR(cpu, (unsigned int)7, "%6.2f", amount)
+PRINT_TOP_GENERATOR(pid, (unsigned int)6, "%5i", pid)
+PRINT_TOP_GENERATOR(uid, (unsigned int)6, "%5i", uid)
 PRINT_TOP_HR_GENERATOR(mem_res, rss, 1)
 PRINT_TOP_HR_GENERATOR(mem_vsize, vsize, 1)
 #ifdef BUILD_IOSTATS
 PRINT_TOP_HR_GENERATOR(read_bytes, read_bytes, active_update_interval())
 PRINT_TOP_HR_GENERATOR(write_bytes, write_bytes, active_update_interval())
-PRINT_TOP_GENERATOR(io_perc, 7, "%6.2f", io_perc)
+PRINT_TOP_GENERATOR(io_perc, (unsigned int)7, "%6.2f", io_perc)
 #endif /* BUILD_IOSTATS */
 
 static void free_top(struct text_object *obj) {
   auto *td = static_cast<struct top_data *>(obj->data.opaque);
 
-  if (td == nullptr) {
-    return;
-  }
+  if (td == nullptr) { return; }
   free_and_zero(td->s);
   free_and_zero(obj->data.opaque);
 }
@@ -673,7 +645,7 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj) {
       free_and_zero(obj->data.opaque);
       return 0;
     }
-      td->num = n - 1;
+    td->num = n - 1;
 
   } else {
     NORM_ERR("invalid argument count for top");

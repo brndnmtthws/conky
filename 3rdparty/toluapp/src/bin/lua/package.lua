@@ -189,7 +189,7 @@ function classPackage:register (pre)
  output("#if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM >= 501\n");
  output(pre.."TOLUA_API int luaopen_"..self.name.." (lua_State* tolua_S) {")
  output(pre.." return tolua_"..self.name.."_open(tolua_S);")
- output(pre.."};")
+ output(pre.."}")
  output("#endif\n\n")
 
 	pop()
