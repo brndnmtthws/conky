@@ -549,7 +549,8 @@ END_TRUE:
   return 1;
 }
 
-struct _dns_data {
+class _dns_data {
+ public:
   _dns_data() = default;
   int nscount{0};
   char **ns_list{nullptr};

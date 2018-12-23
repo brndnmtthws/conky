@@ -221,7 +221,13 @@ void init_pulseaudio(struct text_object *obj) {
   }
   pa_threaded_mainloop_start(pulseaudio->mainloop);
 
-  while (pulseaudio->cstate != PULSE_CONTEXT_READY) { usleep(200); }
+  while (pulseaudio->cstate != PULSE_CONTEXT_READY) {
+    struct timespec tim, tim2;
+    tim.tv_sec = 1;
+    tim.tv_nsec = 200000;
+
+    nanosleep(&tim, &tim2);
+  }
 
   // Initial parameters update
 

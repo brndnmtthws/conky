@@ -1253,7 +1253,9 @@ std::string string_replace_all(std::string original, const std::string &oldpart,
 }
 
 static void draw_string(const char *s) {
-  int i, i2, pos;
+  int i;
+  int i2;
+  int pos;
 #ifdef BUILD_X11
   int width_of_s;
 #endif /* BUILD_X11 */
