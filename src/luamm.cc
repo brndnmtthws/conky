@@ -49,23 +49,14 @@ const char this_cpp_object[] = "lua::this_cpp_object";
 
 // converts C++ exceptions to strings, so lua can do something with them
 int exception_to_string(lua_State *l) {
-  auto *ptr = static_cast<std::exception_ptr *>(lua_touserdata(l, -1));
-  assert(ptr);
-  try {
-    std::rethrow_exception(*ptr);
-  } catch (std::exception &e) {
-    lua_pushstring(l, e.what());
-  } catch (...) {
-#if defined(__APPLE__) && defined(__MACH__)
-    // lua_pushstring(l, ptr->__cxa_exception_type()->name());
-    printf(
-        "%s: FIXME: no member named '__cxa_exception_type' in "
-        "'std::exception_ptr' \n",
-        __func__);
-    lua_pushstring(l, "FIXME: in luamm.cc");
-#else
-    lua_pushstring(l, ptr->__cxa_exception_type()->name());
-#endif
+    auto *ptr = static_cast<std::exception_ptr *>(lua_touserdata(l, -1));
+    assert(ptr);
+    try {
+        std::rethrow_exception(*ptr);
+    } catch (std::exception &e) {
+        lua_pushstring(l, e.what());
+    } catch (...) {
+        lua_pushstring(l, typeid(*ptr).name());
   }
   return 1;
 }

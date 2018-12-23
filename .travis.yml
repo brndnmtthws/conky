@@ -9,7 +9,11 @@ matrix:
             - llvm-toolchain-xenial-7
           packages:
             - clang-7
+            - llvm-7
+            - lld-7
             - libc++-7-dev
+            - libc++abi-7-dev
+            - lcov
             - cmake
             - docbook2x
             - libxdamage-dev
@@ -204,6 +208,8 @@ matrix:
             - llvm-toolchain-xenial-6.0
           packages:
             - clang-6.0
+            - lld-6.0
+            - libstdc++6
             - cmake
             - docbook2x
             - libxdamage-dev
@@ -244,7 +250,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then eval "${MATRIX_EVAL}" ; fi
   - |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      HOMEBREW_NO_AUTO_UPDATE=1 brew install freetype gettext lua imlib2 librsvg docbook2x ;
+      HOMEBREW_NO_AUTO_UPDATE=1 brew install freetype gettext lua imlib2 librsvg docbook2x lcov ;
     fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link gettext --force ; fi
 before_script:
@@ -319,6 +325,8 @@ script:
     else
       make -j4 ;
     fi
+  - make test
+  - if [ "$CXX" = "clang++-7" ] ; then make test-conky-coverage-txt ; fi
   - cd ../build-no-x11
   - make -j4
   - cd ..

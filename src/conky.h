@@ -35,6 +35,7 @@
 #include <arpa/inet.h>
 #include <config.h>      /* defines */
 #include <sys/utsname.h> /* struct uname_s */
+#include <csignal>
 #include <memory>
 #include "common.h" /* at least for struct dns_data */
 #include "luamm.hh"
@@ -361,16 +362,28 @@ void free_and_zero(T *&ptr) {
 template <class T>
 void delete_block_and_zero(T *&ptr) {
   if (ptr) {
-    delete [] ptr;
+    delete[] ptr;
     ptr = nullptr;
   }
 }
 
 extern std::unique_ptr<lua::state> state;
 
+extern conky::simple_config_setting<bool> out_to_stdout;
+
+void setup_inotify();
+void initialisation(int argc, char **argv);
+void set_current_config();
+void main_loop();
+
+extern volatile sig_atomic_t g_sigterm_pending, g_sighup_pending,
+    g_sigusr2_pending;
+
+extern int first_pass;
 extern int argc_copy;
 extern char **argv_copy;
 
-extern conky::simple_config_setting<bool> out_to_stdout;
+extern const char *getopt_string;
+extern const struct option longopts[];
 
 #endif /* _conky_h_ */

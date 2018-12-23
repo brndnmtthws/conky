@@ -32,6 +32,7 @@
 #include <sys/stat.h>
 #include <sys/sysinfo.h>
 #include <sys/types.h>
+#include <clocale>
 #include "common.h"
 #include "conky.h"
 #include "diskio.h"

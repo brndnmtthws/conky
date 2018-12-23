@@ -175,4 +175,5 @@ void print_github(struct text_object *, char *, unsigned int);
 void print_stock(struct text_object *, char *, unsigned int);
 void free_stock(struct text_object *);
 #endif /* BUILD_CURL */
+
 #endif /* _COMMON_H */
