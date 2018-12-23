@@ -222,11 +222,12 @@ void init_pulseaudio(struct text_object *obj) {
   pa_threaded_mainloop_start(pulseaudio->mainloop);
 
   while (pulseaudio->cstate != PULSE_CONTEXT_READY) {
-    struct timespec tim, tim2;
-    tim.tv_sec = 1;
-    tim.tv_nsec = 200000;
+    struct timespec req;
+    struct timespec rem;
+    req.tv_sec = 1;
+    req.tv_nsec = 200000;
 
-    nanosleep(&tim, &tim2);
+    nanosleep(&req, &rem);
   }
 
   // Initial parameters update
