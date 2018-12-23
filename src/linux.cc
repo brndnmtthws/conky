@@ -1014,7 +1014,7 @@ int update_stat(void) {
 
       cpu[idx].cpu_last_total = cpu[idx].cpu_total;
       cpu[idx].cpu_last_active_total = cpu[idx].cpu_active_total;
-      for (i = samples - 1; i > 1; i--) {
+      for (i = samples - 1; i > 0; i--) {
         cpu[idx].cpu_val[i] = cpu[idx].cpu_val[i - 1];
       }
     }
@@ -1171,7 +1171,8 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
   fd = open(path, O_RDONLY);
   if (fd < 0) {
     /* if it fails, strip the /device from dev and attempt again */
-    buf[std::max(0UL, strnlen(buf, 255) - 7)] = 0;
+    size_t len_to_trunc = std::max(7UL, strnlen(buf, 255)) - 7;
+    buf[len_to_trunc] = 0;
     snprintf(path, 255, "%s%s/%s%d_input", dir, dev, type, n);
     fd = open(path, O_RDONLY);
     if (fd < 0) {

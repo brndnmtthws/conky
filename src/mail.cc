@@ -226,10 +226,9 @@ static void update_mail_count(struct local_mail_s *mail) {
   /* maildir format */
   if (S_ISDIR(st.st_mode)) {
     DIR *dir;
-    char *dirname;
+    std::string dirname(mail->mbox);
     struct dirent *dirent;
     char *mailflags;
-    size_t dirname_len = strlen(mail->mbox) + 5;
 
     mail->mail_count = mail->new_mail_count = 0;
     mail->seen_mail_count = mail->unseen_mail_count = 0;
@@ -237,20 +236,12 @@ static void update_mail_count(struct local_mail_s *mail) {
     mail->forwarded_mail_count = mail->unforwarded_mail_count = 0;
     mail->replied_mail_count = mail->unreplied_mail_count = 0;
     mail->draft_mail_count = mail->trashed_mail_count = 0;
-    dirname = static_cast<char *>(malloc(sizeof(char) * dirname_len));
-    if (dirname == nullptr) {
-      NORM_ERR("malloc");
-      return;
-    }
-    strcpy(dirname, mail->mbox);
-    strcat(dirname, "/");
     /* checking the cur subdirectory */
-    strcat(dirname, "cur");
+    dirname = dirname + "/cur";
 
-    dir = opendir(dirname);
+    dir = opendir(dirname.c_str());
     if (dir == nullptr) {
       NORM_ERR("cannot open directory");
-      free(dirname);
       return;
     }
     dirent = readdir(dir);
@@ -262,7 +253,6 @@ static void update_mail_count(struct local_mail_s *mail) {
             malloc(sizeof(char) * strlen(strrchr(dirent->d_name, ','))));
         if (mailflags == nullptr) {
           NORM_ERR("malloc");
-          free(dirname);
           return;
         }
         strcpy(mailflags, strrchr(dirent->d_name, ','));
@@ -302,13 +292,12 @@ static void update_mail_count(struct local_mail_s *mail) {
     }
     closedir(dir);
 
-    dirname[std::max(0UL, strnlen(dirname, dirname_len - 1) - 3)] = '\0';
-    strcat(dirname, "new");
+    dirname.resize(dirname.size() - 3);
+    dirname = dirname + "new";
 
-    dir = opendir(dirname);
+    dir = opendir(dirname.c_str());
     if (dir == nullptr) {
       NORM_ERR("cannot open directory");
-      free(dirname);
       return;
     }
     dirent = readdir(dir);
@@ -323,7 +312,6 @@ static void update_mail_count(struct local_mail_s *mail) {
     }
     closedir(dir);
 
-    free(dirname);
     return;
   }
 #endif

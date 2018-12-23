@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:bionic AS base
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
   apt-get install -qy --no-install-recommends \
@@ -27,6 +27,8 @@ RUN apt-get update \
       libxml2-dev \
       libxnvctrl-dev \
       libiw-dev
+
+FROM base
 
 COPY . /conky
 WORKDIR /conky/build

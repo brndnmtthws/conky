@@ -763,6 +763,8 @@ static int cache_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token,
                                      SEARCH_ID search, int *value, int update,
                                      int gid) {
   static nvidia_c_string ac_string[MAXNUMGPU];
+  (void)tid;
+  (void)aid;
 
   if (update) {
     if (strcmp(token, (char *)"nvclockmin") == 0 &&
@@ -885,7 +887,6 @@ void print_nvidia_value(struct text_object *obj, char *p,
   struct nvidia_s *nvs = static_cast<nvidia_s *>(obj->data.opaque);
   int value, temp1, temp2;
   char *str;
-  Bool ret;
   int event_base;
   int error_base;
 
@@ -924,6 +925,7 @@ void print_nvidia_value(struct text_object *obj, char *p,
               value = -1;
               break;
             }
+            /* falls through */
           default:
             value = get_nvidia_value(nvs->target, nvs->attribute, nvs->gpu_id,
                                      nvs->arg);
@@ -973,6 +975,8 @@ void print_nvidia_value(struct text_object *obj, char *p,
             temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL, nvs->gpu_id,
                                      nvs->arg);
             value = ((float)temp1 * 100 / (float)temp2) + 0.5;
+            break;
+          default:
             break;
         }
         break;
@@ -1027,7 +1031,7 @@ double get_nvidia_barval(struct text_object *obj) {
         NORM_ERR(
             "%s: invalid argument specified: '%s' (using 'fanlevel' instead).",
             nvs->command, nvs->arg);
-        // No break, continue into fanlevel
+        /* falls through */
       case ATTR_FAN_LEVEL:  // fanlevel
         value = get_nvidia_value(nvs->target, ATTR_FAN_LEVEL, nvs->gpu_id,
                                  nvs->arg);
@@ -1064,7 +1068,7 @@ double get_nvidia_barval(struct text_object *obj) {
         value = ((float)temp1 * 100 / (float)temp2) + 0.5;
         break;
       case ATTR_FREQS_STRING:  // mtrfreq (calculate out of memfreqmax)
-        if (nvs->token == "memTransferRate") {
+        if (strcmp(nvs->token, "memTransferRate") != 0) {
           // Just in case error for silly devs
           CRIT_ERR(nullptr, NULL,
                    "%s: attribute is 'ATTR_FREQS_STRING' but token is not "
