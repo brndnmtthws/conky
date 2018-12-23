@@ -43,12 +43,12 @@
 #include "core.h"
 #include "fs.h"
 #include "logging.h"
+#include "misc.h"
 #include "net_stat.h"
 #include "specials.h"
 #include "temphelper.h"
 #include "timeinfo.h"
 #include "top.h"
-#include "misc.h"
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
@@ -134,13 +134,9 @@ double get_time() {
  * path. If HOME is unset it uses an empty string for substitution */
 std::string to_real_path(const std::string &source) {
   const char *homedir = getenv("HOME") != nullptr ? getenv("HOME") : "";
-  if (source.find("~/") == 0) {
-    return homedir + source.substr(1);
-  }
-  if (source.find("$HOME/") == 0) {
-    return homedir + source.substr(5);
-  }
-    return source;
+  if (source.find("~/") == 0) { return homedir + source.substr(1); }
+  if (source.find("$HOME/") == 0) { return homedir + source.substr(5); }
+  return source;
 }
 
 int open_fifo(const char *file, int *reported) {
@@ -151,9 +147,7 @@ int open_fifo(const char *file, int *reported) {
   if (fd == -1) {
     if ((reported == nullptr) || *reported == 0) {
       NORM_ERR("can't open %s: %s", file, strerror(errno));
-      if (reported != nullptr) {
-        *reported = 1;
-      }
+      if (reported != nullptr) { *reported = 1; }
     }
     return -1;
   }
@@ -169,9 +163,7 @@ FILE *open_file(const char *file, int *reported) {
   if (fp == nullptr) {
     if ((reported == nullptr) || *reported == 0) {
       NORM_ERR("can't open %s: %s", file, strerror(errno));
-      if (reported != nullptr) {
-        *reported = 1;
-      }
+      if (reported != nullptr) { *reported = 1; }
     }
     return nullptr;
   }
@@ -182,9 +174,7 @@ FILE *open_file(const char *file, int *reported) {
 std::string variable_substitute(std::string s) {
   std::string::size_type pos = 0;
   while ((pos = s.find('$', pos)) != std::string::npos) {
-    if (pos + 1 >= s.size()) {
-      break;
-    }
+    if (pos + 1 >= s.size()) { break; }
 
     if (s[pos + 1] == '$') {
       s.erase(pos, 1);
@@ -195,15 +185,14 @@ std::string variable_substitute(std::string s) {
 
       if (isalpha((unsigned char)s[pos + 1]) != 0) {
         l = 1;
-        while (pos + l < s.size() && (isalnum((unsigned char)s[pos + l]) != 0)) {
+        while (pos + l < s.size() &&
+               (isalnum((unsigned char)s[pos + l]) != 0)) {
           ++l;
         }
         var = s.substr(pos + 1, l - 1);
       } else if (s[pos + 1] == '{') {
         l = s.find('}', pos);
-        if (l == std::string::npos) {
-          break;
-        }
+        if (l == std::string::npos) { break; }
         l -= pos - 1;
         var = s.substr(pos + 2, l - 3);
       } else {
@@ -273,9 +262,12 @@ void format_seconds_short(char *buf, unsigned int n, long seconds) {
 }
 
 conky::simple_config_setting<bool> no_buffers("no_buffers", true, true);
-conky::simple_config_setting<std::string> bar_fill("console_bar_fill", "#", false);
-conky::simple_config_setting<std::string> bar_unfill("console_bar_unfill", ".", false);
-conky::simple_config_setting<std::string> github_token("github_token", "", false);
+conky::simple_config_setting<std::string> bar_fill("console_bar_fill", "#",
+                                                   false);
+conky::simple_config_setting<std::string> bar_unfill("console_bar_unfill", ".",
+                                                     false);
+conky::simple_config_setting<std::string> github_token("github_token", "",
+                                                       false);
 
 void update_stuff() {
   /* clear speeds, addresses and up status in case device was removed and
@@ -310,21 +302,18 @@ void update_stuff() {
 }
 
 /* Ohkie to return negative values for temperatures */
-int round_to_int_temp(float f) {
-  return static_cast<int>(f);
-}
+int round_to_int_temp(float f) { return static_cast<int>(f); }
 /* Don't return negative values for cpugraph, bar, gauge, percentage.
  * Causes unreasonable numbers to show */
 unsigned int round_to_int(float f) {
-  if (f >= 0.0) {
-    return static_cast<int>(f + 0.5);
-  }
-    return 0;
+  if (f >= 0.0) { return static_cast<int>(f + 0.5); }
+  return 0;
 }
 
 void scan_loadavg_arg(struct text_object *obj, const char *arg) {
   obj->data.i = 0;
-  if ((arg != nullptr) && (arg[1] == 0) && (isdigit((unsigned char)arg[0]) != 0)) {
+  if ((arg != nullptr) && (arg[1] == 0) &&
+      (isdigit((unsigned char)arg[0]) != 0)) {
     obj->data.i = atoi(arg);
     if (obj->data.i > 3 || obj->data.i < 1) {
       NORM_ERR("loadavg arg needs to be in range (1,3)");
@@ -354,7 +343,8 @@ void scan_no_update(struct text_object *obj, const char *arg) {
 
 void free_no_update(struct text_object *obj) { free(obj->data.s); }
 
-void print_no_update(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_no_update(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   snprintf(p, p_max_size, "%s", obj->data.s);
 }
 
@@ -374,28 +364,26 @@ double loadgraphval(struct text_object *obj) {
 #endif /* BUILD_X11 */
 
 uint8_t cpu_percentage(struct text_object *obj) {
-  if ((unsigned int) obj->data.i > info.cpu_count) {
+  if ((unsigned int)obj->data.i > info.cpu_count) {
     NORM_ERR("obj->data.i %i info.cpu_count %i", obj->data.i, info.cpu_count);
     CRIT_ERR(nullptr, nullptr, "attempting to use more CPUs than you have!");
   }
   if (info.cpu_usage != nullptr) {
     return round_to_int(info.cpu_usage[obj->data.i] * 100.0);
   }
-    return 0;
+  return 0;
 }
 
 double cpu_barval(struct text_object *obj) {
-  if (info.cpu_usage != nullptr) {
-    return info.cpu_usage[obj->data.i];
-  }
-    return 0.;
+  if (info.cpu_usage != nullptr) { return info.cpu_usage[obj->data.i]; }
+  return 0.;
 }
 
-#define PRINT_HR_GENERATOR(name)                                        \
-  void print_##name(struct text_object *obj, char *p,                   \
-		                             unsigned int p_max_size) { \
-    human_readable(apply_base_multiplier(obj->data.s, info.name), p,    \
-		                                           p_max_size); \
+#define PRINT_HR_GENERATOR(name)                                     \
+  void print_##name(struct text_object *obj, char *p,                \
+                    unsigned int p_max_size) {                       \
+    human_readable(apply_base_multiplier(obj->data.s, info.name), p, \
+                   p_max_size);                                      \
   }
 
 PRINT_HR_GENERATOR(mem)
@@ -457,7 +445,8 @@ void print_nodename(struct text_object *obj, char *p, unsigned int p_max_size) {
   snprintf(p, p_max_size, "%s", info.uname_s.nodename);
 }
 
-void print_nodename_short(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_nodename_short(struct text_object *obj, char *p,
+                          unsigned int p_max_size) {
   (void)obj;
   snprintf(p, p_max_size, "%s", info.uname_s.nodename);
   for (int i = 0; p[i] != 0; i++) {
@@ -485,22 +474,26 @@ void print_uptime(struct text_object *obj, char *p, unsigned int p_max_size) {
   format_seconds(p, p_max_size, static_cast<int>(info.uptime));
 }
 
-void print_uptime_short(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_uptime_short(struct text_object *obj, char *p,
+                        unsigned int p_max_size) {
   (void)obj;
   format_seconds_short(p, p_max_size, static_cast<int>(info.uptime));
 }
 
-void print_processes(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_processes(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   (void)obj;
   spaced_print(p, p_max_size, "%hu", 4, info.procs);
 }
 
-void print_running_processes(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_running_processes(struct text_object *obj, char *p,
+                             unsigned int p_max_size) {
   (void)obj;
   spaced_print(p, p_max_size, "%hu", 4, info.run_procs);
 }
 
-void print_running_threads(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_running_threads(struct text_object *obj, char *p,
+                           unsigned int p_max_size) {
   (void)obj;
   spaced_print(p, p_max_size, "%hu", 4, info.run_threads);
 }
@@ -511,11 +504,13 @@ void print_threads(struct text_object *obj, char *p, unsigned int p_max_size) {
 }
 
 void print_buffers(struct text_object *obj, char *p, unsigned int p_max_size) {
-  human_readable(apply_base_multiplier(obj->data.s, info.buffers), p, p_max_size);
+  human_readable(apply_base_multiplier(obj->data.s, info.buffers), p,
+                 p_max_size);
 }
 
 void print_cached(struct text_object *obj, char *p, unsigned int p_max_size) {
-  human_readable(apply_base_multiplier(obj->data.s, info.cached), p, p_max_size);
+  human_readable(apply_base_multiplier(obj->data.s, info.cached), p,
+                 p_max_size);
 }
 
 void print_evaluate(struct text_object *obj, char *p, unsigned int p_max_size) {
@@ -530,9 +525,7 @@ int if_empty_iftest(struct text_object *obj) {
 
   generate_text_internal(&(buf[0]), max_user_text.get(*state), *obj->sub);
 
-  if (strlen(&(buf[0])) != 0) {
-    result = 0;
-  }
+  if (strlen(&(buf[0])) != 0) { result = 0; }
   return result;
 }
 
@@ -561,17 +554,13 @@ int if_existing_iftest(struct text_object *obj) {
   int result = 0;
 
   spc = strchr(obj->data.s, ' ');
-  if (spc != nullptr) {
-    *spc = 0;
-  }
+  if (spc != nullptr) { *spc = 0; }
   if (access(obj->data.s, F_OK) == 0) {
     if (spc == nullptr || (check_contains(obj->data.s, spc + 1) != 0)) {
       result = 1;
     }
   }
-  if (spc != nullptr) {
-    *spc = ' ';
-  }
+  if (spc != nullptr) { *spc = ' '; }
   return result;
 }
 
@@ -596,9 +585,7 @@ void free_acpitemp(struct text_object *obj) { close(obj->data.i); }
 
 void print_freq(struct text_object *obj, char *p, unsigned int p_max_size) {
   static int ok = 1;
-  if (ok != 0) {
-    ok = get_freq(p, p_max_size, "%.0f", 1, obj->data.i);
-  }
+  if (ok != 0) { ok = get_freq(p, p_max_size, "%.0f", 1, obj->data.i); }
 }
 
 void print_freq_g(struct text_object *obj, char *p, unsigned int p_max_size) {
@@ -619,7 +606,8 @@ void print_acpifan(struct text_object *obj, char *p, unsigned int p_max_size) {
   get_acpi_fan(p, p_max_size);
 }
 
-void print_acpiacadapter(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_acpiacadapter(struct text_object *obj, char *p,
+                         unsigned int p_max_size) {
   get_acpi_ac_adapter(p, p_max_size,
                       static_cast<const char *>(obj->data.opaque));
 }
@@ -628,7 +616,8 @@ void print_battery(struct text_object *obj, char *p, unsigned int p_max_size) {
   get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_STATUS);
 }
 
-void print_battery_time(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_battery_time(struct text_object *obj, char *p,
+                        unsigned int p_max_size) {
   get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_TIME);
 }
 
@@ -636,21 +625,23 @@ uint8_t battery_percentage(struct text_object *obj) {
   return get_battery_perct(obj->data.s);
 }
 
-void print_battery_short(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_battery_short(struct text_object *obj, char *p,
+                         unsigned int p_max_size) {
   get_battery_short_status(p, p_max_size, obj->data.s);
 }
 
-void print_battery_status(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_battery_status(struct text_object *obj, char *p,
+                          unsigned int p_max_size) {
   get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_STATUS);
   if (0 == strncmp("charging", p, 8)) {
     snprintf(p, p_max_size, "%s", "charging");
   } else if (0 == strncmp("discharging", p, 11) ||
-      0 == strncmp("remaining", p, 9)) {
+             0 == strncmp("remaining", p, 9)) {
     snprintf(p, p_max_size, "%s", "discharging");
   } else if (0 == strncmp("charged", p, 7)) {
     snprintf(p, p_max_size, "%s", "charged");
   } else if (0 == strncmp("not present", p, 11) ||
-      0 == strncmp("absent/on AC", p, 12)) {
+             0 == strncmp("absent/on AC", p, 12)) {
     snprintf(p, p_max_size, "%s", "not present");
   } else if (0 == strncmp("empty", p, 5)) {
     snprintf(p, p_max_size, "%s", "empty");
@@ -672,9 +663,7 @@ void print_blink(struct text_object *obj, char *p, unsigned int p_max_size) {
     generate_text_internal(&(buf[0]), max_user_text.get(*state), *obj->sub);
     last_len = strlen(&(buf[0]));
   } else {
-    for (i = 0; i < last_len; i++) {
-      buf[i] = ' ';
-    }
+    for (i = 0; i < last_len; i++) { buf[i] = ' '; }
   }
 
   snprintf(p, p_max_size, "%s", &(buf[0]));
@@ -684,18 +673,19 @@ void print_blink(struct text_object *obj, char *p, unsigned int p_max_size) {
 void print_include(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::vector<char> buf(max_user_text.get(*state));
 
-  if (obj->sub == nullptr) {
-    return;
-  }
+  if (obj->sub == nullptr) { return; }
 
   generate_text_internal(&(buf[0]), max_user_text.get(*state), *obj->sub);
   snprintf(p, p_max_size, "%s", &(buf[0]));
 }
 
 #ifdef BUILD_CURL
-#define NEW_TOKEN "https://github.com/settings/tokens/new?scopes=notifications&description=conky-query-github\n"
+#define NEW_TOKEN                       \
+  "https://github.com/settings/tokens/" \
+  "new?scopes=notifications&description=conky-query-github\n"
 static size_t read_github_data_cb(char *, size_t, size_t, char *);
-static size_t read_github_data_cb(char *data, size_t size, size_t nmemb, char *p) {
+static size_t read_github_data_cb(char *data, size_t size, size_t nmemb,
+                                  char *p) {
   char *ptr = data;
   size_t sz = nmemb * size;
   size_t z = 0;
@@ -703,34 +693,37 @@ static size_t read_github_data_cb(char *data, size_t size, size_t nmemb, char *p
   static unsigned int skip = 0U;
 
   for (; *ptr; ptr++, z++) {
-    if (z+4 < sz) { /* Verifying up to *(ptr+4) */
-      if ('u' == *ptr && 'n' == *(ptr+1) &&
-          'r' == *(ptr+2) && 'e' == *(ptr+3)) { /* "unread" */
+    if (z + 4 < sz) { /* Verifying up to *(ptr+4) */
+      if ('u' == *ptr && 'n' == *(ptr + 1) && 'r' == *(ptr + 2) &&
+          'e' == *(ptr + 3)) { /* "unread" */
         ++x;
         skip = 0U;
       }
-      if ('m' == *ptr && 'e' == *(ptr+1) &&
-          's' == *(ptr+2) && 's' == *(ptr+3) && z+13 < sz) { /* "message": */
-        if ('B' == *(ptr+10) && 'a' == *(ptr+11) &&
-            'd' == *(ptr+12)) { /* "Bad credentials" */
+      if ('m' == *ptr && 'e' == *(ptr + 1) && 's' == *(ptr + 2) &&
+          's' == *(ptr + 3) && z + 13 < sz) { /* "message": */
+        if ('B' == *(ptr + 10) && 'a' == *(ptr + 11) &&
+            'd' == *(ptr + 12)) { /* "Bad credentials" */
           NORM_ERR("Bad credentials: generate a new token:\n" NEW_TOKEN);
-          snprintf(p, 80, "%s", "GitHub: Bad credentials, generate a new token.");
+          snprintf(p, 80, "%s",
+                   "GitHub: Bad credentials, generate a new token.");
           skip = 1U;
           break;
         }
-        if ('M' == *(ptr+10) && 'i' == *(ptr+11) &&
-            's' == *(ptr+12)) { /* Missing the 'notifications' scope. */
-          NORM_ERR("Missing 'notifications' scope. Generate a new token\n" NEW_TOKEN);
-          snprintf(p, 80, "%s", "GitHub: Missing the notifications scope. Generate a new token.");
+        if ('M' == *(ptr + 10) && 'i' == *(ptr + 11) &&
+            's' == *(ptr + 12)) { /* Missing the 'notifications' scope. */
+          NORM_ERR(
+              "Missing 'notifications' scope. Generate a new "
+              "token\n" NEW_TOKEN);
+          snprintf(
+              p, 80, "%s",
+              "GitHub: Missing the notifications scope. Generate a new token.");
           skip = 1U;
           break;
         }
       }
     }
   }
-  if (0U == skip) {
-    snprintf(p, 49, "%zu", x);
-  }
+  if (0U == skip) { snprintf(p, 49, "%zu", x); }
   return sz;
 }
 
@@ -744,11 +737,12 @@ void print_github(struct text_object *obj, char *p, unsigned int p_max_size) {
   CURLcode res;
 
   if (0 == strcmp(github_token.get(*state).c_str(), "")) {
-    NORM_ERR("${github_notifications} requires token. "
-    "Go ahead and generate one "
-    NEW_TOKEN
-    "Insert it in conky.config = { github_token='TOKEN_SHA' }\n");
-    snprintf(p, p_max_size, "%s", "GitHub notifications requires token, generate a new one.");
+    NORM_ERR(
+        "${github_notifications} requires token. "
+        "Go ahead and generate one " NEW_TOKEN
+        "Insert it in conky.config = { github_token='TOKEN_SHA' }\n");
+    snprintf(p, p_max_size, "%s",
+             "GitHub notifications requires token, generate a new one.");
     return;
   }
 
@@ -759,14 +753,13 @@ void print_github(struct text_object *obj, char *p, unsigned int p_max_size) {
   }
 
   snprintf(github_url, 255, "%s%s",
-    "https://api.github.com/notifications?access_token=", github_token.get(*state).c_str());
+           "https://api.github.com/notifications?access_token=",
+           github_token.get(*state).c_str());
   /* unique string for each conky user, so we dont hit any query limits */
   snprintf(user_agent, 29, "conky/%s", github_token.get(*state).c_str());
 
   curl_global_init(CURL_GLOBAL_ALL);
-  if (nullptr == (curl = curl_easy_init())) {
-    goto error;
-  }
+  if (nullptr == (curl = curl_easy_init())) { goto error; }
   curl_easy_setopt(curl, CURLOPT_URL, github_url);
   curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "gzip");
   curl_easy_setopt(curl, CURLOPT_USERAGENT, user_agent);
@@ -776,21 +769,15 @@ void print_github(struct text_object *obj, char *p, unsigned int p_max_size) {
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, p);
 
   res = curl_easy_perform(curl);
-  if (CURLE_OK != res) {
-    goto error;
-  }
+  if (CURLE_OK != res) { goto error; }
   snprintf(cached_result, 255, "%s", p);
   last_update = 60U;
 
 error:
-  if (nullptr != curl) {
-    curl_easy_cleanup(curl);
-  }
+  if (nullptr != curl) { curl_easy_cleanup(curl); }
   curl_global_cleanup();
 
-  if (!isdigit((unsigned char)*p)) {
-    last_update = 1U;
-  }
+  if (!isdigit((unsigned char)*p)) { last_update = 1U; }
 }
 
 void print_stock(struct text_object *obj, char *p, unsigned int p_max_size) {
@@ -835,8 +822,6 @@ void print_updates(struct text_object *obj, char *p, unsigned int p_max_size) {
 }
 
 int updatenr_iftest(struct text_object *obj) {
-  if (get_total_updates() % get_updatereset() != obj->data.i - 1) {
-    return 0;
-  }
+  if (get_total_updates() % get_updatereset() != obj->data.i - 1) { return 0; }
   return 1;
 }
