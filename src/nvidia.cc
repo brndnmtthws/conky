@@ -32,7 +32,7 @@
  * Author:
  * Fonic <fonic.maxxim@live.com>
  *
- * TODO:
+ * Things to do:
  * - Move decoding of GPU/MEM freqs to print_nvidia_value() using QUERY_SPECIAL
  *   so that all quirks are located there
  * - Implement nvs->print_type to allow control over how the value is printed
@@ -311,7 +311,17 @@ const char *translate_nvidia_special_type[] = {
 };
 
 // Global struct to keep track of queries
-struct nvidia_s {
+class nvidia_s {
+ public:
+  nvidia_s()
+      : command(0),
+        arg(0),
+        query(QUERY_VALUE),
+        target(TARGET_SCREEN),
+        attribute(ATTR_GPU_TEMP),
+        token(0),
+        search(SEARCH_FIRST),
+        gpu_id(0) {}
   const char *command;
   const char *arg;
   QUERY_ID query;
@@ -368,15 +378,13 @@ void nvidia_display_setting::lua_setter(lua::state &l, bool init) {
   Base::lua_setter(l, init);
 
   std::string str = do_convert(l, -1).first;
-  if (str.size()) {
-    if ((nvdisplay = XOpenDisplay(str.c_str())) == nullptr) {
-      CRIT_ERR(nullptr, NULL, "can't open nvidia display: %s",
-               XDisplayName(str.c_str()));
-    }
+  if (!str.empty() && (nvdisplay = XOpenDisplay(str.c_str())) == nullptr) {
+    CRIT_ERR(nullptr, NULL, "can't open nvidia display: %s",
+             XDisplayName(str.c_str()));
   }
 
   ++s;
-}
+}  // namespace
 
 void nvidia_display_setting::cleanup(lua::state &l) {
   lua::stack_sentry s(l, -1);
@@ -395,14 +403,13 @@ nvidia_display_setting nvidia_display;
 // Evaluate module parameters and prepare query
 int set_nvidia_query(struct text_object *obj, const char *arg,
                      unsigned int special_type) {
-  struct nvidia_s *nvs;
+  nvidia_s *nvs;
   int aid;
   int ilen;
 
   // Initialize global struct
-  obj->data.opaque = malloc(sizeof(struct nvidia_s));
-  nvs = static_cast<nvidia_s *>(obj->data.opaque);
-  memset(nvs, 0, sizeof(struct nvidia_s));
+  nvs = new nvidia_s();
+  obj->data.opaque = nvs;
 
   // Added new parameter parsing GPU_ID as 0,1,2,..
   // if no GPU_ID parameter then default to 0
@@ -433,11 +440,16 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
     case GAUGE:
       arg = scan_gauge(obj, arg, 100);
       break;
+    default:
+      break;
   }
 
   // Return error if no argument
   // (sometimes scan_graph gets excited and eats the whole string!
-  if (!arg) return 1;
+  if (!arg) {
+    free_and_zero(strbuf);
+    return 1;
+  }
 
   // Translate parameter to id
   for (aid = 0; aid < ARG_UNKNOWN; aid++) {
@@ -445,13 +457,14 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
   }
 
   // free the string buffer after arg is not anymore needed
-  if (strbuf != nullptr) free(strbuf);
+  if (strbuf != nullptr) free_and_zero(strbuf);
 
   // Save pointers to the arg and command strings for debugging and printing
   nvs->arg = translate_module_argument[aid];
   nvs->command = translate_nvidia_special_type[special_type];
 
   // Evaluate parameter
+  // NOSONAR
   switch (aid) {
     case ARG_TEMP:  // GPU temperature
     case ARG_GPU_TEMP:
@@ -755,7 +768,6 @@ static char *get_nvidia_string(TARGET_ID tid, ATTR_ID aid, int gid,
         __func__, arg, tid, aid, gid);
     return nullptr;
   }
-  // fprintf(stderr, "checking get_nvidia_string-> '%s'", str);
   return str;
 }
 
@@ -825,11 +837,13 @@ static int cache_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token,
 static int get_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token,
                                    SEARCH_ID search, int gid, const char *arg) {
   char *str;
-  char *kvp, *key, *val;
-  char *saveptr1, *saveptr2;
-  int value, temp;
-
-  value = -1;
+  char *kvp;
+  char *key;
+  char *val;
+  char *saveptr1;
+  char *saveptr2;
+  int temp;
+  int value = -1;
 
   // Checks if the value is cacheable and is already loaded
   cache_nvidia_string_value(tid, aid, token, search, &value, 0, gid);
@@ -868,14 +882,6 @@ static int get_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token,
   // This call updated the cache for the cacheable values;
   cache_nvidia_string_value(tid, aid, token, search, &value, 1, gid);
 
-  // TESTING - print raw string if token was not found;
-  // string has to be queried again due to strtok_r()
-  /*if (value == -1) {
-    free(str);
-    str = get_nvidia_string(tid, aid);
-    fprintf(stderr, "%s", str);
-  }*/
-
   // Free string, return value
   free(str);
   return value;
@@ -884,7 +890,7 @@ static int get_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token,
 // Perform query and print result
 void print_nvidia_value(struct text_object *obj, char *p,
                         unsigned int p_max_size) {
-  struct nvidia_s *nvs = static_cast<nvidia_s *>(obj->data.opaque);
+  nvidia_s *nvs = static_cast<nvidia_s *>(obj->data.opaque);
   int value, temp1, temp2;
   char *str;
   int event_base;
@@ -1101,4 +1107,8 @@ double get_nvidia_barval(struct text_object *obj) {
 }
 
 // Cleanup
-void free_nvidia(struct text_object *obj) { free_and_zero(obj->data.opaque); }
+void free_nvidia(struct text_object *obj) {
+  nvidia_s *nvs = static_cast<nvidia_s *>(obj->data.opaque);
+  delete nvs;
+  obj->data.opaque = nullptr;
+}
