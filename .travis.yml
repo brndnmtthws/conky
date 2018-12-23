@@ -6,6 +6,49 @@ matrix:
       addons:
         apt:
           sources:
+            - llvm-toolchain-xenial-7
+          packages:
+            - clang-7
+            - libc++-7-dev
+            - cmake
+            - docbook2x
+            - libxdamage-dev
+            - libx11-dev
+            - libxft-dev
+            - libxext-dev
+            - libglib2.0-dev
+            - libxml2-dev
+            - libcurl4-gnutls-dev
+            - liblua5.3-dev
+            - libcairo2-dev
+            - libimlib2-dev
+            - libxinerama-dev
+            - libmysqlclient-dev
+            - libical-dev
+            - libircclient-dev
+            - libcairo2-dev
+            - libmicrohttpd-dev
+            - ncurses-dev
+            - librsvg2-dev
+            - libaudclient-dev
+            - libxmmsclient-dev
+            - libpulse-dev
+            - libcurl4-gnutls-dev
+            - audacious-dev
+            - libsystemd-dev
+            - libxnvctrl-dev
+            - gawk
+        sonarcloud:
+          organization: "brndnmtthws-github"
+          token:
+            secure: "KikPusy+HXcEVLr0Dqb6mkrefDU5jm7EGQ5fwO4sBG7bRMcnHV3V14s5yB4Ol8btpUC0nkNn/41+f37lkG+oT4y9ZeIH2ZrhsSEHxOgH6DF9ZSVJwtpLrF9siWgfZ0m5c5V7U5rzVYL3jlO1hQfXKCfMNAcwlKcEUrfpk7jVEZc="
+      env:
+        - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
             - ubuntu-toolchain-r-test
           packages:
             - g++-5
@@ -35,7 +78,7 @@ matrix:
             - libcurl4-gnutls-dev
             - audacious-dev
             - libsystemd-dev
-            - libxml2-dev
+            - libxnvctrl-dev
             - gawk
       env:
         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
@@ -73,7 +116,7 @@ matrix:
             - libcurl4-gnutls-dev
             - audacious-dev
             - libsystemd-dev
-            - libxml2-dev
+            - libxnvctrl-dev
             - gawk
       env:
         - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
@@ -111,7 +154,7 @@ matrix:
             - libcurl4-gnutls-dev
             - audacious-dev
             - libsystemd-dev
-            - libxml2-dev
+            - libxnvctrl-dev
             - gawk
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
@@ -149,7 +192,7 @@ matrix:
             - libcurl4-gnutls-dev
             - audacious-dev
             - libsystemd-dev
-            - libxml2-dev
+            - libxnvctrl-dev
             - gawk
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
@@ -187,53 +230,10 @@ matrix:
             - libcurl4-gnutls-dev
             - audacious-dev
             - libsystemd-dev
-            - libxml2-dev
+            - libxnvctrl-dev
             - gawk
       env:
         - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - llvm-toolchain-xenial-7
-          packages:
-            - clang-7
-            - libc++-7-dev
-            - cmake
-            - docbook2x
-            - libxdamage-dev
-            - libx11-dev
-            - libxft-dev
-            - libxext-dev
-            - libglib2.0-dev
-            - libxml2-dev
-            - libcurl4-gnutls-dev
-            - liblua5.3-dev
-            - libcairo2-dev
-            - libimlib2-dev
-            - libxinerama-dev
-            - libmysqlclient-dev
-            - libical-dev
-            - libircclient-dev
-            - libcairo2-dev
-            - libmicrohttpd-dev
-            - ncurses-dev
-            - librsvg2-dev
-            - libaudclient-dev
-            - libxmmsclient-dev
-            - libpulse-dev
-            - libcurl4-gnutls-dev
-            - audacious-dev
-            - libsystemd-dev
-            - libxml2-dev
-            - gawk
-        sonarcloud:
-          organization: "brndnmtthws-github"
-          token:
-            secure: "KikPusy+HXcEVLr0Dqb6mkrefDU5jm7EGQ5fwO4sBG7bRMcnHV3V14s5yB4Ol8btpUC0nkNn/41+f37lkG+oT4y9ZeIH2ZrhsSEHxOgH6DF9ZSVJwtpLrF9siWgfZ0m5c5V7U5rzVYL3jlO1hQfXKCfMNAcwlKcEUrfpk7jVEZc="
-      env:
-        - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
     - os: osx
       osx_image: xcode9.4
     - os: osx
@@ -267,6 +267,7 @@ before_script:
         -DBUILD_PULSEAUDIO=ON                \
         -DBUILD_JOURNAL=ON                   \
         -DBUILD_RSS=ON                       \
+        -DBUILD_NVIDIA=ON                    \
         ..
       cd ..
       mkdir build-no-x11
