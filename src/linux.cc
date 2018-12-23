@@ -1115,9 +1115,6 @@ static int get_first_file_in_a_directory(const char *dir, char *s, int *rep) {
     strncpy(s, namelist[0]->d_name, 255);
     s[255] = '\0';
 
-#ifdef HAVE_OPENMP
-#pragma omp parallel for schedule(dynamic, 10)
-#endif /* HAVE_OPENMP */
     for (i = 0; i < n; i++) { free(namelist[i]); }
     free(namelist);
 
@@ -1751,18 +1748,18 @@ present voltage:         16608 mV
 */
 
 /*
-2213<@jupet�kellari��> jupet@lagi-unstable:~$ cat /proc/apm
-2213<@jupet�kellari��> 1.16 1.2 0x03 0x01 0xff 0x10 -1% -1 ?
-2213<@jupet�kellari��> (-1 ollee ei akkua kiinni, koska akku on p�yd�ll�)
-2214<@jupet�kellari��> jupet@lagi-unstable:~$ cat /proc/apm
-2214<@jupet�kellari��> 1.16 1.2 0x03 0x01 0x03 0x09 98% -1 ?
+2213<@jupetkellari> jupet@lagi-unstable:~$ cat /proc/apm
+2213<@jupetkellari> 1.16 1.2 0x03 0x01 0xff 0x10 -1% -1 ?
+2213<@jupetkellari> (-1 ollee ei akkua kiinni, koska akku on pydll)
+2214<@jupetkellari> jupet@lagi-unstable:~$ cat /proc/apm
+2214<@jupetkellari> 1.16 1.2 0x03 0x01 0x03 0x09 98% -1 ?
 
-2238<@jupet�kellari��> 1.16 1.2 0x03 0x00 0x00 0x01 100% -1 ? ilman verkkovirtaa
-2239<@jupet�kellari��> 1.16 1.2 0x03 0x01 0x00 0x01 99% -1 ? verkkovirralla
+2238<@jupetkellari> 1.16 1.2 0x03 0x00 0x00 0x01 100% -1 ? ilman verkkovirtaa
+2239<@jupetkellari> 1.16 1.2 0x03 0x01 0x00 0x01 99% -1 ? verkkovirralla
 
-2240<@jupet�kellari��> 1.16 1.2 0x03 0x01 0x03 0x09 100% -1 ? verkkovirralla ja
-monitori p��ll� 2241<@jupet�kellari��> 1.16 1.2 0x03 0x00 0x00 0x01 99% -1 ?
-monitori p��ll� mutta ilman verkkovirtaa
+2240<@jupetkellari> 1.16 1.2 0x03 0x01 0x03 0x09 100% -1 ? verkkovirralla ja
+monitori pll 2241<@jupetkellari> 1.16 1.2 0x03 0x00 0x00 0x01 99% -1 ?
+monitori pll mutta ilman verkkovirtaa
 */
 
 /* Kapil Hari Paranjape <kapil@imsc.res.in>
