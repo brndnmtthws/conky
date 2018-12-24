@@ -321,7 +321,7 @@ if(BUILD_X11)
 endif(BUILD_X11)
 
 # Otherwise, use the most recent Lua version
-pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52 luajit)
+pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52)
 set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
 set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIRS})
 link_directories(${LUA_LIBRARY_DIRS})
