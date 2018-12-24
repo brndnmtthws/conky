@@ -11,7 +11,7 @@ cmake_minimum_required ( VERSION 3.4 )
 
 include(FindPkgConfig)
 
-pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52 luajit)
+pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52)
 include_directories ( include src/lib ${LUA_INCLUDE_DIRS} )
 
 # Build lib
