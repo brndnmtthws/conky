@@ -251,8 +251,8 @@ before_install:
   - |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       HOMEBREW_NO_AUTO_UPDATE=1 brew install freetype gettext lua imlib2 librsvg docbook2x lcov ;
+      HOMEBREW_NO_AUTO_UPDATE=1 brew link gettext --force ;
     fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link gettext --force ; fi
 before_script:
   - |
     if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
