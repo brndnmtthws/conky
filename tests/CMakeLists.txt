@@ -16,6 +16,7 @@ endif()
 
 add_executable(test-conky test-common.cc ${test_srcs})
 target_link_libraries(test-conky conky_core)
+catch_discover_tests(test-conky)
 
 if(USING_CLANG_7)
   set(COVERAGE_LCOV_EXCLUDES
@@ -43,5 +44,4 @@ if(USING_CLANG_7)
                                      test-conky
                                      DEPENDENCIES
                                      test-conky)
-  catch_discover_tests(test-conky)
 endif()
