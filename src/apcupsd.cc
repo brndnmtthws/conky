@@ -234,10 +234,8 @@ int update_apcupsd() {
     //
     // read the lines of output and put them into the info structure
     //
-    if (fill_items(sock, &apc) == 0) {
-      close(sock);
-      break;
-    }
+    fill_items(sock, &apc);
+    close(sock);
 
   } while (0);
 
