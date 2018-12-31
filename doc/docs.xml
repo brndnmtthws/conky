@@ -8,303 +8,252 @@
 <!ENTITY lua SYSTEM "lua.xml">
 ]>
 <refentry>
-	<refentryinfo>
-		<address>
-			<email>brenden1@users.sourceforge.net</email>
-		</address>
-		<author>
-			<firstname>Brenden</firstname>
-			<surname>Matthews</surname>
-		</author>
-		<date>2012-05-03</date>
-	</refentryinfo>
-	<refmeta>
-		<refentrytitle>conky</refentrytitle>
-		<manvolnum>1</manvolnum>
-	</refmeta>
-	<refnamediv>
-		<refname>conky</refname>
-		<refpurpose>A system monitor for X originally based on the
-			torsmo code, but more kickass. It just keeps on given'er.
-			Yeah.</refpurpose>
-	</refnamediv>
-	<refsynopsisdiv>
-		<cmdsynopsis>
-			<command>conky</command>
-			<arg>
-				<replaceable>options</replaceable>
-			</arg>
-		</cmdsynopsis>
-	</refsynopsisdiv>
-	<refsect1>
-		<title>Description</title>
-		<para>Conky is a system monitor for X originally based on
-			torsmo. Since its inception, Conky has changed
-			significantly from its predecessor, while maintaining
-			simplicity and configurability. Conky can display just
-			about anything, either on your root desktop or in its own
-			window. Not only does Conky have many built-in objects, it
-			can also display just about any piece of information by
-			using scripts and other external programs.
-		</para>
-		<para>Conky has more than 250 built in objects, including
-			support for a plethora of OS stats (uname, uptime, CPU
-			usage, mem usage, disk usage, "top" like process stats, and
-			network monitoring, just to name a few), built in IMAP and
-			POP3 support, built in support for many popular music
-			players (MPD, XMMS2, BMPx, Audacious), and much much more.
-			Conky can display this info either as text, or using simple
-			progress bars and graph widgets, with different fonts and
-			colours.
-		</para>
-		<para>We are always looking for help, whether its reporting
-			bugs, writing patches, or writing docs. Please use the
-			facilities at SourceForge to make bug reports, feature
-			requests, and submit patches, or stop by #conky on
-			irc.freenode.net if you have questions or want to
-			contribute.</para>
-		<para>Thanks for your interest in Conky.
-		</para>
-	</refsect1>
-	<refsect1>
-		<title>Compiling</title>
-		<para>For users compiling from source on a binary distro, make sure you
-			have the X development libraries installed (Unless you configure
-			your build without X11). This should be a package along the lines
-			of "libx11-dev" or "xorg-x11-dev" for X11 libs, and similar "-dev"
-			format for the other libs required (depending on your build
-			options). You should be able to see which extra packages you need
-			to install by reading errors that you get from running `cmake'. The
-			easiest way to view the available build options is to run `ccmake' or
-			`cmake-gui' from the source tree, but be careful when disabling
-			certain features as you may lose desired functionality.  E.g.,
-			with BUILD_MATH disabled you won't get errors but logarithmic
-			graphs will be normal graphs and gauges will miss their line.
-		</para>
-		<para>Conky has (for some time) been available in the
-			repositories of most popular distributions. Here are some
-			installation instructions for a few:
-		</para>
-		<para>Gentoo users -- Conky is in Gentoo's Portage...
-			simply use "emerge app-admin/conky" for
-			installation.
-		</para>
-		<para>Debian, etc. users -- Conky should be in your
-			repositories, and can be installed by doing "aptitude
-			install conky".
-		</para>
-		<para>Example to compile and run Conky with default
-			components (note that some build options may differ for
-			your system):
-		</para>
-		<variablelist>
-			<varlistentry>
-				<term>
-					<command>
-						<option>cmake</option>
-					</command>
-					<option>-D CMAKE_INSTALL_PREFIX:string=/usr .</option>
-				</term>
-			</varlistentry>
-			<varlistentry>
-				<term>
-					<command>
-						<option>make</option>
-					</command>
-				</term>
-			</varlistentry>
-			<varlistentry>
-				<term>
-					<command>
-						<option>make install</option>
-					</command>
-					<option># Optional</option>
-				</term>
-			</varlistentry>
-			<varlistentry>
-				<term>
-					<command>
-						<option>src/conky</option>
-					</command>
-				</term>
-			</varlistentry>
-		</variablelist>
-		<para>Conky has been tested to be compatible with C99 C and C++0x C++,
-			however it has not been tested with anything other than gcc, and is
-			not guaranteed to work with other compilers.
-		</para>
-		<para>TIP: Try configuring Conky with `ccmake' or `cmake-gui' instead of
-			just `cmake'.
-		</para>
-		<para></para>
-	</refsect1>
-	<refsect1>
-		<title>You Should Know</title>
-		<para>Conky is generally very good on resources. That said,
-			the more you try to make Conky do, the more resources it is
-			going to consume.
-		</para>
-		<para>An easy way to force Conky to reload your ~/.config/conky/conky.conf:
-			"killall -SIGUSR1 conky". Saves you the trouble of having to kill
-			and then restart.
-		</para>
-	</refsect1>
-	<refsect1>
-		<title>Options</title>
-		<para>Command line options override configurations defined in
-			configuration file.
-		</para>
-		&command_options;
-	</refsect1>
-	<refsect1>
-		<title>Configuration Settings</title>
-		<para>Default configuration file location is $HOME/.config/conky/conky.conf or
-			${sysconfdir}/conky/conky.conf. On most systems, sysconfdir is
-			/etc, and you can find the sample config file there
-			(/etc/conky/conky.conf).
-		</para>
-		<para>You might want to copy it to $HOME/.config/conky/conky.conf and then
-			start modifying it. Other configs can be found at
-			http://conky.sf.net/
-		</para>
-		&config_settings;
-	</refsect1>
-	<refsect1>
-		<title>Objects/Variables</title>
-		<para>Colours are parsed using XParsecolor(), there might be a
-			list of them: /usr/share/X11/rgb.txt.
-			Colour can be also in
-			#rrggbb format (hex).
-		</para>
-		<para>
-			Some objects may create threads, and sometimes these threads will
-			not be destroyed until Conky terminates.  There is no way to
-			destroy or clean up threads while Conky is running.  For example,
-			if you use an MPD variable, the MPD thread will keep running until
-			Conky dies.  Some threaded objects will use one of the parameters
-			as a 'key', so that you only have 1 relevant thread running (for
-			example, the $curl, $rss and $weather objects launch one thread per
-			URI).
-		</para>
-		&variables;
-	</refsect1>
-	<refsect1>
-		<title>Lua API</title>
-		<para>Conky features a Lua Programming API, and also ships with Lua
-			bindings for some useful libraries. Note that the bindings require
-			tolua++, which currently only compiles against Lua 5.1.
-		</para>
-		<para>To use Lua Conky, you first need to make sure you have a version of Conky
-			with Lua support enabled (``conky -v'' will report this). Conky defines
-			certain global functions and variables which can be accessed from Lua
-			code running in Conky. Scripts must first be loaded using the lua_load
-			configuration option. You then call functions in Lua via Conky's $lua,
-			$lua_read, and Lua hooks.
-		</para>
-		<para>
-			Be careful when creating threaded objects through the Lua API.  You
-			could wind up with a whole bunch of threads running if a thread is
-			created with each iteration.
-		</para>
-		<para>
-			At this time, the Lua API should not be considered stable and may
-			change drastically from one release to another as it matures.
-		</para>
-		<para>
-			NOTE: In order to accommodate certain features in the cairo
-			library's API, Conky will export a few additional functions for the
-			creation of certain structures.  These are documented below.
-		</para>
-		&lua;
-	</refsect1>
-	<refsect1>
-		<title>Examples</title>
-		<variablelist>
-			<varlistentry>
-				<term>
-					<varname>conky</varname>
-					<option>-t '${time %D %H:%M}' -o -u 30</option>
-				</term>
-				<listitem>Start Conky in its own window with date
-					and clock as text and 30 sec update
-					interval.</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term>
-					<varname>conky</varname>
-					<option>-a top_left -x 5 -y 500 -d</option>
-				</term>
-				<listitem>Start Conky to background at coordinates
-					(5, 500).</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term>
-					<varname>conky</varname>
-					<option>-C &gt; ~/.config/conky/conky.conf</option>
-				</term>
-				<listitem>Do not start Conky, but have it output
-					the builtin default config file to
-					~/.config/conky/conky.conf for later customising.</listitem>
-			</varlistentry>
-		</variablelist>
-	</refsect1>
-	<refsect1>
-		<title>Files</title>
-		<variablelist>
-			<varlistentry>
-				<term>
-					<filename>
-						${sysconfdir}/conky/conky.conf</filename>
-				</term>
-				<listitem>Default system-wide configuration file.
-					The value of ${sysconfdir} depends on the
-					compile-time options (most likely /etc).</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term>
-					<filename>~/.config/conky/conky.conf</filename>
-				</term>
-				<listitem>Default personal configuration
-					file.</listitem>
-			</varlistentry>
-		</variablelist>
-	</refsect1>
-	<refsect1>
-		<title>Bugs</title>
-		<para>Drawing to root or some other desktop window directly
-			doesn't work with all window managers. Especially doesn't
-			work well with Gnome and it has been reported that it
-			doesn't work with KDE either. Nautilus can be disabled from
-			drawing to desktop with program gconf-editor. Uncheck
-			show_desktop in /apps/nautilus/preferences/. There is -w
-			switch in Conky to set some specific window id. You might
-			find xwininfo -tree useful to find the window to draw to.
-			You can also use -o argument which makes Conky to create
-			its own window. If you do try running Conky in its own
-			window, be sure to read up on the own_window_type settings
-			and experiment.</para>
-	</refsect1>
-	<refsect1>
-		<title>See Also</title>
-		<para>
-			<ulink url="https://github.com/brndnmtthws/conky">
-				https://github.com/brndnmtthws/conky</ulink>
-		</para>
-		<para>#conky on irc.freenode.net</para>
-	</refsect1>
-	<refsect1>
-		<title>Copying</title>
-		<para>Copyright (c) 2005-2018 Brenden Matthews, Philip
-			Kovacs, et. al. Any original torsmo code is licensed under
-			the BSD license (see LICENSE.BSD for a copy). All code
-			written since the fork of torsmo is licensed under the GPL
-			(see LICENSE.GPL for a copy), except where noted
-			differently (such as in portmon and audacious code which are LGPL, and
-			prss which is an MIT-style license).</para>
-	</refsect1>
-	<refsect1>
-		<title>Authors</title>
-		<para>The Conky dev team (see AUTHORS for a full list of
-			contributors).</para>
-	</refsect1>
+    <refentryinfo>
+        <address>
+            <email>brenden1@users.sourceforge.net</email>
+        </address>
+        <author>
+            <firstname>Brenden</firstname>
+            <surname>Matthews</surname>
+        </author>
+        <date>2012-05-03</date>
+    </refentryinfo>
+    <refmeta>
+        <refentrytitle>conky</refentrytitle>
+        <manvolnum>1</manvolnum>
+    </refmeta>
+    <refnamediv>
+        <refname>conky</refname>
+        <refpurpose>A system monitor for X originally based on the torsmo
+        code, but more kickass. It just keeps on given'er. Yeah.</refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+        <cmdsynopsis>
+            <command>conky</command>
+            <arg>
+                <replaceable>options</replaceable>
+            </arg>
+        </cmdsynopsis>
+    </refsynopsisdiv>
+    <refsect1>
+        <title>Description</title>
+        <para>Conky is a system monitor for X originally based on torsmo.
+        Since its inception, Conky has changed significantly from its
+        predecessor, while maintaining simplicity and configurability. Conky
+        can display just about anything, either on your root desktop or in its
+        own window. Not only does Conky have many built-in objects, it can
+        also display just about any piece of information by using scripts and
+        other external programs.</para>
+        <para>Conky has more than 250 built in objects, including support for
+        a plethora of OS stats (uname, uptime, CPU usage, mem usage, disk
+        usage, "top" like process stats, and network monitoring, just to name
+        a few), built in IMAP and POP3 support, built in support for many
+        popular music players (MPD, XMMS2, BMPx, Audacious), and much much
+        more. Conky can display this info either as text, or using simple
+        progress bars and graph widgets, with different fonts and
+        colours.</para>
+        <para>We are always looking for help, whether its reporting bugs,
+        writing patches, or writing docs. Please use the facilities at
+        SourceForge to make bug reports, feature requests, and submit patches,
+        or stop by #conky on irc.freenode.net if you have questions or want to
+        contribute.</para>
+        <para>Thanks for your interest in Conky.</para>
+    </refsect1>
+    <refsect1>
+        <title>Compiling</title>
+        <para>For users compiling from source on a binary distro, make sure
+        you have the X development libraries installed (Unless you configure
+        your build without X11). This should be a package along the lines of
+        "libx11-dev" or "xorg-x11-dev" for X11 libs, and similar "-dev" format
+        for the other libs required (depending on your build options). You
+        should be able to see which extra packages you need to install by
+        reading errors that you get from running `cmake'. The easiest way to
+        view the available build options is to run `ccmake' or `cmake-gui'
+        from the source tree, but be careful when disabling certain features
+        as you may lose desired functionality. E.g., with BUILD_MATH disabled
+        you won't get errors but logarithmic graphs will be normal graphs and
+        gauges will miss their line.</para>
+        <para>Conky has (for some time) been available in the repositories of
+        most popular distributions. Here are some installation instructions
+        for a few:</para>
+        <para>Gentoo users -- Conky is in Gentoo's Portage... simply use
+        "emerge app-admin/conky" for installation.</para>
+        <para>Debian, etc. users -- Conky should be in your repositories, and
+        can be installed by doing "aptitude install conky".</para>
+        <para>Example to compile and run Conky with default components (note
+        that some build options may differ for your system):</para>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>
+                        <option>cmake</option>
+                    </command>
+                    <option>-D CMAKE_INSTALL_PREFIX:string=/usr .</option>
+                </term>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>
+                        <option>make</option>
+                    </command>
+                </term>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>
+                        <option>make install</option>
+                    </command>
+                    <option># Optional</option>
+                </term>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>
+                        <option>src/conky</option>
+                    </command>
+                </term>
+            </varlistentry>
+        </variablelist>
+        <para>Conky has been tested to be compatible with C99 C and C++0x C++,
+        however it has not been tested with anything other than gcc, and is
+        not guaranteed to work with other compilers.</para>
+        <para>TIP: Try configuring Conky with `ccmake' or `cmake-gui' instead
+        of just `cmake'.</para>
+        <para></para>
+    </refsect1>
+    <refsect1>
+        <title>You Should Know</title>
+        <para>Conky is generally very good on resources. That said, the more
+        you try to make Conky do, the more resources it is going to
+        consume.</para>
+        <para>An easy way to force Conky to reload your
+        ~/.config/conky/conky.conf: "killall -SIGUSR1 conky". Saves you the
+        trouble of having to kill and then restart.</para>
+    </refsect1>
+    <refsect1>
+    <title>Options</title>
+    <para>Command line options override configurations defined in
+    configuration file.</para>&command_options;</refsect1>
+    <refsect1>
+    <title>Configuration Settings</title>
+    <para>Default configuration file location is
+    $HOME/.config/conky/conky.conf or ${sysconfdir}/conky/conky.conf. On most
+    systems, sysconfdir is /etc, and you can find the sample config file there
+    (/etc/conky/conky.conf).</para>
+    <para>You might want to copy it to $HOME/.config/conky/conky.conf and then
+    start modifying it. Other configs can be found at
+    http://conky.sf.net/</para>&config_settings;</refsect1>
+    <refsect1>
+    <title>Objects/Variables</title>
+    <para>Colours are parsed using XParsecolor(), there might be a list of
+    them: /usr/share/X11/rgb.txt. Colour can be also in #rrggbb format
+    (hex).</para>
+    <para>Some objects may create threads, and sometimes these threads will
+    not be destroyed until Conky terminates. There is no way to destroy or
+    clean up threads while Conky is running. For example, if you use an MPD
+    variable, the MPD thread will keep running until Conky dies. Some threaded
+    objects will use one of the parameters as a 'key', so that you only have 1
+    relevant thread running (for example, the $curl, $rss and $weather objects
+    launch one thread per URI).</para>&variables;</refsect1>
+    <refsect1>
+    <title>Lua API</title>
+    <para>Conky features a Lua Programming API, and also ships with Lua
+    bindings for some useful libraries. Note that the bindings require
+    tolua++, which currently only compiles against Lua 5.1.</para>
+    <para>To use Lua Conky, you first need to make sure you have a version of
+    Conky with Lua support enabled (``conky -v'' will report this). Conky
+    defines certain global functions and variables which can be accessed from
+    Lua code running in Conky. Scripts must first be loaded using the lua_load
+    configuration option. You then call functions in Lua via Conky's $lua,
+    $lua_read, and Lua hooks.</para>
+    <para>Be careful when creating threaded objects through the Lua API. You
+    could wind up with a whole bunch of threads running if a thread is created
+    with each iteration.</para>
+    <para>At this time, the Lua API should not be considered stable and may
+    change drastically from one release to another as it matures.</para>
+    <para>NOTE: In order to accommodate certain features in the cairo
+    library's API, Conky will export a few additional functions for the
+    creation of certain structures. These are documented
+    below.</para>&lua;</refsect1>
+    <refsect1>
+        <title>Examples</title>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <varname>conky</varname>
+                    <option>-t '${time %D %H:%M}' -o -u 30</option>
+                </term>
+                <listitem>Start Conky in its own window with date and clock as
+                text and 30 sec update interval.</listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <varname>conky</varname>
+                    <option>-a top_left -x 5 -y 500 -d</option>
+                </term>
+                <listitem>Start Conky to background at coordinates (5,
+                500).</listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <varname>conky</varname>
+                    <option>-C &gt; ~/.config/conky/conky.conf</option>
+                </term>
+                <listitem>Do not start Conky, but have it output the builtin
+                default config file to ~/.config/conky/conky.conf for later
+                customising.</listitem>
+            </varlistentry>
+        </variablelist>
+    </refsect1>
+    <refsect1>
+        <title>Files</title>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <filename>${sysconfdir}/conky/conky.conf</filename>
+                </term>
+                <listitem>Default system-wide configuration file. The value of
+                ${sysconfdir} depends on the compile-time options (most likely
+                /etc).</listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <filename>~/.config/conky/conky.conf</filename>
+                </term>
+                <listitem>Default personal configuration file.</listitem>
+            </varlistentry>
+        </variablelist>
+    </refsect1>
+    <refsect1>
+        <title>Bugs</title>
+        <para>Drawing to root or some other desktop window directly doesn't
+        work with all window managers. Especially doesn't work well with Gnome
+        and it has been reported that it doesn't work with KDE either.
+        Nautilus can be disabled from drawing to desktop with program
+        gconf-editor. Uncheck show_desktop in /apps/nautilus/preferences/.
+        There is -w switch in Conky to set some specific window id. You might
+        find xwininfo -tree useful to find the window to draw to. You can also
+        use -o argument which makes Conky to create its own window. If you do
+        try running Conky in its own window, be sure to read up on the
+        own_window_type settings and experiment.</para>
+    </refsect1>
+    <refsect1>
+        <title>See Also</title>
+        <para>https://github.com/brndnmtthws/conky</para>
+        <para>#conky on irc.freenode.net</para>
+    </refsect1>
+    <refsect1>
+        <title>Copying</title>
+        <para>Copyright (c) 2005-2018 Brenden Matthews, Philip Kovacs, et. al.
+        Any original torsmo code is licensed under the BSD license (see
+        LICENSE.BSD for a copy). All code written since the fork of torsmo is
+        licensed under the GPL (see LICENSE.GPL for a copy), except where
+        noted differently (such as in portmon and audacious code which are
+        LGPL, and prss which is an MIT-style license).</para>
+    </refsect1>
+    <refsect1>
+        <title>Authors</title>
+        <para>The Conky dev team (see AUTHORS for a full list of
+        contributors).</para>
+    </refsect1>
 </refentry>

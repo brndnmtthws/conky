@@ -7,9 +7,9 @@
             <option>ALIGNMENT</option>
         </term>
         <listitem>Text alignment on screen,
-        {top,bottom,middle}_{left,right,middle} or none. Can also
-        be abbreviated with first chars of position, ie. tr for
-        top_right. Only available with build flag BUILD_X11 enabled.
+        {top,bottom,middle}_{left,right,middle} or none. Can also be
+        abbreviated with first chars of position, ie. tr for top_right. Only
+        available with build flag BUILD_X11 enabled.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -18,7 +18,8 @@
                 <option>-b | --double-buffer</option>
             </command>
         </term>
-        <listitem>Use double buffering (eliminates "flicker"). Only available with build flag BUILD_X11 enabled.
+        <listitem>Use double buffering (eliminates "flicker"). Only available
+        with build flag BUILD_X11 enabled.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -28,7 +29,8 @@
             </command>
             <option>FILE</option>
         </term>
-        <listitem>Config file to load instead of $HOME/.config/conky/conky.conf 
+        <listitem>Config file to load instead of
+        $HOME/.config/conky/conky.conf
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -37,8 +39,9 @@
                 <option>-C | --print-config</option>
             </command>
         </term>
-        <listitem>Print builtin default config to stdout. See also
-        the section EXAMPLES for more information. Only available with build flag BUILD_BUILTIN_CONFIG enabled.
+        <listitem>Print builtin default config to stdout. See also the section
+        EXAMPLES for more information. Only available with build flag
+        BUILD_BUILTIN_CONFIG enabled.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -47,7 +50,7 @@
                 <option>-d | --daemonize</option>
             </command>
         </term>
-        <listitem>Daemonize Conky, aka fork to background. 
+        <listitem>Daemonize Conky, aka fork to background.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -56,8 +59,7 @@
                 <option>-D | --debug</option>
             </command>
         </term>
-        <listitem>Increase debugging output, ie. -DD for more
-        debugging. 
+        <listitem>Increase debugging output, ie. -DD for more debugging.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -67,7 +69,8 @@
             </command>
             <option>FONT</option>
         </term>
-        <listitem>Font to use. Only available with build flag BUILD_X11 enabled. 
+        <listitem>Font to use. Only available with build flag BUILD_X11
+        enabled.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -76,7 +79,7 @@
                 <option>-h | --help</option>
             </command>
         </term>
-        <listitem>Prints command line help and exits. 
+        <listitem>Prints command line help and exits.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -86,7 +89,7 @@
             </command>
             <option>COUNT</option>
         </term>
-        <listitem>Number of times to update Conky (and quit). 
+        <listitem>Number of times to update Conky (and quit).
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -95,7 +98,8 @@
                 <option>-o | --own-window</option>
             </command>
         </term>
-        <listitem>Create own window to draw. Only available with build flag BUILD_X11 enabled.
+        <listitem>Create own window to draw. Only available with build flag
+        BUILD_X11 enabled.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -114,7 +118,7 @@
                 <option>-q | --quiet</option>
             </command>
         </term>
-        <listitem>Run Conky in 'quiet mode' (ie. no output). 
+        <listitem>Run Conky in 'quiet mode' (ie. no output).
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -124,8 +128,7 @@
             </command>
             <option>TEXT</option>
         </term>
-        <listitem>Text to render, remember single quotes, like -t '
-        $uptime ' 
+        <listitem>Text to render, remember single quotes, like -t ' $uptime '
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -135,7 +138,7 @@
             </command>
             <option>SECONDS</option>
         </term>
-        <listitem>Update interval. 
+        <listitem>Update interval.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -144,8 +147,8 @@
                 <option>-v | -V | --version</option>
             </command>
         </term>
-        <listitem>Prints version, build information and general info.
-        Exits after printing. 
+        <listitem>Prints version, build information and general info. Exits
+        after printing.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -155,7 +158,8 @@
             </command>
             <option>WIN_ID</option>
         </term>
-        <listitem>Window id to draw. Only available with build flag BUILD_X11 enabled.
+        <listitem>Window id to draw. Only available with build flag BUILD_X11
+        enabled.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -165,7 +169,7 @@
             </command>
             <option>X_COORDINATE</option>
         </term>
-        <listitem>X position 
+        <listitem>X position
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -175,7 +179,7 @@
             </command>
             <option>X_COORDINATE</option>
         </term>
-        <listitem>X position 
+        <listitem>X position
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -185,7 +189,8 @@
             </command>
             <option>DISPLAY</option>
         </term>
-        <listitem>X11 display to use. Only available with build flag BUILD_X11 enabled. 
+        <listitem>X11 display to use. Only available with build flag BUILD_X11
+        enabled.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -195,7 +200,7 @@
             </command>
             <option>Y_COORDINATE</option>
         </term>
-        <listitem>Y position 
+        <listitem>Y position
         <para></para></listitem>
     </varlistentry>
 </variablelist>

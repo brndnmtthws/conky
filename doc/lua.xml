@@ -7,9 +7,9 @@
             <option>function</option>
         </term>
         <listitem>
-            <para>This function takes a string that is evaluated as
-            per Conky's TEXT section, and then returns a string
-            with the result.</para>
+            <para>This function takes a string that is evaluated as per
+            Conky's TEXT section, and then returns a string with the
+            result.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -32,26 +32,23 @@
             <option>table</option>
         </term>
         <listitem>
-            <para>This table contains some information about
-            Conky's window. The following table describes the
-            values contained:</para>
+            <para>This table contains some information about Conky's window.
+            The following table describes the values contained:</para>
             <simplelist>
                 <member>
                     <command>drawable</command>
-                    <option>Window's drawable (Xlib Drawable),
-                    requires Lua extras enabled at compile
-                    time.</option>
+                    <option>Window's drawable (Xlib Drawable), requires Lua
+                    extras enabled at compile time.</option>
                 </member>
                 <member>
                     <command>visual</command>
-                    <option>Window's visual (Xlib Visual), requires
-                    Lua extras enabled at compile time.</option>
+                    <option>Window's visual (Xlib Visual), requires Lua extras
+                    enabled at compile time.</option>
                 </member>
                 <member>
                     <command>display</command>
-                    <option>Window's display (Xlib Display),
-                    requires Lua extras enabled at compile
-                    time.</option>
+                    <option>Window's display (Xlib Display), requires Lua
+                    extras enabled at compile time.</option>
                 </member>
                 <member>
                     <command>width</command>
@@ -63,42 +60,37 @@
                 </member>
                 <member>
                     <command>border_inner_margin</command>
-                    <option>Window's inner border margin (in
-                    pixels).</option>
+                    <option>Window's inner border margin (in pixels).</option>
                 </member>
                 <member>
                     <command>border_outer_margin</command>
-                    <option>Window's outer border margin (in
-                    pixels).</option>
+                    <option>Window's outer border margin (in pixels).</option>
                 </member>
                 <member>
                     <command>border_width</command>
-                    <option>Window's border width (in
-                    pixels).</option>
+                    <option>Window's border width (in pixels).</option>
                 </member>
                 <member>
                     <command>text_start_x</command>
-                    <option>The x component of the starting
-                    coordinate of text drawing.</option>
+                    <option>The x component of the starting coordinate of text
+                    drawing.</option>
                 </member>
                 <member>
                     <command>text_start_y</command>
-                    <option>The y component of the starting
-                    coordinate of text drawing.</option>
+                    <option>The y component of the starting coordinate of text
+                    drawing.</option>
                 </member>
                 <member>
                     <command>text_width</command>
-                    <option>The width of the text drawing
-                    region.</option>
+                    <option>The width of the text drawing region.</option>
                 </member>
                 <member>
                     <command>text_height</command>
-                    <option>The height of the text drawing
-                    region.</option>
+                    <option>The height of the text drawing region.</option>
                 </member>
             </simplelist>
-            <para>NOTE: This table is only defined when X support
-            is enabled.</para>
+            <para>NOTE: This table is only defined when X support is
+            enabled.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -109,14 +101,12 @@
             <option>table</option>
         </term>
         <listitem>
-            <para>This table contains some information about
-            Conky's internal data. The following table describes
-            the values contained:</para>
+            <para>This table contains some information about Conky's internal
+            data. The following table describes the values contained:</para>
             <simplelist>
                 <member>
                     <command>update_interval</command>
-                    <option>Conky's update interval (in
-                    seconds).</option>
+                    <option>Conky's update interval (in seconds).</option>
                 </member>
             </simplelist>
         </listitem>
@@ -129,9 +119,9 @@
             <option>string</option>
         </term>
         <listitem>
-            <para>A string containing the build info for this
-            particular instance of Conky, including the version,
-            build date, and architecture.</para>
+            <para>A string containing the build info for this particular
+            instance of Conky, including the version, build date, and
+            architecture.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -142,8 +132,8 @@
             <option>string</option>
         </term>
         <listitem>
-            <para>A string containing the build date for this
-            particular instance of Conky.</para>
+            <para>A string containing the build date for this particular
+            instance of Conky.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -154,8 +144,8 @@
             <option>string</option>
         </term>
         <listitem>
-            <para>A string containing the build architecture for
-            this particular instance of Conky.</para>
+            <para>A string containing the build architecture for this
+            particular instance of Conky.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -166,8 +156,8 @@
             <option>string</option>
         </term>
         <listitem>
-            <para>A string containing the version of the current
-            instance of Conky.</para>
+            <para>A string containing the version of the current instance of
+            Conky.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -190,12 +180,11 @@
             <option>function</option>
         </term>
         <listitem>
-            <para>Call this function to return a new
-            cairo_text_extents_t structure. A creation function for
-            this structure is not provided by the cairo API. After
-            calling this, you should use tolua.takeownership() on
-            the return value to ensure ownership is passed
-            properly.</para>
+            <para>Call this function to return a new cairo_text_extents_t
+            structure. A creation function for this structure is not provided
+            by the cairo API. After calling this, you should use
+            tolua.takeownership() on the return value to ensure ownership is
+            passed properly.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -206,12 +195,11 @@
             <option>function</option>
         </term>
         <listitem>
-            <para>Call this function to return a new
-            cairo_font_extents_t structure. A creation function for
-            this structure is not provided by the cairo API. After
-            calling this, you should use tolua.takeownership() on
-            the return value to ensure ownership is passed
-            properly.</para>
+            <para>Call this function to return a new cairo_font_extents_t
+            structure. A creation function for this structure is not provided
+            by the cairo API. After calling this, you should use
+            tolua.takeownership() on the return value to ensure ownership is
+            passed properly.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -222,18 +210,17 @@
             <option>function</option>
         </term>
         <listitem>
-            <para>Call this function to return a new cairo_matrix_t
-            structure. A creation function for this structure is
-            not provided by the cairo API. After calling this, you
-            should use tolua.takeownership() on the return value to
-            ensure ownership is passed properly.</para>
+            <para>Call this function to return a new cairo_matrix_t structure.
+            A creation function for this structure is not provided by the
+            cairo API. After calling this, you should use
+            tolua.takeownership() on the return value to ensure ownership is
+            passed properly.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
         <term>
             <command>
-                <option>
-                cairo_text_extents_t:destroy(structure)</option>
+                <option>cairo_text_extents_t:destroy(structure)</option>
             </command>
             <option>function</option>
         </term>
@@ -245,8 +232,7 @@
     <varlistentry>
         <term>
             <command>
-                <option>
-                cairo_font_extents_t:destroy(structure)</option>
+                <option>cairo_font_extents_t:destroy(structure)</option>
             </command>
             <option>function</option>
         </term>
