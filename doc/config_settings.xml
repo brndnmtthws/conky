@@ -5,11 +5,10 @@
                 <option>alignment</option>
             </command>
         </term>
-        <listitem>Aligned position on screen, may be top_left,
-        top_right, top_middle, bottom_left, bottom_right,
-        bottom_middle, middle_left, middle_middle, middle_right, or
-        none (also can be abreviated as tl, tr, tm, bl, br, bm, ml,
-        mm, mr). See also gap_x and gap_y.
+        <listitem>Aligned position on screen, may be top_left, top_right,
+        top_middle, bottom_left, bottom_right, bottom_middle, middle_left,
+        middle_middle, middle_right, or none (also can be abreviated as tl,
+        tr, tm, bl, br, bm, ml, mm, mr). See also gap_x and gap_y.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -27,8 +26,8 @@
                 <option>background</option>
             </command>
         </term>
-        <listitem>Boolean value, if true, Conky will be forked to
-        background when started.
+        <listitem>Boolean value, if true, Conky will be forked to background
+        when started.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -37,8 +36,8 @@
                 <option>border_inner_margin</option>
             </command>
         </term>
-        <listitem>Inner border margin in pixels (the margin between
-        the border and text).
+        <listitem>Inner border margin in pixels (the margin between the border
+        and text).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -47,8 +46,8 @@
                 <option>border_outer_margin</option>
             </command>
         </term>
-        <listitem>Outer border margin in pixels (the margin between
-        the border and the edge of the window).
+        <listitem>Outer border margin in pixels (the margin between the border
+        and the edge of the window).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -67,9 +66,8 @@
             </command>
         </term>
         <listitem>Predefine a color for use inside conky.text segments.
-        Substitute N by a digit between 0 and 9, inclusively. When
-        specifying the color value in hex, omit the leading hash
-        (#).
+        Substitute N by a digit between 0 and 9, inclusively. When specifying
+        the color value in hex, omit the leading hash (#).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -96,9 +94,10 @@
                 <option>console_graph_ticks</option>
             </command>
         </term>
-        <listitem>A comma-separated list of strings to use as the bars of a graph output
-        to console/shell. The first list item is used for the minimum bar height and the
-        last item is used for the maximum. Example: " ,_,=,#".
+        <listitem>A comma-separated list of strings to use as the bars of a
+        graph output to console/shell. The first list item is used for the
+        minimum bar height and the last item is used for the maximum. Example:
+        " ,_,=,#".
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -107,8 +106,7 @@
                 <option>cpu_avg_samples</option>
             </command>
         </term>
-        <listitem>The number of samples to average for CPU
-        monitoring.
+        <listitem>The number of samples to average for CPU monitoring.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -117,8 +115,8 @@
                 <option>default_bar_height</option>
             </command>
         </term>
-        <listitem>Specify a default height for bars. If not specified,
-        the default value is 6.
+        <listitem>Specify a default height for bars. If not specified, the
+        default value is 6.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -127,11 +125,10 @@
                 <option>default_bar_width</option>
             </command>
         </term>
-        <listitem>Specify a default width for bars. If not specified,
-        the default value is 0, which causes the bar to expand to
-        fit the width of your Conky window. If you set
-        out_to_console = true, the default value will be 10
-        for the text version of the bar.
+        <listitem>Specify a default width for bars. If not specified, the
+        default value is 0, which causes the bar to expand to fit the width of
+        your Conky window. If you set out_to_console = true, the default value
+        will be 10 for the text version of the bar.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -149,8 +146,8 @@
                 <option>default_gauge_height</option>
             </command>
         </term>
-        <listitem>Specify a default height for gauges. If not specified,
-        the default value is 25.
+        <listitem>Specify a default height for gauges. If not specified, the
+        default value is 25.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -159,8 +156,8 @@
                 <option>default_gauge_width</option>
             </command>
         </term>
-        <listitem>Specify a default width for gauges. If not specified,
-        the default value is 40.
+        <listitem>Specify a default width for gauges. If not specified, the
+        default value is 40.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -169,8 +166,8 @@
                 <option>default_graph_height</option>
             </command>
         </term>
-        <listitem>Specify a default height for graphs. If not specified,
-        the default value is 25.
+        <listitem>Specify a default height for graphs. If not specified, the
+        default value is 25.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -179,12 +176,11 @@
                 <option>default_graph_width</option>
             </command>
         </term>
-        <listitem>Specify a default width for graphs. If not specified,
-        the default value is 0, which causes the graph to expand to
-        fit the width of your Conky window. If you set
-        out_to_console = true, the text version of the graph will
-        actually have no width and you will need to set a
-        sensible default or set the height and width of each graph
+        <listitem>Specify a default width for graphs. If not specified, the
+        default value is 0, which causes the graph to expand to fit the width
+        of your Conky window. If you set out_to_console = true, the text
+        version of the graph will actually have no width and you will need to
+        set a sensible default or set the height and width of each graph
         individually.
         <para /></listitem>
     </varlistentry>
@@ -212,7 +208,8 @@
                 <option>disable_auto_reload</option>
             </command>
         </term>
-		<listitem>Enable to disable the inotify-based auto config reload feature.
+        <listitem>Enable to disable the inotify-based auto config reload
+        feature.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -221,8 +218,7 @@
                 <option>diskio_avg_samples</option>
             </command>
         </term>
-        <listitem>The number of samples to average for disk I/O
-        monitoring.
+        <listitem>The number of samples to average for disk I/O monitoring.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -233,8 +229,8 @@
         </term>
         <listitem>Specify an X display to connect to.
         <para /></listitem>
-	</varlistentry>
-	<varlistentry>
+    </varlistentry>
+    <varlistentry>
         <term>
             <command>
                 <option>xinerama_head</option>
@@ -242,16 +238,16 @@
         </term>
         <listitem>Specify a Xinerama head.
         <para /></listitem>
-	</varlistentry>
+    </varlistentry>
     <varlistentry>
         <term>
             <command>
                 <option>double_buffer</option>
             </command>
         </term>
-        <listitem>Use the Xdbe extension? (eliminates flicker) It
-        is highly recommended to use own window with this one so
-        double buffer won't be so big.
+        <listitem>Use the Xdbe extension? (eliminates flicker) It is highly
+        recommended to use own window with this one so double buffer won't be
+        so big.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -260,10 +256,9 @@
                 <option>draw_blended</option>
             </command>
         </term>
-        <listitem>Boolean, blend when rendering drawn image?
-        Some images blend incorrectly breaking alpha with ARBG visuals. This
-        provides a possible work around by disabling blending. Defaults to
-        true.
+        <listitem>Boolean, blend when rendering drawn image? Some images blend
+        incorrectly breaking alpha with ARBG visuals. This provides a possible
+        work around by disabling blending. Defaults to true.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -308,8 +303,8 @@
                 <option>extra_newline</option>
             </command>
         </term>
-        <listitem>Put an extra newline at the end when writing to
-        stdout, useful for writing to awesome's wiboxes.
+        <listitem>Put an extra newline at the end when writing to stdout,
+        useful for writing to awesome's wiboxes.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -318,8 +313,7 @@
                 <option>font</option>
             </command>
         </term>
-        <listitem>Font name in X, xfontsel can be used to get a
-        nice font
+        <listitem>Font name in X, xfontsel can be used to get a nice font
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -333,16 +327,15 @@
         format as a font variable.
         <para /></listitem>
     </varlistentry>
-
     <varlistentry>
         <term>
             <command>
                 <option>format_human_readable</option>
             </command>
         </term>
-        <listitem>If enabled, values which are in bytes will be
-        printed in human readable format (i.e., KiB, MiB, etc). If
-        disabled, the number of bytes is printed instead.
+        <listitem>If enabled, values which are in bytes will be printed in
+        human readable format (i.e., KiB, MiB, etc). If disabled, the number
+        of bytes is printed instead.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -351,9 +344,9 @@
                 <option>gap_x</option>
             </command>
         </term>
-        <listitem>Gap, in pixels, between right or left border of
-        screen, same as passing -x at command line, e.g. gap_x 10.
-        For other position related stuff, see 'alignment'.
+        <listitem>Gap, in pixels, between right or left border of screen, same
+        as passing -x at command line, e.g. gap_x 10. For other position
+        related stuff, see 'alignment'.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -362,9 +355,9 @@
                 <option>gap_y</option>
             </command>
         </term>
-        <listitem>Gap, in pixels, between top or bottom border of
-        screen, same as passing -y at command line, e.g. gap_y 10.
-        For other position related stuff, see 'alignment'.
+        <listitem>Gap, in pixels, between top or bottom border of screen, same
+        as passing -y at command line, e.g. gap_y 10. For other position
+        related stuff, see 'alignment'.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -376,8 +369,7 @@
         <listitem>Specify API token for GitHub notifications.
         <simplelist>
             <member>
-        https://github.com/settings/tokens/new?scopes=notifications&amp;description=conky
-            </member>
+            https://github.com/settings/tokens/new?scopes=notifications&amp;description=conky</member>
         </simplelist>
         <para /></listitem>
     </varlistentry>
@@ -387,8 +379,8 @@
                 <option>hddtemp_host</option>
             </command>
         </term>
-	<listitem>Hostname to connect to for hddtemp objects. Defaults
-		to "127.0.0.1".
+        <listitem>Hostname to connect to for hddtemp objects. Defaults to
+        "127.0.0.1".
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -397,8 +389,7 @@
                 <option>hddtemp_port</option>
             </command>
         </term>
-	<listitem>Port to use for hddtemp connections. Defaults to
-		7634.
+        <listitem>Port to use for hddtemp connections. Defaults to 7634.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -407,9 +398,8 @@
                 <option>http_refresh</option>
             </command>
         </term>
-        <listitem>When this is set the page generated with
-	out_to_http will automatically refresh each interval. Default
-	value is no.
+        <listitem>When this is set the page generated with out_to_http will
+        automatically refresh each interval. Default value is no.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -418,11 +408,10 @@
                 <option>if_up_strictness</option>
             </command>
         </term>
-        <listitem>How strict should if_up be when testing an
-        interface for being up? The value is one of up, link or
-        address, to check for the interface being solely up, being
-        up and having link or being up, having link and an assigned
-        IP address.
+        <listitem>How strict should if_up be when testing an interface for
+        being up? The value is one of up, link or address, to check for the
+        interface being solely up, being up and having link or being up,
+        having link and an assigned IP address.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -431,13 +420,12 @@
                 <option>imap</option>
             </command>
         </term>
-        <listitem>Default global IMAP server. Arguments are: "host
-        user pass [-i interval (in seconds)] [-f 'folder'] [-p port]
-        [-e 'command'] [-r retries]". Default port is 143, default
-        folder is 'INBOX', default interval is 5 minutes, and
-        default number of retries before giving up is 5. If the
-        password is supplied as '*', you will be prompted to enter
-        the password when Conky starts.
+        <listitem>Default global IMAP server. Arguments are: "host user pass
+        [-i interval (in seconds)] [-f 'folder'] [-p port] [-e 'command'] [-r
+        retries]". Default port is 143, default folder is 'INBOX', default
+        interval is 5 minutes, and default number of retries before giving up
+        is 5. If the password is supplied as '*', you will be prompted to
+        enter the password when Conky starts.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -455,11 +443,10 @@
                 <option>imlib_cache_size</option>
             </command>
         </term>
-        <listitem>
-            Imlib2 image cache size, in bytes. Defaults to
-            4MiB. Increase this value if you use $image lots. Set
-            to 0 to disable the image cache.<para/>
-        </listitem>
+        <listitem>Imlib2 image cache size, in bytes. Defaults to 4MiB.
+        Increase this value if you use $image lots. Set to 0 to disable the
+        image cache.
+        <para /></listitem>
     </varlistentry>
     <varlistentry>
         <term>
@@ -468,16 +455,13 @@
             </command>
             <option>function_name [function arguments]</option>
         </term>
-        <listitem>
-            This function, if defined, will be called by
-            Conky through each iteration after drawing to the
-            window. Requires X support. Takes any number of
-            optional arguments. Use this hook for drawing things on
-            top of what Conky draws. Conky puts 'conky_' in front
-            of function_name to prevent accidental calls to the
-            wrong function unless you place 'conky_' in front of it
-            yourself.<para/>
-        </listitem>
+        <listitem>This function, if defined, will be called by Conky through
+        each iteration after drawing to the window. Requires X support. Takes
+        any number of optional arguments. Use this hook for drawing things on
+        top of what Conky draws. Conky puts 'conky_' in front of function_name
+        to prevent accidental calls to the wrong function unless you place
+        'conky_' in front of it yourself.
+        <para /></listitem>
     </varlistentry>
     <varlistentry>
         <term>
@@ -486,16 +470,13 @@
             </command>
             <option>function_name [function arguments]</option>
         </term>
-        <listitem>
-            This function, if defined, will be called by
-            Conky through each iteration before drawing to the
-            window. Requires X support. Takes any number of
-            optional arguments. Use this hook for drawing things on
-            top of what Conky draws. Conky puts 'conky_' in front
-            of function_name to prevent accidental calls to the
-            wrong function unless you place 'conky_' in front of it
-            yourself.<para/>
-        </listitem>
+        <listitem>This function, if defined, will be called by Conky through
+        each iteration before drawing to the window. Requires X support. Takes
+        any number of optional arguments. Use this hook for drawing things on
+        top of what Conky draws. Conky puts 'conky_' in front of function_name
+        to prevent accidental calls to the wrong function unless you place
+        'conky_' in front of it yourself.
+        <para /></listitem>
     </varlistentry>
     <varlistentry>
         <term>
@@ -513,16 +494,13 @@
             </command>
             <option>function_name [function arguments]</option>
         </term>
-        <listitem>
-            This function, if defined, will be called by
-            Conky at shutdown or when the configuration is
-            reloaded. Use this hook to clean up after yourself,
-            such as freeing memory which has been allocated by
-            external libraries via Lua. Conky puts 'conky_' in
-            front of function_name to prevent accidental calls to
-            the wrong function unless you place 'conky_' in
-            front of it yourself.<para/>
-        </listitem>
+        <listitem>This function, if defined, will be called by Conky at
+        shutdown or when the configuration is reloaded. Use this hook to clean
+        up after yourself, such as freeing memory which has been allocated by
+        external libraries via Lua. Conky puts 'conky_' in front of
+        function_name to prevent accidental calls to the wrong function unless
+        you place 'conky_' in front of it yourself.
+        <para /></listitem>
     </varlistentry>
     <varlistentry>
         <term>
@@ -531,15 +509,12 @@
             </command>
             <option>function_name [function arguments]</option>
         </term>
-        <listitem>
-            This function, if defined, will be called by
-            Conky at startup or when the configuration is reloaded.
-            Use this hook to initialize values, or for any run-once
-            applications. Conky puts 'conky_' in front of
-            function_name to prevent accidental calls to the wrong
-            function unless you place 'conky_' in front of
-            it yourself.<para/>
-        </listitem>
+        <listitem>This function, if defined, will be called by Conky at
+        startup or when the configuration is reloaded. Use this hook to
+        initialize values, or for any run-once applications. Conky puts
+        'conky_' in front of function_name to prevent accidental calls to the
+        wrong function unless you place 'conky_' in front of it yourself.
+        <para /></listitem>
     </varlistentry>
     <varlistentry>
         <term>
@@ -556,8 +531,8 @@
                 <option>max_port_monitor_connections</option>
             </command>
         </term>
-        <listitem>Allow each port monitor to track at most this
-        many connections (if 0 or not set, default is 256)
+        <listitem>Allow each port monitor to track at most this many
+        connections (if 0 or not set, default is 256)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -567,10 +542,9 @@
             </command>
             <option>width</option>
         </term>
-        <listitem>When a line in the output contains 'width'
-	chars and the end isn't reached, the next char will start
-	on a new line. If you want to make sure that lines don't
-	get broken, set 'width' to 0
+        <listitem>When a line in the output contains 'width' chars and the end
+        isn't reached, the next char will start on a new line. If you want to
+        make sure that lines don't get broken, set 'width' to 0
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -581,7 +555,7 @@
             <option>bytes</option>
         </term>
         <listitem>Maximum size of user text buffer, i.e. text inside
-	conky.text section in config file (default is 16384 bytes)
+        conky.text section in config file (default is 16384 bytes)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -665,7 +639,8 @@
                 <option>mysql_user</option>
             </command>
         </term>
-        <listitem>MySQL user name to use when connecting to the server. Defaults to your username
+        <listitem>MySQL user name to use when connecting to the server.
+        Defaults to your username
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -674,8 +649,8 @@
                 <option>mysql_password</option>
             </command>
         </term>
-        <listitem>Password of the MySQL user. Place it between "-chars. When this is not set there
-        is no password used
+        <listitem>Password of the MySQL user. Place it between "-chars. When
+        this is not set there is no password used
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -693,8 +668,8 @@
                 <option>music_player_interval</option>
             </command>
         </term>
-        <listitem>Music player thread update interval (defaults to
-        Conky's update interval)
+        <listitem>Music player thread update interval (defaults to Conky's
+        update interval)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -713,7 +688,6 @@
             </command>
         </term>
         <listitem>Subtract (file system) buffers from used memory?
-
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -722,8 +696,8 @@
                 <option>nvidia_display</option>
             </command>
         </term>
-        <listitem>The display that the nvidia variable will use (defaults to the value of the
-            display variable)
+        <listitem>The display that the nvidia variable will use (defaults to
+        the value of the display variable)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -750,9 +724,9 @@
                 <option>out_to_ncurses</option>
             </command>
         </term>
-        <listitem>Print text in the console, but use ncurses so
-        that conky can print the text of a new update over the old
-        text. (In the future this will provide more useful things)
+        <listitem>Print text in the console, but use ncurses so that conky can
+        print the text of a new update over the old text. (In the future this
+        will provide more useful things)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -770,11 +744,10 @@
                 <option>out_to_x</option>
             </command>
         </term>
-        <listitem>When set to no, there will be no output in X
-        (useful when you also use things like out_to_console). If
-        you set it to no, make sure that it's placed before all
-        other X-related setting (take the first line of your
-        configfile to be sure). Default value is yes
+        <listitem>When set to no, there will be no output in X (useful when
+        you also use things like out_to_console). If you set it to no, make
+        sure that it's placed before all other X-related setting (take the
+        first line of your configfile to be sure). Default value is yes
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -810,8 +783,7 @@
                 <option>own_window_class</option>
             </command>
         </term>
-        <listitem>Manually set the WM_CLASS name. Defaults to
-        "Conky".
+        <listitem>Manually set the WM_CLASS name. Defaults to "Conky".
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -821,10 +793,10 @@
             </command>
             <option>colour</option>
         </term>
-        <listitem>If own_window_transparent no, set a specified
-            background colour (defaults to black). Takes either a hex value
-            (e.g. '#ffffff'), a shorthand hex value (e.g. '#fff'), or a valid
-            RGB name (see /usr/lib/X11/rgb.txt)
+        <listitem>If own_window_transparent no, set a specified background
+        colour (defaults to black). Takes either a hex value (e.g. '#ffffff'),
+        a shorthand hex value (e.g. '#fff'), or a valid RGB name (see
+        /usr/lib/X11/rgb.txt)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -835,11 +807,10 @@
             <option>
             undecorated,below,above,sticky,skip_taskbar,skip_pager</option>
         </term>
-        <listitem>If own_window is yes, you may use these window
-        manager hints to affect the way Conky displays. Notes: Use
-        own_window_type desktop as another way to implement many of
-        these hints implicitly. If you use own_window_type
-        override, window manager hints have no meaning and are
+        <listitem>If own_window is yes, you may use these window manager hints
+        to affect the way Conky displays. Notes: Use own_window_type desktop
+        as another way to implement many of these hints implicitly. If you use
+        own_window_type override, window manager hints have no meaning and are
         ignored.
         <para /></listitem>
     </varlistentry>
@@ -849,8 +820,8 @@
                 <option>own_window_title</option>
             </command>
         </term>
-        <listitem>Manually set the window name. Defaults to
-        "conky (&lt;hostname&gt;)".
+        <listitem>Manually set the window name. Defaults to "conky
+        (&lt;hostname&gt;)".
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -859,10 +830,10 @@
                 <option>own_window_argb_visual</option>
             </command>
         </term>
-		<listitem>Boolean, use ARGB visual? ARGB can be used for real
-			transparency, note that a composite manager is required for real
-			transparency.  This option will not work as desired (in most cases)
-			in conjunction with 'own_window_type override'.
+        <listitem>Boolean, use ARGB visual? ARGB can be used for real
+        transparency, note that a composite manager is required for real
+        transparency. This option will not work as desired (in most cases) in
+        conjunction with 'own_window_type override'.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -871,7 +842,9 @@
                 <option>own_window_argb_value</option>
             </command>
         </term>
-		<listitem>When ARGB visuals are enabled, this use this to modify the alpha value used.  Valid range is 0-255, where 0 is 0% opacity, and 255 is 100% opacity.
+        <listitem>When ARGB visuals are enabled, this use this to modify the
+        alpha value used. Valid range is 0-255, where 0 is 0% opacity, and 255
+        is 100% opacity.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -880,8 +853,8 @@
                 <option>own_window_transparent</option>
             </command>
         </term>
-		<listitem>Boolean, set transparency? If ARGB visual is enabled, sets
-			background opacity to 0%.
+        <listitem>Boolean, set transparency? If ARGB visual is enabled, sets
+        background opacity to 0%.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -890,17 +863,16 @@
                 <option>own_window_type</option>
             </command>
         </term>
-        <listitem>if own_window is yes, you may specify type
-        normal, desktop, dock, panel or override (default: normal).
-        Desktop windows are special windows that have no window
-        decorations; are always visible on your desktop; do not
-        appear in your pager or taskbar; and are sticky across all
-        workspaces. Panel windows reserve space along a desktop
-        edge, just like panels and taskbars, preventing maximized
-        windows from overlapping them. The edge is chosen based on
-        the alignment option. Override windows are not under the
-        control of the window manager. Hints are ignored. This type
-        of window can be useful for certain situations.
+        <listitem>if own_window is yes, you may specify type normal, desktop,
+        dock, panel or override (default: normal). Desktop windows are special
+        windows that have no window decorations; are always visible on your
+        desktop; do not appear in your pager or taskbar; and are sticky across
+        all workspaces. Panel windows reserve space along a desktop edge, just
+        like panels and taskbars, preventing maximized windows from
+        overlapping them. The edge is chosen based on the alignment option.
+        Override windows are not under the control of the window manager.
+        Hints are ignored. This type of window can be useful for certain
+        situations.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -909,8 +881,7 @@
                 <option>pad_percents</option>
             </command>
         </term>
-        <listitem>Pad percentages to this many decimals (0 = no
-        padding)
+        <listitem>Pad percentages to this many decimals (0 = no padding)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -919,12 +890,11 @@
                 <option>pop3</option>
             </command>
         </term>
-        <listitem>Default global POP3 server. Arguments are: "host
-        user pass [-i interval (in seconds)] [-p port] [-e 'command']
-        [-r retries]". Default port is 110, default interval is 5
-        minutes, and default number of retries before giving up is
-        5. If the password is supplied as '*', you will be prompted
-        to enter the password when Conky starts.
+        <listitem>Default global POP3 server. Arguments are: "host user pass
+        [-i interval (in seconds)] [-p port] [-e 'command'] [-r retries]".
+        Default port is 110, default interval is 5 minutes, and default number
+        of retries before giving up is 5. If the password is supplied as '*',
+        you will be prompted to enter the password when Conky starts.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -933,8 +903,8 @@
                 <option>short_units</option>
             </command>
         </term>
-        <listitem>Shortens units to a single character (kiB-&gt;k,
-        GiB-&gt;G, etc.). Default is off.
+        <listitem>Shortens units to a single character (kiB-&gt;k, GiB-&gt;G,
+        etc.). Default is off.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -970,9 +940,9 @@
                 <option>temperature_unit</option>
             </command>
         </term>
-        <listitem>Desired output unit of all objects displaying a
-        temperature. Parameters are either "fahrenheit" or
-        "celsius". The default unit is degree Celsius.
+        <listitem>Desired output unit of all objects displaying a temperature.
+        Parameters are either "fahrenheit" or "celsius". The default unit is
+        degree Celsius.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -981,11 +951,10 @@
                 <option>templateN</option>
             </command>
         </term>
-        <listitem>Define a template for later use inside conky.text
-        segments. Substitute N by a digit between 0 and 9,
-        inclusively. The value of the variable is being inserted
-        into the stuff inside conky.text at the corresponding position,
-        but before some substitutions are applied:
+        <listitem>Define a template for later use inside conky.text segments.
+        Substitute N by a digit between 0 and 9, inclusively. The value of the
+        variable is being inserted into the stuff inside conky.text at the
+        corresponding position, but before some substitutions are applied:
         <simplelist>
             <member>'\n' -&gt; newline</member>
             <member>'\\' -&gt; backslash</member>
@@ -1001,12 +970,11 @@
             </command>
             <option>bytes</option>
         </term>
-        <listitem>Size of the standard text buffer (default is 256
-        bytes). This buffer is used for intermediary text, such as
-        individual lines, output from $exec vars, and various other
-        variables. Increasing the size of this buffer can
-        drastically reduce Conky's performance, but will allow for
-        more text display per variable. The size of this buffer
+        <listitem>Size of the standard text buffer (default is 256 bytes).
+        This buffer is used for intermediary text, such as individual lines,
+        output from $exec vars, and various other variables. Increasing the
+        size of this buffer can drastically reduce Conky's performance, but
+        will allow for more text display per variable. The size of this buffer
         cannot be smaller than the default value of 256 bytes.
         <para /></listitem>
     </varlistentry>
@@ -1016,9 +984,8 @@
                 <option>times_in_seconds</option>
             </command>
         </term>
-        <listitem>If true, variables that output times output a number
-	that represents seconds. This doesn't affect $time, $tztime and
-	$utime
+        <listitem>If true, variables that output times output a number that
+        represents seconds. This doesn't affect $time, $tztime and $utime
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1027,9 +994,9 @@
                 <option>top_cpu_separate</option>
             </command>
         </term>
-        <listitem>If true, cpu in top will show usage of one
-        processor's power. If false, cpu in top will show the usage
-        of all processors' power combined.
+        <listitem>If true, cpu in top will show usage of one processor's
+        power. If false, cpu in top will show the usage of all processors'
+        power combined.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1039,8 +1006,8 @@
             </command>
         </term>
         <listitem>If true, top name shows the full command line of each
-        process, including arguments (whenever possible). Otherwise,
-        only the basename is displayed. Default value is false.
+        process, including arguments (whenever possible). Otherwise, only the
+        basename is displayed. Default value is false.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1049,8 +1016,7 @@
                 <option>top_name_width</option>
             </command>
         </term>
-        <listitem>Width for $top name value (defaults to 15
-        characters).
+        <listitem>Width for $top name value (defaults to 15 characters).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1059,8 +1025,8 @@
                 <option>total_run_times</option>
             </command>
         </term>
-        <listitem>Total number of times for Conky to update before
-        quitting. Zero makes Conky run forever
+        <listitem>Total number of times for Conky to update before quitting.
+        Zero makes Conky run forever
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1089,7 +1055,8 @@
                 <option>detect_battery</option>
             </command>
         </term>
-        <listitem>One or more batteries to check in order to use update_interval_on_battery (comma separated, BAT0 default)
+        <listitem>One or more batteries to check in order to use
+        update_interval_on_battery (comma separated, BAT0 default)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1098,8 +1065,7 @@
                 <option>uppercase</option>
             </command>
         </term>
-        <listitem>Boolean value, if true, text is rendered in upper
-        case
+        <listitem>Boolean value, if true, text is rendered in upper case
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1108,12 +1074,11 @@
                 <option>use_spacer</option>
             </command>
         </term>
-        <listitem>Adds spaces around certain objects to stop them
-        from moving other things around. Arguments are left, right,
-        and none (default). The old true/false values are
-        deprecated and default to right/none respectively. Note
-        that this only helps if you are using a mono font, such as
-        Bitstream Vera Sans Mono.
+        <listitem>Adds spaces around certain objects to stop them from moving
+        other things around. Arguments are left, right, and none (default).
+        The old true/false values are deprecated and default to right/none
+        respectively. Note that this only helps if you are using a mono font,
+        such as Bitstream Vera Sans Mono.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1131,8 +1096,7 @@
                 <option>xftalpha</option>
             </command>
         </term>
-        <listitem>Alpha of Xft font. Must be a value at or between
-        1 and 0.
+        <listitem>Alpha of Xft font. Must be a value at or between 1 and 0.
         <para /></listitem>
     </varlistentry>
 </variablelist>
