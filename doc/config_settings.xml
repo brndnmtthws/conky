@@ -96,7 +96,7 @@
         </term>
         <listitem>A comma-separated list of strings to use as the bars of a
         graph output to console/shell. The first list item is used for the
-        minimum bar height and the last item is used for the maximum. Example:
+        minimum bar height and the last item is used for the maximum, e.g.
         " ,_,=,#".
         <para /></listitem>
     </varlistentry>
@@ -137,7 +137,7 @@
                 <option>default_color</option>
             </command>
         </term>
-        <listitem>Default color and border color
+        <listitem>Default color and border color.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -190,7 +190,7 @@
                 <option>default_outline_color</option>
             </command>
         </term>
-        <listitem>Default outline color
+        <listitem>Default outline color.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -199,7 +199,7 @@
                 <option>default_shade_color</option>
             </command>
         </term>
-        <listitem>Default shading color and border's shading color
+        <listitem>Default shading color and border's shading color.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -267,7 +267,7 @@
                 <option>draw_borders</option>
             </command>
         </term>
-        <listitem>Draw borders around text?
+        <listitem>Draw borders around text.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -276,7 +276,7 @@
                 <option>draw_graph_borders</option>
             </command>
         </term>
-        <listitem>Draw borders around graphs?
+        <listitem>Draw borders around graphs.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -285,7 +285,7 @@
                 <option>draw_outline</option>
             </command>
         </term>
-        <listitem>Draw outlines?
+        <listitem>Draw outlines.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -294,7 +294,7 @@
                 <option>draw_shades</option>
             </command>
         </term>
-        <listitem>Draw shades?
+        <listitem>Draw shades.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -313,7 +313,7 @@
                 <option>font</option>
             </command>
         </term>
-        <listitem>Font name in X, xfontsel can be used to get a nice font
+        <listitem>Font name in X, xfontsel can be used to get a nice font.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -522,7 +522,7 @@
                 <option>mail_spool</option>
             </command>
         </term>
-        <listitem>Mail spool for mail checking
+        <listitem>Mail spool for mail checking.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -532,7 +532,7 @@
             </command>
         </term>
         <listitem>Allow each port monitor to track at most this many
-        connections (if 0 or not set, default is 256)
+        connections (if 0 or not set, default is 256).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -544,7 +544,7 @@
         </term>
         <listitem>When a line in the output contains 'width' chars and the end
         isn't reached, the next char will start on a new line. If you want to
-        make sure that lines don't get broken, set 'width' to 0
+        make sure that lines don't get broken, set 'width' to 0.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -555,7 +555,7 @@
             <option>bytes</option>
         </term>
         <listitem>Maximum size of user text buffer, i.e. text inside
-        conky.text section in config file (default is 16384 bytes)
+        conky.text section in config file (default is 16384 bytes).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -565,7 +565,7 @@
             </command>
             <option>pixels</option>
         </term>
-        <listitem>Maximum width of window
+        <listitem>Maximum width of window.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -575,7 +575,7 @@
             </command>
             <option>height</option>
         </term>
-        <listitem>Minimum height of the window
+        <listitem>Minimum height of the window.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -585,7 +585,7 @@
             </command>
             <option>width</option>
         </term>
-        <listitem>Minimum width of window
+        <listitem>Minimum width of window.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -594,7 +594,7 @@
                 <option>mpd_host</option>
             </command>
         </term>
-        <listitem>Host of MPD server
+        <listitem>Host of MPD server.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -603,7 +603,7 @@
                 <option>mpd_password</option>
             </command>
         </term>
-        <listitem>MPD server password
+        <listitem>MPD server password.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -612,7 +612,7 @@
                 <option>mpd_port</option>
             </command>
         </term>
-        <listitem>Port of MPD server
+        <listitem>Port of MPD server.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -621,7 +621,7 @@
                 <option>mysql_host</option>
             </command>
         </term>
-        <listitem>Host of MySQL server. Defaults to localhost
+        <listitem>Host of MySQL server. Defaults to localhost.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -630,7 +630,7 @@
                 <option>mysql_port</option>
             </command>
         </term>
-        <listitem>Port of MySQL server. Defaults to the default mysql port
+        <listitem>Port of MySQL server. Defaults to the default mysql port.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -640,7 +640,7 @@
             </command>
         </term>
         <listitem>MySQL user name to use when connecting to the server.
-        Defaults to your username
+        Defaults to your username.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -650,7 +650,7 @@
             </command>
         </term>
         <listitem>Password of the MySQL user. Place it between "-chars. When
-        this is not set there is no password used
+        this is not set there is no password used.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -659,7 +659,7 @@
                 <option>mysql_db</option>
             </command>
         </term>
-        <listitem>MySQL database to use. Defaults to mysql
+        <listitem>MySQL database to use. Defaults to mysql.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -669,7 +669,7 @@
             </command>
         </term>
         <listitem>Music player thread update interval (defaults to Conky's
-        update interval)
+        update interval).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -678,7 +678,7 @@
                 <option>net_avg_samples</option>
             </command>
         </term>
-        <listitem>The number of samples to average for net data
+        <listitem>The number of samples to average for net data.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -687,7 +687,7 @@
                 <option>no_buffers</option>
             </command>
         </term>
-        <listitem>Subtract (file system) buffers from used memory?
+        <listitem>Subtract (file system) buffers from used memory.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -697,7 +697,7 @@
             </command>
         </term>
         <listitem>The display that the nvidia variable will use (defaults to
-        the value of the display variable)
+        the value of the display variable).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -715,7 +715,7 @@
                 <option>out_to_http</option>
             </command>
         </term>
-        <listitem>Let conky act as a small http-server serving it's text.
+        <listitem>Let conky act as a small http-server serving its text.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -726,7 +726,7 @@
         </term>
         <listitem>Print text in the console, but use ncurses so that conky can
         print the text of a new update over the old text. (In the future this
-        will provide more useful things)
+        will provide more useful things).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -747,7 +747,7 @@
         <listitem>When set to no, there will be no output in X (useful when
         you also use things like out_to_console). If you set it to no, make
         sure that it's placed before all other X-related setting (take the
-        first line of your configfile to be sure). Default value is yes
+        first line of your configfile to be sure). Default value is yes.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -756,7 +756,7 @@
                 <option>override_utf8_locale</option>
             </command>
         </term>
-        <listitem>Force UTF8? requires XFT
+        <listitem>Force UTF8. Requires XFT.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -774,7 +774,7 @@
                 <option>own_window</option>
             </command>
         </term>
-        <listitem>Boolean, create own window to draw?
+        <listitem>Boolean, create own window to draw.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -796,7 +796,7 @@
         <listitem>If own_window_transparent no, set a specified background
         colour (defaults to black). Takes either a hex value (e.g. '#ffffff'),
         a shorthand hex value (e.g. '#fff'), or a valid RGB name (see
-        /usr/lib/X11/rgb.txt)
+        /usr/lib/X11/rgb.txt).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -881,7 +881,7 @@
                 <option>pad_percents</option>
             </command>
         </term>
-        <listitem>Pad percentages to this many decimals (0 = no padding)
+        <listitem>Pad percentages to this many decimals (0 = no padding).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -931,7 +931,7 @@
                 <option>stippled_borders</option>
             </command>
         </term>
-        <listitem>Border stippling (dashing) in pixels
+        <listitem>Border stippling (dashing) in pixels.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -985,7 +985,7 @@
             </command>
         </term>
         <listitem>If true, variables that output times output a number that
-        represents seconds. This doesn't affect $time, $tztime and $utime
+        represents seconds. This doesn't affect $time, $tztime and $utime.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1026,7 +1026,7 @@
             </command>
         </term>
         <listitem>Total number of times for Conky to update before quitting.
-        Zero makes Conky run forever
+        Zero makes Conky run forever.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1036,7 +1036,7 @@
             </command>
             <option>seconds</option>
         </term>
-        <listitem>Update interval
+        <listitem>Update interval.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1046,7 +1046,7 @@
             </command>
             <option>seconds</option>
         </term>
-        <listitem>Update interval when running on batterypower
+        <listitem>Update interval when running on battery power.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1056,7 +1056,7 @@
             </command>
         </term>
         <listitem>One or more batteries to check in order to use
-        update_interval_on_battery (comma separated, BAT0 default)
+        update_interval_on_battery (comma separated, BAT0 default).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1065,7 +1065,7 @@
                 <option>uppercase</option>
             </command>
         </term>
-        <listitem>Boolean value, if true, text is rendered in upper case
+        <listitem>Boolean value, if true, text is rendered in upper case.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1087,7 +1087,7 @@
                 <option>use_xft</option>
             </command>
         </term>
-        <listitem>Use Xft (anti-aliased font and stuff)
+        <listitem>Use Xft (anti-aliased font and stuff).
         <para /></listitem>
     </varlistentry>
     <varlistentry>

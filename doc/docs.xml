@@ -180,24 +180,21 @@
         <variablelist>
             <varlistentry>
                 <term>
-                    <varname>conky</varname>
-                    <option>-t '${time %D %H:%M}' -o -u 30</option>
+                    <option>conky -t '${time %D %H:%M}' -o -u 30</option>
                 </term>
                 <listitem>Start Conky in its own window with date and clock as
                 text and 30 sec update interval.</listitem>
             </varlistentry>
             <varlistentry>
                 <term>
-                    <varname>conky</varname>
-                    <option>-a top_left -x 5 -y 500 -d</option>
+                    <option>conky -a top_left -x 5 -y 500 -d</option>
                 </term>
                 <listitem>Start Conky to background at coordinates (5,
                 500).</listitem>
             </varlistentry>
             <varlistentry>
                 <term>
-                    <varname>conky</varname>
-                    <option>-C &gt; ~/.config/conky/conky.conf</option>
+                    <option>conky -C &gt; ~/.config/conky/conky.conf</option>
                 </term>
                 <listitem>Do not start Conky, but have it output the builtin
                 default config file to ~/.config/conky/conky.conf for later

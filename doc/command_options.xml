@@ -30,7 +30,7 @@
             <option>FILE</option>
         </term>
         <listitem>Config file to load instead of
-        $HOME/.config/conky/conky.conf
+        ~/.config/conky/conky.conf.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -128,7 +128,7 @@
             </command>
             <option>TEXT</option>
         </term>
-        <listitem>Text to render, remember single quotes, like -t ' $uptime '
+        <listitem>Text to render, remember single quotes, like -t ' $uptime '.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -169,7 +169,7 @@
             </command>
             <option>X_COORDINATE</option>
         </term>
-        <listitem>X position
+        <listitem>X position.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -179,7 +179,7 @@
             </command>
             <option>X_COORDINATE</option>
         </term>
-        <listitem>X position
+        <listitem>X position.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -200,7 +200,7 @@
             </command>
             <option>Y_COORDINATE</option>
         </term>
-        <listitem>Y position
+        <listitem>Y position.
         <para></para></listitem>
     </varlistentry>
 </variablelist>
