@@ -30,7 +30,7 @@
             <option>FILE</option>
         </term>
         <listitem>Config file to load instead of
-        ~/.config/conky/conky.conf.
+        <filename>~/.config/conky/conky.conf</filename>.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>

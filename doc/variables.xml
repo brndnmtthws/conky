@@ -7,9 +7,10 @@
             <option>(adapter)</option>
         </term>
         <listitem>ACPI ac adapter state. On linux, the adapter option
-        specifies the subfolder of /sys/class/power_supply containing the
-        state information (tries "AC" and "ADP1" if there is no argument
-        given). Non-linux systems ignore it.
+        specifies the subfolder of
+        <filename>/sys/class/power_supply</filename>&#160;containing the state
+        information (tries "AC" and "ADP1" if there is no argument given).
+        Non-linux systems ignore it.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -384,7 +385,8 @@
             </command>
             <option>(max length)</option>
         </term>
-        <listitem>Title of current tune with optional maximum length specifier.
+        <listitem>Title of current tune with optional maximum length
+        specifier.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -575,6 +577,7 @@
             <option>string</option>
         </term>
         <listitem>PID of the first process that has string in its commandline.
+
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -730,8 +733,8 @@
             <option>(color)</option>
         </term>
         <listitem>Change drawing color to 'color' which is a name of a color
-        or a hexcode preceded with #, e.g. #0A1B2C. If you use ncurses only the
-        following colors are supported: red, green, yellow, blue, magenta,
+        or a hexcode preceded with #, e.g. #0A1B2C. If you use ncurses only
+        the following colors are supported: red, green, yellow, blue, magenta,
         cyan, black, and white.
         <para /></listitem>
     </varlistentry>
@@ -983,10 +986,11 @@
         <listitem>The name of the distribution. It could be that some of the
         untested distributions will show up wrong or as "unknown", if that's
         the case post a bug on sourceforge, make sure it contains the name of
-        your distribution, the contents of /proc/version and if there is a
-        file that only exists on your distribution, also add the path of that
-        file in the bug. If there is no such file, please add another way
-        which we can use to identify your distribution.
+        your distribution, the contents of
+        <filename>/proc/version</filename>&#160;and if there is a file that
+        only exists on your distribution, also add the path of that file in
+        the bug. If there is no such file, please add another way which we can
+        use to identify your distribution.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1564,11 +1568,11 @@
         omitted if you have only one hwmon device. Parameter type is either
         'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' meaning
         temperature. Parameter n is number of the sensor. See
-        /sys/class/hwmon/ on your local computer. The optional arguments
-        'factor' and 'offset' allow precalculation of the raw input, which is
-        being modified as follows: 'input = input * factor + offset'. Note
-        that they have to be given as decimal values (i.e. contain at least
-        one decimal place).
+        <filename>/sys/class/hwmon/</filename>&#160;on your local computer.
+        The optional arguments 'factor' and 'offset' allow precalculation of
+        the raw input, which is being modified as follows: 'input = input *
+        factor + offset'. Note that they have to be given as decimal values
+        (i.e. contain at least one decimal place).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1592,11 +1596,11 @@
         omitted if you have only one I2C device. Parameter type is either 'in'
         or 'vol' meaning voltage; 'fan' meaning fan; 'temp' meaning
         temperature. Parameter n is number of the sensor. See
-        /sys/bus/i2c/devices/ on your local computer. The optional arguments
-        'factor' and 'offset' allow precalculation of the raw input, which is
-        being modified as follows: 'input = input * factor + offset'. Note
-        that they have to be given as decimal values (i.e. contain at least
-        one decimal place).
+        <filename>/sys/bus/i2c/devices/</filename>&#160;on your local
+        computer. The optional arguments 'factor' and 'offset' allow
+        precalculation of the raw input, which is being modified as follows:
+        'input = input * factor + offset'. Note that they have to be given as
+        decimal values (i.e. contain at least one decimal place).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1872,7 +1876,7 @@
             <member>
             <command>long</command>Argument consists of only digits.</member>
             <member>
-            <command>string</command>Argument is enclosed in quotation marks
+            <command>string</command>Argument is enclosed in quotation marks.
             (")</member>
         </simplelist>Valid operands are: '&gt;', '&lt;', '&gt;=', '&lt;=',
         '==', '!='.
@@ -2134,7 +2138,8 @@
                 <option>laptop_mode</option>
             </command>
         </term>
-        <listitem>The value of /proc/sys/vm/laptop_mode.
+        <listitem>The value of
+        <filename>/proc/sys/vm/laptop_mode</filename>.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2285,6 +2290,7 @@
         <listitem>Print a summary of recent messages in an mbox format
         mailbox. mbox parameter is the filename of the mailbox (can be
         encapsulated using '"', ie. ${mboxscan -n 10 "/home/brenden/some box"}
+
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3310,7 +3316,8 @@
             </command>
             <option>pid</option>
         </term>
-        <listitem>The priority of the process (see 'priority' in "man 5 proc").
+        <listitem>The priority of the process (see 'priority' in "man 5
+        proc").
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3629,11 +3636,11 @@
         omitted if you have only one platform device. Platform type is either
         'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' meaning
         temperature. Parameter n is number of the sensor. See
-        /sys/bus/platform/devices/ on your local computer. The optional
-        arguments 'factor' and 'offset' allow precalculation of the raw input,
-        which is being modified as follows: 'input = input * factor + offset'.
-        Note that they have to be given as decimal values (i.e. contain at
-        least one decimal place).
+        <filename>/sys/bus/platform/devices/</filename>&#160;on your local
+        computer. The optional arguments 'factor' and 'offset' allow
+        precalculation of the raw input, which is being modified as follows:
+        'input = input * factor + offset'. Note that they have to be given as
+        decimal values (i.e. contain at least one decimal place).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3828,10 +3835,11 @@
             <option>(ARGS)</option>
         </term>
         <listitem>when using smapi, display contents of the
-        /sys/devices/platform/smapi directory. ARGS are either '(FILENAME)' or
-        'bat (INDEX) (FILENAME)' to display the corresponding files' content.
-        This is a very raw method of accessing the smapi values. When
-        available, better use one of the smapi_* variables instead.
+        <filename>/sys/devices/platform/smapi</filename>&#160;directory. ARGS
+        are either '(FILENAME)' or 'bat (INDEX) (FILENAME)' to display the
+        corresponding files' content. This is a very raw method of accessing
+        the smapi values. When available, better use one of the smapi_*
+        variables instead.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4620,9 +4628,12 @@
             </simplelist>
             <para>'locID' must be a valid location identifier for the required
             uri. For the NOAA site this must be a valid ICAO (see for instance
-            https://pilotweb.nas.faa.gov/qryhtml/icao/). For the weather.com
-            site this must be a valid location ID (see for instance
-            http://aspnetresources.com/tools/locid.aspx).</para>
+
+            <filename>https://pilotweb.nas.faa.gov/qryhtml/icao/</filename>).
+            For the weather.com site this must be a valid location ID (see for
+            instance
+            <filename>
+            http://aspnetresources.com/tools/locid.aspx</filename>).</para>
             <para>'data_type' must be one of the following:</para>
             <simplelist>
                 <member>
