@@ -3,19 +3,18 @@
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2018 Brenden Matthews, et. al. (see AUTHORS)
-# All rights reserved.
+# Copyright (c) 2005-2018 Brenden Matthews, et. al. (see AUTHORS) All rights
+# reserved.
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details. You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
@@ -25,66 +24,69 @@ add_definitions(-DTOLUA_RELEASE)
 
 if(BUILD_X11)
 
-	if(BUILD_LUA_CAIRO)
-		include_directories(${luacairo_includes} ${CMAKE_CURRENT_SOURCE_DIR})
+  if(BUILD_LUA_CAIRO)
+    include_directories(${luacairo_includes} ${CMAKE_CURRENT_SOURCE_DIR})
 
-		# Need the directory for -lSM
-		get_filename_component(X11_SM_LIB_PATH ${X11_SM_LIB} DIRECTORY)
-		link_directories(${X11_SM_LIB_PATH})
+    # Need the directory for -lSM
+    get_filename_component(X11_SM_LIB_PATH ${X11_SM_LIB} DIRECTORY)
+    link_directories(${X11_SM_LIB_PATH})
 
-		# cairo_set_dash() needs this special hack to work properly
-		# if you have a better solution, please let me know
-		wrap_tolua(luacairo_src cairo.pkg libcairo.patch)
+    # cairo_set_dash() needs this special hack to work properly if you have a
+    # better solution, please let me know
+    wrap_tolua(luacairo_src cairo.pkg libcairo.patch)
 
-		add_library(conky-cairo SHARED ${luacairo_src})
-		set_target_properties(conky-cairo PROPERTIES OUTPUT_NAME "cairo")
+    add_library(conky-cairo SHARED ${luacairo_src})
+    set_target_properties(conky-cairo PROPERTIES OUTPUT_NAME "cairo")
 
-		target_link_libraries(conky-cairo ${luacairo_libs} toluapp_lib_static)
-		set(lua_libs ${lua_libs} conky-cairo)
+    target_link_libraries(conky-cairo ${luacairo_libs} toluapp_lib_static)
+    set(lua_libs ${lua_libs} conky-cairo)
 
-		print_target_properties(conky-cairo)
-	endif(BUILD_LUA_CAIRO)
+    print_target_properties(conky-cairo)
+  endif(BUILD_LUA_CAIRO)
 
-	if(BUILD_LUA_IMLIB2)
-		include_directories(${luaimlib2_includes} ${CMAKE_CURRENT_SOURCE_DIR})
-		wrap_tolua(luaimlib2_src imlib2.pkg)
+  if(BUILD_LUA_IMLIB2)
+    include_directories(${luaimlib2_includes} ${CMAKE_CURRENT_SOURCE_DIR})
+    wrap_tolua(luaimlib2_src imlib2.pkg)
 
-		add_library(conky-imlib2 SHARED ${luaimlib2_src})
-		set_target_properties(conky-imlib2 PROPERTIES OUTPUT_NAME "imlib2")
+    add_library(conky-imlib2 SHARED ${luaimlib2_src})
+    set_target_properties(conky-imlib2 PROPERTIES OUTPUT_NAME "imlib2")
 
-		target_link_libraries(conky-imlib2 ${luaimlib2_libs} toluapp_lib_static)
-		set(lua_libs ${lua_libs} conky-imlib2)
+    target_link_libraries(conky-imlib2 ${luaimlib2_libs} toluapp_lib_static)
+    set(lua_libs ${lua_libs} conky-imlib2)
 
-		print_target_properties(conky-imlib2)
-	endif(BUILD_LUA_IMLIB2)
+    print_target_properties(conky-imlib2)
+  endif(BUILD_LUA_IMLIB2)
 
-	if(BUILD_LUA_RSVG)
-		include_directories(${luarsvg_includes} ${CMAKE_CURRENT_SOURCE_DIR})
-		wrap_tolua(luarsvg_src rsvg.pkg)
+  if(BUILD_LUA_RSVG)
+    include_directories(${luarsvg_includes} ${CMAKE_CURRENT_SOURCE_DIR})
+    wrap_tolua(luarsvg_src rsvg.pkg)
 
-		add_library(conky-rsvg SHARED ${luarsvg_src})
-		set_target_properties(conky-rsvg PROPERTIES OUTPUT_NAME "rsvg")
+    add_library(conky-rsvg SHARED ${luarsvg_src})
+    set_target_properties(conky-rsvg PROPERTIES OUTPUT_NAME "rsvg")
 
-		target_link_libraries(conky-rsvg ${luarsvg_libs} toluapp_lib_static)
-		set(lua_libs ${lua_libs} conky-rsvg)
-		
-		print_target_properties(conky-rsvg)
-	endif(BUILD_LUA_RSVG)
+    target_link_libraries(conky-rsvg ${luarsvg_libs} toluapp_lib_static)
+    set(lua_libs ${lua_libs} conky-rsvg)
 
-	if(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
-		include_directories(${luacairo_includes} ${luaimlib2_includes} ${CMAKE_CURRENT_SOURCE_DIR})
-		wrap_tolua(luacairo_imlib2_helper_src cairo_imlib2_helper.pkg)
+    print_target_properties(conky-rsvg)
+  endif(BUILD_LUA_RSVG)
 
-		add_library(conky-cairo_imlib2_helper SHARED ${luacairo_imlib2_helper_src})
-		set_target_properties(conky-cairo_imlib2_helper PROPERTIES OUTPUT_NAME "cairo_imlib2_helper")
+  if(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
+    include_directories(${luacairo_includes} ${luaimlib2_includes}
+                        ${CMAKE_CURRENT_SOURCE_DIR})
+    wrap_tolua(luacairo_imlib2_helper_src cairo_imlib2_helper.pkg)
 
-		target_link_libraries(conky-cairo_imlib2_helper ${luacairo_libs} ${luaimlib2_libs} toluapp_lib_static)
-		set(lua_libs ${lua_libs} conky-cairo_imlib2_helper)
-	endif(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
+    add_library(conky-cairo_imlib2_helper SHARED ${luacairo_imlib2_helper_src})
+    set_target_properties(conky-cairo_imlib2_helper
+                          PROPERTIES OUTPUT_NAME "cairo_imlib2_helper")
+
+    target_link_libraries(conky-cairo_imlib2_helper
+                          ${luacairo_libs}
+                          ${luaimlib2_libs}
+                          toluapp_lib_static)
+    set(lua_libs ${lua_libs} conky-cairo_imlib2_helper)
+  endif(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
 endif(BUILD_X11)
 
-install(TARGETS
-	${lua_libs}
-	LIBRARY DESTINATION ${LIB_INSTALL_DIR}/conky
-	ARCHIVE DESTINATION ${LIB_INSTALL_DIR}/conky
-)
+install(TARGETS ${lua_libs}
+        LIBRARY DESTINATION ${LIB_INSTALL_DIR}/conky
+        ARCHIVE DESTINATION ${LIB_INSTALL_DIR}/conky)
