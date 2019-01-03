@@ -1,7 +1,7 @@
-# - Find the Xinerama include file and library
+# * Find the Xinerama include file and library
 #
 
-SET(Xinerama_INC_SEARCH_PATH
+set(Xinerama_INC_SEARCH_PATH
     /usr/X11R6/include
     /usr/local/include
     /usr/include/X11
@@ -10,36 +10,32 @@ SET(Xinerama_INC_SEARCH_PATH
     /opt/graphics/OpenGL/include
     /usr/include)
 
-SET(Xinerama_LIB_SEARCH_PATH
+set(Xinerama_LIB_SEARCH_PATH
     /usr/X11R6/lib
     /usr/local/lib
     /usr/openwin/lib
     /usr/lib)
 
-
-FIND_PATH(Xinerama_INCLUDE_DIR X11/extensions/Xinerama.h
+find_path(Xinerama_INCLUDE_DIR X11/extensions/Xinerama.h
           ${Xinerama_INC_SEARCH_PATH})
 
-FIND_LIBRARY(Xinerama_LIBRARIES NAMES Xinerama PATH ${Xinerama_LIB_SEARCH_PATH})
+find_library(Xinerama_LIBRARIES NAMES Xinerama PATH ${Xinerama_LIB_SEARCH_PATH})
 
-IF (Xinerama_INCLUDE_DIR AND Xinerama_LIBRARIES)
-    SET(Xinerama_FOUND TRUE)
-ENDIF (Xinerama_INCLUDE_DIR AND Xinerama_LIBRARIES)
+if(Xinerama_INCLUDE_DIR AND Xinerama_LIBRARIES)
+  set(Xinerama_FOUND TRUE)
+endif(Xinerama_INCLUDE_DIR AND Xinerama_LIBRARIES)
 
-IF (Xinerama_FOUND)
-    INCLUDE(CheckLibraryExists)
+if(Xinerama_FOUND)
+  include(CheckLibraryExists)
 
-    CHECK_LIBRARY_EXISTS(${Xinerama_LIBRARIES}
-                         "XineramaQueryScreens"
-                         ${Xinerama_LIBRARIES}
-                         Xinerama_HAS_QUERY)
+  check_library_exists(${Xinerama_LIBRARIES}
+                       "XineramaQueryScreens"
+                       ${Xinerama_LIBRARIES}
+                       Xinerama_HAS_QUERY)
 
-    IF (NOT Xinerama_HAS_QUERY AND Xinerama_FIND_REQUIRED)
-        MESSAGE(FATAL_ERROR "Could NOT find Xinerama")
-    ENDIF (NOT Xinerama_HAS_QUERY AND Xinerama_FIND_REQUIRED)
-ENDIF (Xinerama_FOUND)
+  if(NOT Xinerama_HAS_QUERY AND Xinerama_FIND_REQUIRED)
+    message(FATAL_ERROR "Could NOT find Xinerama")
+  endif(NOT Xinerama_HAS_QUERY AND Xinerama_FIND_REQUIRED)
+endif(Xinerama_FOUND)
 
-MARK_AS_ADVANCED(
-    Xinerama_INCLUDE_DIR
-    Xinerama_LIBRARIES
-)
+mark_as_advanced(Xinerama_INCLUDE_DIR Xinerama_LIBRARIES)

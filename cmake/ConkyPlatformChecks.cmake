@@ -3,19 +3,18 @@
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2018 Brenden Matthews, et. al. (see AUTHORS)
-# All rights reserved.
+# Copyright (c) 2005-2018 Brenden Matthews, et. al. (see AUTHORS) All rights
+# reserved.
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details. You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
@@ -42,7 +41,7 @@ else(CMAKE_SYSTEM_NAME MATCHES "Darwin")
   check_symbol_exists(statfs64 "sys/statfs.h" HAVE_STATFS64)
 endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
-AC_SEARCH_LIBS(clock_gettime "time.h" CLOCK_GETTIME_LIB "rt")
+ac_search_libs(clock_gettime "time.h" CLOCK_GETTIME_LIB "rt")
 if(NOT DEFINED CLOCK_GETTIME_LIB)
   if(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")
     message(FATAL_ERROR "clock_gettime not found.")
@@ -92,11 +91,37 @@ if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
   set(OS_DARWIN true)
 endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
-if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY
-    AND NOT OS_SOLARIS AND NOT OS_HAIKU AND NOT OS_DARWIN)
-  message(FATAL_ERROR "Your platform, '${CMAKE_SYSTEM_NAME}', is not currently supported.  Patches are welcome.")
-endif(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY
-  AND NOT OS_SOLARIS AND NOT OS_HAIKU AND NOT OS_DARWIN)
+if(NOT OS_LINUX
+   AND NOT OS_FREEBSD
+   AND NOT OS_OPENBSD
+   AND NOT OS_DRAGONFLY
+   AND NOT OS_SOLARIS
+   AND NOT OS_HAIKU
+   AND NOT OS_DARWIN)
+  message(
+    FATAL_ERROR
+      "Your platform, '${CMAKE_SYSTEM_NAME}', is not currently supported.  Patches are welcome."
+    )
+endif(NOT
+      OS_LINUX
+      AND
+      NOT
+      OS_FREEBSD
+      AND
+      NOT
+      OS_OPENBSD
+      AND
+      NOT
+      OS_DRAGONFLY
+      AND
+      NOT
+      OS_SOLARIS
+      AND
+      NOT
+      OS_HAIKU
+      AND
+      NOT
+      OS_DARWIN)
 
 # Check for soundcard header
 if(OS_LINUX)
@@ -113,23 +138,22 @@ if(BUILD_I18N AND OS_DRAGONFLY)
 endif(BUILD_I18N AND OS_DRAGONFLY)
 
 if(BUILD_I18N AND OS_DARWIN)
-  find_path(LIBINTL_H_N libintl.h PATHS
-    /usr/local/opt/gettext/include
-    /usr/include
-    /usr/local/include
-    /usr/local/opt/include
-    )
+  find_path(LIBINTL_H_N libintl.h
+            PATHS /usr/local/opt/gettext/include
+                  /usr/include
+                  /usr/local/include
+                  /usr/local/opt/include)
   if(LIBINTL_H_N)
     include_directories(${LIBINTL_H_N})
   else(LIBINTL_H_N)
     message(FATAL_ERROR "Unable to find libintl.h (try `brew install gettext`)")
   endif(LIBINTL_H_N)
-  find_library(INTL_LIB NAMES intl PATHS
-    /usr/local/opt/gettext/lib
-    /usr/lib
-    /usr/local/lib
-    /usr/local/opt/lib
-    )
+  find_library(INTL_LIB
+               NAMES intl
+               PATHS /usr/local/opt/gettext/lib
+                     /usr/lib
+                     /usr/local/lib
+                     /usr/local/opt/lib)
   set(conky_libs ${conky_libs} ${INTL_LIB})
 endif(BUILD_I18N AND OS_DARWIN)
 
@@ -198,7 +222,11 @@ if(BUILD_NCURSES)
 endif(BUILD_NCURSES)
 
 if(BUILD_MYSQL)
-  find_path(mysql_INCLUDE_PATH mysql.h ${INCLUDE_SEARCH_PATH} /usr/include/mysql /usr/local/include/mysql)
+  find_path(mysql_INCLUDE_PATH
+            mysql.h
+            ${INCLUDE_SEARCH_PATH}
+            /usr/include/mysql
+            /usr/local/include/mysql)
   if(NOT mysql_INCLUDE_PATH)
     message(FATAL_ERROR "Unable to find mysql.h")
   endif(NOT mysql_INCLUDE_PATH)
@@ -229,12 +257,13 @@ if(BUILD_PORT_MONITORS)
   if(NOT HAVE_GETNAMEINFO)
     message(FATAL_ERROR "could not find getnameinfo()")
   endif(NOT HAVE_GETNAMEINFO)
-  check_include_files("netdb.h;netinet/in.h;netinet/tcp.h;sys/socket.h;arpa/inet.h" HAVE_PORTMON_HEADERS)
+  check_include_files(
+    "netdb.h;netinet/in.h;netinet/tcp.h;sys/socket.h;arpa/inet.h"
+    HAVE_PORTMON_HEADERS)
   if(NOT HAVE_PORTMON_HEADERS)
     message(FATAL_ERROR "missing needed network header(s) for port monitoring")
   endif(NOT HAVE_PORTMON_HEADERS)
 endif(BUILD_PORT_MONITORS)
-
 
 # Check for iconv
 if(BUILD_ICONV)
@@ -242,7 +271,10 @@ if(BUILD_ICONV)
   find_library(ICONV_LIBRARY NAMES iconv)
   if(NOT ICONV_LIBRARY)
     # maybe iconv() is provided by libc
-    set(ICONV_LIBRARY "" CACHE FILEPATH "Path to the iconv library, if iconv is not provided by libc" FORCE)
+    set(ICONV_LIBRARY ""
+        CACHE FILEPATH
+              "Path to the iconv library, if iconv is not provided by libc"
+        FORCE)
   endif(NOT ICONV_LIBRARY)
   set(CMAKE_REQUIRED_LIBRARIES ${ICONV_LIBRARY})
   check_function_exists(iconv ICONV_FUNC)
@@ -253,7 +285,6 @@ if(BUILD_ICONV)
     message(FATAL_ERROR "Unable to find iconv library")
   endif(HAVE_ICONV_H AND ICONV_FUNC)
 endif(BUILD_ICONV)
-
 
 # check for Xlib
 if(BUILD_X11)
@@ -278,23 +309,27 @@ if(BUILD_X11)
       if(NOT X11_Xshape_FOUND)
         message(FATAL_ERROR "Unable to find Xshape library")
       endif(NOT X11_Xshape_FOUND)
-      set(conky_libs ${conky_libs} ${X11_Xshape_LIB} )
+      set(conky_libs ${conky_libs} ${X11_Xshape_LIB})
     endif(BUILD_XSHAPE)
 
     # check for Xft
     if(BUILD_XFT)
-      find_path(freetype_INCLUDE_PATH config/ftconfig.h ${INCLUDE_SEARCH_PATH}
-        /usr/include/freetype2
-        /usr/local/include/freetype2
-        /usr/pkg/include/freetype2)
+      find_path(freetype_INCLUDE_PATH
+                config/ftconfig.h
+                ${INCLUDE_SEARCH_PATH}
+                /usr/include/freetype2
+                /usr/local/include/freetype2
+                /usr/pkg/include/freetype2)
       if(freetype_INCLUDE_PATH)
         set(freetype_FOUND true)
         set(conky_includes ${conky_includes} ${freetype_INCLUDE_PATH})
       else(freetype_INCLUDE_PATH)
-        find_path(freetype_INCLUDE_PATH freetype/config/ftconfig.h ${INCLUDE_SEARCH_PATH}
-          /usr/include/freetype2
-          /usr/local/include/freetype2
-          /usr/pkg/include/freetype2)
+        find_path(freetype_INCLUDE_PATH
+                  freetype/config/ftconfig.h
+                  ${INCLUDE_SEARCH_PATH}
+                  /usr/include/freetype2
+                  /usr/local/include/freetype2
+                  /usr/pkg/include/freetype2)
         if(freetype_INCLUDE_PATH)
           set(freetype_FOUND true)
           set(conky_includes ${conky_includes} ${freetype_INCLUDE_PATH})
@@ -321,7 +356,15 @@ if(BUILD_X11)
 endif(BUILD_X11)
 
 # Otherwise, use the most recent Lua version
-pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52)
+pkg_search_module(LUA
+                  REQUIRED
+                  lua>=5.3
+                  lua5.3
+                  lua-5.3
+                  lua53
+                  lua5.2
+                  lua-5.2
+                  lua52)
 set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
 set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIRS})
 link_directories(${LUA_LIBRARY_DIRS})
@@ -341,7 +384,10 @@ if(BUILD_X11)
   if(BUILD_LUA_IMLIB2)
     pkg_search_module(IMLIB2 REQUIRED imlib2 Imlib2)
     set(luaimlib2_libs ${IMLIB2_LIBS} ${IMLIB2_LDFLAGS} ${LUA_LIBRARIES})
-    set(luaimlib2_includes ${IMLIB2_INCLUDE_DIRS} ${LUA_INCLUDE_DIRS} ${X11_INCLUDE_DIR})
+    set(luaimlib2_includes
+        ${IMLIB2_INCLUDE_DIRS}
+        ${LUA_INCLUDE_DIRS}
+        ${X11_INCLUDE_DIR})
   endif(BUILD_LUA_IMLIB2)
   if(BUILD_LUA_RSVG)
     pkg_check_modules(RSVG REQUIRED librsvg-2.0)
@@ -360,7 +406,10 @@ if(BUILD_AUDACIOUS)
     pkg_check_modules(AUDACIOUS REQUIRED audacious<1.4.0)
   endif(NEW_AUDACIOUS_FOUND)
   set(conky_libs ${conky_libs} ${AUDACIOUS_LIBRARIES} ${DBUS_GLIB_LIBRARIES})
-  set(conky_includes ${conky_includes} ${AUDACIOUS_INCLUDE_DIRS} ${DBUS_GLIB_INCLUDE_DIRS})
+  set(conky_includes
+      ${conky_includes}
+      ${AUDACIOUS_INCLUDE_DIRS}
+      ${DBUS_GLIB_INCLUDE_DIRS})
 endif(BUILD_AUDACIOUS)
 
 if(BUILD_BMPX)
@@ -473,7 +522,12 @@ if(MAINTAINER_MODE)
   if(NOT APP_SED)
     message(FATAL_ERROR "Unable to find program 'sed'")
   endif(NOT APP_SED)
-  mark_as_advanced(APP_DB2X_XSLTPROC APP_DB2X_MANXML APP_XSLTPROC APP_MAN APP_SED APP_LESS)
+  mark_as_advanced(APP_DB2X_XSLTPROC
+                   APP_DB2X_MANXML
+                   APP_XSLTPROC
+                   APP_MAN
+                   APP_SED
+                   APP_LESS)
 endif(MAINTAINER_MODE)
 
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
@@ -483,9 +537,12 @@ endif(CMAKE_BUILD_TYPE MATCHES "Debug")
 # The version numbers are simply derived from the date and number of commits
 # since start of month
 if(DEBUG)
-  execute_process(COMMAND
-    ${APP_GIT} --git-dir=${CMAKE_CURRENT_SOURCE_DIR}/.git log
-    --since=${VERSION_MAJOR}-${VERSION_MINOR}-01 --pretty=oneline COMMAND
-    ${APP_WC} -l COMMAND ${APP_AWK} "{print $1}" RESULT_VARIABLE RETVAL
-    OUTPUT_VARIABLE COMMIT_COUNT OUTPUT_STRIP_TRAILING_WHITESPACE)
+  execute_process(COMMAND ${APP_GIT} --git-dir=${CMAKE_CURRENT_SOURCE_DIR}/.git
+                          log --since=${VERSION_MAJOR}-${VERSION_MINOR}-01
+                          --pretty=oneline
+                  COMMAND ${APP_WC} -l
+                  COMMAND ${APP_AWK} "{print $1}"
+                  RESULT_VARIABLE RETVAL
+                  OUTPUT_VARIABLE COMMIT_COUNT
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif(DEBUG)

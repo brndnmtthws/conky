@@ -3,23 +3,22 @@
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2018 Brenden Matthews, et. al. (see AUTHORS)
-# All rights reserved.
+# Copyright (c) 2005-2018 Brenden Matthews, et. al. (see AUTHORS) All rights
+# reserved.
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details. You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#set(RELEASE true)
+# set(RELEASE true)
 
 # Set system vars
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
@@ -54,11 +53,37 @@ if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
   set(OS_DARWIN true)
 endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
-if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY
-    AND NOT OS_SOLARIS AND NOT OS_HAIKU AND NOT OS_DARWIN)
-  message(FATAL_ERROR "Your platform, '${CMAKE_SYSTEM_NAME}', is not currently supported.  Patches are welcome.")
-endif(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY
-  AND NOT OS_SOLARIS AND NOT OS_HAIKU AND NOT OS_DARWIN)
+if(NOT OS_LINUX
+   AND NOT OS_FREEBSD
+   AND NOT OS_OPENBSD
+   AND NOT OS_DRAGONFLY
+   AND NOT OS_SOLARIS
+   AND NOT OS_HAIKU
+   AND NOT OS_DARWIN)
+  message(
+    FATAL_ERROR
+      "Your platform, '${CMAKE_SYSTEM_NAME}', is not currently supported.  Patches are welcome."
+    )
+endif(NOT
+      OS_LINUX
+      AND
+      NOT
+      OS_FREEBSD
+      AND
+      NOT
+      OS_OPENBSD
+      AND
+      NOT
+      OS_DRAGONFLY
+      AND
+      NOT
+      OS_SOLARIS
+      AND
+      NOT
+      OS_HAIKU
+      AND
+      NOT
+      OS_DARWIN)
 
 include(FindThreads)
 find_package(Threads)
@@ -67,13 +92,17 @@ set(conky_libs ${CMAKE_THREAD_LIBS_INIT})
 set(conky_includes ${CMAKE_BINARY_DIR})
 
 #
-# On Darwin _POSIX_C_SOURCE must be >= __DARWIN_C_FULL for asprintf to be enabled!
-# Thus disable this and _LARGEFILE64_SOURCE isnt needed, it is already used on macOS.
+# On Darwin _POSIX_C_SOURCE must be >= __DARWIN_C_FULL for asprintf to be
+# enabled! Thus disable this and _LARGEFILE64_SOURCE isnt needed, it is already
+# used on macOS.
 #
 if(NOT OS_DARWIN)
-  add_definitions(-D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L) # Standard definitions
-  set(CMAKE_REQUIRED_DEFINITIONS
-    "${CMAKE_REQUIRED_DEFINITIONS} -D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L")
+  add_definitions(-D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L) # Standard
+                                                                   # definitions
+  set(
+    CMAKE_REQUIRED_DEFINITIONS
+    "${CMAKE_REQUIRED_DEFINITIONS} -D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L"
+    )
 endif(NOT OS_DARWIN)
 
 if(OS_DRAGONFLY)
@@ -120,17 +149,22 @@ endif(NOT RELEASE)
 
 mark_as_advanced(APP_AWK APP_WC APP_DATE APP_UNAME)
 
-#BUILD_DATE=$(LANG=en_US LC_ALL=en_US LOCALE=en_US date)
-#BUILD_ARCH="$(uname -sr) ($(uname -m))"
-execute_process(COMMAND ${APP_DATE} RESULT_VARIABLE RETVAL OUTPUT_VARIABLE
-  BUILD_DATE OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND ${APP_UNAME} -srm RESULT_VARIABLE RETVAL
-  OUTPUT_VARIABLE BUILD_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
+# BUILD_DATE=$(LANG=en_US LC_ALL=en_US LOCALE=en_US date) BUILD_ARCH="$(uname
+# -sr) ($(uname -m))"
+execute_process(COMMAND ${APP_DATE}
+                RESULT_VARIABLE RETVAL
+                OUTPUT_VARIABLE BUILD_DATE
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${APP_UNAME} -srm
+                RESULT_VARIABLE RETVAL
+                OUTPUT_VARIABLE BUILD_ARCH
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 if(RELEASE)
   set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 else(RELEASE)
-  set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}_pre${COMMIT_COUNT}")
+  set(VERSION
+      "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}_pre${COMMIT_COUNT}")
 endif(RELEASE)
 
 set(COPYRIGHT "Copyright Brenden Matthews, et al, 2005-2018")
@@ -146,11 +180,13 @@ macro(AC_SEARCH_LIBS FUNCTION_NAME INCLUDES TARGET_VAR)
         unset(AC_SEARCH_LIBS_TMP CACHE)
         unset(AC_SEARCH_LIBS_FOUND CACHE)
         find_library(AC_SEARCH_LIBS_TMP ${LIB})
-        check_library_exists(${LIB} ${FUNCTION_NAME} ${AC_SEARCH_LIBS_TMP}
-          AC_SEARCH_LIBS_FOUND)
+        check_library_exists(${LIB}
+                             ${FUNCTION_NAME}
+                             ${AC_SEARCH_LIBS_TMP}
+                             AC_SEARCH_LIBS_FOUND)
         if(${AC_SEARCH_LIBS_FOUND})
-          set(${TARGET_VAR} ${AC_SEARCH_LIBS_TMP} CACHE INTERNAL
-            "Library containing ${FUNCTION_NAME}")
+          set(${TARGET_VAR} ${AC_SEARCH_LIBS_TMP}
+              CACHE INTERNAL "Library containing ${FUNCTION_NAME}")
           break()
         endif(${AC_SEARCH_LIBS_FOUND})
       endforeach(LIB)
@@ -158,26 +194,30 @@ macro(AC_SEARCH_LIBS FUNCTION_NAME INCLUDES TARGET_VAR)
   endif("${TARGET_VAR}" MATCHES "^${TARGET_VAR}$")
 endmacro(AC_SEARCH_LIBS)
 
-
 # A function to print the target build properties
 function(print_target_properties tgt)
-    if(NOT TARGET ${tgt})
-        message("There is no target named '${tgt}'")
-        return()
+  if(NOT TARGET ${tgt})
+    message("There is no target named '${tgt}'")
+    return()
+  endif()
+
+  # this list of properties can be extended as needed
+  set(CMAKE_PROPERTY_LIST
+      SOURCE_DIR
+      BINARY_DIR
+      COMPILE_DEFINITIONS
+      COMPILE_OPTIONS
+      INCLUDE_DIRECTORIES
+      LINK_LIBRARIES)
+
+  message("Configuration for target ${tgt}")
+
+  foreach(prop ${CMAKE_PROPERTY_LIST})
+    get_property(propval TARGET ${tgt} PROPERTY ${prop} SET)
+    if(propval)
+      get_target_property(propval ${tgt} ${prop})
+      message(STATUS "${prop} = ${propval}")
     endif()
-
-    # this list of properties can be extended as needed
-    set(CMAKE_PROPERTY_LIST SOURCE_DIR BINARY_DIR COMPILE_DEFINITIONS
-             COMPILE_OPTIONS INCLUDE_DIRECTORIES LINK_LIBRARIES)
-
-    message("Configuration for target ${tgt}")
-
-    foreach (prop ${CMAKE_PROPERTY_LIST})
-        get_property(propval TARGET ${tgt} PROPERTY ${prop} SET)
-        if (propval)
-            get_target_property(propval ${tgt} ${prop})
-            message (STATUS "${prop} = ${propval}")
-        endif()
-    endforeach(prop)
+  endforeach(prop)
 
 endfunction(print_target_properties)
