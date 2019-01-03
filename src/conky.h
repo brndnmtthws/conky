@@ -74,10 +74,6 @@ struct text_object;
 #include "bmpx.h"
 #endif /* BUILD_BMPX */
 
-#ifdef BUILD_EVE
-#include "eve.h"
-#endif /* BUILD_EVE */
-
 #ifdef BUILD_HDDTEMP
 #include "hddtemp.h"
 #endif /* BUILD_HDDTEMP */

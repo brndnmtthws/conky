@@ -28,12 +28,12 @@
  */
 
 /* local headers */
+#include "core.h"
 #include "algebra.h"
 #include "bsdapm.h"
 #include "build.h"
 #include "colours.h"
 #include "combine.h"
-#include "core.h"
 #include "diskio.h"
 #include "entropy.h"
 #include "exec.h"
@@ -431,7 +431,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(freq, nullptr) get_cpu_count();
   if ((arg == nullptr) || (isdigit((unsigned char)arg[0]) == 0) ||
       strlen(arg) >= 3 || atoi(&arg[0]) == 0 ||
-      (unsigned int) atoi(&arg[0]) > info.cpu_count) {
+      (unsigned int)atoi(&arg[0]) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("freq: Invalid CPU number or you don't have that many CPUs! "
       "Displaying the clock for CPU 1."); */
@@ -442,7 +442,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(freq_g, nullptr) get_cpu_count();
   if ((arg == nullptr) || (isdigit((unsigned char)arg[0]) == 0) ||
       strlen(arg) >= 3 || atoi(&arg[0]) == 0 ||
-      (unsigned int) atoi(&arg[0]) > info.cpu_count) {
+      (unsigned int)atoi(&arg[0]) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("freq_g: Invalid CPU number or you don't have that many "
       "CPUs! Displaying the clock for CPU 1."); */
@@ -468,7 +468,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #if defined(__linux__)
   END OBJ(voltage_mv, 0) get_cpu_count();
   if (!arg || !isdigit((unsigned char)arg[0]) || strlen(arg) >= 3 ||
-      atoi(&arg[0]) == 0 || (unsigned int) atoi(&arg[0]) > info.cpu_count) {
+      atoi(&arg[0]) == 0 || (unsigned int)atoi(&arg[0]) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("voltage_mv: Invalid CPU number or you don't have that many "
       "CPUs! Displaying voltage for CPU 1."); */
@@ -478,7 +478,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_voltage_mv;
   END OBJ(voltage_v, 0) get_cpu_count();
   if (!arg || !isdigit((unsigned char)arg[0]) || strlen(arg) >= 3 ||
-      atoi(&arg[0]) == 0 || (unsigned int) atoi(&arg[0]) > info.cpu_count) {
+      atoi(&arg[0]) == 0 || (unsigned int)atoi(&arg[0]) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("voltage_v: Invalid CPU number or you don't have that many "
       "CPUs! Displaying voltage for CPU 1."); */
@@ -490,37 +490,37 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #endif /* __linux__ */
 
 #ifdef BUILD_WLAN
-    END OBJ(wireless_essid, &update_net_stats) obj->data.opaque =
-    get_net_stat(arg, obj, free_at_crash);
-    parse_net_stat_arg(obj, arg, free_at_crash);
-    obj->callbacks.print = &print_wireless_essid;
-    END OBJ(wireless_channel, &update_net_stats)
-    parse_net_stat_arg(obj, arg, free_at_crash);
-    obj->callbacks.print = &print_wireless_channel;
-    END OBJ(wireless_freq, &update_net_stats)
-    parse_net_stat_arg(obj, arg, free_at_crash);
-    obj->callbacks.print = &print_wireless_frequency;
-    END OBJ(wireless_mode, &update_net_stats)
-    parse_net_stat_arg(obj, arg, free_at_crash);
-    obj->callbacks.print = &print_wireless_mode;
-    END OBJ(wireless_bitrate, &update_net_stats)
-    parse_net_stat_arg(obj, arg, free_at_crash);
-    obj->callbacks.print = &print_wireless_bitrate;
-    END OBJ(wireless_ap, &update_net_stats)
-    parse_net_stat_arg(obj, arg, free_at_crash);
-    obj->callbacks.print = &print_wireless_ap;
-    END OBJ(wireless_link_qual, &update_net_stats)
-    parse_net_stat_arg(obj, arg, free_at_crash);
-    obj->callbacks.print = &print_wireless_link_qual;
-    END OBJ(wireless_link_qual_max, &update_net_stats)
-    parse_net_stat_arg(obj, arg, free_at_crash);
-    obj->callbacks.print = &print_wireless_link_qual_max;
-    END OBJ(wireless_link_qual_perc, &update_net_stats)
-    parse_net_stat_arg(obj, arg, free_at_crash);
-    obj->callbacks.print = &print_wireless_link_qual_perc;
-    END OBJ(wireless_link_bar, &update_net_stats)
-    parse_net_stat_bar_arg(obj, arg, free_at_crash);
-    obj->callbacks.barval = &wireless_link_barval;
+  END OBJ(wireless_essid, &update_net_stats) obj->data.opaque =
+      get_net_stat(arg, obj, free_at_crash);
+  parse_net_stat_arg(obj, arg, free_at_crash);
+  obj->callbacks.print = &print_wireless_essid;
+  END OBJ(wireless_channel, &update_net_stats)
+      parse_net_stat_arg(obj, arg, free_at_crash);
+  obj->callbacks.print = &print_wireless_channel;
+  END OBJ(wireless_freq, &update_net_stats)
+      parse_net_stat_arg(obj, arg, free_at_crash);
+  obj->callbacks.print = &print_wireless_frequency;
+  END OBJ(wireless_mode, &update_net_stats)
+      parse_net_stat_arg(obj, arg, free_at_crash);
+  obj->callbacks.print = &print_wireless_mode;
+  END OBJ(wireless_bitrate, &update_net_stats)
+      parse_net_stat_arg(obj, arg, free_at_crash);
+  obj->callbacks.print = &print_wireless_bitrate;
+  END OBJ(wireless_ap, &update_net_stats)
+      parse_net_stat_arg(obj, arg, free_at_crash);
+  obj->callbacks.print = &print_wireless_ap;
+  END OBJ(wireless_link_qual, &update_net_stats)
+      parse_net_stat_arg(obj, arg, free_at_crash);
+  obj->callbacks.print = &print_wireless_link_qual;
+  END OBJ(wireless_link_qual_max, &update_net_stats)
+      parse_net_stat_arg(obj, arg, free_at_crash);
+  obj->callbacks.print = &print_wireless_link_qual_max;
+  END OBJ(wireless_link_qual_perc, &update_net_stats)
+      parse_net_stat_arg(obj, arg, free_at_crash);
+  obj->callbacks.print = &print_wireless_link_qual_perc;
+  END OBJ(wireless_link_bar, &update_net_stats)
+      parse_net_stat_bar_arg(obj, arg, free_at_crash);
+  obj->callbacks.barval = &wireless_link_barval;
 #endif /* BUILD_WLAN */
 
 #ifndef __OpenBSD__
@@ -546,7 +546,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_battery_short;
   obj->callbacks.free = &gen_free_opaque;
 
-  END OBJ(battery_status, 0) obj->data.s = strndup(arg ? arg : "BAT0", text_buffer_size.get(*state));
+  END OBJ(battery_status, 0) obj->data.s =
+      strndup(arg ? arg : "BAT0", text_buffer_size.get(*state));
   obj->callbacks.print = &print_battery_status;
   obj->callbacks.free = &gen_free_opaque;
   END OBJ(battery_time, nullptr) char bat[64];
@@ -664,7 +665,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(obsd_vendor, 0) obj->callbacks.print = &get_obsd_vendor;
   END OBJ(obsd_product, 0) obj->callbacks.print = &get_obsd_product;
 #endif /* __OpenBSD__ */
-  END OBJ(buffers, &update_meminfo)  obj->data.s = STRNDUP_ARG;
+  END OBJ(buffers, &update_meminfo) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_buffers;
   obj->callbacks.free = &gen_free_opaque;
   END OBJ(cached, &update_meminfo) obj->data.s = STRNDUP_ARG;
@@ -873,7 +874,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &gen_free_opaque;
 #endif /* __FreeBSD__ */
 
-  END OBJ(password, 0) obj->data.s = strndup(arg ? arg : "20", text_buffer_size.get(*state));
+  END OBJ(password, 0) obj->data.s =
+      strndup(arg ? arg : "20", text_buffer_size.get(*state));
   obj->callbacks.print = &print_password;
   obj->callbacks.free = &gen_free_opaque;
 
@@ -1517,8 +1519,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_pop3_used;
   obj->callbacks.free = &free_mail_obj;
 #ifdef BUILD_IBM
-  END OBJ_ARG(smapi, 0, "smapi needs an argument") obj->data.s =
-      STRNDUP_ARG;
+  END OBJ_ARG(smapi, 0, "smapi needs an argument") obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_smapi;
   obj->callbacks.free = &gen_free_opaque;
   END OBJ_IF_ARG(if_smapi_bat_installed, 0,
@@ -1725,12 +1726,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(bmpx_bitrate, &update_bmpx) obj->callbacks.print =
       &print_bmpx_bitrate;
 #endif /* BUILD_BMPX */
-#ifdef BUILD_EVE
-  END OBJ_ARG(eve, 0, "eve needs arguments: <userid> <apikey> <characterid>")
-      scan_eve(obj, arg);
-  obj->callbacks.print = &print_eve;
-  obj->callbacks.free = &free_eve;
-#endif /* BUILD_EVE */
 #ifdef BUILD_CURL
   END OBJ_ARG(curl, 0, "curl needs arguments: <uri> <interval in minutes>")
       curl_parse_arg(obj, arg);
@@ -1746,7 +1741,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &rss_free_obj_info;
 #endif /* BUILD_RSS */
 #ifdef BUILD_WEATHER_METAR
-  END OBJ_ARG(weather, 0, "weather still needs to written...") obj->callbacks.print = &print_weather;
+  END OBJ_ARG(weather, 0, "weather still needs to written...")
+      obj->callbacks.print = &print_weather;
 #endif /* BUILD_WEATHER_METAR */
   END OBJ_ARG(lua, nullptr,
               "lua needs arguments: <function name> [function parameters]")
@@ -1800,8 +1796,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &gen_free_opaque;
 #endif /* BUILD_X11 */
 #ifdef BUILD_HDDTEMP
-  END OBJ(hddtemp, &update_hddtemp) if (arg) obj->data.s =
-      STRNDUP_ARG;
+  END OBJ(hddtemp, &update_hddtemp) if (arg) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_hddtemp;
   obj->callbacks.free = &free_hddtemp;
 #endif /* BUILD_HDDTEMP */

@@ -232,11 +232,6 @@ if(BUILD_HDDTEMP)
   set(optional_sources ${optional_sources} ${hddtemp})
 endif(BUILD_HDDTEMP)
 
-if(BUILD_EVE)
-  set(eve eve.cc eve.h)
-  set(optional_sources ${optional_sources} ${eve})
-endif(BUILD_EVE)
-
 if(BUILD_CURL)
   set(ccurl_thread ccurl_thread.cc ccurl_thread.h)
   set(optional_sources ${optional_sources} ${ccurl_thread})

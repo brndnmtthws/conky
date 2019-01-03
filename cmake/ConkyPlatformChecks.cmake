@@ -424,11 +424,6 @@ if(BUILD_XMMS2)
   set(conky_includes ${conky_includes} ${XMMS2_INCLUDE_DIRS})
 endif(BUILD_XMMS2)
 
-if(BUILD_EVE)
-  set(WANT_CURL true)
-  set(WANT_LIBXML2 true)
-endif(BUILD_EVE)
-
 if(BUILD_CURL)
   set(WANT_CURL true)
 endif(BUILD_CURL)
