@@ -43,8 +43,8 @@ The [GitHub Wiki](https://github.com/brndnmtthws/conky/wiki) serves as a central
 Conky's documentation.
 
 * [Installation](https://github.com/brndnmtthws/conky/wiki/Installation)
-* [Configuration Settings](https://github.com/brndnmtthws/conky/wiki/Configuration-Settings)
-* [User Configs](https://github.com/brndnmtthws/conky/wiki/User-Configs)
+* [Configuration Settings](https://github.com/brndnmtthws/conky/wiki/Configurations)
+* [User Configs](https://github.com/brndnmtthws/conky/wiki/Configs)
 * [Frequently Asked Questions](https://github.com/brndnmtthws/conky/wiki/FAQ)
 
 ### License
