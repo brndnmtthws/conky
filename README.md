@@ -4,7 +4,9 @@
 **Conky** is a free, light-weight system monitor for X, that displays
 any kind of information on your desktop.
 
-Grab the [latest release from GitHub](https://github.com/brndnmtthws/conky/releases/latest).
+👉 Grab the [latest release from GitHub](https://github.com/brndnmtthws/conky/releases/latest).
+
+[📹 An introduction to Conky (YouTube)](https://www.youtube.com/watch?v=bHtpLEoRKmg&t=19s).
 
 ### Features
 
