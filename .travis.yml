@@ -41,6 +41,7 @@ matrix:
             - audacious-dev
             - libsystemd-dev
             - libxnvctrl-dev
+            - libircclient-dev
             - gawk
         sonarcloud:
           organization: "brndnmtthws-github"
@@ -83,6 +84,7 @@ matrix:
             - audacious-dev
             - libsystemd-dev
             - libxnvctrl-dev
+            - libircclient-dev
             - gawk
       env:
         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
@@ -121,6 +123,7 @@ matrix:
             - audacious-dev
             - libsystemd-dev
             - libxnvctrl-dev
+            - libircclient-dev
             - gawk
       env:
         - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
@@ -159,6 +162,7 @@ matrix:
             - audacious-dev
             - libsystemd-dev
             - libxnvctrl-dev
+            - libircclient-dev
             - gawk
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
@@ -197,6 +201,7 @@ matrix:
             - audacious-dev
             - libsystemd-dev
             - libxnvctrl-dev
+            - libircclient-dev
             - gawk
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
@@ -237,6 +242,7 @@ matrix:
             - audacious-dev
             - libsystemd-dev
             - libxnvctrl-dev
+            - libircclient-dev
             - gawk
       env:
         - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
@@ -273,6 +279,7 @@ before_script:
         -DBUILD_PULSEAUDIO=ON                \
         -DBUILD_JOURNAL=ON                   \
         -DBUILD_RSS=ON                       \
+        -DBUILD_IRC=ON                       \
         -DBUILD_NVIDIA=ON                    \
         ..
       cd ..
@@ -295,6 +302,7 @@ before_script:
         -DBUILD_PULSEAUDIO=ON                \
         -DBUILD_JOURNAL=ON                   \
         -DBUILD_RSS=ON                       \
+        -DBUILD_IRC=ON                       \
         ..
       cd ..
     elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
