@@ -95,38 +95,38 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-              - g++-8
-              - cmake
-              - docbook2x
-              - libxdamage-dev
-              - libx11-dev
-              - libxft-dev
-              - libxext-dev
-              - libglib2.0-dev
-              - libxml2-dev
-              - libcurl4-gnutls-dev
-              - liblua5.3-dev
-              - libcairo2-dev
-              - libimlib2-dev
-              - libxinerama-dev
-              - libmysqlclient-dev
-              - libical-dev
-              - libircclient-dev
-              - libcairo2-dev
-              - libmicrohttpd-dev
-              - ncurses-dev
-              - librsvg2-dev
-              - libaudclient-dev
-              - libxmmsclient-dev
-              - libpulse-dev
-              - libcurl4-gnutls-dev
-              - audacious-dev
-              - libsystemd-dev
-              - libxnvctrl-dev
-              - libircclient-dev
-              - gawk
+            - g++-8
+            - cmake
+            - docbook2x
+            - libxdamage-dev
+            - libx11-dev
+            - libxft-dev
+            - libxext-dev
+            - libglib2.0-dev
+            - libxml2-dev
+            - libcurl4-gnutls-dev
+            - liblua5.3-dev
+            - libcairo2-dev
+            - libimlib2-dev
+            - libxinerama-dev
+            - libmysqlclient-dev
+            - libical-dev
+            - libircclient-dev
+            - libcairo2-dev
+            - libmicrohttpd-dev
+            - ncurses-dev
+            - librsvg2-dev
+            - libaudclient-dev
+            - libxmmsclient-dev
+            - libpulse-dev
+            - libcurl4-gnutls-dev
+            - audacious-dev
+            - libsystemd-dev
+            - libxnvctrl-dev
+            - libircclient-dev
+            - gawk
       env:
-          - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
     - os: osx
       osx_image: xcode9.4
     - os: osx
@@ -145,6 +145,7 @@ before_script:
 
       cmake                                  \
         -DMAINTAINER_MODE=ON                 \
+        -DBUILD_X11=ON                       \
         -DBUILD_MYSQL=ON                     \
         -DBUILD_LUA_IMLIB2=ON                \
         -DBUILD_LUA_RSVG=ON                  \
@@ -162,9 +163,9 @@ before_script:
         -DBUILD_NVIDIA=ON                    \
         ..
       cd ..
-      mkdir build-no-x11
-      cd build-no-x11
+      cp -r build build-no-x11
 
+      cd build-no-x11
       cmake                                  \
         -DMAINTAINER_MODE=ON                 \
         -DBUILD_X11=OFF                      \
@@ -188,16 +189,16 @@ before_script:
       mkdir build && cd build
       cmake                                  \
         -DMAINTAINER_MODE=ON                 \
+        -DBUILD_X11=ON                       \
         -DBUILD_LUA_RSVG=ON                  \
         -DBUILD_LUA_IMLIB2=ON                \
         ..
       cd ..
+      cp -r build build-no-x11
 
-      mkdir build-no-x11
       cd build-no-x11
       cmake                                  \
         -DMAINTAINER_MODE=ON                 \
-        -DBUILD_X11=OFF                      \
         -DBUILD_X11=OFF                      \
         -DBUILD_LUA_RSVG=ON                  \
         -DBUILD_LUA_IMLIB2=ON                \
