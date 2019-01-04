@@ -95,161 +95,40 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-6
-            - cmake
-            - docbook2x
-            - libxdamage-dev
-            - libx11-dev
-            - libxft-dev
-            - libxext-dev
-            - libglib2.0-dev
-            - libxml2-dev
-            - libcurl4-gnutls-dev
-            - liblua5.3-dev
-            - libcairo2-dev
-            - libimlib2-dev
-            - libxinerama-dev
-            - libmysqlclient-dev
-            - libical-dev
-            - libircclient-dev
-            - libcairo2-dev
-            - libmicrohttpd-dev
-            - ncurses-dev
-            - librsvg2-dev
-            - libaudclient-dev
-            - libxmmsclient-dev
-            - libpulse-dev
-            - libcurl4-gnutls-dev
-            - audacious-dev
-            - libsystemd-dev
-            - libxnvctrl-dev
-            - libircclient-dev
-            - gawk
+              - g++-8
+              - cmake
+              - docbook2x
+              - libxdamage-dev
+              - libx11-dev
+              - libxft-dev
+              - libxext-dev
+              - libglib2.0-dev
+              - libxml2-dev
+              - libcurl4-gnutls-dev
+              - liblua5.3-dev
+              - libcairo2-dev
+              - libimlib2-dev
+              - libxinerama-dev
+              - libmysqlclient-dev
+              - libical-dev
+              - libircclient-dev
+              - libcairo2-dev
+              - libmicrohttpd-dev
+              - ncurses-dev
+              - librsvg2-dev
+              - libaudclient-dev
+              - libxmmsclient-dev
+              - libpulse-dev
+              - libcurl4-gnutls-dev
+              - audacious-dev
+              - libsystemd-dev
+              - libxnvctrl-dev
+              - libircclient-dev
+              - gawk
       env:
-        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - cmake
-            - docbook2x
-            - libxdamage-dev
-            - libx11-dev
-            - libxft-dev
-            - libxext-dev
-            - libglib2.0-dev
-            - libxml2-dev
-            - libcurl4-gnutls-dev
-            - liblua5.3-dev
-            - libcairo2-dev
-            - libimlib2-dev
-            - libxinerama-dev
-            - libmysqlclient-dev
-            - libical-dev
-            - libircclient-dev
-            - libcairo2-dev
-            - libmicrohttpd-dev
-            - ncurses-dev
-            - librsvg2-dev
-            - libaudclient-dev
-            - libxmmsclient-dev
-            - libpulse-dev
-            - libcurl4-gnutls-dev
-            - audacious-dev
-            - libsystemd-dev
-            - libxnvctrl-dev
-            - libircclient-dev
-            - gawk
-      env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - cmake
-            - docbook2x
-            - libxdamage-dev
-            - libx11-dev
-            - libxft-dev
-            - libxext-dev
-            - libglib2.0-dev
-            - libxml2-dev
-            - libcurl4-gnutls-dev
-            - liblua5.3-dev
-            - libcairo2-dev
-            - libimlib2-dev
-            - libxinerama-dev
-            - libmysqlclient-dev
-            - libical-dev
-            - libircclient-dev
-            - libcairo2-dev
-            - libmicrohttpd-dev
-            - ncurses-dev
-            - librsvg2-dev
-            - libaudclient-dev
-            - libxmmsclient-dev
-            - libpulse-dev
-            - libcurl4-gnutls-dev
-            - audacious-dev
-            - libsystemd-dev
-            - libxnvctrl-dev
-            - libircclient-dev
-            - gawk
-      env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - llvm-toolchain-xenial-6.0
-          packages:
-            - clang-6.0
-            - lld-6.0
-            - libstdc++6
-            - cmake
-            - docbook2x
-            - libxdamage-dev
-            - libx11-dev
-            - libxft-dev
-            - libxext-dev
-            - libglib2.0-dev
-            - libxml2-dev
-            - libcurl4-gnutls-dev
-            - liblua5.3-dev
-            - libcairo2-dev
-            - libimlib2-dev
-            - libxinerama-dev
-            - libmysqlclient-dev
-            - libical-dev
-            - libircclient-dev
-            - libcairo2-dev
-            - libmicrohttpd-dev
-            - ncurses-dev
-            - librsvg2-dev
-            - libaudclient-dev
-            - libxmmsclient-dev
-            - libpulse-dev
-            - libcurl4-gnutls-dev
-            - audacious-dev
-            - libsystemd-dev
-            - libxnvctrl-dev
-            - libircclient-dev
-            - gawk
-      env:
-        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+          - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
     - os: osx
       osx_image: xcode9.4
-    - os: osx
-      osx_image: xcode10
     - os: osx
       osx_image: xcode10.1
 before_install:
