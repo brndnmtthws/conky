@@ -220,8 +220,6 @@ option(BUILD_LUA_RSVG "Build rsvg bindings for Lua" false)
 
 option(BUILD_AUDACIOUS "Build audacious (music player) support" false)
 
-option(BUILD_BMPX "Build BMPx (music player) support" false)
-
 option(BUILD_MPD "Enable if you want MPD (music player) support" true)
 
 option(BUILD_MYSQL "Enable if you want MySQL support" false)

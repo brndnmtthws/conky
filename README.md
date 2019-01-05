@@ -17,7 +17,7 @@ Conky can display more than 300 built-in objects, including support for:
    monitoring**, just to name a few).
  * Built-in **IMAP** and **POP3** support.
  * Built-in support for many popular music players ([MPD][],
-   [XMMS2][], [BMPx][], [Audacious][]).
+   [XMMS2][], [Audacious][]).
  * Can be extended using built-in [**Lua**](lua) support, or any of your
    own scripts and programs ([more](https://github.com/brndnmtthws/conky/wiki#tutorial)).
  * Built-in [**Imlib2**][Imlib2] and [**Cairo**][cairo] bindings for arbitrary drawing
@@ -68,7 +68,6 @@ Patches submitted in issues, email, or elsewhere will likely be ignored. When su
 
 [MPD]: https://musicpd.org/
 [XMMS2]: https://github.com/xmms2/wiki/wiki
-[BMPx]: https://www.beep-media-player.org/
 [Audacious]: https://audacious-media-player.org/
 [luawiki]: https://en.wikipedia.org/wiki/Lua_%28programming_language%29
 [Imlib2]: https://docs.enlightenment.org/api/imlib2/html/

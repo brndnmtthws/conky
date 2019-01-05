@@ -48,7 +48,7 @@
         a plethora of OS stats (uname, uptime, CPU usage, mem usage, disk
         usage, "top" like process stats, and network monitoring, just to name
         a few), built in IMAP and POP3 support, built in support for many
-        popular music players (MPD, XMMS2, BMPx, Audacious), and much much
+        popular music players (MPD, XMMS2, Audacious), and much much
         more. Conky can display this info either as text, or using simple
         progress bars and graph widgets, with different fonts and
         colours.</para>
