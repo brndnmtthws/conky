@@ -177,16 +177,13 @@ static void print_version() {
             << _("  * Own window\n")
 #endif
 #endif /* BUILD_X11 */
-#if defined BUILD_AUDACIOUS || defined BUILD_BMPX || defined BUILD_CMUS || \
+#if defined BUILD_AUDACIOUS || defined BUILD_CMUS || \
     defined BUILD_MPD || defined BUILD_MOC || defined BUILD_XMMS2
             << _("\n Music detection:\n")
 #endif
 #ifdef BUILD_AUDACIOUS
             << _("  * Audacious\n")
 #endif /* BUILD_AUDACIOUS */
-#ifdef BUILD_BMPX
-            << _("  * BMPx\n")
-#endif /* BUILD_BMPX */
 #ifdef BUILD_CMUS
             << _("  * CMUS\n")
 #endif /* BUILD_CMUS */

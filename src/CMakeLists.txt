@@ -170,11 +170,6 @@ if(BUILD_AUDACIOUS)
   set(optional_sources ${optional_sources} ${audacious})
 endif(BUILD_AUDACIOUS)
 
-if(BUILD_BMPX)
-  set(bmpx bmpx.cc bmpx.h)
-  set(optional_sources ${optional_sources} ${bmpx})
-endif(BUILD_BMPX)
-
 if(BUILD_IBM)
   set(ibm ibm.cc ibm.h smapi.cc smapi.h)
   set(optional_sources ${optional_sources} ${ibm})

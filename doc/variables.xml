@@ -474,60 +474,6 @@
     <varlistentry>
         <term>
             <command>
-                <option>bmpx_album</option>
-            </command>
-        </term>
-        <listitem>Album in current BMPx track.
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
-                <option>bmpx_artist</option>
-            </command>
-        </term>
-        <listitem>Artist in current BMPx track.
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
-                <option>bmpx_bitrate</option>
-            </command>
-        </term>
-        <listitem>Bitrate of the current BMPx track.
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
-                <option>bmpx_title</option>
-            </command>
-        </term>
-        <listitem>Title of the current BMPx track.
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
-                <option>bmpx_track</option>
-            </command>
-        </term>
-        <listitem>Track number of the current BMPx track.
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
-                <option>bmpx_uri</option>
-            </command>
-        </term>
-        <listitem>URI of the current BMPx track.
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
                 <option>buffers</option>
             </command>
         </term>

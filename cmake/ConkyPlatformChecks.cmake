@@ -412,12 +412,6 @@ if(BUILD_AUDACIOUS)
       ${DBUS_GLIB_INCLUDE_DIRS})
 endif(BUILD_AUDACIOUS)
 
-if(BUILD_BMPX)
-  pkg_check_modules(BMPX REQUIRED bmp-2.0>=0.14.0)
-  set(conky_libs ${conky_libs} ${BMPX_LIBRARIES})
-  set(conky_includes ${conky_includes} ${BMPX_INCLUDE_DIRS})
-endif(BUILD_BMPX)
-
 if(BUILD_XMMS2)
   pkg_check_modules(XMMS2 REQUIRED xmms2-client>=0.6)
   set(conky_libs ${conky_libs} ${XMMS2_LIBRARIES})

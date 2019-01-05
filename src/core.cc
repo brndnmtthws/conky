@@ -1717,15 +1717,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(audacious_bar, 0) scan_bar(obj, arg, 1);
   obj->callbacks.barval = &audacious_barval;
 #endif /* BUILD_AUDACIOUS */
-#ifdef BUIL_BMPX
-  END OBJ(bmpx_title, &update_bmpx) obj->callbacks.print = &print_bmpx_title;
-  END OBJ(bmpx_artist, &update_bmpx) obj->callbacks.print = &print_bmpx_artist;
-  END OBJ(bmpx_album, &update_bmpx) obj->callbacks.print = &print_bmpx_album;
-  END OBJ(bmpx_track, &update_bmpx) obj->callbacks.print = &print_bmpx_track;
-  END OBJ(bmpx_uri, &update_bmpx) obj->callbacks.print = &print_bmpx_uri;
-  END OBJ(bmpx_bitrate, &update_bmpx) obj->callbacks.print =
-      &print_bmpx_bitrate;
-#endif /* BUILD_BMPX */
 #ifdef BUILD_CURL
   END OBJ_ARG(curl, 0, "curl needs arguments: <uri> <interval in minutes>")
       curl_parse_arg(obj, arg);

@@ -40,7 +40,7 @@
                 progress bars, and graphs. Also unlike top, the way it is
                 formatted is completely user-configurable. In addition to
                 monitoring the system itself, Conky can also give you
-                information about several music players (such as XMMS, BMPx,
+                information about several music players (such as XMMS,
                 Music Player Daemon, and Audacious Media Player), tell you how
                 many new messages are in your mail spool, and plenty more. If
                 the functionality you require isn't in Conky yet, it is a
@@ -62,8 +62,8 @@
                 <c>X</c>), and make sure you select the USE flags for any
                 music players (other than MPD) which you want. XMMS (
                 <c>xmms</c>), Audacious (
-                <c>audacious</c>), BMPx (
-                <c>bmpx</c>), or XMMS support via the xmms-infopipe plugin (
+                <c>audacious</c>),
+                or XMMS support via the xmms-infopipe plugin (
                 <c>infopipe</c>).</p>
                 <pre caption="/etc/portage/package.use">
 <comment># Example line to append to /etc/portage/package.use if you don't

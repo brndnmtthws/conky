@@ -70,10 +70,6 @@ char *strndup(const char *s, size_t n);
 /* forward define to make gcc happy */
 struct text_object;
 
-#ifdef BUILD_BMPX
-#include "bmpx.h"
-#endif /* BUILD_BMPX */
-
 #ifdef BUILD_HDDTEMP
 #include "hddtemp.h"
 #endif /* BUILD_HDDTEMP */
@@ -188,9 +184,6 @@ struct information {
 #ifdef BUILD_XMMS2
   struct xmms2_s xmms2;
 #endif /* BUILD_XMMS2 */
-#ifdef BUILD_BMPX
-  struct bmpx_s bmpx;
-#endif /* BUILD_BMPX */
   struct usr_info users;
   struct process *cpu[10];
   struct process *memu[10];
