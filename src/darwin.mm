@@ -7,7 +7,7 @@
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2018, npyl <n.pylarinos@hotmail.com>
+ * Copyright (c) 2018-2019, npyl <n.pylarinos@hotmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -232,7 +232,7 @@ static void get_cpu_sample(struct cpusample **sample) {
   natural_t processorCount;
   processor_cpu_load_info_t processorTickInfo;
   mach_msg_type_number_t processorInfoCount;
-  
+
   machHost = mach_host_self();
 
   kern_return_t err = host_processor_info(
@@ -275,14 +275,14 @@ static void get_cpu_sample(struct cpusample **sample) {
 void allocate_cpu_sample(struct cpusample **sample) {
   if (*sample != nullptr)
     return;
-  
+
   /*
    * allocate ncpus+1 cpusample structs (one foreach CPU)
    * ** sample_handle[0] is overal CPU usage
    */
   *sample = reinterpret_cast<struct cpusample *>(malloc(sizeof(cpusample) * (info.cpu_count + 1)));
   memset(*sample, 0, sizeof(cpusample) * (info.cpu_count + 1));
-  
+
   sample_handle = *sample; /* use a public handle for deallocating */
 }
 
@@ -580,9 +580,9 @@ uint64_t get_physical_memory() {
 }
 
 int update_meminfo() {
-  
+
   /* XXX See #34 */
-  
+
   vm_size_t page_size = getpagesize();  // get pagesize in bytes
   unsigned long swap_avail, swap_free;
 
@@ -654,7 +654,7 @@ int update_meminfo() {
 void update_wlan_stats(struct net_stat *ns) {
   CWWiFiClient *client = [CWWiFiClient sharedWiFiClient];
   CWInterface *interface = [client interfaceWithName:[NSString stringWithUTF8String:ns->dev]];
-  
+
   if (!interface)
     return;
 
@@ -699,7 +699,7 @@ void update_wlan_stats(struct net_stat *ns) {
     default:
       break;
   }
-  
+
   /*
    * Setup
    */
@@ -737,7 +737,7 @@ int update_net_stats() {
 #ifdef BUILD_WLAN
       update_wlan_stats(ns);
 #endif
-      
+
       ns->up = 1;
       last_recv = ns->recv;
       last_trans = ns->trans;
@@ -949,7 +949,7 @@ int update_cpu_usage() {
   static struct cpu_info *cpu = nullptr;
   unsigned int malloc_cpu_size = 0;
   extern void *global_cpu;
-  
+
   static struct cpusample *sample = nullptr;
 
   static pthread_mutex_t last_stat_update_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -983,7 +983,7 @@ int update_cpu_usage() {
   }
 
   allocate_cpu_sample(&sample);
-  
+
   get_cpu_sample(&sample);
 
   /*
@@ -1063,27 +1063,27 @@ void get_acpi_fan(char * /*p_client_buffer*/, size_t /*client_buffer_size*/) {
 char get_freq(char *p_client_buffer, size_t client_buffer_size,
               const char *p_format, int divisor, unsigned int cpu) {
   (void)cpu;
-  
+
   if ((p_client_buffer == nullptr) || client_buffer_size <= 0 ||
       (p_format == nullptr) || divisor <= 0) {
     return 0;
   }
-  
+
 #ifdef BUILD_IPGFREQ
   /*
    * Our data is always the same for every core, so ignore |cpu| argument.
    */
-  
+
   static bool initialised = false;
-  
+
   if (!initialised) {
     IntelEnergyLibInitialize();
     initialised = true;
   }
-  
+
   int freq = 0;
   GetIAFrequency(cpu, &freq);
-  
+
   snprintf(p_client_buffer, client_buffer_size, p_format,
            static_cast<float>(freq) / divisor);
 #else
@@ -1092,21 +1092,21 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
    * (Also, it is always the same for every core, so ignore |cpu| argument)
    * Enable BUILD_IPGFREQ for getting current frequency.
    */
-  
+
   int mib[2];
   unsigned int freq;
   size_t len;
-  
+
   mib[0] = CTL_HW;
   mib[1] = HW_CPU_FREQ;
   len = sizeof(freq);
-  
+
   if (sysctl(mib, 2, &freq, &len, nullptr, 0) == 0) {
     /*
      * convert to MHz
      */
     divisor *= 1000000;
-    
+
     snprintf(p_client_buffer, client_buffer_size, p_format,
              static_cast<float>(freq) / divisor);
   } else {
@@ -1114,7 +1114,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
     return 0;
   }
 #endif
-  
+
   return 1;
 }
 
@@ -1159,9 +1159,9 @@ static void calc_cpu_usage_for_proc(struct process *proc, uint64_t total) {
 static void calc_cpu_total(struct process *proc, uint64_t *total) {
   uint64_t current_total = 0; /* of current iteration */
   struct cpusample *sample = nullptr;
-  
+
   allocate_cpu_sample(&sample);
-  
+
   get_cpu_sample(&sample);
   current_total =
       sample[0].totalUserTime + sample[0].totalIdleTime + sample[0].totalSystemTime;
