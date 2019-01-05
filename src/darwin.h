@@ -7,7 +7,7 @@
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2018, npyl <n.pylarinos@hotmail.com>
+ * Copyright (c) 2018-2019, npyl <n.pylarinos@hotmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

@@ -131,7 +131,7 @@ namespace Catch {
 
 /* Disable C++17 on older GCC versions. */
 #if defined(__GNUC__) && !defined(_GLIBCXX_RELEASE)
-#undef CATCH_CPP17_OR_GREATER 
+#undef CATCH_CPP17_OR_GREATER
 #endif
 
 #endif
