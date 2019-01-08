@@ -27,8 +27,8 @@
  *
  */
 
-#include "net_stat.h"
 #include "netbsd.h"
+#include "net_stat.h"
 
 static kvm_t *kd = nullptr;
 int kd_init = 0, nkd_init = 0;
@@ -223,6 +223,8 @@ int update_total_processes() {
   }
 
   info.procs = n_processes;
+
+  return 0;
 }
 
 void update_running_processes() {
@@ -286,7 +288,8 @@ void update_cpu_usage() {
   oldtotal = total;
 }
 
-void free_cpu(struct text_object *) { /* no-op */ }
+void free_cpu(struct text_object *) { /* no-op */
+}
 
 void update_load_average() {
   double v[3];

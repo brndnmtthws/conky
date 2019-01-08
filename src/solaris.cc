@@ -181,6 +181,8 @@ double get_acpi_temperature(int fd) {
 int update_total_processes(void) {
   kstat_named_t *knp = get_kstat("unix", -1, "system_misc", "nproc");
   if (knp != nullptr) info.procs = knp->value.ui32;
+
+  return 0;
 }
 
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item) {
@@ -314,7 +316,8 @@ int update_cpu_usage(void) {
   return 0;
 }
 
-void free_cpu(struct text_object *) { /* no-op */ }
+void free_cpu(struct text_object *) { /* no-op */
+}
 
 void update_proc_entry(struct process *p) {
   psinfo_t proc;

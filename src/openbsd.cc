@@ -257,6 +257,8 @@ int update_total_processes() {
   kvm_getprocs(kd, KERN_PROC_ALL, 0, &n_processes);
 
   info.procs = n_processes;
+
+  return 0;
 }
 
 void update_running_processes() {
