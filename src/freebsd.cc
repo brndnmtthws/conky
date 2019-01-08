@@ -33,9 +33,9 @@
 #include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/sysctl.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <sys/sysctl.h>
 #include <sys/user.h>
 
 #include <net/if.h>
@@ -371,7 +371,8 @@ int update_cpu_usage(void) {
   return 0;
 }
 
-void free_cpu(struct text_object *) { /* no-op */ }
+void free_cpu(struct text_object *) { /* no-op */
+}
 
 int update_load_average(void) {
   double v[3];
@@ -705,7 +706,8 @@ int get_entropy_poolsize(unsigned int *val) {
   return 1;
 }
 
-void print_sysctlbyname(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_sysctlbyname(struct text_object *obj, char *p,
+                        unsigned int p_max_size) {
   u_int val[3] = {0};
   char buf[256] = {""};
   size_t len = sizeof(val);
