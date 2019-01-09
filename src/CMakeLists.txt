@@ -288,6 +288,10 @@ if(BUILD_TESTS)
   target_link_libraries(conky_core ${conky_libs})
   add_executable(conky main.cc)
   target_link_libraries(conky conky_core ${conky_libs})
+  install(TARGETS conky_core
+          RUNTIME DESTINATION bin
+          LIBRARY DESTINATION lib
+          ARCHIVE DESTINATION lib)
 else()
   add_executable(conky main.cc ${conky_sources} ${optional_sources})
   target_link_libraries(conky ${conky_libs})
