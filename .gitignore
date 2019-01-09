@@ -5,7 +5,7 @@ Doxyfile
 patches/
 doc/conky.1
 README
-build*
+build*/
 doc/*.html
 
 Makefile
