@@ -44,9 +44,9 @@ matrix:
             - libircclient-dev
             - gawk
         sonarcloud:
-          organization: "brndnmtthws-github"
+          organization: brndnmtthws-github
           token:
-            secure: "KikPusy+HXcEVLr0Dqb6mkrefDU5jm7EGQ5fwO4sBG7bRMcnHV3V14s5yB4Ol8btpUC0nkNn/41+f37lkG+oT4y9ZeIH2ZrhsSEHxOgH6DF9ZSVJwtpLrF9siWgfZ0m5c5V7U5rzVYL3jlO1hQfXKCfMNAcwlKcEUrfpk7jVEZc="
+            secure: KikPusy+HXcEVLr0Dqb6mkrefDU5jm7EGQ5fwO4sBG7bRMcnHV3V14s5yB4Ol8btpUC0nkNn/41+f37lkG+oT4y9ZeIH2ZrhsSEHxOgH6DF9ZSVJwtpLrF9siWgfZ0m5c5V7U5rzVYL3jlO1hQfXKCfMNAcwlKcEUrfpk7jVEZc=
       env:
         - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
     - os: linux
@@ -95,38 +95,38 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-              - g++-8
-              - cmake
-              - docbook2x
-              - libxdamage-dev
-              - libx11-dev
-              - libxft-dev
-              - libxext-dev
-              - libglib2.0-dev
-              - libxml2-dev
-              - libcurl4-gnutls-dev
-              - liblua5.3-dev
-              - libcairo2-dev
-              - libimlib2-dev
-              - libxinerama-dev
-              - libmysqlclient-dev
-              - libical-dev
-              - libircclient-dev
-              - libcairo2-dev
-              - libmicrohttpd-dev
-              - ncurses-dev
-              - librsvg2-dev
-              - libaudclient-dev
-              - libxmmsclient-dev
-              - libpulse-dev
-              - libcurl4-gnutls-dev
-              - audacious-dev
-              - libsystemd-dev
-              - libxnvctrl-dev
-              - libircclient-dev
-              - gawk
+            - g++-8
+            - cmake
+            - docbook2x
+            - libxdamage-dev
+            - libx11-dev
+            - libxft-dev
+            - libxext-dev
+            - libglib2.0-dev
+            - libxml2-dev
+            - libcurl4-gnutls-dev
+            - liblua5.3-dev
+            - libcairo2-dev
+            - libimlib2-dev
+            - libxinerama-dev
+            - libmysqlclient-dev
+            - libical-dev
+            - libircclient-dev
+            - libcairo2-dev
+            - libmicrohttpd-dev
+            - ncurses-dev
+            - librsvg2-dev
+            - libaudclient-dev
+            - libxmmsclient-dev
+            - libpulse-dev
+            - libcurl4-gnutls-dev
+            - audacious-dev
+            - libsystemd-dev
+            - libxnvctrl-dev
+            - libircclient-dev
+            - gawk
       env:
-          - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
     - os: osx
       osx_image: xcode9.4
     - os: osx
@@ -221,7 +221,19 @@ script:
 branches:
   only:
     - master
-sudo: false
+sudo: required
 cache:
   - directories:
-      - "$HOME/.sonar/cache"
+      - '$HOME/.sonar/cache'
+before_deploy:
+  - './appimage/build.sh'
+deploy:
+  provider: releases
+  file_glob: true
+  file: conky*.AppImage
+  skip_cleanup: true
+  on:
+    tags: true
+    condition: '$CXX = clang++-7'
+  api_key:
+    secure: YGmk5e9am7gwH1pKJVwjHPheaLrSxMIIa5iDvnto9KKaj9VDgsynzPFcwfP6my78qMszdpC7IsjpukpKFBpmifAZ7OQcpEDFp1d91kXcTEM9ILgu3j3kl/gr6nIkzqJO9VAwlYO5H3t5xlD6EZa36FGg0Nlvi2cCuNG7mEyVJy0=
