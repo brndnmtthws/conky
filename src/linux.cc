@@ -1169,7 +1169,7 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
   fd = open(path, O_RDONLY);
   if (fd < 0) {
     /* if it fails, strip the /device from dev and attempt again */
-    size_t len_to_trunc = std::max(7UL, strnlen(buf, 255)) - 7;
+    size_t len_to_trunc = std::max((size_t)7, strnlen(buf, 255)) - 7;
     buf[len_to_trunc] = 0;
     snprintf(path, 255, "%s%s/%s%d_input", dir, dev, type, n);
     fd = open(path, O_RDONLY);
