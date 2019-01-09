@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/brndnmtthws/conky.svg?branch=master)](https://travis-ci.org/brndnmtthws/conky) [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=conky&metric=alert_status)](https://sonarcloud.io/dashboard/index/conky) [![Maintainability](https://sonarcloud.io/api/project_badges/measure?project=conky&metric=sqale_rating)](https://sonarcloud.io/dashboard/index/conky) [![Code Coverage](https://sonarcloud.io/api/project_badges/measure?project=conky&metric=coverage)](https://sonarcloud.io/dashboard/index/conky) [![Sonarcloud Bugs](https://sonarcloud.io/api/project_badges/measure?project=conky&metric=bugs)](https://sonarcloud.io/dashboard/index/conky)
-<p align="center"><img width="300" src="logo/logotype-horizontal-violet.png"></p>
+<p align="center"><img width="300" src="logo/conky-logotype-horizontal-violet.png"></p>
 
 **Conky** is a free, light-weight system monitor for X, that displays
 any kind of information on your desktop.
