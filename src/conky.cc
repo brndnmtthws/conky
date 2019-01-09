@@ -135,17 +135,17 @@
 #include <bsd/bsd.h>
 #endif
 
-#ifdef BUILD_BUILTIN_CONFIG
-#include "defconfig.h"
-
 #ifdef BUILD_OLD_CONFIG
 #include "convertconf.h"
-#endif
+#endif /* BUILD_OLD_CONFIG */
+
+#ifdef BUILD_BUILTIN_CONFIG
+#include "defconfig.h"
 
 namespace {
 const char builtin_config_magic[] = "==builtin==";
 }  // namespace
-#endif
+#endif /* BUILD_BUILTIN_CONFIG */
 
 #ifndef S_ISSOCK
 #define S_ISSOCK(x) ((x & S_IFMT) == S_IFSOCK)
