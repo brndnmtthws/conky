@@ -1123,6 +1123,71 @@ static int get_first_file_in_a_directory(const char *dir, char *s, int *rep) {
   }
 }
 
+/*
+ * Convert @dev "0" (hwmon number) or "k10temp" (hwmon name) to "hwmon2/device"
+ */
+static void get_dev_path(const char *dir, const char *dev, char *out_buf)
+{
+  struct dirent **namelist;
+  char path[256] = {'\0'};
+  char name[256] = {'\0'};
+  bool found = false;
+  size_t size;
+  int name_fd;
+  int i;
+  int n;
+  int ret;
+
+  /* "0" numbered case */
+  ret = sscanf(dev, "%d", &n);
+  if (ret == 1) {
+    snprintf(out_buf, 255, "hwmon%d/device", n);
+    return;
+  }
+
+  /* "k10temp" name case, need to search hwmon*->name to find a match */
+  n = scandir(dir, &namelist, no_dots, alphasort);
+  if (n < 0) {
+    NORM_ERR("scandir for %s: %s", dir, strerror(errno));
+    goto not_found;
+  }
+  if (n == 0)
+    goto not_found;
+
+  /* Search each hwmon%s/name */
+  for (i = 0; i < n; i++) {
+    if (found)
+      continue;
+
+    snprintf(path, 256, "%s%s/name", dir, namelist[i]->d_name);
+    name_fd = open(path, O_RDONLY);
+    if (name_fd < 0)
+      continue;
+    size = read(name_fd, name, strlen(dev));
+    if (size < strlen(dev)) {
+      close(name_fd);
+      continue;
+    }
+    ret = strncmp(dev, name, strlen(dev));
+    if (!ret) {
+      found = true;
+      snprintf(out_buf, 255, "%s/device", namelist[i]->d_name);
+    }
+    close(name_fd);
+  }
+
+  /* cleanup */
+  for (i = 0; i < n; i++)
+    free(namelist[i]);
+  free(namelist);
+  if (found)
+    return;
+
+not_found:
+  out_buf[0] = '\0';
+  return;
+}
+
 static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
                              int n, int *divisor, char *devtype) {
   char path[256];
@@ -1146,9 +1211,18 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
        * e.g. "hwmon0" -- append "/device" */
       strncat(buf, "/device", 255 - strnlen(buf, 255));
     } else {
-      /* dev holds device number N as a string,
-       * e.g. "0", -- convert to "hwmon0/device" */
-      sprintf(buf, "hwmon%s/device", dev);
+      /*
+       * @dev holds device number N or hwmon name as a string,
+       * convert them as:
+       * "0" -> "hwmon0/device"
+       * "k10temp" -> "hwmon2/device", where hwmon2/name is "k10temp"
+       */
+      get_dev_path(dir, dev, buf);
+      /* Not found */
+      if (buf[0] == '\0') {
+        NORM_ERR("can't parse device \"%s\"", dev);
+        return -1;
+      }
       dev = buf;
     }
   }
@@ -1162,6 +1236,7 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
     type = "temp";
   }
 
+  DBGP("%s: dir=%s dev=%s type=%s n=%d\n", __func__, dir, dev, type, n);
   /* construct path */
   snprintf(path, 255, "%s%s/%s%d_input", dir, dev, type, n);
 

@@ -1496,8 +1496,11 @@
             </command>
             <option>(dev) type n (factor offset)</option>
         </term>
-        <listitem>Hwmon sensor from sysfs (Linux 2.6). Parameter dev may be
-        omitted if you have only one hwmon device. Parameter type is either
+        <listitem>Hwmon sensor from sysfs (Linux 2.6). Parameter dev can be:
+        1) Number. e.g '1' means hwmon1. 2) Module name. e.g. 'k10temp' means
+        the first hwmon device whose module name is 'k10temp. 3) Omitted. Then
+        the first hwmon device (hwmon0) will be used.
+        Parameter type is either
         'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' meaning
         temperature. Parameter n is number of the sensor. See
         <filename>/sys/class/hwmon/</filename>&#160;on your local computer.
