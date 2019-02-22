@@ -41,11 +41,15 @@ wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/lin
 # make them executable
 chmod +x linuxdeploy-x86_64.AppImage
 
+# import signing key
+gpg --allow-secret-key-import secret.gpg
+
 ./linuxdeploy-x86_64.AppImage \
     --appdir AppDir \
     -e AppDir/usr/bin/conky \
     -i AppDir/usr/share/icons/hicolor/scalable/apps/conky-logomark-violet.svg \
     -d AppDir/usr/share/applications/conky.desktop \
+    --sign \
     --output appimage
 
 mv conky*.AppImage "$OLD_CWD"
