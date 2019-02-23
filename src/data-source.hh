@@ -46,7 +46,7 @@ class data_source_base {
  public:
   const std::string name;
 
-  data_source_base(const std::string &name_) : name(name_) {}
+  explicit data_source_base(const std::string &name_) : name(name_) {}
 
   virtual ~data_source_base() {}
   virtual double get_number() const;
@@ -113,7 +113,7 @@ class register_data_source {
 
  public:
   template <typename... Args>
-  register_data_source(const std::string &name, Args &&... args) {
+  explicit register_data_source(const std::string &name, Args &&... args) {
     priv::do_register_data_source(
         name,
         std::bind(&factory<Args...>, std::placeholders::_1, name, args...));

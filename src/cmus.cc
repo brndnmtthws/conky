@@ -59,7 +59,7 @@ class cmus_cb : public conky::callback<cmus_result> {
   virtual void work();
 
  public:
-  cmus_cb(uint32_t period) : Base(period, false, Tuple()) {}
+  explicit cmus_cb(uint32_t period) : Base(period, false, Tuple()) {}
 };
 
 void cmus_cb::work() {
@@ -79,53 +79,55 @@ void cmus_cb::work() {
       if ((p = strrchr(line, '\n'))) *p = '\0';
 
       /* Parse infos. */
-      if (strncmp(line, "status ", 7) == 0)
+      if (strncmp(line, "status ", 7) == 0) {
         cmus.state = line + 7;
 
-      else if (strncmp(line, "file ", 5) == 0)
+      } else if (strncmp(line, "file ", 5) == 0) {
         cmus.file = line + 5;
 
-      else if (strncmp(line, "tag artist ", 11) == 0)
+      } else if (strncmp(line, "tag artist ", 11) == 0) {
         cmus.artist = line + 11;
 
-      else if (strncmp(line, "tag title ", 10) == 0)
+      } else if (strncmp(line, "tag title ", 10) == 0) {
         cmus.title = line + 10;
 
-      else if (strncmp(line, "tag album ", 10) == 0)
+      } else if (strncmp(line, "tag album ", 10) == 0) {
         cmus.album = line + 10;
 
-      else if (strncmp(line, "duration ", 9) == 0)
+      } else if (strncmp(line, "duration ", 9) == 0) {
         cmus.totaltime = line + 9;
 
-      else if (strncmp(line, "position ", 9) == 0) {
+      } else if (strncmp(line, "position ", 9) == 0) {
         cmus.curtime = line + 9;
         cmus.timeleft =
             atoi(cmus.totaltime.c_str()) - atoi(cmus.curtime.c_str());
-        if (cmus.curtime.size() > 0)
-          cmus.progress =
-              (float)atoi(cmus.curtime.c_str()) / atoi(cmus.totaltime.c_str());
-        else
+        if (cmus.curtime.size() > 0) {
+          cmus.progress = static_cast<float>(atoi(cmus.curtime.c_str())) /
+                          atoi(cmus.totaltime.c_str());
+        } else {
           cmus.progress = 0;
+        }
       }
 
-      else if (strncmp(line, "set shuffle ", 12) == 0)
+      else if (strncmp(line, "set shuffle ", 12) == 0) {
         cmus.random = (strncmp(line + 12, "true", 4) == 0 ? "on" : "off");
 
-      else if (strncmp(line, "set repeat ", 11) == 0)
+      } else if (strncmp(line, "set repeat ", 11) == 0) {
         cmus.repeat = (strncmp((line + 11), "true", 4) == 0 ? "all" : "off");
 
-      else if (strncmp(line, "set repeat_current ", 19) == 0)
+      } else if (strncmp(line, "set repeat_current ", 19) == 0) {
         cmus.repeat =
             (strncmp((line + 19), "true", 4) == 0 ? "song" : cmus.repeat);
-      else if (strncmp(line, "set aaa_mode ", 13) == 0)
+      } else if (strncmp(line, "set aaa_mode ", 13) == 0) {
         cmus.aaa = line + 13;
 
-      else if (strncmp(line, "tag tracknumber ", 16) == 0)
+      } else if (strncmp(line, "tag tracknumber ", 16) == 0) {
         cmus.track = line + 16;
-      else if (strncmp(line, "tag genre ", 10) == 0)
+      } else if (strncmp(line, "tag genre ", 10) == 0) {
         cmus.genre = line + 10;
-      else if (strncmp(line, "tag date ", 9) == 0)
+      } else if (strncmp(line, "tag date ", 9) == 0) {
         cmus.date = line + 9;
+      }
     }
   }
 
@@ -167,7 +169,7 @@ uint8_t cmus_percent(struct text_object *obj) {
       lround(music_player_interval.get(*state) / active_update_interval()), 1l);
   const cmus_result &cmus =
       conky::register_cb<cmus_cb>(period)->get_result_copy();
-  return (uint8_t)round(cmus.progress * 100.0f);
+  return static_cast<uint8_t>(round(cmus.progress * 100.0f));
 }
 
 double cmus_progress(struct text_object *obj) {
@@ -176,7 +178,7 @@ double cmus_progress(struct text_object *obj) {
       lround(music_player_interval.get(*state) / active_update_interval()), 1l);
   const cmus_result &cmus =
       conky::register_cb<cmus_cb>(period)->get_result_copy();
-  return (double)cmus.progress;
+  return static_cast<double>(cmus.progress);
 }
 
 void print_cmus_totaltime(struct text_object *obj, char *p,
@@ -197,7 +199,7 @@ void print_cmus_timeleft(struct text_object *obj, char *p,
   const cmus_result &cmus =
       conky::register_cb<cmus_cb>(period)->get_result_copy();
   // format_seconds_short(p, p_max_size, atol(cmus.timeleft.c_str()));
-  format_seconds_short(p, p_max_size, (long)cmus.timeleft);
+  format_seconds_short(p, p_max_size, static_cast<long>(cmus.timeleft));
 }
 
 void print_cmus_curtime(struct text_object *obj, char *p,

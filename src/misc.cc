@@ -97,7 +97,7 @@ void print_cap(struct text_object *obj, char *p, unsigned int p_max_size) {
 
   for (; *src && p_max_size - 1 > x; src++, x++) {
     if (0 == z) {
-      *dest++ = (toupper((unsigned char)*src));
+      *dest++ = (toupper(static_cast<unsigned char>(*src)));
       z++;
       continue;
     }

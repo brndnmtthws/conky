@@ -357,7 +357,9 @@ void print_mpd_smart(struct text_object *obj, char *p,
                      unsigned int p_max_size) {
   const mpd_result &mpd_info = get_mpd();
   int len = obj->data.i;
-  if (len == 0 || (unsigned int)len > p_max_size) { len = p_max_size; }
+  if (len == 0 || static_cast<unsigned int>(len) > p_max_size) {
+    len = p_max_size;
+  }
 
   memset(p, 0, p_max_size);
   if ((static_cast<unsigned int>(!mpd_info.artist.empty()) != 0u) &&

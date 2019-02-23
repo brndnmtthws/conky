@@ -784,7 +784,7 @@ static void generate_text() {
 
     tmp_p = text_buffer;
     while (*tmp_p != 0) {
-      *tmp_p = toupper((unsigned char)*tmp_p);
+      *tmp_p = toupper(static_cast<unsigned char>(*tmp_p));
       tmp_p++;
     }
   }
@@ -2205,7 +2205,7 @@ void main_loop() {
 #endif /* BUILD_X11 */
       struct timespec req, rem;
       auto time_to_sleep = next_update_time - get_time();
-      auto seconds = (time_t)std::floor(time_to_sleep);
+      auto seconds = static_cast<time_t>(std::floor(time_to_sleep));
       auto nanos = (time_to_sleep - seconds) * 1000000000L;
       req.tv_sec = seconds;
       req.tv_nsec = nanos;

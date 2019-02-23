@@ -76,10 +76,11 @@ static char *backslash_escape(const char *src, char **templates,
               (tmpl_num > template_count)) {
             break;
           }
-          if (tmpl_num == 0)
+          if (tmpl_num == 0) {
             CRIT_ERR(
                 nullptr, nullptr,
                 "invalid template argument \\0; arguments must start at \\1");
+          }
           dup_len += strlen(templates[tmpl_num - 1]);
           src_dup =
               static_cast<char *>(realloc(src_dup, dup_len * sizeof(char)));
@@ -184,8 +185,8 @@ char *find_and_replace_templates(const char *inbuf) {
     if (*(p + 1) == '{') {
       p += 2;
       templ = p;
-      while ((*p != 0) && (isspace((unsigned char)*p) == 0) && *p != '{' &&
-             *p != '}') {
+      while ((*p != 0) && (isspace(static_cast<unsigned char>(*p)) == 0) &&
+             *p != '{' && *p != '}') {
         p++;
       }
       if (*p == '}') {
@@ -214,7 +215,9 @@ char *find_and_replace_templates(const char *inbuf) {
     } else {
       templ = p + 1;
       p += strlen("$template");
-      while ((*p != 0) && (isdigit((unsigned char)*p) != 0)) { p++; }
+      while ((*p != 0) && (isdigit(static_cast<unsigned char>(*p)) != 0)) {
+        p++;
+      }
       args = nullptr;
     }
     tmpl_out = handle_template(templ, args);

@@ -183,10 +183,10 @@ std::string variable_substitute(std::string s) {
       std::string var;
       std::string::size_type l = 0;
 
-      if (isalpha((unsigned char)s[pos + 1]) != 0) {
+      if (isalpha(static_cast<unsigned char>(s[pos + 1])) != 0) {
         l = 1;
         while (pos + l < s.size() &&
-               (isalnum((unsigned char)s[pos + l]) != 0)) {
+               (isalnum(static_cast<unsigned char>(s[pos + l])) != 0)) {
           ++l;
         }
         var = s.substr(pos + 1, l - 1);
@@ -313,7 +313,7 @@ unsigned int round_to_int(float f) {
 void scan_loadavg_arg(struct text_object *obj, const char *arg) {
   obj->data.i = 0;
   if ((arg != nullptr) && (arg[1] == 0) &&
-      (isdigit((unsigned char)arg[0]) != 0)) {
+      (isdigit(static_cast<unsigned char>(arg[0])) != 0)) {
     obj->data.i = atoi(arg);
     if (obj->data.i > 3 || obj->data.i < 1) {
       NORM_ERR("loadavg arg needs to be in range (1,3)");
@@ -364,7 +364,7 @@ double loadgraphval(struct text_object *obj) {
 #endif /* BUILD_X11 */
 
 uint8_t cpu_percentage(struct text_object *obj) {
-  if ((unsigned int)obj->data.i > info.cpu_count) {
+  if (static_cast<unsigned int>(obj->data.i) > info.cpu_count) {
     NORM_ERR("obj->data.i %i info.cpu_count %i", obj->data.i, info.cpu_count);
     CRIT_ERR(nullptr, nullptr, "attempting to use more CPUs than you have!");
   }
@@ -777,7 +777,7 @@ error:
   if (nullptr != curl) { curl_easy_cleanup(curl); }
   curl_global_cleanup();
 
-  if (!isdigit((unsigned char)*p)) { last_update = 1U; }
+  if (!isdigit(static_cast<unsigned char>(*p))) { last_update = 1U; }
 }
 
 void print_stock(struct text_object *obj, char *p, unsigned int p_max_size) {

@@ -50,8 +50,10 @@ size_t curl_internal::parse_header_cb(void *ptr, size_t size, size_t nmemb,
   const char *value = static_cast<const char *>(ptr);
   size_t realsize = size * nmemb;
 
-  if (realsize > 0 && (value[realsize - 1] == '\r' || value[realsize - 1] == 0))
+  if (realsize > 0 &&
+      (value[realsize - 1] == '\r' || value[realsize - 1] == 0)) {
     --realsize;
+  }
 
   if (strncmp(value, "Last-Modified: ", 15) == EQUAL) {
     obj->last_modified = std::string(value + 15, realsize - 15);
@@ -182,7 +184,7 @@ void curl_parse_arg(struct text_object *obj, const char *arg) {
   struct curl_data *cd;
   float interval = 0;
 
-  cd = (struct curl_data *)malloc(sizeof(struct curl_data));
+  cd = static_cast<struct curl_data *>(malloc(sizeof(struct curl_data)));
   memset(cd, 0, sizeof(struct curl_data));
 
   argc = sscanf(arg, "%127s %f", cd->uri, &interval);
@@ -191,15 +193,16 @@ void curl_parse_arg(struct text_object *obj, const char *arg) {
     NORM_ERR("wrong number of arguments for $curl");
     return;
   }
-  if (argc == 1)
+  if (argc == 1) {
     cd->interval = 15 * 60;
-  else
+  } else {
     cd->interval = interval > 0 ? interval * 60 : active_update_interval();
+  }
   obj->data.opaque = cd;
 }
 
 void curl_print(struct text_object *obj, char *p, unsigned int p_max_size) {
-  struct curl_data *cd = (struct curl_data *)obj->data.opaque;
+  struct curl_data *cd = static_cast<struct curl_data *>(obj->data.opaque);
 
   if (!cd) {
     NORM_ERR("error processing Curl data");

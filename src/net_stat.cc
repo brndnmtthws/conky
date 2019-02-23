@@ -125,7 +125,7 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
   struct net_stat *netstat = nullptr;
   long int x = 0;
   unsigned int found = 0;
-  char *arg_ptr = (char *)arg;
+  char *arg_ptr = const_cast<char *>(arg);
   char buf[64];
   char *buf_ptr = buf;
 
@@ -138,7 +138,7 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
   if (0 == strncmp(arg, "${iface", 7)) {
     if (nullptr != arg_ptr) {
       for (; *arg_ptr; arg_ptr++) {
-        if (isdigit((unsigned char)*arg_ptr)) {
+        if (isdigit(static_cast<unsigned char>(*arg_ptr))) {
           *buf_ptr++ = *arg_ptr;
           found = 1;
         }
@@ -165,7 +165,8 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
       netstat = get_net_stat(nextarg, obj, free_at_crash);
     }
     i += strlen(nextarg);  // skip this arg
-    while (!((isspace((unsigned char)arg[i]) != 0) || arg[i] == 0)) {
+    while (
+        !((isspace(static_cast<unsigned char>(arg[i])) != 0) || arg[i] == 0)) {
       i++;  // and skip the spaces in front of it
     }
   }

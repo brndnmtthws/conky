@@ -64,9 +64,10 @@ void parse_read_tcpip_arg(struct text_object *obj, const char *arg,
     rtd->port = atoi(rtd->host);
     strncpy(rtd->host, "localhost", 10);
   }
-  if (rtd->port < 1 || rtd->port > 65535)
+  if (rtd->port < 1 || rtd->port > 65535) {
     CRIT_ERR(obj, free_at_crash,
              "read_tcp and read_udp need a port from 1 to 65535 as argument");
+  }
 
   obj->data.opaque = rtd;
 }
