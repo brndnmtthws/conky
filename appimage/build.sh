@@ -52,6 +52,6 @@ wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appima
 
 chmod +x appimagetool-x86_64.AppImage
 
-./appimagetool-x86_64.AppImage conky*.AppImage --sign
+./appimagetool-x86_64.AppImage conky*.AppImage --sign --sign-key E3034071
 
 mv conky*.AppImage "$OLD_CWD"
