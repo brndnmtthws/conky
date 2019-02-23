@@ -48,7 +48,6 @@
 
 #define AmD 0x68747541
 #define InteL 0x756e6547
-#define FMT_UINT "%" PRIuMAX
 
 #if defined(__FreeBSD__)
 #define TICKZ 100L
@@ -123,7 +122,7 @@ void get_cpu_clock_speed(char *str1, unsigned int p_max_size) {
   if (-1 == (nanosleep(&tc, NULL))) { return; }
   z = rdtsc();
 
-  snprintf(str1, p_max_size, FMT_UINT " MHz", ((z - x) / 100000U));
+  snprintf(str1, p_max_size, "%ju MHz", ((z - x) / 100000U));
 }
 
 void print_freq2(struct text_object *obj, char *p, unsigned int p_max_size) {

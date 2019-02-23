@@ -231,7 +231,16 @@ if(BUILD_MYSQL)
     message(FATAL_ERROR "Unable to find mysql.h")
   endif(NOT mysql_INCLUDE_PATH)
   set(conky_includes ${conky_includes} ${mysql_INCLUDE_PATH})
-  find_library(MYSQLCLIENT_LIB NAMES mysqlclient)
+  find_library(MYSQLCLIENT_LIB
+               NAMES mysqlclient
+               PATHS /usr/lib
+                     /usr/lib64
+                     /usr/lib/mysql
+                     /usr/lib64/mysql
+                     /usr/local/lib
+                     /usr/local/lib64
+                     /usr/local/lib/mysql
+                     /usr/local/lib64/mysql)
   if(NOT MYSQLCLIENT_LIB)
     message(FATAL_ERROR "Unable to find mysqlclient library")
   endif(NOT MYSQLCLIENT_LIB)

@@ -1,236 +1,236 @@
 language: cpp
 matrix:
   include:
-  - os: linux
-    dist: xenial
-    addons:
-      apt:
-        sources:
-        - llvm-toolchain-xenial-7
-        packages:
-        - clang-7
-        - llvm-7
-        - lld-7
-        - libc++-7-dev
-        - libc++abi-7-dev
-        - lcov
-        - cmake
-        - docbook2x
-        - libxdamage-dev
-        - libx11-dev
-        - libxft-dev
-        - libxext-dev
-        - libglib2.0-dev
-        - libxml2-dev
-        - libcurl4-gnutls-dev
-        - liblua5.3-dev
-        - libcairo2-dev
-        - libimlib2-dev
-        - libxinerama-dev
-        - libmysqlclient-dev
-        - libical-dev
-        - libircclient-dev
-        - libcairo2-dev
-        - libmicrohttpd-dev
-        - ncurses-dev
-        - librsvg2-dev
-        - libaudclient-dev
-        - libxmmsclient-dev
-        - libpulse-dev
-        - libcurl4-gnutls-dev
-        - audacious-dev
-        - libsystemd-dev
-        - libxnvctrl-dev
-        - libircclient-dev
-        - gawk
-      sonarcloud:
-        organization: brndnmtthws-github
-        token:
-          secure: KikPusy+HXcEVLr0Dqb6mkrefDU5jm7EGQ5fwO4sBG7bRMcnHV3V14s5yB4Ol8btpUC0nkNn/41+f37lkG+oT4y9ZeIH2ZrhsSEHxOgH6DF9ZSVJwtpLrF9siWgfZ0m5c5V7U5rzVYL3jlO1hQfXKCfMNAcwlKcEUrfpk7jVEZc=
-    env:
-    - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
-  - os: linux
-    dist: xenial
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - g++-5
-        - cmake
-        - docbook2x
-        - libxdamage-dev
-        - libx11-dev
-        - libxft-dev
-        - libxext-dev
-        - libglib2.0-dev
-        - libxml2-dev
-        - libcurl4-gnutls-dev
-        - liblua5.3-dev
-        - libcairo2-dev
-        - libimlib2-dev
-        - libxinerama-dev
-        - libmysqlclient-dev
-        - libical-dev
-        - libircclient-dev
-        - libcairo2-dev
-        - libmicrohttpd-dev
-        - ncurses-dev
-        - librsvg2-dev
-        - libaudclient-dev
-        - libxmmsclient-dev
-        - libpulse-dev
-        - libcurl4-gnutls-dev
-        - audacious-dev
-        - libsystemd-dev
-        - libxnvctrl-dev
-        - libircclient-dev
-        - gawk
-    env:
-    - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
-  - os: linux
-    dist: xenial
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - g++-8
-        - cmake
-        - docbook2x
-        - libxdamage-dev
-        - libx11-dev
-        - libxft-dev
-        - libxext-dev
-        - libglib2.0-dev
-        - libxml2-dev
-        - libcurl4-gnutls-dev
-        - liblua5.3-dev
-        - libcairo2-dev
-        - libimlib2-dev
-        - libxinerama-dev
-        - libmysqlclient-dev
-        - libical-dev
-        - libircclient-dev
-        - libcairo2-dev
-        - libmicrohttpd-dev
-        - ncurses-dev
-        - librsvg2-dev
-        - libaudclient-dev
-        - libxmmsclient-dev
-        - libpulse-dev
-        - libcurl4-gnutls-dev
-        - audacious-dev
-        - libsystemd-dev
-        - libxnvctrl-dev
-        - libircclient-dev
-        - gawk
-    env:
-    - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
-  - os: osx
-    osx_image: xcode9.4
-  - os: osx
-    osx_image: xcode10.1
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-xenial-7
+          packages:
+            - clang-7
+            - llvm-7
+            - lld-7
+            - libc++-7-dev
+            - libc++abi-7-dev
+            - lcov
+            - cmake
+            - docbook2x
+            - libxdamage-dev
+            - libx11-dev
+            - libxft-dev
+            - libxext-dev
+            - libglib2.0-dev
+            - libxml2-dev
+            - libcurl4-gnutls-dev
+            - liblua5.3-dev
+            - libcairo2-dev
+            - libimlib2-dev
+            - libxinerama-dev
+            - libmysqlclient-dev
+            - libical-dev
+            - libircclient-dev
+            - libcairo2-dev
+            - libmicrohttpd-dev
+            - ncurses-dev
+            - librsvg2-dev
+            - libaudclient-dev
+            - libxmmsclient-dev
+            - libpulse-dev
+            - libcurl4-gnutls-dev
+            - audacious-dev
+            - libsystemd-dev
+            - libxnvctrl-dev
+            - libircclient-dev
+            - gawk
+        sonarcloud:
+          organization: brndnmtthws-github
+          token:
+            secure: KikPusy+HXcEVLr0Dqb6mkrefDU5jm7EGQ5fwO4sBG7bRMcnHV3V14s5yB4Ol8btpUC0nkNn/41+f37lkG+oT4y9ZeIH2ZrhsSEHxOgH6DF9ZSVJwtpLrF9siWgfZ0m5c5V7U5rzVYL3jlO1hQfXKCfMNAcwlKcEUrfpk7jVEZc=
+      env:
+        - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - cmake
+            - docbook2x
+            - libxdamage-dev
+            - libx11-dev
+            - libxft-dev
+            - libxext-dev
+            - libglib2.0-dev
+            - libxml2-dev
+            - libcurl4-gnutls-dev
+            - liblua5.3-dev
+            - libcairo2-dev
+            - libimlib2-dev
+            - libxinerama-dev
+            - libmysqlclient-dev
+            - libical-dev
+            - libircclient-dev
+            - libcairo2-dev
+            - libmicrohttpd-dev
+            - ncurses-dev
+            - librsvg2-dev
+            - libaudclient-dev
+            - libxmmsclient-dev
+            - libpulse-dev
+            - libcurl4-gnutls-dev
+            - audacious-dev
+            - libsystemd-dev
+            - libxnvctrl-dev
+            - libircclient-dev
+            - gawk
+      env:
+        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - cmake
+            - docbook2x
+            - libxdamage-dev
+            - libx11-dev
+            - libxft-dev
+            - libxext-dev
+            - libglib2.0-dev
+            - libxml2-dev
+            - libcurl4-gnutls-dev
+            - liblua5.3-dev
+            - libcairo2-dev
+            - libimlib2-dev
+            - libxinerama-dev
+            - libmysqlclient-dev
+            - libical-dev
+            - libircclient-dev
+            - libcairo2-dev
+            - libmicrohttpd-dev
+            - ncurses-dev
+            - librsvg2-dev
+            - libaudclient-dev
+            - libxmmsclient-dev
+            - libpulse-dev
+            - libcurl4-gnutls-dev
+            - audacious-dev
+            - libsystemd-dev
+            - libxnvctrl-dev
+            - libircclient-dev
+            - gawk
+      env:
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+    - os: osx
+      osx_image: xcode9.4
+    - os: osx
+      osx_image: xcode10.1
 before_install:
-- openssl aes-256-cbc -K $encrypted_38876355cb3e_key -iv $encrypted_38876355cb3e_iv
-  -in appimage/secret.gpg.enc -out appimage/secret.gpg -d
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then eval "${MATRIX_EVAL}" ; fi
-- |
-  if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    HOMEBREW_NO_AUTO_UPDATE=1 brew install freetype gettext lua imlib2 librsvg docbook2x lcov ;
-    HOMEBREW_NO_AUTO_UPDATE=1 brew link gettext --force ;
-  fi
+  - openssl aes-256-cbc -K $encrypted_38876355cb3e_key -iv $encrypted_38876355cb3e_iv
+    -in appimage/secret.gpg.enc -out appimage/secret.gpg -d
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then eval "${MATRIX_EVAL}" ; fi
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      HOMEBREW_NO_AUTO_UPDATE=1 brew install freetype gettext lua imlib2 librsvg docbook2x lcov ;
+      HOMEBREW_NO_AUTO_UPDATE=1 brew link gettext --force ;
+    fi
 before_script:
-- |
-  if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    mkdir build && cd build
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      mkdir build && cd build
 
-    cmake                                  \
-      -DMAINTAINER_MODE=ON                 \
-      -DBUILD_MYSQL=ON                     \
-      -DBUILD_LUA_IMLIB2=ON                \
-      -DBUILD_LUA_RSVG=ON                  \
-      -DBUILD_LUA_CAIRO=ON                 \
-      -DBUILD_AUDACIOUS=ON                 \
-      -DBUILD_XMMS2=ON                     \
-      -DBUILD_ICAL=ON                      \
-      -DBUILD_IRC=ON                       \
-      -DBUILD_HTTP=ON                      \
-      -DBUILD_ICONV=ON                     \
-      -DBUILD_PULSEAUDIO=ON                \
-      -DBUILD_JOURNAL=ON                   \
-      -DBUILD_RSS=ON                       \
-      -DBUILD_IRC=ON                       \
-      -DBUILD_NVIDIA=ON                    \
-      ..
-    cd ..
-    mkdir build-no-x11
-    cd build-no-x11
+      cmake                                  \
+        -DMAINTAINER_MODE=ON                 \
+        -DBUILD_MYSQL=ON                     \
+        -DBUILD_LUA_IMLIB2=ON                \
+        -DBUILD_LUA_RSVG=ON                  \
+        -DBUILD_LUA_CAIRO=ON                 \
+        -DBUILD_AUDACIOUS=ON                 \
+        -DBUILD_XMMS2=ON                     \
+        -DBUILD_ICAL=ON                      \
+        -DBUILD_IRC=ON                       \
+        -DBUILD_HTTP=ON                      \
+        -DBUILD_ICONV=ON                     \
+        -DBUILD_PULSEAUDIO=ON                \
+        -DBUILD_JOURNAL=ON                   \
+        -DBUILD_RSS=ON                       \
+        -DBUILD_IRC=ON                       \
+        -DBUILD_NVIDIA=ON                    \
+        ..
+      cd ..
+      mkdir build-no-x11
+      cd build-no-x11
 
-    cmake                                  \
-      -DMAINTAINER_MODE=ON                 \
-      -DBUILD_X11=OFF                      \
-      -DBUILD_MYSQL=ON                     \
-      -DBUILD_LUA_CAIRO=ON                 \
-      -DBUILD_LUA_IMLIB2=ON                \
-      -DBUILD_LUA_RSVG=ON                  \
-      -DBUILD_AUDACIOUS=ON                 \
-      -DBUILD_XMMS2=ON                     \
-      -DBUILD_ICAL=ON                      \
-      -DBUILD_IRC=ON                       \
-      -DBUILD_HTTP=ON                      \
-      -DBUILD_ICONV=ON                     \
-      -DBUILD_PULSEAUDIO=ON                \
-      -DBUILD_JOURNAL=ON                   \
-      -DBUILD_RSS=ON                       \
-      -DBUILD_IRC=ON                       \
-      ..
-    cd ..
-  elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    mkdir build && cd build
-    cmake                                  \
-      -DMAINTAINER_MODE=ON                 \
-      -DBUILD_LUA_RSVG=ON                  \
-      -DBUILD_LUA_IMLIB2=ON                \
-      ..
-    cd ..
+      cmake                                  \
+        -DMAINTAINER_MODE=ON                 \
+        -DBUILD_X11=OFF                      \
+        -DBUILD_MYSQL=ON                     \
+        -DBUILD_LUA_CAIRO=ON                 \
+        -DBUILD_LUA_IMLIB2=ON                \
+        -DBUILD_LUA_RSVG=ON                  \
+        -DBUILD_AUDACIOUS=ON                 \
+        -DBUILD_XMMS2=ON                     \
+        -DBUILD_ICAL=ON                      \
+        -DBUILD_IRC=ON                       \
+        -DBUILD_HTTP=ON                      \
+        -DBUILD_ICONV=ON                     \
+        -DBUILD_PULSEAUDIO=ON                \
+        -DBUILD_JOURNAL=ON                   \
+        -DBUILD_RSS=ON                       \
+        -DBUILD_IRC=ON                       \
+        ..
+      cd ..
+    elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      mkdir build && cd build
+      cmake                                  \
+        -DMAINTAINER_MODE=ON                 \
+        -DBUILD_LUA_RSVG=ON                  \
+        -DBUILD_LUA_IMLIB2=ON                \
+        ..
+      cd ..
 
-    mkdir build-no-x11
-    cd build-no-x11
-    cmake                                  \
-      -DMAINTAINER_MODE=ON                 \
-      -DBUILD_X11=OFF                      \
-      -DBUILD_X11=OFF                      \
-      -DBUILD_LUA_RSVG=ON                  \
-      -DBUILD_LUA_IMLIB2=ON                \
-      ..
-    cd ..
-  fi
+      mkdir build-no-x11
+      cd build-no-x11
+      cmake                                  \
+        -DMAINTAINER_MODE=ON                 \
+        -DBUILD_X11=OFF                      \
+        -DBUILD_X11=OFF                      \
+        -DBUILD_LUA_RSVG=ON                  \
+        -DBUILD_LUA_IMLIB2=ON                \
+        ..
+      cd ..
+    fi
 script:
-- cd build
-- |
-  if [ "$CXX" = "clang++-7" ] ; then
-    build-wrapper-linux-x86-64 --out-dir bw-output make -j4 ;
-  else
-    make -j4 ;
-  fi
-- make test
-- if [ "$CXX" = "clang++-7" ] ; then make test-conky-coverage-txt ; fi
-- cd ../build-no-x11
-- make -j4
-- cd ..
-- if [ "$CXX" = "clang++-7" -a ! -z "$SONAR_TOKEN" ] ; then sonar-scanner ; fi
+  - cd build
+  - |
+    if [ "$CXX" = "clang++-7" ] ; then
+      build-wrapper-linux-x86-64 --out-dir bw-output make -j4 ;
+    else
+      make -j4 ;
+    fi
+  - make test
+  - if [ "$CXX" = "clang++-7" ] ; then make test-conky-coverage-txt ; fi
+  - cd ../build-no-x11
+  - make -j4
+  - cd ..
+  - if [ "$CXX" = "clang++-7" -a ! -z "$SONAR_TOKEN" ] ; then sonar-scanner ; fi
 branches:
   only:
-  - master
-  - "/^v\\d+\\.\\d+(\\.\\d+)?(-\\S*)?$/"
+    - master
+    - "/^v\\d+\\.\\d+(\\.\\d+)?(-\\S*)?$/"
 sudo: required
 cache:
-- directories:
-  - "$HOME/.sonar/cache"
+  - directories:
+      - "$HOME/.sonar/cache"
 before_deploy:
-- "gpg --import appimage/secret.gpg"
-- "./appimage/build.sh"
+  - "gpg --import appimage/secret.gpg"
+  - "./appimage/build.sh"
 
 deploy:
   provider: releases

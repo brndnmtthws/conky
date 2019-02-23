@@ -1,8 +1,9 @@
 stages:
+  - base
   - dependencies
   - build
   - test
-  - lint
+  - coverage
 
 variables:
   CC: clang-7
@@ -10,38 +11,400 @@ variables:
   DOCKER_DRIVER: overlay2
   DOCKER_HOST: tcp://localhost:2375/
 
-docker_builder:
+.docker_builder: &docker_builder
   stage: dependencies
   image: docker:stable
-  only:
-    changes:
-      - Dockerfile.builder
   services:
     - docker:dind
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  script:
-    - docker pull $CI_REGISTRY_IMAGE/builder:latest || true
-    - docker build -f Dockerfile.builder --cache-from $CI_REGISTRY_IMAGE/builder:latest --tag $CI_REGISTRY_IMAGE/builder:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE/builder:latest .
-    - docker push ${CI_REGISTRY_IMAGE}/builder:$CI_COMMIT_SHA
-    - docker push ${CI_REGISTRY_IMAGE}/builder:latest
+    - docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest || true
 
-build:
-  image: $CI_REGISTRY_IMAGE/builder:latest
+builder-ubuntu-base:
+  <<: *docker_builder
+  stage: base
+  variables:
+    DISTRO: ubuntu
+  only:
+    changes:
+      - tests/dockerfiles/Dockerfile.ubuntu-base
+  script:
+    - cd tests/dockerfiles
+    - docker pull ubuntu:bionic || true
+    - docker build -f Dockerfile.$DISTRO-base --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest .
+    - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
+
+builder-fedora-base:
+  <<: *docker_builder
+  stage: base
+  variables:
+    DISTRO: fedora
+  only:
+    changes:
+      - tests/dockerfiles/Dockerfile.fedora-base
+  script:
+    - cd tests/dockerfiles
+    - docker pull fedora:latest || true
+    - docker build -f Dockerfile.$DISTRO-base --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest .
+    - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
+
+builder-centos6-base:
+  <<: *docker_builder
+  stage: base
+  variables:
+    DISTRO: centos6
+  only:
+    changes:
+      - tests/dockerfiles/Dockerfile.centos6-base
+  script:
+    - cd tests/dockerfiles
+    - docker pull centos:6 || true
+    - docker build -f Dockerfile.$DISTRO-base --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest .
+    - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
+
+builder-centos7-base:
+  <<: *docker_builder
+  stage: base
+  variables:
+    DISTRO: centos7
+  only:
+    changes:
+      - tests/dockerfiles/Dockerfile.centos7-base
+  script:
+    - cd tests/dockerfiles
+    - docker pull centos:7 || true
+    - docker build -f Dockerfile.$DISTRO-base --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest .
+    - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
+
+.builder_script: &builder_script
+  script:
+    - cd tests/dockerfiles
+    - docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest || true
+    - docker build -f Dockerfile.$DISTRO-$COMPILER --build-arg IMAGE=$CI_REGISTRY_IMAGE --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest .
+    - docker push ${CI_REGISTRY_IMAGE}/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
+    - docker push ${CI_REGISTRY_IMAGE}/builder/$DISTRO-$COMPILER:latest
+
+builder-ubuntu-clang-7:
+  <<: *docker_builder
+  only:
+    changes:
+      - tests/dockerfiles/Dockerfile.ubuntu-base
+      - tests/dockerfiles/Dockerfile.ubuntu-clang-7
+  variables:
+    COMPILER: clang-7
+    DISTRO: ubuntu
+  <<: *builder_script
+
+builder-ubuntu-clang-8:
+  <<: *docker_builder
+  only:
+    changes:
+      - tests/dockerfiles/Dockerfile.ubuntu-base
+      - tests/dockerfiles/Dockerfile.ubuntu-clang-8
+  variables:
+    COMPILER: clang-8
+    DISTRO: ubuntu
+  <<: *builder_script
+
+builder-ubuntu-gcc-5:
+  <<: *docker_builder
+  only:
+    changes:
+      - tests/dockerfiles/Dockerfile.ubuntu-base
+      - tests/dockerfiles/Dockerfile.ubuntu-gcc-5
+  variables:
+    COMPILER: gcc-5
+    DISTRO: ubuntu
+  <<: *builder_script
+
+builder-ubuntu-gcc-6:
+  <<: *docker_builder
+  only:
+    changes:
+      - tests/dockerfiles/Dockerfile.ubuntu-base
+      - tests/dockerfiles/Dockerfile.ubuntu-gcc-6
+  variables:
+    COMPILER: gcc-6
+    DISTRO: ubuntu
+  <<: *builder_script
+
+builder-ubuntu-gcc-7:
+  <<: *docker_builder
+  only:
+    changes:
+      - tests/dockerfiles/Dockerfile.ubuntu-base
+      - tests/dockerfiles/Dockerfile.ubuntu-gcc-7
+  variables:
+    COMPILER: gcc-7
+    DISTRO: ubuntu
+  <<: *builder_script
+
+builder-ubuntu-gcc-8:
+  <<: *docker_builder
+  only:
+    changes:
+      - tests/dockerfiles/Dockerfile.ubuntu-base
+      - tests/dockerfiles/Dockerfile.ubuntu-gcc-8
+  variables:
+    COMPILER: gcc-8
+    DISTRO: ubuntu
+  <<: *builder_script
+
+builder-fedora-gcc-8:
+  <<: *docker_builder
+  only:
+    changes:
+      - tests/dockerfiles/Dockerfile.fedora-base
+      - tests/dockerfiles/Dockerfile.fedora-gcc-8
+  variables:
+    COMPILER: gcc-8
+    DISTRO: fedora
+  <<: *builder_script
+
+builder-fedora-clang-7:
+  <<: *docker_builder
+  only:
+    changes:
+      - tests/dockerfiles/Dockerfile.fedora-base
+      - tests/dockerfiles/Dockerfile.fedora-clang-7
+  variables:
+    COMPILER: clang-7
+    DISTRO: fedora
+  <<: *builder_script
+
+builder-centos6-gcc-7:
+  <<: *docker_builder
+  only:
+    changes:
+      - tests/dockerfiles/Dockerfile.centos6-base
+      - tests/dockerfiles/Dockerfile.centos6-gcc-7
+  variables:
+    COMPILER: gcc-7
+    DISTRO: centos6
+  <<: *builder_script
+
+builder-centos7-gcc-7:
+  <<: *docker_builder
+  only:
+    changes:
+      - tests/dockerfiles/Dockerfile.centos7-base
+      - tests/dockerfiles/Dockerfile.centos7-gcc-7
+  variables:
+    COMPILER: gcc-7
+    DISTRO: centos7
+  <<: *builder_script
+
+builder-centos7-gcc-8:
+  <<: *docker_builder
+  only:
+    changes:
+      - tests/dockerfiles/Dockerfile.centos7-base
+      - tests/dockerfiles/Dockerfile.centos7-gcc-8
+  variables:
+    COMPILER: gcc-8
+    DISTRO: centos7
+  <<: *builder_script
+
+builder-centos7-clang-7:
+  <<: *docker_builder
+  only:
+    changes:
+      - tests/dockerfiles/Dockerfile.centos7-base
+      - tests/dockerfiles/Dockerfile.centos7-clang-7
+  variables:
+    COMPILER: clang-7
+    DISTRO: centos7
+  <<: *builder_script
+
+.build_stages: &build_stages
+  image: $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
   stage: build
   script:
     - mkdir build
     - cd build
-    - cmake -DMAINTAINER_MODE=ON ..
+    - |
+      cmake                                    \
+        -DCMAKE_EXE_LINKER_FLAGS=$LINKER_FLAGS \
+        -DMAINTAINER_MODE=ON                   \
+        -DBUILD_AUDACIOUS=$BUILD_AUDACIOUS     \
+        -DBUILD_MYSQL=ON                       \
+        -DBUILD_LUA_IMLIB2=ON                  \
+        -DBUILD_LUA_RSVG=$BUILD_LUA_RSVG       \
+        -DBUILD_LUA_CAIRO=$BUILD_LUA_CAIRO     \
+        -DBUILD_XMMS2=$BUILD_XMMS2             \
+        -DBUILD_ICAL=ON                        \
+        -DBUILD_IRC=ON                         \
+        -DBUILD_HTTP=ON                        \
+        -DBUILD_ICONV=ON                       \
+        -DBUILD_PULSEAUDIO=ON                  \
+        -DBUILD_JOURNAL=$BUILD_JOURNAL         \
+        -DBUILD_RSS=ON                         \
+        -DBUILD_IRC=ON                         \
+        -DBUILD_NVIDIA=$BUILD_NVIDIA           \
+        ..
     - make -j4
+
+.build_variables: &build_variables
+  COMPILER: clang-7
+  DISTRO: ubuntu
+  CC: clang-7
+  CXX: clang++-7
+  LINKER_FLAGS: ""
+  BUILD_AUDACIOUS: "ON"
+  BUILD_XMMS2: "ON"
+  BUILD_NVIDIA: "ON"
+  BUILD_JOURNAL: "ON"
+  BUILD_LUA_CAIRO: "ON"
+  BUILD_LUA_RSVG: "ON"
+
+ubuntu-clang-7:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
   artifacts:
     expire_in: 1 day
     paths:
       - build/
 
-test:
-  image: $CI_REGISTRY_IMAGE/builder:latest
+ubuntu-clang-8:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    COMPILER: clang-8
+    CC: clang-8
+    CXX: clang++-8
+
+ubuntu-gcc-5:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    COMPILER: gcc-5
+    CC: gcc-5
+    CXX: g++-5
+
+ubuntu-gcc-6:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    COMPILER: gcc-6
+    CC: gcc-6
+    CXX: g++-6
+
+ubuntu-gcc-7:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    COMPILER: gcc-7
+    CC: gcc-7
+    CXX: g++-7
+
+ubuntu-gcc-8:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    COMPILER: gcc-8
+    CC: gcc-8
+    CXX: g++-8
+
+fedora-gcc-8:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    COMPILER: gcc-8
+    DISTRO: fedora
+    CC: gcc
+    CXX: g++
+    BUILD_AUDACIOUS: "OFF"
+
+fedora-clang-7:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    DISTRO: fedora
+    CC: clang
+    CXX: clang++
+    BUILD_AUDACIOUS: "OFF"
+
+centos6-gcc-7:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    COMPILER: gcc-7
+    DISTRO: centos6
+    CC: gcc
+    CXX: g++
+    CMAKE: cmake3
+    BUILD_AUDACIOUS: "OFF"
+    BUILD_XMMS2: "OFF"
+    BUILD_NVIDIA: "OFF"
+    BUILD_JOURNAL: "OFF"
+    BUILD_LUA_CAIRO: "OFF"
+    BUILD_LUA_RSVG: "OFF"
+    # required because centos6 separates tinfo from ncurses
+    LINKER_FLAGS: "-ltinfo"
+  before_script:
+    - source /opt/rh/devtoolset-7/enable
+
+centos7-gcc-7:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    COMPILER: gcc-7
+    DISTRO: centos7
+    CC: gcc
+    CXX: g++
+    CMAKE: cmake3
+    BUILD_AUDACIOUS: "OFF"
+    BUILD_XMMS2: "OFF"
+    BUILD_NVIDIA: "OFF"
+    BUILD_JOURNAL: "OFF"
+  before_script:
+    - source /opt/rh/devtoolset-7/enable
+
+centos7-gcc-8:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    COMPILER: gcc-8
+    DISTRO: centos7
+    CC: gcc
+    CXX: g++
+    CMAKE: cmake3
+    BUILD_AUDACIOUS: "OFF"
+    BUILD_XMMS2: "OFF"
+    BUILD_NVIDIA: "OFF"
+    BUILD_JOURNAL: "OFF"
+  before_script:
+    - source /opt/rh/devtoolset-8/enable
+
+centos7-clang-7:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    COMPILER: clang-7
+    DISTRO: centos7
+    CC: clang
+    CXX: clang++
+    BUILD_AUDACIOUS: "OFF"
+    BUILD_XMMS2: "OFF"
+    BUILD_NVIDIA: "OFF"
+    BUILD_JOURNAL: "OFF"
+  before_script:
+    - source /opt/rh/llvm-toolset-7/enable
+
+.test_stages: &test_stages
+  variables:
+    COMPILER: clang-7
+    DISTRO: ubuntu
+  image: $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
   stage: test
+
+test:
+  <<: *test_stages
   script:
     - cd build
     - cmake -DCMAKE_SOURCE_DIR=$(dirname `pwd`) -DCMAKE_BINARY_DIR=`pwd` -DMAINTAINER_MODE=ON -DBUILD_TESTS=ON ..
@@ -49,17 +412,23 @@ test:
     - make -j4 test
 
 check-clang-tidy:
-  image: $CI_REGISTRY_IMAGE/builder:latest
-  stage: test
+  <<: *test_stages
   script:
     - cd build
     - cmake -DCMAKE_SOURCE_DIR=$(dirname `pwd`) -DCMAKE_BINARY_DIR=`pwd` -DMAINTAINER_MODE=ON -DCHECK_CODE_QUALITY=ON ..
     - make -j4 check-clang-tidy
 
 check-clang-format:
-  image: $CI_REGISTRY_IMAGE/builder:latest
-  stage: test
+  <<: *test_stages
   script:
     - cd build
     - cmake -DCMAKE_SOURCE_DIR=$(dirname `pwd`) -DCMAKE_BINARY_DIR=`pwd` -DMAINTAINER_MODE=ON -DCHECK_CODE_QUALITY=ON ..
     - make -j4 check-clang-format
+
+coverage:
+  <<: *test_stages
+  stage: coverage
+  script:
+    - cd build
+    - cmake -DCMAKE_SOURCE_DIR=$(dirname `pwd`) -DCMAKE_BINARY_DIR=`pwd` -DMAINTAINER_MODE=ON -DBUILD_TESTS=ON ..
+    - make test-conky-coverage-txt
