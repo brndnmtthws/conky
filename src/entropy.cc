@@ -93,12 +93,12 @@ void print_password(struct text_object *obj, char *p, unsigned int p_max_size) {
   static const char letters[] =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*("
       ")_";
-  static const int len = (int)sizeof(letters) - 1;
+  static const int len = static_cast<int>(sizeof(letters)) - 1;
   uintmax_t x = strtoumax(obj->data.s, (char **)NULL, 10);
   uintmax_t z = 0;
 
   if (-1 == (t = time(NULL))) { return; }
-  srandom((unsigned int)t);
+  srandom(static_cast<unsigned int>(t));
 
   for (; z < x && p_max_size - 1 > z; z++) { *p++ = letters[random() % len]; }
   *p = '\0';

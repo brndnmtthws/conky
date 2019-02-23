@@ -165,7 +165,7 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
               endofstring = strlen(p);
             }
           } else if (strcmp(type, "tail") == 0) {
-            fseek(fp, -(long)p_max_size, SEEK_END);
+            fseek(fp, -static_cast<long>(p_max_size), SEEK_END);
             i = fread(p, 1, p_max_size - 1, fp);
             tailstring(p, i, ht->wantedlines);
           } else {
@@ -231,7 +231,7 @@ void print_words(struct text_object *obj, char *p, unsigned int p_max_size) {
   words = 0;
   while (fgets(buf, BUFSZ, fp) != nullptr) {
     for (j = 0; buf[j] != 0; j++) {
-      if (isspace((unsigned char)buf[j]) == 0) {
+      if (isspace(static_cast<unsigned char>(buf[j])) == 0) {
         if (inword == 0) {
           words++;
           inword = 1;

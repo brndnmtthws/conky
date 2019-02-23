@@ -111,7 +111,7 @@ class syntax_error : public lua::exception {
   const syntax_error &operator=(const syntax_error &) = delete;
 
  public:
-  syntax_error(state *L) : lua::exception(L) {}
+  explicit syntax_error(state *L) : lua::exception(L) {}
 
   syntax_error(syntax_error &&other) : lua::exception(std::move(other)) {}
 };
@@ -122,7 +122,7 @@ class file_error : public lua::exception {
   const file_error &operator=(const file_error &) = delete;
 
  public:
-  file_error(state *L) : lua::exception(L) {}
+  explicit file_error(state *L) : lua::exception(L) {}
 
   file_error(file_error &&other) : lua::exception(std::move(other)) {}
 };
@@ -134,7 +134,7 @@ class errfunc_error : public lua::exception {
   const errfunc_error &operator=(const errfunc_error &) = delete;
 
  public:
-  errfunc_error(state *L) : lua::exception(L) {}
+  explicit errfunc_error(state *L) : lua::exception(L) {}
 
   errfunc_error(errfunc_error &&other) : lua::exception(std::move(other)) {}
 };

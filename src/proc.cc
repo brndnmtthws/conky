@@ -162,7 +162,9 @@ void print_pid_environ(struct text_object *obj, char *p,
 
   generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
   if (sscanf(objbuf.get(), "%d %s", &pid, var) == 2) {
-    for (i = 0; var[i] != 0; i++) { var[i] = toupper((unsigned char)var[i]); }
+    for (i = 0; var[i] != 0; i++) {
+      var[i] = toupper(static_cast<unsigned char>(var[i]));
+    }
     pathstream << PROCDIR "/" << pid << "/cwd";
     buf = readfile(pathstream.str().c_str(), &total_read, 1);
     if (buf != nullptr) {
@@ -682,10 +684,11 @@ void print_pid_Xid(struct text_object *obj, char *p, int p_max_size,
         default:
           break;
       }
-      if (type == fsgid || type == fsuid)
+      if (type == fsgid || type == fsuid) {
         end = strchr(begin, '\n');
-      else
+      } else {
         end = strchr(begin, '\t');
+      }
       if (end != nullptr) { *(end) = 0; }
       snprintf(p, p_max_size, "%s", begin);
     } else {

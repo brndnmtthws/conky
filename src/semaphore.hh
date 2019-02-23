@@ -45,7 +45,7 @@ class semaphore {
   semaphore &operator=(const semaphore &) = delete;
 
  public:
-  semaphore(unsigned int value = 0) {
+  explicit semaphore(unsigned int value = 0) {
     sem = dispatch_semaphore_create(value);
 
     if (!sem) throw std::logic_error(strerror(errno));
@@ -63,10 +63,11 @@ class semaphore {
     int ret = dispatch_semaphore_wait(sem, DISPATCH_TIME_NOW);
 
     while (ret > 0) {
-      if (ret == DISPATCH_EAGAIN)
+      if (ret == DISPATCH_EAGAIN) {
         return false;
-      else if (errno != EINTR)
+      } else if (errno != EINTR) {
         abort();
+      }
     }
     return true;
   }

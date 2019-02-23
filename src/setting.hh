@@ -244,9 +244,15 @@ class simple_config_setting : public config_setting_template<T> {
   typedef config_setting_template<T> Base;
 
  public:
-  simple_config_setting(const std::string &name_, const T &default_value_ = T(),
-                        bool modifiable_ = false)
+  explicit simple_config_setting(const std::string &name_,
+                                 const T &default_value_ = T(),
+                                 bool modifiable_ = false)
       : Base(name_), default_value(default_value_), modifiable(modifiable_) {}
+  simple_config_setting(const char *name_, const T &default_value_ = T(),
+                        bool modifiable_ = false)
+      : Base(std::string(name_)),
+        default_value(default_value_),
+        modifiable(modifiable_) {}
 
  protected:
   const T default_value;
@@ -295,10 +301,11 @@ void simple_config_setting<T, Traits>::lua_setter(lua::state &l, bool init) {
     ok = false;
   }
 
-  if (ok && do_convert(l, -2).second)
+  if (ok && do_convert(l, -2).second) {
     l.pop();
-  else
+  } else {
     l.replace(-2);
+  }
   ++s;
 }
 
@@ -329,10 +336,11 @@ class range_config_setting : public simple_config_setting<T, Traits> {
   const T max;
 
  public:
-  range_config_setting(const std::string &name_,
-                       const T &min_ = std::numeric_limits<T>::min(),
-                       const T &max_ = std::numeric_limits<T>::max(),
-                       const T &default_value_ = T(), bool modifiable_ = false)
+  explicit range_config_setting(const std::string &name_,
+                                const T &min_ = std::numeric_limits<T>::min(),
+                                const T &max_ = std::numeric_limits<T>::max(),
+                                const T &default_value_ = T(),
+                                bool modifiable_ = false)
       : Base(name_, default_value_, modifiable_), min(min_), max(max_) {
     assert(min <= Base::default_value && Base::default_value <= max);
   }

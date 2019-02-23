@@ -212,11 +212,13 @@ void llua_load(const char *script) {
 static const char *tokenize(const char *str, size_t *len) {
   str += *len;
   *len = 0;
-  while ((str != nullptr) && (isspace((unsigned char)*str) != 0)) { ++str; }
+  while ((str != nullptr) && (isspace(static_cast<unsigned char>(*str)) != 0)) {
+    ++str;
+  }
 
   size_t level = 0;
   while ((str != nullptr) && (str[*len] != 0) &&
-         (level > 0 || (isspace((unsigned char)str[*len]) == 0))) {
+         (level > 0 || (isspace(static_cast<unsigned char>(str[*len])) == 0))) {
     switch (str[*len]) {
       case '{':
         ++level;

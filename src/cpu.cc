@@ -66,7 +66,10 @@ uint8_t has_tsc_reg(void) {
 
   CPU_REGS(0x00000000, vend, leafs);
   if (0x00000001 > leafs) { return 1U; }
-  if ((uint32_t)vend != AmD && (uint32_t)vend != InteL) { return 1U; }
+  if (static_cast<uint32_t>(vend) != AmD &&
+      static_cast<uint32_t>(vend) != InteL) {
+    return 1U;
+  }
 
   CPU_STR2(0x00000001, eax, ebx, ecx, edx);
   if (0U == (edx & (1U << 4U))) { return 1U; }
@@ -90,7 +93,7 @@ uintmax_t rdtsc(void) {
       : "=a"(ticklo), "=d"(tickhi)::"%rbx", "%rcx");
 
   CPU_FEATURE(0x80000000, regz);
-  if (0x80000001 > (uint32_t)regz) { goto seeya; }
+  if (0x80000001 > static_cast<uint32_t>(regz)) { goto seeya; }
   CPU_STR2(0x80000001, eax, ebx, ecx, edx);
 
   if (0U != (edx & (1U << 27U))) {
@@ -105,7 +108,8 @@ uintmax_t rdtsc(void) {
   }
 
 seeya:
-  return (((uintmax_t)tickhi << 32) | (uintmax_t)ticklo);
+  return ((static_cast<uintmax_t>(tickhi) << 32) |
+          static_cast<uintmax_t>(ticklo));
 }
 
 void get_cpu_clock_speed(char *str1, unsigned int p_max_size) {

@@ -383,9 +383,9 @@ x11_error_handler(Display *d, XErrorEvent *err) {
   NORM_ERR(
       "X Error: type %i Display %lx XID %li serial %lu error_code %i "
       "request_code %i minor_code %i other Display: %lx\n",
-      err->type, (long unsigned)err->display, (long)err->resourceid,
-      err->serial, err->error_code, err->request_code, err->minor_code,
-      (long unsigned)d);
+      err->type, (long unsigned)err->display,
+      static_cast<long>(err->resourceid), err->serial, err->error_code,
+      err->request_code, err->minor_code, (long unsigned)d);
   abort();
 }
 

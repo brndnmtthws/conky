@@ -41,7 +41,7 @@ class errno_error : public std::runtime_error {
   typedef std::runtime_error Base;
 
  public:
-  errno_error(const std::string &prefix, int err_ = errno)
+  explicit errno_error(const std::string &prefix, int err_ = errno)
       : Base(prefix + ": " + strerror_r(err_)), err(err_) {}
 
   const int err;

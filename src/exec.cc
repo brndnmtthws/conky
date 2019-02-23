@@ -264,7 +264,7 @@ void scan_exec_arg(struct text_object *obj, const char *arg,
 
     /* set cmd to everything after the interval */
     cmd = strndup(arg + n, text_buffer_size.get(*state));
-    orig_cmd = (char *)cmd;
+    orig_cmd = const_cast<char *>(cmd);
   }
 
   /* parse any special options for the graphical exec types */

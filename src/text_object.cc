@@ -72,8 +72,9 @@ int append_object(struct text_object *root, struct text_object *obj) {
 
   /* update pointers of the list to append to */
   if (end != nullptr) {
-    if (end->next != nullptr)
+    if (end->next != nullptr) {
       CRIT_ERR(nullptr, nullptr, "huston, we have a lift-off");
+    }
     end->next = obj;
   } else {
     root->next = obj;
@@ -122,8 +123,9 @@ static int push_ifblock(struct ifblock_stack_obj **ifblock_stack_top,
 
   switch (type) {
     case IFBLOCK_ENDIF:
-      if ((*ifblock_stack_top) == nullptr)
+      if ((*ifblock_stack_top) == nullptr) {
         CRIT_ERR(nullptr, nullptr, "got an endif without matching if");
+      }
       (*ifblock_stack_top)->obj->ifblock_next = obj;
       /* if there's some else in between, remove and free it */
       if ((*ifblock_stack_top)->type == IFBLOCK_ELSE) {
@@ -137,8 +139,9 @@ static int push_ifblock(struct ifblock_stack_obj **ifblock_stack_top,
       free(stackobj);
       break;
     case IFBLOCK_ELSE:
-      if ((*ifblock_stack_top) == nullptr)
+      if ((*ifblock_stack_top) == nullptr) {
         CRIT_ERR(nullptr, nullptr, "got an else without matching if");
+      }
       (*ifblock_stack_top)->obj->ifblock_next = obj;
       /* falls through */
     case IFBLOCK_IF:

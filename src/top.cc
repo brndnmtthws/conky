@@ -464,7 +464,8 @@ static void print_top_name(struct text_object *obj, char *p,
     return;
   }
 
-  width = std::min(p_max_size, (unsigned int)top_name_width.get(*state) + 1);
+  width = std::min(p_max_size,
+                   static_cast<unsigned int>(top_name_width.get(*state)) + 1);
   if (top_name_verbose.get(*state)) {
     /* print the full command line */
     snprintf(p, width + 1, "%-*s", width, td->list[td->num]->name);
@@ -484,7 +485,7 @@ static void print_top_mem(struct text_object *obj, char *p,
     return;
   }
 
-  width = std::min(p_max_size, (unsigned int)7);
+  width = std::min(p_max_size, static_cast<unsigned int>(7));
   snprintf(p, width, "%6.2f",
            (static_cast<float>(td->list[td->num]->rss) / info.memmax) / 10);
 }
@@ -500,7 +501,7 @@ static void print_top_time(struct text_object *obj, char *p,
     return;
   }
 
-  width = std::min(p_max_size, (unsigned int)10);
+  width = std::min(p_max_size, static_cast<unsigned int>(10));
   timeval = format_time(td->list[td->num]->total_cpu_time, 9);
   snprintf(p, width, "%9s", timeval);
   free(timeval);

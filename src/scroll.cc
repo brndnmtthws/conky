@@ -107,12 +107,13 @@ static void scroll_scroll_left(struct scroll_data *sd,
                                const std::vector<char> &buf,
                                unsigned int amount) {
   for (unsigned int i = 0; (i < amount) && (buf[sd->start] != '\0') &&
-                           ((unsigned int)sd->start < buf.size());
+                           (static_cast<unsigned int>(sd->start) < buf.size());
        ++i) {
     sd->start += scroll_character_length(buf[sd->start]);
   }
 
-  if (buf[sd->start] == 0 || (unsigned int)sd->start > strlen(buf.data())) {
+  if (buf[sd->start] == 0 ||
+      static_cast<unsigned int>(sd->start) > strlen(buf.data())) {
     sd->start = 0;
   }
 }
@@ -233,7 +234,9 @@ void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
   }
   // if length of text changed to shorter so the (sd->start) is already
   // outside of actual text then reset (sd->start)
-  if ((unsigned int)sd->start >= strlen(&(buf[0]))) { sd->start = 0; }
+  if (static_cast<unsigned int>(sd->start) >= strlen(&(buf[0]))) {
+    sd->start = 0;
+  }
   // make sure a colorchange at the front is not part of the string we are going
   // to show
   while (buf[sd->start] == SPECIAL_CHAR) { sd->start++; }

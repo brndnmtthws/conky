@@ -281,10 +281,11 @@ int main(int argc, char **argv) {
 #ifdef BUILD_CURL
   struct curl_global_initializer {
     curl_global_initializer() {
-      if (curl_global_init(CURL_GLOBAL_ALL))
+      if (curl_global_init(CURL_GLOBAL_ALL)) {
         NORM_ERR(
             "curl_global_init() failed, you may not be able to use curl "
             "variables");
+      }
     }
     ~curl_global_initializer() { curl_global_cleanup(); }
   };
@@ -314,8 +315,9 @@ int main(int argc, char **argv) {
         current_config = optarg;
         break;
       case 'q':
-        if (freopen("/dev/null", "w", stderr) == nullptr)
+        if (freopen("/dev/null", "w", stderr) == nullptr) {
           CRIT_ERR(nullptr, nullptr, "could not open /dev/null as stderr!");
+        }
         break;
       case 'h':
         print_help(argv[0]);
