@@ -1,27 +1,65 @@
 stages:
+  - dependencies
   - build
   - test
   - lint
 
-image: brndnmtthws/conky-builder:latest
 variables:
   CC: clang-7
   CXX: clang++-7
+  DOCKER_DRIVER: overlay2
+  DOCKER_HOST: tcp://localhost:2375/
+
+docker_builder:
+  stage: dependencies
+  image: docker:stable
+  only:
+    changes:
+      - Dockerfile.builder
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker pull $CI_REGISTRY_IMAGE/builder:latest || true
+    - docker build -f Dockerfile.builder --cache-from $CI_REGISTRY_IMAGE/builder:latest --tag $CI_REGISTRY_IMAGE/builder:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE/builder:latest .
+    - docker push ${CI_REGISTRY_IMAGE}/builder:$CI_COMMIT_SHA
+    - docker push ${CI_REGISTRY_IMAGE}/builder:latest
 
 build:
+  image: $CI_REGISTRY_IMAGE/builder:latest
+  stage: build
   script:
     - mkdir build
     - cd build
-    - cmake ..
+    - cmake -DMAINTAINER_MODE=ON ..
     - make -j4
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - build/
 
 test:
+  image: $CI_REGISTRY_IMAGE/builder:latest
+  stage: test
   script:
     - cd build
-    - make test
+    - cmake -DCMAKE_SOURCE_DIR=$(dirname `pwd`) -DCMAKE_BINARY_DIR=`pwd` -DMAINTAINER_MODE=ON -DBUILD_TESTS=ON ..
+    - make -j4
+    - make -j4 test
 
-lint:
+check-clang-tidy:
+  image: $CI_REGISTRY_IMAGE/builder:latest
+  stage: test
   script:
     - cd build
-    - cmake -DCHECK_CODE_QUALITY=ON ..
-    - make check
+    - cmake -DCMAKE_SOURCE_DIR=$(dirname `pwd`) -DCMAKE_BINARY_DIR=`pwd` -DMAINTAINER_MODE=ON -DCHECK_CODE_QUALITY=ON ..
+    - make -j4 check-clang-tidy
+
+check-clang-format:
+  image: $CI_REGISTRY_IMAGE/builder:latest
+  stage: test
+  script:
+    - cd build
+    - cmake -DCMAKE_SOURCE_DIR=$(dirname `pwd`) -DCMAKE_BINARY_DIR=`pwd` -DMAINTAINER_MODE=ON -DCHECK_CODE_QUALITY=ON ..
+    - make -j4 check-clang-format

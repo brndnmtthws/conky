@@ -62,9 +62,7 @@ struct diskio_stat *prepare_diskio_stat(const char *s) {
   char *rpbuf;
   char rpbuf2[256];
 
-  if (s == nullptr) {
-    return &stats;
-  }
+  if (s == nullptr) { return &stats; }
 
   if (strncmp(s, "label:", 6) == 0) {
     snprintf(&(device_name[0]), text_buffer_size.get(*state),
@@ -101,13 +99,13 @@ struct diskio_stat *prepare_diskio_stat(const char *s) {
 
   if (strncmp(s, "label:", 6) == 0) {
     snprintf(&(stat_name[0]), text_buffer_size.get(*state), "/dev/%s",
-           &(device_name[0]));
+             &(device_name[0]));
     if ((stat(&(stat_name[0]), &sb) != 0) || !S_ISBLK(sb.st_mode)) {
       NORM_ERR("diskio device '%s' does not exist", &device_s[0]);
     }
   } else if ((0 == (strncmp(s, "partuuid:", 9))) &&
-        ((stat(rpbuf2, &sb) != 0) || !S_ISBLK(sb.st_mode))) {
-      NORM_ERR("diskio device '%s' does not exist", &device_s[0]);
+             ((stat(rpbuf2, &sb) != 0) || !S_ISBLK(sb.st_mode))) {
+    NORM_ERR("diskio device '%s' does not exist", &device_s[0]);
   }
 
 #endif
@@ -115,9 +113,7 @@ struct diskio_stat *prepare_diskio_stat(const char *s) {
   /* lookup existing */
   while (cur->next != nullptr) {
     cur = cur->next;
-    if (strcmp(cur->dev, &(device_name[0])) == 0) {
-      return cur;
-    }
+    if (strcmp(cur->dev, &(device_name[0])) == 0) { return cur; }
   }
 
   /* no existing found, make a new one */
@@ -145,9 +141,7 @@ static void print_diskio_dir(struct text_object *obj, int dir, char *p,
   auto *diskio = static_cast<struct diskio_stat *>(obj->data.opaque);
   double val;
 
-  if (diskio == nullptr) {
-    return;
-  }
+  if (diskio == nullptr) { return; }
 
   if (dir < 0) {
     val = diskio->current_read;
@@ -166,11 +160,13 @@ void print_diskio(struct text_object *obj, char *p, unsigned int p_max_size) {
   print_diskio_dir(obj, 0, p, p_max_size);
 }
 
-void print_diskio_read(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_diskio_read(struct text_object *obj, char *p,
+                       unsigned int p_max_size) {
   print_diskio_dir(obj, -1, p, p_max_size);
 }
 
-void print_diskio_write(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_diskio_write(struct text_object *obj, char *p,
+                        unsigned int p_max_size) {
   print_diskio_dir(obj, 1, p, p_max_size);
 }
 

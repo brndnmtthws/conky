@@ -27,13 +27,13 @@
  */
 
 #include "mpd.h"
+#include <cmath>
+#include <mutex>
 #include "conky.h"
 #include "libmpdclient.h"
 #include "logging.h"
 #include "timeinfo.h"
 #include "update-cb.hh"
-#include <cmath>
-#include <mutex>
 
 namespace {
 
@@ -61,9 +61,7 @@ void mpd_host_setting::lua_setter(lua::state &l, bool init) {
       l.checkstack(1);
       const char *h = strchr(t, '@');
       if (h != nullptr) {
-        if (h[1] != 0) {
-          l.pushstring(h + 1);
-        }
+        if (h[1] != 0) { l.pushstring(h + 1); }
       } else {
         l.pushstring(t);
       }
@@ -147,9 +145,7 @@ class mpd_cb : public conky::callback<mpd_result> {
       : Base(period, false, Tuple()), conn(nullptr) {}
 
   ~mpd_cb() override {
-    if (conn != nullptr) {
-      mpd_closeConnection(conn);
-    }
+    if (conn != nullptr) { mpd_closeConnection(conn); }
   }
 };
 
@@ -234,9 +230,9 @@ void mpd_cb::work() {
       mpd_info.is_playing = 1;
       mpd_info.bitrate = status->bitRate;
       mpd_info.progress =
-          ((0 != status->totalTime) ?
-           static_cast<float>(status->elapsedTime) / status->totalTime
-           : 0.0);
+          ((0 != status->totalTime)
+               ? static_cast<float>(status->elapsedTime) / status->totalTime
+               : 0.0);
       mpd_info.elapsed = status->elapsedTime;
       mpd_info.length = status->totalTime;
     } else {
@@ -335,12 +331,14 @@ static inline void format_media_player_time(char *buf, const int size,
   }
 }
 
-void print_mpd_elapsed(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_mpd_elapsed(struct text_object *obj, char *p,
+                       unsigned int p_max_size) {
   (void)obj;
   format_media_player_time(p, p_max_size, get_mpd().elapsed);
 }
 
-void print_mpd_length(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_mpd_length(struct text_object *obj, char *p,
+                      unsigned int p_max_size) {
   (void)obj;
   format_media_player_time(p, p_max_size, get_mpd().length);
 }
@@ -355,12 +353,11 @@ double mpd_barval(struct text_object *obj) {
   return get_mpd().progress;
 }
 
-void print_mpd_smart(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_mpd_smart(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   const mpd_result &mpd_info = get_mpd();
   int len = obj->data.i;
-  if (len == 0 || (unsigned int) len > p_max_size) {
-    len = p_max_size;
-  }
+  if (len == 0 || (unsigned int)len > p_max_size) { len = p_max_size; }
 
   memset(p, 0, p_max_size);
   if ((static_cast<unsigned int>(!mpd_info.artist.empty()) != 0u) &&
@@ -383,11 +380,12 @@ int check_mpd_playing(struct text_object *obj) {
   return get_mpd().is_playing;
 }
 
-#define MPD_PRINT_GENERATOR(name, fmt, acc)                                 \
-  void print_mpd_##name(struct text_object *obj, char *p,                   \
-		                                 unsigned int p_max_size) { \
-    if (obj->data.i && (unsigned int) obj->data.i < p_max_size) p_max_size = obj->data.i;  \
-    snprintf(p, p_max_size, fmt, get_mpd().name acc);                       \
+#define MPD_PRINT_GENERATOR(name, fmt, acc)                    \
+  void print_mpd_##name(struct text_object *obj, char *p,      \
+                        unsigned int p_max_size) {             \
+    if (obj->data.i && (unsigned int)obj->data.i < p_max_size) \
+      p_max_size = obj->data.i;                                \
+    snprintf(p, p_max_size, fmt, get_mpd().name acc);          \
   }
 
 MPD_PRINT_GENERATOR(title, "%s", .c_str())

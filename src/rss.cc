@@ -52,9 +52,7 @@ class rss_cb : public curl_callback<std::shared_ptr<PRSS>> {
 
       std::unique_lock<std::mutex> lock(Base::result_mutex);
       Base::result = tmp;
-    } catch (std::runtime_error &e) {
-      NORM_ERR("%s", e.what());
-    }
+    } catch (std::runtime_error &e) { NORM_ERR("%s", e.what()); }
   }
 
  public:
@@ -87,9 +85,7 @@ static void rss_process_info(char *p, int p_max_size, const std::string &uri,
       str = data->title;
       if (str && strlen(str) > 0) {
         // remove trailing new line if one exists
-        if (str[strlen(str) - 1] == '\n') {
-          str[strlen(str) - 1] = 0;
-        }
+        if (str[strlen(str) - 1] == '\n') { str[strlen(str) - 1] = 0; }
         snprintf(p, p_max_size, "%s", str);
       }
     } else if (strcmp(action, "item_title") == EQUAL) {
@@ -97,9 +93,7 @@ static void rss_process_info(char *p, int p_max_size, const std::string &uri,
         str = data->items[act_par].title;
         // remove trailing new line if one exists
         if (str && strlen(str) > 0) {
-          if (str[strlen(str) - 1] == '\n') {
-            str[strlen(str) - 1] = 0;
-          }
+          if (str[strlen(str) - 1] == '\n') { str[strlen(str) - 1] = 0; }
           snprintf(p, p_max_size, "%s", str);
         }
       }
@@ -108,9 +102,7 @@ static void rss_process_info(char *p, int p_max_size, const std::string &uri,
         str = data->items[act_par].description;
         // remove trailing new line if one exists
         if (str && strlen(str) > 0) {
-          if (str[strlen(str) - 1] == '\n') {
-            str[strlen(str) - 1] = 0;
-          }
+          if (str[strlen(str) - 1] == '\n') { str[strlen(str) - 1] = 0; }
           snprintf(p, p_max_size, "%s", str);
         }
       }
@@ -135,9 +127,7 @@ static void rss_process_info(char *p, int p_max_size, const std::string &uri,
           str = item->title;
           if (str) {
             // don't add new line before first item
-            if (itmp > 0) {
-              strncat(p, "\n", p_max_size);
-            }
+            if (itmp > 0) { strncat(p, "\n", p_max_size); }
             /* remove trailing new line if one exists,
              * we have our own */
             if (strlen(str) > 0 && str[strlen(str) - 1] == '\n') {

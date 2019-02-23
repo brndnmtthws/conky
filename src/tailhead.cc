@@ -65,13 +65,9 @@ static void tailstring(char *string, int endofstring, int wantedlines) {
       string[endofstring - 1] = 0;
     }
     for (i = endofstring - 1; i >= 0 && linescounted < wantedlines; i--) {
-      if (string[i] == '\n') {
-        linescounted++;
-      }
+      if (string[i] == '\n') { linescounted++; }
     }
-    if (i > 0) {
-      strfold(string, i + 2);
-    }
+    if (i > 0) { strfold(string, i + 2); }
   }
 }
 
@@ -124,9 +120,7 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
   struct stat st {};
   auto *ht = static_cast<struct headtail *>(obj->data.opaque);
 
-  if (ht == nullptr) {
-    return;
-  }
+  if (ht == nullptr) { return; }
 
   // empty the buffer and reset the counter if we used it the max number of
   // times
@@ -145,12 +139,8 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
         if (fd != -1) {
           if (strcmp(type, "head") == 0) {
             for (i = 0; linescounted < ht->wantedlines; i++) {
-              if (read(fd, p + i, 1) <= 0) {
-                break;
-              }
-              if (p[i] == '\n') {
-                linescounted++;
-              }
+              if (read(fd, p + i, 1) <= 0) { break; }
+              if (p[i] == '\n') { linescounted++; }
             }
             p[i] = 0;
           } else if (strcmp(type, "tail") == 0) {
@@ -175,7 +165,7 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
               endofstring = strlen(p);
             }
           } else if (strcmp(type, "tail") == 0) {
-            fseek(fp, - (long) p_max_size, SEEK_END);
+            fseek(fp, -(long)p_max_size, SEEK_END);
             i = fread(p, 1, p_max_size - 1, fp);
             tailstring(p, i, ht->wantedlines);
           } else {
@@ -219,9 +209,7 @@ void print_lines(struct text_object *obj, char *p, unsigned int p_max_size) {
   lines = 0;
   while (fgets(buf, BUFSZ, fp) != nullptr) {
     for (j = 0; buf[j] != 0; j++) {
-      if (buf[j] == '\n') {
-        lines++;
-      }
+      if (buf[j] == '\n') { lines++; }
     }
   }
   snprintf(p, p_max_size, "%d", lines);

@@ -32,10 +32,10 @@
 #include <unistd.h>
 #include <cctype>
 #include <memory>
+#include <sstream>
 #include "conky.h"
 #include "core.h"
 #include "logging.h"
-#include <sstream>
 
 char *readfile(const char *filename, int *total_read, char showerror) {
   FILE *file;
@@ -79,18 +79,14 @@ struct ll_string *addnode(struct ll_string *end, char *string) {
       static_cast<struct ll_string *>(malloc(sizeof(struct ll_string)));
   current->string = strdup(string);
   current->next = nullptr;
-  if (end != nullptr) {
-    end->next = current;
-  }
+  if (end != nullptr) { end->next = current; }
   return current;
 }
 
 void freelist(struct ll_string *front) {
   if (front != nullptr) {
     free(front->string);
-    if (front->next != nullptr) {
-      freelist(front->next);
-    }
+    if (front->next != nullptr) { freelist(front->next); }
     free(front);
   }
 }
@@ -99,23 +95,23 @@ int inlist(struct ll_string *front, char *string) {
   struct ll_string *current;
 
   for (current = front; current != nullptr; current = current->next) {
-    if (strcmp(current->string, string) == 0) {
-      return 1;
-    }
+    if (strcmp(current->string, string) == 0) { return 1; }
   }
   return 0;
 }
 
-void print_pid_chroot(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_chroot(struct text_object *obj, char *p,
+                      unsigned int p_max_size) {
   std::ostringstream pathstream;
   std::unique_ptr<char[]> buf(new char[max_user_text.get(*state)]);
 
   generate_text_internal(buf.get(), max_user_text.get(*state), *obj->sub);
-  pathstream << PROCDIR "/"  << buf.get() << "/root";
+  pathstream << PROCDIR "/" << buf.get() << "/root";
   pid_readlink(pathstream.str().c_str(), p, p_max_size);
 }
 
-void print_pid_cmdline(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_cmdline(struct text_object *obj, char *p,
+                       unsigned int p_max_size) {
   char *buf;
   int i, bytes_read;
   std::ostringstream pathstream;
@@ -124,13 +120,11 @@ void print_pid_cmdline(struct text_object *obj, char *p, unsigned int p_max_size
   generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
 
   if (*(objbuf.get()) != 0) {
-    pathstream << PROCDIR "/"  << objbuf.get() << "/cmdline";
+    pathstream << PROCDIR "/" << objbuf.get() << "/cmdline";
     buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
     if (buf != nullptr) {
       for (i = 0; i < bytes_read - 1; i++) {
-        if (buf[i] == 0) {
-          buf[i] = ' ';
-        }
+        if (buf[i] == 0) { buf[i] = ' '; }
       }
       snprintf(p, p_max_size, "%s", buf);
       free(buf);
@@ -147,7 +141,7 @@ void print_pid_cwd(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
 
   generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
-  pathstream << PROCDIR "/"  << objbuf.get() << "/cwd";
+  pathstream << PROCDIR "/" << objbuf.get() << "/cwd";
   bytes_read = readlink(pathstream.str().c_str(), buf.get(), p_max_size);
   if (bytes_read != -1) {
     buf[bytes_read] = 0;
@@ -157,7 +151,8 @@ void print_pid_cwd(struct text_object *obj, char *p, unsigned int p_max_size) {
   }
 }
 
-void print_pid_environ(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_environ(struct text_object *obj, char *p,
+                       unsigned int p_max_size) {
   int i, total_read;
   pid_t pid;
   std::ostringstream pathstream;
@@ -167,10 +162,8 @@ void print_pid_environ(struct text_object *obj, char *p, unsigned int p_max_size
 
   generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
   if (sscanf(objbuf.get(), "%d %s", &pid, var) == 2) {
-    for (i = 0; var[i] != 0; i++) {
-      var[i] = toupper((unsigned char)var[i]);
-    }
-    pathstream << PROCDIR "/"  << pid << "/cwd";
+    for (i = 0; var[i] != 0; i++) { var[i] = toupper((unsigned char)var[i]); }
+    pathstream << PROCDIR "/" << pid << "/cwd";
     buf = readfile(pathstream.str().c_str(), &total_read, 1);
     if (buf != nullptr) {
       for (i = 0; i < total_read; i += strlen(buf + i) + 1) {
@@ -189,7 +182,8 @@ void print_pid_environ(struct text_object *obj, char *p, unsigned int p_max_size
   free(var);
 }
 
-void print_pid_environ_list(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_environ_list(struct text_object *obj, char *p,
+                            unsigned int p_max_size) {
   char *buf = nullptr;
   char *buf2;
   int bytes_read, total_read;
@@ -198,7 +192,7 @@ void print_pid_environ_list(struct text_object *obj, char *p, unsigned int p_max
   std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
 
   generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
-  pathstream << PROCDIR "/"  << objbuf.get() << "/environ";
+  pathstream << PROCDIR "/" << objbuf.get() << "/environ";
 
   buf = readfile(pathstream.str().c_str(), &total_read, 1);
   if (buf != nullptr) {
@@ -220,7 +214,7 @@ void print_pid_exe(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
 
   generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
-  pathstream << PROCDIR "/"  << objbuf.get() << "/exe";
+  pathstream << PROCDIR "/" << objbuf.get() << "/exe";
   pid_readlink(pathstream.str().c_str(), p, p_max_size);
 }
 
@@ -234,7 +228,7 @@ void print_pid_nice(struct text_object *obj, char *p, unsigned int p_max_size) {
   generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
 
   if (!obj->data.s) {
-    pathstream << PROCDIR "/"  << objbuf.get() << "/stat";
+    pathstream << PROCDIR "/" << objbuf.get() << "/stat";
     buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
     if (buf != nullptr) {
       sscanf(buf,
@@ -249,7 +243,8 @@ void print_pid_nice(struct text_object *obj, char *p, unsigned int p_max_size) {
   }
 }
 
-void print_pid_openfiles(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_openfiles(struct text_object *obj, char *p,
+                         unsigned int p_max_size) {
   DIR *dir;
   struct dirent *entry;
   std::unique_ptr<char[]> buf(new char[p_max_size]);
@@ -273,9 +268,7 @@ void print_pid_openfiles(struct text_object *obj, char *p, unsigned int p_max_si
                    buf.get());
           totallength += length + strlen("; ");
         }
-        if (files_front == nullptr) {
-          files_front = files_back;
-        }
+        if (files_front == nullptr) { files_front = files_back; }
       }
     }
     closedir(dir);
@@ -286,7 +279,8 @@ void print_pid_openfiles(struct text_object *obj, char *p, unsigned int p_max_si
   }
 }
 
-void print_pid_parent(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_parent(struct text_object *obj, char *p,
+                      unsigned int p_max_size) {
 #define PARENT_ENTRY "PPid:\t"
 #define PARENTNOTFOUND "Can't find the process parent in '%s'"
   char *begin, *end, *buf = nullptr;
@@ -295,7 +289,7 @@ void print_pid_parent(struct text_object *obj, char *p, unsigned int p_max_size)
   std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
 
   generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
-  pathstream << PROCDIR "/"  << objbuf.get() << "/status";
+  pathstream << PROCDIR "/" << objbuf.get() << "/status";
 
   buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
   if (buf != nullptr) {
@@ -303,9 +297,7 @@ void print_pid_parent(struct text_object *obj, char *p, unsigned int p_max_size)
     if (begin != nullptr) {
       begin += strlen(PARENT_ENTRY);
       end = strchr(begin, '\n');
-      if (end != nullptr) {
-        *(end) = 0;
-      }
+      if (end != nullptr) { *(end) = 0; }
       snprintf(p, p_max_size, "%s", begin);
     } else {
       NORM_ERR(PARENTNOTFOUND, pathstream.str().c_str());
@@ -314,7 +306,8 @@ void print_pid_parent(struct text_object *obj, char *p, unsigned int p_max_size)
   }
 }
 
-void print_pid_priority(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_priority(struct text_object *obj, char *p,
+                        unsigned int p_max_size) {
   char *buf = nullptr;
   int bytes_read;
   long int priority;
@@ -324,7 +317,7 @@ void print_pid_priority(struct text_object *obj, char *p, unsigned int p_max_siz
   generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
 
   if (*(objbuf.get()) != 0) {
-    pathstream << PROCDIR "/"  << objbuf.get() << "/stat";
+    pathstream << PROCDIR "/" << objbuf.get() << "/stat";
     buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
     if (buf != nullptr) {
       sscanf(buf,
@@ -339,7 +332,8 @@ void print_pid_priority(struct text_object *obj, char *p, unsigned int p_max_siz
   }
 }
 
-void print_pid_state(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_state(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
 #define STATE_ENTRY "State:\t"
 #define STATENOTFOUND "Can't find the process state in '%s'"
   char *begin, *end, *buf = nullptr;
@@ -348,7 +342,7 @@ void print_pid_state(struct text_object *obj, char *p, unsigned int p_max_size) 
   std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
 
   generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
-  pathstream << PROCDIR "/"  << objbuf.get() << "/status";
+  pathstream << PROCDIR "/" << objbuf.get() << "/status";
 
   buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
   if (buf != nullptr) {
@@ -369,7 +363,8 @@ void print_pid_state(struct text_object *obj, char *p, unsigned int p_max_size) 
   }
 }
 
-void print_pid_state_short(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_state_short(struct text_object *obj, char *p,
+                           unsigned int p_max_size) {
   char *begin, *buf = nullptr;
   int bytes_read;
   std::ostringstream pathstream;
@@ -377,7 +372,7 @@ void print_pid_state_short(struct text_object *obj, char *p, unsigned int p_max_
 
   generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
 
-  pathstream << PROCDIR "/"  << objbuf.get() << "/status";
+  pathstream << PROCDIR "/" << objbuf.get() << "/status";
 
   buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
   if (buf != nullptr) {
@@ -391,27 +386,30 @@ void print_pid_state_short(struct text_object *obj, char *p, unsigned int p_max_
   }
 }
 
-void print_pid_stderr(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_stderr(struct text_object *obj, char *p,
+                      unsigned int p_max_size) {
   std::ostringstream pathstream;
   std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
 
   generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
 
-  pathstream << PROCDIR "/"  << objbuf.get() << "/fd/2";
+  pathstream << PROCDIR "/" << objbuf.get() << "/fd/2";
   pid_readlink(pathstream.str().c_str(), p, p_max_size);
 }
 
-void print_pid_stdin(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_stdin(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
   std::ostringstream pathstream;
 
   generate_text_internal(objbuf.get(), max_user_text.get(*state), *obj->sub);
 
-  pathstream << PROCDIR "/"  << objbuf.get() << "/fd/0";
+  pathstream << PROCDIR "/" << objbuf.get() << "/fd/0";
   pid_readlink(pathstream.str().c_str(), p, p_max_size);
 }
 
-void print_pid_stdout(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_stdout(struct text_object *obj, char *p,
+                      unsigned int p_max_size) {
   std::ostringstream pathstream;
   std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
 
@@ -437,15 +435,14 @@ void scan_cmdline_to_pid_arg(struct text_object *obj, const char *arg,
                 strlen(obj->data.s + i + 1) + 1);
       }
     }
-    if (obj->data.s[i - 1] == ' ') {
-      obj->data.s[i - 1] = 0;
-    }
+    if (obj->data.s[i - 1] == ' ') { obj->data.s[i - 1] = 0; }
   } else {
     CRIT_ERR(obj, free_at_crash, "${cmdline_to_pid commandline}");
   }
 }
 
-void print_cmdline_to_pid(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_cmdline_to_pid(struct text_object *obj, char *p,
+                          unsigned int p_max_size) {
   DIR *dir;
   struct dirent *entry;
   char *buf;
@@ -460,9 +457,7 @@ void print_cmdline_to_pid(struct text_object *obj, char *p, unsigned int p_max_s
       buf = readfile(pathstream.str().c_str(), &bytes_read, 0);
       if (buf != nullptr) {
         for (i = 0; i < bytes_read - 1; i++) {
-          if (buf[i] == 0) {
-            buf[i] = ' ';
-          }
+          if (buf[i] == 0) { buf[i] = ' '; }
         }
         if (strstr(buf, obj->data.s) != nullptr) {
           snprintf(p, p_max_size, "%s", entry->d_name);
@@ -479,7 +474,8 @@ void print_cmdline_to_pid(struct text_object *obj, char *p, unsigned int p_max_s
   }
 }
 
-void print_pid_threads(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_threads(struct text_object *obj, char *p,
+                       unsigned int p_max_size) {
 #define THREADS_ENTRY "Threads:\t"
 #define THREADSNOTFOUND \
   "Can't find the number of the threads of the process in '%s'"
@@ -497,9 +493,7 @@ void print_pid_threads(struct text_object *obj, char *p, unsigned int p_max_size
     if (begin != nullptr) {
       begin += strlen(THREADS_ENTRY);
       end = strchr(begin, '\n');
-      if (end != nullptr) {
-        *(end) = 0;
-      }
+      if (end != nullptr) { *(end) = 0; }
       snprintf(p, p_max_size, "%s", begin);
     } else {
       NORM_ERR(THREADSNOTFOUND, pathstream.str().c_str());
@@ -508,7 +502,8 @@ void print_pid_threads(struct text_object *obj, char *p, unsigned int p_max_size
   }
 }
 
-void print_pid_thread_list(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_thread_list(struct text_object *obj, char *p,
+                           unsigned int p_max_size) {
   DIR *dir;
   struct dirent *entry;
   int totallength = 0;
@@ -528,9 +523,7 @@ void print_pid_thread_list(struct text_object *obj, char *p, unsigned int p_max_
       }
     }
     closedir(dir);
-    if (p[totallength - 1] == ',') {
-      p[totallength - 1] = 0;
-    }
+    if (p[totallength - 1] == ',') { p[totallength - 1] = 0; }
   } else {
     p[0] = 0;
   }
@@ -560,7 +553,8 @@ void print_pid_time_kernelmode(struct text_object *obj, char *p,
   }
 }
 
-void print_pid_time_usermode(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_time_usermode(struct text_object *obj, char *p,
+                             unsigned int p_max_size) {
   char *buf = nullptr;
   int bytes_read;
   unsigned long int kmtime;
@@ -607,9 +601,10 @@ void print_pid_time(struct text_object *obj, char *p, unsigned int p_max_size) {
   }
 }
 
-enum idtype {egid, euid, fsgid, fsuid, gid, sgid, suid, uid};
+enum idtype { egid, euid, fsgid, fsuid, gid, sgid, suid, uid };
 
-void print_pid_Xid(struct text_object *obj, char *p, int p_max_size, idtype type) {
+void print_pid_Xid(struct text_object *obj, char *p, int p_max_size,
+                   idtype type) {
   char *begin, *end, *buf = nullptr;
   int bytes_read;
   std::ostringstream pathstream;
@@ -621,106 +616,107 @@ void print_pid_Xid(struct text_object *obj, char *p, int p_max_size, idtype type
 
   buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
   if (buf != nullptr) {
-    switch(type) {
-    case egid:
-      begin = strstr(buf, "Gid:\t");
-      break;
-    case euid:
-      begin = strstr(buf, "Uid:\t");
-      break;
-    case fsgid:
-      begin = strstr(buf, "Gid:\t");
-      break;
-    case fsuid:
-      begin = strstr(buf, "Uid:\t");
-      break;
-    case gid:
-      begin = strstr(buf, "Gid:\t");
-      break;
-    case sgid:
-      begin = strstr(buf, "Gid:\t");
-      break;
-    case suid:
-      begin = strstr(buf, "Uid:\t");
-      break;
-    case uid:
-      begin = strstr(buf, "Uid:\t");
-      break;
-    default:
-      break;
-    }
-    if (begin != nullptr) {
-      switch(type) {
-      case gid:
-        begin += strlen("Gid:\t");
-        break;
-      case uid:
-        begin += strlen("Uid:\t");
-        break;
+    switch (type) {
       case egid:
-      case euid:
-        begin = strchr(begin, '\t');
-	begin++;
-        begin = strchr(begin, '\t');
-	begin++;
+        begin = strstr(buf, "Gid:\t");
         break;
-      case sgid:
-      case suid:
-        begin = strchr(begin, '\t');
-	begin++;
-        begin = strchr(begin, '\t');
-        begin++;
-        begin = strchr(begin, '\t');
-        begin++;
+      case euid:
+        begin = strstr(buf, "Uid:\t");
         break;
       case fsgid:
+        begin = strstr(buf, "Gid:\t");
+        break;
       case fsuid:
-        begin = strchr(begin, '\t');
-        begin++;
-        begin = strchr(begin, '\t');
-        begin++;
-        begin = strchr(begin, '\t');
-        begin++;
-        begin = strchr(begin, '\t');
-        begin++;
-	break;
+        begin = strstr(buf, "Uid:\t");
+        break;
+      case gid:
+        begin = strstr(buf, "Gid:\t");
+        break;
+      case sgid:
+        begin = strstr(buf, "Gid:\t");
+        break;
+      case suid:
+        begin = strstr(buf, "Uid:\t");
+        break;
+      case uid:
+        begin = strstr(buf, "Uid:\t");
+        break;
       default:
         break;
+    }
+    if (begin != nullptr) {
+      switch (type) {
+        case gid:
+          begin += strlen("Gid:\t");
+          break;
+        case uid:
+          begin += strlen("Uid:\t");
+          break;
+        case egid:
+        case euid:
+          begin = strchr(begin, '\t');
+          begin++;
+          begin = strchr(begin, '\t');
+          begin++;
+          break;
+        case sgid:
+        case suid:
+          begin = strchr(begin, '\t');
+          begin++;
+          begin = strchr(begin, '\t');
+          begin++;
+          begin = strchr(begin, '\t');
+          begin++;
+          break;
+        case fsgid:
+        case fsuid:
+          begin = strchr(begin, '\t');
+          begin++;
+          begin = strchr(begin, '\t');
+          begin++;
+          begin = strchr(begin, '\t');
+          begin++;
+          begin = strchr(begin, '\t');
+          begin++;
+          break;
+        default:
+          break;
       }
-      if(type == fsgid || type == fsuid) end = strchr(begin, '\n'); else end = strchr(begin, '\t');
-      if (end != nullptr) {
-        *(end) = 0;
-      }
+      if (type == fsgid || type == fsuid)
+        end = strchr(begin, '\n');
+      else
+        end = strchr(begin, '\t');
+      if (end != nullptr) { *(end) = 0; }
       snprintf(p, p_max_size, "%s", begin);
     } else {
       errorstring = "Can't find the process ";
-      switch(type) {
-      case egid:
-        errorstring.append("effective gid");
-        break;
-      case euid:
-        errorstring.append("effective uid");
-        break;
-      case fsgid:
-        errorstring.append("process file system gid");
-        break;
-      case fsuid:
-        errorstring.append("process file system uid");
-        break;
-      case gid:
-        errorstring.append("real gid");
-        break;
-      case sgid:
-        errorstring.append("saved set gid");
-        break;
-      case suid:
-        errorstring.append("saved set uid");
-        break;
-      case uid:
-        errorstring.append("real uid");
-        break;
-      default:
-        break;
+      switch (type) {
+        case egid:
+          errorstring.append("effective gid");
+          break;
+        case euid:
+          errorstring.append("effective uid");
+          break;
+        case fsgid:
+          errorstring.append("process file system gid");
+          break;
+        case fsuid:
+          errorstring.append("process file system uid");
+          break;
+        case gid:
+          errorstring.append("real gid");
+          break;
+        case sgid:
+          errorstring.append("saved set gid");
+          break;
+        case suid:
+          errorstring.append("saved set uid");
+          break;
+        case uid:
+          errorstring.append("real uid");
+          break;
+        default:
+          break;
       }
       errorstring.append(" in '%s'");
       NORM_ERR(errorstring.c_str(), pathstream.str().c_str());
@@ -730,23 +726,25 @@ void print_pid_Xid(struct text_object *obj, char *p, int p_max_size, idtype type
 }
 
 void print_pid_egid(struct text_object *obj, char *p, unsigned int p_max_size) {
- print_pid_Xid(obj, p, p_max_size, egid);
+  print_pid_Xid(obj, p, p_max_size, egid);
 }
 
 void print_pid_euid(struct text_object *obj, char *p, unsigned int p_max_size) {
   print_pid_Xid(obj, p, p_max_size, euid);
 }
 
-void print_pid_fsgid(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_fsgid(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   print_pid_Xid(obj, p, p_max_size, fsgid);
 }
 
-void print_pid_fsuid(struct text_object *obj, char *p, unsigned int p_max_size) {
- print_pid_Xid(obj, p, p_max_size, fsuid);
+void print_pid_fsuid(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
+  print_pid_Xid(obj, p, p_max_size, fsuid);
 }
 
 void print_pid_gid(struct text_object *obj, char *p, unsigned int p_max_size) {
- print_pid_Xid(obj, p, p_max_size, gid);
+  print_pid_Xid(obj, p, p_max_size, gid);
 }
 
 void print_pid_sgid(struct text_object *obj, char *p, unsigned int p_max_size) {
@@ -754,7 +752,7 @@ void print_pid_sgid(struct text_object *obj, char *p, unsigned int p_max_size) {
 }
 
 void print_pid_suid(struct text_object *obj, char *p, unsigned int p_max_size) {
- print_pid_Xid(obj, p, p_max_size, suid);
+  print_pid_Xid(obj, p, p_max_size, suid);
 }
 
 void print_pid_uid(struct text_object *obj, char *p, unsigned int p_max_size) {
@@ -776,13 +774,9 @@ void internal_print_pid_vm(struct text_object *obj, char *p, int p_max_size,
     begin = strstr(buf, entry);
     if (begin != nullptr) {
       begin += strlen(entry);
-      while (*begin == '\t' || *begin == ' ') {
-        begin++;
-      }
+      while (*begin == '\t' || *begin == ' ') { begin++; }
       end = strchr(begin, '\n');
-      if (end != nullptr) {
-        *(end) = 0;
-      }
+      if (end != nullptr) { *(end) = 0; }
       snprintf(p, p_max_size, "%s", begin);
     } else {
       NORM_ERR(errorstring, pathstream.str().c_str());
@@ -791,55 +785,65 @@ void internal_print_pid_vm(struct text_object *obj, char *p, int p_max_size,
   }
 }
 
-void print_pid_vmpeak(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_vmpeak(struct text_object *obj, char *p,
+                      unsigned int p_max_size) {
   internal_print_pid_vm(
       obj, p, p_max_size, "VmPeak:\t",
       "Can't find the process peak virtual memory size in '%s'");
 }
 
-void print_pid_vmsize(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_vmsize(struct text_object *obj, char *p,
+                      unsigned int p_max_size) {
   internal_print_pid_vm(obj, p, p_max_size, "VmSize:\t",
                         "Can't find the process virtual memory size in '%s'");
 }
 
-void print_pid_vmlck(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_vmlck(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   internal_print_pid_vm(obj, p, p_max_size, "VmLck:\t",
                         "Can't find the process locked memory size in '%s'");
 }
 
-void print_pid_vmhwm(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_vmhwm(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   internal_print_pid_vm(
       obj, p, p_max_size, "VmHWM:\t",
       "Can't find the process peak resident set size in '%s'");
 }
 
-void print_pid_vmrss(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_vmrss(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   internal_print_pid_vm(obj, p, p_max_size, "VmHWM:\t",
                         "Can't find the process resident set size in '%s'");
 }
 
-void print_pid_vmdata(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_vmdata(struct text_object *obj, char *p,
+                      unsigned int p_max_size) {
   internal_print_pid_vm(obj, p, p_max_size, "VmData:\t",
                         "Can't find the process data segment size in '%s'");
 }
 
-void print_pid_vmstk(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_vmstk(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   internal_print_pid_vm(obj, p, p_max_size, "VmData:\t",
                         "Can't find the process stack segment size in '%s'");
 }
 
-void print_pid_vmexe(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_vmexe(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   internal_print_pid_vm(obj, p, p_max_size, "VmData:\t",
                         "Can't find the process text segment size in '%s'");
 }
 
-void print_pid_vmlib(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_vmlib(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   internal_print_pid_vm(
       obj, p, p_max_size, "VmLib:\t",
       "Can't find the process shared library code size in '%s'");
 }
 
-void print_pid_vmpte(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_vmpte(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   internal_print_pid_vm(
       obj, p, p_max_size, "VmPTE:\t",
       "Can't find the process page table entries size in '%s'");
@@ -861,9 +865,7 @@ void print_pid_read(struct text_object *obj, char *p, unsigned int p_max_size) {
     begin = strstr(buf, READ_ENTRY);
     if (begin != nullptr) {
       end = strchr(begin, '\n');
-      if (end != nullptr) {
-        *(end) = 0;
-      }
+      if (end != nullptr) { *(end) = 0; }
       snprintf(p, p_max_size, "%s", begin);
     } else {
       NORM_ERR(READNOTFOUND, pathstream.str().c_str());
@@ -874,7 +876,8 @@ void print_pid_read(struct text_object *obj, char *p, unsigned int p_max_size) {
 
 #define WRITE_ENTRY "write_bytes: "
 #define WRITENOTFOUND "Can't find the amount of bytes written in '%s'"
-void print_pid_write(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_pid_write(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   char *begin, *end, *buf = nullptr;
   int bytes_read;
   std::ostringstream pathstream;
@@ -888,9 +891,7 @@ void print_pid_write(struct text_object *obj, char *p, unsigned int p_max_size) 
     begin = strstr(buf, WRITE_ENTRY);
     if (begin != nullptr) {
       end = strchr(begin, '\n');
-      if (end != nullptr) {
-        *(end) = 0;
-      }
+      if (end != nullptr) { *(end) = 0; }
       snprintf(p, p_max_size, "%s", begin);
     } else {
       NORM_ERR(WRITENOTFOUND, pathstream.str().c_str());

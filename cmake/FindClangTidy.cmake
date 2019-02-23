@@ -1,17 +1,7 @@
 # Find Clang tidy
 #
 
-if(NOT CLANG_TIDY_BIN_NAME)
-  set(CLANG_TIDY_BIN_NAME clang-tidy)
-endif()
-
-# if custom path check there first
-if(CLANG_TIDY_ROOT_DIR)
-  find_program(CLANG_TIDY_BIN
-               NAMES ${CLANG_TIDY_BIN_NAME}
-               PATHS "${CLANG_TIDY_ROOT_DIR}"
-               NO_DEFAULT_PATH)
-endif()
+set(CLANG_TIDY_BIN_NAME clang-tidy clang-tidy-5.0 clang-tidy-6.0 clang-tidy-7)
 
 find_program(CLANG_TIDY_BIN NAMES ${CLANG_TIDY_BIN_NAME})
 

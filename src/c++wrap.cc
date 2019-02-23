@@ -24,8 +24,8 @@
 
 #include "c++wrap.hh"
 
-#include <cstdio>
 #include <unistd.h>
+#include <cstdio>
 
 /* force use of  POSIX strerror_r instead of non-portable GNU specific */
 #ifdef _GNU_SOURCE
@@ -42,9 +42,7 @@
 
 namespace {
 int pipe2_emulate(int pipefd[2], int flags) {
-  if (pipe(pipefd) == -1) {
-    return -1;
-  }
+  if (pipe(pipefd) == -1) { return -1; }
 
   if ((flags & O_CLOEXEC) != 0) {
     // we emulate O_CLOEXEC if the system does not have it
@@ -52,13 +50,9 @@ int pipe2_emulate(int pipefd[2], int flags) {
 
     for (int i = 0; i < 2; ++i) {
       int r = fcntl(pipefd[i], F_GETFD);
-      if (r == -1) {
-        return -1;
-      }
+      if (r == -1) { return -1; }
 
-      if (fcntl(pipefd[i], F_SETFD, r | FD_CLOEXEC) == -1) {
-        return -1;
-      }
+      if (fcntl(pipefd[i], F_SETFD, r | FD_CLOEXEC) == -1) { return -1; }
     }
   }
 
@@ -81,8 +75,6 @@ std::string strerror_r(int errnum) {
 
 std::pair<int, int> pipe2(int flags) {
   int fd[2];
-  if (pipe2_ptr(fd, flags) == -1) {
-    throw errno_error("pipe2");
-  }
+  if (pipe2_ptr(fd, flags) == -1) { throw errno_error("pipe2"); }
   { return std::pair<int, int>(fd[0], fd[1]); }
 }

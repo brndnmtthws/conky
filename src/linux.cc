@@ -1126,8 +1126,7 @@ static int get_first_file_in_a_directory(const char *dir, char *s, int *rep) {
 /*
  * Convert @dev "0" (hwmon number) or "k10temp" (hwmon name) to "hwmon2/device"
  */
-static void get_dev_path(const char *dir, const char *dev, char *out_buf)
-{
+static void get_dev_path(const char *dir, const char *dev, char *out_buf) {
   struct dirent **namelist;
   char path[256] = {'\0'};
   char name[256] = {'\0'};
@@ -1151,18 +1150,15 @@ static void get_dev_path(const char *dir, const char *dev, char *out_buf)
     NORM_ERR("scandir for %s: %s", dir, strerror(errno));
     goto not_found;
   }
-  if (n == 0)
-    goto not_found;
+  if (n == 0) goto not_found;
 
   /* Search each hwmon%s/name */
   for (i = 0; i < n; i++) {
-    if (found)
-      continue;
+    if (found) continue;
 
     snprintf(path, 256, "%s%s/name", dir, namelist[i]->d_name);
     name_fd = open(path, O_RDONLY);
-    if (name_fd < 0)
-      continue;
+    if (name_fd < 0) continue;
     size = read(name_fd, name, strlen(dev));
     if (size < strlen(dev)) {
       close(name_fd);
@@ -1177,11 +1173,9 @@ static void get_dev_path(const char *dir, const char *dev, char *out_buf)
   }
 
   /* cleanup */
-  for (i = 0; i < n; i++)
-    free(namelist[i]);
+  for (i = 0; i < n; i++) free(namelist[i]);
   free(namelist);
-  if (found)
-    return;
+  if (found) return;
 
 not_found:
   out_buf[0] = '\0';

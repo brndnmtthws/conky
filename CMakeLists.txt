@@ -101,12 +101,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 if(CHECK_CODE_QUALITY)
-  # Set up clang-tidy
-  set(CLANG_TIDY_BIN_NAME
-      clang-tidy
-      clang-tidy-5.0
-      clang-tidy-6.0
-      clang-tidy-7.0)
-  set(CLANG_TIDY_EXCLUDE_PATTERNS "build/" ${CMAKE_BINARY_DIR})
   find_package(ClangTidy)
+  find_package(ClangFormat)
 endif(CHECK_CODE_QUALITY)

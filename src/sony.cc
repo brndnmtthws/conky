@@ -51,9 +51,7 @@ void get_sony_fanspeed(struct text_object *obj, char *p_client_buffer,
 
   (void)obj;
 
-  if (!p_client_buffer || client_buffer_size <= 0) {
-    return;
-  }
+  if (!p_client_buffer || client_buffer_size <= 0) { return; }
 
   snprintf(fan, 127, "%s/fanspeed", SONY_LAPTOP_DIR);
 
@@ -62,12 +60,8 @@ void get_sony_fanspeed(struct text_object *obj, char *p_client_buffer,
     while (!feof(fp)) {
       char line[256];
 
-      if (fgets(line, 255, fp) == nullptr) {
-        break;
-      }
-      if (sscanf(line, "%u", &speed)) {
-        break;
-      }
+      if (fgets(line, 255, fp) == nullptr) { break; }
+      if (sscanf(line, "%u", &speed)) { break; }
     }
   } else {
     CRIT_ERR(nullptr, NULL,

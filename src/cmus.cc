@@ -138,7 +138,7 @@ void cmus_cb::work() {
 
 #define CMUS_PRINT_GENERATOR(type, alt)                                       \
   void print_cmus_##type(struct text_object *obj, char *p,                    \
-		                                  unsigned int p_max_size) {  \
+                         unsigned int p_max_size) {                           \
     (void)obj;                                                                \
     uint32_t period = std::max(                                               \
         lround(music_player_interval.get(*state) / active_update_interval()), \
@@ -179,7 +179,8 @@ double cmus_progress(struct text_object *obj) {
   return (double)cmus.progress;
 }
 
-void print_cmus_totaltime(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_cmus_totaltime(struct text_object *obj, char *p,
+                          unsigned int p_max_size) {
   (void)obj;
   uint32_t period = std::max(
       lround(music_player_interval.get(*state) / active_update_interval()), 1l);
@@ -188,7 +189,8 @@ void print_cmus_totaltime(struct text_object *obj, char *p, unsigned int p_max_s
   format_seconds_short(p, p_max_size, atol(cmus.totaltime.c_str()));
 }
 
-void print_cmus_timeleft(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_cmus_timeleft(struct text_object *obj, char *p,
+                         unsigned int p_max_size) {
   (void)obj;
   uint32_t period = std::max(
       lround(music_player_interval.get(*state) / active_update_interval()), 1l);
@@ -198,7 +200,8 @@ void print_cmus_timeleft(struct text_object *obj, char *p, unsigned int p_max_si
   format_seconds_short(p, p_max_size, (long)cmus.timeleft);
 }
 
-void print_cmus_curtime(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_cmus_curtime(struct text_object *obj, char *p,
+                        unsigned int p_max_size) {
   (void)obj;
   uint32_t period = std::max(
       lround(music_player_interval.get(*state) / active_update_interval()), 1l);

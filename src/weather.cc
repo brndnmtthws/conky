@@ -22,6 +22,7 @@
  *
  */
 
+#include "weather.h"
 #include <ctype.h>
 #include <time.h>
 #include <array>
@@ -34,9 +35,8 @@
 #include "logging.h"
 #include "temphelper.h"
 #include "text_object.h"
-#include "weather.h"
 
 void print_weather(struct text_object *obj, char *p, unsigned int p_max_size) {
-  (void) obj;
-  strncpy(p ,"TODO...", p_max_size);
+  (void)obj;
+  strncpy(p, "TODO...", p_max_size);
 }

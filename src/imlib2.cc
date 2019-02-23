@@ -62,8 +62,7 @@ conky::range_config_setting<unsigned int> imlib_cache_flush_interval(
 
 unsigned int cimlib_cache_flush_last = 0;
 
-conky::simple_config_setting<bool> draw_blended(
-    "draw_blended", true, true);
+conky::simple_config_setting<bool> draw_blended("draw_blended", true, true);
 }  // namespace
 
 void imlib_cache_size_setting::lua_setter(lua::state &l, bool init) {
@@ -123,7 +122,7 @@ void cimlib_add_image(const char *args) {
         "Invalid args for $image.  Format is: '<path to image> (-p"
         "x,y) (-s WxH) (-n) (-f interval)' (got '%s')",
         args);
-    delete [] cur;
+    delete[] cur;
     return;
   }
   strncpy(cur->name, to_real_path(cur->name).c_str(), 1024);
@@ -138,22 +137,16 @@ void cimlib_add_image(const char *args) {
   tmp = strstr(args, "-s ");
   if (tmp != nullptr) {
     tmp += 3;
-    if (sscanf(tmp, "%ix%i", &cur->w, &cur->h) != 0) {
-      cur->wh_set = 1;
-    }
+    if (sscanf(tmp, "%ix%i", &cur->w, &cur->h) != 0) { cur->wh_set = 1; }
   }
 
   tmp = strstr(args, "-n");
-  if (tmp != nullptr) {
-    cur->no_cache = 1;
-  }
+  if (tmp != nullptr) { cur->no_cache = 1; }
 
   tmp = strstr(args, "-f ");
   if (tmp != nullptr) {
     tmp += 3;
-    if (sscanf(tmp, "%d", &cur->flush_interval) != 0) {
-      cur->no_cache = 0;
-    }
+    if (sscanf(tmp, "%d", &cur->flush_interval) != 0) { cur->no_cache = 0; }
   }
   if (cur->flush_interval < 0) {
     NORM_ERR("Imlib2: flush interval should be >= 0");
@@ -180,9 +173,7 @@ static void cimlib_draw_image(struct image_list_s *cur, int *clip_x,
 
   image = imlib_load_image(cur->name);
   if (image == nullptr) {
-    if (rep == 0) {
-      NORM_ERR("Unable to load image '%s'", cur->name);
-    }
+    if (rep == 0) { NORM_ERR("Unable to load image '%s'", cur->name); }
     rep = 1;
     return;
   }
@@ -213,18 +204,10 @@ static void cimlib_draw_image(struct image_list_s *cur, int *clip_x,
   } else {
     imlib_free_image();
   }
-  if (cur->x < *clip_x) {
-    *clip_x = cur->x;
-  }
-  if (cur->y < *clip_y) {
-    *clip_y = cur->y;
-  }
-  if (cur->x + cur->w > *clip_x2) {
-    *clip_x2 = cur->x + cur->w;
-  }
-  if (cur->y + cur->h > *clip_y2) {
-    *clip_y2 = cur->y + cur->h;
-  }
+  if (cur->x < *clip_x) { *clip_x = cur->x; }
+  if (cur->y < *clip_y) { *clip_y = cur->y; }
+  if (cur->x + cur->w > *clip_x2) { *clip_x2 = cur->x + cur->w; }
+  if (cur->y + cur->h > *clip_y2) { *clip_y2 = cur->y + cur->h; }
 }
 
 static void cimlib_draw_all(int *clip_x, int *clip_y, int *clip_x2,
@@ -280,12 +263,8 @@ void cimlib_render(int x, int y, int width, int height) {
   imlib_context_set_image(buffer);
 
   /* setup our clip rect */
-  if (clip_x == INT_MAX) {
-    clip_x = 0;
-  }
-  if (clip_y == INT_MAX) {
-    clip_y = 0;
-  }
+  if (clip_x == INT_MAX) { clip_x = 0; }
+  if (clip_y == INT_MAX) { clip_y = 0; }
 
   /* render the image at 0, 0 */
   imlib_render_image_part_on_drawable_at_size(
@@ -295,7 +274,6 @@ void cimlib_render(int x, int y, int width, int height) {
   imlib_free_image();
 }
 
-void print_image_callback(struct text_object *obj, char *,
-                          unsigned int) {
+void print_image_callback(struct text_object *obj, char *, unsigned int) {
   cimlib_add_image(obj->data.s);
 }

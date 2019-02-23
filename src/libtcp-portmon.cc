@@ -114,7 +114,8 @@ struct _tcp_port_monitor_t {
 
   _tcp_port_monitor_t(int max_connections)
       : hash(),
-        p_peek(max_connections, static_cast<const tcp_connection_t *>(nullptr)) {}
+        p_peek(max_connections,
+               static_cast<const tcp_connection_t *>(nullptr)) {}
 
   _tcp_port_monitor_t(const _tcp_port_monitor_t &other)
       : hash(other.hash),
@@ -202,9 +203,7 @@ void show_connection_to_tcp_port_monitor(monitor_hash_t::value_type &monitor,
 
   tcp_connection_t *p_connection;
 
-  if (!p_void) {
-    return;
-  }
+  if (!p_void) { return; }
 
   /* This p_connection is on caller's stack and not the heap.
    * If we are interested, we will create a copy of the connection
@@ -242,9 +241,7 @@ void show_connection_to_tcp_port_monitor(monitor_hash_t::value_type &monitor,
 void for_each_tcp_port_monitor_in_collection(
     tcp_port_monitor_collection_t *p_collection,
     tcp_port_monitor_function_ptr_t p_function, void *p_function_args) {
-  if (!p_collection || !p_function) {
-    return;
-  }
+  if (!p_collection || !p_function) { return; }
 
   /* for each monitor in the collection */
   for (monitor_hash_t::iterator i = p_collection->hash.begin();
@@ -318,9 +315,7 @@ void process_file(tcp_port_monitor_collection_t *p_collection,
   tcp_connection_t conn;
   unsigned long inode, uid, state;
 
-  if ((fp = std::fopen(file, "r")) == nullptr) {
-    return;
-  }
+  if ((fp = std::fopen(file, "r")) == nullptr) { return; }
 
   /* ignore field name line */
   if (std::fgets(buf, 255, fp) == nullptr) {
@@ -340,9 +335,7 @@ void process_file(tcp_port_monitor_collection_t *p_collection,
     }
     /** TCP_ESTABLISHED equals 1, but is not (always??) included **/
     // if ((inode == 0) || (state != TCP_ESTABLISHED)) {
-    if ((inode == 0) || (state != 1)) {
-      continue;
-    }
+    if ((inode == 0) || (state != 1)) { continue; }
 
     string_to_addr(&conn.local_addr, local_addr);
     string_to_addr(&conn.remote_addr, remote_addr);
@@ -375,9 +368,7 @@ int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
                           size_t buffer_size) {
   struct sockaddr_in sa;
 
-  if (!p_monitor || !p_buffer || connection_index < 0) {
-    return -1;
-  }
+  if (!p_monitor || !p_buffer || connection_index < 0) { return -1; }
 
   std::memset(p_buffer, 0, buffer_size);
   std::memset(&sa, 0, sizeof(sa));
@@ -419,8 +410,8 @@ int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
     case REMOTESERVICE:
 
       sa.sin_port = htons(p_monitor->p_peek[connection_index]->remote_port);
-      getnameinfo((struct sockaddr *)&sa, sizeof(struct sockaddr_in), nullptr, 0,
-                  p_buffer, buffer_size, NI_NUMERICHOST);
+      getnameinfo((struct sockaddr *)&sa, sizeof(struct sockaddr_in), nullptr,
+                  0, p_buffer, buffer_size, NI_NUMERICHOST);
       break;
 
     case LOCALIP:
@@ -444,8 +435,8 @@ int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
     case LOCALSERVICE:
 
       sa.sin_port = htons(p_monitor->p_peek[connection_index]->local_port);
-      getnameinfo((struct sockaddr *)&sa, sizeof(struct sockaddr_in), nullptr, 0,
-                  p_buffer, buffer_size, NI_NUMERICHOST);
+      getnameinfo((struct sockaddr *)&sa, sizeof(struct sockaddr_in), nullptr,
+                  0, p_buffer, buffer_size, NI_NUMERICHOST);
       break;
 
     default:
@@ -474,9 +465,7 @@ void destroy_tcp_port_monitor_collection(
 /* Updates the tcp statistics for all monitors within a collection */
 void update_tcp_port_monitor_collection(
     tcp_port_monitor_collection_t *p_collection) {
-  if (!p_collection) {
-    return;
-  }
+  if (!p_collection) { return; }
 
   process_file(p_collection, "/proc/net/tcp");
   process_file(p_collection, "/proc/net/tcp6");
@@ -495,9 +484,7 @@ void update_tcp_port_monitor_collection(
 int insert_new_tcp_port_monitor_into_collection(
     tcp_port_monitor_collection_t *p_collection, in_port_t port_range_begin,
     in_port_t port_range_end, tcp_port_monitor_args_t *p_creation_args) {
-  if (!p_collection) {
-    return -1;
-  }
+  if (!p_collection) { return -1; }
 
   p_collection->hash.insert(monitor_hash_t::value_type(
       port_range_t(port_range_begin, port_range_end),
@@ -510,9 +497,7 @@ int insert_new_tcp_port_monitor_into_collection(
 tcp_port_monitor_t *find_tcp_port_monitor(
     tcp_port_monitor_collection_t *p_collection, in_port_t port_range_begin,
     in_port_t port_range_end) {
-  if (!p_collection) {
-    return nullptr;
-  }
+  if (!p_collection) { return nullptr; }
 
   /* is monitor in hash? */
   monitor_hash_t::iterator i =

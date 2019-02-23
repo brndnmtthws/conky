@@ -27,6 +27,7 @@
  *
  */
 
+#include "exec.h"
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -36,7 +37,6 @@
 #include <mutex>
 #include "conky.h"
 #include "core.h"
-#include "exec.h"
 #include "logging.h"
 #include "specials.h"
 #include "text_object.h"
@@ -68,7 +68,7 @@ static char *remove_excess_quotes(const char *command) {
   }
 
   for (; *command_ptr; command_ptr++) {
-    if ('\0' == *(command_ptr+1) && 1 == skip &&
+    if ('\0' == *(command_ptr + 1) && 1 == skip &&
         (*command_ptr == '"' || *command_ptr == '\'')) {
       continue;
     }
@@ -122,7 +122,8 @@ static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
     if (fcntl(childend, F_DUPFD, 0) == -1) { perror("fcntl()"); }
     close(childend);
 
-    execl("/bin/sh", "sh", "-c", remove_excess_quotes(command), (char *)nullptr);
+    execl("/bin/sh", "sh", "-c", remove_excess_quotes(command),
+          (char *)nullptr);
     _exit(EXIT_FAILURE);  // child should die here, (normally execl will take
                           // care of this but it can fail)
   }

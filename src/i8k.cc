@@ -56,13 +56,11 @@ static char *i8k_procbuf = nullptr;
 int update_i8k(void) {
   FILE *fp;
 
-  if (!i8k_procbuf) {
-    i8k_procbuf = (char *)malloc(128 * sizeof(char));
-  }
+  if (!i8k_procbuf) { i8k_procbuf = (char *)malloc(128 * sizeof(char)); }
   if ((fp = fopen(PROC_I8K, "r")) == nullptr) {
     free_and_zero(i8k_procbuf);
-    /*THREAD_CRIT_ERR(nullptr, NULL, "/proc/i8k doesn't exist! use insmod to make
-      sure the kernel " "driver is loaded...");*/
+    /*THREAD_CRIT_ERR(nullptr, NULL, "/proc/i8k doesn't exist! use insmod to
+      make sure the kernel " "driver is loaded...");*/
     NORM_ERR(
         "/proc/i8k doesn't exist! use insmod to make sure the kernel driver is "
         "loaded...");
@@ -107,7 +105,8 @@ void print_i8k_left_fan_status(struct text_object *obj, char *p,
   print_i8k_fan_status(p, p_max_size, i8k.left_fan_status);
 }
 
-void print_i8k_cpu_temp(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_i8k_cpu_temp(struct text_object *obj, char *p,
+                        unsigned int p_max_size) {
   int cpu_temp;
 
   (void)obj;
@@ -122,7 +121,8 @@ void print_i8k_right_fan_status(struct text_object *obj, char *p,
   print_i8k_fan_status(p, p_max_size, i8k.right_fan_status);
 }
 
-void print_i8k_ac_status(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_i8k_ac_status(struct text_object *obj, char *p,
+                         unsigned int p_max_size) {
   int ac_status;
 
   (void)obj;
@@ -131,19 +131,15 @@ void print_i8k_ac_status(struct text_object *obj, char *p, unsigned int p_max_si
   if (ac_status == -1) {
     snprintf(p, p_max_size, "%s", "disabled (read i8k docs)");
   }
-  if (ac_status == 0) {
-    snprintf(p, p_max_size, "%s", "off");
-  }
-  if (ac_status == 1) {
-    snprintf(p, p_max_size, "%s", "on");
-  }
+  if (ac_status == 0) { snprintf(p, p_max_size, "%s", "off"); }
+  if (ac_status == 1) { snprintf(p, p_max_size, "%s", "on"); }
 }
 
-#define I8K_PRINT_GENERATOR(name)                                           \
-  void print_i8k_##name(struct text_object *obj, char *p,                   \
-		                                 unsigned int p_max_size) { \
-    (void)obj;                                                              \
-    snprintf(p, p_max_size, "%s", i8k.name);                                \
+#define I8K_PRINT_GENERATOR(name)                         \
+  void print_i8k_##name(struct text_object *obj, char *p, \
+                        unsigned int p_max_size) {        \
+    (void)obj;                                            \
+    snprintf(p, p_max_size, "%s", i8k.name);              \
   }
 
 I8K_PRINT_GENERATOR(version)
