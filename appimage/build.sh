@@ -50,8 +50,8 @@ chmod +x linuxdeploy-x86_64.AppImage
 
 wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
 
-chmod +x appimagetool-x86_64.AppImag
+chmod +x appimagetool-x86_64.AppImage
 
-./appimagetool-x86_64.AppImag conky*.AppImage --sign
+./appimagetool-x86_64.AppImage conky*.AppImage --sign
 
 mv conky*.AppImage "$OLD_CWD"
