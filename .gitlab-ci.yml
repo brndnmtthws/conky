@@ -4,6 +4,9 @@ stages:
   - lint
 
 image: brndnmtthws/conky-builder:latest
+variables:
+  CC: clang-7
+  CXX: clang++-7
 
 build:
   script:
