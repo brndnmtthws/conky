@@ -18,6 +18,7 @@ test:
     - make test
 
 lint:
-  - cd build
-  - cmake -DCHECK_CODE_QUALITY=ON ..
-  - make check
+  script:
+    - cd build
+    - cmake -DCHECK_CODE_QUALITY=ON ..
+    - make check
