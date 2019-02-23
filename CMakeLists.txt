@@ -95,10 +95,10 @@ if(MAINTAINER_MODE)
 endif(MAINTAINER_MODE)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    install(FILES conky.desktop DESTINATION share/applications)
-    install(FILES logo/conky-logomark-violet.svg DESTINATION share/icons/hicolor/scalable/apps)
-endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-
+  install(FILES conky.desktop DESTINATION share/applications)
+  install(FILES logo/conky-logomark-violet.svg
+          DESTINATION share/icons/hicolor/scalable/apps)
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 if(CHECK_CODE_QUALITY)
   # Set up clang-tidy

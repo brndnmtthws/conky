@@ -1,0 +1,23 @@
+stages:
+  - build
+  - test
+  - lint
+
+image: brndnmtthws/conky-builder:latest
+
+build:
+  script:
+    - mkdir build
+    - cd build
+    - cmake ..
+    - make -j4
+
+test:
+  script:
+    - cd build
+    - make test
+
+lint:
+  - cd build
+  - cmake -DCHECK_CODE_QUALITY=ON ..
+  - make check
