@@ -52,9 +52,7 @@ void out_to_ncurses_setting::lua_setter(lua::state &l, bool init) {
 void out_to_ncurses_setting::cleanup(lua::state &l) {
   lua::stack_sentry s(l, -1);
 
-  if (do_convert(l, -1).first) {
-    endwin();
-  }
+  if (do_convert(l, -1).first) { endwin(); }
 
   l.pop();
 }

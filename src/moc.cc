@@ -70,12 +70,8 @@ void moc_cb::work() {
       char *p;
 
       /* Read a line from the pipe and strip the possible '\n'. */
-      if (fgets(line, 100, fp) == nullptr) {
-        break;
-      }
-      if ((p = strrchr(line, '\n')) != nullptr) {
-        *p = '\0';
-      }
+      if (fgets(line, 100, fp) == nullptr) { break; }
+      if ((p = strrchr(line, '\n')) != nullptr) { *p = '\0'; }
 
       /* Parse infos. */
       if (strncmp(line, "State:", 6) == 0) {
@@ -113,7 +109,7 @@ void moc_cb::work() {
 
 #define MOC_PRINT_GENERATOR(type, alt)                                        \
   void print_moc_##type(struct text_object *obj, char *p,                     \
-		                                 unsigned int p_max_size) {   \
+                        unsigned int p_max_size) {                            \
     (void)obj;                                                                \
     uint32_t period = std::max(                                               \
         lround(music_player_interval.get(*state) / active_update_interval()), \

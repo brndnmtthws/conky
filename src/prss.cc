@@ -101,14 +101,10 @@ static inline void read_item(PRSS_Item *res, xmlNodePtr data) {
   for (; data; data = data->next) {
     xmlNodePtr child;
 
-    if (data->type != XML_ELEMENT_NODE) {
-      continue;
-    }
+    if (data->type != XML_ELEMENT_NODE) { continue; }
     child = data->children;
 
-    if (!child) {
-      continue;
-    }
+    if (!child) { continue; }
 
 #define ASSIGN(a)                                          \
   if (strcasecmp((const char *)data->name, #a) == EQUAL) { \
@@ -128,14 +124,10 @@ static inline void read_item(PRSS_Item *res, xmlNodePtr data) {
 static inline void read_element(PRSS *res, xmlNodePtr n) {
   xmlNodePtr child;
 
-  if (n->type != XML_ELEMENT_NODE) {
-    return;
-  }
+  if (n->type != XML_ELEMENT_NODE) { return; }
   child = n->children;
 
-  if (!child) {
-    return;
-  }
+  if (!child) { return; }
 
 #define ASSIGN(a)                                       \
   if (strcasecmp((const char *)n->name, #a) == EQUAL) { \
@@ -172,9 +164,7 @@ static inline int parse_rss_2_0(PRSS *res, xmlNodePtr root) {
                      strcmp((const char *)channel->name, "channel"))) {
     channel = channel->next;
   }
-  if (!channel) {
-    return 0;
-  }
+  if (!channel) { return 0; }
 
   for (n = channel->children; n; n = n->next) {
     if (n->type == XML_ELEMENT_NODE && !strcmp((const char *)n->name, "item")) {
@@ -188,9 +178,7 @@ static inline int parse_rss_2_0(PRSS *res, xmlNodePtr root) {
   res->items = (PRSS_Item *)malloc(items * sizeof(PRSS_Item));
   res->item_count = 0;
 
-  for (n = channel->children; n; n = n->next) {
-    read_element(res, n);
-  }
+  for (n = channel->children; n; n = n->next) { read_element(res, n); }
 
   return 1;
 }
@@ -207,9 +195,7 @@ static inline int parse_rss_1_0(PRSS *res, xmlNodePtr root) {
       } else if (!strcmp((const char *)n->name, "channel")) {
         xmlNodePtr i;
 
-        for (i = n->children; i; i = i->next) {
-          read_element(res, i);
-        }
+        for (i = n->children; i; i = i->next) { read_element(res, i); }
       }
     }
   }

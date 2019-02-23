@@ -72,16 +72,15 @@ speed:          2944
 commands:       enable, disable
  * Peter Tarjan (ptarjan@citromail.hu) */
 
-void get_ibm_acpi_fan(struct text_object *obj, char *p, unsigned int p_max_size) {
+void get_ibm_acpi_fan(struct text_object *obj, char *p,
+                      unsigned int p_max_size) {
   FILE *fp;
   unsigned int speed = 0;
   char fan[128];
 
   (void)obj;
 
-  if (!p || p_max_size <= 0) {
-    return;
-  }
+  if (!p || p_max_size <= 0) { return; }
 
   snprintf(fan, 127, "%s/fan", IBM_ACPI_DIR);
 
@@ -90,12 +89,8 @@ void get_ibm_acpi_fan(struct text_object *obj, char *p, unsigned int p_max_size)
     while (!feof(fp)) {
       char line[256];
 
-      if (fgets(line, 255, fp) == nullptr) {
-        break;
-      }
-      if (sscanf(line, "speed: %u", &speed)) {
-        break;
-      }
+      if (fgets(line, 255, fp) == nullptr) { break; }
+      if (sscanf(line, "speed: %u", &speed)) { break; }
     }
   } else {
     CRIT_ERR(nullptr, NULL,
@@ -140,9 +135,7 @@ int get_ibm_acpi_temps(void) {
     while (!feof(fp)) {
       char line[256];
 
-      if (fgets(line, 255, fp) == nullptr) {
-        break;
-      }
+      if (fgets(line, 255, fp) == nullptr) { break; }
       if (sscanf(line, "temperatures: %d %d %d %d %d %d %d %d",
                  &ibm_acpi_temps[0], &ibm_acpi_temps[1], &ibm_acpi_temps[2],
                  &ibm_acpi_temps[3], &ibm_acpi_temps[4], &ibm_acpi_temps[5],
@@ -171,7 +164,8 @@ commands:       up, down, mute
 commands:       level <level> (<level> is 0-15)
  * Peter Tarjan (ptarjan@citromail.hu) */
 
-void get_ibm_acpi_volume(struct text_object *obj, char *p, unsigned int p_max_size) {
+void get_ibm_acpi_volume(struct text_object *obj, char *p,
+                         unsigned int p_max_size) {
   FILE *fp;
   char volume[128];
   unsigned int vol = -1;
@@ -179,9 +173,7 @@ void get_ibm_acpi_volume(struct text_object *obj, char *p, unsigned int p_max_si
 
   (void)obj;
 
-  if (!p || p_max_size <= 0) {
-    return;
-  }
+  if (!p || p_max_size <= 0) { return; }
 
   snprintf(volume, 127, "%s/volume", IBM_ACPI_DIR);
 
@@ -191,16 +183,12 @@ void get_ibm_acpi_volume(struct text_object *obj, char *p, unsigned int p_max_si
       char line[256];
       unsigned int read_vol = -1;
 
-      if (fgets(line, 255, fp) == nullptr) {
-        break;
-      }
+      if (fgets(line, 255, fp) == nullptr) { break; }
       if (sscanf(line, "level: %u", &read_vol)) {
         vol = read_vol;
         continue;
       }
-      if (sscanf(line, "mute: %s", mute)) {
-        break;
-      }
+      if (sscanf(line, "mute: %s", mute)) { break; }
     }
   } else {
     CRIT_ERR(nullptr, NULL,
@@ -226,16 +214,15 @@ commands:       up, down
 commands:       level <level> (<level> is 0-7)
  * Peter Tarjan (ptarjan@citromail.hu) */
 
-void get_ibm_acpi_brightness(struct text_object *obj, char *p, unsigned int p_max_size) {
+void get_ibm_acpi_brightness(struct text_object *obj, char *p,
+                             unsigned int p_max_size) {
   FILE *fp;
   unsigned int brightness = 0;
   char filename[128];
 
   (void)obj;
 
-  if (!p || p_max_size <= 0) {
-    return;
-  }
+  if (!p || p_max_size <= 0) { return; }
 
   snprintf(filename, 127, "%s/brightness", IBM_ACPI_DIR);
 
@@ -244,12 +231,8 @@ void get_ibm_acpi_brightness(struct text_object *obj, char *p, unsigned int p_ma
     while (!feof(fp)) {
       char line[256];
 
-      if (fgets(line, 255, fp) == nullptr) {
-        break;
-      }
-      if (sscanf(line, "level: %u", &brightness)) {
-        break;
-      }
+      if (fgets(line, 255, fp) == nullptr) { break; }
+      if (sscanf(line, "level: %u", &brightness)) { break; }
     }
   } else {
     CRIT_ERR(nullptr, NULL,
@@ -271,16 +254,15 @@ commands:       on, off
  * get "unknown" for a few models that do not make the status available.
  * Lluis Esquerda (eskerda@gmail.com) */
 
-void get_ibm_acpi_thinklight(struct text_object *obj, char *p, unsigned int p_max_size) {
+void get_ibm_acpi_thinklight(struct text_object *obj, char *p,
+                             unsigned int p_max_size) {
   FILE *fp;
   char thinklight[8];
   char filename[128];
 
   (void)obj;
 
-  if (!p || p_max_size <= 0) {
-    return;
-  }
+  if (!p || p_max_size <= 0) { return; }
 
   snprintf(filename, 127, "%s/light", IBM_ACPI_DIR);
 
@@ -289,12 +271,8 @@ void get_ibm_acpi_thinklight(struct text_object *obj, char *p, unsigned int p_ma
     while (!feof(fp)) {
       char line[256];
 
-      if (fgets(line, 255, fp) == nullptr) {
-        break;
-      }
-      if (sscanf(line, "status: %s", thinklight)) {
-        break;
-      }
+      if (fgets(line, 255, fp) == nullptr) { break; }
+      if (sscanf(line, "status: %s", thinklight)) { break; }
     }
   } else {
     CRIT_ERR(nullptr, NULL,
@@ -317,6 +295,7 @@ void parse_ibm_temps_arg(struct text_object *obj, const char *arg) {
     obj->data.l = atoi(arg);
 }
 
-void print_ibm_temps(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_ibm_temps(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   temp_print(p, p_max_size, ibm_acpi_temps[obj->data.l], TEMP_CELSIUS, 1);
 }

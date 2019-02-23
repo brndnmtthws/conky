@@ -34,26 +34,39 @@
 #define READERR "Can't read '%s'"
 #define READSIZE 128
 
-void print_pid_chroot(struct text_object *obj, char *p, unsigned int p_max_size);
-void print_pid_cmdline(struct text_object *obj, char *p, unsigned int p_max_size);
+void print_pid_chroot(struct text_object *obj, char *p,
+                      unsigned int p_max_size);
+void print_pid_cmdline(struct text_object *obj, char *p,
+                       unsigned int p_max_size);
 void print_pid_cwd(struct text_object *obj, char *p, unsigned int p_max_size);
-void print_pid_environ(struct text_object *obj, char *p, unsigned int p_max_size);
-void print_pid_environ_list(struct text_object *obj, char *p, unsigned int p_max_size);
+void print_pid_environ(struct text_object *obj, char *p,
+                       unsigned int p_max_size);
+void print_pid_environ_list(struct text_object *obj, char *p,
+                            unsigned int p_max_size);
 void print_pid_exe(struct text_object *obj, char *p, unsigned int p_max_size);
 void print_pid_nice(struct text_object *obj, char *p, unsigned int p_max_size);
-void print_pid_openfiles(struct text_object *obj, char *p, unsigned int p_max_size);
-void print_pid_parent(struct text_object *obj, char *p, unsigned int p_max_size);
-void print_pid_priority(struct text_object *obj, char *p, unsigned int p_max_size);
+void print_pid_openfiles(struct text_object *obj, char *p,
+                         unsigned int p_max_size);
+void print_pid_parent(struct text_object *obj, char *p,
+                      unsigned int p_max_size);
+void print_pid_priority(struct text_object *obj, char *p,
+                        unsigned int p_max_size);
 void print_pid_state(struct text_object *obj, char *p, unsigned int p_max_size);
-void print_pid_state_short(struct text_object *obj, char *p, unsigned int p_max_size);
-void print_pid_stderr(struct text_object *obj, char *p, unsigned int p_max_size);
+void print_pid_state_short(struct text_object *obj, char *p,
+                           unsigned int p_max_size);
+void print_pid_stderr(struct text_object *obj, char *p,
+                      unsigned int p_max_size);
 void print_pid_stdin(struct text_object *obj, char *p, unsigned int p_max_size);
-void print_pid_stdout(struct text_object *obj, char *p, unsigned int p_max_size);
-void print_pid_threads(struct text_object *obj, char *p, unsigned int p_max_size);
-void print_pid_thread_list(struct text_object *obj, char *p, unsigned int p_max_size);
+void print_pid_stdout(struct text_object *obj, char *p,
+                      unsigned int p_max_size);
+void print_pid_threads(struct text_object *obj, char *p,
+                       unsigned int p_max_size);
+void print_pid_thread_list(struct text_object *obj, char *p,
+                           unsigned int p_max_size);
 void print_pid_time_kernelmode(struct text_object *obj, char *p,
                                unsigned int p_max_size);
-void print_pid_time_usermode(struct text_object *obj, char *p, unsigned int p_max_size);
+void print_pid_time_usermode(struct text_object *obj, char *p,
+                             unsigned int p_max_size);
 void print_pid_time(struct text_object *obj, char *p, unsigned int p_max_size);
 void print_pid_uid(struct text_object *obj, char *p, unsigned int p_max_size);
 void print_pid_euid(struct text_object *obj, char *p, unsigned int p_max_size);
@@ -64,12 +77,15 @@ void print_pid_egid(struct text_object *obj, char *p, unsigned int p_max_size);
 void print_pid_sgid(struct text_object *obj, char *p, unsigned int p_max_size);
 void print_pid_fsgid(struct text_object *obj, char *p, unsigned int p_max_size);
 void print_pid_read(struct text_object *obj, char *p, unsigned int p_max_size);
-void print_pid_vmpeak(struct text_object *obj, char *p, unsigned int p_max_size);
-void print_pid_vmsize(struct text_object *obj, char *p, unsigned int p_max_size);
+void print_pid_vmpeak(struct text_object *obj, char *p,
+                      unsigned int p_max_size);
+void print_pid_vmsize(struct text_object *obj, char *p,
+                      unsigned int p_max_size);
 void print_pid_vmlck(struct text_object *obj, char *p, unsigned int p_max_size);
 void print_pid_vmhwm(struct text_object *obj, char *p, unsigned int p_max_size);
 void print_pid_vmrss(struct text_object *obj, char *p, unsigned int p_max_size);
-void print_pid_vmdata(struct text_object *obj, char *p, unsigned int p_max_size);
+void print_pid_vmdata(struct text_object *obj, char *p,
+                      unsigned int p_max_size);
 void print_pid_vmstk(struct text_object *obj, char *p, unsigned int p_max_size);
 void print_pid_vmexe(struct text_object *obj, char *p, unsigned int p_max_size);
 void print_pid_vmlib(struct text_object *obj, char *p, unsigned int p_max_size);
@@ -78,6 +94,7 @@ void print_pid_write(struct text_object *obj, char *p, unsigned int p_max_size);
 
 void scan_cmdline_to_pid_arg(struct text_object *obj, const char *arg,
                              void *free_at_crash);
-void print_cmdline_to_pid(struct text_object *obj, char *p, unsigned int p_max_size);
+void print_cmdline_to_pid(struct text_object *obj, char *p,
+                          unsigned int p_max_size);
 
 #endif /* CONKY_PROC_H */

@@ -152,8 +152,7 @@ class state : private std::mutex {
       // throwing exceptions in destructors is a bad idea
       // but we catch (and ignore) them, just in case
       ptr->~T();
-    } catch (...) {
-    }
+    } catch (...) {}
     return 0;
   }
 
@@ -305,9 +304,9 @@ class state : private std::mutex {
   void setfield(int index, const char *k);
   void setglobal(const char *name);
   void settable(int index);
-  // lua_tostring uses nullptr to indicate conversion error, since there is no such
-  // thing as a nullptr std::string, we throw an exception. Returned value may
-  // contain '\0'
+  // lua_tostring uses nullptr to indicate conversion error, since there is no
+  // such thing as a nullptr std::string, we throw an exception. Returned value
+  // may contain '\0'
   std::string tostring(int index);
   // allocate a new lua userdata of appropriate size, and create a object in it
   // pushes the userdata on stack and returns the pointer
@@ -343,8 +342,7 @@ class stack_sentry {
   const stack_sentry &operator=(const stack_sentry &) = delete;
 
  public:
-  explicit stack_sentry(state &l, int n_ = 0)
-      : L(&l), n(l.gettop() + n_) {
+  explicit stack_sentry(state &l, int n_ = 0) : L(&l), n(l.gettop() + n_) {
     assert(n >= 0);
   }
 

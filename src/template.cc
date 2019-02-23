@@ -184,7 +184,10 @@ char *find_and_replace_templates(const char *inbuf) {
     if (*(p + 1) == '{') {
       p += 2;
       templ = p;
-      while ((*p != 0) && (isspace((unsigned char)*p) == 0) && *p != '{' && *p != '}') { p++; }
+      while ((*p != 0) && (isspace((unsigned char)*p) == 0) && *p != '{' &&
+             *p != '}') {
+        p++;
+      }
       if (*p == '}') {
         args = nullptr;
       } else {

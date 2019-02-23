@@ -132,7 +132,8 @@ uint8_t smapi_bat_percentage(struct text_object *obj) {
   return val;
 }
 
-void print_smapi_bat_temp(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_smapi_bat_temp(struct text_object *obj, char *p,
+                          unsigned int p_max_size) {
   int idx, val;
   if (obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
     val = smapi_bat_installed_internal(idx)
@@ -144,7 +145,8 @@ void print_smapi_bat_temp(struct text_object *obj, char *p, unsigned int p_max_s
     NORM_ERR("argument to smapi_bat_temp must be an integer");
 }
 
-void print_smapi_bat_power(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_smapi_bat_power(struct text_object *obj, char *p,
+                           unsigned int p_max_size) {
   int idx, val;
   if (obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
     val = smapi_bat_installed_internal(idx)
@@ -165,9 +167,7 @@ double smapi_bat_barval(struct text_object *obj) {
 int smapi_bat_installed(struct text_object *obj) {
   int idx;
   if (obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
-    if (!smapi_bat_installed_internal(idx)) {
-      return 0;
-    }
+    if (!smapi_bat_installed_internal(idx)) { return 0; }
   } else
     NORM_ERR("argument to if_smapi_bat_installed must be an integer");
   return 1;

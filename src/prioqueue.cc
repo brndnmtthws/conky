@@ -84,21 +84,15 @@ struct prio_queue *init_prio_queue() {
 
 void pq_set_compare(struct prio_queue *queue,
                     int (*pqcompare)(void *a, void *b)) {
-  if (pqcompare != nullptr) {
-    queue->compare = pqcompare;
-  }
+  if (pqcompare != nullptr) { queue->compare = pqcompare; }
 }
 
 void pq_set_free(struct prio_queue *queue, void (*pqfree)(void *a)) {
-  if (pqfree != nullptr) {
-    queue->free = pqfree;
-  }
+  if (pqfree != nullptr) { queue->free = pqfree; }
 }
 
 void pq_set_max_size(struct prio_queue *queue, int max_size) {
-  if (max_size >= 0) {
-    queue->max_size = max_size;
-  }
+  if (max_size >= 0) { queue->max_size = max_size; }
 }
 
 int pq_get_cur_size(struct prio_queue *queue) { return queue->cur_size; }
@@ -117,9 +111,7 @@ void insert_prio_elem(struct prio_queue *queue, void *data) {
   struct prio_elem *cur;
 
   /* queue->compare is a must-have */
-  if (queue->compare == nullptr) {
-    return;
-  }
+  if (queue->compare == nullptr) { return; }
 
   /* empty queue, insert the first item */
   if (queue->cur_size == 0) {
@@ -176,9 +168,7 @@ void *pop_prio_elem(struct prio_queue *queue) {
   struct prio_elem *tmp;
   void *data;
 
-  if (queue->cur_size <= 0) {
-    return nullptr;
-  }
+  if (queue->cur_size <= 0) { return nullptr; }
 
   tmp = queue->head;
   data = tmp->data;
@@ -197,8 +187,6 @@ void *pop_prio_elem(struct prio_queue *queue) {
 
 void free_prio_queue(struct prio_queue *queue) {
   void *data;
-  while ((data = pop_prio_elem(queue)) != nullptr) {
-    (*queue->free)(data);
-  }
+  while ((data = pop_prio_elem(queue)) != nullptr) { (*queue->free)(data); }
   free(queue);
 }

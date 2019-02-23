@@ -59,9 +59,7 @@ static const char *devs[] = SOUND_DEVICE_NAMES;
 int mixer_init(const char *name) {
   unsigned int i;
 
-  if (name == 0 || name[0] == '\0') {
-    name = "vol";
-  }
+  if (name == 0 || name[0] == '\0') { name = "vol"; }
 
   /* open mixer */
   if (mixer_fd <= 0) {
@@ -73,9 +71,7 @@ int mixer_init(const char *name) {
   }
 
   for (i = 0; i < sizeof(devs) / sizeof(const char *); i++) {
-    if (strcasecmp(devs[i], name) == 0) {
-      return i;
-    }
+    if (strcasecmp(devs[i], name) == 0) { return i; }
   }
 
   return -1;
@@ -86,9 +82,7 @@ static int mixer_get(int i) {
   int val = -1;
 
   if (ioctl(mixer_fd, MIXER_READ(i), &val) == -1) {
-    if (!rep) {
-      NORM_ERR("mixer ioctl: %s", strerror(errno));
-    }
+    if (!rep) { NORM_ERR("mixer ioctl: %s", strerror(errno)); }
     rep = 1;
     return 0;
   }

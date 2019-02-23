@@ -41,9 +41,7 @@ static double fahrenheit_to_celsius(double n) { return ((n - 32) * 5 / 9); }
 static double celsius_to_fahrenheit(double n) { return ((n * 9 / 5) + 32); }
 
 static double convert_temp_output(double n, enum TEMP_UNIT input_unit) {
-  if (input_unit == output_unit.get(*state)) {
-    return n;
-  }
+  if (input_unit == output_unit.get(*state)) { return n; }
 
   switch (output_unit.get(*state)) {
     case TEMP_CELSIUS:
@@ -55,8 +53,8 @@ static double convert_temp_output(double n, enum TEMP_UNIT input_unit) {
   return 0.0;
 }
 
-int temp_print(char *p, size_t p_max_size, double n,
-               enum TEMP_UNIT input_unit, int to_int) {
+int temp_print(char *p, size_t p_max_size, double n, enum TEMP_UNIT input_unit,
+               int to_int) {
   int i_out = 0;
   float f_out = 0.0;
   size_t plen = 0;

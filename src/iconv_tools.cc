@@ -44,13 +44,9 @@ static iconv_t **iconv_cd = 0;
 
 int register_iconv(iconv_t *new_iconv) {
   iconv_cd = (void ***)realloc(iconv_cd, sizeof(iconv_t *) * (iconv_count + 1));
-  if (!iconv_cd) {
-    CRIT_ERR(nullptr, NULL, "Out of memory");
-  }
+  if (!iconv_cd) { CRIT_ERR(nullptr, NULL, "Out of memory"); }
   iconv_cd[iconv_count] = (void **)malloc(sizeof(iconv_t));
-  if (!iconv_cd[iconv_count]) {
-    CRIT_ERR(nullptr, NULL, "Out of memory");
-  }
+  if (!iconv_cd[iconv_count]) { CRIT_ERR(nullptr, NULL, "Out of memory"); }
   memcpy(iconv_cd[iconv_count], new_iconv, sizeof(iconv_t));
   iconv_count++;
   return iconv_count;
@@ -135,7 +131,8 @@ void init_iconv_start(struct text_object *obj, void *free_at_crash,
 
 void init_iconv_stop(void) { iconv_converting = 0; }
 
-void print_iconv_start(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_iconv_start(struct text_object *obj, char *p,
+                       unsigned int p_max_size) {
   (void)p;
   (void)p_max_size;
 
@@ -143,7 +140,8 @@ void print_iconv_start(struct text_object *obj, char *p, unsigned int p_max_size
   iconv_selected = obj->data.i;
 }
 
-void print_iconv_stop(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_iconv_stop(struct text_object *obj, char *p,
+                      unsigned int p_max_size) {
   (void)obj;
   (void)p;
   (void)p_max_size;

@@ -1,16 +1,11 @@
 FROM ubuntu:bionic
+
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
   apt-get install -qy --no-install-recommends \
   software-properties-common \
   wget \
   gpg-agent \
-  && wget -q https://apt.llvm.org/llvm-snapshot.gpg.key \
-  && apt-key add llvm-snapshot.gpg.key \
-  && add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main' \
-  && DEBIAN_FRONTEND=noninteractive \
-  apt-get install -qy --no-install-recommends \
-  software-properties-common \
   cmake \
   git \
   audacious-dev \
@@ -35,6 +30,16 @@ RUN apt-get update \
   libxmmsclient-dev \
   libxnvctrl-dev \
   ncurses-dev \
+  lcov \
+  docbook2x \
+  man \
+  less
+
+RUN wget -q https://apt.llvm.org/llvm-snapshot.gpg.key \
+  && apt-key add llvm-snapshot.gpg.key \
+  && add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main' \
+  && DEBIAN_FRONTEND=noninteractive \
+  apt-get install -qy --no-install-recommends \
   clang-7 \
   lldb-7 \
   lld-7 \

@@ -71,9 +71,7 @@ settings_vector make_settings_vector() {
   settings_vector ret;
   ret.reserve(settings->size());
 
-  for (auto &setting : *settings) {
-    ret.push_back(setting.second);
-  }
+  for (auto &setting : *settings) { ret.push_back(setting.second); }
   sort(ret.begin(), ret.end(), &priv::config_setting_base::seq_compare);
 
   return ret;
@@ -131,9 +129,7 @@ void config_setting_base::process_setting(lua::state &l, bool init) {
   lua::stack_sentry s(l, -3);
 
   config_setting_base *ptr = get_setting(l, -3);
-  if (ptr == nullptr) {
-    return;
-  }
+  if (ptr == nullptr) { return; }
 
   ptr->lua_setter(l, init);
   l.pushvalue(-2);

@@ -86,9 +86,7 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
     } else {
       print_num_mails = PRINT_MAILS;
     }
-    if (print_num_mails < 1) {
-      print_num_mails = 1;
-    }
+    if (print_num_mails < 1) { print_num_mails = 1; }
 
     substr = strstr(args, "-t");
     if (substr != nullptr) {
@@ -131,9 +129,7 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
 
       while (tmp != nullptr) {
         tmp = strtok(nullptr, " ");
-        if (tmp != nullptr) {
-          start = tmp;
-        }
+        if (tmp != nullptr) { start = tmp; }
       }
       strncpy(mbox_mail_spool, start, DEFAULT_TEXT_BUFFER_SIZE);
       free(copy_args);
@@ -189,9 +185,7 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
     curr->from[0] = '\0';
     curr->subject[0] = '\0';
 
-    if (i == 0) {
-      startlist = curr;
-    }
+    if (i == 0) { startlist = curr; }
     if (i > 0) {
       curr->previous = prev;
       prev->next = curr;
@@ -199,34 +193,26 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
     prev = curr;
   }
 
-  if (startlist == nullptr) {
-    return;
-  }
+  if (startlist == nullptr) { return; }
   /* connect end to start for an endless loop-ring */
   startlist->previous = curr;
   curr->next = startlist;
 
   /* mbox */
   fp = fopen(mbox_mail_spool, "re");
-  if (fp == nullptr) {
-    return;
-  }
+  if (fp == nullptr) { return; }
 
   /* first find a "From " to set it to 0 for header-sarchings */
   flag = 1;
   while (feof(fp) == 0) {
-    if (fgets(buf, text_buffer_size.get(*state), fp) == nullptr) {
-      break;
-    }
+    if (fgets(buf, text_buffer_size.get(*state), fp) == nullptr) { break; }
 
     if (strncmp(buf, "From ", 5) == 0) {
       curr = curr->next;
 
       /* skip until \n */
       while (strchr(buf, '\n') == nullptr && (feof(fp) == 0)) {
-        if (fgets(buf, text_buffer_size.get(*state), fp) == nullptr) {
-          break;
-        }
+        if (fgets(buf, text_buffer_size.get(*state), fp) == nullptr) { break; }
       }
 
       flag = 0; /* in the headers now */
@@ -242,9 +228,7 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
       /* then search for new mail ("From ") */
 
       while (strchr(buf, '\n') == nullptr && (feof(fp) == 0)) {
-        if (fgets(buf, text_buffer_size.get(*state), fp) == nullptr) {
-          break;
-        }
+        if (fgets(buf, text_buffer_size.get(*state), fp) == nullptr) { break; }
       }
       flag = 1; /* in the body now */
       continue;
@@ -260,9 +244,7 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
       curr = curr->previous;
       /* Skip until \n */
       while (strchr(buf, '\n') == nullptr && (feof(fp) == 0)) {
-        if (fgets(buf, text_buffer_size.get(*state), fp) == nullptr) {
-          break;
-        }
+        if (fgets(buf, text_buffer_size.get(*state), fp) == nullptr) { break; }
       }
       continue;
     }
@@ -398,9 +380,7 @@ void parse_mboxscan_arg(struct text_object *obj, const char *arg) {
 void print_mboxscan(struct text_object *obj, char *p, unsigned int p_max_size) {
   auto *msd = static_cast<mboxscan_data *>(obj->data.opaque);
 
-  if (msd == nullptr) {
-    return;
-  }
+  if (msd == nullptr) { return; }
 
   mbox_scan(msd->args, msd->output, text_buffer_size.get(*state));
   snprintf(p, p_max_size, "%s", msd->output);
@@ -409,9 +389,7 @@ void print_mboxscan(struct text_object *obj, char *p, unsigned int p_max_size) {
 void free_mboxscan(struct text_object *obj) {
   auto *msd = static_cast<mboxscan_data *>(obj->data.opaque);
 
-  if (msd == nullptr) {
-    return;
-  }
+  if (msd == nullptr) { return; }
   free_and_zero(msd->args);
   free_and_zero(msd->output);
   free_and_zero(obj->data.opaque);

@@ -63,9 +63,7 @@ static void set_up_gradient() {
     greenmask |= 1 << i;
     bluemask |= 1 << i;
   }
-  if (colour_depth % 3 == 1) {
-    greenmask |= 1 << (colour_depth / 3);
-  }
+  if (colour_depth % 3 == 1) { greenmask |= 1 << (colour_depth / 3); }
   redmask = redmask << (2 * colour_depth / 3 + colour_depth % 3);
   greenmask = greenmask << (colour_depth / 3);
 }
@@ -74,9 +72,7 @@ static void set_up_gradient() {
 unsigned int adjust_colours(unsigned int colour) {
   double r, g, b;
 
-  if (colour_depth == 0) {
-    set_up_gradient();
-  }
+  if (colour_depth == 0) { set_up_gradient(); }
   if (colour_depth == 16) {
     r = (colour & 0xff0000) >> 16;
     g = (colour & 0xff00) >> 8;
@@ -100,9 +96,7 @@ unsigned long *do_gradient(int width, unsigned long first_colour,
       static_cast<unsigned long *>(malloc(width * sizeof(unsigned long)));
   int i;
 
-  if (colour_depth == 0) {
-    set_up_gradient();
-  }
+  if (colour_depth == 0) { set_up_gradient(); }
   red1 = (first_colour & redmask) >> redshift;
   green1 = (first_colour & greenmask) >> greenshift;
   blue1 = first_colour & bluemask;
@@ -139,24 +133,12 @@ unsigned long *do_gradient(int width, unsigned long first_colour,
     red3 += red1;
     green3 += green1;
     blue3 += blue1;
-    if (red3 < 0) {
-      red3 = 0;
-    }
-    if (green3 < 0) {
-      green3 = 0;
-    }
-    if (blue3 < 0) {
-      blue3 = 0;
-    }
-    if (red3 > bluemask) {
-      red3 = bluemask;
-    }
-    if (green3 > bluemask) {
-      green3 = bluemask;
-    }
-    if (blue3 > bluemask) {
-      blue3 = bluemask;
-    }
+    if (red3 < 0) { red3 = 0; }
+    if (green3 < 0) { green3 = 0; }
+    if (blue3 < 0) { blue3 = 0; }
+    if (red3 > bluemask) { red3 = bluemask; }
+    if (green3 > bluemask) { green3 = bluemask; }
+    if (blue3 > bluemask) { blue3 = bluemask; }
     colours[i] = (red3 << redshift) | (green3 << greenshift) | blue3;
   }
   return colours;
