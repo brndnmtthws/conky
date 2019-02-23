@@ -13,14 +13,6 @@ fi
 
 BUILD_DIR=$(mktemp -d -p "$TEMP_BASE" AppImageLauncher-build-XXXXXX)
 
-# make sure to clean up build dir, even if errors occur
-cleanup () {
-    if [ -d "$BUILD_DIR" ]; then
-        rm -rf "$BUILD_DIR"
-    fi
-}
-trap cleanup EXIT
-
 # store repo root as variable
 REPO_ROOT=$(readlink -f $(dirname $(dirname $0)))
 OLD_CWD=$(readlink -f .)
@@ -55,3 +47,5 @@ chmod +x appimagetool-x86_64.AppImage
 ./appimagetool-x86_64.AppImage conky*.AppImage --sign
 
 mv conky*.AppImage "$OLD_CWD"
+
+popd
