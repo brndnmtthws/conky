@@ -45,13 +45,12 @@ chmod +x linuxdeploy-x86_64.AppImage
     --appdir AppDir \
     -e AppDir/usr/bin/conky \
     -i AppDir/usr/share/icons/hicolor/scalable/apps/conky-logomark-violet.svg \
-    -d AppDir/usr/share/applications/conky.desktop \
-    --output appimage
+    -d AppDir/usr/share/applications/conky.desktop
 
 wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
 
 chmod +x appimagetool-x86_64.AppImage
 
-./appimagetool-x86_64.AppImage conky*.AppImage --sign --sign-key E3034071
+./appimagetool-x86_64.AppImage AppDir --sign --sign-key E3034071
 
 mv conky*.AppImage "$OLD_CWD"
