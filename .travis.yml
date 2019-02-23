@@ -229,7 +229,9 @@ cache:
 - directories:
   - "$HOME/.sonar/cache"
 before_deploy:
+- "gpg --allow-secret-key-import appimage/secret.gpg"
 - "./appimage/build.sh"
+
 deploy:
   provider: releases
   file_glob: true
