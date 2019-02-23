@@ -229,7 +229,7 @@ cache:
 - directories:
   - "$HOME/.sonar/cache"
 before_deploy:
-- "gpg --allow-secret-key-import appimage/secret.gpg"
+- "gpg --import appimage/secret.gpg"
 - "./appimage/build.sh"
 
 deploy:
