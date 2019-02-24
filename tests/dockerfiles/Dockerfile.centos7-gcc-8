@@ -1,0 +1,6 @@
+ARG IMAGE=registry.gitlab.com/brndnmtthws-oss/conky
+FROM ${IMAGE}/builder/centos7-base:latest
+
+RUN yum -y -q install \
+    devtoolset-8 \
+    && yum clean all
