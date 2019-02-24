@@ -337,6 +337,8 @@ conky::range_config_setting<int> border_width("border_width", 0,
 conky::simple_config_setting<bool> use_xft("use_xft", false, false);
 #endif
 
+conky::simple_config_setting<bool> forced_redraw("forced_redraw", false, false);
+
 #ifdef OWN_WINDOW
 conky::simple_config_setting<bool> set_transparent("own_window_transparent",
                                                    false, false);

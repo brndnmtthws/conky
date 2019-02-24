@@ -40,7 +40,7 @@ local bool_setting = {
     own_window = true, own_window_argb_visual = true, own_window_transparent = true,
     short_units = true, show_graph_range = true, show_graph_scale = true,
     times_in_seconds = true, top_cpu_separate = true, uppercase = true, use_xft = true,
-    draw_blended = true
+    draw_blended = true, forced_redraw = true
 };
 
 local num_setting = {
