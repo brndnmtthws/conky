@@ -132,8 +132,6 @@ matrix:
     - os: osx
       osx_image: xcode10.1
 before_install:
-  - openssl aes-256-cbc -K $encrypted_38876355cb3e_key -iv $encrypted_38876355cb3e_iv
-    -in appimage/secret.gpg.enc -out appimage/secret.gpg -d
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then eval "${MATRIX_EVAL}" ; fi
   - |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
@@ -229,6 +227,8 @@ cache:
   - directories:
       - "$HOME/.sonar/cache"
 before_deploy:
+  - openssl aes-256-cbc -K $encrypted_38876355cb3e_key -iv $encrypted_38876355cb3e_iv
+    -in appimage/secret.gpg.enc -out appimage/secret.gpg -d
   - "gpg --import appimage/secret.gpg"
   - "./appimage/build.sh"
 
