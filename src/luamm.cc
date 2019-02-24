@@ -314,7 +314,7 @@ int state::gc(int what, int data) {
   pushinteger(what);
   pushinteger(data);
   call(2, 1, 0);
-  assert(isnumber(-1));
+  assert(state::_isnumber(-1));
   int r = tointeger(-1);
   pop();
   return r;
@@ -389,7 +389,7 @@ bool state::next(int index) {
 
   call(2, MULTRET, 0);
 
-  assert(isnumber(-1));
+  assert(state::_isnumber(-1));
   int r = tointeger(-1);
   pop();
   return r != 0;
@@ -427,7 +427,7 @@ bool state::safe_compare(lua_CFunction trampoline, int index1, int index2) {
   pushvalue(index1);
   pushvalue(index2);
   call(2, 1, 0);
-  assert(isnumber(-1));
+  assert(state::_isnumber(-1));
   int r = tointeger(-1);
   pop();
   return r != 0;

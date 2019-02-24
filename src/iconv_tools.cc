@@ -72,7 +72,7 @@ void free_iconv(struct text_object *obj) {
 void iconv_convert(size_t *a, char *buff_in, char *p, size_t p_max_size) {
   int bytes;
   size_t dummy1, dummy2;
-#if defined(__FreeBSD__) || defined(__DragonFly__)
+#if defined(__DragonFly__)
   const char *ptr = buff_in;
 #else
   char *ptr = buff_in;

@@ -1,5 +1,7 @@
 FROM centos:7
 
+ENV SCCACHE_VER=0.2.8
+
 RUN yum update -y -q \
     && yum -y -q install \
     epel-release \
@@ -28,9 +30,14 @@ RUN yum update -y -q \
     man \
     mysql-devel \
     ncurses-devel \
+    openssl-devel \
     patch \
     pulseaudio-libs-devel \
     readline-devel \
+    && curl -sL https://github.com/mozilla/sccache/releases/download/${SCCACHE_VER}/sccache-${SCCACHE_VER}-x86_64-unknown-linux-musl.tar.gz -o sccache-${SCCACHE_VER}-x86_64-unknown-linux-musl.tar.gz \
+    && tar xf sccache-${SCCACHE_VER}-x86_64-unknown-linux-musl.tar.gz \
+    && cp sccache-${SCCACHE_VER}-x86_64-unknown-linux-musl/sccache /usr/bin \
+    && rm -rf sccache-${SCCACHE_VER}-x86_64-unknown-linux-musl* \
     && curl -L https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.sh -o cmake-3.13.4-Linux-x86_64.sh \
     && chmod +x cmake-3.13.4-Linux-x86_64.sh \
     && ./cmake-3.13.4-Linux-x86_64.sh --prefix=/usr --skip-license \

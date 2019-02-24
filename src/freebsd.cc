@@ -274,7 +274,6 @@ int update_running_processes(void) {
 
 void get_cpu_count(void) {
   int cpu_count = 0;
-  size_t cpu_count_len = sizeof(cpu_count);
 
   if (GETSYSCTL("hw.ncpu", cpu_count) == 0) {
     info.cpu_count = cpu_count;
@@ -350,7 +349,7 @@ int update_cpu_usage(void) {
     fprintf(stderr, "Cannot get kern.cp_times\n");
   }
 
-  for (i = 0; i < info.cpu_count; i++) {
+  for (i = 0; i < (int)info.cpu_count; i++) {
     total = 0;
     for (j = 0; j < CPUSTATES; j++) total += cp_time[i * CPUSTATES + j];
 
@@ -451,26 +450,7 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item) {
   }
 }
 
-static int check_bat(const char *bat) {
-  int batnum, numbatts;
-  char *endptr;
-  if (GETSYSCTL("hw.acpi.battery.units", numbatts)) {
-    fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.units\"\n");
-    return -1;
-  }
-  if (numbatts <= 0) {
-    fprintf(stderr, "No battery unit detected\n");
-    return -1;
-  }
-  if (!bat || (batnum = strtol(bat, &endptr, 10)) < 0 || bat == endptr ||
-      batnum > numbatts) {
-    fprintf(stderr, "Wrong battery unit %s requested\n", bat ? bat : "");
-    return -1;
-  }
-  return batnum;
-}
-
-int get_battery_perct(const char *bat) {
+int get_battery_perct(const char *) {
   int batcapacity;
 
   get_battery_stats(nullptr, &batcapacity, NULL, NULL);
@@ -602,7 +582,7 @@ int update_diskio(void) {
   struct device_selection *dev_select = nullptr;
   long select_generation;
   static struct statinfo statinfo_cur;
-  char device_name[text_buffer_size.get(*state)];
+  char device_name[DEFAULT_TEXT_BUFFER_SIZE];
   struct diskio_stat *cur;
   unsigned int reads, writes;
   unsigned int total_reads = 0, total_writes = 0;
@@ -627,7 +607,7 @@ int update_diskio(void) {
 
       di = dev_select[dn].position;
       dev = &statinfo_cur.dinfo->devices[di];
-      snprintf(device_name, text_buffer_size.get(*state), "%s%d",
+      snprintf(device_name, DEFAULT_TEXT_BUFFER_SIZE, "%s%d",
                dev_select[dn].device_name, dev_select[dn].unit_number);
 
       total_reads += (reads = dev->bytes[DEVSTAT_READ] / 512);
@@ -661,7 +641,7 @@ void get_top_info(void) {
   p = kvm_getprocs(kd, KERN_PROC_PROC, 0, &n_processes);
 
   for (i = 0; i < n_processes; i++) {
-    if (!((p[i].ki_flag & P_SYSTEM)) && p[i].ki_comm != nullptr) {
+    if (!(p[i].ki_flag & P_SYSTEM)) {
       proc = get_process(p[i].ki_pid);
 
       proc->time_stamp = g_time;

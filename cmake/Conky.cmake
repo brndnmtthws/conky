@@ -105,6 +105,14 @@ if(NOT OS_DARWIN)
     )
 endif(NOT OS_DARWIN)
 
+if(OS_FREEBSD)
+  add_definitions(-D__BSD_VISIBLE=1 -D_XOPEN_SOURCE=700)
+  set(
+    CMAKE_REQUIRED_DEFINITIONS
+    "${CMAKE_REQUIRED_DEFINITIONS} -D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L -D__BSD_VISIBLE=1 -D_XOPEN_SOURCE=700"
+    )
+endif(OS_FREEBSD)
+
 if(OS_DRAGONFLY)
   set(conky_libs ${conky_libs} -L/usr/pkg/lib)
   set(conky_includes ${conky_includes} -I/usr/pkg/include)

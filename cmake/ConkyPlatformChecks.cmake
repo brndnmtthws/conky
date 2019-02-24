@@ -61,7 +61,10 @@ endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
 
 if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
   set(OS_FREEBSD true)
-  set(conky_libs ${conky_libs} -lkvm -ldevstat -lbsd)
+  set(conky_libs ${conky_libs} -lkvm -ldevstat -lintl -linotify)
+  if(BUILD_IRC)
+    set(conky_libs ${conky_libs} -lssl -lcrypto)
+  endif(BUILD_IRC)
 endif(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
 
 if(CMAKE_SYSTEM_NAME MATCHES "DragonFly")

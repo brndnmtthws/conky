@@ -1098,11 +1098,11 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_sip_status;
   obj->callbacks.free = &gen_free_opaque;
 #else
-  END OBJ_IF_ARG(
-      if_running, 0,
-      "if_running needs an argument") char buf[text_buffer_size.get(*state)];
+  END OBJ_IF_ARG(if_running, 0, "if_running needs an argument")
 
-  snprintf(buf, text_buffer_size.get(*state), "pidof %s >/dev/null", arg);
+      char buf[DEFAULT_TEXT_BUFFER_SIZE];
+
+  snprintf(buf, DEFAULT_TEXT_BUFFER_SIZE, "pidof %s >/dev/null", arg);
   obj->data.s = STRNDUP_ARG;
   /* XXX: maybe use a different callback here */
   obj->callbacks.iftest = &if_running_iftest;
