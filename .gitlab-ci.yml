@@ -12,6 +12,11 @@ variables:
   DOCKER_HOST: tcp://localhost:2375/
 
 .docker_builder: &docker_builder
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
   stage: dependencies
   image: docker:stable
   services:
@@ -221,6 +226,11 @@ builder-centos7-clang-7:
   <<: *builder_script
 
 .build_stages: &build_stages
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
   image: $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
   stage: build
   script:
@@ -397,6 +407,11 @@ centos7-clang-7:
     - source /opt/rh/llvm-toolset-7/enable
 
 .test_stages: &test_stages
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
   variables:
     COMPILER: clang-7
     DISTRO: ubuntu
