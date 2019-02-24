@@ -2045,9 +2045,11 @@ void main_loop() {
 #endif
               if (ev.xproperty.atom == ATOM(_XROOTPMAP_ID) ||
                   ev.xproperty.atom == ATOM(_XROOTMAP_ID)) {
-                draw_stuff();
-                next_update_time = get_time();
-                need_to_update = 1;
+               if (forced_redraw.get(*state)) {
+                  draw_stuff();
+                  next_update_time = get_time();
+                  need_to_update = 1;
+                 }
               }
 #ifdef USE_ARGB
             }

@@ -232,6 +232,8 @@ extern conky::range_config_setting<int> border_inner_margin;
 extern conky::range_config_setting<int> border_outer_margin;
 extern conky::range_config_setting<int> border_width;
 
+extern conky::simple_config_setting<bool> forced_redraw;
+
 #ifdef BUILD_XFT
 extern conky::simple_config_setting<bool> use_xft;
 #endif
