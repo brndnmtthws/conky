@@ -59,15 +59,29 @@
 include(CMakeParseArguments)
 
 # Check prereqs
-find_program(GCOV_PATH ${CMAKE_SOURCE_DIR}/tests/llvm-gcov.sh gcov)
+find_program(GCOV_PATH
+             NAMES ${CMAKE_SOURCE_DIR}/tests/llvm-gcov.sh gcov
+             PATHS ENV PATH)
 find_program(LCOV_PATH
              NAMES lcov
                    lcov.bat
                    lcov.exe
-                   lcov.perl)
-find_program(LLVM_COV_PATH NAMES llvm-cov-7 llvm-cov-6 llvm-profdata)
+                   lcov.perl
+             PATHS ENV PATH)
+find_program(LLVM_COV_PATH
+             NAMES llvm-cov80
+                   llvm-cov-8
+                   llvm-cov70
+                   llvm-cov-7
+                   llvm-cov
+             PATHS ENV PATH)
 find_program(LLVM_PROFDATA_PATH
-             NAMES llvm-profdata-7 llvm-profdata-6 llvm-profdata)
+             NAMES llvm-profdata80
+                   llvm-profdata-8
+                   llvm-profdata70
+                   llvm-profdata-7
+                   llvm-profdata
+             PATHS ENV PATH)
 find_program(GENHTML_PATH NAMES genhtml genhtml.perl genhtml.bat)
 find_program(GCOVR_PATH gcovr PATHS ${CMAKE_SOURCE_DIR}/scripts/test)
 find_program(SIMPLE_PYTHON_EXECUTABLE python)
@@ -186,8 +200,7 @@ function(SETUP_TARGET_FOR_COVERAGE_LCOV_HTML)
             ${PROJECT_BINARY_DIR}/${Coverage_NAME}.info.cleaned
             # Clean up
     COMMAND ${CMAKE_COMMAND} -E remove ${Coverage_NAME}.base
-            ${Coverage_NAME}.total
-            ${PROJECT_BINARY_DIR}/${Coverage_NAME}.info.cleaned
+            ${Coverage_NAME}.total ${PROJECT_BINARY_DIR}/${Coverage_NAME}.info
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
     DEPENDS ${Coverage_DEPENDENCIES}
     COMMENT
@@ -198,7 +211,8 @@ function(SETUP_TARGET_FOR_COVERAGE_LCOV_HTML)
   add_custom_command(
     TARGET ${Coverage_NAME} POST_BUILD
     COMMAND ;
-    COMMENT "Lcov code coverage info report saved in ${Coverage_NAME}.info.")
+    COMMENT
+      "Lcov code coverage info report saved in ${Coverage_NAME}.info.cleaned")
 
   # Show info where to find the report
   add_custom_command(

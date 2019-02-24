@@ -1,4 +1,6 @@
+---
 stages:
+  - pull
   - base
   - dependencies
   - build
@@ -6,10 +8,51 @@ stages:
   - deploy
 
 variables:
-  CC: clang-7
-  CXX: clang++-7
+  SCCACHE_GCS_BUCKET: btm-build-cache
+  SCCACHE_GCS_RW_MODE: READ_WRITE
+  SCCACHE_GCS_KEY_PATH: /tmp/storage-key.json
   DOCKER_DRIVER: overlay2
-  DOCKER_HOST: tcp://localhost:2375/
+
+before_script:
+  - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
+
+.pull_images: &pull_images
+  stage: pull
+  allow_failure: true
+  image: docker:stable
+  services:
+    - docker:dind
+  script:
+    - set -- $CI_JOB_NAME
+    - export DISTRO=$2
+    - export COMPILER=$3
+    - "echo \"Distro: ${DISTRO}\nCompiler: ${COMPILER}\""
+    - export DOCKER_HOST="${DOCKER_HOST:-tcp://localhost:2375/}"
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    # Pull either the last ref slug, or latest, depending on which exists
+    - docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG || docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
+    # If ref slug exists, use that, otherwise fallback to latest tag
+    - >
+      docker tag
+      $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG
+      $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA ||
+      docker tag
+      $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
+      $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
+
+pull ubuntu clang-7: *pull_images
+pull ubuntu clang-8: *pull_images
+pull ubuntu gcc-5: *pull_images
+pull ubuntu gcc-6: *pull_images
+pull ubuntu gcc-7: *pull_images
+pull ubuntu gcc-8: *pull_images
+pull fedora gcc-8: *pull_images
+pull fedora clang-7: *pull_images
+pull centos6 gcc-7: *pull_images
+pull centos7 gcc-7: *pull_images
+pull centos7 gcc-8: *pull_images
+pull centos7 clang-5: *pull_images
 
 .docker_base_builder: &docker_base_builder
   retry:
@@ -17,23 +60,33 @@ variables:
     when:
       - runner_system_failure
       - stuck_or_timeout_failure
+      - unknown_failure
+      - api_failure
   stage: base
   image: docker:stable
-  services:
-    - docker:dind
   only:
     changes:
-      - tests/dockerfiles/Dockerfile.$2-base
+      - tests/dockerfiles/*
+  services:
+    - docker:dind
   before_script:
     - set -- $CI_JOB_NAME
     - export DISTRO=$2
     - "echo \"Distro: ${DISTRO}\nDocker base: ${DOCKER_BASE_IMAGE}\""
+    - export DOCKER_HOST="${DOCKER_HOST:-tcp://localhost:2375/}"
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest || true
+    - >
+      docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_REF_SLUG
+      || true
   script:
     - cd tests/dockerfiles
     - docker pull $DOCKER_BASE_IMAGE || true
-    - docker build -f Dockerfile.$DISTRO-base --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_REF_SLUG .
+    - >
+      docker build -f Dockerfile.$DISTRO-base
+      --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
+      --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA
+      --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_REF_SLUG .
     - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA
     - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_REF_SLUG
 
@@ -66,11 +119,26 @@ builder centos7 base:
     - export COMPILER=$3
     - "echo \"Distro: ${DISTRO}\nCompiler: ${COMPILER}\""
     - cd tests/dockerfiles
-    - docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest || true
-    - docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG || true
-    - docker build -f Dockerfile.$DISTRO-$COMPILER --build-arg IMAGE=$CI_REGISTRY_IMAGE --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG .
+    - >
+      docker tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_REF_SLUG
+      $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
+    - >
+      docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG
+      || true
+    - >
+      docker pull
+      $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG
+      || true
+    - >
+      docker build -f Dockerfile.$DISTRO-$COMPILER
+      --build-arg IMAGE=$CI_REGISTRY_IMAGE
+      --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG
+      --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
+      --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG .
     - docker push ${CI_REGISTRY_IMAGE}/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
-    - docker push ${CI_REGISTRY_IMAGE}/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG
+    - >
+      docker push
+      ${CI_REGISTRY_IMAGE}/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG
 
 builder ubuntu clang-7: *docker_builder
 builder ubuntu clang-8: *docker_builder
@@ -83,7 +151,7 @@ builder fedora clang-7: *docker_builder
 builder centos6 gcc-7: *docker_builder
 builder centos7 gcc-7: *docker_builder
 builder centos7 gcc-8: *docker_builder
-builder centos7 clang-7: *docker_builder
+builder centos7 clang-5: *docker_builder
 
 .build_stages: &build_stages
   retry:
@@ -91,32 +159,36 @@ builder centos7 clang-7: *docker_builder
     when:
       - runner_system_failure
       - stuck_or_timeout_failure
-  image: $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
+      - unknown_failure
+      - api_failure
+  image: $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
   stage: build
   script:
     - "echo \"Distro: ${DISTRO}\nCompiler: ${COMPILER}\nCC: $CC\nCXX: $CXX\""
     - mkdir build
     - cd build
-    - |
-      cmake                                    \
-        -DCMAKE_EXE_LINKER_FLAGS=$LINKER_FLAGS \
-        -DMAINTAINER_MODE=ON                   \
-        -DBUILD_AUDACIOUS=$BUILD_AUDACIOUS     \
-        -DBUILD_MYSQL=ON                       \
-        -DBUILD_LUA_IMLIB2=ON                  \
-        -DBUILD_LUA_RSVG=$BUILD_LUA_RSVG       \
-        -DBUILD_LUA_CAIRO=$BUILD_LUA_CAIRO     \
-        -DBUILD_XMMS2=$BUILD_XMMS2             \
-        -DBUILD_ICAL=ON                        \
-        -DBUILD_IRC=ON                         \
-        -DBUILD_HTTP=ON                        \
-        -DBUILD_ICONV=ON                       \
-        -DBUILD_PULSEAUDIO=ON                  \
-        -DBUILD_JOURNAL=$BUILD_JOURNAL         \
-        -DBUILD_RSS=ON                         \
-        -DBUILD_IRC=ON                         \
-        -DBUILD_NVIDIA=$BUILD_NVIDIA           \
-        ..
+    - >
+      cmake
+      -DCMAKE_EXE_LINKER_FLAGS=$LINKER_FLAGS
+      -DCMAKE_C_COMPILER_LAUNCHER=sccache
+      -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+      -DMAINTAINER_MODE=ON
+      -DBUILD_AUDACIOUS=$BUILD_AUDACIOUS
+      -DBUILD_MYSQL=ON
+      -DBUILD_LUA_IMLIB2=ON
+      -DBUILD_LUA_RSVG=$BUILD_LUA_RSVG
+      -DBUILD_LUA_CAIRO=$BUILD_LUA_CAIRO
+      -DBUILD_XMMS2=$BUILD_XMMS2
+      -DBUILD_ICAL=ON
+      -DBUILD_IRC=ON
+      -DBUILD_HTTP=ON
+      -DBUILD_ICONV=ON
+      -DBUILD_PULSEAUDIO=ON
+      -DBUILD_JOURNAL=$BUILD_JOURNAL
+      -DBUILD_RSS=ON
+      -DBUILD_IRC=ON
+      -DBUILD_NVIDIA=$BUILD_NVIDIA
+      ..
     - make -j4
 
 .build_variables: &build_variables
@@ -136,10 +208,8 @@ ubuntu clang-7:
     <<: *build_variables
     DISTRO: ubuntu
     COMPILER: clang-7
-  artifacts:
-    expire_in: 1 day
-    paths:
-      - build/
+    CC: clang-7
+    CXX: clang++-7
 
 ubuntu clang-8:
   <<: *build_stages
@@ -258,12 +328,12 @@ centos7 gcc-8:
   before_script:
     - source /opt/rh/devtoolset-8/enable
 
-centos7 clang-7:
+centos7 clang-5:
   <<: *build_stages
   variables:
     <<: *build_variables
     DISTRO: centos7
-    COMPILER: clang-7
+    COMPILER: clang-5
     CC: clang
     CXX: clang++
     BUILD_AUDACIOUS: "OFF"
@@ -273,40 +343,299 @@ centos7 clang-7:
   before_script:
     - source /opt/rh/llvm-toolset-7/enable
 
+.freebsd_deps: &freebsd_deps
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - unknown_failure
+      - api_failure
+  tags:
+    - freebsd12
+  before_script:
+    # Try up to 5 times until installation succeeds. It may be locked.
+    - >
+      for i in {1..5}; do
+      sudo pkg install -y -q
+      cairo
+      docbook-xsl
+      docbook2X
+      gettext-runtime
+      imlib2
+      lcov
+      libical
+      libiconv
+      libinotify
+      libircclient
+      libmicrohttpd
+      librsvg2
+      libX11
+      libXdamage
+      libXext
+      libXfixes
+      libXft
+      libXinerama
+      libxslt
+      lua53
+      mysql80-client
+      pkgconf
+      xmms2
+      $COMPILER_PACKAGE 
+      && break || sleep $(expr $i \* $i + 1); done
+
+.freebsd_build_script: &freebsd_build_script
+  script:
+    - mkdir build
+    - cd build
+    - >
+      cmake
+      -DCMAKE_REQUIRED_INCLUDES="/usr/include;/usr/local/include"
+      -DCMAKE_EXE_LINKER_FLAGS=$LINKER_FLAGS
+      -DCMAKE_C_COMPILER_LAUNCHER=sccache
+      -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+      -DMAINTAINER_MODE=ON
+      -DBUILD_MYSQL=ON
+      -DBUILD_LUA_IMLIB2=ON
+      -DBUILD_LUA_RSVG=ON
+      -DBUILD_LUA_CAIRO=ON
+      -DBUILD_XMMS2=ON
+      -DBUILD_ICAL=ON
+      -DBUILD_IRC=ON
+      -DBUILD_HTTP=ON
+      -DBUILD_ICONV=ON
+      -DBUILD_RSS=ON
+      -DBUILD_IRC=ON
+      ..
+    - make -j4
+
+freebsd12 gcc-8:
+  <<: *freebsd_deps
+  stage: build
+  variables:
+    DISTRO: freebsd12
+    CC: gcc
+    CXX: g++
+    COMPILER_PACKAGE: gcc
+  <<: *freebsd_build_script
+
+freebsd12 clang-7:
+  <<: *freebsd_deps
+  stage: build
+  variables:
+    DISTRO: freebsd12
+    CC: clang
+    CXX: clang++
+    COMPILER_PACKAGE: llvm70
+  <<: *freebsd_build_script
+
 .test_stages: &test_stages
   retry:
     max: 2
     when:
       - runner_system_failure
       - stuck_or_timeout_failure
+      - unknown_failure
+      - api_failure
+  image: $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
+  stage: test
+
+.test_run: &test_run
+  script:
+    - "echo \"Distro: ${DISTRO}\nCompiler: ${COMPILER}\nCC: $CC\nCXX: $CXX\""
+    - mkdir build
+    - cd build
+    - >
+      cmake
+      -DCMAKE_C_COMPILER_LAUNCHER=sccache
+      -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+      -DMAINTAINER_MODE=ON
+      -DBUILD_TESTS=ON
+      ..
+    - make -j4
+    - make -j4 test
+    - if [ "$COMPILER" == "clang-7" ] ; then make -j4 test-conky-coverage-txt ; fi
+    - if [ "$COMPILER" == "clang-7" ] ; then make -j4 test-conky-coverage-html ; fi
+    - if [ "$COMPILER" == "clang-7" ] ; then lcov-summary test-conky-coverage-html.info.cleaned ; fi
+  coverage: '/Total Coverage:\s+(\d+\.\d+)%/'
+  artifacts:
+    name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME-coverage-report"
+    paths:
+      - build/test-conky-coverage-html/
+
+test ubuntu clang-7:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: ubuntu
+    COMPILER: clang-7
+    CC: clang-7
+    CXX: clang++-7
+
+test ubuntu clang-8:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: ubuntu
+    COMPILER: clang-8
+    CC: clang-8
+    CXX: clang++-8
+
+test ubuntu gcc-5:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: ubuntu
+    COMPILER: gcc-5
+    CC: gcc-5
+    CXX: g++-5
+
+test ubuntu gcc-6:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: ubuntu
+    COMPILER: gcc-6
+    CC: gcc-6
+    CXX: g++-6
+
+test ubuntu gcc-7:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: ubuntu
+    COMPILER: gcc-7
+    CC: gcc-7
+    CXX: g++-7
+
+test ubuntu gcc-8:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: ubuntu
+    COMPILER: gcc-8
+    CC: gcc-8
+    CXX: g++-8
+
+test fedora clang-7:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: fedora
+    COMPILER: clang-7
+    CC: clang
+    CXX: clang++
+
+test fedora gcc-8:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: fedora
+    COMPILER: gcc-8
+    CC: gcc
+    CXX: g++
+
+test centos6 gcc-7:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: centos7
+    COMPILER: gcc-7
+    CC: gcc
+    CXX: g++
+  before_script:
+    - source /opt/rh/devtoolset-7/enable
+
+test centos7 clang-5:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: centos7
+    COMPILER: clang-5
+    CC: clang
+    CXX: clang++
+  before_script:
+    - source /opt/rh/llvm-toolset-7/enable
+
+test centos7 gcc-7:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: centos7
+    COMPILER: gcc-7
+    CC: gcc
+    CXX: g++
+  before_script:
+    - source /opt/rh/devtoolset-7/enable
+
+test centos7 gcc-8:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: centos7
+    COMPILER: gcc-8
+    CC: gcc
+    CXX: g++
+  before_script:
+    - source /opt/rh/devtoolset-8/enable
+
+test freebsd12 clang-7:
+  <<: *freebsd_deps
+  <<: *test_run
+  variables:
+    DISTRO: freebsd12
+    COMPILER: clang-7
+    COMPILER_PACKAGE: llvm70
+    CC: clang
+    CXX: clang++
+
+test freebsd12 gcc-8:
+  <<: *freebsd_deps
+  <<: *test_run
+  variables:
+    DISTRO: freebsd12
+    COMPILER: gcc-8
+    COMPILER_PACKAGE: gcc
+    CC: gcc
+    CXX: g++
+
+check clang-tidy:
+  <<: *test_stages
   variables:
     COMPILER: clang-7
     DISTRO: ubuntu
-  image: $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG
-  stage: test
-
-test and coverage:
-  <<: *test_stages
+    CC: clang-7
+    CXX: clang++-7
   script:
-    - "echo \"Distro: ${DISTRO}\nCompiler: ${COMPILER}\nCC: $CC\nCXX: $CXX\""
+    - mkdir build
     - cd build
-    - cmake -DCMAKE_SOURCE_DIR=$(dirname `pwd`) -DCMAKE_BINARY_DIR=`pwd` -DMAINTAINER_MODE=ON -DBUILD_TESTS=ON ..
+    - >
+      cmake
+      -DCMAKE_C_COMPILER_LAUNCHER=sccache
+      -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+      -DMAINTAINER_MODE=ON
+      -DCHECK_CODE_QUALITY=ON
+      ..
     - make -j4
-    - make -j4 test
-    - make -j4 test-conky-coverage-txt
-
-check-clang-tidy:
-  <<: *test_stages
-  script:
-    - cd build
-    - cmake -DCMAKE_SOURCE_DIR=$(dirname `pwd`) -DCMAKE_BINARY_DIR=`pwd` -DMAINTAINER_MODE=ON -DCHECK_CODE_QUALITY=ON ..
     - make -j4 check-clang-tidy
 
-check-clang-format:
+check clang-format:
   <<: *test_stages
+  variables:
+    COMPILER: clang-7
+    DISTRO: ubuntu
+    CC: clang-7
+    CXX: clang++-7
   script:
+    - mkdir build
     - cd build
-    - cmake -DCMAKE_SOURCE_DIR=$(dirname `pwd`) -DCMAKE_BINARY_DIR=`pwd` -DMAINTAINER_MODE=ON -DCHECK_CODE_QUALITY=ON ..
+    - >
+      cmake
+      -DCMAKE_C_COMPILER_LAUNCHER=sccache
+      -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+      -DMAINTAINER_MODE=ON
+      -DCHECK_CODE_QUALITY=ON
+      ..
     - make -j4 check-clang-format
 
 .push_base_images: &push_base_images
@@ -315,6 +644,8 @@ check-clang-format:
     when:
       - runner_system_failure
       - stuck_or_timeout_failure
+      - unknown_failure
+      - api_failure
   stage: deploy
   image: docker:stable
   services:
@@ -324,13 +655,16 @@ check-clang-format:
       - master
       - tags
   before_script:
+    - export DOCKER_HOST="${DOCKER_HOST:-tcp://localhost:2375/}"
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
     - set -- $CI_JOB_NAME
     - export DISTRO=$2
     - 'echo "Distro: ${DISTRO}"'
     - docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA
-    - docker tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
+    - >
+      docker tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA
+      $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
     - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
 
 push ubuntu base: *push_base_images
@@ -350,7 +684,9 @@ push fedora base: *push_base_images
     - export COMPILER=$3
     - "echo \"Distro: ${DISTRO}\nCompiler: ${COMPILER}\""
     - docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
-    - docker tag $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
+    - >
+      docker tag $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
+      $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
     - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
 
 push ubuntu clang-7: *push_images
@@ -364,4 +700,4 @@ push fedora clang-7: *push_images
 push centos6 gcc-7: *push_images
 push centos7 gcc-7: *push_images
 push centos7 gcc-8: *push_images
-push centos7 clang-7: *push_images
+push centos7 clang-5: *push_images

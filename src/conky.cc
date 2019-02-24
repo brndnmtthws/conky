@@ -49,7 +49,10 @@
 #include <sys/param.h>
 #include <sys/time.h>
 #ifdef HAVE_SYS_INOTIFY_H
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc99-extensions"
 #include <sys/inotify.h>
+#pragma clang diagnostic pop
 #endif /* HAVE_SYS_INOTIFY_H */
 #ifdef BUILD_X11
 #pragma GCC diagnostic push
@@ -130,10 +133,6 @@
 #ifdef BUILD_HTTP
 #include <microhttpd.h>
 #endif /* BUILD_HTTP */
-
-#if defined(__FreeBSD_kernel__)
-#include <bsd/bsd.h>
-#endif
 
 #ifdef BUILD_OLD_CONFIG
 #include "convertconf.h"

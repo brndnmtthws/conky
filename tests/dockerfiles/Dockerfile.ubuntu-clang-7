@@ -15,4 +15,10 @@ RUN wget -q https://apt.llvm.org/llvm-snapshot.gpg.key \
   clang-format-7 \
   clang-tidy-7 \
   && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+  && rm -rf /var/lib/apt/lists/* \
+  && wget https://deb.nodesource.com/setup_11.x -O npm.sh \
+  && bash npm.sh \
+  && rm npm.sh \
+  && apt-get install -y nodejs \
+  && npm install -g lcov-summary \
+  && npm cache clean --force

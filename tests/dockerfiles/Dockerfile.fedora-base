@@ -1,7 +1,9 @@
 FROM fedora:latest
 
-RUN yum update -y -q \
-    && yum -y -q install \
+ENV SCCACHE_VER=0.2.8
+
+RUN dnf update -y -q \
+    && dnf -y -q install \
     audacious-devel \
     cairo-devel \
     cmake \
@@ -28,8 +30,13 @@ RUN yum update -y -q \
     man \
     mysql-devel \
     ncurses-devel \
+    openssl-devel \
     patch \
     pulseaudio-libs-devel \
     readline-devel \
     systemd-devel \
-    xmms2-devel
+    xmms2-devel \
+    && curl -sL https://github.com/mozilla/sccache/releases/download/${SCCACHE_VER}/sccache-${SCCACHE_VER}-x86_64-unknown-linux-musl.tar.gz -o sccache-${SCCACHE_VER}-x86_64-unknown-linux-musl.tar.gz \
+    && tar xf sccache-${SCCACHE_VER}-x86_64-unknown-linux-musl.tar.gz \
+    && cp sccache-${SCCACHE_VER}-x86_64-unknown-linux-musl/sccache /usr/bin \
+    && rm -rf sccache-${SCCACHE_VER}-x86_64-unknown-linux-musl*

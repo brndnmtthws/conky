@@ -20,11 +20,12 @@ catch_discover_tests(test-conky)
 
 if(USING_CLANG_7)
   set(COVERAGE_LCOV_EXCLUDES
-      "v1/*"
-      "/usr/include/**"
-      "/usr/lib/**"
-      "/usr/local/include/**"
-      "/usr/local/lib/**"
+      "*/include/c++/v1/*"
+      "/usr/include/*"
+      "/usr/lib/*"
+      "/usr/local/Cellar/*"
+      "/usr/local/include/*"
+      "/usr/local/lib/*"
       "/usr/include/libkern/i386/*"
       "/usr/include/sys/_types/*"
       "/usr/local/opt/gettext/include/*"

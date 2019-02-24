@@ -32,7 +32,10 @@ extern "C" {
 }
 
 #ifdef HAVE_SYS_INOTIFY_H
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc99-extensions"
 #include <sys/inotify.h>
+#pragma clang diagnostic pop
 
 void llua_append_notify(const char *name);
 void llua_rm_notifies(void);

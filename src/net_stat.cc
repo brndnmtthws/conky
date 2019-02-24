@@ -118,8 +118,10 @@ struct net_stat *get_net_stat(const char *dev, void * /*free_at_crash1*/,
 
 void parse_net_stat_arg(struct text_object *obj, const char *arg,
                         void *free_at_crash) {
+#ifdef BUILD_IPV6
   bool shownetmask = false;
   bool showscope = false;
+#endif               /* BUILD_IPV6 */
   char nextarg[21];  // longest arg possible is a devname (max 20 chars)
   int i = 0;
   struct net_stat *netstat = nullptr;
@@ -152,6 +154,7 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
   }
 
   while (sscanf(arg + i, " %20s", nextarg) == 1) {
+#ifdef BUILD_IPV6
     if (strcmp(nextarg, "-n") == 0 || strcmp(nextarg, "--netmask") == 0) {
       shownetmask = true;
     } else if (strcmp(nextarg, "-s") == 0 || strcmp(nextarg, "--scope") == 0) {
@@ -162,8 +165,11 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
         if (nextarg[j] == 's') { showscope = true; }
       }
     } else {
+#endif /* BUILD_IPV6 */
       netstat = get_net_stat(nextarg, obj, free_at_crash);
+#ifdef BUILD_IPV6
     }
+#endif                     /* BUILD_IPV6 */
     i += strlen(nextarg);  // skip this arg
     while (
         !((isspace(static_cast<unsigned char>(arg[i])) != 0) || arg[i] == 0)) {
