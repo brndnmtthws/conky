@@ -677,6 +677,8 @@ push fedora base: *push_base_images
 .push_images: &push_images
   <<: *push_base_images
   only:
+    changes:
+      - tests/dockerfiles/*
     refs:
       - master
       - tags
