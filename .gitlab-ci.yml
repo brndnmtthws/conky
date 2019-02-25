@@ -358,7 +358,7 @@ centos7 clang-5:
   before_script:
     # Try up to 5 times until installation succeeds. It may be locked.
     - >
-      for i in {1..5}; do
+      for i in {1..6}; do
       sudo pkg install -y -q
       cairo
       docbook-xsl
@@ -384,7 +384,7 @@ centos7 clang-5:
       pkgconf
       xmms2
       $COMPILER_PACKAGE 
-      && break || sleep $(expr $i \* $i + 1); done
+      && break || sleep $(expr $i \* $i + 10); done
 
 .freebsd_build_script: &freebsd_build_script
   script:
