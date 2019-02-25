@@ -79,11 +79,16 @@ pull centos7 clang-5: *pull_images
     - >
       docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_REF_SLUG
       || true
+    - >
+      docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA
+      || true
   script:
     - cd tests/dockerfiles
     - docker pull $DOCKER_BASE_IMAGE || true
     - >
       docker build -f Dockerfile.$DISTRO-base
+      --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
+      --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_REF_SLUG
       --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
       --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA
       --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_REF_SLUG .
@@ -120,19 +125,16 @@ builder centos7 base:
     - "echo \"Distro: ${DISTRO}\nCompiler: ${COMPILER}\""
     - cd tests/dockerfiles
     - >
-      docker tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_REF_SLUG
+      docker tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA
       $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
     - >
-      docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG
-      || true
-    - >
-      docker pull
-      $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG
+      docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
       || true
     - >
       docker build -f Dockerfile.$DISTRO-$COMPILER
       --build-arg IMAGE=$CI_REGISTRY_IMAGE
-      --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG
+      --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
+      --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
       --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
       --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG .
     - docker push ${CI_REGISTRY_IMAGE}/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
