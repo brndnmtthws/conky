@@ -145,6 +145,7 @@ before_script:
 
       cmake                                  \
         -DMAINTAINER_MODE=ON                 \
+        -DBUILD_TESTS=ON                     \
         -DBUILD_MYSQL=ON                     \
         -DBUILD_LUA_IMLIB2=ON                \
         -DBUILD_LUA_RSVG=ON                  \
@@ -167,6 +168,7 @@ before_script:
 
       cmake                                  \
         -DMAINTAINER_MODE=ON                 \
+        -DBUILD_TESTS=ON                     \
         -DBUILD_X11=OFF                      \
         -DBUILD_MYSQL=ON                     \
         -DBUILD_LUA_CAIRO=ON                 \
@@ -188,6 +190,7 @@ before_script:
       mkdir build && cd build
       cmake                                  \
         -DMAINTAINER_MODE=ON                 \
+        -DBUILD_TESTS=ON                     \
         -DBUILD_LUA_RSVG=ON                  \
         -DBUILD_LUA_IMLIB2=ON                \
         ..
@@ -197,6 +200,7 @@ before_script:
       cd build-no-x11
       cmake                                  \
         -DMAINTAINER_MODE=ON                 \
+        -DBUILD_TESTS=ON                     \
         -DBUILD_X11=OFF                      \
         -DBUILD_X11=OFF                      \
         -DBUILD_LUA_RSVG=ON                  \
