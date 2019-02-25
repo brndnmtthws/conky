@@ -44,10 +44,6 @@ matrix:
             - libxnvctrl-dev
             - libircclient-dev
             - gawk
-        sonarcloud:
-          organization: brndnmtthws-github
-          token:
-            secure: KikPusy+HXcEVLr0Dqb6mkrefDU5jm7EGQ5fwO4sBG7bRMcnHV3V14s5yB4Ol8btpUC0nkNn/41+f37lkG+oT4y9ZeIH2ZrhsSEHxOgH6DF9ZSVJwtpLrF9siWgfZ0m5c5V7U5rzVYL3jlO1hQfXKCfMNAcwlKcEUrfpk7jVEZc=
       env:
         - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
     - os: linux
@@ -211,18 +207,11 @@ before_script:
     fi
 script:
   - cd build
-  - |
-    if [ "$CXX" = "clang++-7" ] ; then
-      build-wrapper-linux-x86-64 --out-dir bw-output make -j4 ;
-    else
-      make -j4 ;
-    fi
+  - make -j4
   - make test
   - if [ "$CXX" = "clang++-7" ] ; then make test-conky-coverage-txt ; fi
   - cd ../build-no-x11
   - make -j4
-  - cd ..
-  - if [ "$CXX" = "clang++-7" -a ! -z "$SONAR_TOKEN" ] ; then sonar-scanner ; fi
 branches:
   only:
     - master
