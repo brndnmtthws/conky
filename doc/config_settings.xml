@@ -33,6 +33,15 @@
     <varlistentry>
         <term>
             <command>
+                <option>forced_redraw</option>
+            </command>
+        </term>
+        <listitem>Boolean value, if true, Conky will redraw everything when you switch the workspace. This may cause delays/flickering on some WMs.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>border_inner_margin</option>
             </command>
         </term>
