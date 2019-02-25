@@ -110,7 +110,7 @@ endif(NOT LIB_INSTALL_DIR)
 set(PACKAGE_LIBRARY_DIR "${LIB_INSTALL_DIR}/conky"
     CACHE STRING "Package library path (where Lua bindings are installed"
     FORCE)
-set(DEFAULTNETDEV "eth0" CACHE STRING "Default networkdevice")
+set(DEFAULTNETDEV "eno1" CACHE STRING "Default networkdevice")
 
 # Mac only override
 if(OS_DARWIN)
