@@ -653,6 +653,8 @@ check clang-format:
   services:
     - docker:dind
   only:
+    changes:
+      - tests/dockerfiles/*
     refs:
       - master
       - tags
