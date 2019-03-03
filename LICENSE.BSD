@@ -1,3 +1,8 @@
+*NOTICE*: This file exists for historical reasons because the original
+Torsmo and early Conky code was licensed under the BSD license. Conky
+is now licensed under GPLv3.
+
+
 Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
 Copyright (c) 2005-2019 Brenden Matthews, Philip Kovacs, et. al. (see AUTHORS)
 All rights reserved.
