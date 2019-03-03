@@ -193,14 +193,14 @@ static void remove_deleted_chars(char *string) {
  * @param[in] buf output of a command executed by an exec_cb object
  * @return number between 0.0 and 100.0
  */
-/* cache the result, so on invalid/empty values to return the cached one */
-static double cached_result = 0.0;
 static inline double get_barnum(const char *buf) {
   double barnum;
 
   if (sscanf(buf, "%lf", &barnum) != 1) {
-    /* don't reset execbars on invalid values. see issue #580 */
-    return cached_result;
+    NORM_ERR(
+        "reading exec value failed (perhaps it's not the "
+        "correct format?)");
+    return 0.0;
   }
   if (barnum > 100.0 || barnum < 0.0) {
     NORM_ERR(
@@ -209,7 +209,6 @@ static inline double get_barnum(const char *buf) {
     return 0.0;
   }
 
-  cached_result = barnum;
   return barnum;
 }
 
