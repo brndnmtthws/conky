@@ -50,8 +50,7 @@ Conky's documentation.
 
 ### License
 
-Conky is licensed under the terms of the [GPLv3](LICENSE) and
-[BSD](LICENSE.BSD) licenses.
+Conky is licensed under the terms of the [GPLv3](LICENSE) license.
 
 ### Contributing
 
