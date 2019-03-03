@@ -4,7 +4,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${conky_includes})
 
-set(test_srcs "")
+set(test_srcs "test-conky.cc")
 
 if(OS_LINUX)
   set(test_srcs ${test_srcs} test-linux.cc)
