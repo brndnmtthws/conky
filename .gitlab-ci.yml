@@ -297,6 +297,7 @@ centos6 gcc-7:
     LINKER_FLAGS: "-ltinfo"
   before_script:
     - source /opt/rh/devtoolset-7/enable
+    - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
 
 centos7 gcc-7:
   <<: *build_stages
@@ -313,6 +314,7 @@ centos7 gcc-7:
     BUILD_JOURNAL: "OFF"
   before_script:
     - source /opt/rh/devtoolset-7/enable
+    - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
 
 centos7 gcc-8:
   <<: *build_stages
@@ -329,6 +331,7 @@ centos7 gcc-8:
     BUILD_JOURNAL: "OFF"
   before_script:
     - source /opt/rh/devtoolset-8/enable
+    - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
 
 centos7 clang-5:
   <<: *build_stages
@@ -344,6 +347,7 @@ centos7 clang-5:
     BUILD_JOURNAL: "OFF"
   before_script:
     - source /opt/rh/llvm-toolset-7/enable
+    - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
 
 .freebsd_deps: &freebsd_deps
   retry:
@@ -356,7 +360,8 @@ centos7 clang-5:
   tags:
     - freebsd12
   before_script:
-    # Try up to 5 times until installation succeeds. It may be locked.
+    - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
+    # Try up to 7 times until installation succeeds. It may be locked.
     - >
       for i in {1..7}; do
       sudo pkg install -y -q
@@ -547,6 +552,7 @@ test centos6 gcc-7:
     CXX: g++
   before_script:
     - source /opt/rh/devtoolset-7/enable
+    - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
 
 test centos7 clang-5:
   <<: *test_stages
@@ -558,6 +564,7 @@ test centos7 clang-5:
     CXX: clang++
   before_script:
     - source /opt/rh/llvm-toolset-7/enable
+    - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
 
 test centos7 gcc-7:
   <<: *test_stages
@@ -569,6 +576,7 @@ test centos7 gcc-7:
     CXX: g++
   before_script:
     - source /opt/rh/devtoolset-7/enable
+    - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
 
 test centos7 gcc-8:
   <<: *test_stages
@@ -580,6 +588,7 @@ test centos7 gcc-8:
     CXX: g++
   before_script:
     - source /opt/rh/devtoolset-8/enable
+    - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
 
 test freebsd12 clang-7:
   <<: *freebsd_deps
