@@ -38,6 +38,32 @@ bars and graph widgets, with different fonts and colours.
 
 See the User Configs below for more screenshots and associated config files.
 
+## Quickstart
+
+Conky comes bundled with many package managers. However, if you'd like to try the latest release of Conky, you can try the AppImage build. If you have `jq` and `curl` installed, run the following command to fetch the latest AppImage:
+
+```ShellSession
+$ curl -sL -o conky-x86_64.AppImage \
+    $(curl -sL https://api.github.com/repos/brndnmtthws/conky/releases/latest | \
+    jq --raw-output '.assets[0] | .browser_download_url')
+$ ls
+conky-x86_64.AppImage
+```
+
+If you don't have `jq` and `curl` installed, go to
+https://github.com/brndnmtthws/conky/releases/latest and fetch the latest
+AppImage. Then:
+
+```ShellSession
+$ chmod +x ./conky-x86_64.AppImage
+$ ./conky-x86_64.AppImage -C > ~/.conkyrc
+$ ./conky-x86_64.AppImage
+```
+
+And that's it! [Check out the Wiki](https://github.com/brndnmtthws/conky/wiki) for more details on configuring Conky.
+
+_Note_: To use the AppImage, you may need to install additional runtime libraries.
+
 ## Documentation
 
 The [GitHub Wiki](https://github.com/brndnmtthws/conky/wiki) serves as a central hub for all of
