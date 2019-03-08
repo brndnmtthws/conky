@@ -603,10 +603,10 @@ void print_pid_time(struct text_object *obj, char *p, unsigned int p_max_size) {
   }
 }
 
-enum idtype { egid, euid, fsgid, fsuid, gid, sgid, suid, uid };
+enum xid_type { egid, euid, fsgid, fsuid, gid, sgid, suid, uid };
 
 void print_pid_Xid(struct text_object *obj, char *p, int p_max_size,
-                   idtype type) {
+                   xid_type type) {
   char *begin, *end, *buf = nullptr;
   int bytes_read;
   std::ostringstream pathstream;
