@@ -363,9 +363,12 @@ centos7 clang-5:
     - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
     # Try up to 7 times until installation succeeds. It may be locked.
     - >
-      for i in {1..7}; do
+      (
+      flock -x -w 600 9 || exit 1;
+      sudo pkg update;
       sudo pkg install -y -q
       cairo
+      cmake
       docbook-xsl
       docbook2X
       gettext-runtime
@@ -388,8 +391,8 @@ centos7 clang-5:
       mysql80-client
       pkgconf
       xmms2
-      $COMPILER_PACKAGE 
-      && break || sleep $(expr $i \* $i + 15); done
+      $COMPILER_PACKAGE
+      ) 9>/var/lock/pkg
 
 .freebsd_build_script: &freebsd_build_script
   script:
