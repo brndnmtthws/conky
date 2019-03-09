@@ -290,8 +290,8 @@ if(BUILD_TESTS)
   target_link_libraries(conky conky_core ${conky_libs})
   install(TARGETS conky_core
           RUNTIME DESTINATION bin
-          LIBRARY DESTINATION ${LIB_INSTALL_DIR}/conky
-          ARCHIVE DESTINATION ${LIB_INSTALL_DIR}/conky)
+          LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+          ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
 else()
   add_executable(conky main.cc ${conky_sources} ${optional_sources})
   target_link_libraries(conky ${conky_libs})
@@ -299,14 +299,14 @@ endif()
 
 install(TARGETS conky
         RUNTIME DESTINATION bin
-        LIBRARY DESTINATION ${LIB_INSTALL_DIR}/conky
-        ARCHIVE DESTINATION ${LIB_INSTALL_DIR}/conky)
+        LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+        ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
 
 if(BUILD_PORT_MONITORS)
   install(TARGETS tcp-portmon
           RUNTIME DESTINATION bin
-          LIBRARY DESTINATION ${LIB_INSTALL_DIR}/conky
-          ARCHIVE DESTINATION ${LIB_INSTALL_DIR}/conky)
+          LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+          ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
 endif(BUILD_PORT_MONITORS)
 
 print_target_properties(conky)
