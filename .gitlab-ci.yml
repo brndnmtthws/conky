@@ -471,6 +471,7 @@ freebsd12 clang-7:
     - make -j4
     - if [[ "$DISTRO" == "freebsd12" ]] ; then sudo make install ; else make install ; fi
     - conky -v
+    - find . -iname '*.gcda' -delete
     - >
       cmake
       -DCMAKE_C_COMPILER_LAUNCHER=sccache
