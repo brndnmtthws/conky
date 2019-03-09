@@ -357,6 +357,7 @@ centos7 clang-5:
       - stuck_or_timeout_failure
       - unknown_failure
       - api_failure
+  allow_failure: true
   tags:
     - freebsd12
   before_script:
