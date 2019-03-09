@@ -297,10 +297,16 @@ else()
   target_link_libraries(conky ${conky_libs})
 endif()
 
-# Install libtcp-portmon too?
 install(TARGETS conky
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION ${LIB_INSTALL_DIR}/conky
         ARCHIVE DESTINATION ${LIB_INSTALL_DIR}/conky)
+
+if(BUILD_PORT_MONITORS)
+  install(TARGETS tcp-portmon
+          RUNTIME DESTINATION bin
+          LIBRARY DESTINATION ${LIB_INSTALL_DIR}/conky
+          ARCHIVE DESTINATION ${LIB_INSTALL_DIR}/conky)
+endif(BUILD_PORT_MONITORS)
 
 print_target_properties(conky)
