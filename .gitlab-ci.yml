@@ -467,6 +467,19 @@ freebsd12 clang-7:
     - if [ "$COMPILER" == "clang-7" ] ; then make -j4 test-conky-coverage-txt ; fi
     - if [ "$COMPILER" == "clang-7" ] ; then make -j4 test-conky-coverage-html ; fi
     - if [ "$COMPILER" == "clang-7" ] ; then lcov-summary test-conky-coverage-html.info.cleaned ; fi
+    - make -j4
+    - if [[ "$DISTRO" == "freebsd12" ]] ; then sudo make install ; else make install ; fi
+    - conky -v
+    - >
+      cmake
+      -DCMAKE_C_COMPILER_LAUNCHER=sccache
+      -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      -DRELEASE=ON
+      ..
+    - make -j4
+    - if [[ "$DISTRO" == "freebsd12" ]] ; then sudo make install ; else make install ; fi
+    - conky -v
   coverage: '/Total Coverage:\s+(\d+\.\d+)%/'
   artifacts:
     name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME-coverage-report"
