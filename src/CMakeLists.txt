@@ -290,8 +290,8 @@ if(BUILD_TESTS)
   target_link_libraries(conky conky_core ${conky_libs})
   install(TARGETS conky_core
           RUNTIME DESTINATION bin
-          LIBRARY DESTINATION lib
-          ARCHIVE DESTINATION lib)
+          LIBRARY DESTINATION ${LIB_INSTALL_DIR}/conky
+          ARCHIVE DESTINATION ${LIB_INSTALL_DIR}/conky)
 else()
   add_executable(conky main.cc ${conky_sources} ${optional_sources})
   target_link_libraries(conky ${conky_libs})
@@ -300,7 +300,7 @@ endif()
 # Install libtcp-portmon too?
 install(TARGETS conky
         RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib)
+        LIBRARY DESTINATION ${LIB_INSTALL_DIR}/conky
+        ARCHIVE DESTINATION ${LIB_INSTALL_DIR}/conky)
 
 print_target_properties(conky)
