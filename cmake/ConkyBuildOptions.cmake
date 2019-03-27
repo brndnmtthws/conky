@@ -91,7 +91,9 @@ option(CHECK_CODE_QUALITY "Check code formatting/quality with clang" false)
 option(RELEASE "Build release package" false)
 mark_as_advanced(RELEASE)
 
-option(MAINTAINER_MODE "Enable maintainer mode (builds docs)" false)
+option(MAINTAINER_MODE "Enable maintainer mode" false)
+
+option(BUILD_DOCS "Build documentation" false)
 
 option(BUILD_I18N "Enable if you want internationalization support" true)
 if(BUILD_I18N)

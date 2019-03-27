@@ -88,11 +88,11 @@ set(MAN_FILES doc/conky.1)
 
 install(FILES ${DOC_FILES} DESTINATION ${DOC_PATH})
 
-if(MAINTAINER_MODE)
+if(BUILD_DOCS)
   install(FILES ${HTML_FILES} DESTINATION ${HTML_PATH})
 
   install(FILES ${MAN_FILES} DESTINATION ${MAN_PATH})
-endif(MAINTAINER_MODE)
+endif(BUILD_DOCS)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   install(FILES conky.desktop DESTINATION share/applications)
