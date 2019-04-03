@@ -60,6 +60,6 @@ void print_distribution(struct text_object *, char *, unsigned int);
 void determine_longstat_file(void);
 
 extern char e_iface[50];
-extern char interfaces_arr[64][64];
+extern char interfaces_arr[MAX_NET_INTERFACES][64];
 
 #endif /* _LINUX_H */

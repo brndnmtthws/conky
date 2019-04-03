@@ -103,7 +103,7 @@ char e_iface[50];
 /* To use ${iface X} where X is a number and will
  * return the current X NIC name */
 static const unsigned int iface_len = 64U;
-char interfaces_arr[iface_len][iface_len] = {""};
+char interfaces_arr[MAX_NET_INTERFACES][iface_len] = {""};
 
 #define SHORTSTAT_TEMPL "%*s %llu %llu %llu"
 #define LONGSTAT_TEMPL "%*s %llu %llu %llu "
