@@ -497,7 +497,7 @@ if(WANT_LIBXML2)
 endif(WANT_LIBXML2)
 
 # Look for doc generation programs
-if(MAINTAINER_MODE)
+if(BUILD_DOCS)
   # Used for doc generation
   find_program(APP_DB2X_XSLTPROC db2x_xsltproc)
   if(NOT APP_DB2X_XSLTPROC)
@@ -529,7 +529,7 @@ if(MAINTAINER_MODE)
                    APP_MAN
                    APP_SED
                    APP_LESS)
-endif(MAINTAINER_MODE)
+endif(BUILD_DOCS)
 
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
   set(DEBUG true)
