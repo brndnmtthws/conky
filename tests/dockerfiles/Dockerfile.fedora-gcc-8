@@ -1,7 +1,0 @@
-ARG IMAGE=registry.gitlab.com/brndnmtthws-oss/conky
-FROM ${IMAGE}/builder/fedora-base:latest
-
-RUN yum -qy install \
-    gcc \
-    gcc-c++ \
-    && yum clean all

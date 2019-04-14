@@ -1,0 +1,42 @@
+FROM fedora:31
+
+ENV SCCACHE_VER=0.2.8
+
+RUN dnf update -y -q \
+    && dnf -y -q install \
+    audacious-devel \
+    cairo-devel \
+    cmake \
+    dbus-glib-devel \
+    docbook2X \
+    freetype-devel \
+    git \
+    imlib2-devel \
+    lcov \
+    libcurl-devel \
+    libical-devel \
+    libircclient-devel \
+    libmicrohttpd-devel \
+    librsvg2-devel \
+    libX11-devel \
+    libXdamage-devel \
+    libXext-devel \
+    libXft-devel \
+    libXinerama-devel \
+    libxml2-devel \
+    libXNVCtrl-devel \
+    lua-devel \
+    make \
+    man \
+    mysql-devel \
+    ncurses-devel \
+    openssl-devel \
+    patch \
+    pulseaudio-libs-devel \
+    readline-devel \
+    systemd-devel \
+    xmms2-devel \
+    && curl -sL https://github.com/mozilla/sccache/releases/download/${SCCACHE_VER}/sccache-${SCCACHE_VER}-x86_64-unknown-linux-musl.tar.gz -o sccache-${SCCACHE_VER}-x86_64-unknown-linux-musl.tar.gz \
+    && tar xf sccache-${SCCACHE_VER}-x86_64-unknown-linux-musl.tar.gz \
+    && cp sccache-${SCCACHE_VER}-x86_64-unknown-linux-musl/sccache /usr/bin \
+    && rm -rf sccache-${SCCACHE_VER}-x86_64-unknown-linux-musl*
