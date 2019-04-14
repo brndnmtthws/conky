@@ -11,5 +11,8 @@ RUN wget -q https://apt.llvm.org/llvm-snapshot.gpg.key \
   lld-8 \
   libc++-8-dev \
   libc++abi-8-dev \
+  clang-tools-8 \
+  clang-format-8 \
+  clang-tidy-8 \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
