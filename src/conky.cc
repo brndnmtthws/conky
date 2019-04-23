@@ -729,16 +729,12 @@ void evaluate(const char *text, char *p, int p_max_size) {
 
   /**
    * Consider expressions like: ${execp echo '${execp echo hi}'}
-   * These would require multiple passes of evaluation:
-   * The first pass would parse the first level of |execp| and would generate
-   * a callback registration using |register_exec|, but to correctly evaluate
-   * the expression, we would need to wait for the just registered callback to
-   * execute and return its result.
+   * These would require run extract_variable_text_internal() before
+   * callbacks and generate_text_internal() after callbacks.
    */
-  parse_conky_vars(&subroot, text, p, p_max_size);
+  extract_variable_text_internal(&subroot, txt);
   conky::run_all_callbacks();
-  // Run another evaluation pass.
-  parse_conky_vars(&subroot, text, p, p_max_size);
+  generate_text_internal(p, p_max_size, subroot);
   DBGP2("evaluated '%s' to '%s'", text, p);
 
   free_text_objects(&subroot);
