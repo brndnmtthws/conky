@@ -1276,7 +1276,7 @@
         should start and end with a "-char. The "-chars are not part of the
         output, \w,\d,\h,\m,\s,\(,\) and \\ are replaced by
         weeks,days,hours,minutes,seconds,(,) and \. If you leave out a unit,
-        it's value will be expressed in the highest unite lower then the one
+        it's value will be expressed in the highest unit lower than the one
         left out. Text between ()-chars will not be visible if a replaced unit
         in this text is 0. If seconds is a decimal number then you can see the
         numbers behind the point by using \S followed by a number that
