@@ -299,7 +299,8 @@ int update_cpu_usage(void) {
 
   /* (Re)allocate the array with previous values */
   if (last_cpu_cnt != info.cpu_count || last_cpu_use == nullptr) {
-    last_cpu_use = (int *)realloc(last_cpu_use, (info.cpu_count + 1) * sizeof(int));
+    last_cpu_use =
+        (int *)realloc(last_cpu_use, (info.cpu_count + 1) * sizeof(int));
     last_cpu_cnt = info.cpu_count;
     if (last_cpu_use == nullptr) return 0;
   }
