@@ -288,6 +288,7 @@ int update_cpu_usage(void) {
   static int last_cpu_cnt = 0;
   static int *last_cpu_use = nullptr;
   double d = current_update_time - last_update_time;
+  double total_cpu_usage = 0;
   int cpu;
 
   if (d < 0.1) return 0;
@@ -298,23 +299,24 @@ int update_cpu_usage(void) {
 
   /* (Re)allocate the array with previous values */
   if (last_cpu_cnt != info.cpu_count || last_cpu_use == nullptr) {
-    last_cpu_use = (int *)realloc(last_cpu_use, info.cpu_count * sizeof(int));
+    last_cpu_use =
+        (int *)realloc(last_cpu_use, (info.cpu_count + 1) * sizeof(int));
     last_cpu_cnt = info.cpu_count;
     if (last_cpu_use == nullptr) return 0;
   }
 
-  info.cpu_usage = (float *)malloc(info.cpu_count * sizeof(float));
+  info.cpu_usage = (float *)malloc((info.cpu_count + 1) * sizeof(float));
 
   pthread_mutex_lock(&kstat_mtx);
-  for (cpu = 0; cpu < info.cpu_count; cpu++) {
+  for (cpu = 1; cpu <= info.cpu_count; cpu++) {
     char stat_name[PATH_MAX];
     unsigned long cpu_user, cpu_nice, cpu_system, cpu_idle;
     unsigned long cpu_use;
     cpu_stat_t *cs;
     kstat_t *ksp;
 
-    snprintf(stat_name, PATH_MAX, "cpu_stat%d", cpu);
-    ksp = kstat_lookup(kstat, (char *)"cpu_stat", cpu, stat_name);
+    snprintf(stat_name, PATH_MAX, "cpu_stat%d", cpu - 1);
+    ksp = kstat_lookup(kstat, (char *)"cpu_stat", cpu - 1, stat_name);
     if (ksp == nullptr) continue;
     if (kstat_read(kstat, ksp, nullptr) == -1) continue;
     cs = (cpu_stat_t *)ksp->ks_data;
@@ -327,9 +329,12 @@ int update_cpu_usage(void) {
     cpu_use = cpu_user + cpu_nice + cpu_system;
 
     info.cpu_usage[cpu] = (double)(cpu_use - last_cpu_use[cpu]) / d / 100.0;
+    total_cpu_usage += info.cpu_usage[cpu];
     last_cpu_use[cpu] = cpu_use;
   }
   pthread_mutex_unlock(&kstat_mtx);
+
+  info.cpu_usage[0] = total_cpu_usage / info.cpu_count;
 
   return 0;
 }
