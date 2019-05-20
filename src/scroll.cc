@@ -207,42 +207,43 @@ void parse_scroll_arg(struct text_object *obj, const char *arg,
 void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
   auto *sd = static_cast<struct scroll_data *>(obj->data.opaque);
   unsigned int j, colorchanges = 0, frontcolorchanges = 0,
-                  visibcolorchanges = 0, strend;
-  unsigned int visiblechars = 0;
-  char *pwithcolors;
+                  visibcolorchanges = 0;
   std::vector<char> buf(max_user_text.get(*state), static_cast<char>(0));
 
   if (sd == nullptr) { return; }
 
   generate_text_internal(&(buf[0]), max_user_text.get(*state), *obj->sub);
   for (j = 0; buf[j] != 0; j++) {
-    switch (buf[j]) {
-      case '\n':  // place all the lines behind each other with LINESEPARATOR
-                  // between them
+    if (buf[j] == '\n') {
+      // place all the lines behind each other with LINESEPARATOR between them
 #define LINESEPARATOR '|'
-        buf[j] = LINESEPARATOR;
-        break;
-      case SPECIAL_CHAR:
-        colorchanges++;
-        break;
+      buf[j] = LINESEPARATOR;
+    } else if (buf[j] == SPECIAL_CHAR) {
+      colorchanges++;
     }
   }
+
   // no scrolling necessary if the length of the text to scroll is too short
   if (strlen(&(buf[0])) - colorchanges <= sd->show) {
     snprintf(p, p_max_size, "%s", &(buf[0]));
     return;
   }
+
   // if length of text changed to shorter so the (sd->start) is already
   // outside of actual text then reset (sd->start)
   if (static_cast<unsigned int>(sd->start) >= strlen(&(buf[0]))) {
     sd->start = 0;
   }
+
   // make sure a colorchange at the front is not part of the string we are going
   // to show
   while (buf[sd->start] == SPECIAL_CHAR) { sd->start++; }
+
   // place all chars that should be visible in p, including colorchanges
+  unsigned int visiblechars;
   for (j = 0, visiblechars = 0; visiblechars < sd->show;) {
-    char c = p[j] = buf[sd->start + j];
+    char c = buf[sd->start + j];
+    p[j] = c;
     if (0 == c) { break; }
 
     ++j;
@@ -260,19 +261,23 @@ void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
       ++visiblechars;
     }
   }
+
   for (; visiblechars < sd->show; j++, visiblechars++) { p[j] = ' '; }
   p[j] = 0;
+
   // count colorchanges in front of the visible part and place that many
   // colorchanges in front of the visible part
   for (j = 0; j < static_cast<unsigned>(sd->start); j++) {
     if (buf[j] == SPECIAL_CHAR) { frontcolorchanges++; }
   }
+
   int pwithcolors_len = strlen(p) + 4 + colorchanges - visibcolorchanges;
-  pwithcolors = static_cast<char *>(malloc(pwithcolors_len));
+  char *pwithcolors = static_cast<char *>(malloc(pwithcolors_len));
+
   for (j = 0; j < frontcolorchanges; j++) { pwithcolors[j] = SPECIAL_CHAR; }
   pwithcolors[j] = 0;
   strncat(pwithcolors, p, pwithcolors_len);
-  strend = strlen(pwithcolors);
+  unsigned int strend = strlen(pwithcolors);
   // and place the colorchanges not in front or in the visible part behind the
   // visible part
   for (j = 0; j < colorchanges - frontcolorchanges - visibcolorchanges; j++) {
@@ -281,13 +286,14 @@ void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
   pwithcolors[strend + j] = 0;
   strncpy(p, pwithcolors, p_max_size);
   free(pwithcolors);
+
   // scroll
   if (sd->direction == SCROLL_LEFT) {
     scroll_scroll_left(sd, buf, sd->step);
   } else if (sd->direction == SCROLL_WAIT) {
     unsigned int charsleft = scroll_count_characters_to_right(sd, buf);
 
-if (sd->show >= charsleft) {
+    if (sd->show >= charsleft) {
       if (sd->wait_arg == 0) {
         sd->start = 0;
       } else {
@@ -310,9 +316,11 @@ if (sd->show >= charsleft) {
       } else {
         sd->wait--;
       }
-    }  } else {
+    }
+  } else {
     scroll_scroll_right(sd, buf, sd->step);
   }
+
 #ifdef BUILD_X11
   // reset color when scroll is finished
   if (out_to_x.get(*state)) {
