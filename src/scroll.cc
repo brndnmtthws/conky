@@ -287,15 +287,19 @@ void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
   } else if (sd->direction == SCROLL_WAIT) {
     unsigned int charsleft = scroll_count_characters_to_right(sd, buf);
 
-    if (sd->show >= charsleft) {
-      if ((sd->wait_arg != 0u) && (--sd->wait <= 0 && sd->wait_arg != 1)) {
-        sd->wait = sd->wait_arg;
-      } else {
+if (sd->show >= charsleft) {
+      if (sd->wait_arg == 0) {
         sd->start = 0;
+      } else {
+        sd->wait--;
+        if (sd->wait <= 0 && sd->wait_arg != 1) {
+          sd->wait = sd->wait_arg;
+        } else {
+          sd->start = 0;
+        }
       }
     } else {
-      if ((sd->wait_arg == 0u) || sd->wait_arg == 1 ||
-          ((sd->wait_arg != 0u) && sd->wait-- <= 0)) {
+      if (sd->wait_arg == 0 || sd->wait_arg == 1 || sd->wait <= 0) {
         sd->wait = 0;
 
         if (sd->step < charsleft) {
@@ -303,9 +307,10 @@ void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
         } else {
           scroll_scroll_left(sd, buf, charsleft);
         }
+      } else {
+        sd->wait--;
       }
-    }
-  } else {
+    }  } else {
     scroll_scroll_right(sd, buf, sd->step);
   }
 #ifdef BUILD_X11
