@@ -1419,13 +1419,13 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
                   }
                 }
                 /* this is mugfugly, but it works */
-                XDrawLine(
-                    display, window.drawable, window.gc,
-                    text_offset_x + cur_x + i + 1, text_offset_y + by + h,
-                    text_offset_x + cur_x + i + 1,
-                    text_offset_y + round_to_int(static_cast<double>(by) + h -
-                                                 current->graph[j] * (h - 1) /
-                                                     current->scale));
+                XDrawLine(display, window.drawable, window.gc,
+                          text_offset_x + cur_x + i + 1, text_offset_y + by + h,
+                          text_offset_x + cur_x + i + 1,
+                          text_offset_y + round_to_positive_int(
+                                              static_cast<double>(by) + h -
+                                              current->graph[j] * (h - 1) /
+                                                  current->scale));
                 ++j;
               }
               free_and_zero(tmpcolour);

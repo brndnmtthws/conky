@@ -71,7 +71,7 @@ void format_seconds_short(char *buf, unsigned int n, long seconds);
 
 int round_to_int_temp(float);
 
-unsigned int round_to_int(float);
+unsigned int round_to_positive_int(float);
 
 extern conky::simple_config_setting<bool> no_buffers;
 extern conky::simple_config_setting<std::string> bar_fill;

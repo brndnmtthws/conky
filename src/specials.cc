@@ -374,7 +374,8 @@ void new_gauge_in_shell(struct text_object *obj, char *p,
   static const char *gaugevals[] = {"_. ", "\\. ", " | ", " ./", " ._"};
   auto *g = static_cast<struct gauge *>(obj->special_data);
 
-  snprintf(p, p_max_size, "%s", gaugevals[round_to_int(usage * 4 / g->scale)]);
+  snprintf(p, p_max_size, "%s",
+           gaugevals[round_to_positive_int(usage * 4 / g->scale)]);
 }
 
 #ifdef BUILD_X11
@@ -488,7 +489,7 @@ void new_graph_in_shell(struct special_t *s, char *buf, int buf_max_size) {
   char *buf_max = buf + (sizeof(char) * buf_max_size);
   double scale = (tickitems.size() - 1) / s->scale;
   for (int i = s->graph_allocated - 1; i >= 0; i--) {
-    const unsigned int v = round_to_int(s->graph[i] * scale);
+    const unsigned int v = round_to_positive_int(s->graph[i] * scale);
     const char *tick = tickitems[v].c_str();
     size_t itemlen = tickitems[v].size();
     for (unsigned int j = 0; j < itemlen; j++) {
@@ -639,7 +640,7 @@ static void new_bar_in_shell(struct text_object *obj, char *buffer,
 
   if (width > buf_max_size) { width = buf_max_size; }
 
-  scaledusage = round_to_int(usage * width / b->scale);
+  scaledusage = round_to_positive_int(usage * width / b->scale);
 
   for (i = 0; i < scaledusage; i++) {
     buffer[i] = *(bar_fill.get(*state).c_str());
