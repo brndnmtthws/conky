@@ -192,6 +192,24 @@ TEST_CASE("cpu_percentage and cpu_barval return correct values") {
   }
 }
 
+TEST_CASE("mem_percentage and mem_barval return correct values") {
+  info.mem = 6;
+
+  SECTION("for memmax == 0") {
+    info.memmax = 0;
+
+    REQUIRE(mem_percentage(nullptr) == 0);
+    REQUIRE(mem_barval(nullptr) == 0);
+  }
+
+  SECTION("for memmax > 0") {
+    info.memmax = 24;
+
+    REQUIRE(mem_percentage(nullptr) == 25);
+    REQUIRE(mem_barval(nullptr) == Approx(0.25));
+  }
+}
+
 TEST_CASE("mem_with_buffers_barval returns correct value") {
   info.memwithbuffers = 6;
 
