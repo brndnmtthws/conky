@@ -64,7 +64,7 @@ void pa_sink_info_callback(pa_context *c, const pa_sink_info *i, int eol,
     pdr->sink_index = i->index;
     pdr->sink_active_port_name.assign(i->active_port->name);
     pdr->sink_active_port_description.assign(i->active_port->description);
-    pdr->sink_volume = round_to_int(
+    pdr->sink_volume = round_to_positive_int(
         100.0f * (float)pa_cvolume_avg(&(i->volume)) / (float)PA_VOLUME_NORM);
     pa_threaded_mainloop_signal(pulseaudio->mainloop, 0);
   }
