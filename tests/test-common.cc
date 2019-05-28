@@ -34,6 +34,8 @@
 #include <common.h>
 #include <conky.h>
 
+extern char **environ;
+
 std::string get_valid_environment_variable_name() {
   if (getenv("HOME") != nullptr) { return "HOME"; }
 
