@@ -153,22 +153,22 @@ TEST_CASE("cpu_percentage and cpu_barval return correct values") {
   obj0.data.i = 0;
   struct text_object obj1;
   obj1.data.i = 1;
-  struct text_object obj2;
-  obj2.data.i = 2;
+  // struct text_object obj2;
+  // obj2.data.i = 2;
   info.cpu_count = 1;
 
-  SECTION("for non-existent cpu") {
-    info.cpu_usage = new float[2];
-    info.cpu_usage[0] = 0.253;
-    info.cpu_usage[1] = 0.507;
+  // SECTION("for non-existent cpu") {
+  // info.cpu_usage = new float[2];
+  // info.cpu_usage[0] = 0.253;
+  // info.cpu_usage[1] = 0.507;
 
-    // This does not exist in Catch2, but would be nice to have since that's
-    // what happens in this case.
-    // REQUIRE_EXIT(cpu_percentage(&obj2));
-    // REQUIRE_EXIT(cpu_barval(&obj2));
+  // This does not exist in Catch2, but would be nice to have since that's
+  // what happens in this case.
+  // REQUIRE_EXIT(cpu_percentage(&obj2));
+  // REQUIRE_EXIT(cpu_barval(&obj2));
 
-    delete[] info.cpu_usage;
-  }
+  // delete[] info.cpu_usage;
+  // }
 
   SECTION("for cpu_usage == nullptr") {
     info.cpu_usage = nullptr;
