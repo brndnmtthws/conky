@@ -375,6 +375,10 @@ uint8_t cpu_percentage(struct text_object *obj) {
 }
 
 double cpu_barval(struct text_object *obj) {
+  if (static_cast<unsigned int>(obj->data.i) > info.cpu_count) {
+    NORM_ERR("obj->data.i %i info.cpu_count %i", obj->data.i, info.cpu_count);
+    CRIT_ERR(nullptr, nullptr, "attempting to use more CPUs than you have!");
+  }
   if (info.cpu_usage != nullptr) { return info.cpu_usage[obj->data.i]; }
   return 0.;
 }
