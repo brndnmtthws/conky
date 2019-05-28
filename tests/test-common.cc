@@ -160,11 +160,10 @@ TEST_CASE("cpu_percentage and cpu_barval return correct values") {
     info.cpu_usage[0] = 0.253;
     info.cpu_usage[1] = 0.507;
 
-    REQUIRE(cpu_barval(&obj2) == 0);
-
     // This does not exist in Catch2, but would be nice to have since that's
     // what happens in this case.
     // REQUIRE_EXIT(cpu_percentage(&obj2));
+    // REQUIRE_EXIT(cpu_barval(&obj2));
 
     delete[] info.cpu_usage;
   }
