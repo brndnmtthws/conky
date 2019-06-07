@@ -39,6 +39,7 @@
 #endif /* HAVE_SYS_PARAM_H */
 #include <algorithm>
 #include <sstream>
+#include <map>
 #include "colours.h"
 #include "common.h"
 #include "conky.h"
@@ -46,6 +47,9 @@
 struct special_t *specials = nullptr;
 
 int special_count;
+int graph_count = 0;
+
+std::map<int, double*> graphs;
 
 namespace {
 conky::range_config_setting<int> default_bar_width(
@@ -90,6 +94,7 @@ struct gauge {
 };
 
 struct graph {
+  int id;
   char flags;
   int width, height;
   unsigned int first_colour, last_colour;
@@ -203,6 +208,7 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
   obj->special_data = g;
 
   /* zero width means all space that is available */
+  g->id = ++graph_count;
   g->width = default_graph_width.get(*state);
   g->height = default_graph_height.get(*state);
   g->first_colour = 0;
@@ -501,6 +507,32 @@ graph_buf_end:
   *p = '\0';
 }
 
+double* copy_graph(double* original_graph, int graph_width) {
+  double* new_graph = new double[graph_width];
+
+  memcpy(new_graph, original_graph, graph_width * sizeof(double));
+
+  return new_graph;
+}
+
+double* retrieve_graph(int graph_id, int graph_width) {
+  if (graphs.find(graph_id) == graphs.end()) {
+    return new double[graph_width];
+  }
+  else {
+    return copy_graph(graphs[graph_id], graph_width);
+  }
+}
+
+void store_graph(int graph_id, struct special_t *s) {
+  if (s->graph == nullptr) {
+    graphs[graph_id] = nullptr;
+  }
+  else {
+    graphs[graph_id] = copy_graph(s->graph, s->graph_width);
+  }
+}
+
 /**
  * Creates a visual graph and/or appends val to the graph / plot
  *
@@ -559,7 +591,13 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
 #ifdef BUILD_MATH
   if ((g->flags & SF_SHOWLOG) != 0) { s->scale = log10(s->scale + 1); }
 #endif
+
+  int graph_id = ((struct graph*)obj->special_data)->id;
+  s->graph = retrieve_graph(graph_id, s->graph_width);
+
   graph_append(s, val, g->flags);
+
+  store_graph(graph_id, s);
 
   if (out_to_stdout.get(*state)) { new_graph_in_shell(s, buf, buf_max_size); }
 }
