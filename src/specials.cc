@@ -38,8 +38,8 @@
 #include <sys/param.h>
 #endif /* HAVE_SYS_PARAM_H */
 #include <algorithm>
-#include <sstream>
 #include <map>
+#include <sstream>
 #include "colours.h"
 #include "common.h"
 #include "conky.h"
@@ -49,7 +49,7 @@ struct special_t *specials = nullptr;
 int special_count;
 int graph_count = 0;
 
-std::map<int, double*> graphs;
+std::map<int, double *> graphs;
 
 namespace {
 conky::range_config_setting<int> default_bar_width(
@@ -507,19 +507,18 @@ graph_buf_end:
   *p = '\0';
 }
 
-double* copy_graph(double* original_graph, int graph_width) {
-  double* new_graph = new double[graph_width];
+double *copy_graph(double *original_graph, int graph_width) {
+  double *new_graph = new double[graph_width];
 
   memcpy(new_graph, original_graph, graph_width * sizeof(double));
 
   return new_graph;
 }
 
-double* retrieve_graph(int graph_id, int graph_width) {
+double *retrieve_graph(int graph_id, int graph_width) {
   if (graphs.find(graph_id) == graphs.end()) {
     return new double[graph_width];
-  }
-  else {
+  } else {
     return copy_graph(graphs[graph_id], graph_width);
   }
 }
@@ -527,8 +526,7 @@ double* retrieve_graph(int graph_id, int graph_width) {
 void store_graph(int graph_id, struct special_t *s) {
   if (s->graph == nullptr) {
     graphs[graph_id] = nullptr;
-  }
-  else {
+  } else {
     graphs[graph_id] = copy_graph(s->graph, s->graph_width);
   }
 }
@@ -592,7 +590,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
   if ((g->flags & SF_SHOWLOG) != 0) { s->scale = log10(s->scale + 1); }
 #endif
 
-  int graph_id = ((struct graph*)obj->special_data)->id;
+  int graph_id = ((struct graph *)obj->special_data)->id;
   s->graph = retrieve_graph(graph_id, s->graph_width);
 
   graph_append(s, val, g->flags);
@@ -788,4 +786,9 @@ void new_tab(struct text_object *obj, char *p, unsigned int p_max_size) {
   s = new_special(p, TAB);
   s->width = t->width;
   s->arg = t->arg;
+}
+
+void clear_stored_graphs() {
+  graph_count = 0;
+  graphs.clear();
 }

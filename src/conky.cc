@@ -100,6 +100,7 @@
 #include "mail.h"
 #include "nc.h"
 #include "net_stat.h"
+#include "specials.h"
 #include "temphelper.h"
 #include "template.h"
 #include "timeinfo.h"
@@ -2381,6 +2382,8 @@ void free_specials(special_t *&current) {
     delete current;
     current = nullptr;
   }
+
+  clear_stored_graphs();
 }
 
 void clean_up_without_threads(void *memtofree1, void *memtofree2) {
