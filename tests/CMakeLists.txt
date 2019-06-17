@@ -14,6 +14,8 @@ if(OS_DARWIN)
   set(test_srcs ${test_srcs} test-darwin.cc)
 endif()
 
+set(test_srcs ${test_srcs} test-core.cc)
+
 add_executable(test-conky test-common.cc ${test_srcs})
 target_link_libraries(test-conky conky_core)
 catch_discover_tests(test-conky)
