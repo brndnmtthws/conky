@@ -36,7 +36,7 @@
 TEST_CASE("diskiographval returns correct value") {
   struct text_object obj;
 
-  SECTION("for missing data") { REQUIRE(diskiographval(&obj) == 0); }
+  SECTION("for missing data") { REQUIRE(diskiographval(&obj) == Approx(0.0)); }
 
   SECTION("for valid data") {
     diskio_stat *diskio = new diskio_stat;
