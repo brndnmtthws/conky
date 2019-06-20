@@ -30,12 +30,50 @@
 
 #include <fs.h>
 
-TEST_CASE("fs_free_percentage returns correct value") {
+//TEST_CASE("fs_free_percentage returns correct value") {
+//  struct text_object obj;
+//
+//  SECTION("for missing data") {
+//    REQUIRE(fs_free_percentage(&obj) == 0);
+//  }
+//
+//  SECTION("for fs size == 0") {
+//    fs_stat *fs = new fs_stat;
+//    fs->size = 0;
+//    fs->avail = 17;
+//    fs->free = 97;
+//
+//    obj.data.opaque = fs;
+//
+//    REQUIRE(fs_free_percentage(&obj) == 0);
+//
+//    delete fs;
+//  }
+//
+//  SECTION("for valid data") {
+//    fs_stat *fs = new fs_stat;
+//    fs->size = 68;
+//    fs->avail = 17;
+//    fs->free = 97;
+//
+//    obj.data.opaque = fs;
+//
+//    REQUIRE(fs_free_percentage(&obj) == 25);
+//
+//    delete fs;
+//  }
+//}
+
+TEST_CASE("fs_free_percentage returns correct value for missing data") {
   struct text_object obj;
 
   SECTION("for missing data") {
     REQUIRE(fs_free_percentage(&obj) == 0);
   }
+}
+
+TEST_CASE("fs_free_percentage returns correct value for fs size == 0") {
+  struct text_object obj;
 
   SECTION("for fs size == 0") {
     fs_stat *fs = new fs_stat;
@@ -49,6 +87,10 @@ TEST_CASE("fs_free_percentage returns correct value") {
 
     delete fs;
   }
+}
+
+TEST_CASE("fs_free_percentage returns correct value for valid data") {
+  struct text_object obj;
 
   SECTION("for valid data") {
     fs_stat *fs = new fs_stat;
