@@ -34,7 +34,7 @@ TEST_CASE("fs_free_percentage returns correct value") {
   struct text_object obj;
 
   SECTION("for missing data") {
-    REQUIRE(fs_free_percentage(&obj) == Approx(0.0));
+    REQUIRE(fs_free_percentage(&obj) == 0);
   }
 
   SECTION("for fs size == 0") {
@@ -45,7 +45,7 @@ TEST_CASE("fs_free_percentage returns correct value") {
 
     obj.data.opaque = fs;
 
-    REQUIRE(fs_free_percentage(&obj) == Approx(0.0));
+    REQUIRE(fs_free_percentage(&obj) == 0);
 
     delete fs;
   }
@@ -58,7 +58,7 @@ TEST_CASE("fs_free_percentage returns correct value") {
 
     obj.data.opaque = fs;
 
-    REQUIRE(fs_free_percentage(&obj) == Approx(25.0));
+    REQUIRE(fs_free_percentage(&obj) == 25);
 
     delete fs;
   }

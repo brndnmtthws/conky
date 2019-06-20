@@ -36,7 +36,11 @@
 TEST_CASE("diskiographval returns correct value") {
   struct text_object obj;
 
-  SECTION("for missing data") { REQUIRE(diskiographval(&obj) == Approx(0.0).margin(0.00001)); }
+  SECTION("for missing data") {
+    double epsilon = std::numeric_limits<double>::epsilon();
+    
+    REQUIRE(diskiographval(&obj) == Approx(0.0).margin(epsilon));
+  }
 
   SECTION("for valid data") {
     diskio_stat *diskio = new diskio_stat;
