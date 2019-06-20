@@ -29,24 +29,24 @@
 #include "catch2/catch.hpp"
 
 #include <config.h>
-#include <diskio.h>
 #include <conky.h>
+#include <diskio.h>
 
 #if BUILD_X11
 TEST_CASE("diskiographval returns correct value") {
   struct text_object obj;
 
-  SECTION("for missing data") {
-    REQUIRE(diskiographval(&obj) == 0);
-  }
+  SECTION("for missing data") { REQUIRE(diskiographval(&obj) == 0); }
 
   SECTION("for valid data") {
-    diskio_stat *stat = new diskio_stat;
-    stat->current = 2.5;
-    
-    obj.data.opaque = stat;
+    diskio_stat *diskio = new diskio_stat;
+    diskio->current = 2.5;
+
+    obj.data.opaque = diskio;
 
     REQUIRE(diskiographval(&obj) == Approx(2.5));
+
+    delete diskio;
   }
 }
 #endif

@@ -46,7 +46,7 @@ TEST_CASE("fs_free_percentage returns correct value") {
     obj.data.opaque = fs;
 
     REQUIRE(fs_free_percentage(&obj) == Approx(0.0));
-    
+
     delete fs;
   }
 
@@ -59,9 +59,7 @@ TEST_CASE("fs_free_percentage returns correct value") {
     obj.data.opaque = fs;
 
     REQUIRE(fs_free_percentage(&obj) == Approx(25.0));
-    
+
     delete fs;
   }
 }
-
-
