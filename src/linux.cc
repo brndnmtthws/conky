@@ -666,12 +666,17 @@ int update_net_stats(void) {
       }
 
       // get link quality
-      if (winfo->has_range && winfo->has_stats &&
-          ((winfo->stats.qual.level != 0) ||
-           (winfo->stats.qual.updated & IW_QUAL_DBM))) {
-        if (!(winfo->stats.qual.updated & IW_QUAL_QUAL_INVALID)) {
+      if (winfo->has_range && winfo->has_stats) {
+        bool has_qual_level = (winfo->stats.qual.level != 0) ||
+                              (winfo->stats.qual.updated & IW_QUAL_DBM);
+
+        if (has_qual_level &&
+            !(winfo->stats.qual.updated & IW_QUAL_QUAL_INVALID)) {
           ns->link_qual = winfo->stats.qual.qual;
-          ns->link_qual_max = winfo->range.max_qual.qual;
+
+          if (winfo->range.max_qual.qual > 0) {
+            ns->link_qual_max = winfo->range.max_qual.qual;
+          }
         }
       }
 
