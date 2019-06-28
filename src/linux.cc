@@ -61,6 +61,7 @@
 #define _LINUX_IF_H
 #endif
 #include <linux/route.h>
+#include <linux/version.h>
 #include <math.h>
 #include <pthread.h>
 #include <atomic>
@@ -186,7 +187,7 @@ int update_meminfo(void) {
    * These variables keep the calculations local to the function and finish off
    * the function by assigning the results to the information struct */
   unsigned long long shmem = 0, sreclaimable = 0, curmem = 0, curbufmem = 0,
-                     cureasyfree = 0;
+                     cureasyfree = 0, memavail = 0;
 
   info.memmax = info.memdirty = info.swap = info.swapfree = info.swapmax =
       info.memwithbuffers = info.buffers = info.cached = info.memfree =
@@ -211,6 +212,8 @@ int update_meminfo(void) {
       sscanf(buf, "%*s %llu", &info.cached);
     } else if (strncmp(buf, "Dirty:", 6) == 0) {
       sscanf(buf, "%*s %llu", &info.memdirty);
+    } else if (strncmp(buf, "MemAvailable:", 13) == 0) {
+      sscanf(buf, "%*s %llu", &memavail);
     } else if (strncmp(buf, "Shmem:", 6) == 0) {
       sscanf(buf, "%*s %llu", &shmem);
     } else if (strncmp(buf, "SReclaimable:", 13) == 0) {
@@ -229,14 +232,25 @@ int update_meminfo(void) {
   */
   curbufmem = (info.cached - shmem) + info.buffers + sreclaimable;
 
-  /* Now ('info.mem' - 'info.bufmem') is the *really used* (aka unreclaimable)
-     memory. When this value reaches the size of the physical RAM, and swap is
-     full or non-present, OOM happens. Therefore this is the value users want to
-     monitor, regarding their RAM.
-  */
+  /* Calculate the memory usage.
+   *
+   * The Linux Kernel introduced a new field for memory available,
+   * when possible, use that.
+   * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=34e431b0ae398fc54ea69ff85ec700722c9da773
+   */
   if (no_buffers.get(*state)) {
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(3, 14, 0)
+    /* Now ('info.mem' - 'info.bufmem') is the *really used* (aka unreclaimable)
+       memory. When this value reaches the size of the physical RAM, and swap is
+       full or non-present, OOM happens. Therefore this is the value users want
+       to monitor, regarding their RAM.
+    */
     curmem -= curbufmem;
     cureasyfree += curbufmem;
+#else
+    curmem = info.memmax - memavail;
+    cureasyfree += curbufmem;
+#endif
   }
 
   /* Now that we know that every calculation is finished we can wrap up

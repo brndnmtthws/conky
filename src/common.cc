@@ -293,6 +293,14 @@ void update_stuff() {
 
   /* if you registered a callback with conky::register_cb, this will run it */
   conky::run_all_callbacks();
+
+#if !defined(__linux__)
+  /* XXX: move the following into the update_meminfo() functions? */
+  if (no_buffers.get(*state)) {
+    info.mem -= info.bufmem;
+    info.memeasyfree += info.bufmem;
+  }
+#endif
 }
 
 /* Ohkie to return negative values for temperatures */
