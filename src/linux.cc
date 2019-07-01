@@ -227,7 +227,10 @@ int update_meminfo(void) {
      full or non-present, OOM happens. Therefore this is the value users want to
      monitor, regarding their RAM.
   */
-
+  if (no_buffers.get(*state)) {
+    info.mem -= info.bufmem;
+    info.memeasyfree += info.bufmem;
+  }
   fclose(meminfo_fp);
   return 0;
 }
