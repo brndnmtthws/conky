@@ -450,66 +450,23 @@ void print_gateway_ip(struct text_object *obj, char *p,
   snprintf(p, p_max_size, "%s", gw_info.ip);
 }
 
-/**
- * Parses information from /proc/net/dev and stores them in ???
- *
- * For the output format of /proc/net/dev @see http://linux.die.net/man/5/proc
- *
- * @return always returns 0. May change in the future, e.g. returning non zero
- * if some error happened
- **/
-int update_net_stats(void) {
-  update_gateway_info();
-  update_gateway_info2();
-  FILE *net_dev_fp;
-  static int reported = 0;
-  /* variable to notify the parts averaging the download speed, that this
-   * is the first call ever to this function. This variable can't be used
-   * to decide if this is the first time an interface was parsed as there
-   * are many interfaces, which can be activated and deactivated at arbitrary
-   * times */
-  static bool is_first_update = true;
-
-  // FIXME: arbitrary size chosen to keep code simple.
-  char buf[256];
-  double time_between_updates;
-
-  /* get delta */
-  time_between_updates = current_update_time - last_update_time;
-  if (time_between_updates <= 0.0001) { return 0; }
-
-  /* open file /proc/net/dev. If not something went wrong, clear all
-   * network statistics */
-  if (!(net_dev_fp = open_file("/proc/net/dev", &reported))) {
-    clear_net_stats();
-    return 0;
-  }
-  /* ignore first two header lines in file /proc/net/dev. If somethings
-   * goes wrong, e.g. end of file reached, quit.
-   * (Why isn't clear_net_stats called for this case ??? */
-  char *one = fgets(buf, 255, net_dev_fp);
-  char *two = fgets(buf, 255, net_dev_fp);
-  if (!one || /* garbage */
-      !two) { /* garbage (field names) */
-    fclose(net_dev_fp);
-    return 0;
-  }
-
+void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
+                           double time_between_updates) {
   /* read each interface */
 #ifdef BUILD_WLAN
   // wireless info variables
-  int skfd, has_bitrate = 0;
   struct wireless_info *winfo;
   struct iwreq wrq;
 #endif
 
-  for (int i2 = 0; i2 < MAX_NET_INTERFACES; i2++) {
+  for (int i = 0; i < MAX_NET_INTERFACES; i++) {
     struct net_stat *ns;
     char *s, *p;
-    char temp_addr[18];
     long long r, t, last_recv, last_trans;
 
     /* quit only after all non-header lines from /proc/net/dev parsed */
+    // FIXME: arbitrary size chosen to keep code simple.
+    char buf[256];
     if (fgets(buf, 255, net_dev_fp) == nullptr) { break; }
     p = buf;
     /* change char * p to first non-space character, which is the beginning
@@ -591,6 +548,7 @@ int update_net_stats(void) {
       ns2 = get_net_stat(((struct ifreq *)conf.ifc_buf)[k].ifr_ifrn.ifrn_name,
                          nullptr, NULL);
       ns2->addr = ((struct ifreq *)conf.ifc_buf)[k].ifr_ifru.ifru_addr;
+      char temp_addr[18];
       sprintf(temp_addr, "%u.%u.%u.%u, ", ns2->addr.sa_data[2] & 255,
               ns2->addr.sa_data[3] & 255, ns2->addr.sa_data[4] & 255,
               ns2->addr.sa_data[5] & 255);
@@ -617,9 +575,9 @@ int update_net_stats(void) {
 #ifdef HAVE_OPENMP
 #pragma omp parallel for reduction(+ : curtmp1, curtmp2) schedule(dynamic, 10)
 #endif /* HAVE_OPENMP */
-    for (int i = 0; i < samples; i++) {
-      curtmp1 = curtmp1 + ns->net_rec[i];
-      curtmp2 = curtmp2 + ns->net_trans[i];
+    for (int j = 0; j < samples; j++) {
+      curtmp1 = curtmp1 + ns->net_rec[j];
+      curtmp2 = curtmp2 + ns->net_trans[j];
     }
     ns->recv_speed = curtmp1 / (double)samples;
     ns->trans_speed = curtmp2 / (double)samples;
@@ -627,9 +585,9 @@ int update_net_stats(void) {
 #ifdef HAVE_OPENMP
 #pragma omp parallel for schedule(dynamic, 10)
 #endif /* HAVE_OPENMP */
-      for (int i = samples; i > 1; i--) {
-        ns->net_rec[i - 1] = ns->net_rec[i - 2];
-        ns->net_trans[i - 1] = ns->net_trans[i - 2];
+      for (int j = samples; j > 1; j--) {
+        ns->net_rec[j - 1] = ns->net_rec[j - 2];
+        ns->net_trans[j - 1] = ns->net_trans[j - 2];
       }
     }
 
@@ -638,7 +596,7 @@ int update_net_stats(void) {
     winfo = (struct wireless_info *)malloc(sizeof(struct wireless_info));
     memset(winfo, 0, sizeof(struct wireless_info));
 
-    skfd = iw_sockets_open();
+    int skfd = iw_sockets_open();
     if (iw_get_basic_config(skfd, s, &(winfo->b)) > -1) {
       // set present winfo variables
       if (iw_get_range_info(skfd, s, &(winfo->range)) >= 0) {
@@ -657,7 +615,6 @@ int update_net_stats(void) {
       if (iw_get_ext(skfd, s, SIOCGIWRATE, &wrq) >= 0) {
         memcpy(&(winfo->bitrate), &(wrq.u.bitrate), sizeof(iwparam));
         iw_print_bitrate(ns->bitrate, 16, winfo->bitrate.value);
-        has_bitrate = 1;
       }
 
       // get link quality
@@ -705,8 +662,9 @@ int update_net_stats(void) {
     free(winfo);
 #endif
   }
+}
 
-#ifdef BUILD_IPV6
+void update_ipv6_net_stats() {
   FILE *file;
   char v6addr[33];
   char devname[21];
@@ -724,51 +682,102 @@ int update_net_stats(void) {
     }
   }
 
-  if ((file = fopen(PROCDIR "/net/if_inet6", "r")) != nullptr) {
-    while (fscanf(file, "%32s %*02x %02x %02x %*02x %20s\n", v6addr, &netmask,
-                  &scope, devname) != EOF) {
-      ns = get_net_stat(devname, nullptr, NULL);
+  if ((file = fopen(PROCDIR "/net/if_inet6", "r")) == nullptr) { return; }
 
-      if (ns->v6addrs == nullptr) {
-        lastv6 = (struct v6addr *)malloc(sizeof(struct v6addr));
-        ns->v6addrs = lastv6;
-      } else {
-        lastv6 = ns->v6addrs;
-        while (lastv6->next) lastv6 = lastv6->next;
-        lastv6->next = (struct v6addr *)malloc(sizeof(struct v6addr));
-        lastv6 = lastv6->next;
-      }
+  while (fscanf(file, "%32s %*02x %02x %02x %*02x %20s\n", v6addr, &netmask,
+                &scope, devname) != EOF) {
+    ns = get_net_stat(devname, nullptr, NULL);
 
-      for (int i = 0; i < 16; i++)
-        sscanf(v6addr + 2 * i, "%2hhx", &(lastv6->addr.s6_addr[i]));
-
-      lastv6->netmask = netmask;
-
-      switch (scope) {
-        case 0:  // global
-          lastv6->scope = 'G';
-          break;
-        case 16:  // host-local
-          lastv6->scope = 'H';
-          break;
-        case 32:  // link-local
-          lastv6->scope = 'L';
-          break;
-        case 64:  // site-local
-          lastv6->scope = 'S';
-          break;
-        case 128:  // compat
-          lastv6->scope = 'C';
-          break;
-        default:
-          lastv6->scope = '?';
-      }
-
-      lastv6->next = nullptr;
+    if (ns->v6addrs == nullptr) {
+      lastv6 = (struct v6addr *)malloc(sizeof(struct v6addr));
+      ns->v6addrs = lastv6;
+    } else {
+      lastv6 = ns->v6addrs;
+      while (lastv6->next) lastv6 = lastv6->next;
+      lastv6->next = (struct v6addr *)malloc(sizeof(struct v6addr));
+      lastv6 = lastv6->next;
     }
 
-    fclose(file);
+    for (int i = 0; i < 16; i++)
+      sscanf(v6addr + 2 * i, "%2hhx", &(lastv6->addr.s6_addr[i]));
+
+    lastv6->netmask = netmask;
+
+    switch (scope) {
+      case 0:  // global
+        lastv6->scope = 'G';
+        break;
+      case 16:  // host-local
+        lastv6->scope = 'H';
+        break;
+      case 32:  // link-local
+        lastv6->scope = 'L';
+        break;
+      case 64:  // site-local
+        lastv6->scope = 'S';
+        break;
+      case 128:  // compat
+        lastv6->scope = 'C';
+        break;
+      default:
+        lastv6->scope = '?';
+    }
+
+    lastv6->next = nullptr;
   }
+
+  fclose(file);
+}
+
+/**
+ * Parses information from /proc/net/dev and stores them in ???
+ *
+ * For the output format of /proc/net/dev @see http://linux.die.net/man/5/proc
+ *
+ * @return always returns 0. May change in the future, e.g. returning non zero
+ * if some error happened
+ **/
+int update_net_stats(void) {
+  update_gateway_info();
+  update_gateway_info2();
+  FILE *net_dev_fp;
+  static int reported = 0;
+  /* variable to notify the parts averaging the download speed, that this
+   * is the first call ever to this function. This variable can't be used
+   * to decide if this is the first time an interface was parsed as there
+   * are many interfaces, which can be activated and deactivated at arbitrary
+   * times */
+  static bool is_first_update = true;
+
+  // FIXME: arbitrary size chosen to keep code simple.
+  char buf[256];
+  double time_between_updates;
+
+  /* get delta */
+  time_between_updates = current_update_time - last_update_time;
+  if (time_between_updates <= 0.0001) { return 0; }
+
+  /* open file /proc/net/dev. If not something went wrong, clear all
+   * network statistics */
+  if (!(net_dev_fp = open_file("/proc/net/dev", &reported))) {
+    clear_net_stats();
+    return 0;
+  }
+  /* ignore first two header lines in file /proc/net/dev. If somethings
+   * goes wrong, e.g. end of file reached, quit.
+   * (Why isn't clear_net_stats called for this case ??? */
+  char *one = fgets(buf, 255, net_dev_fp);
+  char *two = fgets(buf, 255, net_dev_fp);
+  if (!one || /* garbage */
+      !two) { /* garbage (field names) */
+    fclose(net_dev_fp);
+    return 0;
+  }
+
+  update_net_interfaces(net_dev_fp, is_first_update, time_between_updates);
+
+#ifdef BUILD_IPV6
+  update_ipv6_net_stats();
 #endif /* BUILD_IPV6 */
 
   is_first_update = false;
