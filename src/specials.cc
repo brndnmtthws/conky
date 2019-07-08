@@ -508,7 +508,8 @@ graph_buf_end:
 }
 
 double *copy_graph(double *original_graph, int graph_width) {
-  double *new_graph = new double[graph_width];
+  double *new_graph =
+      static_cast<double *>(malloc(graph_width * sizeof(double)));
 
   memcpy(new_graph, original_graph, graph_width * sizeof(double));
 
@@ -517,7 +518,7 @@ double *copy_graph(double *original_graph, int graph_width) {
 
 double *retrieve_graph(int graph_id, int graph_width) {
   if (graphs.find(graph_id) == graphs.end()) {
-    return new double[graph_width];
+    return static_cast<double *>(calloc(1, graph_width * sizeof(double)));
   } else {
     return copy_graph(graphs[graph_id], graph_width);
   }
@@ -527,7 +528,8 @@ void store_graph(int graph_id, struct special_t *s) {
   if (s->graph == nullptr) {
     graphs[graph_id] = nullptr;
   } else {
-    graphs[graph_id] = copy_graph(s->graph, s->graph_width);
+    if (graphs.find(graph_id) != graphs.end()) { free(graphs[graph_id]); }
+    graphs[graph_id] = s->graph;
   }
 }
 
@@ -572,6 +574,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
     }
     s->graph = graph;
     s->graph_allocated = s->graph_width;
+    graphs[g->id] = graph;
   }
   s->height = g->height;
   s->first_colour = adjust_colours(g->first_colour);
