@@ -1050,7 +1050,7 @@ int fscanf_no_i18n(FILE *stream, const char *format, ...) {
   va_list ap;
 
 #ifdef BUILD_I18N
-  const char *oldlocale = setlocale(LC_NUMERIC, nullptr);
+  char *oldlocale = strdup(setlocale(LC_NUMERIC, nullptr));
 
   setlocale(LC_NUMERIC, "C");
 #endif
@@ -1059,6 +1059,7 @@ int fscanf_no_i18n(FILE *stream, const char *format, ...) {
   va_end(ap);
 #ifdef BUILD_I18N
   setlocale(LC_NUMERIC, oldlocale);
+  free(oldlocale);
 #endif
   return returncode;
 }
