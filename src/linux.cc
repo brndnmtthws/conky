@@ -482,7 +482,7 @@ int update_net_stats(void) {
 
 #ifdef BUILD_WLAN
   // wireless info variables
-  int skfd, has_bitrate = 0;
+  int skfd;
   struct wireless_info *winfo;
   struct iwreq wrq;
 #endif
@@ -662,7 +662,6 @@ int update_net_stats(void) {
       if (iw_get_ext(skfd, s, SIOCGIWRATE, &wrq) >= 0) {
         memcpy(&(winfo->bitrate), &(wrq.u.bitrate), sizeof(iwparam));
         iw_print_bitrate(ns->bitrate, 16, winfo->bitrate.value);
-        has_bitrate = 1;
       }
 
       // get link quality
