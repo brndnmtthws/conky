@@ -216,6 +216,7 @@ if(BUILD_HTTP)
 endif(BUILD_HTTP)
 
 if(BUILD_NCURSES)
+  set(CURSES_NEED_NCURSES TRUE)
   include(FindCurses)
   if(NOT CURSES_FOUND)
     message(FATAL_ERROR "Unable to find ncurses library")
