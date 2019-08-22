@@ -179,11 +179,18 @@ int update_meminfo(void) {
   /* unsigned int a; */
   char buf[256];
 
-  unsigned long long shmem = 0, sreclaimable = 0;
+  /* With multi-threading, calculations that require
+   * multple steps to reach a final result can cause havok
+   * if the intermediary calculations are directly assigned to the
+   * information struct (they may be read by other functions in the meantime).
+   * These variables keep the calculations local to the function and finish off
+   * the function by assigning the results to the information struct */
+  unsigned long long shmem = 0, sreclaimable = 0, curmem = 0, curbufmem = 0,
+                     cureasyfree = 0;
 
-  info.mem = info.memwithbuffers = info.memmax = info.memdirty = info.swap =
-      info.swapfree = info.swapmax = info.bufmem = info.buffers = info.cached =
-          info.memfree = info.memeasyfree = 0;
+  info.memmax = info.memdirty = info.swap = info.swapfree = info.swapmax =
+      info.memwithbuffers = info.buffers = info.cached = info.memfree =
+          info.memeasyfree = 0;
 
   if (!(meminfo_fp = open_file("/proc/meminfo", &reported))) { return 0; }
 
@@ -211,8 +218,8 @@ int update_meminfo(void) {
     }
   }
 
-  info.mem = info.memwithbuffers = info.memmax - info.memfree;
-  info.memeasyfree = info.memfree;
+  curmem = info.memwithbuffers = info.memmax - info.memfree;
+  cureasyfree = info.memfree;
   info.swap = info.swapmax - info.swapfree;
 
   /* Reclaimable memory: does not include shared memory, which is part of cached
@@ -220,17 +227,24 @@ int update_meminfo(void) {
      Note: when shared memory is swapped out, shmem decreases and swapfree
      decreases - we want this.
   */
-  info.bufmem = (info.cached - shmem) + info.buffers + sreclaimable;
+  curbufmem = (info.cached - shmem) + info.buffers + sreclaimable;
 
-  /* Now (info.mem - info.bufmem) is the *really used* (aka unreclaimable)
+  /* Now ('info.mem' - 'info.bufmem') is the *really used* (aka unreclaimable)
      memory. When this value reaches the size of the physical RAM, and swap is
      full or non-present, OOM happens. Therefore this is the value users want to
      monitor, regarding their RAM.
   */
   if (no_buffers.get(*state)) {
-    info.mem -= info.bufmem;
-    info.memeasyfree += info.bufmem;
+    curmem -= curbufmem;
+    cureasyfree += curbufmem;
   }
+
+  /* Now that we know that every calculation is finished we can wrap up
+   * by assigning the values to the information structure */
+  info.mem = curmem;
+  info.bufmem = curbufmem;
+  info.memeasyfree = cureasyfree;
+
   fclose(meminfo_fp);
   return 0;
 }
