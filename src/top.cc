@@ -390,10 +390,6 @@ static void process_find_top(struct process **cpu, struct process **mem,
 }
 
 int update_top() {
-  // XXX: this was a separate callback. and it should be again, as soon as it's
-  // possible
-  update_meminfo();
-
   process_find_top(info.cpu, info.memu, info.time
 #ifdef BUILD_IOSTATS
                    ,
