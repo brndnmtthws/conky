@@ -2923,6 +2923,10 @@
                 <command>modelname</command>
                 <option>name of the GPU card</option>
             </member>
+            <member>
+                <command>driverversion</command>
+                <option>Driver version</option>
+            </member>
         </simplelist></para></listitem>
     </varlistentry>
     <varlistentry>
