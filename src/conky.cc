@@ -584,10 +584,10 @@ void human_readable(long long num, char *buf, int size) {
   }
   if (short_units.get(*state)) {
     width = 5;
-    format = "%.*f%.1s";
+    format = "%.*f %.1s";
   } else {
     width = 7;
-    format = "%.*f%-.3s";
+    format = "%.*f %-.3s";
   }
 
   if (llabs(num) < 1000LL) {
@@ -1220,6 +1220,38 @@ static void draw_string(const char *s) {
   memcpy(tmpstring1, s, tbs);
 }
 
+#if defined(BUILD_MATH) && defined(BUILD_X11)
+/// Format \a size as a real followed by closest SI unit, with \a prec number
+/// of digits after the decimal point.
+static std::string formatSizeWithUnits(double size, int prec = 1) {
+  int div = 0;
+  double rem = 0;
+
+  while (size >= 1024.0 &&
+         static_cast<size_t>(div) < (sizeof suffixes / sizeof *suffixes)) {
+    rem = fmod(size, 1024.0);
+    div++;
+    size /= 1024.0;
+  }
+
+  double size_d = size + rem / 1024.0;
+
+  std::ostringstream result;
+  result.setf(std::ios::fixed, std::ios::floatfield);
+  result.precision(prec);
+  result << size_d;
+  result << " ";
+
+  if (short_units.get(*state)) {
+    result << suffixes[div][0];
+  } else {
+    result << suffixes[div];
+  }
+
+  return result.str();
+}
+#endif /* BUILD_MATH && BUILD_X11 */
+
 int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 #ifndef BUILD_X11
   static int cur_x, cur_y; /* current x and y for drawing */
@@ -1489,13 +1521,12 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             if (show_graph_scale.get(*state) && (current->show_scale == 1)) {
               int tmp_x = cur_x;
               int tmp_y = cur_y;
-              char *tmp_str;
               cur_x += font_ascent() / 2;
               cur_y += font_h / 2;
-              if (asprintf(&tmp_str, "%.1f", current->scale)) {
-                draw_string(tmp_str);
-                free(tmp_str);
-              }
+              std::string tmp_str = formatSizeWithUnits(
+                  current->scale_log != 0 ? std::pow(10.0, current->scale)
+                                          : current->scale);
+              draw_string(tmp_str.c_str());
               cur_x = tmp_x;
               cur_y = tmp_y;
             }

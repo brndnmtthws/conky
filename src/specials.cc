@@ -590,7 +590,10 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
   }
   s->tempgrad = g->tempgrad;
 #ifdef BUILD_MATH
-  if ((g->flags & SF_SHOWLOG) != 0) { s->scale = log10(s->scale + 1); }
+  if ((g->flags & SF_SHOWLOG) != 0) {
+    s->scale_log = 1;
+    s->scale = log10(s->scale + 1);
+  }
 #endif
 
   int graph_id = ((struct graph *)obj->special_data)->id;
