@@ -343,7 +343,7 @@ void parse_net_stat_graph_arg(struct text_object *obj, const char *arg,
 }
 
 /**
- * returns the download speed in kiB/s for the interface referenced by obj
+ * returns the download speed in B/s for the interface referenced by obj
  *
  * @param[in] obj struct containting a member data, which is a struct
  *                containing a void * to a net_stat struct
@@ -351,13 +351,13 @@ void parse_net_stat_graph_arg(struct text_object *obj, const char *arg,
 double downspeedgraphval(struct text_object *obj) {
   auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
-  return (ns != nullptr ? (ns->recv_speed / 1024.0) : 0);
+  return (ns != nullptr ? ns->recv_speed : 0);
 }
 
 double upspeedgraphval(struct text_object *obj) {
   auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
 
-  return (ns != nullptr ? (ns->trans_speed / 1024.0) : 0);
+  return (ns != nullptr ? ns->trans_speed : 0);
 }
 #endif /* BUILD_X11 */
 
