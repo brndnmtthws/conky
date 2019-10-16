@@ -538,7 +538,7 @@ static void print_top_user(struct text_object *obj, char *p,
   }
 
 PRINT_TOP_GENERATOR(cpu, (unsigned int)7, "%6.2f", amount)
-PRINT_TOP_GENERATOR(pid, (unsigned int)6, "%5i", pid)
+PRINT_TOP_GENERATOR(pid, (unsigned int)8, "%7i", pid)
 PRINT_TOP_GENERATOR(uid, (unsigned int)6, "%5i", uid)
 PRINT_TOP_HR_GENERATOR(mem_res, rss, 1)
 PRINT_TOP_HR_GENERATOR(mem_vsize, vsize, 1)
