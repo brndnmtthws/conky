@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import os
@@ -116,7 +116,7 @@ def get_changed_files(git_bin, excludes, file_extensions):
 
 def run_clang_format(clang_format_bin, changed_files):
     """
-    Run clang format on a list of files 
+    Run clang format on a list of files
     @return 0 if formatted correctly.
     """
     if len(changed_files) == 0:
