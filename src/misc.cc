@@ -108,6 +108,22 @@ void print_cap(struct text_object *obj, char *p, unsigned int p_max_size) {
   snprintf(p, p_max_size, "%s", buf);
 }
 
+void print_lower(struct text_object *obj, char *p, unsigned int p_max_size) {
+  evaluate(obj->data.s, p, p_max_size);
+  for (unsigned int x = 0; x < p_max_size-1 && p[x]; x++) {
+    p[x] = tolower(p[x]);
+  }
+  p[p_max_size-1] = '\0';
+}
+
+void print_upper(struct text_object *obj, char *p, unsigned int p_max_size) {
+  evaluate(obj->data.s, p, p_max_size);
+  for (unsigned int x = 0; x < p_max_size-1 && p[x]; x++) {
+    p[x] = toupper(p[x]);
+  }
+  p[p_max_size-1] = '\0';
+}
+
 long long int apply_base_multiplier(const char *s, long long int num) {
   long long int base = 1024LL;
   if (*s && (0 == (strcmp(s, "si")))) { base = 1000LL; }
