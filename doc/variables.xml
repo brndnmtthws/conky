@@ -3847,7 +3847,27 @@
             </command>
             <option>text</option>
         </term>
-        <listitem>All words capitalized regardless.
+        <listitem>Capitalises the start of each word.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>lower_case</option>
+            </command>
+            <option>text</option>
+        </term>
+        <listitem>Converts all letters into lowercase.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>upper_case</option>
+            </command>
+            <option>text</option>
+        </term>
+        <listitem>Converts all letters into uppercase.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
