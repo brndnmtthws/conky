@@ -3843,7 +3843,7 @@
     <varlistentry>
         <term>
             <command>
-                <option>start_case</option>
+                <option>startcase</option>
             </command>
             <option>text</option>
         </term>
@@ -3853,7 +3853,7 @@
     <varlistentry>
         <term>
             <command>
-                <option>lower_case</option>
+                <option>lowercase</option>
             </command>
             <option>text</option>
         </term>
@@ -3863,7 +3863,7 @@
     <varlistentry>
         <term>
             <command>
-                <option>upper_case</option>
+                <option>uppercase</option>
             </command>
             <option>text</option>
         </term>

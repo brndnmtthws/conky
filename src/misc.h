@@ -35,8 +35,8 @@
 
 void print_cat(struct text_object *, char *, unsigned int);
 void print_catp(struct text_object *, char *, unsigned int);
-void print_cap(struct text_object *, char *, unsigned int);
-void print_lower(struct text_object *, char *, unsigned int);
-void print_upper(struct text_object *, char *, unsigned int);
+void print_startcase(struct text_object *, char *, unsigned int);
+void print_lowercase(struct text_object *, char *, unsigned int);
+void print_uppercase(struct text_object *, char *, unsigned int);
 long long apply_base_multiplier(const char *, long long int);
 #endif /* _MISC_H */

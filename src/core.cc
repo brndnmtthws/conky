@@ -882,15 +882,18 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #ifdef __x86_64__
   END OBJ(freq2, 0) obj->callbacks.print = &print_freq2;
 #endif /* __x86_64__ */
-
+  END OBJ(startcase, 0) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_startcase;
+  obj->callbacks.free = &gen_free_opaque;
+  // Deprecated, for compatibility purposes only
   END OBJ(start_case, 0) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_cap;
+  obj->callbacks.print = &print_startcase;
   obj->callbacks.free = &gen_free_opaque;
-  END OBJ(lower_case, 0) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_lower;
+  END OBJ(lowercase, 0) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_lowercase;
   obj->callbacks.free = &gen_free_opaque;
-  END OBJ(upper_case, 0) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_upper;
+  END OBJ(uppercase, 0) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_uppercase;
   obj->callbacks.free = &gen_free_opaque;
   END OBJ(catp, 0) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_catp;
