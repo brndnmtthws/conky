@@ -85,7 +85,8 @@ void print_catp(struct text_object *obj, char *p, unsigned int p_max_size) {
   delete[] buf;
 }
 
-void print_startcase(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_startcase(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   unsigned int x = 0;
   int z = 0;
   char buf[DEFAULT_TEXT_BUFFER_SIZE];
@@ -108,7 +109,8 @@ void print_startcase(struct text_object *obj, char *p, unsigned int p_max_size) 
   snprintf(p, p_max_size, "%s", buf);
 }
 
-void print_lowercase(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_lowercase(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   evaluate(obj->data.s, p, p_max_size);
   for (unsigned int x = 0; x < p_max_size - 1 && p[x]; x++) {
     p[x] = tolower(p[x]);
@@ -116,7 +118,8 @@ void print_lowercase(struct text_object *obj, char *p, unsigned int p_max_size) 
   p[p_max_size - 1] = '\0';
 }
 
-void print_uppercase(struct text_object *obj, char *p, unsigned int p_max_size) {
+void print_uppercase(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   evaluate(obj->data.s, p, p_max_size);
   for (unsigned int x = 0; x < p_max_size - 1 && p[x]; x++) {
     p[x] = toupper(p[x]);
