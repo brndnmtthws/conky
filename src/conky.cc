@@ -283,6 +283,9 @@ std::string current_config;
 static conky::simple_config_setting<bool> stuff_in_uppercase("uppercase", false,
                                                              true);
 
+static conky::simple_config_setting<bool> stuff_in_lowercase("lowercase", false,
+                                                             true);
+
 /* Run how many times? */
 static conky::range_config_setting<unsigned long> total_run_times(
     "total_run_times", 0, std::numeric_limits<unsigned long>::max(), 0, true);
@@ -792,6 +795,14 @@ static void generate_text() {
     tmp_p = text_buffer;
     while (*tmp_p != 0) {
       *tmp_p = toupper(static_cast<unsigned char>(*tmp_p));
+      tmp_p++;
+    }
+  } else if (stuff_in_lowercase.get(*state)) {
+    char *tmp_p;
+
+    tmp_p = text_buffer;
+    while (*tmp_p != 0) {
+      *tmp_p = tolower(static_cast<unsigned char>(*tmp_p));
       tmp_p++;
     }
   }
