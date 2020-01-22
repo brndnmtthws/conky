@@ -3873,11 +3873,11 @@
     <varlistentry>
         <term>
             <command>
-                <option>strip</option>
+                <option>rstrip</option>
             </command>
             <option>text</option>
         </term>
-        <listitem>Strips all whitespace from ends of input.
+        <listitem>Strips all trailing whitespace from input.
         <para /></listitem>
     </varlistentry>
     <varlistentry>

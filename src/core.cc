@@ -895,7 +895,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(uppercase, 0) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_uppercase;
   obj->callbacks.free = &gen_free_opaque;
-  END OBJ(strip, 0) obj->data.s = STRNDUP_ARG;
+  END OBJ(rstrip, 0) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &strip_trailing_whitespace;
   obj->callbacks.free = &gen_free_opaque;
   END OBJ(catp, 0) obj->data.s = STRNDUP_ARG;
