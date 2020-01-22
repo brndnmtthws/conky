@@ -117,6 +117,20 @@ void print_uppercase(struct text_object *obj, char *p,
   }
 }
 
+void strip_trailing_whitespace(struct text_object *obj, char *p,
+                               unsigned int p_max_size) {
+  evaluate(obj->data.s, p, p_max_size);
+  for (unsigned int x = p_max_size - 2;; x--) {
+    if (p[x] && !isspace(p[x])) {
+      p[x + 1] = '\0';
+      break;
+    } else if (x == 0) {
+      p[x] = '\0';
+      break;
+    }
+  }
+}
+
 long long int apply_base_multiplier(const char *s, long long int num) {
   long long int base = 1024LL;
   if (*s && (0 == (strcmp(s, "si")))) { base = 1000LL; }
