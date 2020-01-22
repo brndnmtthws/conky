@@ -99,7 +99,6 @@ void print_startcase(struct text_object *obj, char *p,
       z++;
     }
   }
-  p[p_max_size - 1] = '\0';
 }
 
 void print_lowercase(struct text_object *obj, char *p,
@@ -108,7 +107,6 @@ void print_lowercase(struct text_object *obj, char *p,
   for (unsigned int x = 0; x < p_max_size - 1 && p[x]; x++) {
     p[x] = tolower(p[x]);
   }
-  p[p_max_size - 1] = '\0';
 }
 
 void print_uppercase(struct text_object *obj, char *p,
@@ -117,7 +115,6 @@ void print_uppercase(struct text_object *obj, char *p,
   for (unsigned int x = 0; x < p_max_size - 1 && p[x]; x++) {
     p[x] = toupper(p[x]);
   }
-  p[p_max_size - 1] = '\0';
 }
 
 long long int apply_base_multiplier(const char *s, long long int num) {
