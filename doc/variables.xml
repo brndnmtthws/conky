@@ -3873,6 +3873,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>strip</option>
+            </command>
+            <option>text</option>
+        </term>
+        <listitem>Strips all whitespace from ends of input.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>stippled_hr</option>
             </command>
             <option>(space)</option>
