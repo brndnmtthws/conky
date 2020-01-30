@@ -88,14 +88,12 @@ void print_catp(struct text_object *obj, char *p, unsigned int p_max_size) {
 void print_startcase(struct text_object *obj, char *p,
                      unsigned int p_max_size) {
   evaluate(obj->data.s, p, p_max_size);
+
   for (unsigned int x = 0, z = 0; x < p_max_size - 1 && p[x]; x++) {
     if (isspace(p[x])) {
       z = 0;
-    } else if (z == 0) {
-      p[x] = toupper(p[x]);
-      z++;
     } else {
-      p[x] = tolower(p[x]);
+      p[x] = z ? tolower(p[x]) : toupper(p[x]);
       z++;
     }
   }
@@ -104,17 +102,17 @@ void print_startcase(struct text_object *obj, char *p,
 void print_lowercase(struct text_object *obj, char *p,
                      unsigned int p_max_size) {
   evaluate(obj->data.s, p, p_max_size);
-  for (unsigned int x = 0; x < p_max_size - 1 && p[x]; x++) {
+
+  for (unsigned int x = 0; x < p_max_size - 1 && p[x]; x++)
     p[x] = tolower(p[x]);
-  }
 }
 
 void print_uppercase(struct text_object *obj, char *p,
                      unsigned int p_max_size) {
   evaluate(obj->data.s, p, p_max_size);
-  for (unsigned int x = 0; x < p_max_size - 1 && p[x]; x++) {
+
+  for (unsigned int x = 0; x < p_max_size - 1 && p[x]; x++)
     p[x] = toupper(p[x]);
-  }
 }
 
 void strip_trailing_whitespace(struct text_object *obj, char *p,
