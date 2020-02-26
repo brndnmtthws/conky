@@ -517,7 +517,7 @@ static void print_top_user(struct text_object *obj, char *p,
   if (pw != nullptr) {
     snprintf(p, p_max_size, "%.8s", pw->pw_name);
   } else {
-    NORM_ERR("The uid doesn't exist");
+    snprintf(p, p_max_size, "%d", td->list[td->num]->uid);
   }
 }
 
