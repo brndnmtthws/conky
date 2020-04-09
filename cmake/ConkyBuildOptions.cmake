@@ -91,7 +91,9 @@ option(CHECK_CODE_QUALITY "Check code formatting/quality with clang" false)
 option(RELEASE "Build release package" false)
 mark_as_advanced(RELEASE)
 
-option(MAINTAINER_MODE "Enable maintainer mode (builds docs)" false)
+option(MAINTAINER_MODE "Enable maintainer mode" false)
+
+option(BUILD_DOCS "Build documentation" false)
 
 option(BUILD_I18N "Enable if you want internationalization support" true)
 if(BUILD_I18N)
@@ -125,7 +127,7 @@ set(MAX_USER_TEXT_DEFAULT "16384"
           "Default maximum size of config TEXT buffer, i.e. below TEXT line.")
 set(DEFAULT_TEXT_BUFFER_SIZE "256"
     CACHE STRING "Default size used for temporary, static text buffers")
-set(MAX_NET_INTERFACES "64" CACHE STRING "Maximum number of network devices")
+set(MAX_NET_INTERFACES "256" CACHE STRING "Maximum number of network devices")
 
 # Platform specific options Linux only
 if(OS_LINUX)

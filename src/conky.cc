@@ -100,6 +100,7 @@
 #include "mail.h"
 #include "nc.h"
 #include "net_stat.h"
+#include "specials.h"
 #include "temphelper.h"
 #include "template.h"
 #include "timeinfo.h"
@@ -280,6 +281,9 @@ std::string current_config;
 
 /* set to 1 if you want all text to be in uppercase */
 static conky::simple_config_setting<bool> stuff_in_uppercase("uppercase", false,
+                                                             true);
+
+static conky::simple_config_setting<bool> stuff_in_lowercase("lowercase", false,
                                                              true);
 
 /* Run how many times? */
@@ -583,10 +587,10 @@ void human_readable(long long num, char *buf, int size) {
   }
   if (short_units.get(*state)) {
     width = 5;
-    format = "%.*f%.1s";
+    format = "%.*f %.1s";
   } else {
     width = 7;
-    format = "%.*f%-.3s";
+    format = "%.*f %-.3s";
   }
 
   if (llabs(num) < 1000LL) {
@@ -729,16 +733,12 @@ void evaluate(const char *text, char *p, int p_max_size) {
 
   /**
    * Consider expressions like: ${execp echo '${execp echo hi}'}
-   * These would require multiple passes of evaluation:
-   * The first pass would parse the first level of |execp| and would generate
-   * a callback registration using |register_exec|, but to correctly evaluate
-   * the expression, we would need to wait for the just registered callback to
-   * execute and return its result.
+   * These would require run extract_variable_text_internal() before
+   * callbacks and generate_text_internal() after callbacks.
    */
-  parse_conky_vars(&subroot, text, p, p_max_size);
+  extract_variable_text_internal(&subroot, text);
   conky::run_all_callbacks();
-  // Run another evaluation pass.
-  parse_conky_vars(&subroot, text, p, p_max_size);
+  generate_text_internal(p, p_max_size, subroot);
   DBGP2("evaluated '%s' to '%s'", text, p);
 
   free_text_objects(&subroot);
@@ -795,6 +795,14 @@ static void generate_text() {
     tmp_p = text_buffer;
     while (*tmp_p != 0) {
       *tmp_p = toupper(static_cast<unsigned char>(*tmp_p));
+      tmp_p++;
+    }
+  } else if (stuff_in_lowercase.get(*state)) {
+    char *tmp_p;
+
+    tmp_p = text_buffer;
+    while (*tmp_p != 0) {
+      *tmp_p = tolower(static_cast<unsigned char>(*tmp_p));
       tmp_p++;
     }
   }
@@ -1223,6 +1231,38 @@ static void draw_string(const char *s) {
   memcpy(tmpstring1, s, tbs);
 }
 
+#if defined(BUILD_MATH) && defined(BUILD_X11)
+/// Format \a size as a real followed by closest SI unit, with \a prec number
+/// of digits after the decimal point.
+static std::string formatSizeWithUnits(double size, int prec = 1) {
+  int div = 0;
+  double rem = 0;
+
+  while (size >= 1024.0 &&
+         static_cast<size_t>(div) < (sizeof suffixes / sizeof *suffixes)) {
+    rem = fmod(size, 1024.0);
+    div++;
+    size /= 1024.0;
+  }
+
+  double size_d = size + rem / 1024.0;
+
+  std::ostringstream result;
+  result.setf(std::ios::fixed, std::ios::floatfield);
+  result.precision(prec);
+  result << size_d;
+  result << " ";
+
+  if (short_units.get(*state)) {
+    result << suffixes[div][0];
+  } else {
+    result << suffixes[div];
+  }
+
+  return result.str();
+}
+#endif /* BUILD_MATH && BUILD_X11 */
+
 int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 #ifndef BUILD_X11
   static int cur_x, cur_y; /* current x and y for drawing */
@@ -1423,13 +1463,13 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
                   }
                 }
                 /* this is mugfugly, but it works */
-                XDrawLine(
-                    display, window.drawable, window.gc,
-                    text_offset_x + cur_x + i + 1, text_offset_y + by + h,
-                    text_offset_x + cur_x + i + 1,
-                    text_offset_y + round_to_int(static_cast<double>(by) + h -
-                                                 current->graph[j] * (h - 1) /
-                                                     current->scale));
+                XDrawLine(display, window.drawable, window.gc,
+                          text_offset_x + cur_x + i + 1, text_offset_y + by + h,
+                          text_offset_x + cur_x + i + 1,
+                          text_offset_y + round_to_positive_int(
+                                              static_cast<double>(by) + h -
+                                              current->graph[j] * (h - 1) /
+                                                  current->scale));
                 ++j;
               }
               free_and_zero(tmpcolour);
@@ -1492,13 +1532,12 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             if (show_graph_scale.get(*state) && (current->show_scale == 1)) {
               int tmp_x = cur_x;
               int tmp_y = cur_y;
-              char *tmp_str;
               cur_x += font_ascent() / 2;
               cur_y += font_h / 2;
-              if (asprintf(&tmp_str, "%.1f", current->scale)) {
-                draw_string(tmp_str);
-                free(tmp_str);
-              }
+              std::string tmp_str = formatSizeWithUnits(
+                  current->scale_log != 0 ? std::pow(10.0, current->scale)
+                                          : current->scale);
+              draw_string(tmp_str.c_str());
               cur_x = tmp_x;
               cur_y = tmp_y;
             }
@@ -2385,6 +2424,8 @@ void free_specials(special_t *&current) {
     delete current;
     current = nullptr;
   }
+
+  clear_stored_graphs();
 }
 
 void clean_up_without_threads(void *memtofree1, void *memtofree2) {

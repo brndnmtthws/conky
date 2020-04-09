@@ -54,6 +54,8 @@ static kstat_ctl_t *kstat;
 static time_t kstat_updated;
 static int pageshift = INT_MAX;
 
+static pthread_mutex_t kstat_mtx = PTHREAD_MUTEX_INITIALIZER;
+
 static int pagetok(int pages) {
   if (pageshift == INT_MAX) {
     int pagesize = sysconf(_SC_PAGESIZE);
@@ -65,23 +67,32 @@ static int pagetok(int pages) {
 }
 
 static void update_kstat() {
-  time_t now = time(nullptr);
+  time_t now;
+
+  pthread_mutex_lock(&kstat_mtx);
+  now = time(nullptr);
 
   if (kstat == nullptr) {
     if ((kstat = kstat_open()) == nullptr) {
+      pthread_mutex_unlock(&kstat_mtx);
       NORM_ERR("can't open kstat: %s", strerror(errno));
       return;
     }
     kstat_updated = 0;
   }
-  if (now - kstat_updated < 2) /* Do not update kstats too often */
+  if (now - kstat_updated < 2) {
+    /* Do not update kstats too often */
+    pthread_mutex_unlock(&kstat_mtx);
     return;
+  }
 
   if (kstat_chain_update(kstat) == -1) {
+    pthread_mutex_unlock(&kstat_mtx);
     perror("kstat_chain_update");
     return;
   }
   kstat_updated = now;
+  pthread_mutex_unlock(&kstat_mtx);
 }
 
 static kstat_named_t *get_kstat(const char *module, int inst, const char *name,
@@ -90,10 +101,12 @@ static kstat_named_t *get_kstat(const char *module, int inst, const char *name,
 
   update_kstat();
 
+  pthread_mutex_lock(&kstat_mtx);
   ksp = kstat_lookup(kstat, (char *)module, inst, (char *)name);
   if (ksp == nullptr) {
     NORM_ERR("cannot lookup kstat %s:%d:%s:%s %s", module, inst, name, stat,
              strerror(errno));
+    pthread_mutex_unlock(&kstat_mtx);
     return nullptr;
   }
 
@@ -101,14 +114,17 @@ static kstat_named_t *get_kstat(const char *module, int inst, const char *name,
     if (ksp->ks_type == KSTAT_TYPE_NAMED || ksp->ks_type == KSTAT_TYPE_TIMER) {
       kstat_named_t *knp =
           (kstat_named_t *)kstat_data_lookup(ksp, (char *)stat);
+      pthread_mutex_unlock(&kstat_mtx);
       return knp;
     } else {
       NORM_ERR("kstat %s:%d:%s:%s has unexpected type %d", module, inst, name,
                stat, ksp->ks_type);
+      pthread_mutex_unlock(&kstat_mtx);
       return nullptr;
     }
   }
   NORM_ERR("cannot read kstat %s:%d:%s:%s", module, inst, name, stat);
+  pthread_mutex_unlock(&kstat_mtx);
   return nullptr;
 }
 
@@ -272,6 +288,7 @@ int update_cpu_usage(void) {
   static int last_cpu_cnt = 0;
   static int *last_cpu_use = nullptr;
   double d = current_update_time - last_update_time;
+  double total_cpu_usage = 0;
   int cpu;
 
   if (d < 0.1) return 0;
@@ -282,22 +299,24 @@ int update_cpu_usage(void) {
 
   /* (Re)allocate the array with previous values */
   if (last_cpu_cnt != info.cpu_count || last_cpu_use == nullptr) {
-    last_cpu_use = (int *)realloc(last_cpu_use, info.cpu_count * sizeof(int));
+    last_cpu_use =
+        (int *)realloc(last_cpu_use, (info.cpu_count + 1) * sizeof(int));
     last_cpu_cnt = info.cpu_count;
     if (last_cpu_use == nullptr) return 0;
   }
 
-  info.cpu_usage = (float *)malloc(info.cpu_count * sizeof(float));
+  info.cpu_usage = (float *)malloc((info.cpu_count + 1) * sizeof(float));
 
-  for (cpu = 0; cpu < info.cpu_count; cpu++) {
+  pthread_mutex_lock(&kstat_mtx);
+  for (cpu = 1; cpu <= info.cpu_count; cpu++) {
     char stat_name[PATH_MAX];
     unsigned long cpu_user, cpu_nice, cpu_system, cpu_idle;
     unsigned long cpu_use;
     cpu_stat_t *cs;
     kstat_t *ksp;
 
-    snprintf(stat_name, PATH_MAX, "cpu_stat%d", cpu);
-    ksp = kstat_lookup(kstat, (char *)"cpu_stat", cpu, stat_name);
+    snprintf(stat_name, PATH_MAX, "cpu_stat%d", cpu - 1);
+    ksp = kstat_lookup(kstat, (char *)"cpu_stat", cpu - 1, stat_name);
     if (ksp == nullptr) continue;
     if (kstat_read(kstat, ksp, nullptr) == -1) continue;
     cs = (cpu_stat_t *)ksp->ks_data;
@@ -310,8 +329,12 @@ int update_cpu_usage(void) {
     cpu_use = cpu_user + cpu_nice + cpu_system;
 
     info.cpu_usage[cpu] = (double)(cpu_use - last_cpu_use[cpu]) / d / 100.0;
+    total_cpu_usage += info.cpu_usage[cpu];
     last_cpu_use[cpu] = cpu_use;
   }
+  pthread_mutex_unlock(&kstat_mtx);
+
+  info.cpu_usage[0] = total_cpu_usage / info.cpu_count;
 
   return 0;
 }
@@ -377,6 +400,7 @@ int update_diskio(void) {
 
   update_kstat();
 
+  pthread_mutex_lock(&kstat_mtx);
   for (struct diskio_stat *cur = &stats; cur; cur = cur->next) {
     unsigned int read, written;
     kstat_io_t *ksio;
@@ -392,6 +416,7 @@ int update_diskio(void) {
   }
 
   update_diskio_values(&stats, tot_read, tot_written);
+  pthread_mutex_unlock(&kstat_mtx);
 
   return 0;
 }

@@ -47,8 +47,9 @@ pull ubuntu gcc-5: *pull_images
 pull ubuntu gcc-6: *pull_images
 pull ubuntu gcc-7: *pull_images
 pull ubuntu gcc-8: *pull_images
-pull fedora gcc-8: *pull_images
-pull fedora clang-7: *pull_images
+pull fedora-29 gcc-8: *pull_images
+pull fedora-29 clang-7: *pull_images
+pull fedora-31 clang-8: *pull_images
 pull centos6 gcc-7: *pull_images
 pull centos7 gcc-7: *pull_images
 pull centos7 gcc-8: *pull_images
@@ -100,10 +101,15 @@ builder ubuntu base:
   variables:
     DOCKER_BASE_IMAGE: ubuntu:bionic
 
-builder fedora base:
+builder fedora-29 base:
   <<: *docker_base_builder
   variables:
-    DOCKER_BASE_IMAGE: fedora:latest
+    DOCKER_BASE_IMAGE: fedora:29
+
+builder fedora-31 base:
+  <<: *docker_base_builder
+  variables:
+    DOCKER_BASE_IMAGE: fedora:31
 
 builder centos6 base:
   <<: *docker_base_builder
@@ -148,8 +154,9 @@ builder ubuntu gcc-5: *docker_builder
 builder ubuntu gcc-6: *docker_builder
 builder ubuntu gcc-7: *docker_builder
 builder ubuntu gcc-8: *docker_builder
-builder fedora gcc-8: *docker_builder
-builder fedora clang-7: *docker_builder
+builder fedora-29 gcc-8: *docker_builder
+builder fedora-29 clang-7: *docker_builder
+builder fedora-31 clang-8: *docker_builder
 builder centos6 gcc-7: *docker_builder
 builder centos7 gcc-7: *docker_builder
 builder centos7 gcc-8: *docker_builder
@@ -194,8 +201,6 @@ builder centos7 clang-5: *docker_builder
     - make -j4
 
 .build_variables: &build_variables
-  CC: clang-7
-  CXX: clang++-7
   LINKER_FLAGS: ""
   BUILD_AUDACIOUS: "ON"
   BUILD_XMMS2: "ON"
@@ -258,22 +263,32 @@ ubuntu gcc-8:
     CC: gcc-8
     CXX: g++-8
 
-fedora gcc-8:
+fedora-29 gcc-8:
   <<: *build_stages
   variables:
     <<: *build_variables
-    DISTRO: fedora
+    DISTRO: fedora-29
     COMPILER: gcc-8
     CC: gcc
     CXX: g++
     BUILD_AUDACIOUS: "OFF"
 
-fedora clang-7:
+fedora-29 clang-7:
   <<: *build_stages
   variables:
     <<: *build_variables
-    DISTRO: fedora
+    DISTRO: fedora-29
     COMPILER: clang-7
+    CC: clang
+    CXX: clang++
+    BUILD_AUDACIOUS: "OFF"
+
+fedora-31 clang-8:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    DISTRO: fedora-31
+    COMPILER: clang-8
     CC: clang
     CXX: clang++
     BUILD_AUDACIOUS: "OFF"
@@ -357,11 +372,11 @@ centos7 clang-5:
       - stuck_or_timeout_failure
       - unknown_failure
       - api_failure
-  allow_failure: true
   tags:
     - freebsd12
   before_script:
     - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
+    - 'echo "COMPILER_PACKAGE: $COMPILER_PACKAGE"'
     # Try up to 7 times until installation succeeds. It may be locked.
     - >
       (
@@ -403,8 +418,6 @@ centos7 clang-5:
       cmake
       -DCMAKE_REQUIRED_INCLUDES="/usr/include;/usr/local/include"
       -DCMAKE_EXE_LINKER_FLAGS=$LINKER_FLAGS
-      -DCMAKE_C_COMPILER_LAUNCHER=sccache
-      -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
       -DMAINTAINER_MODE=ON
       -DBUILD_MYSQL=ON
       -DBUILD_LUA_IMLIB2=ON
@@ -435,9 +448,19 @@ freebsd12 clang-7:
   stage: build
   variables:
     DISTRO: freebsd12
-    CC: clang
-    CXX: clang++
+    CC: clang70
+    CXX: clang++70
     COMPILER_PACKAGE: llvm70
+  <<: *freebsd_build_script
+
+freebsd12 clang-8:
+  <<: *freebsd_deps
+  stage: build
+  variables:
+    DISTRO: freebsd12
+    CC: clang80
+    CXX: clang++80
+    COMPILER_PACKAGE: llvm80
   <<: *freebsd_build_script
 
 .test_stages: &test_stages
@@ -456,13 +479,20 @@ freebsd12 clang-7:
     - "echo \"Distro: ${DISTRO}\nCompiler: ${COMPILER}\nCC: $CC\nCXX: $CXX\""
     - mkdir build
     - cd build
-    - >
-      cmake
-      -DCMAKE_C_COMPILER_LAUNCHER=sccache
-      -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
-      -DMAINTAINER_MODE=ON
-      -DBUILD_TESTS=ON
-      ..
+    - |
+      if [[ "$DISTRO" == "freebsd12" ]] ; then
+        cmake \
+        -DBUILD_TESTS=ON \
+        -DMAINTAINER_MODE=ON \
+        ..
+      else
+        cmake \
+        -DCMAKE_C_COMPILER_LAUNCHER=sccache \
+        -DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
+        -DBUILD_TESTS=ON \
+        -DMAINTAINER_MODE=ON \
+        ..
+      fi
     - make -j4
     - make -j4 test
     - if [ "$COMPILER" == "clang-7" ] ; then make -j4 test-conky-coverage-txt ; fi
@@ -472,13 +502,20 @@ freebsd12 clang-7:
     - if [[ "$DISTRO" == "freebsd12" ]] ; then sudo make install ; else make install ; fi
     - conky -v
     - find . -iname '*.gcda' -delete
-    - >
-      cmake
-      -DCMAKE_C_COMPILER_LAUNCHER=sccache
-      -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
-      -DCMAKE_BUILD_TYPE=RelWithDebInfo
-      -DRELEASE=ON
-      ..
+    - |
+      if [[ "$DISTRO" == "freebsd12" ]] ; then
+        cmake \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DRELEASE=ON \
+        ..
+      else
+        cmake \
+        -DCMAKE_C_COMPILER_LAUNCHER=sccache \
+        -DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DRELEASE=ON \
+        ..
+      fi
     - make -j4
     - if [[ "$DISTRO" == "freebsd12" ]] ; then sudo make install ; else make install ; fi
     - conky -v
@@ -542,23 +579,33 @@ test ubuntu gcc-8:
     CC: gcc-8
     CXX: g++-8
 
-test fedora clang-7:
+
+test fedora-29 gcc-8:
   <<: *test_stages
   <<: *test_run
   variables:
-    DISTRO: fedora
+    DISTRO: fedora-29
+    COMPILER: gcc-8
+    CC: gcc
+    CXX: g++
+
+test fedora-29 clang-7:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: fedora-29
     COMPILER: clang-7
     CC: clang
     CXX: clang++
 
-test fedora gcc-8:
+test fedora-31 clang-8:
   <<: *test_stages
   <<: *test_run
   variables:
-    DISTRO: fedora
-    COMPILER: gcc-8
-    CC: gcc
-    CXX: g++
+    DISTRO: fedora-31
+    COMPILER: clang-8
+    CC: clang
+    CXX: clang++
 
 test centos6 gcc-7:
   <<: *test_stages
@@ -615,8 +662,18 @@ test freebsd12 clang-7:
     DISTRO: freebsd12
     COMPILER: clang-7
     COMPILER_PACKAGE: llvm70
-    CC: clang
-    CXX: clang++
+    CC: clang70
+    CXX: clang++70
+
+test freebsd12 clang-8:
+  <<: *freebsd_deps
+  <<: *test_run
+  variables:
+    DISTRO: freebsd12
+    COMPILER: clang-8
+    COMPILER_PACKAGE: llvm80
+    CC: clang80
+    CXX: clang++80
 
 test freebsd12 gcc-8:
   <<: *freebsd_deps
@@ -631,10 +688,10 @@ test freebsd12 gcc-8:
 check clang-tidy:
   <<: *test_stages
   variables:
-    COMPILER: clang-7
+    COMPILER: clang-8
     DISTRO: ubuntu
-    CC: clang-7
-    CXX: clang++-7
+    CC: clang-8
+    CXX: clang++-8
   script:
     - mkdir build
     - cd build
@@ -651,10 +708,10 @@ check clang-tidy:
 check clang-format:
   <<: *test_stages
   variables:
-    COMPILER: clang-7
+    COMPILER: clang-8
     DISTRO: ubuntu
-    CC: clang-7
-    CXX: clang++-7
+    CC: clang-8
+    CXX: clang++-8
   script:
     - mkdir build
     - cd build
@@ -701,7 +758,8 @@ check clang-format:
 push ubuntu base: *push_base_images
 push centos6 base: *push_base_images
 push centos7 base: *push_base_images
-push fedora base: *push_base_images
+push fedora-29 base: *push_base_images
+push fedora-31 base: *push_base_images
 
 .push_images: &push_images
   <<: *push_base_images
@@ -728,8 +786,9 @@ push ubuntu gcc-5: *push_images
 push ubuntu gcc-6: *push_images
 push ubuntu gcc-7: *push_images
 push ubuntu gcc-8: *push_images
-push fedora gcc-8: *push_images
-push fedora clang-7: *push_images
+push fedora-29 gcc-8: *push_images
+push fedora-29 clang-7: *push_images
+push fedora-31 clang-8: *push_images
 push centos6 gcc-7: *push_images
 push centos7 gcc-7: *push_images
 push centos7 gcc-8: *push_images

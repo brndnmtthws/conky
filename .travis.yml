@@ -7,6 +7,50 @@ matrix:
       addons:
         apt:
           sources:
+            - llvm-toolchain-xenial-8
+          packages:
+            - clang-8
+            - llvm-8
+            - lld-8
+            - libc++-8-dev
+            - libc++abi-8-dev
+            - lcov
+            - cmake
+            - docbook2x
+            - libxdamage-dev
+            - libx11-dev
+            - libxft-dev
+            - libxext-dev
+            - libglib2.0-dev
+            - libxml2-dev
+            - libcurl4-gnutls-dev
+            - liblua5.3-dev
+            - libcairo2-dev
+            - libimlib2-dev
+            - libxinerama-dev
+            - libmysqlclient-dev
+            - libical-dev
+            - libircclient-dev
+            - libcairo2-dev
+            - libmicrohttpd-dev
+            - ncurses-dev
+            - librsvg2-dev
+            - libaudclient-dev
+            - libxmmsclient-dev
+            - libpulse-dev
+            - libcurl4-gnutls-dev
+            - audacious-dev
+            - libsystemd-dev
+            - libxnvctrl-dev
+            - libircclient-dev
+            - gawk
+      env:
+        - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
             - llvm-toolchain-xenial-7
           packages:
             - clang-7
@@ -221,6 +265,7 @@ cache:
   - directories:
       - "$HOME/.sonar/cache"
 before_deploy:
+  - cd $TRAVIS_BUILD_DIR
   - openssl aes-256-cbc -K $encrypted_38876355cb3e_key -iv $encrypted_38876355cb3e_iv
     -in appimage/secret.gpg.enc -out appimage/secret.gpg -d
   - "gpg --import appimage/secret.gpg"
@@ -233,6 +278,6 @@ deploy:
   skip_cleanup: true
   on:
     tags: true
-    condition: "$CXX = clang++-7"
+    condition: "$CXX = clang++-8"
   api_key:
     secure: YGmk5e9am7gwH1pKJVwjHPheaLrSxMIIa5iDvnto9KKaj9VDgsynzPFcwfP6my78qMszdpC7IsjpukpKFBpmifAZ7OQcpEDFp1d91kXcTEM9ILgu3j3kl/gr6nIkzqJO9VAwlYO5H3t5xlD6EZa36FGg0Nlvi2cCuNG7mEyVJy0=

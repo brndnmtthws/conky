@@ -42,6 +42,8 @@
    Author: Carl Worth <cworth@cworth.org>
 */
 
+$#pragma clang diagnostic push
+$#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 $#include <glib.h>
 $#include <librsvg/rsvg.h>
 $#include "librsvg-helper.h"
@@ -105,3 +107,27 @@ void g_object_unref(gpointer object);
 
 RsvgHandle * rsvg_create_handle_from_file(const char *);
 int rsvg_destroy_handle(RsvgHandle *);
+
+RsvgHandle *rsvg_handle_new_with_flags (RsvgHandleFlags flags);
+
+void        rsvg_handle_set_base_gfile (RsvgHandle *handle,
+                                        GFile      *base_file);
+
+gboolean    rsvg_handle_read_stream_sync (RsvgHandle   *handle,
+                                          GInputStream *stream,
+                                          GCancellable *cancellable,
+                                          GError      **error);
+
+RsvgHandle *rsvg_handle_new_from_gfile_sync (GFile          *file,
+                                             RsvgHandleFlags flags,
+                                             GCancellable   *cancellable,
+                                             GError        **error);
+
+RsvgHandle *rsvg_handle_new_from_stream_sync (GInputStream   *input_stream,
+                                              GFile          *base_file,
+                                              RsvgHandleFlags flags,
+                                              GCancellable   *cancellable,
+                                              GError        **error);
+
+RsvgHandle *rsvg_handle_new_from_data (const guint8 *data, gsize data_len, GError **error);
+RsvgHandle *rsvg_handle_new_from_file (const gchar *filename, GError **error);

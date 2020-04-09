@@ -54,9 +54,10 @@
  * ambienttemp [gpu_id]}°C FAN    ${nvidia fanspeed [gpu_id]} RPM (${nvidia
  * fanlevel [gpu_id]}%)
  *
- * miscelaneas:
+ * Miscellaneous:
  * OPENGL ${nvidia imagequality [gpu_id]}
  * GPU    ${nvidia modelname [gpu_id]}
+ * DRIVER ${nvidia driverversion [gpu_id]}
  *
  * --==| NVIDIA Bars |==--
  * LOAD  ${nvidiabar [height][,width] gpuutil [gpu_id]}
@@ -135,7 +136,7 @@ const char *translate_module_argument[] = {
     "fanlevel",
 
     "imagequality",  // Miscellaneous
-    "modelname"};
+    "modelname", "driverversion"};
 
 // Enum for module arguments
 typedef enum _ARG_ID {
@@ -185,8 +186,8 @@ typedef enum _ARG_ID {
   ARG_FAN_LEVEL,
 
   ARG_IMAGEQUALITY,
-
   ARG_MODEL_NAME,
+  ARG_DRIVER_VERSION,
 
   ARG_UNKNOWN
 } ARG_ID;
@@ -243,6 +244,9 @@ const int translate_nvidia_attribute[] = {
 
     NV_CTRL_GPU_CURRENT_PERFORMANCE_LEVEL,
     NV_CTRL_IMAGE_SETTINGS,
+
+    NV_CTRL_STRING_PRODUCT_NAME,
+    NV_CTRL_STRING_NVIDIA_DRIVER_VERSION,
 };
 
 // Enum for nvidia query attributes
@@ -271,7 +275,7 @@ typedef enum _ATTR_ID {
   ATTR_IMAGE_QUALITY,
 
   ATTR_MODEL_NAME,
-
+  ATTR_DRIVER_VERSION,
 } ATTR_ID;
 
 // Enum for query type
@@ -653,6 +657,12 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
       nvs->query = QUERY_STRING;
       nvs->target = TARGET_GPU;
       nvs->attribute = ATTR_MODEL_NAME;
+      break;
+
+    case ARG_DRIVER_VERSION:
+      nvs->query = QUERY_STRING;
+      nvs->target = TARGET_GPU;
+      nvs->attribute = ATTR_DRIVER_VERSION;
       break;
 
     default:  // Unknown/invalid argument

@@ -1,5 +1,4 @@
-/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=cpp
+/*
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -9,9 +8,8 @@
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
- *   (see AUTHORS)
+ * Copyright (c) 2005-2019 Brenden Matthews, Philip Kovacs, et. al.
+ *	(see AUTHORS)
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,16 +26,25 @@
  *
  */
 
-#ifndef _MISC_H
-#define _MISC_H
+#include "catch2/catch.hpp"
 
-#include "text_object.h"
+#include <config.h>
+#include <conky.h>
+#include <diskio.h>
 
-void print_cat(struct text_object *, char *, unsigned int);
-void print_catp(struct text_object *, char *, unsigned int);
-void print_startcase(struct text_object *, char *, unsigned int);
-void print_lowercase(struct text_object *, char *, unsigned int);
-void print_uppercase(struct text_object *, char *, unsigned int);
-void strip_trailing_whitespace(struct text_object *, char *, unsigned int);
-long long apply_base_multiplier(const char *, long long int);
-#endif /* _MISC_H */
+#if BUILD_X11
+TEST_CASE("diskiographval returns correct value") {
+  struct text_object obj;
+
+  SECTION("for valid data") {
+    diskio_stat *diskio = new diskio_stat;
+    diskio->current = 2.5;
+
+    obj.data.opaque = diskio;
+
+    REQUIRE(diskiographval(&obj) == Approx(2.5));
+
+    delete diskio;
+  }
+}
+#endif

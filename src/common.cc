@@ -294,18 +294,20 @@ void update_stuff() {
   /* if you registered a callback with conky::register_cb, this will run it */
   conky::run_all_callbacks();
 
+#if !defined(__linux__)
   /* XXX: move the following into the update_meminfo() functions? */
   if (no_buffers.get(*state)) {
     info.mem -= info.bufmem;
     info.memeasyfree += info.bufmem;
   }
+#endif
 }
 
 /* Ohkie to return negative values for temperatures */
 int round_to_int_temp(float f) { return static_cast<int>(f); }
 /* Don't return negative values for cpugraph, bar, gauge, percentage.
  * Causes unreasonable numbers to show */
-unsigned int round_to_int(float f) {
+unsigned int round_to_positive_int(float f) {
   if (f >= 0.0) { return static_cast<int>(f + 0.5); }
   return 0;
 }
@@ -369,12 +371,16 @@ uint8_t cpu_percentage(struct text_object *obj) {
     CRIT_ERR(nullptr, nullptr, "attempting to use more CPUs than you have!");
   }
   if (info.cpu_usage != nullptr) {
-    return round_to_int(info.cpu_usage[obj->data.i] * 100.0);
+    return round_to_positive_int(info.cpu_usage[obj->data.i] * 100.0);
   }
   return 0;
 }
 
 double cpu_barval(struct text_object *obj) {
+  if (static_cast<unsigned int>(obj->data.i) > info.cpu_count) {
+    NORM_ERR("obj->data.i %i info.cpu_count %i", obj->data.i, info.cpu_count);
+    CRIT_ERR(nullptr, nullptr, "attempting to use more CPUs than you have!");
+  }
   if (info.cpu_usage != nullptr) { return info.cpu_usage[obj->data.i]; }
   return 0.;
 }
@@ -399,7 +405,9 @@ PRINT_HR_GENERATOR(swapmax)
 uint8_t mem_percentage(struct text_object *obj) {
   (void)obj;
 
-  return (info.memmax != 0u ? round_to_int(info.mem * 100 / info.memmax) : 0);
+  return (info.memmax != 0u
+              ? round_to_positive_int(info.mem * 100 / info.memmax)
+              : 0);
 }
 
 double mem_barval(struct text_object *obj) {
@@ -419,8 +427,9 @@ double mem_with_buffers_barval(struct text_object *obj) {
 uint8_t swap_percentage(struct text_object *obj) {
   (void)obj;
 
-  return (info.swapmax != 0u ? round_to_int(info.swap * 100 / info.swapmax)
-                             : 0);
+  return (info.swapmax != 0u
+              ? round_to_positive_int(info.swap * 100 / info.swapmax)
+              : 0);
 }
 
 double swap_barval(struct text_object *obj) {

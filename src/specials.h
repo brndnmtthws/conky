@@ -66,7 +66,8 @@ struct special_t {
   short show_scale;
   int graph_width;
   int graph_allocated;
-  int scaled;                  /* auto adjust maximum */
+  int scaled; /* auto adjust maximum */
+  int scale_log;
   unsigned long first_colour;  // for graph gradient
   unsigned long last_colour;
   short font_added;
@@ -108,6 +109,8 @@ void new_alignr(struct text_object *, char *, unsigned int);
 void new_alignc(struct text_object *, char *, unsigned int);
 void new_goto(struct text_object *, char *, unsigned int);
 void new_tab(struct text_object *, char *, unsigned int);
+
+void clear_stored_graphs();
 
 struct special_t *new_special(char *buf, enum special_types t);
 

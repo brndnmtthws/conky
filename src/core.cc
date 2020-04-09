@@ -882,9 +882,21 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #ifdef __x86_64__
   END OBJ(freq2, 0) obj->callbacks.print = &print_freq2;
 #endif /* __x86_64__ */
-
+  END OBJ(startcase, 0) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_startcase;
+  obj->callbacks.free = &gen_free_opaque;
+  // Deprecated, for compatibility purposes only
   END OBJ(start_case, 0) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_cap;
+  obj->callbacks.print = &print_startcase;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(lowercase, 0) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_lowercase;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(uppercase, 0) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_uppercase;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(rstrip, 0) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &strip_trailing_whitespace;
   obj->callbacks.free = &gen_free_opaque;
   END OBJ(catp, 0) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_catp;
@@ -1077,7 +1089,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       obj->data.s = STRNDUP_ARG;
   obj->callbacks.iftest = &if_existing_iftest;
   obj->callbacks.free = &gen_free_opaque;
-#ifdef __linux__
+#if defined(__linux__) || defined(__FreeBSD__)
   END OBJ_IF_ARG(if_mounted, 0, "if_mounted needs an argument") obj->data.s =
       STRNDUP_ARG;
   obj->callbacks.iftest = &check_mount;

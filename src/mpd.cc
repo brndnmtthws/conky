@@ -345,7 +345,7 @@ void print_mpd_length(struct text_object *obj, char *p,
 
 uint8_t mpd_percentage(struct text_object *obj) {
   (void)obj;
-  return round_to_int(get_mpd().progress * 100.0f);
+  return round_to_positive_int(get_mpd().progress * 100.0f);
 }
 
 double mpd_barval(struct text_object *obj) {

@@ -72,8 +72,8 @@ void print_entropy_avail(struct text_object *obj, char *p,
 
 uint8_t entropy_percentage(struct text_object *obj) {
   (void)obj;
-  return round_to_int(static_cast<double>(entropy.avail) * 100.0 /
-                      static_cast<double>(entropy.poolsize));
+  return round_to_positive_int(static_cast<double>(entropy.avail) * 100.0 /
+                               static_cast<double>(entropy.poolsize));
 }
 
 void print_entropy_poolsize(struct text_object *obj, char *p,

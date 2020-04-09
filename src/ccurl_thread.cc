@@ -166,7 +166,7 @@ class simple_curl_cb : public curl_callback<std::string> {
  */
 
 struct curl_data {
-  char uri[128];
+  char *uri;
   float interval;
 };
 
@@ -180,24 +180,31 @@ void ccurl_process_info(char *p, int p_max_size, const std::string &uri,
 }
 
 void curl_parse_arg(struct text_object *obj, const char *arg) {
-  int argc;
   struct curl_data *cd;
   float interval = 0;
+  char *space;
+
+  if (strlen(arg) < 1) {
+    NORM_ERR("wrong number of arguments for $curl");
+    return;
+  }
 
   cd = static_cast<struct curl_data *>(malloc(sizeof(struct curl_data)));
   memset(cd, 0, sizeof(struct curl_data));
 
-  argc = sscanf(arg, "%127s %f", cd->uri, &interval);
-  if (argc < 1) {
-    free(cd);
-    NORM_ERR("wrong number of arguments for $curl");
-    return;
-  }
-  if (argc == 1) {
-    cd->interval = 15 * 60;
-  } else {
+  // Default to a 15 minute interval
+  cd->interval = 15 * 60;
+
+  cd->uri = strdup(arg);
+  space = strchr(cd->uri, ' ');
+  if (space) {
+    // If an explicit interval was given, use that
+    char *interval_str = &space[1];
+    *space = '\0';
+    sscanf(interval_str, "%f", &interval);
     cd->interval = interval > 0 ? interval * 60 : active_update_interval();
   }
+
   obj->data.opaque = cd;
 }
 
@@ -211,4 +218,8 @@ void curl_print(struct text_object *obj, char *p, unsigned int p_max_size) {
   ccurl_process_info(p, p_max_size, cd->uri, cd->interval);
 }
 
-void curl_obj_free(struct text_object *obj) { free_and_zero(obj->data.opaque); }
+void curl_obj_free(struct text_object *obj) {
+  struct curl_data *cd = static_cast<struct curl_data *>(obj->data.opaque);
+  free_and_zero(cd->uri);
+  free_and_zero(obj->data.opaque);
+}

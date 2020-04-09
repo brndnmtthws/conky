@@ -390,10 +390,6 @@ static void process_find_top(struct process **cpu, struct process **mem,
 }
 
 int update_top() {
-  // XXX: this was a separate callback. and it should be again, as soon as it's
-  // possible
-  update_meminfo();
-
   process_find_top(info.cpu, info.memu, info.time
 #ifdef BUILD_IOSTATS
                    ,
@@ -521,7 +517,7 @@ static void print_top_user(struct text_object *obj, char *p,
   if (pw != nullptr) {
     snprintf(p, p_max_size, "%.8s", pw->pw_name);
   } else {
-    NORM_ERR("The uid doesn't exist");
+    snprintf(p, p_max_size, "%d", td->list[td->num]->uid);
   }
 }
 
@@ -542,7 +538,7 @@ static void print_top_user(struct text_object *obj, char *p,
   }
 
 PRINT_TOP_GENERATOR(cpu, (unsigned int)7, "%6.2f", amount)
-PRINT_TOP_GENERATOR(pid, (unsigned int)6, "%5i", pid)
+PRINT_TOP_GENERATOR(pid, (unsigned int)8, "%7i", pid)
 PRINT_TOP_GENERATOR(uid, (unsigned int)6, "%5i", uid)
 PRINT_TOP_HR_GENERATOR(mem_res, rss, 1)
 PRINT_TOP_HR_GENERATOR(mem_vsize, vsize, 1)

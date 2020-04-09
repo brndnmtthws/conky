@@ -1080,6 +1080,15 @@
     <varlistentry>
         <term>
             <command>
+                <option>lowercase</option>
+            </command>
+        </term>
+        <listitem>Boolean value, if true, text is rendered in lower case.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>use_spacer</option>
             </command>
         </term>

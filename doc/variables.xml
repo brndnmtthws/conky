@@ -1276,7 +1276,7 @@
         should start and end with a "-char. The "-chars are not part of the
         output, \w,\d,\h,\m,\s,\(,\) and \\ are replaced by
         weeks,days,hours,minutes,seconds,(,) and \. If you leave out a unit,
-        it's value will be expressed in the highest unite lower then the one
+        it's value will be expressed in the highest unit lower than the one
         left out. Text between ()-chars will not be visible if a replaced unit
         in this text is 0. If seconds is a decimal number then you can see the
         numbers behind the point by using \S followed by a number that
@@ -2923,6 +2923,10 @@
                 <command>modelname</command>
                 <option>name of the GPU card</option>
             </member>
+            <member>
+                <command>driverversion</command>
+                <option>Driver version</option>
+            </member>
         </simplelist></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -3839,11 +3843,41 @@
     <varlistentry>
         <term>
             <command>
-                <option>start_case</option>
+                <option>startcase</option>
             </command>
             <option>text</option>
         </term>
-        <listitem>All words capitalized regardless.
+        <listitem>Capitalises the start of each word.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>lowercase</option>
+            </command>
+            <option>text</option>
+        </term>
+        <listitem>Converts all letters into lowercase.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>uppercase</option>
+            </command>
+            <option>text</option>
+        </term>
+        <listitem>Converts all letters into uppercase.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>rstrip</option>
+            </command>
+            <option>text</option>
+        </term>
+        <listitem>Strips all trailing whitespace from input.
         <para /></listitem>
     </varlistentry>
     <varlistentry>

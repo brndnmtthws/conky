@@ -85,27 +85,48 @@ void print_catp(struct text_object *obj, char *p, unsigned int p_max_size) {
   delete[] buf;
 }
 
-void print_cap(struct text_object *obj, char *p, unsigned int p_max_size) {
-  unsigned int x = 0;
-  int z = 0;
-  char buf[DEFAULT_TEXT_BUFFER_SIZE];
-  char *src = obj->data.s;
-  char *dest = buf;
-
+void print_startcase(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
   evaluate(obj->data.s, p, p_max_size);
-  if (0 != strcmp(p, "")) { src = p; }
 
-  for (; *src && p_max_size - 1 > x; src++, x++) {
-    if (0 == z) {
-      *dest++ = (toupper(static_cast<unsigned char>(*src)));
+  for (unsigned int x = 0, z = 0; x < p_max_size - 1 && p[x]; x++) {
+    if (isspace(p[x])) {
+      z = 0;
+    } else {
+      p[x] = z ? tolower(p[x]) : toupper(p[x]);
       z++;
-      continue;
     }
-    *dest++ = *src;
-    if (' ' == *src) z = 0;
   }
-  *dest = '\0';
-  snprintf(p, p_max_size, "%s", buf);
+}
+
+void print_lowercase(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
+  evaluate(obj->data.s, p, p_max_size);
+
+  for (unsigned int x = 0; x < p_max_size - 1 && p[x]; x++)
+    p[x] = tolower(p[x]);
+}
+
+void print_uppercase(struct text_object *obj, char *p,
+                     unsigned int p_max_size) {
+  evaluate(obj->data.s, p, p_max_size);
+
+  for (unsigned int x = 0; x < p_max_size - 1 && p[x]; x++)
+    p[x] = toupper(p[x]);
+}
+
+void strip_trailing_whitespace(struct text_object *obj, char *p,
+                               unsigned int p_max_size) {
+  evaluate(obj->data.s, p, p_max_size);
+  for (unsigned int x = p_max_size - 2;; x--) {
+    if (p[x] && !isspace(p[x])) {
+      p[x + 1] = '\0';
+      break;
+    } else if (x == 0) {
+      p[x] = '\0';
+      break;
+    }
+  }
 }
 
 long long int apply_base_multiplier(const char *s, long long int num) {

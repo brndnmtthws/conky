@@ -175,16 +175,6 @@
     <varlistentry>
         <term>
             <command>
-                <option>-x</option>
-            </command>
-            <option>X_COORDINATE</option>
-        </term>
-        <listitem>X position.
-        <para></para></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
                 <option>-X | --display=</option>
             </command>
             <option>DISPLAY</option>

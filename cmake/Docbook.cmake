@@ -33,7 +33,7 @@
 
 # man_MANS = conky.1
 
-if(MAINTAINER_MODE)
+if(BUILD_DOCS)
 
   function(wrap_xsltproc)
     if(NOT ARGV)
@@ -96,4 +96,4 @@ if(MAINTAINER_MODE)
 
   endfunction(wrap_man)
 
-endif(MAINTAINER_MODE)
+endif(BUILD_DOCS)

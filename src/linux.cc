@@ -61,6 +61,7 @@
 #define _LINUX_IF_H
 #endif
 #include <linux/route.h>
+#include <linux/version.h>
 #include <math.h>
 #include <pthread.h>
 #include <atomic>
@@ -103,7 +104,7 @@ char e_iface[50];
 /* To use ${iface X} where X is a number and will
  * return the current X NIC name */
 static const unsigned int iface_len = 64U;
-char interfaces_arr[iface_len][iface_len] = {""};
+char interfaces_arr[MAX_NET_INTERFACES][iface_len] = {""};
 
 #define SHORTSTAT_TEMPL "%*s %llu %llu %llu"
 #define LONGSTAT_TEMPL "%*s %llu %llu %llu "
@@ -133,10 +134,10 @@ int update_uptime(void) {
   } else
 #endif
   {
-    static int rep = 0;
+    static int reported = 0;
     FILE *fp;
 
-    if (!(fp = open_file("/proc/uptime", &rep))) {
+    if (!(fp = open_file("/proc/uptime", &reported))) {
       info.uptime = 0.0;
       return 0;
     }
@@ -174,18 +175,25 @@ int check_mount(struct text_object *obj) {
 
 int update_meminfo(void) {
   FILE *meminfo_fp;
-  static int rep = 0;
+  static int reported = 0;
 
   /* unsigned int a; */
   char buf[256];
 
-  unsigned long long shmem = 0, sreclaimable = 0;
+  /* With multi-threading, calculations that require
+   * multple steps to reach a final result can cause havok
+   * if the intermediary calculations are directly assigned to the
+   * information struct (they may be read by other functions in the meantime).
+   * These variables keep the calculations local to the function and finish off
+   * the function by assigning the results to the information struct */
+  unsigned long long shmem = 0, sreclaimable = 0, curmem = 0, curbufmem = 0,
+                     cureasyfree = 0, memavail = 0;
 
-  info.mem = info.memwithbuffers = info.memmax = info.memdirty = info.swap =
-      info.swapfree = info.swapmax = info.bufmem = info.buffers = info.cached =
-          info.memfree = info.memeasyfree = 0;
+  info.memmax = info.memdirty = info.swap = info.swapfree = info.swapmax =
+      info.memwithbuffers = info.buffers = info.cached = info.memfree =
+          info.memeasyfree = 0;
 
-  if (!(meminfo_fp = open_file("/proc/meminfo", &rep))) { return 0; }
+  if (!(meminfo_fp = open_file("/proc/meminfo", &reported))) { return 0; }
 
   while (!feof(meminfo_fp)) {
     if (fgets(buf, 255, meminfo_fp) == nullptr) { break; }
@@ -204,6 +212,8 @@ int update_meminfo(void) {
       sscanf(buf, "%*s %llu", &info.cached);
     } else if (strncmp(buf, "Dirty:", 6) == 0) {
       sscanf(buf, "%*s %llu", &info.memdirty);
+    } else if (strncmp(buf, "MemAvailable:", 13) == 0) {
+      sscanf(buf, "%*s %llu", &memavail);
     } else if (strncmp(buf, "Shmem:", 6) == 0) {
       sscanf(buf, "%*s %llu", &shmem);
     } else if (strncmp(buf, "SReclaimable:", 13) == 0) {
@@ -211,8 +221,8 @@ int update_meminfo(void) {
     }
   }
 
-  info.mem = info.memwithbuffers = info.memmax - info.memfree;
-  info.memeasyfree = info.memfree;
+  curmem = info.memwithbuffers = info.memmax - info.memfree;
+  cureasyfree = info.memfree;
   info.swap = info.swapmax - info.swapfree;
 
   /* Reclaimable memory: does not include shared memory, which is part of cached
@@ -220,13 +230,34 @@ int update_meminfo(void) {
      Note: when shared memory is swapped out, shmem decreases and swapfree
      decreases - we want this.
   */
-  info.bufmem = (info.cached - shmem) + info.buffers + sreclaimable;
+  curbufmem = (info.cached - shmem) + info.buffers + sreclaimable;
 
-  /* Now (info.mem - info.bufmem) is the *really used* (aka unreclaimable)
-     memory. When this value reaches the size of the physical RAM, and swap is
-     full or non-present, OOM happens. Therefore this is the value users want to
-     monitor, regarding their RAM.
-  */
+  /* Calculate the memory usage.
+   *
+   * The Linux Kernel introduced a new field for memory available,
+   * when possible, use that.
+   * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=34e431b0ae398fc54ea69ff85ec700722c9da773
+   */
+  if (no_buffers.get(*state)) {
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(3, 14, 0)
+    /* Now ('info.mem' - 'info.bufmem') is the *really used* (aka unreclaimable)
+       memory. When this value reaches the size of the physical RAM, and swap is
+       full or non-present, OOM happens. Therefore this is the value users want
+       to monitor, regarding their RAM.
+    */
+    curmem -= curbufmem;
+    cureasyfree += curbufmem;
+#else
+    curmem = info.memmax - memavail;
+    cureasyfree += curbufmem;
+#endif
+  }
+
+  /* Now that we know that every calculation is finished we can wrap up
+   * by assigning the values to the information structure */
+  info.mem = curmem;
+  info.bufmem = curbufmem;
+  info.memeasyfree = cureasyfree;
 
   fclose(meminfo_fp);
   return 0;
@@ -450,72 +481,23 @@ void print_gateway_ip(struct text_object *obj, char *p,
   snprintf(p, p_max_size, "%s", gw_info.ip);
 }
 
-/**
- * Parses information from /proc/net/dev and stores them in ???
- *
- * For the output format of /proc/net/dev @see http://linux.die.net/man/5/proc
- *
- * @return always returns 0. May change in the future, e.g. returning non zero
- * if some error happened
- **/
-int update_net_stats(void) {
-  update_gateway_info();
-  update_gateway_info2();
-  FILE *net_dev_fp;
-  static int rep = 0;
-  /* variably to notify the parts averaging the download speed, that this
-   * is the first call ever to this function. This variable can't be used
-   * to decide if this is the first time an interface was parsed as there
-   * are many interfaces, which can be activated and deactivated at arbitrary
-   * times */
-  static char first = 1;
-
-  // FIXME: arbitrary size chosen to keep code simple.
-  int i;
-  int i2;
-  unsigned int curtmp1;
-  unsigned int curtmp2;
-  unsigned int k;
-  struct ifconf conf;
-  char buf[256];
-  double delta;
-
+void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
+                           double time_between_updates) {
+  /* read each interface */
 #ifdef BUILD_WLAN
   // wireless info variables
-  int skfd, has_bitrate = 0;
   struct wireless_info *winfo;
   struct iwreq wrq;
 #endif
 
-  /* get delta */
-  delta = current_update_time - last_update_time;
-  if (delta <= 0.0001) { return 0; }
-
-  /* open file /proc/net/dev. If not something went wrong, clear all
-   * network statistics */
-  if (!(net_dev_fp = open_file("/proc/net/dev", &rep))) {
-    clear_net_stats();
-    return 0;
-  }
-  /* ignore first two header lines in file /proc/net/dev. If somethings
-   * goes wrong, e.g. end of file reached, quit.
-   * (Why isn't clear_net_stats called for this case ??? */
-  char *one = fgets(buf, 255, net_dev_fp);
-  char *two = fgets(buf, 255, net_dev_fp);
-  if (!one || /* garbage */
-      !two) { /* garbage (field names) */
-    fclose(net_dev_fp);
-    return 0;
-  }
-
-  /* read each interface */
-  for (i2 = 0; i2 < MAX_NET_INTERFACES; i2++) {
+  for (int i = 0; i < MAX_NET_INTERFACES; i++) {
     struct net_stat *ns;
     char *s, *p;
-    char temp_addr[18];
     long long r, t, last_recv, last_trans;
 
     /* quit only after all non-header lines from /proc/net/dev parsed */
+    // FIXME: arbitrary size chosen to keep code simple.
+    char buf[256];
     if (fgets(buf, 255, net_dev_fp) == nullptr) { break; }
     p = buf;
     /* change char * p to first non-space character, which is the beginning
@@ -549,12 +531,12 @@ int update_net_stats(void) {
      * to currently received, meaning the change in network traffic is 0 */
     if (ns->last_read_recv == -1) {
       ns->recv = r;
-      first = 1;
+      is_first_update = true;
       ns->last_read_recv = r;
     }
     if (ns->last_read_trans == -1) {
       ns->trans = t;
-      first = 1;
+      is_first_update = true;
       ns->last_read_trans = t;
     }
     /* move current traffic statistic to last thereby obsoleting the
@@ -580,15 +562,16 @@ int update_net_stats(void) {
     ns->last_read_trans = t;
 
     /*** ip addr patch ***/
-    i = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
+    int file_descriptor = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
 
+    struct ifconf conf;
     conf.ifc_buf = (char *)malloc(sizeof(struct ifreq) * MAX_NET_INTERFACES);
     conf.ifc_len = sizeof(struct ifreq) * MAX_NET_INTERFACES;
     memset(conf.ifc_buf, 0, conf.ifc_len);
 
-    ioctl((long)i, SIOCGIFCONF, &conf);
+    ioctl(file_descriptor, SIOCGIFCONF, &conf);
 
-    for (k = 0; k < conf.ifc_len / sizeof(struct ifreq); k++) {
+    for (unsigned int k = 0; k < conf.ifc_len / sizeof(struct ifreq); k++) {
       struct net_stat *ns2;
 
       if (!(((struct ifreq *)conf.ifc_buf) + k)) break;
@@ -596,6 +579,7 @@ int update_net_stats(void) {
       ns2 = get_net_stat(((struct ifreq *)conf.ifc_buf)[k].ifr_ifrn.ifrn_name,
                          nullptr, NULL);
       ns2->addr = ((struct ifreq *)conf.ifc_buf)[k].ifr_ifru.ifru_addr;
+      char temp_addr[18];
       sprintf(temp_addr, "%u.%u.%u.%u, ", ns2->addr.sa_data[2] & 255,
               ns2->addr.sa_data[3] & 255, ns2->addr.sa_data[4] & 255,
               ns2->addr.sa_data[5] & 255);
@@ -603,28 +587,28 @@ int update_net_stats(void) {
         strncpy(ns2->addrs + strlen(ns2->addrs), temp_addr, 17);
     }
 
-    close((long)i);
+    close(file_descriptor);
 
     free(conf.ifc_buf);
     /*** end ip addr patch ***/
 
-    if (!first) {
-      /* calculate instantenous speeds */
-      ns->net_rec[0] = (ns->recv - last_recv) / delta;
-      ns->net_trans[0] = (ns->trans - last_trans) / delta;
+    if (!is_first_update) {
+      /* calculate instantaneous speeds */
+      ns->net_rec[0] = (ns->recv - last_recv) / time_between_updates;
+      ns->net_trans[0] = (ns->trans - last_trans) / time_between_updates;
     }
 
-    curtmp1 = 0;
-    curtmp2 = 0;
+    unsigned int curtmp1 = 0;
+    unsigned int curtmp2 = 0;
     /* get an average over the last speed samples */
     int samples = net_avg_samples.get(*state);
     /* is OpenMP actually useful here? How large is samples? > 1000 ? */
 #ifdef HAVE_OPENMP
 #pragma omp parallel for reduction(+ : curtmp1, curtmp2) schedule(dynamic, 10)
 #endif /* HAVE_OPENMP */
-    for (i = 0; i < samples; i++) {
-      curtmp1 = curtmp1 + ns->net_rec[i];
-      curtmp2 = curtmp2 + ns->net_trans[i];
+    for (int j = 0; j < samples; j++) {
+      curtmp1 = curtmp1 + ns->net_rec[j];
+      curtmp2 = curtmp2 + ns->net_trans[j];
     }
     ns->recv_speed = curtmp1 / (double)samples;
     ns->trans_speed = curtmp2 / (double)samples;
@@ -632,9 +616,9 @@ int update_net_stats(void) {
 #ifdef HAVE_OPENMP
 #pragma omp parallel for schedule(dynamic, 10)
 #endif /* HAVE_OPENMP */
-      for (i = samples; i > 1; i--) {
-        ns->net_rec[i - 1] = ns->net_rec[i - 2];
-        ns->net_trans[i - 1] = ns->net_trans[i - 2];
+      for (int j = samples; j > 1; j--) {
+        ns->net_rec[j - 1] = ns->net_rec[j - 2];
+        ns->net_trans[j - 1] = ns->net_trans[j - 2];
       }
     }
 
@@ -643,7 +627,7 @@ int update_net_stats(void) {
     winfo = (struct wireless_info *)malloc(sizeof(struct wireless_info));
     memset(winfo, 0, sizeof(struct wireless_info));
 
-    skfd = iw_sockets_open();
+    int skfd = iw_sockets_open();
     if (iw_get_basic_config(skfd, s, &(winfo->b)) > -1) {
       // set present winfo variables
       if (iw_get_range_info(skfd, s, &(winfo->range)) >= 0) {
@@ -662,16 +646,20 @@ int update_net_stats(void) {
       if (iw_get_ext(skfd, s, SIOCGIWRATE, &wrq) >= 0) {
         memcpy(&(winfo->bitrate), &(wrq.u.bitrate), sizeof(iwparam));
         iw_print_bitrate(ns->bitrate, 16, winfo->bitrate.value);
-        has_bitrate = 1;
       }
 
       // get link quality
-      if (winfo->has_range && winfo->has_stats &&
-          ((winfo->stats.qual.level != 0) ||
-           (winfo->stats.qual.updated & IW_QUAL_DBM))) {
-        if (!(winfo->stats.qual.updated & IW_QUAL_QUAL_INVALID)) {
+      if (winfo->has_range && winfo->has_stats) {
+        bool has_qual_level = (winfo->stats.qual.level != 0) ||
+                              (winfo->stats.qual.updated & IW_QUAL_DBM);
+
+        if (has_qual_level &&
+            !(winfo->stats.qual.updated & IW_QUAL_QUAL_INVALID)) {
           ns->link_qual = winfo->stats.qual.qual;
-          ns->link_qual_max = winfo->range.max_qual.qual;
+
+          if (winfo->range.max_qual.qual > 0) {
+            ns->link_qual_max = winfo->range.max_qual.qual;
+          }
         }
       }
 
@@ -686,6 +674,7 @@ int update_net_stats(void) {
           snprintf(ns->essid, 34, "%s", "off/any");
         }
       }
+
       // get channel and freq
       if (winfo->b.has_freq) {
         if (winfo->has_range == 1) {
@@ -699,18 +688,21 @@ int update_net_stats(void) {
 
       snprintf(ns->mode, 16, "%s", iw_operation_mode[winfo->b.mode]);
     }
+
     iw_sockets_close(skfd);
     free(winfo);
 #endif
   }
+}
 
-#ifdef BUILD_IPV6
+void update_ipv6_net_stats() {
   FILE *file;
   char v6addr[33];
   char devname[21];
   unsigned int netmask, scope;
   struct net_stat *ns;
   struct v6addr *lastv6;
+
   // remove the old v6 addresses otherwise they are listed multiple times
   for (unsigned int i = 0; i < MAX_NET_INTERFACES; i++) {
     ns = &netstats[i];
@@ -720,48 +712,106 @@ int update_net_stats(void) {
       free(lastv6);
     }
   }
-  if ((file = fopen(PROCDIR "/net/if_inet6", "r")) != nullptr) {
-    while (fscanf(file, "%32s %*02x %02x %02x %*02x %20s\n", v6addr, &netmask,
-                  &scope, devname) != EOF) {
-      ns = get_net_stat(devname, nullptr, NULL);
-      if (ns->v6addrs == nullptr) {
-        lastv6 = (struct v6addr *)malloc(sizeof(struct v6addr));
-        ns->v6addrs = lastv6;
-      } else {
-        lastv6 = ns->v6addrs;
-        while (lastv6->next) lastv6 = lastv6->next;
-        lastv6->next = (struct v6addr *)malloc(sizeof(struct v6addr));
-        lastv6 = lastv6->next;
-      }
-      for (int i = 0; i < 16; i++)
-        sscanf(v6addr + 2 * i, "%2hhx", &(lastv6->addr.s6_addr[i]));
-      lastv6->netmask = netmask;
-      switch (scope) {
-        case 0:  // global
-          lastv6->scope = 'G';
-          break;
-        case 16:  // host-local
-          lastv6->scope = 'H';
-          break;
-        case 32:  // link-local
-          lastv6->scope = 'L';
-          break;
-        case 64:  // site-local
-          lastv6->scope = 'S';
-          break;
-        case 128:  // compat
-          lastv6->scope = 'C';
-          break;
-        default:
-          lastv6->scope = '?';
-      }
-      lastv6->next = nullptr;
+
+  if ((file = fopen(PROCDIR "/net/if_inet6", "r")) == nullptr) { return; }
+
+  while (fscanf(file, "%32s %*02x %02x %02x %*02x %20s\n", v6addr, &netmask,
+                &scope, devname) != EOF) {
+    ns = get_net_stat(devname, nullptr, NULL);
+
+    if (ns->v6addrs == nullptr) {
+      lastv6 = (struct v6addr *)malloc(sizeof(struct v6addr));
+      ns->v6addrs = lastv6;
+    } else {
+      lastv6 = ns->v6addrs;
+      while (lastv6->next) lastv6 = lastv6->next;
+      lastv6->next = (struct v6addr *)malloc(sizeof(struct v6addr));
+      lastv6 = lastv6->next;
     }
-    fclose(file);
+
+    for (int i = 0; i < 16; i++)
+      sscanf(v6addr + 2 * i, "%2hhx", &(lastv6->addr.s6_addr[i]));
+
+    lastv6->netmask = netmask;
+
+    switch (scope) {
+      case 0:  // global
+        lastv6->scope = 'G';
+        break;
+      case 16:  // host-local
+        lastv6->scope = 'H';
+        break;
+      case 32:  // link-local
+        lastv6->scope = 'L';
+        break;
+      case 64:  // site-local
+        lastv6->scope = 'S';
+        break;
+      case 128:  // compat
+        lastv6->scope = 'C';
+        break;
+      default:
+        lastv6->scope = '?';
+    }
+
+    lastv6->next = nullptr;
   }
+
+  fclose(file);
+}
+
+/**
+ * Parses information from /proc/net/dev and stores them in ???
+ *
+ * For the output format of /proc/net/dev @see http://linux.die.net/man/5/proc
+ *
+ * @return always returns 0. May change in the future, e.g. returning non zero
+ * if some error happened
+ **/
+int update_net_stats(void) {
+  update_gateway_info();
+  update_gateway_info2();
+  FILE *net_dev_fp;
+  static int reported = 0;
+  /* variable to notify the parts averaging the download speed, that this
+   * is the first call ever to this function. This variable can't be used
+   * to decide if this is the first time an interface was parsed as there
+   * are many interfaces, which can be activated and deactivated at arbitrary
+   * times */
+  static bool is_first_update = true;
+
+  // FIXME: arbitrary size chosen to keep code simple.
+  char buf[256];
+  double time_between_updates;
+
+  /* get delta */
+  time_between_updates = current_update_time - last_update_time;
+  if (time_between_updates <= 0.0001) { return 0; }
+
+  /* open file /proc/net/dev. If not something went wrong, clear all
+   * network statistics */
+  if (!(net_dev_fp = open_file("/proc/net/dev", &reported))) {
+    clear_net_stats();
+    return 0;
+  }
+  /* ignore first two header lines in file /proc/net/dev. If somethings
+   * goes wrong, e.g. end of file reached, quit.
+   * (Why isn't clear_net_stats called for this case ??? */
+  char *one = fgets(buf, 255, net_dev_fp);
+  char *two = fgets(buf, 255, net_dev_fp);
+  if (!one || /* garbage */
+      !two) { /* garbage (field names) */
+    fclose(net_dev_fp);
+    return 0;
+  }
+
+  update_net_interfaces(net_dev_fp, is_first_update, time_between_updates);
+
+#ifdef BUILD_IPV6
+  update_ipv6_net_stats();
 #endif /* BUILD_IPV6 */
 
-  first = 0;
+  is_first_update = false;
 
   fclose(net_dev_fp);
   return 0;
@@ -798,10 +848,10 @@ int update_threads(void) {
   } else
 #endif
   {
-    static int rep = 0;
+    static int reported = 0;
     FILE *fp;
 
-    if (!(fp = open_file("/proc/loadavg", &rep))) {
+    if (!(fp = open_file("/proc/loadavg", &reported))) {
       info.threads = 0;
       return 0;
     }
@@ -848,10 +898,10 @@ void determine_longstat(char *buf) {
 void determine_longstat_file(void) {
 #define MAX_PROCSTAT_LINELEN 255
   FILE *stat_fp;
-  static int rep = 0;
+  static int reported = 0;
   char buf[MAX_PROCSTAT_LINELEN + 1];
 
-  if (!(stat_fp = open_file("/proc/stat", &rep))) return;
+  if (!(stat_fp = open_file("/proc/stat", &reported))) return;
   while (!feof(stat_fp) &&
          fgets(buf, MAX_PROCSTAT_LINELEN, stat_fp) != nullptr) {
     if (strncmp(buf, "cpu", 3) == 0) {
@@ -864,7 +914,7 @@ void determine_longstat_file(void) {
 
 void get_cpu_count(void) {
   FILE *stat_fp;
-  static int rep = 0;
+  static int reported = 0;
   char buf[256];
   char *str1, *str2, *token, *subtoken;
   char *saveptr1, *saveptr2;
@@ -873,7 +923,7 @@ void get_cpu_count(void) {
 
   if (info.cpu_usage) { return; }
 
-  if (!(stat_fp = open_file("/sys/devices/system/cpu/present", &rep))) {
+  if (!(stat_fp = open_file("/sys/devices/system/cpu/present", &reported))) {
     return;
   }
 
@@ -915,7 +965,7 @@ void get_cpu_count(void) {
 
 int update_stat(void) {
   FILE *stat_fp;
-  static int rep = 0;
+  static int reported = 0;
   struct cpu_info *cpu = nullptr;
   char buf[256];
   int i;
@@ -960,7 +1010,7 @@ int update_stat(void) {
     global_cpu = cpu;
   }
 
-  if (!(stat_fp = open_file("/proc/stat", &rep))) {
+  if (!(stat_fp = open_file("/proc/stat", &reported))) {
     info.run_threads = 0;
     if (info.cpu_usage) {
       memset(info.cpu_usage, 0, info.cpu_count * sizeof(float));
@@ -1050,7 +1100,7 @@ int fscanf_no_i18n(FILE *stream, const char *format, ...) {
   va_list ap;
 
 #ifdef BUILD_I18N
-  const char *oldlocale = setlocale(LC_NUMERIC, nullptr);
+  char *oldlocale = strdup(setlocale(LC_NUMERIC, nullptr));
 
   setlocale(LC_NUMERIC, "C");
 #endif
@@ -1059,6 +1109,7 @@ int fscanf_no_i18n(FILE *stream, const char *format, ...) {
   va_end(ap);
 #ifdef BUILD_I18N
   setlocale(LC_NUMERIC, oldlocale);
+  free(oldlocale);
 #endif
   return returncode;
 }
@@ -1075,10 +1126,10 @@ int update_load_average(void) {
   } else
 #endif
   {
-    static int rep = 0;
+    static int reported = 0;
     FILE *fp;
 
-    if (!(fp = open_file("/proc/loadavg", &rep))) {
+    if (!(fp = open_file("/proc/loadavg", &reported))) {
       info.loadavg[0] = info.loadavg[1] = info.loadavg[2] = 0.0;
       return 0;
     }
@@ -1099,15 +1150,16 @@ static int no_dots(const struct dirent *d) {
   return 1;
 }
 
-static int get_first_file_in_a_directory(const char *dir, char *s, int *rep) {
+static int get_first_file_in_a_directory(const char *dir, char *s,
+                                         int *reported) {
   struct dirent **namelist;
   int i, n;
 
   n = scandir(dir, &namelist, no_dots, alphasort);
   if (n < 0) {
-    if (!rep || !*rep) {
+    if (!reported || !*reported) {
       NORM_ERR("scandir for %s: %s", dir, strerror(errno));
-      if (rep) { *rep = 1; }
+      if (reported) { *reported = 1; }
     }
     return 0;
   } else {
@@ -1193,9 +1245,9 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
 
   /* if device is nullptr or *, get first */
   if (dev == nullptr || strcmp(dev, "*") == 0) {
-    static int rep = 0;
+    static int reported = 0;
 
-    if (!get_first_file_in_a_directory(dir, buf, &rep)) { return -1; }
+    if (!get_first_file_in_a_directory(dir, buf, &reported)) { return -1; }
     dev = buf;
   }
 
@@ -1445,7 +1497,7 @@ void free_sysfs_sensor(struct text_object *obj) {
 char get_freq(char *p_client_buffer, size_t client_buffer_size,
               const char *p_format, int divisor, unsigned int cpu) {
   FILE *f;
-  static int rep = 0;
+  static int reported = 0;
   char frequency[32];
   char s[256];
   double freq = 0;
@@ -1476,7 +1528,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
   }
 
   // open the CPU information file
-  f = open_file("/proc/cpuinfo", &rep);
+  f = open_file("/proc/cpuinfo", &reported);
   if (!f) {
     perror(PACKAGE_NAME ": Failed to access '/proc/cpuinfo' at get_freq()");
     return 0;
@@ -1613,7 +1665,7 @@ void print_voltage_v(struct text_object *obj, char *p,
 #define ACPI_FAN_DIR "/proc/acpi/fan/"
 
 void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
-  static int rep = 0;
+  static int reported = 0;
   char buf[256];
   char buf2[256];
   FILE *fp;
@@ -1621,14 +1673,14 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
   if (!p_client_buffer || client_buffer_size <= 0) { return; }
 
   /* yeah, slow... :/ */
-  if (!get_first_file_in_a_directory(ACPI_FAN_DIR, buf, &rep)) {
+  if (!get_first_file_in_a_directory(ACPI_FAN_DIR, buf, &reported)) {
     snprintf(p_client_buffer, client_buffer_size, "%s", "no fans?");
     return;
   }
 
   snprintf(buf2, sizeof(buf2), "%s%s/state", ACPI_FAN_DIR, buf);
 
-  fp = open_file(buf2, &rep);
+  fp = open_file(buf2, &reported);
   if (!fp) {
     snprintf(p_client_buffer, client_buffer_size, "%s",
              "can't open fan's state file");
@@ -1663,7 +1715,7 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
 
 void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
                          const char *adapter) {
-  static int rep = 0;
+  static int reported = 0;
 
   char buf[256];
   char buf2[256];
@@ -1680,7 +1732,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
       snprintf(buf2, sizeof(buf2), "%s/ADP1/uevent", SYSFS_AC_ADAPTER_DIR);
   }
   if (stat(buf2, &sb) == 0)
-    fp = open_file(buf2, &rep);
+    fp = open_file(buf2, &reported);
   else
     fp = 0;
   if (fp) {
@@ -1699,14 +1751,14 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
     fclose(fp);
   } else {
     /* yeah, slow... :/ */
-    if (!get_first_file_in_a_directory(ACPI_AC_ADAPTER_DIR, buf, &rep)) {
+    if (!get_first_file_in_a_directory(ACPI_AC_ADAPTER_DIR, buf, &reported)) {
       snprintf(p_client_buffer, client_buffer_size, "%s", "no ac_adapters?");
       return;
     }
 
     snprintf(buf2, sizeof(buf2), "%s%s/state", ACPI_AC_ADAPTER_DIR, buf);
 
-    fp = open_file(buf2, &rep);
+    fp = open_file(buf2, &reported);
     if (!fp) {
       snprintf(p_client_buffer, client_buffer_size, "%s",
                "No ac adapter found.... where is it?");
@@ -2274,7 +2326,7 @@ void get_battery_short_status(char *buffer, unsigned int n, const char *bat) {
 }
 
 int _get_battery_perct(const char *bat) {
-  static int rep = 0;
+  static int reported = 0;
   int idx;
   char acpi_path[128];
   char sysfs_path[128];
@@ -2295,13 +2347,13 @@ int _get_battery_perct(const char *bat) {
 
   if (sysfs_bat_fp[idx] == nullptr && acpi_bat_fp[idx] == NULL &&
       apm_bat_fp[idx] == nullptr) {
-    sysfs_bat_fp[idx] = open_file(sysfs_path, &rep);
-    rep = 0;
+    sysfs_bat_fp[idx] = open_file(sysfs_path, &reported);
+    reported = 0;
   }
 
   if (sysfs_bat_fp[idx] == nullptr && acpi_bat_fp[idx] == NULL &&
       apm_bat_fp[idx] == nullptr) {
-    acpi_bat_fp[idx] = open_file(acpi_path, &rep);
+    acpi_bat_fp[idx] = open_file(acpi_path, &reported);
   }
 
   if (sysfs_bat_fp[idx] != nullptr) {
@@ -2437,7 +2489,7 @@ void powerbook_update_time(long timeval);
 #define PMU_PATH "/proc/pmu"
 void get_powerbook_batt_info(struct text_object *obj, char *buffer,
                              unsigned int n) {
-  static int rep = 0;
+  static int reported = 0;
   const char *batt_path = PMU_PATH "/battery_0";
   const char *info_path = PMU_PATH "/info";
   unsigned int flags = 0;
@@ -2454,7 +2506,7 @@ void get_powerbook_batt_info(struct text_object *obj, char *buffer,
   pb_battery_info_update = current_update_time;
 
   if (pmu_battery_fp == nullptr) {
-    pmu_battery_fp = open_file(batt_path, &rep);
+    pmu_battery_fp = open_file(batt_path, &reported);
     if (pmu_battery_fp == nullptr) { return; }
   }
 
@@ -2474,7 +2526,7 @@ void get_powerbook_batt_info(struct text_object *obj, char *buffer,
       sscanf(buf, "time rem.  : %ld", &timeval);
     }
   }
-  pmu_info_fp = open_file(info_path, &rep);
+  pmu_info_fp = open_file(info_path, &reported);
   if (pmu_info_fp == nullptr) { return; }
 
   rewind(pmu_info_fp);
@@ -2543,10 +2595,10 @@ void powerbook_update_time(long timeval) {
 #define ENTROPY_AVAIL_PATH "/proc/sys/kernel/random/entropy_avail"
 
 int get_entropy_avail(unsigned int *val) {
-  static int rep = 0;
+  static int reported = 0;
   FILE *fp;
 
-  if (!(fp = open_file(ENTROPY_AVAIL_PATH, &rep))) return 1;
+  if (!(fp = open_file(ENTROPY_AVAIL_PATH, &reported))) return 1;
 
   if (fscanf(fp, "%u", val) != 1) return 1;
 
@@ -2557,10 +2609,10 @@ int get_entropy_avail(unsigned int *val) {
 #define ENTROPY_POOLSIZE_PATH "/proc/sys/kernel/random/poolsize"
 
 int get_entropy_poolsize(unsigned int *val) {
-  static int rep = 0;
+  static int reported = 0;
   FILE *fp;
 
-  if (!(fp = open_file(ENTROPY_POOLSIZE_PATH, &rep))) return 1;
+  if (!(fp = open_file(ENTROPY_POOLSIZE_PATH, &reported))) return 1;
 
   if (fscanf(fp, "%u", val) != 1) return 1;
 
@@ -2610,7 +2662,7 @@ int is_disk(char *dev) {
 
 int update_diskio(void) {
   FILE *fp;
-  static int rep = 0;
+  static int reported = 0;
   char buf[512], devbuf[64];
   unsigned int major, minor;
   int col_count = 0;
@@ -2622,7 +2674,7 @@ int update_diskio(void) {
   stats.current_read = 0;
   stats.current_write = 0;
 
-  if (!(fp = open_file("/proc/diskstats", &rep))) { return 0; }
+  if (!(fp = open_file("/proc/diskstats", &reported))) { return 0; }
 
   /* read reads and writes from all disks (minor = 0), including cd-roms
    * and floppies, and sum them up */

@@ -38,6 +38,7 @@
 #include <sys/param.h>
 #endif /* HAVE_SYS_PARAM_H */
 #include <algorithm>
+#include <map>
 #include <sstream>
 #include "colours.h"
 #include "common.h"
@@ -46,6 +47,9 @@
 struct special_t *specials = nullptr;
 
 int special_count;
+int graph_count = 0;
+
+std::map<int, double *> graphs;
 
 namespace {
 conky::range_config_setting<int> default_bar_width(
@@ -90,6 +94,7 @@ struct gauge {
 };
 
 struct graph {
+  int id;
   char flags;
   int width, height;
   unsigned int first_colour, last_colour;
@@ -203,6 +208,7 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
   obj->special_data = g;
 
   /* zero width means all space that is available */
+  g->id = ++graph_count;
   g->width = default_graph_width.get(*state);
   g->height = default_graph_height.get(*state);
   g->first_colour = 0;
@@ -374,7 +380,8 @@ void new_gauge_in_shell(struct text_object *obj, char *p,
   static const char *gaugevals[] = {"_. ", "\\. ", " | ", " ./", " ._"};
   auto *g = static_cast<struct gauge *>(obj->special_data);
 
-  snprintf(p, p_max_size, "%s", gaugevals[round_to_int(usage * 4 / g->scale)]);
+  snprintf(p, p_max_size, "%s",
+           gaugevals[round_to_positive_int(usage * 4 / g->scale)]);
 }
 
 #ifdef BUILD_X11
@@ -488,7 +495,7 @@ void new_graph_in_shell(struct special_t *s, char *buf, int buf_max_size) {
   char *buf_max = buf + (sizeof(char) * buf_max_size);
   double scale = (tickitems.size() - 1) / s->scale;
   for (int i = s->graph_allocated - 1; i >= 0; i--) {
-    const unsigned int v = round_to_int(s->graph[i] * scale);
+    const unsigned int v = round_to_positive_int(s->graph[i] * scale);
     const char *tick = tickitems[v].c_str();
     size_t itemlen = tickitems[v].size();
     for (unsigned int j = 0; j < itemlen; j++) {
@@ -498,6 +505,32 @@ void new_graph_in_shell(struct special_t *s, char *buf, int buf_max_size) {
   }
 graph_buf_end:
   *p = '\0';
+}
+
+double *copy_graph(double *original_graph, int graph_width) {
+  double *new_graph =
+      static_cast<double *>(malloc(graph_width * sizeof(double)));
+
+  memcpy(new_graph, original_graph, graph_width * sizeof(double));
+
+  return new_graph;
+}
+
+double *retrieve_graph(int graph_id, int graph_width) {
+  if (graphs.find(graph_id) == graphs.end()) {
+    return static_cast<double *>(calloc(1, graph_width * sizeof(double)));
+  } else {
+    return copy_graph(graphs[graph_id], graph_width);
+  }
+}
+
+void store_graph(int graph_id, struct special_t *s) {
+  if (s->graph == nullptr) {
+    graphs[graph_id] = nullptr;
+  } else {
+    if (graphs.find(graph_id) != graphs.end()) { free(graphs[graph_id]); }
+    graphs[graph_id] = s->graph;
+  }
 }
 
 /**
@@ -541,6 +574,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
     }
     s->graph = graph;
     s->graph_allocated = s->graph_width;
+    graphs[g->id] = graph;
   }
   s->height = g->height;
   s->first_colour = adjust_colours(g->first_colour);
@@ -556,9 +590,18 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
   }
   s->tempgrad = g->tempgrad;
 #ifdef BUILD_MATH
-  if ((g->flags & SF_SHOWLOG) != 0) { s->scale = log10(s->scale + 1); }
+  if ((g->flags & SF_SHOWLOG) != 0) {
+    s->scale_log = 1;
+    s->scale = log10(s->scale + 1);
+  }
 #endif
+
+  int graph_id = ((struct graph *)obj->special_data)->id;
+  s->graph = retrieve_graph(graph_id, s->graph_width);
+
   graph_append(s, val, g->flags);
+
+  store_graph(graph_id, s);
 
   if (out_to_stdout.get(*state)) { new_graph_in_shell(s, buf, buf_max_size); }
 }
@@ -639,7 +682,7 @@ static void new_bar_in_shell(struct text_object *obj, char *buffer,
 
   if (width > buf_max_size) { width = buf_max_size; }
 
-  scaledusage = round_to_int(usage * width / b->scale);
+  scaledusage = round_to_positive_int(usage * width / b->scale);
 
   for (i = 0; i < scaledusage; i++) {
     buffer[i] = *(bar_fill.get(*state).c_str());
@@ -749,4 +792,9 @@ void new_tab(struct text_object *obj, char *p, unsigned int p_max_size) {
   s = new_special(p, TAB);
   s->width = t->width;
   s->arg = t->arg;
+}
+
+void clear_stored_graphs() {
+  graph_count = 0;
+  graphs.clear();
 }
