@@ -125,7 +125,7 @@ if conky == nil then --> standalone program
     -- 2 args: 1st is inputfile, 2nd is outputfile
     -- 0, 3 or more args: print usage to STDERR and quit
     if #arg == 1 or #arg == 2 then
-        if os.execute('command -v dos2unix 2&>1') then
+        if os.execute('command -v dos2unix 2>&1 >/dev/null') == 0 then
             os.execute('dos2unix ' .. arg[1]);
         end
         input = io.input(arg[1]);
