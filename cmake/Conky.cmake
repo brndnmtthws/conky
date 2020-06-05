@@ -157,13 +157,11 @@ endif(NOT RELEASE)
 
 mark_as_advanced(APP_AWK APP_WC APP_DATE APP_UNAME)
 
-# BUILD_DATE=$(LANG=en_US LC_ALL=en_US LOCALE=en_US date) BUILD_ARCH="$(uname
-# -sr) ($(uname -m))"
-execute_process(COMMAND ${APP_DATE}
-                RESULT_VARIABLE RETVAL
-                OUTPUT_VARIABLE BUILD_DATE
-                OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND ${APP_UNAME} -srm
+# BUILD_DATE=$(LANG=en_US LC_ALL=en_US LOCALE=en_US date --utc
+# --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y-%m-%d)
+# BUILD_ARCH="$(uname -sm)"
+STRING(TIMESTAMP BUILD_DATE "%Y-%m-%d" UTC)
+execute_process(COMMAND ${APP_UNAME} -sm
                 RESULT_VARIABLE RETVAL
                 OUTPUT_VARIABLE BUILD_ARCH
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
