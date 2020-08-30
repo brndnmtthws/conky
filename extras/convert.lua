@@ -156,5 +156,5 @@ if conky == nil then
     output:write(converted);
     output:close();
 else
-    return assert(loadstring(converted, 'converted config'));
+    return assert(load(converted, 'converted config'));
 end;
