@@ -51,7 +51,6 @@ int find_match_op(const char *expr) {
       case '<':
       case '>':
         return idx;
-        break;
     }
   }
   return -1;
