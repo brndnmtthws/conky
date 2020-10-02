@@ -84,7 +84,8 @@ static char *backslash_escape(const char *src, char **templates,
           dup_len += strlen(templates[tmpl_num - 1]);
           src_dup =
               static_cast<char *>(realloc(src_dup, dup_len * sizeof(char)));
-          sprintf(src_dup + dup_idx, "%s", templates[tmpl_num - 1]);
+          snprintf(src_dup + dup_idx, dup_len - dup_idx, "%s",
+                   templates[tmpl_num - 1]);
           dup_idx += strlen(templates[tmpl_num - 1]);
           p += digits;
         }

@@ -580,9 +580,9 @@ void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
                          nullptr, NULL);
       ns2->addr = ((struct ifreq *)conf.ifc_buf)[k].ifr_ifru.ifru_addr;
       char temp_addr[18];
-      sprintf(temp_addr, "%u.%u.%u.%u, ", ns2->addr.sa_data[2] & 255,
-              ns2->addr.sa_data[3] & 255, ns2->addr.sa_data[4] & 255,
-              ns2->addr.sa_data[5] & 255);
+      snprintf(temp_addr, sizeof(temp_addr), "%u.%u.%u.%u, ",
+               ns2->addr.sa_data[2] & 255, ns2->addr.sa_data[3] & 255,
+               ns2->addr.sa_data[4] & 255, ns2->addr.sa_data[5] & 255);
       if (nullptr == strstr(ns2->addrs, temp_addr))
         strncpy(ns2->addrs + strlen(ns2->addrs), temp_addr, 17);
     }

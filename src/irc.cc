@@ -59,7 +59,8 @@ void addmessage(struct ctx *ctxptr, char *nick, const char *text) {
   struct ll_text *lastmsg = ctxptr->messages;
   struct ll_text *newmsg = (struct ll_text *)malloc(sizeof(struct ll_text));
   newmsg->text = (char *)malloc(strlen(nick) + strlen(text) + 4);  // 4 = ": \n"
-  sprintf(newmsg->text, "%s: %s\n", nick, text);
+  snprintf(newmsg->text, strlen(nick) + strlen(text) + 4, "%s: %s\n", nick,
+           text);
   newmsg->next = nullptr;
   int msgcnt = 1;
   if (!lastmsg) {
@@ -107,7 +108,7 @@ void ev_num(irc_session_t *session, unsigned int event, const char *,
   if (event == 433) {  // nick in use
     int len = strlen(params[1]) + 4;
     char *newnick = (char *)malloc(len);
-    strcpy(newnick, params[1]);
+    strncpy(newnick, len, params[1]);
     attachment[1] += rand() % 10;
     attachment[2] += rand() % 10;
     strncat(newnick, attachment, len - 1);

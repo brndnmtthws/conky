@@ -255,7 +255,8 @@ static void update_mail_count(struct local_mail_s *mail) {
           NORM_ERR("malloc");
           return;
         }
-        strcpy(mailflags, strrchr(dirent->d_name, ','));
+        strncpy(mailflags, strrchr(dirent->d_name, ','),
+                strlen(strrchr(dirent->d_name, ',')));
         if (strchr(mailflags, 'T') ==
             nullptr) { /* The message is not in the trash */
           if (strchr(mailflags, 'S') !=
