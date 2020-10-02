@@ -525,7 +525,9 @@ void print_pid_thread_list(struct text_object *obj, char *p,
       }
     }
     closedir(dir);
-    if (p[totallength - 1] == ',') { p[totallength - 1] = 0; }
+    if (totallength > 0 && p[totallength - 1] == ',') {
+      p[totallength - 1] = 0;
+    }
   } else {
     p[0] = 0;
   }
