@@ -130,7 +130,7 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
   }
   // use the buffer if possible
   if (ht->buffer != nullptr) {
-    strcpy(p, ht->buffer);
+    strncpy(p, ht->buffer, p_max_size);
     ht->current_use++;
   } else {  // otherwise find the needed data
     if (stat(ht->logfile.c_str(), &st) == 0) {

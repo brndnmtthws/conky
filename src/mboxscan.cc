@@ -145,7 +145,8 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
 
     /* allowing $MAIL in the config */
     if (strcmp(mbox_mail_spool, "$MAIL") == 0) {
-      strcpy(mbox_mail_spool, current_mail_spool.get(*state).c_str());
+      strncpy(mbox_mail_spool, current_mail_spool.get(*state).c_str(),
+              DEFAULT_TEXT_BUFFER_SIZE);
     }
 
     if (stat(mbox_mail_spool, &statbuf) != 0) {

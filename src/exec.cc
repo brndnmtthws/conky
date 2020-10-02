@@ -168,17 +168,18 @@ void exec_cb::work() {
 // remove backspaced chars, example: "dog^H^H^Hcat" becomes "cat"
 // string has to end with \0 and it's length should fit in a int
 #define BACKSPACE 8
-static void remove_deleted_chars(char *string) {
+static void remove_deleted_chars(char *string, unsigned int p_max_size) {
   int i = 0;
   while (string[i] != 0) {
     if (string[i] == BACKSPACE) {
       if (i != 0) {
-        strcpy(&(string[i - 1]), &(string[i + 1]));
+        strncpy(&(string[i - 1]), &(string[i + 1]),
+                strnlen(string, p_max_size) - i + 1);
         i--;
       } else {
-        strcpy(
-            &(string[i]),
-            &(string[i + 1]));  // necessary for ^H's at the start of a string
+        strncpy(&(string[i]), &(string[i + 1]),
+                strnlen(string, p_max_size) -
+                    i);  // necessary for ^H's at the start of a string
       }
     } else {
       i++;
@@ -229,7 +230,7 @@ void fill_p(const char *buffer, struct text_object *obj, char *p,
     snprintf(p, p_max_size, "%s", buffer);
   }
 
-  remove_deleted_chars(p);
+  remove_deleted_chars(p, p_max_size);
 }
 
 /**
