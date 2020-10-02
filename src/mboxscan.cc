@@ -131,7 +131,9 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
         tmp = strtok(nullptr, " ");
         if (tmp != nullptr) { start = tmp; }
       }
-      strncpy(mbox_mail_spool, start, DEFAULT_TEXT_BUFFER_SIZE);
+      if (start != nullptr) {
+        strncpy(mbox_mail_spool, start, DEFAULT_TEXT_BUFFER_SIZE);
+      }
       free(copy_args);
     }
     if (strlen(mbox_mail_spool) < 1) {
