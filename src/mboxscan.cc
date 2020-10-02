@@ -350,11 +350,11 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
     }
     strncat(output, buf, max_len - strlen(output));
 
-    tmp = curr;
-    curr = curr->previous;
-    free(tmp->from);
-    free(tmp->subject);
-    free(tmp);
+    tmp = curr->previous;
+    free(curr->from);
+    free(curr->subject);
+    free(curr);
+    curr = tmp;
 
     i--;
   }
