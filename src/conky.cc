@@ -317,6 +317,10 @@ static conky::simple_config_setting<std::string> append_file("append_file",
 static FILE *append_fpointer = nullptr;
 
 #ifdef BUILD_HTTP
+#ifdef MHD_YES
+/* older API */
+#define MHD_Result int
+#endif /* MHD_YES */
 std::string webpage;
 struct MHD_Daemon *httpd;
 static conky::simple_config_setting<bool> http_refresh("http_refresh", false,
