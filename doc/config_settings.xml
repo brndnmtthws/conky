@@ -1041,6 +1041,15 @@
     <varlistentry>
         <term>
             <command>
+                <option>units_spacer</option>
+            </command>
+        </term>
+        <listitem>String to place between values and units. (default: empty)
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>update_interval</option>
             </command>
             <option>seconds</option>

@@ -182,6 +182,8 @@ static conky::simple_config_setting<bool> short_units("short_units", false,
                                                       true);
 static conky::simple_config_setting<bool> format_human_readable(
     "format_human_readable", true, true);
+conky::simple_config_setting<std::string> units_spacer(
+    "units_spacer", "", false);
 
 conky::simple_config_setting<bool> out_to_stdout("out_to_console",
 // Default value is false, unless we are building without X
@@ -587,14 +589,16 @@ void human_readable(long long num, char *buf, int size) {
   }
   if (short_units.get(*state)) {
     width = 5;
-    format = "%.*f %.1s";
+    format = "%.*f%s%.1s";
   } else {
     width = 7;
-    format = "%.*f %-.3s";
+    format = "%.*f%s%-.3s";
   }
+  width += strlen(units_spacer.get(*state).c_str());
 
   if (llabs(num) < 1000LL) {
     spaced_print(buf, size, format, width, 0, static_cast<float>(num),
+                 units_spacer.get(*state).c_str(),
                  _(*suffix));
     return;
   }
@@ -628,7 +632,9 @@ void human_readable(long long num, char *buf, int size) {
   if (fnum < 99.95) { precision = 1; /* print 10-99 with one decimal place */ }
   if (fnum < 9.995) { precision = 2; /* print 0-9 with two decimal places */ }
 
-  spaced_print(buf, size, format, width, precision, fnum, _(*suffix));
+  spaced_print(buf, size, format, width, precision, fnum,
+               units_spacer.get(*state).c_str(),
+               _(*suffix));
 }
 
 /* global object list root element */
