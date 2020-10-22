@@ -322,12 +322,13 @@ struct MHD_Daemon *httpd;
 static conky::simple_config_setting<bool> http_refresh("http_refresh", false,
                                                        true);
 
-int sendanswer(void *cls, struct MHD_Connection *connection, const char *url,
-               const char *method, const char *version, const char *upload_data,
-               size_t *upload_data_size, void **con_cls) {
+MHD_Result sendanswer(void *cls, struct MHD_Connection *connection,
+                      const char *url, const char *method, const char *version,
+                      const char *upload_data, unsigned long *upload_data_size,
+                      void **con_cls) {
   struct MHD_Response *response = MHD_create_response_from_buffer(
       webpage.length(), (void *)webpage.c_str(), MHD_RESPMEM_PERSISTENT);
-  int ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
+  MHD_Result ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
   MHD_destroy_response(response);
   if (cls || url || method || version || upload_data || upload_data_size ||
       con_cls) {}  // make compiler happy
