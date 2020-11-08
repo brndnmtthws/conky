@@ -33,6 +33,7 @@
 
 unsigned int adjust_colours(unsigned int);
 unsigned long *do_gradient(int, unsigned long, unsigned long);
+unsigned long *do_hsv_gradient(int, unsigned long, unsigned long);
 
 long get_x11_color(const std::string &colour);
 // XXX: when everyone uses C++ strings, remove this C version
