@@ -248,8 +248,7 @@ void scaled_hsv_to_scaled_rgb(long *const hsv, long *rgb) {
 }
 
 /* this function returns the next colour between two colours in hsv space for a gradient */
-unsigned long *do_hsv_gradient(
-    int width,
+unsigned long *do_hsv_gradient(int width,
     unsigned long first_colour,
     unsigned long last_colour) {
 
@@ -276,6 +275,12 @@ unsigned long *do_hsv_gradient(
   scaled_rgb_to_scaled_hsv(rgb2, hsv2);
 
   hueDiff = hsv2[0] - hsv1[0];
+  // use shortest hue path
+  if (hueDiff > CONST_SCALE180) {
+    hueDiff = hueDiff - CONST_SCALE360;
+  } else if (hueDiff < -CONST_SCALE180) {
+    hueDiff = hueDiff + CONST_SCALE360;
+  }
   satDiff = hsv2[1] - hsv1[1];
   valDiff = hsv2[2] - hsv1[2];
 
@@ -288,7 +293,12 @@ unsigned long *do_hsv_gradient(
     long divisor = width - i;
     k = (hueDiff + divisor / 2) / divisor;
     hueDiff -= k;
-    hsv1[0] += k;
+    long h = hsv1[0] + k;
+    if (h < 0) {
+      hsv1[0] = CONST_SCALE360 + h;
+    } else {
+      hsv1[0] = h;
+    }
 
     k = (satDiff + divisor / 2) / divisor;
     satDiff -= k;
