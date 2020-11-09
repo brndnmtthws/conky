@@ -142,6 +142,10 @@
 #ifdef BUILD_BUILTIN_CONFIG
 #include "defconfig.h"
 
+#ifdef BUILD_HSV_GRADIENT
+#include "hsv_gradient.h"
+#endif /* BUILD_HSV_GRADIENT */
+
 namespace {
 const char builtin_config_magic[] = "==builtin==";
 }  // namespace

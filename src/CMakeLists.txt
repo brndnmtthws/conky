@@ -282,6 +282,11 @@ if(BUILD_PULSEAUDIO)
   set(optional_sources ${optional_sources} ${pulseaudio})
 endif(BUILD_PULSEAUDIO)
 
+if(BUILD_HSV_GRADIENT)
+  set(hsv_gradient hsv_gradient.cc hsv_gradient.h)
+  set(optional_sources ${optional_sources} ${hsv_gradient})
+endif(BUILD_HSV_GRADIENT)
+
 if(BUILD_TESTS)
   # Create a library strictly for testing
   add_library(conky_core ${conky_sources} ${optional_sources})

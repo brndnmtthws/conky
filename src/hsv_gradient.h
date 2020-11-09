@@ -26,22 +26,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef _COLOURS_H
-#define _COLOURS_H
+#ifndef _HSV_GRADIENT_H
+#define _HSV_GRADIENT_H
 
-#include <string>
-
-unsigned int adjust_colours(unsigned int);
-unsigned long *do_gradient(int, unsigned long, unsigned long);
 unsigned long *do_hsv_gradient(int, unsigned long, unsigned long);
 
-long get_x11_color(const std::string &colour);
-// XXX: when everyone uses C++ strings, remove this C version
-long get_x11_color(const char *);
-
-// needed by hsv_gradient
-extern short colour_depth;
-extern long redmask, greenmask, bluemask;
-extern void set_up_gradient();
+long to_decimal_scale(long value, long max_value);
+long from_decimal_scale(long value, long max_value);
+void scaled_rgb_to_scaled_hsv(long * const rgb, long *hsv);
+void scaled_hsv_to_scaled_rgb(long *const hsv, long *rgb);
 
 #endif /* _COLOURS_H */
