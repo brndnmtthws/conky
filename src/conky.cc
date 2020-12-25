@@ -2184,7 +2184,7 @@ void main_loop() {
             if (own_window.get(*state)) {
               /* if an ordinary window with decorations */
               if ((own_window_type.get(*state) == TYPE_NORMAL) &&
-                  not TEST_HINT(own_window_hints.get(*state),
+                  !TEST_HINT(own_window_hints.get(*state),
                                 HINT_UNDECORATED)) {
                 /* allow conky to hold input focus. */
                 break;
