@@ -1,5 +1,4 @@
 /*
-ad_
  *
  * Conky, a system monitor, based on torsmo
  *
