@@ -61,8 +61,7 @@ display_output_file::display_output_file(const std::string &name_)
 bool display_output_file::detect() {
   if (static_cast<unsigned int>(!overwrite_file.get(*state).empty()) != 0u ||
       static_cast<unsigned int>(!append_file.get(*state).empty()) != 0u) {
-    std::cerr << "Display output '" << name << "' enabled in config."
-              << std::endl;
+    DBGP2("Display output '%s' enabled in config.", name.c_str());
     return true;
   }
   return false;

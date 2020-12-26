@@ -66,8 +66,7 @@ display_output_ncurses::display_output_ncurses()
 
 bool display_output_ncurses::detect() {
   if (out_to_ncurses.get(*state)) {
-    std::cerr << "Display output '" << name << "' enabled in config."
-              << std::endl;
+    DBGP2("Display output '%s' enabled in config.", name.c_str());
     return true;
   }
   return false;
