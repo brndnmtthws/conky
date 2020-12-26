@@ -27,6 +27,7 @@
 #include <config.h>
 
 #include "display-output.hh"
+#include "logging.h"
 
 #include <algorithm>
 #include <iostream>
@@ -91,9 +92,10 @@ disabled_display_output::disabled_display_output(const std::string &name,
     : display_output_base(name) {
   priority = -2;
   // XXX some generic way of reporting errors? NORM_ERR?
-  std::cerr << "Support for display output '" << name
-            << "' has been disabled during compilation. Please recompile with '"
-            << define << "'" << std::endl;
+  DBGP(
+      "Support for display output '%s' has been disabled during compilation. "
+      "Please recompile with '%s'",
+      name.c_str(), define.c_str());
 }
 
 bool initialize_display_outputs() {
@@ -108,11 +110,9 @@ bool initialize_display_outputs() {
 
   for (auto output : outputs) {
     if (output->priority < 0) continue;
-    std::cerr << "Testing display output '" << output->name << "'... "
-              << std::endl;
+    DBGP2("Testing display output '%s'... ", output->name.c_str());
     if (output->detect()) {
-      std::cerr << "Detected display output '" << output->name << "'... "
-                << std::endl;
+      DBGP2("Detected display output '%s'... ", output->name.c_str());
 
       if (graphical_count && output->graphical()) continue;
 
@@ -120,8 +120,7 @@ bool initialize_display_outputs() {
       active_display_outputs.push_back(output);
 
       if (output->initialize()) {
-        std::cerr << "Initialized display output '" << output->name << "'... "
-                  << std::endl;
+        DBGP("Initialized display output '%s'... ", output->name.c_str());
 
         output->is_active = true;
         if (output->graphical()) graphical_count++;

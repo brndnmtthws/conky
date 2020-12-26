@@ -133,8 +133,7 @@ display_output_http::display_output_http() : display_output_base("http") {
 
 bool display_output_http::detect() {
   if (/*priv::*/ out_to_http.get(*state)) {
-    std::cerr << "Display output '" << name << "' enabled in config."
-              << std::endl;
+    DBGP2("Display output '%s' enabled in config.", name.c_str());
     return true;
   }
   return false;

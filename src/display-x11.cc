@@ -205,8 +205,7 @@ display_output_x11::display_output_x11() : display_output_base("x11") {
 
 bool display_output_x11::detect() {
   if (out_to_x.get(*state)) {
-    std::cerr << "Display output '" << name << "' enabled in config."
-              << std::endl;
+    DBGP2("Display output '%s' enabled in config.", name.c_str());
     return true;
   }
   return false;
