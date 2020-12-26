@@ -76,6 +76,57 @@ extern long current_color;
 static int xft_dpi = -1;
 #endif /* BUILD_XFT */
 
+/* for x_fonts */
+struct x_font_list {
+  XFontStruct *font;
+  XFontSet fontset;
+
+#ifdef BUILD_XFT
+  XftFont *xftfont;
+  int font_alpha;
+#endif
+
+  x_font_list()
+      : font(nullptr),
+        fontset(nullptr)
+#ifdef BUILD_XFT
+        ,
+        xftfont(nullptr),
+        font_alpha(0xffff)
+#endif
+  {
+  }
+};
+
+static std::vector<x_font_list> x_fonts; /* indexed by selected_font */
+
+#ifdef BUILD_XFT
+namespace {
+class xftalpha_setting : public conky::simple_config_setting<float> {
+  using Base = conky::simple_config_setting<float>;
+
+ protected:
+  void lua_setter(lua::state &l, bool init) override {
+    lua::stack_sentry s(l, -2);
+
+    Base::lua_setter(l, init);
+
+    if (init && out_to_x.get(*state)) {
+      x_fonts.resize(std::max(1, static_cast<int>(fonts.size())));
+      x_fonts[0].font_alpha = do_convert(l, -1).first * 0xffff;
+    }
+
+    ++s;
+  }
+
+ public:
+  xftalpha_setting() : Base("xftalpha", 1.0, false) {}
+};
+
+xftalpha_setting xftalpha;
+}  // namespace
+#endif /* BUILD_XFT */
+
 static void X11_create_window();
 
 struct _x11_stuff_s {
@@ -538,17 +589,17 @@ int display_output_x11::calc_text_width(const char *s) {
     XGlyphInfo gi;
 
     if (utf8_mode.get(*state)) {
-      XftTextExtentsUtf8(display, fonts[selected_font].xftfont,
+      XftTextExtentsUtf8(display, x_fonts[selected_font].xftfont,
                          reinterpret_cast<const FcChar8 *>(s), slen, &gi);
     } else {
-      XftTextExtents8(display, fonts[selected_font].xftfont,
+      XftTextExtents8(display, x_fonts[selected_font].xftfont,
                       reinterpret_cast<const FcChar8 *>(s), slen, &gi);
     }
     return gi.xOff;
   }
 #endif /* BUILD_XFT */
 
-  return XTextWidth(fonts[selected_font].font, s, slen);
+  return XTextWidth(x_fonts[selected_font].font, s, slen);
 }
 
 void display_output_x11::draw_string_at(int x, int y, const char *s, int w) {
@@ -565,19 +616,19 @@ void display_output_x11::draw_string_at(int x, int y, const char *s, int w) {
     c2.color.red = c.red;
     c2.color.green = c.green;
     c2.color.blue = c.blue;
-    c2.color.alpha = fonts[selected_font].font_alpha;
+    c2.color.alpha = x_fonts[selected_font].font_alpha;
     if (utf8_mode.get(*state)) {
-      XftDrawStringUtf8(window.xftdraw, &c2, fonts[selected_font].xftfont, x, y,
-                        reinterpret_cast<const XftChar8 *>(s), w);
+      XftDrawStringUtf8(window.xftdraw, &c2, x_fonts[selected_font].xftfont, x,
+                        y, reinterpret_cast<const XftChar8 *>(s), w);
     } else {
-      XftDrawString8(window.xftdraw, &c2, fonts[selected_font].xftfont, x, y,
+      XftDrawString8(window.xftdraw, &c2, x_fonts[selected_font].xftfont, x, y,
                      reinterpret_cast<const XftChar8 *>(s), w);
     }
   } else
 #endif
   {
     if (utf8_mode.get(*state)) {
-      Xutf8DrawString(display, window.drawable, fonts[selected_font].fontset,
+      Xutf8DrawString(display, window.drawable, x_fonts[selected_font].fontset,
                       window.gc, x, y, s, w);
     } else {
       XDrawString(display, window.drawable, window.gc, x, y, s, w);
@@ -656,7 +707,158 @@ void display_output_x11::clear_text(int exposures) {
   }
 }
 
-void display_output_x11::load_fonts(bool utf8) { ::load_fonts(utf8); }
+#ifdef BUILD_XFT
+
+int display_output_x11::font_height(int f) {
+  assert(f < x_fonts.size());
+  if (use_xft.get(*state)) {
+    return x_fonts[f].xftfont->ascent + x_fonts[f].xftfont->descent;
+  } else {
+    return x_fonts[f].font->max_bounds.ascent +
+           x_fonts[f].font->max_bounds.descent;
+  }
+}
+
+int display_output_x11::font_ascent(int f) {
+  assert(f < x_fonts.size());
+  if (use_xft.get(*state)) {
+    return x_fonts[f].xftfont->ascent;
+  } else {
+    return x_fonts[f].font->max_bounds.ascent;
+  }
+}
+
+int display_output_x11::font_descent(int f) {
+  assert(f < x_fonts.size());
+  if (use_xft.get(*state)) {
+    return x_fonts[f].xftfont->descent;
+  } else {
+    return x_fonts[f].font->max_bounds.descent;
+  }
+}
+
+#else
+
+int display_output_x11::font_height(int f) {
+  assert(f < x_fonts.size());
+  return x_fonts[f].font->max_bounds.ascent +
+         x_fonts[f].font->max_bounds.descent;
+}
+
+int display_output_x11::font_ascent(int f) {
+  assert(f < x_fonts.size());
+  return x_fonts[f].font->max_bounds.ascent;
+}
+
+int display_output_x11::font_descent(int f) {
+  assert(f < x_fonts.size());
+  return x_fonts[f].font->max_bounds.descent;
+}
+
+#endif
+
+void display_output_x11::setup_fonts(void) {
+#ifdef BUILD_XFT
+  if (use_xft.get(*state)) {
+    if (window.xftdraw != nullptr) {
+      XftDrawDestroy(window.xftdraw);
+      window.xftdraw = nullptr;
+    }
+    window.xftdraw = XftDrawCreate(display, window.drawable, window.visual,
+                                   window.colourmap);
+  }
+#endif /* BUILD_XFT */
+}
+
+void display_output_x11::set_font(int f) {
+#ifdef BUILD_XFT
+  if (use_xft.get(*state)) { return; }
+#endif /* BUILD_XFT */
+  if (x_fonts.size() > f && x_fonts[f].font != nullptr &&
+      window.gc != nullptr) {
+    XSetFont(display, window.gc, x_fonts[f].font->fid);
+  }
+}
+
+void display_output_x11::free_fonts(bool utf8) {
+  for (auto &font : x_fonts) {
+#ifdef BUILD_XFT
+    if (use_xft.get(*state)) {
+      /*
+       * Do we not need to close fonts with Xft? Unsure.  Not freeing the
+       * fonts seems to incur a slight memory leak, but it also prevents
+       * a crash.
+       *
+       * XftFontClose(display, x_fonts[i].xftfont);
+       */
+    } else
+#endif /* BUILD_XFT */
+    {
+      if (font.font != nullptr) { XFreeFont(display, font.font); }
+      if (utf8 && (font.fontset != nullptr)) {
+        XFreeFontSet(display, font.fontset);
+      }
+    }
+  }
+  x_fonts.clear();
+#ifdef BUILD_XFT
+  if (window.xftdraw != nullptr) {
+    XftDrawDestroy(window.xftdraw);
+    window.xftdraw = nullptr;
+  }
+#endif /* BUILD_XFT */
+}
+void display_output_x11::load_fonts(bool utf8) {
+  x_fonts.resize(fonts.size());
+  for (int i = 0; i < fonts.size(); i++) {
+    auto &font = fonts[i];
+    auto &xfont = x_fonts[i];
+#ifdef BUILD_XFT
+    /* load Xft font */
+    if (use_xft.get(*state)) {
+      if (xfont.xftfont == nullptr) {
+        xfont.xftfont = XftFontOpenName(display, screen, font.name.c_str());
+      }
+
+      if (xfont.xftfont != nullptr) { continue; }
+
+      NORM_ERR("can't load Xft font '%s'", font.name.c_str());
+      if ((xfont.xftfont = XftFontOpenName(display, screen, "courier-12")) !=
+          nullptr) {
+        continue;
+      }
+
+      CRIT_ERR(nullptr, nullptr, "can't load Xft font '%s'", "courier-12");
+
+      continue;
+    }
+#endif
+    if (utf8 && xfont.fontset == nullptr) {
+      char **missing;
+      int missingnum;
+      char *missingdrawn;
+      xfont.fontset = XCreateFontSet(display, font.name.c_str(), &missing,
+                                     &missingnum, &missingdrawn);
+      XFreeStringList(missing);
+      if (xfont.fontset == nullptr) {
+        NORM_ERR("can't load font '%s'", font.name.c_str());
+        xfont.fontset = XCreateFontSet(display, "fixed", &missing, &missingnum,
+                                       &missingdrawn);
+        if (xfont.fontset == nullptr) {
+          CRIT_ERR(nullptr, nullptr, "can't load font '%s'", "fixed");
+        }
+      }
+    }
+    /* load normal font */
+    if ((xfont.font == nullptr) &&
+        (xfont.font = XLoadQueryFont(display, font.name.c_str())) == nullptr) {
+      NORM_ERR("can't load font '%s'", font.name.c_str());
+      if ((xfont.font = XLoadQueryFont(display, "fixed")) == nullptr) {
+        CRIT_ERR(nullptr, nullptr, "can't load font '%s'", "fixed");
+      }
+    }
+  }
+}
 
 #endif /* BUILD_X11 */
 
