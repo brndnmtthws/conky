@@ -71,6 +71,13 @@ class display_output_x11 : public display_output_base {
 
   virtual void end_draw_stuff();
   virtual void clear_text(int exposures);
+
+  virtual int font_height(int);
+  virtual int font_ascent(int);
+  virtual int font_descent(int);
+  virtual void setup_fonts(void);
+  virtual void set_font(int);
+  virtual void free_fonts(bool utf8);
   virtual void load_fonts(bool utf8);
 
   // X11-specific

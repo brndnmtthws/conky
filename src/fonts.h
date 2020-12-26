@@ -37,25 +37,8 @@
 /* for fonts */
 struct font_list {
   std::string name;
-  XFontStruct *font;
-  XFontSet fontset;
 
-#ifdef BUILD_XFT
-  XftFont *xftfont;
-  int font_alpha;
-#endif
-
-  font_list()
-      : name(),
-        font(nullptr),
-        fontset(nullptr)
-#ifdef BUILD_XFT
-        ,
-        xftfont(nullptr),
-        font_alpha(0xffff)
-#endif
-  {
-  }
+  font_list() : name() {}
 };
 
 /* direct access to registered fonts (FIXME: bad encapsulation) */

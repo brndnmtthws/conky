@@ -28,6 +28,7 @@
  */
 
 #include "fonts.h"
+#include "display-output.hh"
 #include "logging.h"
 
 unsigned int selected_font = 0;
@@ -53,55 +54,14 @@ conky::simple_config_setting<std::string> font_template[10] = {
     {"font0", ""}, {"font1", ""}, {"font2", ""}, {"font3", ""}, {"font4", ""},
     {"font5", ""}, {"font6", ""}, {"font7", ""}, {"font8", ""}, {"font9", ""}};
 
-#ifdef BUILD_XFT
-namespace {
-class xftalpha_setting : public conky::simple_config_setting<float> {
-  using Base = conky::simple_config_setting<float>;
-
- protected:
-  void lua_setter(lua::state &l, bool init) override {
-    lua::stack_sentry s(l, -2);
-
-    Base::lua_setter(l, init);
-
-    if (init && out_to_x.get(*state)) {
-      fonts[0].font_alpha = do_convert(l, -1).first * 0xffff;
-    }
-
-    ++s;
-  }
-
- public:
-  xftalpha_setting() : Base("xftalpha", 1.0, false) {}
-};
-
-xftalpha_setting xftalpha;
-}  // namespace
-#endif /* BUILD_XFT */
-
 void set_font() {
-#ifdef BUILD_XFT
-  if (use_xft.get(*state)) { return; }
-#endif /* BUILD_XFT */
-  if (fonts.size() > selected_font && fonts[selected_font].font != nullptr &&
-      window.gc != nullptr) {
-    XSetFont(display, window.gc, fonts[selected_font].font->fid);
-  }
+  if (selected_font >= fonts.size()) return;
+  for (auto output : display_outputs()) output->set_font(selected_font);
 }
 
 void setup_fonts() {
   DBGP2("setting up fonts");
-  if (!out_to_x.get(*state)) { return; }
-#ifdef BUILD_XFT
-  if (use_xft.get(*state)) {
-    if (window.xftdraw != nullptr) {
-      XftDrawDestroy(window.xftdraw);
-      window.xftdraw = nullptr;
-    }
-    window.xftdraw = XftDrawCreate(display, window.drawable, window.visual,
-                                   window.colourmap);
-  }
-#endif /* BUILD_XFT */
+  for (auto output : display_outputs()) output->setup_fonts();
   set_font();
 }
 
@@ -114,140 +74,27 @@ int add_font(const char *data_in) {
 }
 
 void free_fonts(bool utf8) {
-  if (!out_to_x.get(*state)) { return; }
-  for (auto &font : fonts) {
-#ifdef BUILD_XFT
-    if (use_xft.get(*state)) {
-      /*
-       * Do we not need to close fonts with Xft? Unsure.  Not freeing the
-       * fonts seems to incur a slight memory leak, but it also prevents
-       * a crash.
-       *
-       * XftFontClose(display, fonts[i].xftfont);
-       */
-    } else
-#endif /* BUILD_XFT */
-    {
-      if (font.font != nullptr) { XFreeFont(display, font.font); }
-      if (utf8 && (font.fontset != nullptr)) {
-        XFreeFontSet(display, font.fontset);
-      }
-    }
-  }
+  for (auto output : display_outputs()) output->free_fonts(utf8);
   fonts.clear();
   selected_font = 0;
-#ifdef BUILD_XFT
-  if (window.xftdraw != nullptr) {
-    XftDrawDestroy(window.xftdraw);
-    window.xftdraw = nullptr;
-  }
-#endif /* BUILD_XFT */
 }
 
 void load_fonts(bool utf8) {
   DBGP2("loading fonts");
-  if (!out_to_x.get(*state)) { return; }
-  for (auto &font : fonts) {
-#ifdef BUILD_XFT
-    /* load Xft font */
-    if (use_xft.get(*state)) {
-      if (font.xftfont == nullptr) {
-        font.xftfont = XftFontOpenName(display, screen, font.name.c_str());
-      }
-
-      if (font.xftfont != nullptr) { continue; }
-
-      NORM_ERR("can't load Xft font '%s'", font.name.c_str());
-      if ((font.xftfont = XftFontOpenName(display, screen, "courier-12")) !=
-          nullptr) {
-        continue;
-      }
-
-      CRIT_ERR(nullptr, nullptr, "can't load Xft font '%s'", "courier-12");
-
-      continue;
-    }
-#endif
-    if (utf8 && font.fontset == nullptr) {
-      char **missing;
-      int missingnum;
-      char *missingdrawn;
-      font.fontset = XCreateFontSet(display, font.name.c_str(), &missing,
-                                    &missingnum, &missingdrawn);
-      XFreeStringList(missing);
-      if (font.fontset == nullptr) {
-        NORM_ERR("can't load font '%s'", font.name.c_str());
-        font.fontset = XCreateFontSet(display, "fixed", &missing, &missingnum,
-                                      &missingdrawn);
-        if (font.fontset == nullptr) {
-          CRIT_ERR(nullptr, nullptr, "can't load font '%s'", "fixed");
-        }
-      }
-    }
-    /* load normal font */
-    if ((font.font == nullptr) &&
-        (font.font = XLoadQueryFont(display, font.name.c_str())) == nullptr) {
-      NORM_ERR("can't load font '%s'", font.name.c_str());
-      if ((font.font = XLoadQueryFont(display, "fixed")) == nullptr) {
-        CRIT_ERR(nullptr, nullptr, "can't load font '%s'", "fixed");
-      }
-    }
-  }
+  for (auto output : display_outputs()) output->load_fonts(utf8);
 }
 
-#ifdef BUILD_XFT
-
 int font_height() {
-  if (!out_to_x.get(*state)) { return 0; }
   assert(selected_font < fonts.size());
-  if (use_xft.get(*state)) {
-    return fonts[selected_font].xftfont->ascent +
-           fonts[selected_font].xftfont->descent;
-  } else {
-    return fonts[selected_font].font->max_bounds.ascent +
-           fonts[selected_font].font->max_bounds.descent;
-  }
+  return display_output()->font_height(selected_font);
 }
 
 int font_ascent() {
-  if (!out_to_x.get(*state)) { return 0; }
   assert(selected_font < fonts.size());
-  if (use_xft.get(*state)) {
-    return fonts[selected_font].xftfont->ascent;
-  } else {
-    return fonts[selected_font].font->max_bounds.ascent;
-  }
+  return display_output()->font_ascent(selected_font);
 }
 
 int font_descent() {
-  if (!out_to_x.get(*state)) { return 0; }
   assert(selected_font < fonts.size());
-  if (use_xft.get(*state)) {
-    return fonts[selected_font].xftfont->descent;
-  } else {
-    return fonts[selected_font].font->max_bounds.descent;
-  }
+  return display_output()->font_descent(selected_font);
 }
-
-#else
-
-int font_height() {
-  if (!out_to_x.get(*state)) { return 0; }
-  assert(selected_font < fonts.size());
-  return fonts[selected_font].font->max_bounds.ascent +
-         fonts[selected_font].font->max_bounds.descent;
-}
-
-int font_ascent() {
-  if (!out_to_x.get(*state)) { return 0; }
-  assert(selected_font < fonts.size());
-  return fonts[selected_font].font->max_bounds.ascent;
-}
-
-int font_descent() {
-  if (!out_to_x.get(*state)) { return 0; }
-  assert(selected_font < fonts.size());
-  return fonts[selected_font].font->max_bounds.descent;
-}
-
-#endif

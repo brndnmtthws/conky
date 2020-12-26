@@ -108,6 +108,14 @@ class display_output_base {
   virtual void begin_draw_stuff() {}
   virtual void end_draw_stuff() {}
   virtual void clear_text(int exposures) {}
+
+  // font stuff
+  virtual int font_height(int) { return 0; }
+  virtual int font_ascent(int) { return 0; }
+  virtual int font_descent(int) { return 0; }
+  virtual void setup_fonts(void) {}
+  virtual void set_font(int) {}
+  virtual void free_fonts(bool utf8) {}
   virtual void load_fonts(bool utf8) {}
 
   // tty interface
