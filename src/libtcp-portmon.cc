@@ -480,7 +480,7 @@ void update_tcp_port_monitor_collection(
       p_collection, &rebuild_tcp_port_monitor_peek_table, nullptr);
 }
 
-/* Creation of reduntant monitors is silently ignored */
+/* Creation of redundant monitors is silently ignored */
 int insert_new_tcp_port_monitor_into_collection(
     tcp_port_monitor_collection_t *p_collection, in_port_t port_range_begin,
     in_port_t port_range_end, tcp_port_monitor_args_t *p_creation_args) {

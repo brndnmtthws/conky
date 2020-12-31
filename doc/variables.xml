@@ -1054,7 +1054,7 @@
         </term>
         <listitem>Evaluates given string according to the rules of conky.text
         interpretation, i.e. parsing any contained text object specifications
-        into their output, any occuring '$$' into a single '$' and so on. The
+        into their output, any occurring '$$' into a single '$' and so on. The
         output is then being parsed again.
         <para /></listitem>
     </varlistentry>
@@ -4698,7 +4698,7 @@
                 </member>
                 <member>
                     <command>low</command>
-                    <option>Minimun temperature (you can use the
+                    <option>Minimum temperature (you can use the
                     'temperature_unit' config setting to change
                     units)</option>
                 </member>

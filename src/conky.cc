@@ -2295,7 +2295,7 @@ void main_loop() {
     if (g_sigusr2_pending != 0) {
       g_sigusr2_pending = 0;
       // refresh view;
-      NORM_ERR("recieved SIGUSR2. refreshing.");
+      NORM_ERR("received SIGUSR2. refreshing.");
       update_text();
       draw_stuff();
 #ifdef BUILD_NCURSES

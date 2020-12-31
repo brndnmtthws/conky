@@ -116,11 +116,11 @@ tcp_port_monitor_collection_t *create_tcp_port_monitor_collection(void);
 void destroy_tcp_port_monitor_collection(
     tcp_port_monitor_collection_t *p_collection);
 
-/* Updates the tcp statitics for all monitors within a collection */
+/* Updates the tcp statistics for all monitors within a collection */
 void update_tcp_port_monitor_collection(
     tcp_port_monitor_collection_t *p_collection);
 
-/* Creation of reduntant monitors is silently ignored
+/* Creation of redundant monitors is silently ignored
  * Returns 0 on success, -1 otherwise. */
 int insert_new_tcp_port_monitor_into_collection(
     tcp_port_monitor_collection_t *p_collection, in_port_t port_range_begin,

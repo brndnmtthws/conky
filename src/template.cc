@@ -43,7 +43,7 @@ conky::simple_config_setting<std::string> _template[10] = {
 
 /* backslash_escape - do the actual substitution task for template objects
  *
- * The field templates is used for substituting the \N occurences. Set it to
+ * The field templates is used for substituting the \N occurrences. Set it to
  * nullptr to leave them as they are.
  */
 static char *backslash_escape(const char *src, char **templates,

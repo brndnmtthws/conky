@@ -345,7 +345,7 @@ void parse_net_stat_graph_arg(struct text_object *obj, const char *arg,
 /**
  * returns the download speed in B/s for the interface referenced by obj
  *
- * @param[in] obj struct containting a member data, which is a struct
+ * @param[in] obj struct containing a member data, which is a struct
  *                containing a void * to a net_stat struct
  **/
 double downspeedgraphval(struct text_object *obj) {

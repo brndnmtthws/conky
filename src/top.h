@@ -42,7 +42,7 @@
 
 #include "conky.h"
 #include "text_object.h"
-#define CPU_THRESHHOLD 0 /* threshhold for the cpu diff to appear */
+#define CPU_THRESHHOLD 0 /* threshold for the cpu diff to appear */
 #include <assert.h>
 #include <ctype.h>
 #include <dirent.h>

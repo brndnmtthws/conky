@@ -7,7 +7,7 @@
         </term>
         <listitem>Aligned position on screen, may be top_left, top_right,
         top_middle, bottom_left, bottom_right, bottom_middle, middle_left,
-        middle_middle, middle_right, or none (also can be abreviated as tl,
+        middle_middle, middle_right, or none (also can be abbreviated as tl,
         tr, tm, bl, br, bm, ml, mm, mr). See also gap_x and gap_y.
         <para /></listitem>
     </varlistentry>

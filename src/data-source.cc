@@ -33,7 +33,7 @@ namespace {
 /*
  * Returned when there is no data available.
  * An alternative would be to throw an exception, but if we don't want to react
- * too aggresively when the user e.g. uses a nonexisting variable, then
+ * too aggressively when the user e.g. uses a nonexisting variable, then
  * returning NaN will do just fine.
  */
 float NaN = std::numeric_limits<float>::quiet_NaN();
