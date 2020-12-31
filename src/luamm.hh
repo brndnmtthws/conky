@@ -270,7 +270,7 @@ class state : private std::mutex {
   void rawset(int index) { lua_rawset(cobj.get(), index); }
   void rawsetfield(int index, const char *k);
   int ref(int t) { return luaL_ref(cobj.get(), t); }
-  // len recieves length, if not null. Returned value may contain '\0'
+  // len receives length, if not null. Returned value may contain '\0'
   const char *tocstring(int index, size_t *len = nullptr) {
     return lua_tolstring(cobj.get(), index, len);
   }

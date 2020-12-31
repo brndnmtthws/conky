@@ -684,7 +684,7 @@ static inline int get_nvidia_target_count(Display *dpy, TARGET_ID tid) {
     NORM_ERR(nullptr, NULL,
              "%s:"
              "\n          Trying to query Nvidia target failed (using the "
-             "propietary drivers)."
+             "proprietary drivers)."
              "\n          Are you sure they are installed correctly and a "
              "Nvidia GPU is in use?"
              "\n          (display: %d,Nvidia target_count: %d)",

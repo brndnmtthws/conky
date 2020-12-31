@@ -75,7 +75,7 @@ static int net_recv_ex(int sock, void *buf, int size, struct timeval *tv) {
   if (res < 0) { return 0; }
   if (res == 0) {
     // timeout
-    errno = ETIMEDOUT;  // select was succesfull, errno is now 0
+    errno = ETIMEDOUT;  // select was successful, errno is now 0
     return 0;
   }
 

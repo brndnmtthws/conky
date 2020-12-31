@@ -113,7 +113,7 @@ class callback_base {
   // to be implemented by descendant classes
   virtual void work() = 0;
 
-  // called when two registered objects evaulate as equal, the latter is removed
+  // called when two registered objects evaluate as equal, the latter is removed
   // afterwards
   virtual void merge(callback_base &&);
 

@@ -181,7 +181,7 @@ int update_meminfo(void) {
   char buf[256];
 
   /* With multi-threading, calculations that require
-   * multple steps to reach a final result can cause havok
+   * multiple steps to reach a final result can cause havok
    * if the intermediary calculations are directly assigned to the
    * information struct (they may be read by other functions in the meantime).
    * These variables keep the calculations local to the function and finish off
@@ -1706,7 +1706,7 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
      POWER_SUPPLY_TYPE=Mains
      POWER_SUPPLY_ONLINE=1
 
-   Update: it seems the folder name is hardware-dependent. We add an aditional
+   Update: it seems the folder name is hardware-dependent. We add an additional
    adapter argument, specifying the folder name.
 
    Update: on some systems it's /sys/class/power_supply/ADP1 instead of
@@ -2801,7 +2801,7 @@ static void calc_io_each(void) {
 
   for (p = first_process; p; p = p->next) sum += p->read_bytes + p->write_bytes;
 
-  if (sum == 0) sum = 1; /* to avoid having NANs if no I/O occured */
+  if (sum == 0) sum = 1; /* to avoid having NANs if no I/O occurred */
   for (p = first_process; p; p = p->next)
     p->io_perc = 100.0 * (p->read_bytes + p->write_bytes) / (float)sum;
 }
@@ -2922,7 +2922,7 @@ static void process_parse_stat(struct process *process) {
               state, &process->user_time, &process->kernel_time, &nice_val,
               &process->vsize, &process->rss);
   if (rc < 6) {
-    NORM_ERR("scaning data for %s failed, got only %d fields", procname, rc);
+    NORM_ERR("scanning data for %s failed, got only %d fields", procname, rc);
     return;
   }
 

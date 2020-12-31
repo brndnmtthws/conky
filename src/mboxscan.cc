@@ -70,7 +70,7 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
   FILE *fp;
 
   /* output was set to 1 after malloc'ing in conky.c */
-  /* -> beeing able to test it here for catching SIGUSR1 */
+  /* -> being able to test it here for catching SIGUSR1 */
   if (output[0] == 1) {
     force_rescan = 1;
     output[0] = '\0';

@@ -3034,7 +3034,7 @@ class PredicateMatcher : public MatcherBase<T> {
 
 // The following functions create the actual matcher objects.
 // The user has to explicitly specify type to the function, because
-// infering std::function<bool(T const&)> is hard (but possible) and
+// inferring std::function<bool(T const&)> is hard (but possible) and
 // requires a lot of TMP.
 template <typename T>
 Generic::PredicateMatcher<T> Predicate(

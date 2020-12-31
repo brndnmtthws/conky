@@ -1,6 +1,6 @@
 /*
  *
- * tcp-portmon.h - libtcp-portmon hooks protoypes
+ * tcp-portmon.h - libtcp-portmon hooks prototypes
  *
  * Copyright (C) 2008 Phil Sutter <Phil@nwl.cc>
  *
