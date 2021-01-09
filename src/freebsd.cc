@@ -49,7 +49,9 @@
 #include <unistd.h>
 
 #include <dev/acpica/acpiio.h>
+#if 0
 #include <dev/wi/if_wavelan_ieee.h>
+#endif
 
 #include <mutex>
 
