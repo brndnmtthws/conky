@@ -94,10 +94,10 @@ void free_no_update(struct text_object *);
 
 void scan_loadavg_arg(struct text_object *, const char *);
 void print_loadavg(struct text_object *, char *, unsigned int);
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 void scan_loadgraph_arg(struct text_object *, const char *);
 double loadgraphval(struct text_object *);
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 
 uint8_t cpu_percentage(struct text_object *);
 double cpu_barval(struct text_object *);
