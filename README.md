@@ -1,4 +1,4 @@
-![Matrix](https://img.shields.io/matrix/conky:frens.io?server_fqdn=matrix.frens.io) [![Build Status](https://travis-ci.org/brndnmtthws/conky.svg?branch=master)](https://travis-ci.org/brndnmtthws/conky) [![pipeline status](https://gitlab.com/brndnmtthws-oss/conky/badges/master/pipeline.svg)](https://gitlab.com/brndnmtthws-oss/conky/commits/master) [![coverage report](https://gitlab.com/brndnmtthws-oss/conky/badges/master/coverage.svg)](https://gitlab.com/brndnmtthws-oss/conky/commits/master)
+[![Matrix](https://img.shields.io/matrix/conky:frens.io?label=%5Bm%5D%20chat&server_fqdn=matrix.frens.io)](https://matrix.to/#/#conky:frens.io?via=frens.io) [![Build Status](https://travis-ci.org/brndnmtthws/conky.svg?branch=master)](https://travis-ci.org/brndnmtthws/conky) [![pipeline status](https://gitlab.com/brndnmtthws-oss/conky/badges/master/pipeline.svg)](https://gitlab.com/brndnmtthws-oss/conky/commits/master) [![coverage report](https://gitlab.com/brndnmtthws-oss/conky/badges/master/coverage.svg)](https://gitlab.com/brndnmtthws-oss/conky/commits/master)
 
 <p align="center"><img width="300" src="logo/conky-logotype-horizontal-violet.png"></p>
 
