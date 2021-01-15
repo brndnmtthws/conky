@@ -364,104 +364,104 @@ centos7 clang-5:
     - source /opt/rh/llvm-toolset-7/enable
     - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
 
-.freebsd_deps: &freebsd_deps
-  retry:
-    max: 2
-    when:
-      - runner_system_failure
-      - stuck_or_timeout_failure
-      - unknown_failure
-      - api_failure
-  tags:
-    - freebsd12
-  before_script:
-    - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
-    - 'echo "COMPILER_PACKAGE: $COMPILER_PACKAGE"'
-    # Try up to 7 times until installation succeeds. It may be locked.
-    - >
-      (
-      flock -x -w 600 9 || exit 1;
-      sudo pkg update;
-      sudo pkg install -y -q
-      cairo
-      cmake
-      docbook-xsl
-      docbook2X
-      gettext-runtime
-      imlib2
-      lcov
-      libical
-      libiconv
-      libinotify
-      libircclient
-      libmicrohttpd
-      librsvg2
-      libX11
-      libXdamage
-      libXext
-      libXfixes
-      libXft
-      libXinerama
-      libxslt
-      lua53
-      mysql80-client
-      pkgconf
-      xmms2
-      $COMPILER_PACKAGE
-      ) 9>/var/lock/pkg
+# .freebsd_deps: &freebsd_deps
+#   retry:
+#     max: 2
+#     when:
+#       - runner_system_failure
+#       - stuck_or_timeout_failure
+#       - unknown_failure
+#       - api_failure
+#   tags:
+#     - freebsd12
+#   before_script:
+#     - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
+#     - 'echo "COMPILER_PACKAGE: $COMPILER_PACKAGE"'
+#     # Try up to 7 times until installation succeeds. It may be locked.
+#     - >
+#       (
+#       flock -x -w 600 9 || exit 1;
+#       sudo pkg update;
+#       sudo pkg install -y -q
+#       cairo
+#       cmake
+#       docbook-xsl
+#       docbook2X
+#       gettext-runtime
+#       imlib2
+#       lcov
+#       libical
+#       libiconv
+#       libinotify
+#       libircclient
+#       libmicrohttpd
+#       librsvg2
+#       libX11
+#       libXdamage
+#       libXext
+#       libXfixes
+#       libXft
+#       libXinerama
+#       libxslt
+#       lua53
+#       mysql80-client
+#       pkgconf
+#       xmms2
+#       $COMPILER_PACKAGE
+#       ) 9>/var/lock/pkg
 
-.freebsd_build_script: &freebsd_build_script
-  script:
-    - mkdir build
-    - cd build
-    - >
-      cmake
-      -DCMAKE_REQUIRED_INCLUDES="/usr/include;/usr/local/include"
-      -DCMAKE_EXE_LINKER_FLAGS=$LINKER_FLAGS
-      -DMAINTAINER_MODE=ON
-      -DBUILD_MYSQL=ON
-      -DBUILD_LUA_IMLIB2=ON
-      -DBUILD_LUA_RSVG=ON
-      -DBUILD_LUA_CAIRO=ON
-      -DBUILD_XMMS2=ON
-      -DBUILD_ICAL=ON
-      -DBUILD_IRC=ON
-      -DBUILD_HTTP=ON
-      -DBUILD_ICONV=ON
-      -DBUILD_RSS=ON
-      -DBUILD_IRC=ON
-      ..
-    - make -j4
+# .freebsd_build_script: &freebsd_build_script
+#   script:
+#     - mkdir build
+#     - cd build
+#     - >
+#       cmake
+#       -DCMAKE_REQUIRED_INCLUDES="/usr/include;/usr/local/include"
+#       -DCMAKE_EXE_LINKER_FLAGS=$LINKER_FLAGS
+#       -DMAINTAINER_MODE=ON
+#       -DBUILD_MYSQL=ON
+#       -DBUILD_LUA_IMLIB2=ON
+#       -DBUILD_LUA_RSVG=ON
+#       -DBUILD_LUA_CAIRO=ON
+#       -DBUILD_XMMS2=ON
+#       -DBUILD_ICAL=ON
+#       -DBUILD_IRC=ON
+#       -DBUILD_HTTP=ON
+#       -DBUILD_ICONV=ON
+#       -DBUILD_RSS=ON
+#       -DBUILD_IRC=ON
+#       ..
+#     - make -j4
 
-freebsd12 gcc-8:
-  <<: *freebsd_deps
-  stage: build
-  variables:
-    DISTRO: freebsd12
-    CC: gcc
-    CXX: g++
-    COMPILER_PACKAGE: gcc
-  <<: *freebsd_build_script
+# freebsd12 gcc-8:
+#   <<: *freebsd_deps
+#   stage: build
+#   variables:
+#     DISTRO: freebsd12
+#     CC: gcc
+#     CXX: g++
+#     COMPILER_PACKAGE: gcc
+#   <<: *freebsd_build_script
 
-freebsd12 clang-7:
-  <<: *freebsd_deps
-  stage: build
-  variables:
-    DISTRO: freebsd12
-    CC: clang70
-    CXX: clang++70
-    COMPILER_PACKAGE: llvm70
-  <<: *freebsd_build_script
+# freebsd12 clang-7:
+#   <<: *freebsd_deps
+#   stage: build
+#   variables:
+#     DISTRO: freebsd12
+#     CC: clang70
+#     CXX: clang++70
+#     COMPILER_PACKAGE: llvm70
+#   <<: *freebsd_build_script
 
-freebsd12 clang-8:
-  <<: *freebsd_deps
-  stage: build
-  variables:
-    DISTRO: freebsd12
-    CC: clang80
-    CXX: clang++80
-    COMPILER_PACKAGE: llvm80
-  <<: *freebsd_build_script
+# freebsd12 clang-8:
+#   <<: *freebsd_deps
+#   stage: build
+#   variables:
+#     DISTRO: freebsd12
+#     CC: clang80
+#     CXX: clang++80
+#     COMPILER_PACKAGE: llvm80
+#   <<: *freebsd_build_script
 
 .test_stages: &test_stages
   retry:
@@ -579,7 +579,6 @@ test ubuntu gcc-8:
     CC: gcc-8
     CXX: g++-8
 
-
 test fedora-29 gcc-8:
   <<: *test_stages
   <<: *test_run
@@ -655,35 +654,35 @@ test centos7 gcc-8:
     - source /opt/rh/devtoolset-8/enable
     - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
 
-test freebsd12 clang-7:
-  <<: *freebsd_deps
-  <<: *test_run
-  variables:
-    DISTRO: freebsd12
-    COMPILER: clang-7
-    COMPILER_PACKAGE: llvm70
-    CC: clang70
-    CXX: clang++70
+# test freebsd12 clang-7:
+#   <<: *freebsd_deps
+#   <<: *test_run
+#   variables:
+#     DISTRO: freebsd12
+#     COMPILER: clang-7
+#     COMPILER_PACKAGE: llvm70
+#     CC: clang70
+#     CXX: clang++70
 
-test freebsd12 clang-8:
-  <<: *freebsd_deps
-  <<: *test_run
-  variables:
-    DISTRO: freebsd12
-    COMPILER: clang-8
-    COMPILER_PACKAGE: llvm80
-    CC: clang80
-    CXX: clang++80
+# test freebsd12 clang-8:
+#   <<: *freebsd_deps
+#   <<: *test_run
+#   variables:
+#     DISTRO: freebsd12
+#     COMPILER: clang-8
+#     COMPILER_PACKAGE: llvm80
+#     CC: clang80
+#     CXX: clang++80
 
-test freebsd12 gcc-8:
-  <<: *freebsd_deps
-  <<: *test_run
-  variables:
-    DISTRO: freebsd12
-    COMPILER: gcc-8
-    COMPILER_PACKAGE: gcc
-    CC: gcc
-    CXX: g++
+# test freebsd12 gcc-8:
+#   <<: *freebsd_deps
+#   <<: *test_run
+#   variables:
+#     DISTRO: freebsd12
+#     COMPILER: gcc-8
+#     COMPILER_PACKAGE: gcc
+#     CC: gcc
+#     CXX: g++
 
 check clang-tidy:
   <<: *test_stages
