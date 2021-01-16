@@ -591,10 +591,10 @@ void human_readable(long long num, char *buf, int size) {
     return;
   }
   if (short_units.get(*state)) {
-    width = 5;
+    width = 6;
     format = "%.*f %.1s";
   } else {
-    width = 7;
+    width = 8;
     format = "%.*f %-.3s";
   }
 
