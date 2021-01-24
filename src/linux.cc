@@ -3079,5 +3079,5 @@ void get_top_info(void) {
   calc_cpu_each(total);     /* and then the percentage for each task */
 #ifdef BUILD_IOSTATS
   calc_io_each(); /* percentage of I/O for each task */
-#endif /* BUILD_IOSTATS */
+#endif            /* BUILD_IOSTATS */
 }

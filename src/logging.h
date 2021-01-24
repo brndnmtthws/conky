@@ -65,7 +65,7 @@ void clean_up(void *memtofree1, void *memtofree2);
 void clean_up_without_threads(void *memtofree1, void *memtofree2);
 
 template <typename... Args>
-inline void gettextize_format(const char *format, Args &&...args) {
+inline void gettextize_format(const char *format, Args &&... args) {
   fprintf(stderr, _(format), args...);
 }
 
@@ -74,7 +74,7 @@ inline void gettextize_format(const char *format, Args &&...args) {
 inline void gettextize_format(const char *format) { fputs(_(format), stderr); }
 
 template <typename... Args>
-void NORM_ERR(const char *format, Args &&...args) {
+void NORM_ERR(const char *format, Args &&... args) {
   fprintf(stderr, PACKAGE_NAME ": ");
   gettextize_format(format, args...);
   fputs("\n", stderr);
@@ -83,7 +83,7 @@ void NORM_ERR(const char *format, Args &&...args) {
 /* critical error */
 template <typename... Args>
 inline void CRIT_ERR(void *memtofree1, void *memtofree2, const char *format,
-                     Args &&...args) {
+                     Args &&... args) {
   NORM_ERR(format, args...);
   clean_up(memtofree1, memtofree2);
   exit(EXIT_FAILURE);
@@ -91,7 +91,7 @@ inline void CRIT_ERR(void *memtofree1, void *memtofree2, const char *format,
 
 template <typename... Args>
 inline void THREAD_CRIT_ERR(void *memtofree1, void *memtofree2,
-                            const char *format, Args &&...args) {
+                            const char *format, Args &&... args) {
   NORM_ERR(format, args...);
   clean_up_without_threads(memtofree1, memtofree2);
   return;

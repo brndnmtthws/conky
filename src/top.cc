@@ -587,7 +587,7 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj) {
   } else {
 #ifdef BUILD_IOSTATS
     NORM_ERR("Must be top, top_mem, top_time or top_io");
-#else /* BUILD_IOSTATS */
+#else  /* BUILD_IOSTATS */
     NORM_ERR("Must be top, top_mem or top_time");
 #endif /* BUILD_IOSTATS */
     free_and_zero(obj->data.opaque);
@@ -629,7 +629,7 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj) {
       NORM_ERR(
           "must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize, "
           "io_read, io_write, io_perc");
-#else /* BUILD_IOSTATS */
+#else  /* BUILD_IOSTATS */
       NORM_ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize");
 #endif /* BUILD_IOSTATS */
       free_and_zero(td->s);

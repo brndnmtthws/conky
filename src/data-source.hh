@@ -101,7 +101,7 @@ template <typename T>
 class register_data_source {
   template <typename... Args>
   static int factory(lua::state *l, const std::string &name,
-                     const Args &...args) {
+                     const Args &... args) {
     T *t = static_cast<T *>(l->newuserdata(sizeof(T)));
     l->insert(1);
     new (t) T(l, name, args...);
@@ -113,7 +113,7 @@ class register_data_source {
 
  public:
   template <typename... Args>
-  explicit register_data_source(const std::string &name, Args &&...args) {
+  explicit register_data_source(const std::string &name, Args &&... args) {
     priv::do_register_data_source(
         name,
         std::bind(&factory<Args...>, std::placeholders::_1, name, args...));

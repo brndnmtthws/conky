@@ -772,7 +772,7 @@ void print_github(struct text_object *obj, char *p, unsigned int p_max_size) {
   curl_easy_setopt(curl, CURLOPT_URL, github_url);
 #if defined(CURLOPT_ACCEPT_ENCODING)
   curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "gzip");
-#else /* defined(CURLOPT_ACCEPT_ENCODING) */
+#else  /* defined(CURLOPT_ACCEPT_ENCODING) */
   curl_easy_setopt(curl, CURLOPT_ENCODING, "gzip");
 #endif /* defined(CURLOPT_ACCEPT_ENCODING) */
   curl_easy_setopt(curl, CURLOPT_USERAGENT, user_agent);

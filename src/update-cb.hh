@@ -42,7 +42,7 @@ template <typename Callback>
 class callback_handle;
 void run_all_callbacks();
 template <typename Callback, typename... Params>
-callback_handle<Callback> register_cb(uint32_t period, Params &&...params);
+callback_handle<Callback> register_cb(uint32_t period, Params &&... params);
 
 namespace priv {
 class callback_base {
@@ -88,7 +88,7 @@ class callback_base {
 
   template <typename Callback, typename... Params>
   friend callback_handle<Callback> conky::register_cb(uint32_t period,
-                                                      Params &&...params);
+                                                      Params &&... params);
 
   friend void conky::run_all_callbacks();
 
@@ -140,11 +140,11 @@ class callback_handle : private std::shared_ptr<Callback> {
   friend void conky::run_all_callbacks();
   template <typename Callback_, typename... Params>
   friend callback_handle<Callback_> register_cb(uint32_t period,
-                                                Params &&...params);
+                                                Params &&... params);
 };
 
 template <typename Callback, typename... Params>
-callback_handle<Callback> register_cb(uint32_t period, Params &&...params) {
+callback_handle<Callback> register_cb(uint32_t period, Params &&... params) {
   return std::dynamic_pointer_cast<Callback>(
       priv::callback_base::do_register_cb(priv::callback_base::handle(
           new Callback(period, std::forward<Params>(params)...))));
