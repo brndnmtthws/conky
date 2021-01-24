@@ -43,10 +43,15 @@ before_script:
 
 pull ubuntu clang-7: *pull_images
 pull ubuntu clang-8: *pull_images
+pull ubuntu clang-9: *pull_images
+pull ubuntu clang-10: *pull_images
+pull ubuntu clang-11: *pull_images
 pull ubuntu gcc-5: *pull_images
 pull ubuntu gcc-6: *pull_images
 pull ubuntu gcc-7: *pull_images
 pull ubuntu gcc-8: *pull_images
+pull ubuntu gcc-9: *pull_images
+pull ubuntu gcc-10: *pull_images
 pull fedora-29 gcc-8: *pull_images
 pull fedora-29 clang-7: *pull_images
 pull fedora-31 clang-8: *pull_images
@@ -150,10 +155,15 @@ builder centos7 base:
 
 builder ubuntu clang-7: *docker_builder
 builder ubuntu clang-8: *docker_builder
+builder ubuntu clang-9: *docker_builder
+builder ubuntu clang-10: *docker_builder
+builder ubuntu clang-11: *docker_builder
 builder ubuntu gcc-5: *docker_builder
 builder ubuntu gcc-6: *docker_builder
 builder ubuntu gcc-7: *docker_builder
 builder ubuntu gcc-8: *docker_builder
+builder ubuntu gcc-9: *docker_builder
+builder ubuntu gcc-10: *docker_builder
 builder fedora-29 gcc-8: *docker_builder
 builder fedora-29 clang-7: *docker_builder
 builder fedora-31 clang-8: *docker_builder
@@ -227,6 +237,33 @@ ubuntu clang-8:
     CC: clang-8
     CXX: clang++-8
 
+ubuntu clang-9:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    DISTRO: ubuntu
+    COMPILER: clang-9
+    CC: clang-9
+    CXX: clang++-9
+
+ubuntu clang-10:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    DISTRO: ubuntu
+    COMPILER: clang-10
+    CC: clang-10
+    CXX: clang++-10
+
+ubuntu clang-11:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    DISTRO: ubuntu
+    COMPILER: clang-11
+    CC: clang-11
+    CXX: clang++-11
+
 ubuntu gcc-5:
   <<: *build_stages
   variables:
@@ -262,6 +299,24 @@ ubuntu gcc-8:
     COMPILER: gcc-8
     CC: gcc-8
     CXX: g++-8
+
+ubuntu gcc-9:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    DISTRO: ubuntu
+    COMPILER: gcc-9
+    CC: gcc-9
+    CXX: g++-9
+
+ubuntu gcc-10:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    DISTRO: ubuntu
+    COMPILER: gcc-10
+    CC: gcc-10
+    CXX: g++-10
 
 fedora-29 gcc-8:
   <<: *build_stages
@@ -543,6 +598,33 @@ test ubuntu clang-8:
     CC: clang-8
     CXX: clang++-8
 
+test ubuntu clang-9:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: ubuntu
+    COMPILER: clang-9
+    CC: clang-9
+    CXX: clang++-9
+
+test ubuntu clang-10:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: ubuntu
+    COMPILER: clang-10
+    CC: clang-10
+    CXX: clang++-10
+
+test ubuntu clang-11:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: ubuntu
+    COMPILER: clang-11
+    CC: clang-11
+    CXX: clang++-11
+
 test ubuntu gcc-5:
   <<: *test_stages
   <<: *test_run
@@ -578,6 +660,24 @@ test ubuntu gcc-8:
     COMPILER: gcc-8
     CC: gcc-8
     CXX: g++-8
+
+test ubuntu gcc-9:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: ubuntu
+    COMPILER: gcc-9
+    CC: gcc-9
+    CXX: g++-9
+
+test ubuntu gcc-10:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: ubuntu
+    COMPILER: gcc-10
+    CC: gcc-10
+    CXX: g++-10
 
 test fedora-29 gcc-8:
   <<: *test_stages
@@ -687,10 +787,10 @@ test centos7 gcc-8:
 check clang-tidy:
   <<: *test_stages
   variables:
-    COMPILER: clang-8
+    COMPILER: clang-11
     DISTRO: ubuntu
-    CC: clang-8
-    CXX: clang++-8
+    CC: clang-11
+    CXX: clang++-11
   script:
     - mkdir build
     - cd build
@@ -707,10 +807,10 @@ check clang-tidy:
 check clang-format:
   <<: *test_stages
   variables:
-    COMPILER: clang-8
+    COMPILER: clang-11
     DISTRO: ubuntu
-    CC: clang-8
-    CXX: clang++-8
+    CC: clang-11
+    CXX: clang++-11
   script:
     - mkdir build
     - cd build
@@ -781,10 +881,15 @@ push fedora-31 base: *push_base_images
 
 push ubuntu clang-7: *push_images
 push ubuntu clang-8: *push_images
+push ubuntu clang-9: *push_images
+push ubuntu clang-10: *push_images
+push ubuntu clang-11: *push_images
 push ubuntu gcc-5: *push_images
 push ubuntu gcc-6: *push_images
 push ubuntu gcc-7: *push_images
 push ubuntu gcc-8: *push_images
+push ubuntu gcc-9: *push_images
+push ubuntu gcc-10: *push_images
 push fedora-29 gcc-8: *push_images
 push fedora-29 clang-7: *push_images
 push fedora-31 clang-8: *push_images
