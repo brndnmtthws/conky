@@ -52,7 +52,7 @@ long to_decimal_scale(long value, long max_value) {
   } else if (value > 0) {
     return (value * CONST_SCALE + max_value - 1) / max_value;
   }
-  return -((abs(value) * CONST_SCALE + max_value - 1) / max_value);
+  return -((std::abs(value) * CONST_SCALE + max_value - 1) / max_value);
 }
 
 long from_decimal_scale(long value, long max_value) {
@@ -61,7 +61,7 @@ long from_decimal_scale(long value, long max_value) {
   } else if (value > 0) {
     return (value * max_value + CONST_SCALE_HALF) / CONST_SCALE;
   }
-  return -((abs(value) * max_value + CONST_SCALE_HALF) / CONST_SCALE);
+  return -((std::abs(value) * max_value + CONST_SCALE_HALF) / CONST_SCALE);
 }
 
 void scaled_rgb_to_scaled_hsv(long *const rgb, long *hsv) {
@@ -110,7 +110,7 @@ void scaled_hsv_to_scaled_rgb(long *const hsv, long *rgb) {
 
   long hue = hsv[0] % CONST_SCALE360;
   long x = (c * (CONST_SCALE -
-                 abs(((hue + 30L) / 60L) % CONST_SCALE2 - CONST_SCALE)) +
+                 std::abs(((hue + 30L) / 60L) % CONST_SCALE2 - CONST_SCALE)) +
             CONST_SCALE_HALF) /
            CONST_SCALE;
   long m = hsv[2] - c;
