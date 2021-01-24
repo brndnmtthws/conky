@@ -1,0 +1,50 @@
+name: Docker
+
+on:
+  push:
+    # Publish `main` as Docker `latest` image.
+    branches:
+      - main
+
+    # Publish `v1.2.3` tags as releases.
+    tags:
+      - v*
+
+  # Run tests for any PRs.
+  pull_request:
+
+env:
+  IMAGE_NAME: conky
+  DOCKERHUB_ACCOUNT: brndnmtthws
+
+jobs:
+  buildx:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Log into Dockerhub registry
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u $DOCKERHUB_ACCOUNT --password-stdin
+      - name: Build
+        run: |
+          DOCKERHUB_IMAGE_ID=$DOCKERHUB_ACCOUNT/$IMAGE_NAME
+
+          # Change all uppercase to lowercase
+          GITHUB_IMAGE_ID=$(echo $GITHUB_IMAGE_ID | tr '[A-Z]' '[a-z]')
+          DOCKERHUB_IMAGE_ID=$(echo $DOCKERHUB_IMAGE_ID | tr '[A-Z]' '[a-z]')
+
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "main" ] && VERSION=latest
+
+          docker buildx build --push --platform linux/arm/v7,linux/arm64/v8,linux/amd64 -t $GITHUB_IMAGE_ID:$VERSION .
