@@ -40,19 +40,20 @@
  *
  * Showcase (conky.conf):
  * --==| NVIDIA | ==--
- * GPU    ${nvidia gpufreq [target_id]}MHz (${nvidia gpufreqmin [target_id]}-${nvidia
- * gpufreqmax [target_id]}MHz) MEM    ${nvidia memfreq [target_id]}MHz (${nvidia
- * memfreqmin [target_id]}-${nvidia memfreqmax [target_id]}MHz) MTR    ${nvidia
- * mtrfreq [target_id]}MHz (${nvidia mtrfreqmin [target_id]}-${nvidia mtrfreqmax
- * [target_id]}MHz) PERF   Level ${nvidia perflevel [target_id]} (${nvidia
- * perflevelmin [target_id]}-${nvidia perflevelmax [target_id]}), Mode: ${nvidia
- * perfmode [target_id]} VRAM   ${nvidia memutil [target_id]}% (${nvidia memused
- * [target_id]}MB/${nvidia memtotal [target_id]}MB) LOAD   GPU ${nvidia gpuutil
- * [target_id]}%, RAM ${nvidia membwutil [target_id]}%, VIDEO ${nvidia videoutil
- * [target_id]}%, PCIe ${nvidia pcieutil [target_id]}% TEMP   GPU ${nvidia gputemp
+ * GPU    ${nvidia gpufreq [target_id]}MHz (${nvidia gpufreqmin
+ * [target_id]}-${nvidia gpufreqmax [target_id]}MHz) MEM    ${nvidia memfreq
+ * [target_id]}MHz (${nvidia memfreqmin [target_id]}-${nvidia memfreqmax
+ * [target_id]}MHz) MTR    ${nvidia mtrfreq [target_id]}MHz (${nvidia mtrfreqmin
+ * [target_id]}-${nvidia mtrfreqmax [target_id]}MHz) PERF   Level ${nvidia
+ * perflevel [target_id]} (${nvidia perflevelmin [target_id]}-${nvidia
+ * perflevelmax [target_id]}), Mode: ${nvidia perfmode [target_id]} VRAM
+ * ${nvidia memutil [target_id]}% (${nvidia memused [target_id]}MB/${nvidia
+ * memtotal [target_id]}MB) LOAD   GPU ${nvidia gpuutil [target_id]}%, RAM
+ * ${nvidia membwutil [target_id]}%, VIDEO ${nvidia videoutil [target_id]}%,
+ * PCIe ${nvidia pcieutil [target_id]}% TEMP   GPU ${nvidia gputemp
  * [target_id]}°C (${nvidia gputempthreshold [target_id]}°C max.), SYS ${nvidia
- * ambienttemp [target_id]}°C FAN    ${nvidia fanspeed [target_id]} RPM (${nvidia
- * fanlevel [target_id]}%)
+ * ambienttemp [target_id]}°C FAN    ${nvidia fanspeed [target_id]} RPM
+ * (${nvidia fanlevel [target_id]}%)
  *
  * Miscellaneous:
  * OPENGL ${nvidia imagequality [target_id]}
@@ -908,7 +909,7 @@ static int get_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token,
   return value;
 }
 
-bool validate_target_id(Display* dpy, int target_id, ATTR_ID attribute) {
+bool validate_target_id(Display *dpy, int target_id, ATTR_ID attribute) {
   // num_GPU and num_COOLER calculated only once based on the physical target
   static int num_GPU = get_nvidia_target_count(dpy, TARGET_GPU) - 1;
   static int num_COOLER = get_nvidia_target_count(dpy, TARGET_COOLER) - 1;
@@ -955,12 +956,13 @@ void print_nvidia_value(struct text_object *obj, char *p,
   str = nullptr;
 
   // Perform query if the query exists and isnt stupid
-  if (nvs != nullptr && validate_target_id(dpy, nvs->target_id, nvs->attribute)) {
+  if (nvs != nullptr &&
+      validate_target_id(dpy, nvs->target_id, nvs->attribute)) {
     // Execute switch by query type
     switch (nvs->query) {
       case QUERY_VALUE:
         value = get_nvidia_value(nvs->target, nvs->attribute, nvs->target_id,
-                                     nvs->arg);
+                                 nvs->arg);
         break;
       case QUERY_STRING:
         str = get_nvidia_string(nvs->target, nvs->attribute, nvs->target_id,
@@ -973,8 +975,8 @@ void print_nvidia_value(struct text_object *obj, char *p,
       case QUERY_SPECIAL:
         switch (nvs->attribute) {
           case ATTR_PERF_MODE:
-            temp1 = get_nvidia_value(nvs->target, nvs->attribute, nvs->target_id,
-                                     nvs->arg);
+            temp1 = get_nvidia_value(nvs->target, nvs->attribute,
+                                     nvs->target_id, nvs->arg);
             switch (temp1) {
               case NV_CTRL_GPU_POWER_MIZER_MODE_ADAPTIVE:
                 result = asprintf(&str, "Adaptive");
@@ -997,15 +999,15 @@ void print_nvidia_value(struct text_object *obj, char *p,
           case ATTR_MEM_FREE:
             temp1 = get_nvidia_value(nvs->target, ATTR_MEM_USED, nvs->target_id,
                                      nvs->arg);
-            temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL, nvs->target_id,
-                                     nvs->arg);
+            temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL,
+                                     nvs->target_id, nvs->arg);
             value = temp2 - temp1;
             break;
           case ATTR_MEM_UTIL:
             temp1 = get_nvidia_value(nvs->target, ATTR_MEM_USED, nvs->target_id,
                                      nvs->arg);
-            temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL, nvs->target_id,
-                                     nvs->arg);
+            temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL,
+                                     nvs->target_id, nvs->arg);
             value = ((float)temp1 * 100 / (float)temp2) + 0.5;
             break;
           default:
@@ -1053,7 +1055,8 @@ double get_nvidia_barval(struct text_object *obj) {
 
   // Convert query_result to a percentage using ((val-min)÷(max-min)×100)+0.5 if
   // needed.
-  if (nvs != nullptr && validate_target_id(dpy, nvs->target_id, nvs->attribute)) {
+  if (nvs != nullptr &&
+      validate_target_id(dpy, nvs->target_id, nvs->attribute)) {
     switch (nvs->attribute) {
       case ATTR_UTILS_STRING:  // one of the percentage utils (gpuutil,
                                // membwutil, videoutil and pcieutil)
@@ -1063,15 +1066,15 @@ double get_nvidia_barval(struct text_object *obj) {
         break;
       case ATTR_MEM_UTIL:  // memutil
       case ATTR_MEM_USED:
-        temp1 =
-            get_nvidia_value(nvs->target, ATTR_MEM_USED, nvs->target_id, nvs->arg);
+        temp1 = get_nvidia_value(nvs->target, ATTR_MEM_USED, nvs->target_id,
+                                 nvs->arg);
         temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL, nvs->target_id,
                                  nvs->arg);
         value = ((float)temp1 * 100 / (float)temp2) + 0.5;
         break;
       case ATTR_MEM_FREE:  // memfree
-        temp1 =
-            get_nvidia_value(nvs->target, ATTR_MEM_USED, nvs->target_id, nvs->arg);
+        temp1 = get_nvidia_value(nvs->target, ATTR_MEM_USED, nvs->target_id,
+                                 nvs->arg);
         temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL, nvs->target_id,
                                  nvs->arg);
         value = temp2 - temp1;
@@ -1086,8 +1089,8 @@ double get_nvidia_barval(struct text_object *obj) {
                                  nvs->arg);
         break;
       case ATTR_GPU_TEMP:  // gputemp (calculate out of gputempthreshold)
-        temp1 =
-            get_nvidia_value(nvs->target, ATTR_GPU_TEMP, nvs->target_id, nvs->arg);
+        temp1 = get_nvidia_value(nvs->target, ATTR_GPU_TEMP, nvs->target_id,
+                                 nvs->arg);
         temp2 = get_nvidia_value(nvs->target, ATTR_GPU_TEMP_THRESHOLD,
                                  nvs->target_id, nvs->arg);
         value = ((float)temp1 * 100 / (float)temp2) + 0.5;
@@ -1101,16 +1104,16 @@ double get_nvidia_barval(struct text_object *obj) {
         value = ((float)temp1 * 100 / (float)temp2) + 0.5;
         break;
       case ATTR_GPU_FREQ:  // gpufreq (calculate out of gpufreqmax)
-        temp1 =
-            get_nvidia_value(nvs->target, ATTR_GPU_FREQ, nvs->target_id, nvs->arg);
+        temp1 = get_nvidia_value(nvs->target, ATTR_GPU_FREQ, nvs->target_id,
+                                 nvs->arg);
         temp2 = get_nvidia_string_value(nvs->target, ATTR_PERFMODES_STRING,
                                         (char *)"nvclockmax", SEARCH_MAX,
                                         nvs->target_id, nvs->arg);
         value = ((float)temp1 * 100 / (float)temp2) + 0.5;
         break;
       case ATTR_MEM_FREQ:  // memfreq (calculate out of memfreqmax)
-        temp1 =
-            get_nvidia_value(nvs->target, ATTR_MEM_FREQ, nvs->target_id, nvs->arg);
+        temp1 = get_nvidia_value(nvs->target, ATTR_MEM_FREQ, nvs->target_id,
+                                 nvs->arg);
         temp2 = get_nvidia_string_value(nvs->target, ATTR_PERFMODES_STRING,
                                         (char *)"memclockmax", SEARCH_MAX,
                                         nvs->target_id, nvs->arg);
@@ -1135,8 +1138,8 @@ double get_nvidia_barval(struct text_object *obj) {
         value = ((float)temp1 * 100 / (float)temp2) + 0.5;
         break;
       case ATTR_IMAGE_QUALITY:  // imagequality
-        value = get_nvidia_value(nvs->target, ATTR_IMAGE_QUALITY, nvs->target_id,
-                                 nvs->arg);
+        value = get_nvidia_value(nvs->target, ATTR_IMAGE_QUALITY,
+                                 nvs->target_id, nvs->arg);
         break;
 
       default:  // Throw error if unsupported args are used
