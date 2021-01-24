@@ -32,11 +32,9 @@ jobs:
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u $DOCKERHUB_ACCOUNT --password-stdin
       - name: Build
         run: |
-          GITHUB_IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
           DOCKERHUB_IMAGE_ID=$DOCKERHUB_ACCOUNT/$IMAGE_NAME
 
           # Change all uppercase to lowercase
-          GITHUB_IMAGE_ID=$(echo $GITHUB_IMAGE_ID | tr '[A-Z]' '[a-z]')
           DOCKERHUB_IMAGE_ID=$(echo $DOCKERHUB_IMAGE_ID | tr '[A-Z]' '[a-z]')
 
           # Strip git ref prefix from version
@@ -48,4 +46,4 @@ jobs:
           # Use Docker `latest` tag convention
           [ "$VERSION" == "main" ] && VERSION=latest
 
-          docker buildx build --push --platform linux/arm/v7,linux/arm64/v8,linux/amd64 -t $GITHUB_IMAGE_ID:$VERSION .
+          docker buildx build --push --platform linux/arm/v7,linux/arm64/v8,linux/amd64 -t $DOCKERHUB_IMAGE_ID:$VERSION .
