@@ -108,7 +108,7 @@ void ev_num(irc_session_t *session, unsigned int event, const char *,
   if (event == 433) {  // nick in use
     int len = strlen(params[1]) + 4;
     char *newnick = (char *)malloc(len);
-    strncpy(newnick, len, params[1]);
+    strncpy(newnick, params[1], len);
     attachment[1] += rand() % 10;
     attachment[2] += rand() % 10;
     strncat(newnick, attachment, len - 1);
