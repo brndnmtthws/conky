@@ -55,6 +55,8 @@ pull ubuntu gcc-10: *pull_images
 pull fedora-29 gcc-8: *pull_images
 pull fedora-29 clang-7: *pull_images
 pull fedora-31 clang-8: *pull_images
+pull fedora-32 clang-10: *pull_images
+pull fedora-33 clang-11: *pull_images
 pull centos6 gcc-7: *pull_images
 pull centos7 gcc-7: *pull_images
 pull centos7 gcc-8: *pull_images
@@ -116,6 +118,16 @@ builder fedora-31 base:
   variables:
     DOCKER_BASE_IMAGE: fedora:31
 
+builder fedora-32 base:
+  <<: *docker_base_builder
+  variables:
+    DOCKER_BASE_IMAGE: fedora:32
+
+builder fedora-33 base:
+  <<: *docker_base_builder
+  variables:
+    DOCKER_BASE_IMAGE: fedora:33
+
 builder centos6 base:
   <<: *docker_base_builder
   variables:
@@ -167,6 +179,8 @@ builder ubuntu gcc-10: *docker_builder
 builder fedora-29 gcc-8: *docker_builder
 builder fedora-29 clang-7: *docker_builder
 builder fedora-31 clang-8: *docker_builder
+builder fedora-32 clang-10: *docker_builder
+builder fedora-33 clang-11: *docker_builder
 builder centos6 gcc-7: *docker_builder
 builder centos7 gcc-7: *docker_builder
 builder centos7 gcc-8: *docker_builder
@@ -344,6 +358,26 @@ fedora-31 clang-8:
     <<: *build_variables
     DISTRO: fedora-31
     COMPILER: clang-8
+    CC: clang
+    CXX: clang++
+    BUILD_AUDACIOUS: "OFF"
+
+fedora-32 clang-10:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    DISTRO: fedora-32
+    COMPILER: clang-10
+    CC: clang
+    CXX: clang++
+    BUILD_AUDACIOUS: "OFF"
+
+fedora-33 clang-11:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    DISTRO: fedora-33
+    COMPILER: clang-11
     CC: clang
     CXX: clang++
     BUILD_AUDACIOUS: "OFF"
@@ -706,6 +740,24 @@ test fedora-31 clang-8:
     CC: clang
     CXX: clang++
 
+test fedora-32 clang-10:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: fedora-32
+    COMPILER: clang-10
+    CC: clang
+    CXX: clang++
+
+test fedora-33 clang-11:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: fedora-33
+    COMPILER: clang-11
+    CC: clang
+    CXX: clang++
+
 test centos6 gcc-7:
   <<: *test_stages
   <<: *test_run
@@ -859,6 +911,8 @@ push centos6 base: *push_base_images
 push centos7 base: *push_base_images
 push fedora-29 base: *push_base_images
 push fedora-31 base: *push_base_images
+push fedora-32 base: *push_base_images
+push fedora-33 base: *push_base_images
 
 .push_images: &push_images
   <<: *push_base_images
@@ -893,6 +947,8 @@ push ubuntu gcc-10: *push_images
 push fedora-29 gcc-8: *push_images
 push fedora-29 clang-7: *push_images
 push fedora-31 clang-8: *push_images
+push fedora-32 clang-10: *push_images
+push fedora-33 clang-11: *push_images
 push centos6 gcc-7: *push_images
 push centos7 gcc-7: *push_images
 push centos7 gcc-8: *push_images
