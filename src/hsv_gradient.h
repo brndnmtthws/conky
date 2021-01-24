@@ -33,7 +33,7 @@ unsigned long *do_hsv_gradient(int, unsigned long, unsigned long);
 
 long to_decimal_scale(long value, long max_value);
 long from_decimal_scale(long value, long max_value);
-void scaled_rgb_to_scaled_hsv(long * const rgb, long *hsv);
+void scaled_rgb_to_scaled_hsv(long *const rgb, long *hsv);
 void scaled_hsv_to_scaled_rgb(long *const hsv, long *rgb);
 
 #endif /* _COLOURS_H */

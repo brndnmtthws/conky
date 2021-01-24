@@ -28,10 +28,9 @@
 
 #include "catch2/catch.hpp"
 
-#include <hsv_gradient.h>
 #include <conky.h>
+#include <hsv_gradient.h>
 #include <lua-config.hh>
-
 
 int testColor(long *rgb, int scale) {
   long hsv[3];
@@ -69,6 +68,5 @@ TEST_CASE("hsv gradient tests") {
       }
     }
     REQUIRE(failedCount == 0);
-
   }
 }

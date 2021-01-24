@@ -312,7 +312,7 @@ class state : private std::mutex {
   // allocate a new lua userdata of appropriate size, and create a object in it
   // pushes the userdata on stack and returns the pointer
   template <typename T, typename... Args>
-  T *createuserdata(Args &&... args);
+  T *createuserdata(Args &&...args);
 
   using std::mutex::lock;
   using std::mutex::try_lock;
@@ -365,7 +365,7 @@ class stack_sentry {
 };
 
 template <typename T, typename... Args>
-T *state::createuserdata(Args &&... args) {
+T *state::createuserdata(Args &&...args) {
   stack_sentry s(*this);
 
   void *t = newuserdata(sizeof(T));

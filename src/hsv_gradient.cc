@@ -26,8 +26,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include "conky.h"
 #include "colours.h"
+#include "conky.h"
 #include "logging.h"
 #ifdef BUILD_X11
 #include "x11.h"
@@ -52,7 +52,7 @@ long to_decimal_scale(long value, long max_value) {
   } else if (value > 0) {
     return (value * CONST_SCALE + max_value - 1) / max_value;
   }
-  return -((abs(value) * CONST_SCALE  + max_value - 1) / max_value);
+  return -((abs(value) * CONST_SCALE + max_value - 1) / max_value);
 }
 
 long from_decimal_scale(long value, long max_value) {
@@ -64,7 +64,7 @@ long from_decimal_scale(long value, long max_value) {
   return -((abs(value) * max_value + CONST_SCALE_HALF) / CONST_SCALE);
 }
 
-void scaled_rgb_to_scaled_hsv(long * const rgb, long *hsv) {
+void scaled_rgb_to_scaled_hsv(long *const rgb, long *hsv) {
   long val = rgb[0] > rgb[1] ? MAX(rgb[0], rgb[2]) : MAX(rgb[1], rgb[2]);
   long cmin = rgb[0] < rgb[1] ? MIN(rgb[0], rgb[2]) : MIN(rgb[1], rgb[2]);
   long delta = val - cmin;
@@ -107,9 +107,10 @@ void scaled_hsv_to_scaled_rgb(long *const hsv, long *rgb) {
   long c = (hsv[2] * hsv[1] + CONST_SCALE_HALF) / CONST_SCALE;
 
   long hue = hsv[0] % CONST_SCALE360;
-  long x = (c *
-      (CONST_SCALE - abs(((hue + 30L) / 60L) % CONST_SCALE2 - CONST_SCALE))
-      + CONST_SCALE_HALF) / CONST_SCALE;
+  long x = (c * (CONST_SCALE -
+                 abs(((hue + 30L) / 60L) % CONST_SCALE2 - CONST_SCALE)) +
+            CONST_SCALE_HALF) /
+           CONST_SCALE;
   long m = hsv[2] - c;
 
   rgb[0] = m;
@@ -137,11 +138,10 @@ void scaled_hsv_to_scaled_rgb(long *const hsv, long *rgb) {
   }
 }
 
-/* this function returns the next colour between two colours in hsv space for a gradient */
-unsigned long *do_hsv_gradient(int width,
-    unsigned long first_colour,
-    unsigned long last_colour) {
-
+/* this function returns the next colour between two colours in hsv space for a
+ * gradient */
+unsigned long *do_hsv_gradient(int width, unsigned long first_colour,
+                               unsigned long last_colour) {
   long rgb1[3], rgb2[3], rgb3[3];
   long hsv1[3], hsv2[3];
   long hueDiff, satDiff, valDiff;
@@ -154,11 +154,15 @@ unsigned long *do_hsv_gradient(int width,
 
   if (colour_depth == 0) { set_up_gradient(); }
 
-  rgb1[0] = to_decimal_scale((first_colour & redmask) >> redshift, redmask >> redshift);
-  rgb1[1] = to_decimal_scale((first_colour & greenmask) >> greenshift, greenmask >> greenshift);
+  rgb1[0] = to_decimal_scale((first_colour & redmask) >> redshift,
+                             redmask >> redshift);
+  rgb1[1] = to_decimal_scale((first_colour & greenmask) >> greenshift,
+                             greenmask >> greenshift);
   rgb1[2] = to_decimal_scale(first_colour & bluemask, bluemask);
-  rgb2[0] = to_decimal_scale((last_colour & redmask) >> redshift, redmask >> redshift);
-  rgb2[1] = to_decimal_scale((last_colour & greenmask) >> greenshift, greenmask >> greenshift);
+  rgb2[0] = to_decimal_scale((last_colour & redmask) >> redshift,
+                             redmask >> redshift);
+  rgb2[1] = to_decimal_scale((last_colour & greenmask) >> greenshift,
+                             greenmask >> greenshift);
   rgb2[2] = to_decimal_scale(last_colour & bluemask, bluemask);
 
   scaled_rgb_to_scaled_hsv(rgb1, hsv1);
@@ -205,7 +209,6 @@ unsigned long *do_hsv_gradient(int width,
     long blue3 = from_decimal_scale(rgb3[2], bluemask);
 
     colours[i] = (red3 << redshift) | (green3 << greenshift) | blue3;
-
   }
   return colours;
 }

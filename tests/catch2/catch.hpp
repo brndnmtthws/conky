@@ -5649,7 +5649,7 @@ bool isDebuggerActive();
 // raise() called from it, i.e. one stack frame below.
 #if defined(__GNUC__) && (defined(__i386) || defined(__x86_64))
 #define CATCH_TRAP() asm volatile("int $3") /* NOLINT */
-#else                                       // Fall back to the generic way.
+#else  // Fall back to the generic way.
 #include <signal.h>
 
 #define CATCH_TRAP() raise(SIGTRAP)
@@ -6610,7 +6610,7 @@ class TokenStream {
     return m_tokenBuffer.front();
   }
 
-  auto operator-> () const -> Token const* {
+  auto operator->() const -> Token const* {
     assert(!m_tokenBuffer.empty());
     return &m_tokenBuffer.front();
   }

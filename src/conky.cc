@@ -1457,7 +1457,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
               if (current->last_colour != 0 || current->first_colour != 0) {
 #ifdef BUILD_HSV_GRADIENT
                 tmpcolour = do_hsv_gradient(w - 1, current->last_colour,
-                                        current->first_colour);
+                                            current->first_colour);
 #else
                 tmpcolour = do_gradient(w - 1, current->last_colour,
                                         current->first_colour);
@@ -2197,8 +2197,7 @@ void main_loop() {
             if (own_window.get(*state)) {
               /* if an ordinary window with decorations */
               if ((own_window_type.get(*state) == TYPE_NORMAL) &&
-                  !TEST_HINT(own_window_hints.get(*state),
-                                HINT_UNDECORATED)) {
+                  !TEST_HINT(own_window_hints.get(*state), HINT_UNDECORATED)) {
                 /* allow conky to hold input focus. */
                 break;
               }
