@@ -6,7 +6,10 @@ set(ClangFormat_BIN_NAME
     clang-format-5.0
     clang-format-6.0
     clang-format-7
-    clang-format-8)
+    clang-format-8
+    clang-format-9
+    clang-format-10
+    clang-format-11)
 
 find_program(ClangFormat_BIN NAMES ${ClangFormat_BIN_NAME})
 

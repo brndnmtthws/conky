@@ -6,7 +6,10 @@ set(ClangTidy_BIN_NAME
     clang-tidy-5.0
     clang-tidy-6.0
     clang-tidy-7
-    clang-tidy-8)
+    clang-tidy-8
+    clang-tidy-9
+    clang-tidy-10
+    clang-tidy-11)
 
 find_program(ClangTidy_BIN NAMES ${ClangTidy_BIN_NAME})
 
