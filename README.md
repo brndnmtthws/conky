@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/brndnmtthws/conky.svg?branch=master)](https://travis-ci.org/brndnmtthws/conky) [![pipeline status](https://gitlab.com/brndnmtthws-oss/conky/badges/master/pipeline.svg)](https://gitlab.com/brndnmtthws-oss/conky/commits/master) [![coverage report](https://gitlab.com/brndnmtthws-oss/conky/badges/master/coverage.svg)](https://gitlab.com/brndnmtthws-oss/conky/commits/master) [Matrix chat](https://matrix.to/#/#conky:frens.io)
+[![Build Status](https://travis-ci.org/brndnmtthws/conky.svg?branch=main)](https://travis-ci.org/brndnmtthws/conky) [![pipeline status](https://gitlab.com/brndnmtthws-oss/conky/badges/main/pipeline.svg)](https://gitlab.com/brndnmtthws-oss/conky/commits/main) [![coverage report](https://gitlab.com/brndnmtthws-oss/conky/badges/main/coverage.svg)](https://gitlab.com/brndnmtthws-oss/conky/commits/main) [Matrix chat](https://matrix.to/#/#conky:frens.io)
 
 <p align="center"><img width="300" src="logo/conky-logotype-horizontal-violet.png"></p>
 
