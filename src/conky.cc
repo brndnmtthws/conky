@@ -332,7 +332,7 @@ static conky::simple_config_setting<bool> http_refresh("http_refresh", false,
 
 MHD_Result sendanswer(void *cls, struct MHD_Connection *connection,
                       const char *url, const char *method, const char *version,
-                      const char *upload_data, unsigned long *upload_data_size,
+                      const char *upload_data, size_t *upload_data_size,
                       void **con_cls) {
   struct MHD_Response *response = MHD_create_response_from_buffer(
       webpage.length(), (void *)webpage.c_str(), MHD_RESPMEM_PERSISTENT);
