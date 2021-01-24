@@ -65,8 +65,10 @@ long from_decimal_scale(long value, long max_value) {
 }
 
 void scaled_rgb_to_scaled_hsv(long *const rgb, long *hsv) {
-  long val = rgb[0] > rgb[1] ? std::max(rgb[0], rgb[2]) : std::max(rgb[1], rgb[2]);
-  long cmin = rgb[0] < rgb[1] ? std::min(rgb[0], rgb[2]) : std::min(rgb[1], rgb[2]);
+  long val =
+      rgb[0] > rgb[1] ? std::max(rgb[0], rgb[2]) : std::max(rgb[1], rgb[2]);
+  long cmin =
+      rgb[0] < rgb[1] ? std::min(rgb[0], rgb[2]) : std::min(rgb[1], rgb[2]);
   long delta = val - cmin;
 
   long hue;
