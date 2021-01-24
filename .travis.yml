@@ -258,7 +258,7 @@ script:
   - make -j4
 branches:
   only:
-    - master
+    - main
     - "/^v\\d+\\.\\d+(\\.\\d+)?(-\\S*)?$/"
 sudo: required
 cache:
