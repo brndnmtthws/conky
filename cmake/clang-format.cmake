@@ -1,5 +1,5 @@
-set(CLANG_FORMAT_CXX_FILE_EXTENSIONS
-    ${CLANG_FORMAT_CXX_FILE_EXTENSIONS}
+set(ClangFormat_CXX_FILE_EXTENSIONS
+    ${ClangFormat_CXX_FILE_EXTENSIONS}
     *.cpp
     *.h
     *.cxx
@@ -9,19 +9,19 @@ set(CLANG_FORMAT_CXX_FILE_EXTENSIONS
     *.hh
     *.ipp)
 
-foreach(PATTERN ${CLANG_FORMAT_CXX_FILE_EXTENSIONS})
-  list(APPEND CLANG_FORMAT_CXX_PATTERN ${CMAKE_SOURCE_DIR}/src/${PATTERN})
-  list(APPEND CLANG_FORMAT_CXX_PATTERN ${CMAKE_SOURCE_DIR}/tests/${PATTERN})
-  list(APPEND CLANG_FORMAT_CXX_PATTERN ${CMAKE_SOURCE_DIR}/lua/${PATTERN})
+foreach(PATTERN ${ClangFormat_CXX_FILE_EXTENSIONS})
+  list(APPEND ClangFormat_CXX_PATTERN ${CMAKE_SOURCE_DIR}/src/${PATTERN})
+  list(APPEND ClangFormat_CXX_PATTERN ${CMAKE_SOURCE_DIR}/tests/${PATTERN})
+  list(APPEND ClangFormat_CXX_PATTERN ${CMAKE_SOURCE_DIR}/lua/${PATTERN})
 endforeach()
 
-file(GLOB_RECURSE CLANG_FORMAT_SRCS ${CLANG_FORMAT_CXX_PATTERN})
+file(GLOB_RECURSE ClangFormat_SRCS ${ClangFormat_CXX_PATTERN})
 
 add_custom_target(clang-format
-                  COMMAND ${CLANG_FORMAT_BIN} -style=file -i
-                          ${CLANG_FORMAT_SRCS})
+                  COMMAND ${ClangFormat_BIN} -style=file -i
+                          ${ClangFormat_SRCS})
 add_custom_target(check-clang-format
                   COMMAND ${CMAKE_SOURCE_DIR}/bin/run-clang-format.py
                           --color always
-                          --clang-format-executable ${CLANG_FORMAT_BIN}
-                                                    ${CLANG_FORMAT_SRCS})
+                          --clang-format-executable ${ClangFormat_BIN}
+                                                    ${ClangFormat_SRCS})
