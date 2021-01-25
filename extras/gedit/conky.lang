@@ -165,7 +165,7 @@
         <!-- We use this to stop premature end of parent -->
         <context>
           <start>\[\[</start><end>\]\]</end>
-          <!-- Reccursive -->
+          <!-- Recursive -->
           <include><context ref="lua-lit-string:*"/></include>
         </context>
         <!-- end: Literal Sub-String -->
