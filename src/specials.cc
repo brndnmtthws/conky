@@ -749,6 +749,11 @@ void new_voffset(struct text_object *obj, char *p, unsigned int p_max_size) {
   new_special(p, VOFFSET)->arg = obj->data.l;
 }
 
+void new_save_coordinates(struct text_object *obj, char *p, unsigned int p_max_size) {
+  if (p_max_size == 0) { return; }
+  new_special(p, SAVE_COORDINATES)->arg = obj->data.l;
+}
+
 void new_alignr(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
   new_special(p, ALIGNR)->arg = obj->data.l;

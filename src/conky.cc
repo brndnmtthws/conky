@@ -1015,6 +1015,16 @@ static int draw_mode; /* FG, BG or OUTLINE */
 #ifdef BUILD_X11
 static long current_color;
 
+static int saved_coordinates_x[100];
+static int saved_coordinates_y[100];
+
+int get_saved_coordinates_x(int i) {
+  return saved_coordinates_x[i];
+}
+int get_saved_coordinates_y(int i) {
+  return saved_coordinates_y[i];
+}
+
 static int text_size_updater(char *s, int special_index) {
   int w = 0;
   char *p;
@@ -1595,6 +1605,11 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 
         case VOFFSET:
           cur_y += current->arg;
+          break;
+
+        case SAVE_COORDINATES:
+          saved_coordinates_x[static_cast<int>(current->arg)] = cur_x - text_start_x;
+          saved_coordinates_y[static_cast<int>(current->arg)] = cur_y + text_start_y - last_font_height;
           break;
 
         case TAB: {

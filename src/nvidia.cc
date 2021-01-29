@@ -310,6 +310,7 @@ const char *translate_nvidia_special_type[] = {
     "nvidiagraph",  // GRAPH
     "",             // OFFSET
     "",             // VOFFSET
+    "",             // SAVE_COORDINATES
     "",             // FONT
     "",             // GOTO
     ""              // TAB
