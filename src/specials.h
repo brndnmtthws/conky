@@ -51,6 +51,7 @@ enum special_types {
   GRAPH,
   OFFSET,
   VOFFSET,
+  SAVE_COORDINATES,
   FONT,
   GOTO,
   TAB
@@ -105,6 +106,7 @@ void new_bg(struct text_object *, char *, unsigned int);
 void new_outline(struct text_object *, char *, unsigned int);
 void new_offset(struct text_object *, char *, unsigned int);
 void new_voffset(struct text_object *, char *, unsigned int);
+void new_save_coordinates(struct text_object *, char *, unsigned int);
 void new_alignr(struct text_object *, char *, unsigned int);
 void new_alignc(struct text_object *, char *, unsigned int);
 void new_goto(struct text_object *, char *, unsigned int);
