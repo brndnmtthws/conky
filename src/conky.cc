@@ -1609,7 +1609,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 
         case SAVE_COORDINATES:
           saved_coordinates_x[static_cast<int>(current->arg)] = cur_x - text_start_x;
-          saved_coordinates_y[static_cast<int>(current->arg)] = cur_y + text_start_y - last_font_height;
+          saved_coordinates_y[static_cast<int>(current->arg)] = cur_y - text_start_y - last_font_height;
           break;
 
         case TAB: {
