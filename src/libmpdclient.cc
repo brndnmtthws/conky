@@ -115,7 +115,7 @@ static int do_connect_fail(mpd_Connection *connection,
   return (connect(connection->sock, serv_addr, addrlen) == SOCKET_ERROR &&
           WSAGetLastError() != WSAEWOULDBLOCK);
 }
-#else  /* !WIN32 (sane operating systems) */
+#else /* !WIN32 (sane operating systems) */
 static int do_connect_fail(mpd_Connection *connection,
                            const struct sockaddr *serv_addr, int addrlen) {
   int flags = fcntl(connection->sock, F_GETFL, 0);
@@ -247,7 +247,7 @@ static int mpd_connect(mpd_Connection *connection, const char *host, int port,
     connection->error = MPD_ERROR_UNKHOST;
     return -1;
   }
-#else  /* HAVE_GETHOSTBYNAME_R */
+#else /* HAVE_GETHOSTBYNAME_R */
   if (!(he_res = gethostbyname(host))) {
     snprintf(connection->errorStr, MPD_ERRORSTR_MAX_LENGTH,
              "host \"%s\" not found", host);
