@@ -1802,7 +1802,6 @@ static void draw_stuff() {
     selected_font = 0;
     if (draw_shades.get(*state) && !draw_outline.get(*state)) {
       text_offset_x = text_offset_y = 1;
-      text_start_y++;
       set_foreground_color(default_shade_color.get(*state));
       draw_mode = BG;
       draw_text();
