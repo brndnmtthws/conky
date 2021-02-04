@@ -3,7 +3,7 @@ FROM ${IMAGE}/builder/ubuntu-base:latest
 
 RUN wget -q https://apt.llvm.org/llvm-snapshot.gpg.key \
   && apt-key add llvm-snapshot.gpg.key \
-  && add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main' \
+  && add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-9 main' \
   && DEBIAN_FRONTEND=noninteractive \
   apt-get install -qy --no-install-recommends \
   clang-9 \
