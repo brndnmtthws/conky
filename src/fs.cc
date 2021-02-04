@@ -167,7 +167,7 @@ void get_fs_type(const char *path, char *result) {
   return;
 #elif defined(__sun)
   assert(0); /* not used - see update_fs_stat() */
-#else /* HAVE_STRUCT_STATFS_F_FSTYPENAME */
+#else  /* HAVE_STRUCT_STATFS_F_FSTYPENAME */
 
   struct mntent *me;
   FILE *mtab = setmntent("/proc/mounts", "r");
