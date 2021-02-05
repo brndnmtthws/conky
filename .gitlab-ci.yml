@@ -41,7 +41,6 @@ before_script:
       $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
     - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
 
-pull ubuntu clang-7: *pull_images
 pull ubuntu clang-8: *pull_images
 pull ubuntu clang-9: *pull_images
 pull ubuntu clang-10: *pull_images
@@ -159,7 +158,6 @@ builder centos7 base:
       docker push
       ${CI_REGISTRY_IMAGE}/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG
 
-builder ubuntu clang-7: *docker_builder
 builder ubuntu clang-8: *docker_builder
 builder ubuntu clang-9: *docker_builder
 builder ubuntu clang-10: *docker_builder
@@ -225,15 +223,6 @@ builder centos7 clang-5: *docker_builder
   BUILD_JOURNAL: "ON"
   BUILD_LUA_CAIRO: "ON"
   BUILD_LUA_RSVG: "ON"
-
-ubuntu clang-7:
-  <<: *build_stages
-  variables:
-    <<: *build_variables
-    DISTRO: ubuntu
-    COMPILER: clang-7
-    CC: clang-7
-    CXX: clang++-7
 
 ubuntu clang-8:
   <<: *build_stages
@@ -556,9 +545,9 @@ centos7 clang-5:
       fi
     - make -j4
     - make -j4 test
-    - if [ "$COMPILER" == "clang-7" ] ; then make -j4 test-conky-coverage-txt ; fi
-    - if [ "$COMPILER" == "clang-7" ] ; then make -j4 test-conky-coverage-html ; fi
-    - if [ "$COMPILER" == "clang-7" ] ; then lcov-summary test-conky-coverage-html.info.cleaned ; fi
+    - if [ "$COMPILER" == "clang-11" ] ; then make -j4 test-conky-coverage-txt ; fi
+    - if [ "$COMPILER" == "clang-11" ] ; then make -j4 test-conky-coverage-html ; fi
+    - if [ "$COMPILER" == "clang-11" ] ; then lcov-summary test-conky-coverage-html.info.cleaned ; fi
     - make -j4
     - if [[ "$DISTRO" == "freebsd12" ]] ; then sudo make install ; else make install ; fi
     - conky -v
@@ -585,15 +574,6 @@ centos7 clang-5:
     name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME-coverage-report"
     paths:
       - build/test-conky-coverage-html/
-
-test ubuntu clang-7:
-  <<: *test_stages
-  <<: *test_run
-  variables:
-    DISTRO: ubuntu
-    COMPILER: clang-7
-    CC: clang-7
-    CXX: clang++-7
 
 test ubuntu clang-8:
   <<: *test_stages
@@ -892,7 +872,6 @@ push fedora-33 base: *push_base_images
       $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
     - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
 
-push ubuntu clang-7: *push_images
 push ubuntu clang-8: *push_images
 push ubuntu clang-9: *push_images
 push ubuntu clang-10: *push_images
