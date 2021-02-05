@@ -34,7 +34,7 @@ variables:
   script:
     - cd tests/dockerfiles
     - >
-      docker build -f Dockerfile.$DISTRO-base
+      docker build . -f Dockerfile.$DISTRO-base
       --build-arg BUILDKIT_INLINE_CACHE=1
       --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
       --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
@@ -80,7 +80,7 @@ builder centos7 base:
     - "echo \"Distro: ${DISTRO}\nCompiler: ${COMPILER}\""
     - cd tests/dockerfiles
     - >
-      docker build -f Dockerfile.$DISTRO-$COMPILER
+      docker build . -f Dockerfile.$DISTRO-$COMPILER
       --build-arg IMAGE=$CI_REGISTRY_IMAGE
       --build-arg BUILDKIT_INLINE_CACHE=1
       --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
