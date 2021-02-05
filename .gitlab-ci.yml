@@ -20,9 +20,9 @@ variables:
       - api_failure
   stage: base
   image: docker:stable
-  only:
-    changes:
-      - tests/dockerfiles/*
+  # only:
+  # changes:
+  # - tests/dockerfiles/*
   services:
     - docker:dind
   before_script:
