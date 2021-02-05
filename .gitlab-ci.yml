@@ -4,7 +4,7 @@ stages:
   - dependencies
   - build
   - test
-  - deploy
+  - check
 
 variables:
   DOCKER_DRIVER: overlay2
@@ -636,8 +636,19 @@ test centos7 gcc-8:
 #     CC: gcc
 #     CXX: g++
 
+.check_stages: &check_stages
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - unknown_failure
+      - api_failure
+  image: $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
+  stage: check
+
 check clang-tidy:
-  <<: *test_stages
+  <<: *check_stages
   variables:
     COMPILER: clang-11
     DISTRO: ubuntu
@@ -655,7 +666,7 @@ check clang-tidy:
     - make -j4 check-clang-tidy
 
 check clang-format:
-  <<: *test_stages
+  <<: *check_stages
   variables:
     COMPILER: clang-11
     DISTRO: ubuntu
