@@ -57,7 +57,6 @@ pull fedora-29 clang-7: *pull_images
 pull fedora-31 clang-8: *pull_images
 pull fedora-32 clang-10: *pull_images
 pull fedora-33 clang-11: *pull_images
-pull centos6 gcc-7: *pull_images
 pull centos7 gcc-7: *pull_images
 pull centos7 gcc-8: *pull_images
 pull centos7 clang-5: *pull_images
@@ -128,11 +127,6 @@ builder fedora-33 base:
   variables:
     DOCKER_BASE_IMAGE: fedora:33
 
-builder centos6 base:
-  <<: *docker_base_builder
-  variables:
-    DOCKER_BASE_IMAGE: centos:6
-
 builder centos7 base:
   <<: *docker_base_builder
   variables:
@@ -181,7 +175,6 @@ builder fedora-29 clang-7: *docker_builder
 builder fedora-31 clang-8: *docker_builder
 builder fedora-32 clang-10: *docker_builder
 builder fedora-33 clang-11: *docker_builder
-builder centos6 gcc-7: *docker_builder
 builder centos7 gcc-7: *docker_builder
 builder centos7 gcc-8: *docker_builder
 builder centos7 clang-5: *docker_builder
@@ -381,27 +374,6 @@ fedora-33 clang-11:
     CC: clang
     CXX: clang++
     BUILD_AUDACIOUS: "OFF"
-
-centos6 gcc-7:
-  <<: *build_stages
-  variables:
-    <<: *build_variables
-    DISTRO: centos6
-    COMPILER: gcc-7
-    CC: gcc
-    CXX: g++
-    CMAKE: cmake3
-    BUILD_AUDACIOUS: "OFF"
-    BUILD_XMMS2: "OFF"
-    BUILD_NVIDIA: "OFF"
-    BUILD_JOURNAL: "OFF"
-    BUILD_LUA_CAIRO: "OFF"
-    BUILD_LUA_RSVG: "OFF"
-    # required because centos6 separates tinfo from ncurses
-    LINKER_FLAGS: "-ltinfo"
-  before_script:
-    - source /opt/rh/devtoolset-7/enable
-    - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
 
 centos7 gcc-7:
   <<: *build_stages
@@ -758,18 +730,6 @@ test fedora-33 clang-11:
     CC: clang
     CXX: clang++
 
-test centos6 gcc-7:
-  <<: *test_stages
-  <<: *test_run
-  variables:
-    DISTRO: centos7
-    COMPILER: gcc-7
-    CC: gcc
-    CXX: g++
-  before_script:
-    - source /opt/rh/devtoolset-7/enable
-    - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
-
 test centos7 clang-5:
   <<: *test_stages
   <<: *test_run
@@ -907,7 +867,6 @@ check clang-format:
     - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
 
 push ubuntu base: *push_base_images
-push centos6 base: *push_base_images
 push centos7 base: *push_base_images
 push fedora-29 base: *push_base_images
 push fedora-31 base: *push_base_images
@@ -949,7 +908,6 @@ push fedora-29 clang-7: *push_images
 push fedora-31 clang-8: *push_images
 push fedora-32 clang-10: *push_images
 push fedora-33 clang-11: *push_images
-push centos6 gcc-7: *push_images
 push centos7 gcc-7: *push_images
 push centos7 gcc-8: *push_images
 push centos7 clang-5: *push_images
