@@ -247,26 +247,26 @@ int update_meminfo(void) {
     */
     curmem -= curbufmem;
     cureasyfree += curbufmem;
-#else
-#   curmem = info.memmax - memavail;
+#else  /* LINUX_VERSION_CODE <= KERNEL_VERSION(3, 14, 0) */
     /* The memory available field is describe in /proc man page as :
-     * "An estimate of how much memory is available for starting new applications, without swapping."
-     * We can see in page_alloc.c in the linux kernel that :
-     * "Not all the page cache can be freed, otherwise the system will start swapping.
-     * Assume at least half of the page cache, or the low watermark worth of cache, needs to stay."
-     * There is a difference between the system starts swapping and OOM happens even if there is no swap 
-     * on the system.
-     * People think they will find the same amount of used RAM with the free program.
-     * From man free, we can see :
-     * used   Used memory (calculated as total - free - buffers - cache)
-     * free   Unused memory (MemFree and SwapFree in /proc/meminfo)
-     * buffers Memory used by kernel buffers (Buffers in /proc/meminfo)
-     * cache  Memory used by the page cache and slabs (Cached and SReclaimable in /proc/meminfo)
-     * So, curmem should be calculate as follow to find the same amount of memory in conky and free.
+     * "An estimate of how much memory is available for starting new
+     * applications, without swapping." We can see in page_alloc.c in the linux
+     * kernel that : "Not all the page cache can be freed, otherwise the system
+     * will start swapping. Assume at least half of the page cache, or the low
+     * watermark worth of cache, needs to stay." There is a difference between
+     * the system starts swapping and OOM happens even if there is no swap on
+     * the system. People think they will find the same amount of used RAM with
+     * the free program. From man free, we can see : used   Used memory
+     * (calculated as total - free - buffers - cache) free   Unused memory
+     * (MemFree and SwapFree in /proc/meminfo) buffers Memory used by kernel
+     * buffers (Buffers in /proc/meminfo) cache  Memory used by the page cache
+     * and slabs (Cached and SReclaimable in /proc/meminfo) So, curmem should be
+     * calculate as follow to find the same amount of memory in conky and free.
      */
-    curmem = info.memmax - (info.memfree + info.buffers + info.cached + sreclaimable);
+    curmem = info.memmax -
+             (info.memfree + info.buffers + info.cached + sreclaimable);
     cureasyfree += curbufmem;
-#endif
+#endif /* LINUX_VERSION_CODE <= KERNEL_VERSION(3, 14, 0) */
   }
 
   /* Now that we know that every calculation is finished we can wrap up
