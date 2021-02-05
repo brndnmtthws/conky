@@ -34,5 +34,6 @@ RUN apt-get update \
   libxnvctrl-dev \
   man \
   ncurses-dev \
-  software-properties-common
+  software-properties-common \
+  wget
 
