@@ -1,6 +1,5 @@
 ---
 stages:
-  - pull
   - base
   - dependencies
   - build
@@ -9,47 +8,7 @@ stages:
 
 variables:
   DOCKER_DRIVER: overlay2
-
-.pull_images: &pull_images
-  stage: pull
-  allow_failure: true
-  image: docker:stable
-  services:
-    - docker:dind
-  script:
-    - set -- $CI_JOB_NAME
-    - export DISTRO=$2
-    - export COMPILER=$3
-    - "echo \"Distro: ${DISTRO}\nCompiler: ${COMPILER}\""
-    - export DOCKER_HOST="${DOCKER_HOST:-tcp://localhost:2375/}"
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    # Pull either the last ref slug, or latest, depending on which exists
-    - docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG || docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
-    # If ref slug exists, use that, otherwise fallback to latest tag
-    - >
-      docker tag
-      $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG
-      $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA ||
-      docker tag
-      $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
-      $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
-    - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
-
-pull ubuntu clang-9: *pull_images
-pull ubuntu clang-10: *pull_images
-pull ubuntu clang-11: *pull_images
-pull ubuntu gcc-7: *pull_images
-pull ubuntu gcc-8: *pull_images
-pull ubuntu gcc-9: *pull_images
-pull ubuntu gcc-10: *pull_images
-pull fedora-29 gcc-8: *pull_images
-pull fedora-29 clang-7: *pull_images
-pull fedora-31 clang-8: *pull_images
-pull fedora-32 clang-10: *pull_images
-pull fedora-33 clang-11: *pull_images
-pull centos7 gcc-7: *pull_images
-pull centos7 gcc-8: *pull_images
-pull centos7 clang-5: *pull_images
+  DOCKER_BUILDKIT: 1
 
 .docker_base_builder: &docker_base_builder
   retry:
@@ -72,25 +31,14 @@ pull centos7 clang-5: *pull_images
     - "echo \"Distro: ${DISTRO}\nDocker base: ${DOCKER_BASE_IMAGE}\""
     - export DOCKER_HOST="${DOCKER_HOST:-tcp://localhost:2375/}"
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest || true
-    - >
-      docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_REF_SLUG
-      || true
-    - >
-      docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA
-      || true
   script:
     - cd tests/dockerfiles
-    - docker pull $DOCKER_BASE_IMAGE || true
     - >
       docker build -f Dockerfile.$DISTRO-base
+      --build-arg BUILDKIT_INLINE_CACHE=1
       --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
-      --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_REF_SLUG
-      --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
-      --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA
-      --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_REF_SLUG .
-    - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA
-    - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_REF_SLUG
+      --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
+    - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
 
 builder ubuntu base:
   <<: *docker_base_builder
@@ -132,22 +80,12 @@ builder centos7 base:
     - "echo \"Distro: ${DISTRO}\nCompiler: ${COMPILER}\""
     - cd tests/dockerfiles
     - >
-      docker tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA
-      $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
-    - >
-      docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
-      || true
-    - >
       docker build -f Dockerfile.$DISTRO-$COMPILER
       --build-arg IMAGE=$CI_REGISTRY_IMAGE
+      --build-arg BUILDKIT_INLINE_CACHE=1
       --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
-      --cache-from $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
-      --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
-      --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG .
-    - docker push ${CI_REGISTRY_IMAGE}/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
-    - >
-      docker push
-      ${CI_REGISTRY_IMAGE}/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG
+      --tag $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
+    - docker push ${CI_REGISTRY_IMAGE}/builder/$DISTRO-$COMPILER:latest
 
 builder ubuntu clang-9: *docker_builder
 builder ubuntu clang-10: *docker_builder
@@ -173,7 +111,7 @@ builder centos7 clang-5: *docker_builder
       - stuck_or_timeout_failure
       - unknown_failure
       - api_failure
-  image: $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
+  image: $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
   stage: build
   script:
     - "echo \"Distro: ${DISTRO}\nCompiler: ${COMPILER}\nCC: $CC\nCXX: $CXX\""
@@ -477,7 +415,7 @@ centos7 clang-5:
       - stuck_or_timeout_failure
       - unknown_failure
       - api_failure
-  image: $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
+  image: $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
   stage: test
 
 .test_run: &test_run
@@ -732,76 +670,3 @@ check clang-format:
       -DCHECK_CODE_QUALITY=ON
       ..
     - make -j4 check-clang-format
-
-.push_base_images: &push_base_images
-  retry:
-    max: 2
-    when:
-      - runner_system_failure
-      - stuck_or_timeout_failure
-      - unknown_failure
-      - api_failure
-  stage: deploy
-  image: docker:stable
-  services:
-    - docker:dind
-  only:
-    changes:
-      - tests/dockerfiles/*
-    refs:
-      - master
-      - tags
-  before_script:
-    - export DOCKER_HOST="${DOCKER_HOST:-tcp://localhost:2375/}"
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  script:
-    - set -- $CI_JOB_NAME
-    - export DISTRO=$2
-    - 'echo "Distro: ${DISTRO}"'
-    - docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA
-    - >
-      docker tag $CI_REGISTRY_IMAGE/builder/$DISTRO-base:$CI_COMMIT_SHA
-      $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
-    - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-base:latest
-
-push ubuntu base: *push_base_images
-push centos7 base: *push_base_images
-push fedora-29 base: *push_base_images
-push fedora-31 base: *push_base_images
-push fedora-32 base: *push_base_images
-push fedora-33 base: *push_base_images
-
-.push_images: &push_images
-  <<: *push_base_images
-  only:
-    changes:
-      - tests/dockerfiles/*
-    refs:
-      - master
-      - tags
-  script:
-    - set -- $CI_JOB_NAME
-    - export DISTRO=$2
-    - export COMPILER=$3
-    - "echo \"Distro: ${DISTRO}\nCompiler: ${COMPILER}\""
-    - docker pull $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
-    - >
-      docker tag $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
-      $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
-    - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
-
-push ubuntu clang-9: *push_images
-push ubuntu clang-10: *push_images
-push ubuntu clang-11: *push_images
-push ubuntu gcc-7: *push_images
-push ubuntu gcc-8: *push_images
-push ubuntu gcc-9: *push_images
-push ubuntu gcc-10: *push_images
-push fedora-29 gcc-8: *push_images
-push fedora-29 clang-7: *push_images
-push fedora-31 clang-8: *push_images
-push fedora-32 clang-10: *push_images
-push fedora-33 clang-11: *push_images
-push centos7 gcc-7: *push_images
-push centos7 gcc-8: *push_images
-push centos7 clang-5: *push_images
