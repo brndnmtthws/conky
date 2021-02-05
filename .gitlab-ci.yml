@@ -8,13 +8,7 @@ stages:
   - deploy
 
 variables:
-  SCCACHE_GCS_BUCKET: btm-build-cache
-  SCCACHE_GCS_RW_MODE: READ_WRITE
-  SCCACHE_GCS_KEY_PATH: /tmp/storage-key.json
   DOCKER_DRIVER: overlay2
-
-before_script:
-  - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
 
 .pull_images: &pull_images
   stage: pull
@@ -188,8 +182,6 @@ builder centos7 clang-5: *docker_builder
     - >
       cmake
       -DCMAKE_EXE_LINKER_FLAGS=$LINKER_FLAGS
-      -DCMAKE_C_COMPILER_LAUNCHER=sccache
-      -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
       -DMAINTAINER_MODE=ON
       -DBUILD_AUDACIOUS=$BUILD_AUDACIOUS
       -DBUILD_MYSQL=ON
@@ -346,7 +338,6 @@ centos7 gcc-7:
     BUILD_JOURNAL: "OFF"
   before_script:
     - source /opt/rh/devtoolset-7/enable
-    - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
 
 centos7 gcc-8:
   <<: *build_stages
@@ -363,7 +354,6 @@ centos7 gcc-8:
     BUILD_JOURNAL: "OFF"
   before_script:
     - source /opt/rh/devtoolset-8/enable
-    - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
 
 centos7 clang-5:
   <<: *build_stages
@@ -379,7 +369,6 @@ centos7 clang-5:
     BUILD_JOURNAL: "OFF"
   before_script:
     - source /opt/rh/llvm-toolset-7/enable
-    - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
 
 # .freebsd_deps: &freebsd_deps
 #   retry:
@@ -504,8 +493,6 @@ centos7 clang-5:
         ..
       else
         cmake \
-        -DCMAKE_C_COMPILER_LAUNCHER=sccache \
-        -DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
         -DBUILD_TESTS=ON \
         -DMAINTAINER_MODE=ON \
         ..
@@ -527,8 +514,6 @@ centos7 clang-5:
         ..
       else
         cmake \
-        -DCMAKE_C_COMPILER_LAUNCHER=sccache \
-        -DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
         -DCMAKE_BUILD_TYPE=RelWithDebInfo \
         -DRELEASE=ON \
         ..
@@ -660,7 +645,6 @@ test centos7 clang-5:
     CXX: clang++
   before_script:
     - source /opt/rh/llvm-toolset-7/enable
-    - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
 
 test centos7 gcc-7:
   <<: *test_stages
@@ -672,7 +656,6 @@ test centos7 gcc-7:
     CXX: g++
   before_script:
     - source /opt/rh/devtoolset-7/enable
-    - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
 
 test centos7 gcc-8:
   <<: *test_stages
@@ -684,7 +667,6 @@ test centos7 gcc-8:
     CXX: g++
   before_script:
     - source /opt/rh/devtoolset-8/enable
-    - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
 
 # test freebsd12 clang-7:
 #   <<: *freebsd_deps
@@ -728,8 +710,6 @@ check clang-tidy:
     - cd build
     - >
       cmake
-      -DCMAKE_C_COMPILER_LAUNCHER=sccache
-      -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
       -DMAINTAINER_MODE=ON
       -DCHECK_CODE_QUALITY=ON
       ..
@@ -748,8 +728,6 @@ check clang-format:
     - cd build
     - >
       cmake
-      -DCMAKE_C_COMPILER_LAUNCHER=sccache
-      -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
       -DMAINTAINER_MODE=ON
       -DCHECK_CODE_QUALITY=ON
       ..
