@@ -41,12 +41,9 @@ before_script:
       $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
     - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:$CI_COMMIT_SHA
 
-pull ubuntu clang-8: *pull_images
 pull ubuntu clang-9: *pull_images
 pull ubuntu clang-10: *pull_images
 pull ubuntu clang-11: *pull_images
-pull ubuntu gcc-5: *pull_images
-pull ubuntu gcc-6: *pull_images
 pull ubuntu gcc-7: *pull_images
 pull ubuntu gcc-8: *pull_images
 pull ubuntu gcc-9: *pull_images
@@ -158,12 +155,9 @@ builder centos7 base:
       docker push
       ${CI_REGISTRY_IMAGE}/builder/$DISTRO-$COMPILER:$CI_COMMIT_REF_SLUG
 
-builder ubuntu clang-8: *docker_builder
 builder ubuntu clang-9: *docker_builder
 builder ubuntu clang-10: *docker_builder
 builder ubuntu clang-11: *docker_builder
-builder ubuntu gcc-5: *docker_builder
-builder ubuntu gcc-6: *docker_builder
 builder ubuntu gcc-7: *docker_builder
 builder ubuntu gcc-8: *docker_builder
 builder ubuntu gcc-9: *docker_builder
@@ -224,15 +218,6 @@ builder centos7 clang-5: *docker_builder
   BUILD_LUA_CAIRO: "ON"
   BUILD_LUA_RSVG: "ON"
 
-ubuntu clang-8:
-  <<: *build_stages
-  variables:
-    <<: *build_variables
-    DISTRO: ubuntu
-    COMPILER: clang-8
-    CC: clang-8
-    CXX: clang++-8
-
 ubuntu clang-9:
   <<: *build_stages
   variables:
@@ -259,24 +244,6 @@ ubuntu clang-11:
     COMPILER: clang-11
     CC: clang-11
     CXX: clang++-11
-
-ubuntu gcc-5:
-  <<: *build_stages
-  variables:
-    <<: *build_variables
-    DISTRO: ubuntu
-    COMPILER: gcc-5
-    CC: gcc-5
-    CXX: g++-5
-
-ubuntu gcc-6:
-  <<: *build_stages
-  variables:
-    <<: *build_variables
-    DISTRO: ubuntu
-    COMPILER: gcc-6
-    CC: gcc-6
-    CXX: g++-6
 
 ubuntu gcc-7:
   <<: *build_stages
@@ -575,15 +542,6 @@ centos7 clang-5:
     paths:
       - build/test-conky-coverage-html/
 
-test ubuntu clang-8:
-  <<: *test_stages
-  <<: *test_run
-  variables:
-    DISTRO: ubuntu
-    COMPILER: clang-8
-    CC: clang-8
-    CXX: clang++-8
-
 test ubuntu clang-9:
   <<: *test_stages
   <<: *test_run
@@ -610,24 +568,6 @@ test ubuntu clang-11:
     COMPILER: clang-11
     CC: clang-11
     CXX: clang++-11
-
-test ubuntu gcc-5:
-  <<: *test_stages
-  <<: *test_run
-  variables:
-    DISTRO: ubuntu
-    COMPILER: gcc-5
-    CC: gcc-5
-    CXX: g++-5
-
-test ubuntu gcc-6:
-  <<: *test_stages
-  <<: *test_run
-  variables:
-    DISTRO: ubuntu
-    COMPILER: gcc-6
-    CC: gcc-6
-    CXX: g++-6
 
 test ubuntu gcc-7:
   <<: *test_stages
@@ -872,12 +812,9 @@ push fedora-33 base: *push_base_images
       $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
     - docker push $CI_REGISTRY_IMAGE/builder/$DISTRO-$COMPILER:latest
 
-push ubuntu clang-8: *push_images
 push ubuntu clang-9: *push_images
 push ubuntu clang-10: *push_images
 push ubuntu clang-11: *push_images
-push ubuntu gcc-5: *push_images
-push ubuntu gcc-6: *push_images
 push ubuntu gcc-7: *push_images
 push ubuntu gcc-8: *push_images
 push ubuntu gcc-9: *push_images
