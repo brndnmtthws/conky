@@ -72,9 +72,9 @@ pull centos7 clang-5: *pull_images
       - api_failure
   stage: base
   image: docker:stable
-  # only:
-  # changes:
-  # - tests/dockerfiles/*
+  only:
+    changes:
+      - tests/dockerfiles/*
   services:
     - docker:dind
   before_script:
@@ -888,8 +888,8 @@ check clang-format:
   services:
     - docker:dind
   only:
-    # changes:
-    # - tests/dockerfiles/*
+    changes:
+      - tests/dockerfiles/*
     refs:
       - master
       - tags
@@ -917,8 +917,8 @@ push fedora-33 base: *push_base_images
 .push_images: &push_images
   <<: *push_base_images
   only:
-    # changes:
-    # - tests/dockerfiles/*
+    changes:
+      - tests/dockerfiles/*
     refs:
       - master
       - tags
