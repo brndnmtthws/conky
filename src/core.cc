@@ -1011,6 +1011,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &new_offset;
   END OBJ(voffset, nullptr) obj->data.l = arg != nullptr ? atoi(arg) : 1;
   obj->callbacks.print = &new_voffset;
+  END OBJ(save_coordinates, nullptr) obj->data.l =
+      arg != nullptr ? atoi(arg) : 0;
+  obj->callbacks.print = &new_save_coordinates;
   END OBJ_ARG(goto, nullptr, "goto needs arguments") obj->data.l = atoi(arg);
   obj->callbacks.print = &new_goto;
 #ifdef BUILD_X11
@@ -1578,6 +1581,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_mpd_title;
   END OBJ(mpd_date, nullptr) mpd_set_maxlen(mpd_date);
   obj->callbacks.print = &print_mpd_date;
+  END OBJ(mpd_comment, nullptr) mpd_set_maxlen(mpd_comment);
+  obj->callbacks.print = &print_mpd_comment;
   END OBJ(mpd_random, nullptr) obj->callbacks.print = &print_mpd_random;
   END OBJ(mpd_repeat, nullptr) obj->callbacks.print = &print_mpd_repeat;
   END OBJ(mpd_elapsed, nullptr) obj->callbacks.print = &print_mpd_elapsed;

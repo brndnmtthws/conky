@@ -23,3 +23,5 @@ lua/libimlib2.c
 # Ignore vscode stuff
 .vscode
 *.code-workspace
+.idea/
+

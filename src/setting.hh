@@ -227,12 +227,12 @@ T config_setting_template<T>::get(lua::state &l) {
 
 /*
  * Declares a setting <name> in the conky.config table.
- * Getter function is used to translate the lua value into C++. It recieves the
+ * Getter function is used to translate the lua value into C++. It receives the
  * value on the lua stack. It should pop it and return the C++ value. In case
  * the value is nil, it should return a predefined default value. Translation
  * into basic types works with the help of lua_traits template above The
  * lua_setter function is called when someone tries to set the value.  It
- * recieves the new and the old value on the stack (old one is on top). It
+ * receives the new and the old value on the stack (old one is on top). It
  * should return the new value for the setting. It doesn't have to be the value
  * the user set, if e.g. the value doesn't make sense. The second parameter is
  * true if the assignment occurs during the initial parsing of the config file,

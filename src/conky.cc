@@ -142,6 +142,10 @@
 #ifdef BUILD_BUILTIN_CONFIG
 #include "defconfig.h"
 
+#ifdef BUILD_HSV_GRADIENT
+#include "hsv_gradient.h"
+#endif /* BUILD_HSV_GRADIENT */
+
 namespace {
 const char builtin_config_magic[] = "==builtin==";
 }  // namespace
@@ -317,17 +321,22 @@ static conky::simple_config_setting<std::string> append_file("append_file",
 static FILE *append_fpointer = nullptr;
 
 #ifdef BUILD_HTTP
+#ifdef MHD_YES
+/* older API */
+#define MHD_Result int
+#endif /* MHD_YES */
 std::string webpage;
 struct MHD_Daemon *httpd;
 static conky::simple_config_setting<bool> http_refresh("http_refresh", false,
                                                        true);
 
-int sendanswer(void *cls, struct MHD_Connection *connection, const char *url,
-               const char *method, const char *version, const char *upload_data,
-               size_t *upload_data_size, void **con_cls) {
+MHD_Result sendanswer(void *cls, struct MHD_Connection *connection,
+                      const char *url, const char *method, const char *version,
+                      const char *upload_data, size_t *upload_data_size,
+                      void **con_cls) {
   struct MHD_Response *response = MHD_create_response_from_buffer(
       webpage.length(), (void *)webpage.c_str(), MHD_RESPMEM_PERSISTENT);
-  int ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
+  MHD_Result ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
   MHD_destroy_response(response);
   if (cls || url || method || version || upload_data || upload_data_size ||
       con_cls) {}  // make compiler happy
@@ -586,10 +595,10 @@ void human_readable(long long num, char *buf, int size) {
     return;
   }
   if (short_units.get(*state)) {
-    width = 5;
+    width = 6;
     format = "%.*f %.1s";
   } else {
-    width = 7;
+    width = 8;
     format = "%.*f %-.3s";
   }
 
@@ -1005,6 +1014,12 @@ static int cur_x, cur_y; /* current x and y for drawing */
 static int draw_mode; /* FG, BG or OUTLINE */
 #ifdef BUILD_X11
 static long current_color;
+
+static int saved_coordinates_x[100];
+static int saved_coordinates_y[100];
+
+int get_saved_coordinates_x(int i) { return saved_coordinates_x[i]; }
+int get_saved_coordinates_y(int i) { return saved_coordinates_y[i]; }
 
 static int text_size_updater(char *s, int special_index) {
   int w = 0;
@@ -1446,8 +1461,13 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
               unsigned long *tmpcolour = nullptr;
 
               if (current->last_colour != 0 || current->first_colour != 0) {
+#ifdef BUILD_HSV_GRADIENT
+                tmpcolour = do_hsv_gradient(w - 1, current->last_colour,
+                                            current->first_colour);
+#else
                 tmpcolour = do_gradient(w - 1, current->last_colour,
                                         current->first_colour);
+#endif
               }
               colour_idx = 0;
               for (i = w - 2; i > -1; i--) {
@@ -1581,6 +1601,13 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 
         case VOFFSET:
           cur_y += current->arg;
+          break;
+
+        case SAVE_COORDINATES:
+          saved_coordinates_x[static_cast<int>(current->arg)] =
+              cur_x - text_start_x;
+          saved_coordinates_y[static_cast<int>(current->arg)] =
+              cur_y - text_start_y - last_font_height;
           break;
 
         case TAB: {
@@ -1775,7 +1802,6 @@ static void draw_stuff() {
     selected_font = 0;
     if (draw_shades.get(*state) && !draw_outline.get(*state)) {
       text_offset_x = text_offset_y = 1;
-      text_start_y++;
       set_foreground_color(default_shade_color.get(*state));
       draw_mode = BG;
       draw_text();
@@ -2183,8 +2209,7 @@ void main_loop() {
             if (own_window.get(*state)) {
               /* if an ordinary window with decorations */
               if ((own_window_type.get(*state) == TYPE_NORMAL) &&
-                  not TEST_HINT(own_window_hints.get(*state),
-                                HINT_UNDECORATED)) {
+                  !TEST_HINT(own_window_hints.get(*state), HINT_UNDECORATED)) {
                 /* allow conky to hold input focus. */
                 break;
               }
@@ -2290,7 +2315,7 @@ void main_loop() {
     if (g_sigusr2_pending != 0) {
       g_sigusr2_pending = 0;
       // refresh view;
-      NORM_ERR("recieved SIGUSR2. refreshing.");
+      NORM_ERR("received SIGUSR2. refreshing.");
       update_text();
       draw_stuff();
 #ifdef BUILD_NCURSES

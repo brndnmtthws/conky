@@ -1334,6 +1334,7 @@ void print_keyboard_layout(struct text_object *obj, char *p,
 
   snprintf(p, p_max_size, "%s", (group != NULL ? group : "unknown"));
   XFree(group);
+  XkbFreeKeyboard(desc, XkbGBN_AllComponentsMask, True);
 }
 
 void print_mouse_speed(struct text_object *obj, char *p,

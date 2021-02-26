@@ -113,23 +113,24 @@ mpd_host_setting mpd_host;
 mpd_password_setting mpd_password;
 
 struct mpd_result {
-  std::string title;
-  std::string artist;
-  std::string albumartist;
-  std::string album;
-  std::string date;
-  std::string status;
-  std::string random;
-  std::string repeat;
-  std::string track;
-  std::string name;
-  std::string file;
-  int is_playing{};
-  int vol{};
   float progress{};
   int bitrate{};
-  int length{};
   int elapsed{};
+  int is_playing{};
+  int length{};
+  int vol{};
+  std::string album;
+  std::string albumartist;
+  std::string artist;
+  std::string comment;
+  std::string date;
+  std::string file;
+  std::string name;
+  std::string random;
+  std::string repeat;
+  std::string status;
+  std::string title;
+  std::string track;
 };
 
 class mpd_cb : public conky::callback<mpd_result> {
@@ -261,14 +262,15 @@ void mpd_cb::work() {
     (a) = b;            \
   else                  \
     (a) = "";
-      SETSTRING(mpd_info.artist, song->artist);
-      SETSTRING(mpd_info.albumartist, song->albumartist);
       SETSTRING(mpd_info.album, song->album);
-      SETSTRING(mpd_info.title, song->title);
+      SETSTRING(mpd_info.albumartist, song->albumartist);
+      SETSTRING(mpd_info.artist, song->artist);
+      SETSTRING(mpd_info.comment, song->comment);
       SETSTRING(mpd_info.date, song->date);
-      SETSTRING(mpd_info.track, song->track);
-      SETSTRING(mpd_info.name, song->name);
       SETSTRING(mpd_info.file, song->file);
+      SETSTRING(mpd_info.name, song->name);
+      SETSTRING(mpd_info.title, song->title);
+      SETSTRING(mpd_info.track, song->track);
       if (entity != nullptr) {
         mpd_freeInfoEntity(entity);
         entity = nullptr;
@@ -390,18 +392,19 @@ int check_mpd_playing(struct text_object *obj) {
     snprintf(p, p_max_size, fmt, get_mpd().name acc);          \
   }
 
-MPD_PRINT_GENERATOR(title, "%s", .c_str())
-MPD_PRINT_GENERATOR(artist, "%s", .c_str())
-MPD_PRINT_GENERATOR(albumartist, "%s", .c_str())
 MPD_PRINT_GENERATOR(album, "%s", .c_str())
+MPD_PRINT_GENERATOR(albumartist, "%s", .c_str())
+MPD_PRINT_GENERATOR(artist, "%s", .c_str())
+MPD_PRINT_GENERATOR(bitrate, "%d", )
+MPD_PRINT_GENERATOR(comment, "%s", .c_str())
 MPD_PRINT_GENERATOR(date, "%s", .c_str())
+MPD_PRINT_GENERATOR(file, "%s", .c_str())
+MPD_PRINT_GENERATOR(name, "%s", .c_str())
 MPD_PRINT_GENERATOR(random, "%s", .c_str())
 MPD_PRINT_GENERATOR(repeat, "%s", .c_str())
-MPD_PRINT_GENERATOR(track, "%s", .c_str())
-MPD_PRINT_GENERATOR(name, "%s", .c_str())
-MPD_PRINT_GENERATOR(file, "%s", .c_str())
-MPD_PRINT_GENERATOR(vol, "%d", )
-MPD_PRINT_GENERATOR(bitrate, "%d", )
 MPD_PRINT_GENERATOR(status, "%s", .c_str())
+MPD_PRINT_GENERATOR(title, "%s", .c_str())
+MPD_PRINT_GENERATOR(track, "%s", .c_str())
+MPD_PRINT_GENERATOR(vol, "%d", )
 
 #undef MPD_PRINT_GENERATOR

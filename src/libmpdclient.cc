@@ -424,8 +424,7 @@ mpd_Connection *mpd_newConnection(const char *host, int port, float timeout) {
       connection->buflen += readed;
       connection->buffer[connection->buflen] = '\0';
     } else if (err < 0) {
-      if
-        SELECT_ERRNO_IGNORE { continue; }
+      if SELECT_ERRNO_IGNORE { continue; }
       snprintf(connection->errorStr, MPD_ERRORSTR_MAX_LENGTH,
                "problems connecting to \"%s\" on port %i", host, port);
       connection->error = MPD_ERROR_CONNPORT;
@@ -497,8 +496,7 @@ static void mpd_executeCommand(mpd_Connection *connection,
     if (ret != 1 && !SELECT_ERRNO_IGNORE) { break; }
     ret = send(connection->sock, commandPtr, commandLen, MSG_DONTWAIT);
     if (ret <= 0) {
-      if
-        SENDRECV_ERRNO_IGNORE { continue; }
+      if SENDRECV_ERRNO_IGNORE { continue; }
       snprintf(connection->errorStr, MPD_ERRORSTR_MAX_LENGTH,
                "problems giving command \"%s\"", command);
       connection->error = MPD_ERROR_SENDING;

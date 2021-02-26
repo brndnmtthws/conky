@@ -8,7 +8,7 @@ The syntax highlighting will automatically be applied to all files with `conky` 
  * [Regex Tutorial](http://www.rexegg.com/)
  * [Regex Testing](https://regex101.com/)
 
-Developers: The main context (`id="conkyrc"`) is where gedit begins. This main context then references other sub-contexts. Each context can apply styles to itself, sub-strings from its regexs, or its contents (in the case of `<start><end>` "container" contexts). If you are ever confused by something, try searching for XML attributes in the [`gtksourceview` docs][1]. If you find a particuarly complex regex, try using the Regex Tester linked above, and bear in mind that `gtksourceview` adds some extra regex syntax (i.e. `\%[ ... ]` and `\%{ ... }`).
+Developers: The main context (`id="conkyrc"`) is where gedit begins. This main context then references other sub-contexts. Each context can apply styles to itself, sub-strings from its regexs, or its contents (in the case of `<start><end>` "container" contexts). If you are ever confused by something, try searching for XML attributes in the [`gtksourceview` docs][1]. If you find a particularly complex regex, try using the Regex Tester linked above, and bear in mind that `gtksourceview` adds some extra regex syntax (i.e. `\%[ ... ]` and `\%{ ... }`).
 
 ***
 

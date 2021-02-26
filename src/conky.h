@@ -301,6 +301,9 @@ void set_updatereset(int);
 int get_updatereset(void);
 int get_total_updates(void);
 
+int get_saved_coordinates_x(int);
+int get_saved_coordinates_y(int);
+
 /* defined in conky.c */
 int spaced_print(char *, int, const char *, int, ...)
     __attribute__((format(printf, 3, 5)));

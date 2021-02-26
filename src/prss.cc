@@ -92,7 +92,7 @@ PRSS::~PRSS() {
 }
 
 static inline void prss_null_item(PRSS_Item *i) {
-  memset(i, 0, sizeof(PRSS_Item));
+  if (i != nullptr) { memset(i, 0, sizeof(*i)); }
 }
 
 static inline void read_item(PRSS_Item *res, xmlNodePtr data) {

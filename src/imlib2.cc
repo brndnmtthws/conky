@@ -148,6 +148,15 @@ void cimlib_add_image(const char *args) {
     tmp += 3;
     if (sscanf(tmp, "%d", &cur->flush_interval) != 0) { cur->no_cache = 0; }
   }
+  tmp = strstr(args, "-i ");
+  if (tmp != nullptr) {
+    tmp += 3;
+    int i;
+    if (sscanf(tmp, "%d", &i) == 1) {
+      cur->x = get_saved_coordinates_x(i);
+      cur->y = get_saved_coordinates_y(i);
+    }
+  }
   if (cur->flush_interval < 0) {
     NORM_ERR("Imlib2: flush interval should be >= 0");
     cur->flush_interval = 0;

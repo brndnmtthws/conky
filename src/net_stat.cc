@@ -298,13 +298,13 @@ void print_v6addrs(struct text_object *obj, char *p, unsigned int p_max_size) {
     // netmask
     if (ns->v6show_nm) {
       char netmaskstr[5];  // max 5 chars (/128 + null-terminator)
-      sprintf(netmaskstr, "/%u", current_v6->netmask);
+      snprintf(netmaskstr, sizeof(netmaskstr), "/%u", current_v6->netmask);
       strncat(p, netmaskstr, p_max_size);
     }
     // scope
     if (ns->v6show_sc) {
       char scopestr[4];
-      sprintf(scopestr, "(%c)", current_v6->scope);
+      snprintf(scopestr, sizeof(scopestr), "(%c)", current_v6->scope);
       strncat(p, scopestr, p_max_size);
     }
     // next (or last) address
@@ -345,7 +345,7 @@ void parse_net_stat_graph_arg(struct text_object *obj, const char *arg,
 /**
  * returns the download speed in B/s for the interface referenced by obj
  *
- * @param[in] obj struct containting a member data, which is a struct
+ * @param[in] obj struct containing a member data, which is a struct
  *                containing a void * to a net_stat struct
  **/
 double downspeedgraphval(struct text_object *obj) {

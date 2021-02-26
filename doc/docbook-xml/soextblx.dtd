@@ -57,7 +57,7 @@
 
      Other miscellaneous changes:
 
-       - Tag ommission indicators have been removed
+       - Tag omission indicators have been removed
        - Comments have been removed from declarations
        - NUMBER attributes have been changed to NMTOKEN
        - NUTOKEN attributes have been to changed to NMTOKEN

@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/brndnmtthws/conky.svg?branch=master)](https://travis-ci.org/brndnmtthws/conky) [![pipeline status](https://gitlab.com/brndnmtthws-oss/conky/badges/master/pipeline.svg)](https://gitlab.com/brndnmtthws-oss/conky/commits/master) [![coverage report](https://gitlab.com/brndnmtthws-oss/conky/badges/master/coverage.svg)](https://gitlab.com/brndnmtthws-oss/conky/commits/master)
+[![Build Status](https://travis-ci.org/brndnmtthws/conky.svg?branch=main)](https://travis-ci.org/brndnmtthws/conky) [![pipeline status](https://gitlab.com/brndnmtthws-oss/conky/badges/main/pipeline.svg)](https://gitlab.com/brndnmtthws-oss/conky/commits/main) [![coverage report](https://gitlab.com/brndnmtthws-oss/conky/badges/main/coverage.svg)](https://gitlab.com/brndnmtthws-oss/conky/commits/main) [Matrix chat](https://matrix.to/#/#conky:frens.io)
 
 <p align="center"><img width="300" src="logo/conky-logotype-horizontal-violet.png"></p>
 
@@ -23,7 +23,7 @@ Conky can display more than 300 built-in objects, including support for:
   own scripts and programs ([more](https://github.com/brndnmtthws/conky/wiki#tutorial)).
 - Built-in [**Imlib2**][imlib2] and [**Cairo**][cairo] bindings for arbitrary drawing
   with Lua ([more](https://github.com/brndnmtthws/conky/wiki/Lua)).
-- Runs on Linux, FreeBSD, OpenBSD, DragonFlyBSD, NetBSD, Solaris, Haiku OS, and macOS!
+- Runs on Linux, FreeBSD, OpenBSD, DragonFlyBSD, NetBSD, Solaris, Haiku, and macOS!
 
 ... and much much more.
 

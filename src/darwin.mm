@@ -618,7 +618,7 @@ int update_meminfo() {
    *
    * STEPS:
    * - get stolen pages count
-   * Occassionaly host_statistics64 doesn't return correct values (see
+   * Occasionally host_statistics64 doesn't return correct values (see
    * https://stackoverflow.com/questions/14789672/why-does-host-statistics64-return-inconsistent-results)
    * We need to get the count of stolen pages and add it to wired pages count.
    * This is a known bug and apple has implemented the function
@@ -800,7 +800,7 @@ int update_threads() {
  * If it is RUNNING it means that it actually has some threads
  *  that are in TH_STATE_RUNNING.
  * Foreach pid and foreach pid's threads check their state and increment
- *  the run_threads counter acordingly.
+ *  the run_threads counter accordingly.
  */
 int update_running_threads() {
   struct kinfo_proc *p = nullptr;
@@ -1214,7 +1214,7 @@ static void calc_cpu_time_for_proc(struct process *process,
 
 /*
  * finds top-information only for one process which is represented by a
- * kinfo_proc struct this function is called mutliple types ( one foreach
+ * kinfo_proc struct this function is called multiple types ( one foreach
  * process ) to implement get_top_info()
  */
 static void get_top_info_for_kinfo_proc(struct kinfo_proc *p) {

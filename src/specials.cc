@@ -253,7 +253,7 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
     }
 
     /* all the following functions try to interpret the beginning of a
-     * a string with different formaters. If successfuly the return from
+     * a string with different formaters. If successfully the return from
      * this whole function */
 
     /* interpret the beginning(!) of the argument string as:
@@ -749,12 +749,18 @@ void new_voffset(struct text_object *obj, char *p, unsigned int p_max_size) {
   new_special(p, VOFFSET)->arg = obj->data.l;
 }
 
+void new_save_coordinates(struct text_object *obj, char *p,
+                          unsigned int p_max_size) {
+  if (p_max_size == 0) { return; }
+  new_special(p, SAVE_COORDINATES)->arg = obj->data.l;
+}
+
 void new_alignr(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
   new_special(p, ALIGNR)->arg = obj->data.l;
 }
 
-// A postive offset pushes the text further left
+// A positive offset pushes the text further left
 void new_alignc(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
   new_special(p, ALIGNC)->arg = obj->data.l;

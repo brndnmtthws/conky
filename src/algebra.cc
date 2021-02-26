@@ -51,7 +51,6 @@ int find_match_op(const char *expr) {
       case '<':
       case '>':
         return idx;
-        break;
     }
   }
   return -1;
@@ -181,7 +180,7 @@ int compare(const char *expr) {
   idx = find_match_op(expr);
   mtype = get_match_type(expr);
 
-  if ((idx == 0) || mtype == -1) {
+  if ((idx <= 0) || mtype == -1) {
     NORM_ERR("failed to parse compare string '%s'", expr);
     return -2;
   }

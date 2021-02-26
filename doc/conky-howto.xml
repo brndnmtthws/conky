@@ -115,7 +115,7 @@ $
                 <note>Make sure to replace "1.6.0" with the specific version
                 of Conky you have installed.</note>
                 <p>Now, open up the sample configuration in the text editor of
-                your choice. You may notice that there are two seperate
+                your choice. You may notice that there are two separate
                 sections of the configuration file. The first section of the
                 file, contains the programs configuration options and controls
                 how it acts. This includes things such as the

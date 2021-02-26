@@ -70,7 +70,7 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
   FILE *fp;
 
   /* output was set to 1 after malloc'ing in conky.c */
-  /* -> beeing able to test it here for catching SIGUSR1 */
+  /* -> being able to test it here for catching SIGUSR1 */
   if (output[0] == 1) {
     force_rescan = 1;
     output[0] = '\0';
@@ -131,7 +131,9 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
         tmp = strtok(nullptr, " ");
         if (tmp != nullptr) { start = tmp; }
       }
-      strncpy(mbox_mail_spool, start, DEFAULT_TEXT_BUFFER_SIZE);
+      if (start != nullptr) {
+        strncpy(mbox_mail_spool, start, DEFAULT_TEXT_BUFFER_SIZE);
+      }
       free(copy_args);
     }
     if (strlen(mbox_mail_spool) < 1) {
@@ -143,7 +145,8 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
 
     /* allowing $MAIL in the config */
     if (strcmp(mbox_mail_spool, "$MAIL") == 0) {
-      strcpy(mbox_mail_spool, current_mail_spool.get(*state).c_str());
+      strncpy(mbox_mail_spool, current_mail_spool.get(*state).c_str(),
+              DEFAULT_TEXT_BUFFER_SIZE);
     }
 
     if (stat(mbox_mail_spool, &statbuf) != 0) {
@@ -348,11 +351,11 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
     }
     strncat(output, buf, max_len - strlen(output));
 
-    tmp = curr;
-    curr = curr->previous;
-    free(tmp->from);
-    free(tmp->subject);
-    free(tmp);
+    tmp = curr->previous;
+    free(curr->from);
+    free(curr->subject);
+    free(curr);
+    curr = tmp;
 
     i--;
   }

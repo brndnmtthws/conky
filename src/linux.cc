@@ -181,7 +181,7 @@ int update_meminfo(void) {
   char buf[256];
 
   /* With multi-threading, calculations that require
-   * multple steps to reach a final result can cause havok
+   * multiple steps to reach a final result can cause havok
    * if the intermediary calculations are directly assigned to the
    * information struct (they may be read by other functions in the meantime).
    * These variables keep the calculations local to the function and finish off
@@ -247,10 +247,26 @@ int update_meminfo(void) {
     */
     curmem -= curbufmem;
     cureasyfree += curbufmem;
-#else
-    curmem = info.memmax - memavail;
+#else  /* LINUX_VERSION_CODE <= KERNEL_VERSION(3, 14, 0) */
+    /* The memory available field is describe in /proc man page as :
+     * "An estimate of how much memory is available for starting new
+     * applications, without swapping." We can see in page_alloc.c in the linux
+     * kernel that : "Not all the page cache can be freed, otherwise the system
+     * will start swapping. Assume at least half of the page cache, or the low
+     * watermark worth of cache, needs to stay." There is a difference between
+     * the system starts swapping and OOM happens even if there is no swap on
+     * the system. People think they will find the same amount of used RAM with
+     * the free program. From man free, we can see : used   Used memory
+     * (calculated as total - free - buffers - cache) free   Unused memory
+     * (MemFree and SwapFree in /proc/meminfo) buffers Memory used by kernel
+     * buffers (Buffers in /proc/meminfo) cache  Memory used by the page cache
+     * and slabs (Cached and SReclaimable in /proc/meminfo) So, curmem should be
+     * calculate as follow to find the same amount of memory in conky and free.
+     */
+    curmem = info.memmax -
+             (info.memfree + info.buffers + info.cached + sreclaimable);
     cureasyfree += curbufmem;
-#endif
+#endif /* LINUX_VERSION_CODE <= KERNEL_VERSION(3, 14, 0) */
   }
 
   /* Now that we know that every calculation is finished we can wrap up
@@ -580,9 +596,9 @@ void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
                          nullptr, NULL);
       ns2->addr = ((struct ifreq *)conf.ifc_buf)[k].ifr_ifru.ifru_addr;
       char temp_addr[18];
-      sprintf(temp_addr, "%u.%u.%u.%u, ", ns2->addr.sa_data[2] & 255,
-              ns2->addr.sa_data[3] & 255, ns2->addr.sa_data[4] & 255,
-              ns2->addr.sa_data[5] & 255);
+      snprintf(temp_addr, sizeof(temp_addr), "%u.%u.%u.%u, ",
+               ns2->addr.sa_data[2] & 255, ns2->addr.sa_data[3] & 255,
+               ns2->addr.sa_data[4] & 255, ns2->addr.sa_data[5] & 255);
       if (nullptr == strstr(ns2->addrs, temp_addr))
         strncpy(ns2->addrs + strlen(ns2->addrs), temp_addr, 17);
     }
@@ -1706,7 +1722,7 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
      POWER_SUPPLY_TYPE=Mains
      POWER_SUPPLY_ONLINE=1
 
-   Update: it seems the folder name is hardware-dependent. We add an aditional
+   Update: it seems the folder name is hardware-dependent. We add an additional
    adapter argument, specifying the folder name.
 
    Update: on some systems it's /sys/class/power_supply/ADP1 instead of
@@ -2801,7 +2817,7 @@ static void calc_io_each(void) {
 
   for (p = first_process; p; p = p->next) sum += p->read_bytes + p->write_bytes;
 
-  if (sum == 0) sum = 1; /* to avoid having NANs if no I/O occured */
+  if (sum == 0) sum = 1; /* to avoid having NANs if no I/O occurred */
   for (p = first_process; p; p = p->next)
     p->io_perc = 100.0 * (p->read_bytes + p->write_bytes) / (float)sum;
 }
@@ -2922,7 +2938,7 @@ static void process_parse_stat(struct process *process) {
               state, &process->user_time, &process->kernel_time, &nice_val,
               &process->vsize, &process->rss);
   if (rc < 6) {
-    NORM_ERR("scaning data for %s failed, got only %d fields", procname, rc);
+    NORM_ERR("scanning data for %s failed, got only %d fields", procname, rc);
     return;
   }
 

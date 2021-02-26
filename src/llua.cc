@@ -533,7 +533,7 @@ void llua_setup_info(struct information *i, double u_interval) {
   lua_newtable(lua_L);
 
   llua_set_number("update_interval", u_interval);
-  (void)i;
+  llua_set_number("cpu_count", i->cpu_count);
 
   lua_setglobal(lua_L, "conky_info");
 }
