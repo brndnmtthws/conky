@@ -46,4 +46,4 @@ jobs:
           # Use Docker `latest` tag convention
           [ "$VERSION" == "main" ] && VERSION=latest
 
-          docker buildx build --push --platform linux/arm/v7,linux/arm64/v8,linux/amd64 -t $DOCKERHUB_IMAGE_ID:$VERSION .
+          docker buildx build --push --platform linux/arm/v7,linux/arm64/v8,linux/amd64 -t $DOCKERHUB_IMAGE_ID:$VERSION --cache-from=type=registry,ref=brndnmtthws/conky:buildcache --cache-to=type=registry,ref=brndnmtthws/conky:buildcache .
