@@ -42,14 +42,11 @@
    Author: Carl Worth <cworth@cworth.org>
 */
 
-$#pragma clang diagnostic push
-$#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 $#include <glib.h>
 $#include <librsvg/rsvg.h>
 $#include "librsvg-helper.h"
 
 typedef struct _RsvgHandle RsvgHandle;
-typedef struct RsvgHandlePrivate RsvgHandlePrivate;
 typedef struct _RsvgHandleClass RsvgHandleClass;
 
 /**
@@ -70,15 +67,22 @@ typedef struct _RsvgDimensionData {
 } RsvgDimensionData;
 
 /**
- * RsvgPositionData:
- * Position of an SVG fragment.
+ * RsvgRectangle:
+ * @x: X coordinate of the left side of the rectangle
+ * @y: Y coordinate of the the top side of the rectangle
+ * @width: width of the rectangle
+ * @height: height of the rectangle
+ *
+ * A data structure for holding a rectangle.
+ *
+ * Since: 2.46
  */
-typedef struct _RsvgPositionData {
-    int x;
-    int y;
-    static tolua_outside RsvgPositionData * rsvgPositionDataCreate @ create();
-    tolua_outside void rsvgPositionDataGet @ get(int * x, int * y);
-} RsvgPositionData;
+typedef struct _RsvgRectangle {
+    double x;
+    double y;
+    double width;
+    double height;
+} RsvgRectangle;
 
 const char  *rsvg_handle_get_base_uri (RsvgHandle * handle);
 void         rsvg_handle_set_base_uri (RsvgHandle * handle, const char *base_uri);

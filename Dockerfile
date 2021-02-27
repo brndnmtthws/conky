@@ -1,10 +1,10 @@
-FROM ubuntu:bionic AS builder
+FROM ubuntu:focal AS builder
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
   apt-get install -qy --no-install-recommends \
   cmake \
   git \
-  g++ \
+  build-essential \
   audacious-dev \
   libaudclient-dev \
   libcairo2-dev \
