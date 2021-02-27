@@ -95,7 +95,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on contributing to
 ## Supporting this project
 
 Conky exists only through the hard work of a collection of volunteers. Please
-considering sponsoring the project's developers.
+consider sponsoring the project's developers if you get value out of Conky.
 
 ## Stargazers over time
 
