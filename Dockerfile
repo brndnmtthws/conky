@@ -1,11 +1,12 @@
 FROM ubuntu:focal AS builder
+
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
   apt-get install -qy --no-install-recommends \
-  cmake \
-  git \
-  build-essential \
   audacious-dev \
+  ca-certificates \
+  clang \
+  git \
   libaudclient-dev \
   libcairo2-dev \
   libcurl4-openssl-dev \
@@ -16,8 +17,10 @@ RUN apt-get update \
   liblua5.3-dev \
   libmicrohttpd-dev \
   libmysqlclient-dev \
+  libncurses-dev \
   libpulse-dev \
   librsvg2-dev \
+  libssl-dev \
   libsystemd-dev \
   libxdamage-dev \
   libxext-dev \
@@ -26,14 +29,33 @@ RUN apt-get update \
   libxml2-dev \
   libxmmsclient-dev \
   libxnvctrl-dev \
-  ncurses-dev 
+  make \
+  patch \
+  wget \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
+# Compile CMake, we need the latest because the bug here (for armv7 builds):
+# https://gitlab.kitware.com/cmake/cmake/-/issues/20568
+WORKDIR /cmake
+RUN wget -q https://github.com/Kitware/CMake/releases/download/v3.19.6/cmake-3.19.6.tar.gz \
+  && tar xf cmake-3.19.6.tar.gz \
+  && cd cmake-3.19.6 \
+  && ./bootstrap \
+  && make -j5 \
+  && make -j5 install \
+  && cd \
+  && rm -rf /cmake
 
 COPY . /conky
 WORKDIR /conky/build
+
 ARG X11=yes
 
 RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   cmake \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++ \
   -DCMAKE_INSTALL_PREFIX=/opt/conky \
   -DBUILD_AUDACIOUS=ON \
   -DBUILD_HTTP=ON \
@@ -54,6 +76,8 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   ../ \
   ; else \
   cmake \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++ \
   -DCMAKE_INSTALL_PREFIX=/opt/conky \
   -DBUILD_AUDACIOUS=ON \
   -DBUILD_HTTP=ON \
@@ -94,6 +118,7 @@ RUN apt-get update \
   libncurses6 \
   libpulse0 \
   librsvg2-2 \
+  libsm6 \
   libsystemd0 \
   libxcb-xfixes0 \
   libxdamage1 \
