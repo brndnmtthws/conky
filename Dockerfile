@@ -6,6 +6,8 @@ RUN apt-get update \
   audacious-dev \
   ca-certificates \
   clang \
+  curl \
+  gfortran \
   git \
   libaudclient-dev \
   libcairo2-dev \
@@ -31,14 +33,13 @@ RUN apt-get update \
   libxnvctrl-dev \
   make \
   patch \
-  wget \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
 # Compile CMake, we need the latest because the bug here (for armv7 builds):
 # https://gitlab.kitware.com/cmake/cmake/-/issues/20568
 WORKDIR /cmake
-RUN wget -q https://github.com/Kitware/CMake/releases/download/v3.19.6/cmake-3.19.6.tar.gz \
+RUN curl -Lq https://github.com/Kitware/CMake/releases/download/v3.19.6/cmake-3.19.6.tar.gz -o cmake-3.19.6.tar.gz \
   && tar xf cmake-3.19.6.tar.gz \
   && cd cmake-3.19.6 \
   && ./bootstrap \
