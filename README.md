@@ -24,6 +24,7 @@ Conky can display more than 300 built-in objects, including support for:
 - Built-in [**Imlib2**][imlib2] and [**Cairo**][cairo] bindings for arbitrary drawing
   with Lua ([more](https://github.com/brndnmtthws/conky/wiki/Lua)).
 - Runs on Linux, FreeBSD, OpenBSD, DragonFlyBSD, NetBSD, Solaris, Haiku, and macOS!
+- [Docker image](https://hub.docker.com/r/brndnmtthws/conky/) available for amd64, armv7, and aarch64 (aka armv8)
 
 ... and much much more.
 
@@ -90,3 +91,12 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on contributing to
 [luawiki]: https://en.wikipedia.org/wiki/Lua_%28programming_language%29
 [imlib2]: https://docs.enlightenment.org/api/imlib2/html/
 [cairo]: https://www.cairographics.org/
+
+## Supporting this project
+
+Conky exists only through the hard work of a collection of volunteers. Please
+considering sponsoring the project's developers.
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/brndnmtthws/conky.svg)](https://starchart.cc/brndnmtthws/conky)
