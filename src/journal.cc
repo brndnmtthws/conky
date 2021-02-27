@@ -40,10 +40,6 @@
 #include "text_object.h"
 
 #define MAX_JOURNAL_LINES 200
-#ifndef SD_JOURNAL_SYSTEM
-// SD_JOURNAL_SYSTEM added and SD_JOURNAL_SYSTEM_ONLY deprecated in systemd-205
-#define SD_JOURNAL_SYSTEM SD_JOURNAL_SYSTEM_ONLY
-#endif /* SD_JOURNAL_SYSTEM */
 
 class journal {
  public:
