@@ -65,11 +65,6 @@ builder fedora-33 base:
   variables:
     DOCKER_BASE_IMAGE: fedora:33
 
-builder centos7 base:
-  <<: *docker_base_builder
-  variables:
-    DOCKER_BASE_IMAGE: centos:7
-
 .docker_builder: &docker_builder
   <<: *docker_base_builder
   stage: dependencies
@@ -99,9 +94,6 @@ builder fedora-29 clang-7: *docker_builder
 builder fedora-31 clang-8: *docker_builder
 builder fedora-32 clang-10: *docker_builder
 builder fedora-33 clang-11: *docker_builder
-builder centos7 gcc-7: *docker_builder
-builder centos7 gcc-8: *docker_builder
-builder centos7 clang-5: *docker_builder
 
 .build_stages: &build_stages
   retry:
@@ -260,53 +252,6 @@ fedora-33 clang-11:
     CC: clang
     CXX: clang++
     BUILD_AUDACIOUS: "OFF"
-
-centos7 gcc-7:
-  <<: *build_stages
-  variables:
-    <<: *build_variables
-    DISTRO: centos7
-    COMPILER: gcc-7
-    CC: gcc
-    CXX: g++
-    CMAKE: cmake3
-    BUILD_AUDACIOUS: "OFF"
-    BUILD_XMMS2: "OFF"
-    BUILD_NVIDIA: "OFF"
-    BUILD_JOURNAL: "OFF"
-  before_script:
-    - source /opt/rh/devtoolset-7/enable
-
-centos7 gcc-8:
-  <<: *build_stages
-  variables:
-    <<: *build_variables
-    DISTRO: centos7
-    COMPILER: gcc-8
-    CC: gcc
-    CXX: g++
-    CMAKE: cmake3
-    BUILD_AUDACIOUS: "OFF"
-    BUILD_XMMS2: "OFF"
-    BUILD_NVIDIA: "OFF"
-    BUILD_JOURNAL: "OFF"
-  before_script:
-    - source /opt/rh/devtoolset-8/enable
-
-centos7 clang-5:
-  <<: *build_stages
-  variables:
-    <<: *build_variables
-    DISTRO: centos7
-    COMPILER: clang-5
-    CC: clang
-    CXX: clang++
-    BUILD_AUDACIOUS: "OFF"
-    BUILD_XMMS2: "OFF"
-    BUILD_NVIDIA: "OFF"
-    BUILD_JOURNAL: "OFF"
-  before_script:
-    - source /opt/rh/llvm-toolset-7/enable
 
 # .freebsd_deps: &freebsd_deps
 #   retry:
@@ -572,39 +517,6 @@ test fedora-33 clang-11:
     COMPILER: clang-11
     CC: clang
     CXX: clang++
-
-test centos7 clang-5:
-  <<: *test_stages
-  <<: *test_run
-  variables:
-    DISTRO: centos7
-    COMPILER: clang-5
-    CC: clang
-    CXX: clang++
-  before_script:
-    - source /opt/rh/llvm-toolset-7/enable
-
-test centos7 gcc-7:
-  <<: *test_stages
-  <<: *test_run
-  variables:
-    DISTRO: centos7
-    COMPILER: gcc-7
-    CC: gcc
-    CXX: g++
-  before_script:
-    - source /opt/rh/devtoolset-7/enable
-
-test centos7 gcc-8:
-  <<: *test_stages
-  <<: *test_run
-  variables:
-    DISTRO: centos7
-    COMPILER: gcc-8
-    CC: gcc
-    CXX: g++
-  before_script:
-    - source /opt/rh/devtoolset-8/enable
 
 # test freebsd12 clang-7:
 #   <<: *freebsd_deps
