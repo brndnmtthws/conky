@@ -90,7 +90,7 @@ RUN apt-get update \
   libiw30 \
   liblua5.3-0 \
   libmicrohttpd12 \
-  libmysqlclient20 \
+  libmysqlclient21 \
   libncurses6 \
   libpulse0 \
   librsvg2-2 \
