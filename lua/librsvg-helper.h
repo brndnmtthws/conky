@@ -55,8 +55,11 @@ void rsvgPositionDataGet(RsvgPositionData *pd, int *x, int *y) {
 }
 
 RsvgHandle *rsvg_create_handle_from_file(const char *filename) {
+  GFile *gfile = g_file_new_for_path(filename);
+
   GError *error = NULL;
-  RsvgHandle *handle = rsvg_handle_new_from_file(filename, &error);
+  RsvgHandle *handle = rsvg_handle_new_from_gfile_sync(
+      gfile, RSVG_HANDLE_FLAGS_NONE, NULL, &error);
 
   if (error) {
     g_object_unref(error);
@@ -64,22 +67,15 @@ RsvgHandle *rsvg_create_handle_from_file(const char *filename) {
     handle = NULL;
   }
 
+  g_object_unref(gfile);
+
   return handle;
 }
 
 int rsvg_destroy_handle(RsvgHandle *handle) {
-  int status = 0;
+  if (handle) { g_object_unref(handle); }
 
-  if (handle) {
-    GError *error = NULL;
-    status = rsvg_handle_close(handle, &error);
-
-    if (status) g_object_unref(handle);
-
-    if (error) g_object_unref(error);
-  }
-
-  return status;
+  return 0;
 }
 
 #endif /* _LIBRSVG_HELPER_H_ */
