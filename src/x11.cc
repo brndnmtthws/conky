@@ -34,7 +34,6 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
-#pragma GCC diagnostic ignored "-Wdeprecated-register"
 #pragma GCC diagnostic ignored "-Wregister"
 #include <X11/XKBlib.h>
 #pragma GCC diagnostic pop
