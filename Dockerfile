@@ -76,7 +76,7 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   && make -j5 all \
   && make -j5 install
 
-FROM ubuntu:bionic
+FROM ubuntu:focal
 
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
@@ -91,7 +91,7 @@ RUN apt-get update \
   liblua5.3-0 \
   libmicrohttpd12 \
   libmysqlclient20 \
-  libncurses5 \
+  libncurses6 \
   libpulse0 \
   librsvg2-2 \
   libsystemd0 \
