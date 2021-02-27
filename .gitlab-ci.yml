@@ -45,11 +45,6 @@ builder ubuntu base:
   variables:
     DOCKER_BASE_IMAGE: ubuntu:bionic
 
-builder fedora-29 base:
-  <<: *docker_base_builder
-  variables:
-    DOCKER_BASE_IMAGE: fedora:29
-
 builder fedora-31 base:
   <<: *docker_base_builder
   variables:
@@ -89,8 +84,6 @@ builder ubuntu gcc-7: *docker_builder
 builder ubuntu gcc-8: *docker_builder
 builder ubuntu gcc-9: *docker_builder
 builder ubuntu gcc-10: *docker_builder
-builder fedora-29 gcc-8: *docker_builder
-builder fedora-29 clang-7: *docker_builder
 builder fedora-31 clang-8: *docker_builder
 builder fedora-32 clang-10: *docker_builder
 builder fedora-33 clang-11: *docker_builder
@@ -202,26 +195,6 @@ ubuntu gcc-10:
     COMPILER: gcc-10
     CC: gcc-10
     CXX: g++-10
-
-fedora-29 gcc-8:
-  <<: *build_stages
-  variables:
-    <<: *build_variables
-    DISTRO: fedora-29
-    COMPILER: gcc-8
-    CC: gcc
-    CXX: g++
-    BUILD_AUDACIOUS: "OFF"
-
-fedora-29 clang-7:
-  <<: *build_stages
-  variables:
-    <<: *build_variables
-    DISTRO: fedora-29
-    COMPILER: clang-7
-    CC: clang
-    CXX: clang++
-    BUILD_AUDACIOUS: "OFF"
 
 fedora-31 clang-8:
   <<: *build_stages
@@ -472,24 +445,6 @@ test ubuntu gcc-10:
     COMPILER: gcc-10
     CC: gcc-10
     CXX: g++-10
-
-test fedora-29 gcc-8:
-  <<: *test_stages
-  <<: *test_run
-  variables:
-    DISTRO: fedora-29
-    COMPILER: gcc-8
-    CC: gcc
-    CXX: g++
-
-test fedora-29 clang-7:
-  <<: *test_stages
-  <<: *test_run
-  variables:
-    DISTRO: fedora-29
-    COMPILER: clang-7
-    CC: clang
-    CXX: clang++
 
 test fedora-31 clang-8:
   <<: *test_stages
