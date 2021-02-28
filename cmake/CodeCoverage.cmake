@@ -74,6 +74,12 @@ find_program(LLVM_COV_PATH
                    llvm-cov70
                    llvm-cov-7
                    llvm-cov
+                   llvm-cov-9
+                   llvm-cov90
+                   llvm-cov-10
+                   llvm-cov10
+                   llvm-cov-11
+                   llvm-cov11
              PATHS ENV PATH)
 find_program(LLVM_PROFDATA_PATH
              NAMES llvm-profdata80
@@ -81,6 +87,12 @@ find_program(LLVM_PROFDATA_PATH
                    llvm-profdata70
                    llvm-profdata-7
                    llvm-profdata
+                   llvm-profdata-9
+                   llvm-profdata90
+                   llvm-profdata-10
+                   llvm-profdata10
+                   llvm-profdata-11
+                   llvm-profdata11
              PATHS ENV PATH)
 find_program(GENHTML_PATH NAMES genhtml genhtml.perl genhtml.bat)
 find_program(GCOVR_PATH gcovr PATHS ${CMAKE_SOURCE_DIR}/scripts/test)
