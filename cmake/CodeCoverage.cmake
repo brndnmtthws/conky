@@ -70,9 +70,9 @@ find_program(LCOV_PATH
              PATHS ENV PATH)
 find_program(LLVM_COV_PATH
              NAMES
-                   llvm-cov11
+                   llvm-cov110
                    llvm-cov-11
-                   llvm-cov10
+                   llvm-cov100
                    llvm-cov-10
                    llvm-cov90
                    llvm-cov-9
@@ -84,9 +84,9 @@ find_program(LLVM_COV_PATH
              PATHS ENV PATH)
 find_program(LLVM_PROFDATA_PATH
              NAMES
-                   llvm-profdata11
+                   llvm-profdata110
                    llvm-profdata-11
-                   llvm-profdata10
+                   llvm-profdata100
                    llvm-profdata-10
                    llvm-profdata90
                    llvm-profdata-9
