@@ -10,7 +10,6 @@ RUN dnf update -y -q \
   freetype-devel \
   git \
   imlib2-devel \
-  lcov \
   libcurl-devel \
   libical-devel \
   libircclient-devel \
