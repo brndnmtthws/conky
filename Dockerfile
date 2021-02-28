@@ -9,6 +9,7 @@ RUN apt-get update \
   curl \
   gfortran \
   git \
+  libarchive-dev \
   libaudclient-dev \
   libcairo2-dev \
   libcurl4-openssl-dev \
@@ -16,14 +17,17 @@ RUN apt-get update \
   libimlib2-dev \
   libircclient-dev \
   libiw-dev \
+  libjsoncpp-dev \
   liblua5.3-dev \
   libmicrohttpd-dev \
   libmysqlclient-dev \
   libncurses-dev \
   libpulse-dev \
+  librhash-dev \
   librsvg2-dev \
   libssl-dev \
   libsystemd-dev \
+  libuv1-dev \
   libxdamage-dev \
   libxext-dev \
   libxft-dev \
@@ -42,7 +46,7 @@ WORKDIR /cmake
 RUN curl -Lq https://github.com/Kitware/CMake/releases/download/v3.19.6/cmake-3.19.6.tar.gz -o cmake-3.19.6.tar.gz \
   && tar xf cmake-3.19.6.tar.gz \
   && cd cmake-3.19.6 \
-  && ./bootstrap \
+  && CC=clang CXX=clang++ CFLAGS="-D_FILE_OFFSET_BITS=64" CXXFLAGS="-D_FILE_OFFSET_BITS=64" ./bootstrap --system-libs --parallel=5 \
   && make -j5 \
   && make -j5 install \
   && cd \
