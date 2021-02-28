@@ -253,6 +253,7 @@ fedora-33 clang-11:
     - if [ "$COMPILER" == "clang-11" ] ; then make -j4 test-conky-coverage-html ; fi
     - if [ "$COMPILER" == "clang-11" ] ; then lcov-summary test-conky-coverage-html.info.cleaned ; fi
     - make -j4
+    - make -j4 install
     - conky -v
     - find . -iname '*.gcda' -delete
     - |
