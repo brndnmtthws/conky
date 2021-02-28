@@ -23,7 +23,7 @@ add_executable(test-conky test-common.cc ${test_srcs})
 target_link_libraries(test-conky conky_core)
 catch_discover_tests(test-conky)
 
-if(USING_CLANG_7)
+if(USING_CLANG)
   set(COVERAGE_LCOV_EXCLUDES
       "*/include/c++/v1/*"
       "/usr/include/*"

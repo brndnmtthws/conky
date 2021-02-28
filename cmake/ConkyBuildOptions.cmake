@@ -75,16 +75,12 @@ if(MAINTAINER_MODE)
       CACHE STRING "Flags used by the compiler during debug builds."
       FORCE)
   endif()
-endif(MAINTAINER_MODE)
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(USING_CLANG true)
-  if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 7.0.0
-     AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0.0)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-    set(USING_CLANG_7 true)
-  endif()
-endif()
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+      set(USING_CLANG true)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    endif()
+endif(MAINTAINER_MODE)
 
 option(CHECK_CODE_QUALITY "Check code formatting/quality with clang" false)
 
