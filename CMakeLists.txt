@@ -53,8 +53,8 @@ add_subdirectory(3rdparty/toluapp)
 set(conky_libs ${conky_libs} toluapp_lib_static)
 
 if(BUILD_TESTS)
-  if(USING_CLANG_7)
-    message(STATUS "Detected clang-7, enabling test coverage reports")
+  if(USING_CLANG)
+    message(STATUS "Detected clang, enabling test coverage reports")
     # Enable coverage checks
     include(CodeCoverage)
     append_coverage_compiler_flags()
