@@ -10,7 +10,6 @@ RUN wget -q https://apt.llvm.org/llvm-snapshot.gpg.key \
   clang-format-11 \
   clang-tidy-11 \
   clang-tools-11 \
-  lcov \
   gcovr \
   libc++-11-dev \
   libc++abi-11-dev \

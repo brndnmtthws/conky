@@ -10,6 +10,7 @@ RUN apt-get update \
   git \
   gpg \
   gpg-agent \
+  lcov \
   less \
   libaudclient-dev \
   libcairo2-dev \

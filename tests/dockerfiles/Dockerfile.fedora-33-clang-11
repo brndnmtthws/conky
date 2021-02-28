@@ -4,7 +4,6 @@ FROM ${IMAGE}/builder/fedora-33-base:latest
 RUN dnf -y -q install \
   clang \
   gcovr \
-  lcov \
   libcxx-devel \
   libcxxabi-devel \
   llvm \
