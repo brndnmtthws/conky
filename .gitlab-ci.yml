@@ -261,6 +261,7 @@ fedora-33 clang-11:
         -DRELEASE=ON \
         ..
     - make -j4
+    - make -j4 install
     - conky -v
   coverage: '/Total Coverage:\s+(\d+\.\d+)%/'
   artifacts:
