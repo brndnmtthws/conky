@@ -226,105 +226,6 @@ fedora-33 clang-11:
     CXX: clang++
     BUILD_AUDACIOUS: "OFF"
 
-# .freebsd_deps: &freebsd_deps
-#   retry:
-#     max: 2
-#     when:
-#       - runner_system_failure
-#       - stuck_or_timeout_failure
-#       - unknown_failure
-#       - api_failure
-#   tags:
-#     - freebsd12
-#   before_script:
-#     - echo $GCS_STORAGE_KEY > $SCCACHE_GCS_KEY_PATH
-#     - 'echo "COMPILER_PACKAGE: $COMPILER_PACKAGE"'
-#     # Try up to 7 times until installation succeeds. It may be locked.
-#     - >
-#       (
-#       flock -x -w 600 9 || exit 1;
-#       sudo pkg update;
-#       sudo pkg install -y -q
-#       cairo
-#       cmake
-#       docbook-xsl
-#       docbook2X
-#       gettext-runtime
-#       imlib2
-#       lcov
-#       libical
-#       libiconv
-#       libinotify
-#       libircclient
-#       libmicrohttpd
-#       librsvg2
-#       libX11
-#       libXdamage
-#       libXext
-#       libXfixes
-#       libXft
-#       libXinerama
-#       libxslt
-#       lua53
-#       mysql80-client
-#       pkgconf
-#       xmms2
-#       $COMPILER_PACKAGE
-#       ) 9>/var/lock/pkg
-
-# .freebsd_build_script: &freebsd_build_script
-#   script:
-#     - mkdir build
-#     - cd build
-#     - >
-#       cmake
-#       -DCMAKE_REQUIRED_INCLUDES="/usr/include;/usr/local/include"
-#       -DCMAKE_EXE_LINKER_FLAGS=$LINKER_FLAGS
-#       -DMAINTAINER_MODE=ON
-#       -DBUILD_MYSQL=ON
-#       -DBUILD_LUA_IMLIB2=ON
-#       -DBUILD_LUA_RSVG=ON
-#       -DBUILD_LUA_CAIRO=ON
-#       -DBUILD_XMMS2=ON
-#       -DBUILD_ICAL=ON
-#       -DBUILD_IRC=ON
-#       -DBUILD_HTTP=ON
-#       -DBUILD_ICONV=ON
-#       -DBUILD_RSS=ON
-#       -DBUILD_IRC=ON
-#       ..
-#     - make -j4
-
-# freebsd12 gcc-8:
-#   <<: *freebsd_deps
-#   stage: build
-#   variables:
-#     DISTRO: freebsd12
-#     CC: gcc
-#     CXX: g++
-#     COMPILER_PACKAGE: gcc
-#   <<: *freebsd_build_script
-
-# freebsd12 clang-7:
-#   <<: *freebsd_deps
-#   stage: build
-#   variables:
-#     DISTRO: freebsd12
-#     CC: clang70
-#     CXX: clang++70
-#     COMPILER_PACKAGE: llvm70
-#   <<: *freebsd_build_script
-
-# freebsd12 clang-8:
-#   <<: *freebsd_deps
-#   stage: build
-#   variables:
-#     DISTRO: freebsd12
-#     CC: clang80
-#     CXX: clang++80
-#     COMPILER_PACKAGE: llvm80
-#   <<: *freebsd_build_script
-
 .test_stages: &test_stages
   retry:
     max: 2
@@ -342,40 +243,24 @@ fedora-33 clang-11:
     - mkdir build
     - cd build
     - |
-      if [[ "$DISTRO" == "freebsd12" ]] ; then
-        cmake \
+      cmake \
         -DBUILD_TESTS=ON \
         -DMAINTAINER_MODE=ON \
         ..
-      else
-        cmake \
-        -DBUILD_TESTS=ON \
-        -DMAINTAINER_MODE=ON \
-        ..
-      fi
     - make -j4
     - make -j4 test
     - if [ "$COMPILER" == "clang-11" ] ; then make -j4 test-conky-coverage-txt ; fi
     - if [ "$COMPILER" == "clang-11" ] ; then make -j4 test-conky-coverage-html ; fi
     - if [ "$COMPILER" == "clang-11" ] ; then lcov-summary test-conky-coverage-html.info.cleaned ; fi
     - make -j4
-    - if [[ "$DISTRO" == "freebsd12" ]] ; then sudo make install ; else make install ; fi
     - conky -v
     - find . -iname '*.gcda' -delete
     - |
-      if [[ "$DISTRO" == "freebsd12" ]] ; then
-        cmake \
+      cmake \
         -DCMAKE_BUILD_TYPE=RelWithDebInfo \
         -DRELEASE=ON \
         ..
-      else
-        cmake \
-        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-        -DRELEASE=ON \
-        ..
-      fi
     - make -j4
-    - if [[ "$DISTRO" == "freebsd12" ]] ; then sudo make install ; else make install ; fi
     - conky -v
   coverage: '/Total Coverage:\s+(\d+\.\d+)%/'
   artifacts:
@@ -472,36 +357,6 @@ test fedora-33 clang-11:
     COMPILER: clang-11
     CC: clang
     CXX: clang++
-
-# test freebsd12 clang-7:
-#   <<: *freebsd_deps
-#   <<: *test_run
-#   variables:
-#     DISTRO: freebsd12
-#     COMPILER: clang-7
-#     COMPILER_PACKAGE: llvm70
-#     CC: clang70
-#     CXX: clang++70
-
-# test freebsd12 clang-8:
-#   <<: *freebsd_deps
-#   <<: *test_run
-#   variables:
-#     DISTRO: freebsd12
-#     COMPILER: clang-8
-#     COMPILER_PACKAGE: llvm80
-#     CC: clang80
-#     CXX: clang++80
-
-# test freebsd12 gcc-8:
-#   <<: *freebsd_deps
-#   <<: *test_run
-#   variables:
-#     DISTRO: freebsd12
-#     COMPILER: gcc-8
-#     COMPILER_PACKAGE: gcc
-#     CC: gcc
-#     CXX: g++
 
 .check_stages: &check_stages
   retry:
