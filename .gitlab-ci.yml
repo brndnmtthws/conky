@@ -100,7 +100,7 @@ builder fedora-33 clang-11: *docker_builder
   stage: build
   script:
     - "echo \"Distro: ${DISTRO}\nCompiler: ${COMPILER}\nCC: $CC\nCXX: $CXX\""
-    - mkdir build
+    - mkdir -p build
     - cd build
     - >
       cmake
@@ -240,7 +240,7 @@ fedora-33 clang-11:
 .test_run: &test_run
   script:
     - "echo \"Distro: ${DISTRO}\nCompiler: ${COMPILER}\nCC: $CC\nCXX: $CXX\""
-    - mkdir build
+    - mkdir -p build
     - cd build
     - |
       cmake \
@@ -379,7 +379,7 @@ check clang-tidy:
     CC: clang-11
     CXX: clang++-11
   script:
-    - mkdir build
+    - mkdir -p build
     - cd build
     - >
       cmake
@@ -397,7 +397,7 @@ check clang-format:
     CC: clang-11
     CXX: clang++-11
   script:
-    - mkdir build
+    - mkdir -p build
     - cd build
     - >
       cmake
