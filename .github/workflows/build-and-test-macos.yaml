@@ -1,0 +1,38 @@
+name: Build and test on macOS
+on: [push]
+jobs:
+  build:
+    strategy:
+      matrix:
+        os:
+          - macos-10.15
+          # - macos-11.0
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Install dependencies
+        run: |
+          brew install \
+            docbook2x \
+            freetype \
+            gettext \
+            imlib2 \
+            lcov \
+            librsvg \
+            libxft \
+            libxinerama \
+            lua
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Configure with CMake
+        run: |
+          mkdir build
+          cd build
+          cmake ..                               \
+            -DMAINTAINER_MODE=ON                 \
+            -DBUILD_TESTS=ON
+      - name: Compile
+        working-directory: build
+        run: make -j5
+      - name: Test
+        working-directory: build
+        run: make test

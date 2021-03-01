@@ -1,0 +1,104 @@
+name: Build and test on Linux
+on: [push]
+jobs:
+  build:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-18.04
+          - ubuntu-20.04
+        x11: [ON, OFF]
+        compiler:
+          - clang
+          - gcc
+        compiler_version:
+          - 7
+          - 8
+          - 9
+          - 10
+        exclude:
+          - compiler: clang
+            compiler_version: 7
+          - os: ubuntu-18.04
+            compiler: clang
+            compiler_version: 10
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -yqq --no-install-recommends \
+            audacious-dev \
+            cmake \
+            docbook2x \
+            gawk \
+            lcov \
+            libaudclient-dev \
+            libc++-${{ matrix.compiler_version }}-dev \
+            libc++abi-${{ matrix.compiler_version }}-dev \
+            libcairo2-dev \
+            libcurl4-gnutls-dev \
+            libcurl4-gnutls-dev \
+            libglib2.0-dev \
+            libical-dev \
+            libimlib2-dev \
+            libircclient-dev \
+            liblua5.3-dev \
+            libmicrohttpd-dev \
+            libmysqlclient-dev \
+            libpulse-dev \
+            librsvg2-dev \
+            libsystemd-dev \
+            libx11-dev \
+            libxdamage-dev \
+            libxext-dev \
+            libxft-dev \
+            libxinerama-dev \
+            libxml2-dev \
+            libxmmsclient-dev \
+            libxnvctrl-dev \
+            ncurses-dev
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Configure with CMake
+        run: |
+          [[ "${{ matrix.compiler }}" == "clang"* ]] && CC=clang-${{ matrix.compiler_version }}
+          [[ "${{ matrix.compiler }}" == "clang"* ]] && CXX=clang++-${{ matrix.compiler_version }}
+
+          [[ "${{ matrix.compiler }}" == "gcc"* ]] && CC=gcc-${{ matrix.compiler_version }}
+          [[ "${{ matrix.compiler }}" == "gcc"* ]] && CXX=g++-${{ matrix.compiler_version }}
+
+
+          # Enable librsvg by default, disable for older versions of Ubuntu
+          # because we need librsvg>=2.46
+          RSVG_ENABLED=ON
+          [[ "${{ matrix.os }}" == "ubuntu-18.04"* ]] && RSVG_ENABLED=OFF
+
+          mkdir build
+          cd build
+          cmake ..                               \
+            -DCMAKE_C_COMPILER=$CC               \
+            -DCMAKE_CXX_COMPILER=$CXX            \
+            -DBUILD_X11=${{ matrix.x11 }}        \
+            -DMAINTAINER_MODE=ON                 \
+            -DBUILD_TESTS=ON                     \
+            -DBUILD_MYSQL=ON                     \
+            -DBUILD_LUA_IMLIB2=ON                \
+            -DBUILD_LUA_RSVG=${RSVG_ENABLED}     \
+            -DBUILD_LUA_CAIRO=ON                 \
+            -DBUILD_AUDACIOUS=ON                 \
+            -DBUILD_XMMS2=ON                     \
+            -DBUILD_ICAL=ON                      \
+            -DBUILD_IRC=ON                       \
+            -DBUILD_HTTP=ON                      \
+            -DBUILD_ICONV=ON                     \
+            -DBUILD_PULSEAUDIO=ON                \
+            -DBUILD_JOURNAL=ON                   \
+            -DBUILD_RSS=ON                       \
+            -DBUILD_IRC=ON                       \
+            -DBUILD_NVIDIA=ON
+      - name: Compile
+        working-directory: build
+        run: make -j5
+      - name: Test
+        working-directory: build
+        run: make test

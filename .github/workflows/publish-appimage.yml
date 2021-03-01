@@ -1,0 +1,50 @@
+name: Build AppImage
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -yqq --no-install-recommends \
+            audacious-dev \
+            cmake \
+            docbook2x \
+            gawk \
+            lcov \
+            libaudclient-dev \
+            libcairo2-dev \
+            libcurl4-gnutls-dev \
+            libcurl4-gnutls-dev \
+            libglib2.0-dev \
+            libical-dev \
+            libimlib2-dev \
+            libircclient-dev \
+            liblua5.3-dev \
+            libmicrohttpd-dev \
+            libmysqlclient-dev \
+            libpulse-dev \
+            librsvg2-dev \
+            libsystemd-dev \
+            libx11-dev \
+            libxdamage-dev \
+            libxext-dev \
+            libxft-dev \
+            libxinerama-dev \
+            libxml2-dev \
+            libxmmsclient-dev \
+            libxnvctrl-dev \
+            ncurses-dev
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Import GPG Deploy Key
+        run: |
+          echo "${{ secrets.GPG_DEPLOY_KEY }}" > appimage/secret.gpg
+          gpg --import appimage/secret.gpg
+      - name: Build AppImage
+        run: ./appimage/build.sh
+      - name: Archive AppImage
+        uses: actions/upload-artifact@v2
+        with:
+          name: conky-appimage
+          path: conky*.AppImage
