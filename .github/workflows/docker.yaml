@@ -16,6 +16,7 @@ on:
 env:
   IMAGE_NAME: conky
   DOCKERHUB_ACCOUNT: brndnmtthws
+  DOCKER_BUILDKIT: 1
 
 jobs:
   buildx:
@@ -46,4 +47,10 @@ jobs:
           # Use Docker `latest` tag convention
           [ "$VERSION" == "main" ] && VERSION=latest
 
-          docker buildx build --push --platform linux/arm/v7,linux/arm64/v8,linux/amd64 -t $DOCKERHUB_IMAGE_ID:$VERSION --cache-from=type=registry,ref=brndnmtthws/conky:buildcache --cache-to=type=registry,ref=brndnmtthws/conky:buildcache .
+          docker buildx build \
+            --push \
+            --platform linux/arm/v7,linux/arm64/v8,linux/amd64 \
+            --cache-from=type=registry,ref=$DOCKERHUB_ACCOUNT/$IMAGE_NAME:buildcache \
+            --cache-to=type=registry,ref=$DOCKERHUB_ACCOUNT/$IMAGE_NAME:buildcache \
+            --tag $DOCKERHUB_IMAGE_ID:$VERSION \
+            .
