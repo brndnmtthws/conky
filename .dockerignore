@@ -1,6 +1,11 @@
 Dockerfile
 .dockerignore
 
+# Ignore SCM/CI related stuff
+.github/
+.git/
+.gitlab-ci.yml
+
 .DS_Store
 *~
 .*.swp
