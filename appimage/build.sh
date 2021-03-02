@@ -30,7 +30,29 @@ pushd "$BUILD_DIR"
 
 # configure build files with cmake
 # we need to explicitly set the install prefix, as CMake's default is /usr/local for some reason...
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DRELEASE=ON -DCMAKE_INSTALL_PREFIX=/usr "$REPO_ROOT"
+cmake                                  \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo    \
+  -DRELEASE=ON                         \
+  -DBUILD_AUDACIOUS=ON                 \
+  -DBUILD_HTTP=ON                      \
+  -DBUILD_ICAL=ON                      \
+  -DBUILD_ICONV=ON                     \
+  -DBUILD_IRC=ON                       \
+  -DBUILD_IRC=ON                       \
+  -DBUILD_JOURNAL=ON                   \
+  -DBUILD_LUA_CAIRO=ON                 \
+  -DBUILD_LUA_IMLIB2=ON                \
+  -DBUILD_LUA_RSVG=ON                  \
+  -DBUILD_MYSQL=ON                     \
+  -DBUILD_NVIDIA=ON                    \
+  -DBUILD_PULSEAUDIO=ON                \
+  -DBUILD_RSS=ON                       \
+  -DBUILD_TESTS=ON                     \
+  -DBUILD_WLAN=ON                      \
+  -DBUILD_X11=ON                       \
+  -DBUILD_XMMS2=ON                     \
+  -DCMAKE_INSTALL_PREFIX=/usr          \
+  "$REPO_ROOT"
 
 # build project and install files into AppDir
 make -j4
@@ -42,10 +64,10 @@ wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/lin
 chmod +x linuxdeploy-x86_64.AppImage
 
 ./linuxdeploy-x86_64.AppImage \
-    --appdir AppDir \
-    -e AppDir/usr/bin/conky \
-    -i AppDir/usr/share/icons/hicolor/scalable/apps/conky-logomark-violet.svg \
-    -d AppDir/usr/share/applications/conky.desktop
+  --appdir AppDir \
+  -e AppDir/usr/bin/conky \
+  -i AppDir/usr/share/icons/hicolor/scalable/apps/conky-logomark-violet.svg \
+  -d AppDir/usr/share/applications/conky.desktop
 
 wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
 
