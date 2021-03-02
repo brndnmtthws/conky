@@ -24,11 +24,11 @@ jobs:
             libaudclient-dev \
             libcairo2-dev \
             libcurl4-gnutls-dev \
-            libcurl4-gnutls-dev \
             libglib2.0-dev \
             libical-dev \
             libimlib2-dev \
             libircclient-dev \
+            libiw-dev \
             liblua5.3-dev \
             libmicrohttpd-dev \
             libmysqlclient-dev \
