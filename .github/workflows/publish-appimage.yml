@@ -67,7 +67,7 @@ jobs:
         run: |
           echo ARTIFACT_PATHNAME=${{ env.ARTIFACT_PATHNAME }}
           echo ARTIFACT_NAME=${{ env.ARTIFACT_NAME }}
-      - name: Create Release
+      - name: Create Conky Release
         id: create_release
         uses: actions/create-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
@@ -75,10 +75,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          release_name: Conky ${{ github.ref }}
           draft: false
           prerelease: false
-      - name: Upload Release Asset
+      - name: Upload Conky Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         if: startsWith(github.ref, 'refs/tags/v')
