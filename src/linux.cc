@@ -778,7 +778,6 @@ void update_ipv6_net_stats() {
 }
 #endif /* BUILD_IPV6 */
 
-
 /**
  * Parses information from /proc/net/dev and stores them in ???
  *
