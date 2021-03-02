@@ -711,6 +711,7 @@ void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
   }
 }
 
+#ifdef BUILD_IPV6
 void update_ipv6_net_stats() {
   FILE *file;
   char v6addr[33];
@@ -775,6 +776,8 @@ void update_ipv6_net_stats() {
 
   fclose(file);
 }
+#endif /* BUILD_IPV6 */
+
 
 /**
  * Parses information from /proc/net/dev and stores them in ???
