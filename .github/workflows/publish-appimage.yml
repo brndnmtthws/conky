@@ -63,6 +63,10 @@ jobs:
           ARTIFACT_NAME=$(basename $ARTIFACT_PATHNAME)
           echo "ARTIFACT_PATHNAME=${ARTIFACT_PATHNAME}" >> $GITHUB_ENV
           echo "ARTIFACT_NAME=${ARTIFACT_NAME}" >> $GITHUB_ENV
+      - name: Print Name of Artifact
+        run: |
+          echo ARTIFACT_PATHNAME=${{ env.ARTIFACT_PATHNAME }}
+          echo ARTIFACT_NAME=${{ env.ARTIFACT_NAME }}
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
