@@ -48,6 +48,6 @@ jobs:
             --push \
             --platform linux/arm/v7,linux/arm64/v8,linux/amd64 \
             --cache-from=type=registry,ref=$DOCKERHUB_ACCOUNT/$IMAGE_NAME:buildcache \
-            --cache-to=type=registry,ref=$DOCKERHUB_ACCOUNT/$IMAGE_NAME:buildcache \
+            --cache-to=type=registry,ref=$DOCKERHUB_ACCOUNT/$IMAGE_NAME:buildcache,mode=max \
             --tag $DOCKERHUB_IMAGE_ID:$VERSION \
             .
