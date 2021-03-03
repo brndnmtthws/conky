@@ -130,6 +130,7 @@ endif(NOT
 if(OS_LINUX)
   check_include_files("linux/soundcard.h" HAVE_SOME_SOUNDCARD_H)
   check_include_files("linux/soundcard.h" HAVE_LINUX_SOUNDCARD_H)
+  check_include_files("linux/sockios.h" HAVE_LINUX_SOCKIOS_H)
 elseif(OS_OPENBSD)
   check_include_files("soundcard.h" HAVE_SOME_SOUNDCARD_H)
 else(OS_LINUX)

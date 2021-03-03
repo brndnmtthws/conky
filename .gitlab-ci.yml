@@ -43,7 +43,7 @@ variables:
 builder ubuntu base:
   <<: *docker_base_builder
   variables:
-    DOCKER_BASE_IMAGE: ubuntu:bionic
+    DOCKER_BASE_IMAGE: ubuntu:focal
 
 builder fedora-31 base:
   <<: *docker_base_builder
@@ -59,6 +59,16 @@ builder fedora-33 base:
   <<: *docker_base_builder
   variables:
     DOCKER_BASE_IMAGE: fedora:33
+
+builder archlinux base:
+  <<: *docker_base_builder
+  variables:
+    DOCKER_BASE_IMAGE: archlinux:base
+
+builder alpine base:
+  <<: *docker_base_builder
+  variables:
+    DOCKER_BASE_IMAGE: alpine:latest
 
 .docker_builder: &docker_builder
   <<: *docker_base_builder
@@ -87,6 +97,10 @@ builder ubuntu gcc-10: *docker_builder
 builder fedora-31 clang-8: *docker_builder
 builder fedora-32 clang-10: *docker_builder
 builder fedora-33 clang-11: *docker_builder
+builder archlinux clang: *docker_builder
+builder archlinux gcc: *docker_builder
+builder alpine gcc: *docker_builder
+# builder alpine clang: *docker_builder
 
 .build_stages: &build_stages
   retry:
@@ -104,34 +118,38 @@ builder fedora-33 clang-11: *docker_builder
     - cd build
     - >
       cmake
-      -DCMAKE_EXE_LINKER_FLAGS=$LINKER_FLAGS
-      -DMAINTAINER_MODE=ON
       -DBUILD_AUDACIOUS=$BUILD_AUDACIOUS
-      -DBUILD_MYSQL=ON
+      -DBUILD_HTTP=ON
+      -DBUILD_ICAL=$BUILD_ICAL
+      -DBUILD_ICONV=ON
+      -DBUILD_IRC=$BUILD_IRC
+      -DBUILD_JOURNAL=$BUILD_JOURNAL
+      -DBUILD_LUA_CAIRO=$BUILD_LUA_CAIRO
       -DBUILD_LUA_IMLIB2=ON
       -DBUILD_LUA_RSVG=$BUILD_LUA_RSVG
-      -DBUILD_LUA_CAIRO=$BUILD_LUA_CAIRO
-      -DBUILD_XMMS2=$BUILD_XMMS2
-      -DBUILD_ICAL=ON
-      -DBUILD_IRC=ON
-      -DBUILD_HTTP=ON
-      -DBUILD_ICONV=ON
-      -DBUILD_PULSEAUDIO=ON
-      -DBUILD_JOURNAL=$BUILD_JOURNAL
-      -DBUILD_RSS=ON
-      -DBUILD_IRC=ON
+      -DBUILD_MYSQL=$BUILD_MYSQL
       -DBUILD_NVIDIA=$BUILD_NVIDIA
+      -DBUILD_PULSEAUDIO=$BUILD_PULSEAUDIO
+      -DBUILD_RSS=$BUILD_RSS
+      -DBUILD_XMMS2=$BUILD_XMMS2
+      -DCMAKE_EXE_LINKER_FLAGS=$LINKER_FLAGS
+      -DMAINTAINER_MODE=ON
       ..
     - make -j4
 
 .build_variables: &build_variables
-  LINKER_FLAGS: ""
   BUILD_AUDACIOUS: "ON"
-  BUILD_XMMS2: "ON"
-  BUILD_NVIDIA: "ON"
+  BUILD_ICAL: "ON"
+  BUILD_IRC: "ON"
   BUILD_JOURNAL: "ON"
   BUILD_LUA_CAIRO: "ON"
   BUILD_LUA_RSVG: "ON"
+  BUILD_MYSQL: "ON"
+  BUILD_NVIDIA: "ON"
+  BUILD_PULSEAUDIO: "ON"
+  BUILD_RSS: "ON"
+  BUILD_XMMS2: "ON"
+  LINKER_FLAGS: ""
 
 ubuntu clang-9:
   <<: *build_stages
@@ -225,6 +243,68 @@ fedora-33 clang-11:
     CC: clang
     CXX: clang++
     BUILD_AUDACIOUS: "OFF"
+
+archlinux clang:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    DISTRO: archlinux
+    COMPILER: clang
+    CC: clang
+    CXX: clang++
+    BUILD_AUDACIOUS: "OFF"
+    BUILD_XMMS2: "OFF"
+
+archlinux gcc:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    DISTRO: archlinux
+    COMPILER: gcc
+    CC: gcc
+    CXX: g++
+    BUILD_AUDACIOUS: "OFF"
+    BUILD_XMMS2: "OFF"
+
+alpine gcc:
+  <<: *build_stages
+  variables:
+    <<: *build_variables
+    DISTRO: alpine
+    COMPILER: gcc
+    CC: gcc
+    CXX: g++
+    BUILD_AUDACIOUS: "OFF"
+    BUILD_ICAL: "OFF"
+    BUILD_IRC: "OFF"
+    BUILD_JOURNAL: "OFF"
+    BUILD_LUA_CAIRO: "OFF"
+    BUILD_LUA_RSVG: "OFF"
+    BUILD_MYSQL: "OFF"
+    BUILD_NVIDIA: "OFF"
+    BUILD_PULSEAUDIO: "OFF"
+    BUILD_RSS: "OFF"
+    BUILD_XMMS2: "OFF"
+
+# alpine clang:
+#   <<: *build_stages
+#   variables:
+#     <<: *build_variables
+#     DISTRO: alpine
+#     COMPILER: clang
+#     CC: clang
+#     CXX: clang++
+#     BUILD_AUDACIOUS: "OFF"
+#     BUILD_ICAL: "OFF"
+#     BUILD_IRC: "OFF"
+#     BUILD_JOURNAL: "OFF"
+#     BUILD_LUA_CAIRO: "OFF"
+#     BUILD_LUA_RSVG: "OFF"
+#     BUILD_MYSQL: "OFF"
+#     BUILD_NVIDIA: "OFF"
+#     BUILD_PULSEAUDIO: "OFF"
+#     BUILD_RSS: "OFF"
+#     BUILD_XMMS2: "OFF"
 
 .test_stages: &test_stages
   retry:
@@ -359,6 +439,42 @@ test fedora-33 clang-11:
     COMPILER: clang-11
     CC: clang
     CXX: clang++
+
+test archlinux clang:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: archlinux
+    COMPILER: clang
+    CC: clang
+    CXX: clang++
+
+test archlinux gcc:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: archlinux
+    COMPILER: gcc
+    CC: gcc
+    CXX: g++
+
+test alpine gcc:
+  <<: *test_stages
+  <<: *test_run
+  variables:
+    DISTRO: alpine
+    COMPILER: gcc
+    CC: gcc
+    CXX: g++
+
+# test alpine clang:
+#   <<: *test_stages
+#   <<: *test_run
+#   variables:
+#     DISTRO: alpine
+#     COMPILER: clang
+#     CC: clang
+#     CXX: clang++
 
 .check_stages: &check_stages
   retry:
