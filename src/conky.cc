@@ -1464,10 +1464,10 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 #ifdef BUILD_HSV_GRADIENT
                 tmpcolour = do_hsv_gradient(w - 1, current->last_colour,
                                             current->first_colour);
-#else
+#else  /* BUILD_HSV_GRADIENT */
                 tmpcolour = do_gradient(w - 1, current->last_colour,
                                         current->first_colour);
-#endif
+#endif /* BUILD_HSV_GRADIENT */
               }
               colour_idx = 0;
               for (i = w - 2; i > -1; i--) {

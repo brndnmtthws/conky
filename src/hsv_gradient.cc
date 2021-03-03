@@ -26,13 +26,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+#include "hsv_gradient.h"
 #include "colours.h"
 #include "conky.h"
 #include "logging.h"
+
 #ifdef BUILD_X11
 #include "x11.h"
-
-#endif
+#endif /* BUILD_X11 */
 
 #define CONST_SCALE 512L
 #define CONST_SCALE_HALF (CONST_SCALE / 2)
@@ -150,7 +151,7 @@ unsigned long *do_hsv_gradient(int width, unsigned long first_colour,
 
   int redshift = (2 * colour_depth / 3 + colour_depth % 3);
   int greenshift = (colour_depth / 3);
-  auto *colours =
+  unsigned long *colours =
       static_cast<unsigned long *>(malloc(width * sizeof(unsigned long)));
   int i;
 
@@ -212,5 +213,6 @@ unsigned long *do_hsv_gradient(int width, unsigned long first_colour,
 
     colours[i] = (red3 << redshift) | (green3 << greenshift) | blue3;
   }
+
   return colours;
 }
