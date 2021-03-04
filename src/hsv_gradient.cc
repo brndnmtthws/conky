@@ -143,16 +143,18 @@ void scaled_hsv_to_scaled_rgb(long *const hsv, long *rgb) {
 
 /* this function returns the next colour between two colours in hsv space for a
  * gradient */
-unsigned long *do_hsv_gradient(int width, unsigned long first_colour,
-                               unsigned long last_colour) {
+std::unique_ptr<unsigned long[]> do_hsv_gradient(int width,
+                                                 unsigned long first_colour,
+                                                 unsigned long last_colour) {
   long rgb1[3], rgb2[3], rgb3[3];
   long hsv1[3], hsv2[3];
   long hueDiff, satDiff, valDiff;
 
   int redshift = (2 * colour_depth / 3 + colour_depth % 3);
   int greenshift = (colour_depth / 3);
-  unsigned long *colours =
-      static_cast<unsigned long *>(malloc(width * sizeof(unsigned long)));
+  std::unique_ptr<unsigned long[]> colours(new unsigned long[width]);
+  //  unsigned long *colours =
+  // static_cast<unsigned long *>(malloc(width * sizeof(unsigned long)));
   int i;
 
   if (colour_depth == 0) { set_up_gradient(); }
