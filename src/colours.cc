@@ -85,15 +85,15 @@ unsigned int adjust_colours(unsigned int colour) {
 }
 
 /* this function returns the next colour between two colours for a gradient */
-unsigned long *do_gradient(int width, unsigned long first_colour,
-                           unsigned long last_colour) {
+std::unique_ptr<unsigned long[]> do_gradient(int width,
+                                             unsigned long first_colour,
+                                             unsigned long last_colour) {
   int red1, green1, blue1;           // first colour
   int red2, green2, blue2;           // last colour
   int reddiff, greendiff, bluediff;  // difference
   short redshift = (2 * colour_depth / 3 + colour_depth % 3);
   short greenshift = (colour_depth / 3);
-  auto *colours =
-      static_cast<unsigned long *>(malloc(width * sizeof(unsigned long)));
+  std::unique_ptr<unsigned long[]> colours(new unsigned long[width]);
   int i;
 
   if (colour_depth == 0) { set_up_gradient(); }

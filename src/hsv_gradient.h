@@ -29,12 +29,15 @@
 #ifndef _HSV_GRADIENT_H
 #define _HSV_GRADIENT_H
 
+#include <memory>
+
 // needed by hsv_gradient
 extern short colour_depth;
 extern long redmask, greenmask, bluemask;
 extern void set_up_gradient();
 
-unsigned long *do_hsv_gradient(int, unsigned long, unsigned long);
+std::unique_ptr<unsigned long[]> do_hsv_gradient(int, unsigned long,
+                                                 unsigned long);
 
 long to_decimal_scale(long value, long max_value);
 long from_decimal_scale(long value, long max_value);

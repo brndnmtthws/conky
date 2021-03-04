@@ -1458,7 +1458,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 
             /* in case we don't have a graph yet */
             if (current->graph != nullptr) {
-              unsigned long *tmpcolour = nullptr;
+              std::unique_ptr<unsigned long[]> tmpcolour;
 
               if (current->last_colour != 0 || current->first_colour != 0) {
 #ifdef BUILD_HSV_GRADIENT
@@ -1492,7 +1492,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
                                                   current->scale));
                 ++j;
               }
-              free_and_zero(tmpcolour);
             }
             if (h > cur_y_add && h > font_h) { cur_y_add = h; }
             if (show_graph_range.get(*state)) {
