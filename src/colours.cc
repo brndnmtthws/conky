@@ -40,7 +40,6 @@ short colour_depth = 0;
 long redmask, greenmask, bluemask;
 
 void set_up_gradient() {
-  int i;
 #ifdef BUILD_X11
   if (out_to_x.get(*state)) {
     colour_depth = DisplayPlanes(display, screen);
@@ -58,7 +57,7 @@ void set_up_gradient() {
   redmask = 0;
   greenmask = 0;
   bluemask = 0;
-  for (i = (colour_depth / 3) - 1; i >= 0; i--) {
+  for (int i = (colour_depth / 3) - 1; i >= 0; i--) {
     redmask |= 1 << i;
     greenmask |= 1 << i;
     bluemask |= 1 << i;
@@ -94,7 +93,6 @@ std::unique_ptr<unsigned long[]> do_gradient(int width,
   short redshift = (2 * colour_depth / 3 + colour_depth % 3);
   short greenshift = (colour_depth / 3);
   std::unique_ptr<unsigned long[]> colours(new unsigned long[width]);
-  int i;
 
   if (colour_depth == 0) { set_up_gradient(); }
   red1 = (first_colour & redmask) >> redshift;
@@ -109,7 +107,7 @@ std::unique_ptr<unsigned long[]> do_gradient(int width,
 #ifdef HAVE_OPENMP
 #pragma omp parallel for schedule(dynamic, 10) shared(colours)
 #endif /* HAVE_OPENMP */
-  for (i = 0; i < width; i++) {
+  for (int i = 0; i < width; i++) {
     int red3 = 0, green3 = 0, blue3 = 0;  // colour components
 
     float factor = (static_cast<float>(i) / (width - 1));

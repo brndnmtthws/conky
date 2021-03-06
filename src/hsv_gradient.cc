@@ -152,10 +152,8 @@ std::unique_ptr<unsigned long[]> do_hsv_gradient(int width,
 
   int redshift = (2 * colour_depth / 3 + colour_depth % 3);
   int greenshift = (colour_depth / 3);
+
   std::unique_ptr<unsigned long[]> colours(new unsigned long[width]);
-  //  unsigned long *colours =
-  // static_cast<unsigned long *>(malloc(width * sizeof(unsigned long)));
-  int i;
 
   if (colour_depth == 0) { set_up_gradient(); }
 
@@ -186,7 +184,7 @@ std::unique_ptr<unsigned long[]> do_hsv_gradient(int width,
   colours[0] = first_colour;
   colours[width - 1] = last_colour;
 
-  for (i = 1; i < (width - 1); i++) {
+  for (int i = 1; i < (width - 1); i++) {
     long k;
 
     long divisor = width - i;
