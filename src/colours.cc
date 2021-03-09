@@ -92,6 +92,10 @@ std::unique_ptr<unsigned long[]> do_gradient(int width,
   int reddiff, greendiff, bluediff;  // difference
   short redshift = (2 * colour_depth / 3 + colour_depth % 3);
   short greenshift = (colour_depth / 3);
+
+  // Make sure the width is always at least 2
+  width = std::max(2, width);
+
   std::unique_ptr<unsigned long[]> colours(new unsigned long[width]);
 
   if (colour_depth == 0) { set_up_gradient(); }
