@@ -766,6 +766,12 @@ static void generate_text() {
    * some info.mem entries */
   update_stuff();
 
+  /* Update `last_update_time` before `generate_text_internal()`, as the latter
+   * calls `evaluate()` -> `update_net_stats()`, which needs `last_update_time`
+   * to be set correctly. If this is not done, than the network speed being
+   * shown will be much lower than the actual speed.*/
+  last_update_time = current_update_time;
+
   /* populate the text buffer; generate_text_internal() iterates through
    * global_root_object (an instance of the text_object struct) and calls
    * any callbacks that were set on startup by construct_text_object(). */
@@ -822,7 +828,6 @@ static void generate_text() {
   if (next_update_time < time || next_update_time > time + ui) {
     next_update_time = time - fmod(time, ui) + ui;
   }
-  last_update_time = current_update_time;
   total_updates++;
 }
 
