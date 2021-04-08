@@ -133,11 +133,19 @@ void cimlib_add_image(const char *args) {
   if (tmp != nullptr) {
     tmp += 3;
     sscanf(tmp, "%i,%i", &cur->x, &cur->y);
+#ifdef BUILD_XFT
+    cur->x = DPI_SCALE(cur->x);
+    cur->y = DPI_SCALE(cur->y);
+#endif /* BUILD_XFT */
   }
   tmp = strstr(args, "-s ");
   if (tmp != nullptr) {
     tmp += 3;
     if (sscanf(tmp, "%ix%i", &cur->w, &cur->h) != 0) { cur->wh_set = 1; }
+#ifdef BUILD_XFT
+    cur->w = DPI_SCALE(cur->w);
+    cur->h = DPI_SCALE(cur->h);
+#endif /* BUILD_XFT */
   }
 
   tmp = strstr(args, "-n");
@@ -200,8 +208,8 @@ static void cimlib_draw_image(struct image_list_s *cur, int *clip_x,
   w = imlib_image_get_width();
   h = imlib_image_get_height();
   if (cur->wh_set == 0) {
-    cur->w = w;
-    cur->h = h;
+    cur->w = DPI_SCALE(w);
+    cur->h = DPI_SCALE(h);
   }
   imlib_context_set_image(buffer);
   imlib_blend_image_onto_image(image, 1, 0, 0, w, h, cur->x, cur->y, cur->w,

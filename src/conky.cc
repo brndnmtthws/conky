@@ -58,6 +58,9 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
 #include <X11/Xutil.h>
+#ifdef BUILD_XFT
+#include <X11/Xlib.h>
+#endif /* BUILD_XFT */
 #pragma GCC diagnostic pop
 #include "x11.h"
 #ifdef BUILD_XDAMAGE
@@ -495,6 +498,19 @@ int calc_text_width(const char *s) {
 #endif /* BUILD_X11 */
 }
 
+#ifdef BUILD_X11
+#ifdef BUILD_XFT
+int xft_dpi_scale(int value) {
+    if (use_xft.get(*state)) {
+        return (value * xft_dpi + (value>0?48:-48)) / 96;
+    } else {
+        return value;
+    }
+}
+#endif /* BUILD_XFT */
+#endif /* BUILD_X11 */
+
+
 /* formatted text to render on screen, generated in generate_text(),
  * drawn in draw_stuff() */
 
@@ -835,8 +851,8 @@ int get_string_width(const char *s) { return *s != 0 ? calc_text_width(s) : 0; }
 
 #ifdef BUILD_X11
 static inline int get_border_total() {
-  return border_inner_margin.get(*state) + border_outer_margin.get(*state) +
-         border_width.get(*state);
+  return DPI_SCALE(border_inner_margin.get(*state)) + DPI_SCALE(border_outer_margin.get(*state)) +
+         DPI_SCALE(border_width.get(*state));
 }
 
 static int get_string_width_special(char *s, int special_index) {
@@ -928,15 +944,15 @@ static void update_text_area() {
   if (fixed_size == 0)
 #endif
   {
-    text_width = minimum_width.get(*state);
+    text_width = DPI_SCALE(minimum_width.get(*state));
     text_height = 0;
     last_font_height = font_height();
     for_each_line(text_buffer, text_size_updater);
     text_width += 1;
-    if (text_height < minimum_height.get(*state)) {
-      text_height = minimum_height.get(*state);
+    if (text_height < DPI_SCALE(minimum_height.get(*state))) {
+      text_height = DPI_SCALE(minimum_height.get(*state));
     }
-    int mw = maximum_width.get(*state);
+    int mw = DPI_SCALE(maximum_width.get(*state));
     if (text_width > mw && mw > 0) { text_width = mw; }
   }
 
@@ -946,21 +962,21 @@ static void update_text_area() {
     case TOP_LEFT:
     case TOP_RIGHT:
     case TOP_MIDDLE:
-      y = workarea[1] + gap_y.get(*state);
+      y = workarea[1] + DPI_SCALE(gap_y.get(*state));
       break;
 
     case BOTTOM_LEFT:
     case BOTTOM_RIGHT:
     case BOTTOM_MIDDLE:
     default:
-      y = workarea[3] - text_height - gap_y.get(*state);
+      y = workarea[3] - text_height - DPI_SCALE(gap_y.get(*state));
       break;
 
     case MIDDLE_LEFT:
     case MIDDLE_RIGHT:
     case MIDDLE_MIDDLE:
       y = workarea[1] + (workarea[3] - workarea[1]) / 2 - text_height / 2 -
-          gap_y.get(*state);
+          DPI_SCALE(gap_y.get(*state));
       break;
   }
   switch (align) {
@@ -968,20 +984,20 @@ static void update_text_area() {
     case BOTTOM_LEFT:
     case MIDDLE_LEFT:
     default:
-      x = workarea[0] + gap_x.get(*state);
+      x = workarea[0] + DPI_SCALE(gap_x.get(*state));
       break;
 
     case TOP_RIGHT:
     case BOTTOM_RIGHT:
     case MIDDLE_RIGHT:
-      x = workarea[2] - text_width - gap_x.get(*state);
+      x = workarea[2] - text_width - DPI_SCALE(gap_x.get(*state));
       break;
 
     case TOP_MIDDLE:
     case BOTTOM_MIDDLE:
     case MIDDLE_MIDDLE:
       x = workarea[0] + (workarea[2] - workarea[0]) / 2 - text_width / 2 -
-          gap_x.get(*state);
+          DPI_SCALE(gap_x.get(*state));
       break;
   }
 #ifdef OWN_WINDOW
@@ -1078,7 +1094,7 @@ static int text_size_updater(char *s, int special_index) {
   w += get_string_width(s);
 
   if (w > text_width) { text_width = w; }
-  int mw = maximum_width.get(*state);
+  int mw = DPI_SCALE(maximum_width.get(*state));
   if (text_width > mw && mw > 0) { text_width = mw; }
 
   text_height += last_font_height;
@@ -1196,7 +1212,7 @@ static void draw_string(const char *s) {
   }
 #ifdef BUILD_X11
   if (out_to_x.get(*state)) {
-    int mw = maximum_width.get(*state);
+    int mw = DPI_SCALE(maximum_width.get(*state));
     if (text_width == mw) {
       /* this means the text is probably pushing the limit,
        * so we'll chop it */
@@ -1291,7 +1307,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 #ifdef BUILD_X11
   int font_h = 0;
   int cur_y_add = 0;
-  int mw = maximum_width.get(*state);
+  int mw = DPI_SCALE(maximum_width.get(*state));
 #endif /* BUILD_X11 */
   char *p = s;
   int orig_special_index = special_index;
@@ -1374,7 +1390,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             if (w == 0) { w = text_start_x + text_width - cur_x - 1; }
             if (w < 0) { w = 0; }
 
-            XSetLineAttributes(display, window.gc, 1, LineSolid, CapButt,
+            XSetLineAttributes(display, window.gc, DPI_SCALE(1), LineSolid, CapButt,
                                JoinMiter);
 
             XDrawRectangle(display, window.drawable, window.gc,
@@ -1453,7 +1469,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             }
             if (w < 0) { w = 0; }
             if (draw_graph_borders.get(*state)) {
-              XSetLineAttributes(display, window.gc, 1, LineSolid, CapButt,
+              XSetLineAttributes(display, window.gc, DPI_SCALE(1), LineSolid, CapButt,
                                  JoinMiter);
               XDrawRectangle(display, window.drawable, window.gc,
                              text_offset_x + cur_x, text_offset_y + by, w, h);
@@ -1745,13 +1761,13 @@ static void draw_text() {
 #ifdef BUILD_X11
   if (out_to_x.get(*state)) {
     cur_y = text_start_y;
-    int bw = border_width.get(*state);
+    int bw = DPI_SCALE(border_width.get(*state));
 
     /* draw borders */
     if (draw_borders.get(*state) && bw > 0) {
       if (stippled_borders.get(*state) != 0) {
-        char ss[2] = {stippled_borders.get(*state),
-                      stippled_borders.get(*state)};
+        char ss[2] = {(char)DPI_SCALE(stippled_borders.get(*state)),
+                      (char)DPI_SCALE(stippled_borders.get(*state))};
         XSetLineAttributes(display, window.gc, bw, LineOnOffDash, CapButt,
                            JoinMiter);
         XSetDashes(display, window.gc, 0, ss, 2);
@@ -1760,7 +1776,7 @@ static void draw_text() {
                            JoinMiter);
       }
 
-      int offset = border_inner_margin.get(*state) + bw;
+      int offset = DPI_SCALE(border_inner_margin.get(*state)) + bw;
       XDrawRectangle(display, window.drawable, window.gc,
                      text_offset_x + text_start_x - offset,
                      text_offset_y + text_start_y - offset,
@@ -2169,7 +2185,7 @@ void main_loop() {
 
                 text_width = window.width - 2 * border_total;
                 text_height = window.height - 2 * border_total;
-                int mw = maximum_width.get(*state);
+                int mw = DPI_SCALE(maximum_width.get(*state));
                 if (text_width > mw && mw > 0) { text_width = mw; }
               }
 
@@ -2541,6 +2557,11 @@ static void X11_create_window() {
   if (out_to_x.get(*state)) {
     setup_fonts();
     load_fonts(utf8_mode.get(*state));
+#ifdef BUILD_XFT
+    if (use_xft.get(*state)) {
+        xft_dpi = atoi(XGetDefault(display, "Xft", "dpi"));
+    }
+#endif /* BUILD_XFT */
     update_text_area(); /* to position text/window on screen */
 
 #ifdef OWN_WINDOW
@@ -2801,7 +2822,7 @@ void initialisation(int argc, char **argv) {
         break;
 
       case 'u':
-        state->pushinteger(strtol(optarg, &conv_end, 10));
+        state->pushinteger(DPI_SCALE(strtol(optarg, &conv_end, 10)));
         if (*conv_end != 0) {
           CRIT_ERR(nullptr, nullptr, "'%s' is a wrong update-interval", optarg);
         }
