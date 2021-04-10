@@ -301,17 +301,8 @@ void set_updatereset(int);
 int get_updatereset(void);
 int get_total_updates(void);
 
-#ifdef BUILD_X11
-#ifdef BUILD_XFT
 static int xft_dpi;
 int xft_dpi_scale(int value);
-#define DPI_SCALE(a) xft_dpi_scale(a)
-#else
-#define DPI_SCALE(a) a
-#endif /* BUILD_XFT */
-#else
-#define DPI_SCALE(a) a
-#endif /* BUILD_X11 */
 
 int get_saved_coordinates_x(int);
 int get_saved_coordinates_y(int);
