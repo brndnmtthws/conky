@@ -673,6 +673,18 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
     /* Sanity check to avoid making an invalid 0x0 window */
     if (b == 0) { b = 1; }
 
+    XClassHint classHint;
+
+    // class_name must be a named local variable, so that c_str() remains
+    // valid until we call XmbSetWMProperties() or XSetClassHint. We use const_cast because,
+    // for whatever reason, res_name is not declared as const char *.
+    // XmbSetWMProperties hopefully doesn't modify the value (hell, even their
+    // own example app assigns a literal string constant to the field)
+    const std::string &class_name = own_window_class.get(l);
+
+    classHint.res_name = const_cast<char *>(class_name.c_str());
+    classHint.res_class = classHint.res_name;
+
     if (own_window_type.get(l) == TYPE_OVERRIDE) {
       /* An override_redirect True window.
        * No WM hints or button processing needed. */
@@ -708,6 +720,7 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
                         depth, InputOutput, visual, flags, &attrs);
 
       XLowerWindow(display, window.window);
+      XSetClassHint(display, window.window, &classHint);
 
       fprintf(stderr, PACKAGE_NAME ": window type - override\n");
       fflush(stderr);
@@ -732,7 +745,6 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
                                     0,
                                     0};
 
-      XClassHint classHint;
       XWMHints wmHint;
       Atom xa;
 
@@ -752,16 +764,6 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
       window.window =
           XCreateWindow(display, window.root, window.x, window.y, b, b, 0,
                         depth, InputOutput, visual, flags, &attrs);
-
-      // class_name must be a named local variable, so that c_str() remains
-      // valid until we call XmbSetWMProperties(). We use const_cast because,
-      // for whatever reason, res_name is not declared as const char *.
-      // XmbSetWMProperties hopefully doesn't modify the value (hell, even their
-      // own example app assigns a literal string constant to the field)
-      const std::string &class_name = own_window_class.get(l);
-
-      classHint.res_name = const_cast<char *>(class_name.c_str());
-      classHint.res_class = classHint.res_name;
 
       uint16_t hints = own_window_hints.get(l);
 
