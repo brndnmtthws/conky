@@ -12,12 +12,12 @@ jobs:
           - clang
           - gcc
         compiler_version:
-          - 8
           - 9
           - 10
+          - 11
         exclude:
-          - compiler: clang
-            compiler_version: 7
+          - compiler: gcc
+            compiler_version: 11
           - os: ubuntu-18.04
             compiler: clang
             compiler_version: 10
