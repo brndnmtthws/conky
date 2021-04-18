@@ -12,7 +12,6 @@ jobs:
           - clang
           - gcc
         compiler_version:
-          - 7
           - 8
           - 9
           - 10
