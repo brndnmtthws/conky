@@ -12,15 +12,25 @@ jobs:
           - clang
           - gcc
         compiler_version:
+          - 7
           - 9
           - 10
           - 11
         exclude:
+          - os: ubuntu-20.04
+            compiler: gcc
+            compiler_version: 7
           - compiler: gcc
             compiler_version: 11
           - os: ubuntu-18.04
             compiler: clang
+            compiler_version: 7
+          - os: ubuntu-18.04
+            compiler: clang
             compiler_version: 10
+          - os: ubuntu-18.04
+            compiler: clang
+            compiler_version: 11
     runs-on: ${{ matrix.os }}
     steps:
       - run: sudo apt-get -qq update
