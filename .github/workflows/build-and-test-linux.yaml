@@ -24,6 +24,7 @@ jobs:
             compiler_version: 10
     runs-on: ${{ matrix.os }}
     steps:
+      - run: sudo apt-get -qq update
       - name: Install dependencies
         run: |
           sudo apt-get install -yqq --no-install-recommends \
