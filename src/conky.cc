@@ -277,6 +277,9 @@ static int text_offset_x, text_offset_y; /* offset for start position */
 static int text_width = 1,
            text_height = 1; /* initially 1 so no zero-sized window is created */
 
+#ifdef BUILD_XFT
+static int xft_dpi;
+#endif /* BUILD_XFT */
 #endif /* BUILD_X11 */
 
 /* struct that has all info to be shared between
@@ -500,16 +503,15 @@ int calc_text_width(const char *s) {
 
 int xft_dpi_scale(int value) {
 #if defined(BUILD_X11) && defined(BUILD_XFT)
-    if (use_xft.get(*state)) {
-        return (value * xft_dpi + (value>0?48:-48)) / 96;
-    } else {
-        return value;
-    }
-#else /* defined(BUILD_X11) && defined(BUILD_XFT) */
+  if (use_xft.get(*state)) {
+    return (value * xft_dpi + (value > 0 ? 48 : -48)) / 96;
+  } else {
     return value;
+  }
+#else  /* defined(BUILD_X11) && defined(BUILD_XFT) */
+  return value;
 #endif /* defined(BUILD_X11) && defined(BUILD_XFT) */
 }
-
 
 /* formatted text to render on screen, generated in generate_text(),
  * drawn in draw_stuff() */
@@ -851,7 +853,8 @@ int get_string_width(const char *s) { return *s != 0 ? calc_text_width(s) : 0; }
 
 #ifdef BUILD_X11
 static inline int get_border_total() {
-  return xft_dpi_scale(border_inner_margin.get(*state)) + xft_dpi_scale(border_outer_margin.get(*state)) +
+  return xft_dpi_scale(border_inner_margin.get(*state)) +
+         xft_dpi_scale(border_outer_margin.get(*state)) +
          xft_dpi_scale(border_width.get(*state));
 }
 
@@ -1390,8 +1393,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             if (w == 0) { w = text_start_x + text_width - cur_x - 1; }
             if (w < 0) { w = 0; }
 
-            XSetLineAttributes(display, window.gc, xft_dpi_scale(1), LineSolid, CapButt,
-                               JoinMiter);
+            XSetLineAttributes(display, window.gc, xft_dpi_scale(1), LineSolid,
+                               CapButt, JoinMiter);
 
             XDrawRectangle(display, window.drawable, window.gc,
                            text_offset_x + cur_x, text_offset_y + by, w, h);
@@ -1469,8 +1472,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             }
             if (w < 0) { w = 0; }
             if (draw_graph_borders.get(*state)) {
-              XSetLineAttributes(display, window.gc, xft_dpi_scale(1), LineSolid, CapButt,
-                                 JoinMiter);
+              XSetLineAttributes(display, window.gc, xft_dpi_scale(1),
+                                 LineSolid, CapButt, JoinMiter);
               XDrawRectangle(display, window.drawable, window.gc,
                              text_offset_x + cur_x, text_offset_y + by, w, h);
             }
@@ -2559,9 +2562,9 @@ static void X11_create_window() {
     load_fonts(utf8_mode.get(*state));
 #ifdef BUILD_XFT
     if (use_xft.get(*state)) {
-        xft_dpi = atoi(XGetDefault(display, "Xft", "dpi"));
+      xft_dpi = atoi(XGetDefault(display, "Xft", "dpi"));
     }
-#endif /* BUILD_XFT */
+#endif                  /* BUILD_XFT */
     update_text_area(); /* to position text/window on screen */
 
 #ifdef OWN_WINDOW
