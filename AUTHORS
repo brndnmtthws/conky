@@ -24,7 +24,7 @@ affinity <affy at users dot sourceforge dot net>
 akash <akash at users dot sourceforge dot net>
   battery_percent and battery_bar
 
-Asbjørn Zweidorff Kjær <bunjiboys at users dot sourceforge dot net>
+Asbjï¿½rn Zweidorff Kjï¿½r <bunjiboys at users dot sourceforge dot net>
   support for EVE-Online skill monitoring
 
 Aseem Mohanty <amohanty at myrealbox dot com>
@@ -122,7 +122,7 @@ Gwenhael LE MOINE <cycojesus at yahoo dot fr>
 Hannu Saransaari <hipo at users dot sourceforge dot net>
   Main code
 
-Henri Häkkinen <henux at users dot sourceforge dot net>
+Henri Hï¿½kkinen <henux at users dot sourceforge dot net>
   MOC support
 
 hinokind <hinokind at users dot sourceforge dot net>
@@ -170,7 +170,7 @@ Jonas Koelker <jonaskoelker at users dot sourceforge dot net>
 Joshua Gerrish <jgerrish at users dot sourceforge dot net>
   mpd password patch
 
-Jørgen P. Tjernø <daxxar at mental dot mine dot nu>
+Jï¿½rgen P. Tjernï¿½ <daxxar at mental dot mine dot nu>
   Restores default settings before loading new config file in SIGHUP
   Some cleaning and commenting apparently :)
   SIGHUP config file reload
@@ -205,7 +205,7 @@ Lassi Selander <sleipner at users dot sourceforge dot net>
 Lauri Hakkarainen <b10nik at users dot sourceforge dot net>
   Some translating, web and other stuff
 
-Leszek Krupiñski <leszek at wafel dot com>
+Leszek Krupiï¿½ski <leszek at wafel dot com>
   Battery number for ACPI battery
   Load average bug fix
 
@@ -278,6 +278,9 @@ Phil <n0-1 at users dot sourceforge dot net>
 Psychon <psychon at users dot sourceforge dot net>
   a bunch of code cleanups
 
+Rogier Reerink <me at rogier dot io>
+  Intel backlight support
+
 roiban adi <adiroiban at users dot sourceforge dot net>
   hex colour patch
 
@@ -314,7 +317,7 @@ Szymon Boniecki
 Thomas Cort
   CPU frequency patch for alpha
 
-Toke Høiland-Jørgensen <toke at toke dot dk>
+Toke Hï¿½iland-Jï¿½rgensen <toke at toke dot dk>
   systemd journal support
 
 Toni <bleach at users dot sourceforge dot net>
@@ -358,5 +361,5 @@ zimba-tm <zimba-tm at users dot sourceforge dot net>
 zotrix <zotrix at users dot sourceforge dot net>
   FreeBSD patch for <10 procs
 
-Daniel Beßler <daniel@orgizm.net>
+Daniel Beï¿½ler <daniel@orgizm.net>
   argb visual patch

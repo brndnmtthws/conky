@@ -107,6 +107,9 @@
 #ifdef BUILD_PULSEAUDIO
 #include "pulseaudio.h"
 #endif /* BUILD_PULSEAUDIO */
+#ifdef BUILD_INTEL_BACKLIGHT
+#include "intel_backlight.h"
+#endif /* BUILD_INTEL_BACKLIGHT */
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
@@ -1971,6 +1974,11 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &free_pulseaudio;
   init_pulseaudio(obj);
 #endif /* BUILD_PULSEAUDIO */
+#ifdef BUILD_INTEL_BACKLIGHT
+  END OBJ(intel_backlight, 0) obj->callbacks.print = &print_intel_backlight;
+  obj->callbacks.free = &free_intel_backlight;
+  init_intel_backlight(obj);
+#endif /* BUILD_INTEL_BACKLIGHT */
   END {
     auto *buf = static_cast<char *>(malloc(text_buffer_size.get(*state)));
 

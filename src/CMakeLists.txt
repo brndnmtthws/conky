@@ -282,6 +282,11 @@ if(BUILD_PULSEAUDIO)
   set(optional_sources ${optional_sources} ${pulseaudio})
 endif(BUILD_PULSEAUDIO)
 
+if(BUILD_INTEL_BACKLIGHT)
+  set(intel_backlight intel_backlight.cc intel_backlight.h)
+  set(optional_sources ${optional_sources} ${intel_backlight})
+endif(BUILD_INTEL_BACKLIGHT)
+
 if(BUILD_HSV_GRADIENT)
   set(hsv_gradient hsv_gradient.cc hsv_gradient.h)
   set(optional_sources ${optional_sources} ${hsv_gradient})

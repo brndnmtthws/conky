@@ -107,6 +107,8 @@
 
 #cmakedefine BUILD_PULSEAUDIO 1
 
+#cmakedefine BUILD_INTEL_BACKLIGHT 0
+
 #cmakedefine BUILD_IPV6 1
 
 #cmakedefine BUILD_HTTP 1
