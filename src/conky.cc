@@ -278,7 +278,7 @@ static int text_width = 1,
            text_height = 1; /* initially 1 so no zero-sized window is created */
 
 #ifdef BUILD_XFT
-static int xft_dpi;
+static int xft_dpi = -1;
 #endif /* BUILD_XFT */
 #endif /* BUILD_X11 */
 
@@ -503,7 +503,7 @@ int calc_text_width(const char *s) {
 
 int xft_dpi_scale(int value) {
 #if defined(BUILD_X11) && defined(BUILD_XFT)
-  if (use_xft.get(*state)) {
+  if (use_xft.get(*state) && xft_dpi > 0) {
     return (value * xft_dpi + (value > 0 ? 48 : -48)) / 96;
   } else {
     return value;
@@ -2562,7 +2562,8 @@ static void X11_create_window() {
     load_fonts(utf8_mode.get(*state));
 #ifdef BUILD_XFT
     if (use_xft.get(*state)) {
-      xft_dpi = atoi(XGetDefault(display, "Xft", "dpi"));
+      auto dpi = XGetDefault(display, "Xft", "dpi");
+      if (dpi) { xft_dpi = atoi(dpi); }
     }
 #endif                  /* BUILD_XFT */
     update_text_area(); /* to position text/window on screen */
