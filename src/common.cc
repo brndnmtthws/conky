@@ -395,6 +395,7 @@ double cpu_barval(struct text_object *obj) {
 PRINT_HR_GENERATOR(mem)
 PRINT_HR_GENERATOR(memwithbuffers)
 PRINT_HR_GENERATOR(memeasyfree)
+PRINT_HR_GENERATOR(legacymem)
 PRINT_HR_GENERATOR(memfree)
 PRINT_HR_GENERATOR(memmax)
 PRINT_HR_GENERATOR(memdirty)
