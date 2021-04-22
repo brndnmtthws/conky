@@ -24,7 +24,7 @@ affinity <affy at users dot sourceforge dot net>
 akash <akash at users dot sourceforge dot net>
   battery_percent and battery_bar
 
-AsbjÃ¸rn Zweidorff KjÃ¦r <bunjiboys at users dot sourceforge dot net>
+Asbjørn Zweidorff Kjær <bunjiboys at users dot sourceforge dot net>
   support for EVE-Online skill monitoring
 
 Aseem Mohanty <amohanty at myrealbox dot com>
@@ -122,7 +122,7 @@ Gwenhael LE MOINE <cycojesus at yahoo dot fr>
 Hannu Saransaari <hipo at users dot sourceforge dot net>
   Main code
 
-Henri HÃ¤kkinen <henux at users dot sourceforge dot net>
+Henri Häkkinen <henux at users dot sourceforge dot net>
   MOC support
 
 hinokind <hinokind at users dot sourceforge dot net>
@@ -170,7 +170,7 @@ Jonas Koelker <jonaskoelker at users dot sourceforge dot net>
 Joshua Gerrish <jgerrish at users dot sourceforge dot net>
   mpd password patch
 
-JÃ¸rgen P. TjernÃ¸ <daxxar at mental dot mine dot nu>
+Jørgen P. Tjernø <daxxar at mental dot mine dot nu>
   Restores default settings before loading new config file in SIGHUP
   Some cleaning and commenting apparently :)
   SIGHUP config file reload
@@ -205,7 +205,7 @@ Lassi Selander <sleipner at users dot sourceforge dot net>
 Lauri Hakkarainen <b10nik at users dot sourceforge dot net>
   Some translating, web and other stuff
 
-Leszek KrupiÃ±ski <leszek at wafel dot com>
+Leszek Krupiñski <leszek at wafel dot com>
   Battery number for ACPI battery
   Load average bug fix
 
@@ -317,7 +317,7 @@ Szymon Boniecki
 Thomas Cort
   CPU frequency patch for alpha
 
-Toke HÃ¸iland-JÃ¸rgensen <toke at toke dot dk>
+Toke Høiland-Jørgensen <toke at toke dot dk>
   systemd journal support
 
 Toni <bleach at users dot sourceforge dot net>
@@ -361,5 +361,5 @@ zimba-tm <zimba-tm at users dot sourceforge dot net>
 zotrix <zotrix at users dot sourceforge dot net>
   FreeBSD patch for <10 procs
 
-Daniel BeÃŸler <daniel@orgizm.net>
+Daniel Beßler <daniel@orgizm.net>
   argb visual patch
