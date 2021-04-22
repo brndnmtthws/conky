@@ -1991,6 +1991,15 @@
     <varlistentry>
         <term>
             <command>
+                <option>intel_backlight</option>
+            </command>
+        </term>
+        <listitem>Display the brightness of your Intel backlight in percent.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>ioscheduler</option>
             </command>
             <option>disk</option>
