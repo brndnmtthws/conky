@@ -170,6 +170,7 @@ int update_meminfo(void) {
   info.mem = (total_pages - free_pages - inactive_pages) * (pagesize >> 10);
   info.memwithbuffers = info.mem;
   info.memeasyfree = info.memfree = info.memmax - info.mem;
+  info.legacymem = info.mem;
 
   if ((swapmode(&swap_avail, &swap_free)) >= 0) {
     info.swapmax = swap_avail;

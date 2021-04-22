@@ -1169,6 +1169,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(mem, &update_meminfo) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_mem;
   obj->callbacks.free = &gen_free_opaque;
+  END OBJ(legacymem, &update_meminfo) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_legacymem;
+  obj->callbacks.free = &gen_free_opaque;
   END OBJ(memwithbuffers, &update_meminfo) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_memwithbuffers;
   obj->callbacks.free = &gen_free_opaque;

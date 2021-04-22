@@ -62,6 +62,7 @@ int update_meminfo() {
   // TODO: we have some more info...
   info.memwithbuffers = info.mem;
   info.memeasyfree = info.memfree = info.memmax - info.mem;
+  info.legacymem = info.mem;
 
   info.swapmax = si.max_swap_pages * (B_PAGE_SIZE >> 10);
   info.swapfree = si.free_swap_pages * (B_PAGE_SIZE >> 10);

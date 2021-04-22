@@ -105,6 +105,7 @@ double cpu_barval(struct text_object *);
 void print_mem(struct text_object *, char *, unsigned int);
 void print_memwithbuffers(struct text_object *, char *, unsigned int);
 void print_memeasyfree(struct text_object *, char *, unsigned int);
+void print_legacymem(struct text_object *, char *, unsigned int);
 void print_memfree(struct text_object *, char *, unsigned int);
 void print_memmax(struct text_object *, char *, unsigned int);
 void print_memdirty(struct text_object *, char *, unsigned int);
