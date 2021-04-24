@@ -42,22 +42,4 @@ TEST_CASE("Expressions can be evaluated", "[evaluate]") {
     evaluate(input, result, kMaxSize);
     REQUIRE(strncmp(input, result, kMaxSize) == 0);
   }
-
-  SECTION("execs can be evaluated") {
-    constexpr int kMaxSize = 50;
-    const char input[kMaxSize] = "${exec echo text}";
-    char result[kMaxSize]{'\0'};
-
-    evaluate(input, result, kMaxSize);
-    REQUIRE(strncmp("text", result, kMaxSize) == 0);
-  }
-
-  SECTION("execp echo without other substitutions can be evaluated") {
-    constexpr int kMaxSize = 50;
-    const char input[kMaxSize] = "${execp echo text}";
-    char result[kMaxSize]{'\0'};
-
-    evaluate(input, result, kMaxSize);
-    REQUIRE(strncmp("text", result, kMaxSize) == 0);
-  }
 }

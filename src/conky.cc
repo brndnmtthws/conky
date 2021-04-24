@@ -764,7 +764,6 @@ void evaluate(const char *text, char *p, int p_max_size) {
    * callbacks and generate_text_internal() after callbacks.
    */
   extract_variable_text_internal(&subroot, text);
-  conky::run_all_callbacks();
   generate_text_internal(p, p_max_size, subroot);
   DBGP2("evaluated '%s' to '%s'", text, p);
 
