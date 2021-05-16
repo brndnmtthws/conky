@@ -104,3 +104,14 @@ if(CHECK_CODE_QUALITY)
   find_package(ClangTidy)
   find_package(ClangFormat)
 endif(CHECK_CODE_QUALITY)
+
+# uninstall target
+if(NOT TARGET uninstall)
+  configure_file(
+      "${CMAKE_MODULE_PATH}/UninstallConky.cmake.in"
+    "${CMAKE_BINARY_DIR}/cmake_uninstall.cmake"
+    IMMEDIATE @ONLY)
+
+  add_custom_target(uninstall
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/cmake_uninstall.cmake)
+endif()
