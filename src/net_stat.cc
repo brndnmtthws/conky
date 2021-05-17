@@ -335,6 +335,14 @@ void parse_net_stat_graph_arg(struct text_object *obj, const char *arg,
 
   // default to DEFAULTNETDEV
   if (buf != nullptr) {
+#if defined(__linux__)
+    if (0 == (strcmp("$gw_iface", buf)) || 0 == (strcmp("${gw_iface}", buf))) {
+      update_gateway_info();
+      obj->data.opaque = get_net_stat(e_iface, obj, free_at_crash);
+      free(buf);
+      return;
+    }
+#endif
     obj->data.opaque = get_net_stat(buf, obj, free_at_crash);
     free(buf);
     return;
