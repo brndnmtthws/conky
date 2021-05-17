@@ -134,6 +134,9 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
   if (arg == nullptr) { arg = DEFAULTNETDEV; }
 
   if (0 == (strcmp("$gw_iface", arg)) || 0 == (strcmp("${gw_iface}", arg))) {
+#if defined(__linux__)
+    update_gateway_info();
+#endif
     arg = e_iface;
   }
 
