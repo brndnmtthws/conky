@@ -66,6 +66,9 @@
 #ifdef BUILD_XDAMAGE
 #include <X11/extensions/Xdamage.h>
 #endif
+#ifdef MOUSE_EVENTS
+#include "mouse_events.h"
+#endif
 #ifdef BUILD_IMLIB2
 #include "imlib2.h"
 #endif /* BUILD_IMLIB2 */
@@ -2119,6 +2122,8 @@ void main_loop() {
       /* handle X events */
       while (XPending(display) != 0) {
         XEvent ev;
+        /* indicates whether processed even was properly consumed */
+        bool consumed = false;
 
         XNextEvent(display, &ev);
         switch (ev.type) {
@@ -2205,6 +2210,13 @@ void main_loop() {
             break;
 
           case ButtonPress:
+#ifdef MOUSE_EVENTS
+            if (ev.xbutton.button == 4 || ev.xbutton.button == 5) {
+              consumed = llua_mouse_hook(mouse_scroll_event(&ev.xbutton));
+            } else {
+              consumed = llua_mouse_hook(mouse_press_event(&ev.xbutton));
+            }
+#endif /* MOUSE_EVENTS */
             if (own_window.get(*state)) {
               /* if an ordinary window with decorations */
               if ((own_window_type.get(*state) == TYPE_NORMAL &&
@@ -2214,19 +2226,27 @@ void main_loop() {
                 /* allow conky to hold input focus. */
                 break;
               }
-              /* forward the click to the desktop window */
               XUngrabPointer(display, ev.xbutton.time);
-              ev.xbutton.window = window.desktop;
-              ev.xbutton.x = ev.xbutton.x_root;
-              ev.xbutton.y = ev.xbutton.y_root;
-              XSendEvent(display, ev.xbutton.window, False, ButtonPressMask,
-                         &ev);
-              XSetInputFocus(display, ev.xbutton.window, RevertToParent,
-                             ev.xbutton.time);
+              if (!consumed) {
+                /* forward the click to the desktop window */
+                ev.xbutton.window = window.desktop;
+                ev.xbutton.x = ev.xbutton.x_root;
+                ev.xbutton.y = ev.xbutton.y_root;
+                XSendEvent(display, ev.xbutton.window, False, ButtonPressMask,
+                           &ev);
+                XSetInputFocus(display, ev.xbutton.window, RevertToParent,
+                               ev.xbutton.time);
+              }
             }
             break;
 
           case ButtonRelease:
+#ifdef MOUSE_EVENTS
+            if (ev.xbutton.button != 4 && ev.xbutton.button != 5) {
+              llua_mouse_hook(mouse_release_event(&ev.xbutton));
+            }
+            /* don't care about pointer button release */
+#endif /* MOUSE_EVENTS */
             if (own_window.get(*state)) {
               /* if an ordinary window with decorations */
               if ((own_window_type.get(*state) == TYPE_NORMAL) &&
@@ -2242,7 +2262,22 @@ void main_loop() {
                          &ev);
             }
             break;
-
+#ifdef MOUSE_EVENTS
+          /*
+          underlying windows are notified too for following events, can't
+          forward the event without using complex filtering of XQueryTree output
+          which would be an overkill.
+          */
+          case MotionNotify:
+            llua_mouse_hook(mouse_move_event(&ev.xmotion));
+            break;
+          case EnterNotify:
+            llua_mouse_hook(mouse_enter_event(&ev.xcrossing));
+            break;
+          case LeaveNotify:
+            llua_mouse_hook(mouse_leave_event(&ev.xcrossing));
+            break;
+#endif /* MOUSE_EVENTS */
 #endif
 
           default:

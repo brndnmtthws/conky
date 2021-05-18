@@ -981,6 +981,16 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
   /* Drawable is same as window. This may be changed by double buffering. */
   window.drawable = window.window;
 
+
+#ifdef MOUSE_EVENTS
+  if (own_window_type.get(l) != TYPE_DESKTOP && own_window_type.get(l) != TYPE_OVERRIDE) {
+    XSetWindowAttributes attrs;
+    attrs.event_mask |= ButtonPress | ButtonRelease | MotionNotify | EnterNotify | LeaveNotify;
+    // modifying root results in a crash so "desktop" and "override" can't be supported
+    XChangeWindowAttributes(display, window.window, CWEventMask, &attrs);
+  }
+#endif
+
   XFlush(display);
 
   XSelectInput(display, window.window,
@@ -989,6 +999,9 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
                    | (own_window.get(l) ? (StructureNotifyMask |
                                            ButtonPressMask | ButtonReleaseMask)
                                         : 0)
+#endif
+#ifdef MOUSE_EVENTS
+                   | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | EnterWindowMask | LeaveWindowMask
 #endif
   );
   DBGP("leave init_window()");

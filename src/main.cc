@@ -180,6 +180,9 @@ static void print_version() {
 #ifdef OWN_WINDOW
             << _("  * Own window\n")
 #endif
+#ifdef MOUSE_EVENTS
+            << _("  * Mouse events\n")
+#endif /* MOUSE_EVENTS */
 #endif /* BUILD_X11 */
 #ifdef BUILD_HSV_GRADIENT
             << _("  * HSV Gradient\n")

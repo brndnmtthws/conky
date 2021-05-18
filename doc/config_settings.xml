@@ -460,6 +460,20 @@
     <varlistentry>
         <term>
             <command>
+                <option>lua_mouse_hook</option>
+            </command>
+            <option>function_name</option>
+        </term>
+        <listitem>This function, if defined, will be called by Conky upon
+        receiving mouse events from X. Requires X support. A table containing
+        event information will be passed to this function as the first argument
+        . Use this hook for detecting mouse input and acting on it. Conky puts
+        'conky_' in front of function_name to prevent accidental calls.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>lua_draw_hook_post</option>
             </command>
             <option>function_name [function arguments]</option>
