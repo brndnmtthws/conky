@@ -30,8 +30,7 @@ if(BUILD_BUILTIN_CONFIG)
                              ${CMAKE_CURRENT_SOURCE_DIR}/${builtin_config}
                              defconfig.h defconfig
                      DEPENDS ${builtin_config})
-  add_custom_target(defconfig ALL DEPENDS defconfig.h)
-  set_source_files_properties(defconfig.h PROPERTIES GENERATED TRUE)
+  set(generated_hdr_files ${generated_hdr_files} defconfig.h)
 endif(BUILD_BUILTIN_CONFIG)
 
 if(BUILD_OLD_CONFIG)
@@ -40,6 +39,7 @@ if(BUILD_OLD_CONFIG)
                              ${CMAKE_SOURCE_DIR}/extras/convert.lua
                              convertconf.h convertconf
                      DEPENDS ${CMAKE_SOURCE_DIR}/extras/convert.lua)
-  add_custom_target(convertconf ALL DEPENDS convertconf.h)
-  set_source_files_properties(convertconf.h PROPERTIES GENERATED TRUE)
+  set(generated_hdr_files ${generated_hdr_files} convertconf.h)
 endif(BUILD_OLD_CONFIG)
+
+add_custom_target(generated_hdr_files DEPENDS ${generated_hdr_files})
