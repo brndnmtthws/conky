@@ -295,8 +295,10 @@ endif(BUILD_HSV_GRADIENT)
 if(BUILD_TESTS)
   # Create a library strictly for testing
   add_library(conky_core ${conky_sources} ${optional_sources})
+  add_dependencies(conky_core generated_hdr_files)
   target_link_libraries(conky_core ${conky_libs})
   add_executable(conky main.cc)
+  add_dependencies(conky generated_hdr_files)
   target_link_libraries(conky conky_core ${conky_libs})
   install(TARGETS conky_core
           RUNTIME DESTINATION bin
@@ -304,6 +306,7 @@ if(BUILD_TESTS)
           ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
 else()
   add_executable(conky main.cc ${conky_sources} ${optional_sources})
+  add_dependencies(conky generated_hdr_files)
   target_link_libraries(conky ${conky_libs})
 endif()
 
