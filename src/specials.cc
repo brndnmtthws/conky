@@ -596,12 +596,11 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
   }
 #endif
 
-  int graph_id = ((struct graph *)obj->special_data)->id;
-  s->graph = retrieve_graph(graph_id, s->graph_width);
+  s->graph = retrieve_graph(g->id, s->graph_width);
 
   graph_append(s, val, g->flags);
 
-  store_graph(graph_id, s);
+  store_graph(g->id, s);
 
   if (out_to_stdout.get(*state)) { new_graph_in_shell(s, buf, buf_max_size); }
 }
