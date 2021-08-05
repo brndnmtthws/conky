@@ -596,7 +596,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
   }
 #endif
 
-  s->graph = retrieve_graph(g->id, s->graph_width);
+  if (s->graph) { s->graph = retrieve_graph(g->id, s->graph_width); }
 
   graph_append(s, val, g->flags);
 
