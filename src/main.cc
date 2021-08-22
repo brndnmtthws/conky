@@ -260,6 +260,27 @@ static void print_help(const char *prog_name) {
          prog_name);
 }
 
+int already_running() {
+  int rv = 0;
+  char buf[128];
+  FILE* pipe = popen("ps -e | grep conky", "r");
+
+  if (!pipe) return -1;
+  while (!feof(pipe)) {
+        if (fgets(buf, 128, pipe) != NULL) {
+           long id = atol(buf);
+
+           if (id == getpid()) continue;
+           std::cerr << "found running conky at #" << id << std::endl;
+           std::cerr << "    current process is #" << getpid() << std::endl;
+           ++rv;
+           }
+        }
+  pclose(pipe);
+
+  return rv;
+  }
+
 inline void reset_optind() {
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
     defined(__OpenBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
@@ -340,6 +361,13 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
   }
+  int rv;
+
+  if (rv = already_running()) {
+     std::cerr << "conky is already running (" << rv
+               << "), so skip second start." << std::endl;
+     exit(rv);
+     }
 
   try {
     set_current_config();
