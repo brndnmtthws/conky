@@ -138,16 +138,16 @@
 #include <microhttpd.h>
 #endif /* BUILD_HTTP */
 
+#ifdef BUILD_HSV_GRADIENT
+#include "hsv_gradient.h"
+#endif /* BUILD_HSV_GRADIENT */
+
 #ifdef BUILD_OLD_CONFIG
 #include "convertconf.h"
 #endif /* BUILD_OLD_CONFIG */
 
 #ifdef BUILD_BUILTIN_CONFIG
 #include "defconfig.h"
-
-#ifdef BUILD_HSV_GRADIENT
-#include "hsv_gradient.h"
-#endif /* BUILD_HSV_GRADIENT */
 
 namespace {
 const char builtin_config_magic[] = "==builtin==";
