@@ -153,7 +153,7 @@ static void print_diskio_dir(struct text_object *obj, int dir, char *p,
 
   /* TODO: move this correction from kB to kB/s elsewhere
    * (or get rid of it??) */
-  human_readable((val / active_update_interval()) * 1024LL, p, p_max_size);
+  human_readable(val / active_update_interval(), p, p_max_size);
 }
 
 void print_diskio(struct text_object *obj, char *p, unsigned int p_max_size) {
@@ -219,9 +219,9 @@ void update_diskio_values(struct diskio_stat *ds, unsigned int reads,
   /* compute averages */
   int samples = diskio_avg_samples.get(*state);
   for (i = 0; i < samples; i++) {
-    sum += ds->sample[i];
-    sum_r += ds->sample_read[i];
-    sum_w += ds->sample_write[i];
+    sum += ds->sample[i] * 1024LL;
+    sum_r += ds->sample_read[i] * 1024LL;
+    sum_w += ds->sample_write[i] * 1024LL;
   }
   ds->current = sum / static_cast<double>(samples);
   ds->current_read = sum_r / static_cast<double>(samples);
