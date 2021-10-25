@@ -661,7 +661,9 @@ void display_output_x11::draw_arc(int x, int y, int w, int h, int a1, int a2) {
 }
 
 void display_output_x11::move_win(int x, int y) {
-  XMoveWindow(display, window.window, window.x, window.y);
+  window.x = x;
+  window.y = y;
+  XMoveWindow(display, window.window, x, y);
 }
 
 int display_output_x11::dpi_scale(int value) {
@@ -708,7 +710,7 @@ void display_output_x11::clear_text(int exposures) {
 
 #ifdef BUILD_XFT
 
-int display_output_x11::font_height(int f) {
+int display_output_x11::font_height(unsigned int f) {
   assert(f < x_fonts.size());
   if (use_xft.get(*state)) {
     return x_fonts[f].xftfont->ascent + x_fonts[f].xftfont->descent;
@@ -718,7 +720,7 @@ int display_output_x11::font_height(int f) {
   }
 }
 
-int display_output_x11::font_ascent(int f) {
+int display_output_x11::font_ascent(unsigned int f) {
   assert(f < x_fonts.size());
   if (use_xft.get(*state)) {
     return x_fonts[f].xftfont->ascent;
@@ -727,7 +729,7 @@ int display_output_x11::font_ascent(int f) {
   }
 }
 
-int display_output_x11::font_descent(int f) {
+int display_output_x11::font_descent(unsigned int f) {
   assert(f < x_fonts.size());
   if (use_xft.get(*state)) {
     return x_fonts[f].xftfont->descent;
@@ -738,18 +740,18 @@ int display_output_x11::font_descent(int f) {
 
 #else
 
-int display_output_x11::font_height(int f) {
+int display_output_x11::font_height(unsigned int f) {
   assert(f < x_fonts.size());
   return x_fonts[f].font->max_bounds.ascent +
          x_fonts[f].font->max_bounds.descent;
 }
 
-int display_output_x11::font_ascent(int f) {
+int display_output_x11::font_ascent(unsigned int f) {
   assert(f < x_fonts.size());
   return x_fonts[f].font->max_bounds.ascent;
 }
 
-int display_output_x11::font_descent(int f) {
+int display_output_x11::font_descent(unsigned int f) {
   assert(f < x_fonts.size());
   return x_fonts[f].font->max_bounds.descent;
 }
@@ -769,7 +771,8 @@ void display_output_x11::setup_fonts(void) {
 #endif /* BUILD_XFT */
 }
 
-void display_output_x11::set_font(int f) {
+void display_output_x11::set_font(unsigned int f) {
+  assert(f < x_fonts.size());
 #ifdef BUILD_XFT
   if (use_xft.get(*state)) { return; }
 #endif /* BUILD_XFT */
@@ -809,7 +812,7 @@ void display_output_x11::free_fonts(bool utf8) {
 }
 void display_output_x11::load_fonts(bool utf8) {
   x_fonts.resize(fonts.size());
-  for (int i = 0; i < fonts.size(); i++) {
+  for (unsigned int i = 0; i < fonts.size(); i++) {
     auto &font = fonts[i];
     auto &xfont = x_fonts[i];
 #ifdef BUILD_XFT

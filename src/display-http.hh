@@ -48,10 +48,10 @@ class display_output_http : public display_output_base {
   virtual bool shutdown();
 
   // drawing primitives
-  virtual void set_foreground_color(long c) {}
+  virtual void set_foreground_color(long) {}
   virtual void begin_draw_text();
   virtual void end_draw_text();
-  virtual void draw_string(const char *s, int w);
+  virtual void draw_string(const char *, int);
 
   // HTTP-specific
  private:

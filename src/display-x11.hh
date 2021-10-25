@@ -47,38 +47,38 @@ class display_output_x11 : public display_output_base {
   virtual bool initialize();
   virtual bool shutdown();
 
-  virtual bool main_loop_wait(double t);
+  virtual bool main_loop_wait(double);
 
   virtual void sigterm_cleanup();
   virtual void cleanup();
 
   // drawing primitives
-  virtual void set_foreground_color(long c);
+  virtual void set_foreground_color(long);
 
-  virtual int calc_text_width(const char *s);
+  virtual int calc_text_width(const char *);
 
   // GUI interface
-  virtual void draw_string_at(int x, int y, const char *s, int w);
+  virtual void draw_string_at(int, int, const char *, int);
   // X11 lookalikes
-  virtual void set_line_style(int w, bool solid);
-  virtual void set_dashes(char *s);
-  virtual void draw_line(int x1, int y1, int x2, int y2);
-  virtual void draw_rect(int x, int y, int w, int h);
-  virtual void fill_rect(int x, int y, int w, int h);
-  virtual void draw_arc(int x, int y, int w, int h, int a1, int a2);
-  virtual void move_win(int x, int y);
-  virtual int dpi_scale(int value);
+  virtual void set_line_style(int, bool);
+  virtual void set_dashes(char *);
+  virtual void draw_line(int, int, int, int);
+  virtual void draw_rect(int, int, int, int);
+  virtual void fill_rect(int, int, int, int);
+  virtual void draw_arc(int, int, int, int, int, int);
+  virtual void move_win(int, int);
+  virtual int dpi_scale(int);
 
   virtual void end_draw_stuff();
-  virtual void clear_text(int exposures);
+  virtual void clear_text(int);
 
-  virtual int font_height(int);
-  virtual int font_ascent(int);
-  virtual int font_descent(int);
+  virtual int font_height(unsigned int);
+  virtual int font_ascent(unsigned int);
+  virtual int font_descent(unsigned int);
   virtual void setup_fonts(void);
-  virtual void set_font(int);
-  virtual void free_fonts(bool utf8);
-  virtual void load_fonts(bool utf8);
+  virtual void set_font(unsigned int);
+  virtual void free_fonts(bool);
+  virtual void load_fonts(bool);
 
   // X11-specific
 };

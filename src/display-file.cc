@@ -71,7 +71,7 @@ bool display_output_file::initialize() { return true; }
 
 bool display_output_file::shutdown() { return true; }
 
-void display_output_file::draw_string(const char *s, int w) {
+void display_output_file::draw_string(const char *s, int) {
   if (overwrite_fpointer != nullptr) { fprintf(overwrite_fpointer, "%s\n", s); }
   if (append_fpointer != nullptr) { fprintf(append_fpointer, "%s\n", s); }
 }

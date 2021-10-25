@@ -65,7 +65,7 @@ bool display_output_console::initialize() { return true; }
 
 bool display_output_console::shutdown() { return true; }
 
-void display_output_console::draw_string(const char *s, int w) {
+void display_output_console::draw_string(const char *s, int) {
   if (out_to_stdout.get(*state)) {
     printf("%s\n", s);
     if (extra_newline.get(*state)) { fputc('\n', stdout); }

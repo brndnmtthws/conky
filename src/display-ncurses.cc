@@ -90,7 +90,7 @@ void display_output_ncurses::begin_draw_text() {
 
 void display_output_ncurses::end_draw_text() {}
 
-void display_output_ncurses::draw_string(const char *s, int w) {
+void display_output_ncurses::draw_string(const char *s, int) {
   printw("%s", s);
 }
 
@@ -99,24 +99,28 @@ void display_output_ncurses::line_inner_done() { printw("\n"); }
 int display_output_ncurses::getx() {
   int x, y;
   getyx(ncurses_window, y, x);
+  (void)y;
   return x;
 }
 
 int display_output_ncurses::gety() {
   int x, y;
   getyx(ncurses_window, y, x);
+  (void)x;
   return y;
 }
 
 void display_output_ncurses::gotox(int x) {
   int y, old_x;
   getyx(ncurses_window, y, old_x);
+  (void)old_x;
   move(y, x);
 }
 
 void display_output_ncurses::gotoy(int y) {
   int x, old_y;
   getyx(ncurses_window, old_y, x);
+  (void)old_y;
   move(y, x);
 }
 
