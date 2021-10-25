@@ -173,7 +173,7 @@ void display_output_http::begin_draw_text() {
 
 void display_output_http::end_draw_text() { webpage.append(WEBPAGE_END); }
 
-void display_output_http::draw_string(const char *s, int w) {
+void display_output_http::draw_string(const char *s, int) {
   std::string::size_type origlen = webpage.length();
   webpage.append(s);
   webpage = string_replace_all(webpage, "\n", "<br />", origlen);

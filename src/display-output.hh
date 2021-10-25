@@ -78,52 +78,54 @@ class display_output_base {
   virtual bool graphical() { return is_graphical; };
   virtual bool draw_line_inner_required() { return is_graphical; }
 
-  virtual bool main_loop_wait(double t) { return false; }
+  virtual bool main_loop_wait(double /*t*/) { return false; }
 
   virtual void sigterm_cleanup() {}
   virtual void cleanup() {}
 
   // drawing primitives
-  virtual void set_foreground_color(long c) {}
+  virtual void set_foreground_color(long /*c*/) {}
 
   virtual int calc_text_width(const char *s) { return strlen(s); }
 
   virtual void begin_draw_text() {}
   virtual void end_draw_text() {}
-  virtual void draw_string(const char *s, int w) {}
+  virtual void draw_string(const char * /*s*/, int /*w*/) {}
   virtual void line_inner_done() {}
 
   // GUI interface
-  virtual void draw_string_at(int x, int y, const char *s, int w) {}
+  virtual void draw_string_at(int /*x*/, int /*y*/, const char * /*s*/,
+                              int /*w*/) {}
   // X11 lookalikes
-  virtual void set_line_style(int w, bool solid) {}
-  virtual void set_dashes(char *s) {}
-  virtual void draw_line(int x1, int y1, int x2, int y2) {}
-  virtual void draw_rect(int x, int y, int w, int h) {}
-  virtual void fill_rect(int x, int y, int w, int h) {}
-  virtual void draw_arc(int x, int y, int w, int h, int a1, int a2) {}
-  virtual void move_win(int x, int y) {}
+  virtual void set_line_style(int /*w*/, bool /*solid*/) {}
+  virtual void set_dashes(char * /*s*/) {}
+  virtual void draw_line(int /*x1*/, int /*y1*/, int /*x2*/, int /*y2*/) {}
+  virtual void draw_rect(int /*x*/, int /*y*/, int /*w*/, int /*h*/) {}
+  virtual void fill_rect(int /*x*/, int /*y*/, int /*w*/, int /*h*/) {}
+  virtual void draw_arc(int /*x*/, int /*y*/, int /*w*/, int /*h*/, int /*a1*/,
+                        int /*a2*/) {}
+  virtual void move_win(int /*x*/, int /*y*/) {}
   virtual int dpi_scale(int value) { return value; }
 
   virtual void begin_draw_stuff() {}
   virtual void end_draw_stuff() {}
-  virtual void clear_text(int exposures) {}
+  virtual void clear_text(int /*exposures*/) {}
 
   // font stuff
-  virtual int font_height(int) { return 0; }
-  virtual int font_ascent(int) { return 0; }
-  virtual int font_descent(int) { return 0; }
+  virtual int font_height(unsigned int) { return 0; }
+  virtual int font_ascent(unsigned int) { return 0; }
+  virtual int font_descent(unsigned int) { return 0; }
   virtual void setup_fonts(void) {}
-  virtual void set_font(int) {}
-  virtual void free_fonts(bool utf8) {}
-  virtual void load_fonts(bool utf8) {}
+  virtual void set_font(unsigned int) {}
+  virtual void free_fonts(bool /*utf8*/) {}
+  virtual void load_fonts(bool /*utf8*/) {}
 
   // tty interface
   virtual int getx() { return 0; }
   virtual int gety() { return 0; }
-  virtual void gotox(int x) {}
-  virtual void gotoy(int y) {}
-  virtual void gotoxy(int x, int y) {}
+  virtual void gotox(int /*x*/) {}
+  virtual void gotoy(int /*y*/) {}
+  virtual void gotoxy(int /*x*/, int /*y*/) {}
 
   virtual void flush() {}
 
