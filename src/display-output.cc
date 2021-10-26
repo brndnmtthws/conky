@@ -50,6 +50,13 @@ display_outputs_t *display_outputs;
 
 }  // namespace
 
+// HACK: force the linker to link all the objects in with test enabled
+extern void init_console_output();
+extern void init_ncurses_output();
+extern void init_file_output();
+extern void init_http_output();
+extern void init_x11_output();
+
 /*
  * The selected and active display output.
  */
@@ -99,6 +106,12 @@ disabled_display_output::disabled_display_output(const std::string &name,
 }
 
 bool initialize_display_outputs() {
+  init_console_output();
+  init_ncurses_output();
+  init_file_output();
+  init_http_output();
+  init_x11_output();
+
   std::vector<display_output_base *> outputs;
   outputs.reserve(display_outputs->size());
 
