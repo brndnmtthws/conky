@@ -52,6 +52,7 @@ conky::disabled_display_output ncurses_output_disabled("ncurses",
 #endif
 
 }  // namespace
+extern void init_ncurses_output() {}
 
 // namespace priv {
 

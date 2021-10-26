@@ -43,6 +43,7 @@ namespace {
 conky::display_output_console console_output("console");
 
 }  // namespace
+void init_console_output() {}
 
 namespace priv {}  // namespace priv
 

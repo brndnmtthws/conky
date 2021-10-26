@@ -47,6 +47,7 @@ conky::disabled_display_output http_output_disabled("http", "BUILD_HTTP");
 #endif
 
 }  // namespace
+extern void init_http_output() {}
 
 // TODO: cleanup namespace
 // namespace priv {

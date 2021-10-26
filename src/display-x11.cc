@@ -193,6 +193,7 @@ conky::disabled_display_output x11_output_disabled("x11", "BUILD_X11");
 #endif
 
 }  // namespace
+extern void init_x11_output() {}
 
 namespace priv {}  // namespace priv
 
