@@ -110,6 +110,196 @@ struct tab {
   int width, arg;
 };
 
+
+/**
+ * Stores the positional arguments into the given graph
+ *
+ * @param[out] g stores the retrieved arguments
+ * @param[in]  quoted_cmd
+ * @param[in]  argstr
+ * @param[in]  defscale
+ **/
+char * store_positional_args(
+    struct graph * g,
+    char * quoted_cmd,
+    char * argstr,
+    double defscale) {
+  char buf[1024] = {'\0'};    /* first unquoted string argument in argstr */
+  /* all the following functions try to interpret the beginning of a
+   * a string with different formaters. If successfull they return from
+   * this whole function */
+
+  /* interpret the beginning(!) of the argument string as:
+   * '[height],[width] [color1] [color2] [scale]'
+   * This means parameters like -t and -l may not be in the beginning */
+  if (sscanf(argstr, "%d,%d %x %x %lf", &g->height, &g->width,
+             &g->first_colour, &g->last_colour, &g->scale) == 5) {
+    return *quoted_cmd != 0
+               ? strndup(quoted_cmd, text_buffer_size.get(*state))
+               : nullptr;
+  }
+  /* [height],[width] [color1] [color2] */
+  g->scale = defscale;
+  if (sscanf(argstr, "%d,%d %x %x", &g->height, &g->width, &g->first_colour,
+             &g->last_colour) == 4) {
+    return *quoted_cmd != 0
+               ? strndup(quoted_cmd, text_buffer_size.get(*state))
+               : nullptr;
+  }
+  /* [command] [height],[width] [color1] [color2] [scale] */
+  if (sscanf(argstr, "%1023s %d,%d %x %x %lf", buf, &g->height, &g->width,
+             &g->first_colour, &g->last_colour, &g->scale) == 6) {
+    return strndup(buf, text_buffer_size.get(*state));
+  }
+  g->scale = defscale;
+  if (sscanf(argstr, "%1023s %d,%d %x %x", buf, &g->height, &g->width,
+             &g->first_colour, &g->last_colour) == 5) {
+    return strndup(buf, text_buffer_size.get(*state));
+  }
+
+  buf[0] = '\0';
+  g->height = default_graph_height.get(*state);
+  g->width = default_graph_width.get(*state);
+  if (sscanf(argstr, "%x %x %lf", &g->first_colour, &g->last_colour,
+             &g->scale) == 3) {
+    return *quoted_cmd != 0
+               ? strndup(quoted_cmd, text_buffer_size.get(*state))
+               : nullptr;
+  }
+  g->scale = defscale;
+  if (sscanf(argstr, "%x %x", &g->first_colour, &g->last_colour) == 2) {
+    return *quoted_cmd != 0
+               ? strndup(quoted_cmd, text_buffer_size.get(*state))
+               : nullptr;
+  }
+  if (sscanf(argstr, "%1023s %x %x %lf", buf, &g->first_colour,
+             &g->last_colour, &g->scale) == 4) {
+    return strndup(buf, text_buffer_size.get(*state));
+  }
+  g->scale = defscale;
+  if (sscanf(argstr, "%1023s %x %x", buf, &g->first_colour,
+             &g->last_colour) == 3) {
+    return strndup(buf, text_buffer_size.get(*state));
+  }
+
+  buf[0] = '\0';
+  g->first_colour = 0;
+  g->last_colour = 0;
+  if (sscanf(argstr, "%d,%d %lf", &g->height, &g->width, &g->scale) == 3) {
+    return *quoted_cmd != 0
+               ? strndup(quoted_cmd, text_buffer_size.get(*state))
+               : nullptr;
+  }
+  g->scale = defscale;
+  if (sscanf(argstr, "%d,%d", &g->height, &g->width) == 2) {
+    return *quoted_cmd != 0
+               ? strndup(quoted_cmd, text_buffer_size.get(*state))
+               : nullptr;
+  }
+  if (sscanf(argstr, "%1023s %d,%d %lf", buf, &g->height, &g->width,
+             &g->scale) < 4) {
+    g->scale = defscale;
+    // TODO(brenden): check the return value and throw an error?
+    sscanf(argstr, "%1023s %d,%d", buf, &g->height, &g->width);
+  }
+
+  if ((*quoted_cmd == 0) && (*buf == 0)) { return nullptr; }
+  return strndup(*quoted_cmd != 0 ? quoted_cmd : buf,
+                 text_buffer_size.get(*state));
+}
+
+/**
+ * Finds the value associated with the given option in a string
+ *
+ * @param[out] result stores the retrieved value or nullptr
+ * @param[in]  size size of result
+ * @param[in]  string the string to search
+ * @param[in]  option the substring (key) to find its related value
+ **/
+void get_option_value(
+    char ** result,
+    size_t size,
+    char * string,
+    const char * option) {
+  char * match_ptr = strstr(string, option);
+  if (match_ptr == nullptr) {
+    *result = nullptr;
+    return;
+  }
+
+  /* get value of the option. Could be seperated by either spaces or
+   * a single '=' */
+  size_t start = strlen(option);
+  if (match_ptr[start] == '=') {
+    if (start < strlen(match_ptr) - 1) {
+      start++;
+    }
+    else {
+      *result = nullptr;
+      return;
+    }
+  }
+  else if (match_ptr[start] == ' ') {
+    while (match_ptr[start] == ' ') {
+      if (start < strlen(match_ptr) - 1) {
+        start++;
+      }
+      else {
+        *result = nullptr;
+        return;
+      }
+    }
+  }
+  else {
+    /* `option` was found but it was surrounded by invalid
+     * characters. Repeat the search starting after this
+     * position */
+    get_option_value(result, size, match_ptr + 1, option);
+    return;
+  }
+  size_t length = 0;
+  while (
+      start + length < strlen(match_ptr)
+      && match_ptr[start+length] != ' '
+      && match_ptr[start+length] != '\0') {
+    length++;
+  }
+  if (length >= size) {
+    *result = nullptr;
+    return;
+  }
+  strncpy(*result, match_ptr + start, length);
+  return;
+}
+
+/**
+ * Stores the value associated with the given option found in the given
+ * string into the destination according to the format
+ *
+ * @param[out] dest stores the retrieved value or nullptr
+ * @param[in]  format format used in sscanf
+ * @param[in]  string the string to search
+ * @param[in]  option the substring (key) to find its related value
+ **/
+template <typename T>
+void store_option_value(
+    T dest,
+    const char * format,
+    char * string,
+    const char * option) {
+  size_t size = strlen(string) + 1;
+  char * value = (char *) malloc(sizeof(char) * size);
+
+  get_option_value(&value, size, string, option);
+  if (value != nullptr) {
+    sscanf(value, format, dest);
+  }
+  free(value);
+}
+template void store_option_value<int *>(int *, const char *, char *, const char *);
+template void store_option_value<double *>(double *, const char *, char *, const char *);
+template void store_option_value<unsigned int *>(unsigned int *, const char *, char *, const char *);
+
 /*
  * Scanning arguments to various special text objects
  */
@@ -200,8 +390,7 @@ void scan_font(struct text_object *obj, const char *args) {
  **/
 char *scan_graph(struct text_object *obj, const char *args, double defscale) {
   char quoted_cmd[1024] = {'\0'}; /* double-quoted execgraph command */
-  char argstr[1024] = {'\0'};     /* args minus quoted_cmd */
-  char buf[1024] = {'\0'};        /* first unquoted string argument in argstr */
+  char argstr[1024] = {'\0'};     /* args minus quoted_cmd and --options */
 
   auto *g = static_cast<struct graph *>(malloc(sizeof(struct graph)));
   memset(g, 0, sizeof(struct graph));
@@ -217,6 +406,7 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
   g->tempgrad = FALSE;
   if (args != nullptr) {
     /* extract double-quoted command in case of execgraph */
+    char no_quote_args[1024] = {'\0'};
     if (*args == '"') {
       char *_ptr;
       size_t _size;
@@ -232,107 +422,50 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
       strncpy(quoted_cmd, args + 1, _size);
       quoted_cmd[_size] = '\0';
 
-      /* copy everything after the last quote into argstr */
-      if (_size + 2 < strlen(args)) { strncpy(argstr, args + _size + 2, 1023); }
+      /* copy everything after the last quote into no_quote_args */
+      if (_size + 2 < strlen(args)) {
+        strncpy(no_quote_args, args + _size + 2, 1023);
+      }
     } else {
       /* redundant, but simplifies the code below */
-      strncpy(argstr, args, 1023);
+      strncpy(no_quote_args, args, 1023);
     }
 
     /* set tempgrad to true, if '-t' specified.
      * It doesn#t matter where the argument is exactly. */
-    if ((strstr(argstr, " " TEMPGRAD) != nullptr) ||
-        strncmp(argstr, TEMPGRAD, strlen(TEMPGRAD)) == 0) {
+    if ((strstr(no_quote_args, " " TEMPGRAD) != nullptr) ||
+        strncmp(no_quote_args, TEMPGRAD, strlen(TEMPGRAD)) == 0) {
       g->tempgrad = TRUE;
     }
     /* set showlog-flag, if '-l' specified
      * It doesn#t matter where the argument is exactly. */
-    if ((strstr(argstr, " " LOGGRAPH) != nullptr) ||
-        strncmp(argstr, LOGGRAPH, strlen(LOGGRAPH)) == 0) {
+    if ((strstr(no_quote_args, " " LOGGRAPH) != nullptr) ||
+        strncmp(no_quote_args, LOGGRAPH, strlen(LOGGRAPH)) == 0) {
       g->flags |= SF_SHOWLOG;
     }
 
-    /* all the following functions try to interpret the beginning of a
-     * a string with different formaters. If successfully the return from
-     * this whole function */
+    /* copy everything before the first --option into argstr
+     * This means all --options must be after the positional arguments */
+    size_t length = 1023;
+    char * end = strstr(no_quote_args, "--");
+    if (end != nullptr) {
+      length = end - no_quote_args;
+    }
+    strncpy(argstr, no_quote_args, length);
 
-    /* interpret the beginning(!) of the argument string as:
-     * '[height],[width] [color1] [color2] [scale]'
-     * This means parameters like -t and -l may not be in the beginning */
-    if (sscanf(argstr, "%d,%d %x %x %lf", &g->height, &g->width,
-               &g->first_colour, &g->last_colour, &g->scale) == 5) {
-      return *quoted_cmd != 0
-                 ? strndup(quoted_cmd, text_buffer_size.get(*state))
-                 : nullptr;
-    }
-    /* [height],[width] [color1] [color2] */
-    g->scale = defscale;
-    if (sscanf(argstr, "%d,%d %x %x", &g->height, &g->width, &g->first_colour,
-               &g->last_colour) == 4) {
-      return *quoted_cmd != 0
-                 ? strndup(quoted_cmd, text_buffer_size.get(*state))
-                 : nullptr;
-    }
-    /* [command] [height],[width] [color1] [color2] [scale] */
-    if (sscanf(argstr, "%1023s %d,%d %x %x %lf", buf, &g->height, &g->width,
-               &g->first_colour, &g->last_colour, &g->scale) == 6) {
-      return strndup(buf, text_buffer_size.get(*state));
-    }
-    g->scale = defscale;
-    if (sscanf(argstr, "%1023s %d,%d %x %x", buf, &g->height, &g->width,
-               &g->first_colour, &g->last_colour) == 5) {
-      return strndup(buf, text_buffer_size.get(*state));
-    }
+    /* process the positional args */
+    char * ptr = store_positional_args(g, quoted_cmd, argstr, defscale);
 
-    buf[0] = '\0';
-    g->height = default_graph_height.get(*state);
-    g->width = default_graph_width.get(*state);
-    if (sscanf(argstr, "%x %x %lf", &g->first_colour, &g->last_colour,
-               &g->scale) == 3) {
-      return *quoted_cmd != 0
-                 ? strndup(quoted_cmd, text_buffer_size.get(*state))
-                 : nullptr;
-    }
-    g->scale = defscale;
-    if (sscanf(argstr, "%x %x", &g->first_colour, &g->last_colour) == 2) {
-      return *quoted_cmd != 0
-                 ? strndup(quoted_cmd, text_buffer_size.get(*state))
-                 : nullptr;
-    }
-    if (sscanf(argstr, "%1023s %x %x %lf", buf, &g->first_colour,
-               &g->last_colour, &g->scale) == 4) {
-      return strndup(buf, text_buffer_size.get(*state));
-    }
-    g->scale = defscale;
-    if (sscanf(argstr, "%1023s %x %x", buf, &g->first_colour,
-               &g->last_colour) == 3) {
-      return strndup(buf, text_buffer_size.get(*state));
-    }
+    /* process the --options */
+    /* Make sure to add a new template declaration under
+     * store_option_value() if adding a call to it with a new type */
+    store_option_value<int *> (&g->height, "%d", no_quote_args, "--height");
+    store_option_value<int *> (&g->width, "%d", no_quote_args, "--width");
+    store_option_value<double *> (&g->scale, "%lf", no_quote_args, "--scale");
+    store_option_value<unsigned int *> (&g->first_colour, "%x", no_quote_args, "--first_colour");
+    store_option_value<unsigned int *> (&g->last_colour, "%x", no_quote_args, "--last_colour");
 
-    buf[0] = '\0';
-    g->first_colour = 0;
-    g->last_colour = 0;
-    if (sscanf(argstr, "%d,%d %lf", &g->height, &g->width, &g->scale) == 3) {
-      return *quoted_cmd != 0
-                 ? strndup(quoted_cmd, text_buffer_size.get(*state))
-                 : nullptr;
-    }
-    g->scale = defscale;
-    if (sscanf(argstr, "%d,%d", &g->height, &g->width) == 2) {
-      return *quoted_cmd != 0
-                 ? strndup(quoted_cmd, text_buffer_size.get(*state))
-                 : nullptr;
-    }
-    if (sscanf(argstr, "%1023s %d,%d %lf", buf, &g->height, &g->width,
-               &g->scale) < 4) {
-      g->scale = defscale;
-      // TODO(brenden): check the return value and throw an error?
-      sscanf(argstr, "%1023s %d,%d", buf, &g->height, &g->width);
-    }
-
-    if ((*quoted_cmd == 0) && (*buf == 0)) { return nullptr; }
-    return strndup(*quoted_cmd != 0 ? quoted_cmd : buf,
-                   text_buffer_size.get(*state));
+    return ptr;
   }
 
   return nullptr;
