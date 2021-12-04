@@ -1571,6 +1571,9 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             }
 #ifdef BUILD_MATH
             if (show_graph_scale.get(*state) && (current->show_scale == 1)) {
+              if (current->scale_colour != 0) {
+                set_foreground_color(current->scale_colour);
+              }
               int tmp_x = cur_x;
               int tmp_y = cur_y;
               cur_x += font_ascent() / 2;

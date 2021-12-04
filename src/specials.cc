@@ -97,7 +97,7 @@ struct graph {
   int id;
   char flags;
   int width, height;
-  unsigned int first_colour, last_colour;
+  unsigned int first_colour, last_colour, scale_colour;
   double scale;
   char tempgrad;
 };
@@ -402,6 +402,7 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
   g->height = default_graph_height.get(*state);
   g->first_colour = 0;
   g->last_colour = 0;
+  g->scale_colour = 0;
   g->scale = defscale;
   g->tempgrad = FALSE;
   if (args != nullptr) {
@@ -464,6 +465,7 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
     store_option_value<double *> (&g->scale, "%lf", no_quote_args, "--scale");
     store_option_value<unsigned int *> (&g->first_colour, "%x", no_quote_args, "--first_colour");
     store_option_value<unsigned int *> (&g->last_colour, "%x", no_quote_args, "--last_colour");
+    store_option_value<unsigned int *> (&g->scale_colour, "%x", no_quote_args, "--scale_colour");
 
     return ptr;
   }
@@ -712,6 +714,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
   s->height = xft_dpi_scale(g->height);
   s->first_colour = adjust_colours(g->first_colour);
   s->last_colour = adjust_colours(g->last_colour);
+  s->scale_colour = adjust_colours(g->scale_colour);
   if (g->scale != 0) {
     s->scaled = 0;
     s->scale = g->scale;

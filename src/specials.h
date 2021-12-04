@@ -71,6 +71,7 @@ struct special_t {
   int scale_log;
   unsigned long first_colour;  // for graph gradient
   unsigned long last_colour;
+  unsigned long scale_colour;  // colour of the value showing the scale
   short font_added;
   char tempgrad;
   struct special_t *next;
