@@ -2013,6 +2013,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(pa_card_name, 0) obj->callbacks.print = &print_puau_card_name;
   obj->callbacks.free = &free_pulseaudio;
   init_pulseaudio(obj);
+  END OBJ_IF(if_pa_source_running, 0) obj->callbacks.iftest = &puau_source_running;
+  obj->callbacks.free = &free_pulseaudio;
+  init_pulseaudio(obj);
+  END OBJ_IF(if_pa_source_muted, 0) obj->callbacks.iftest = &puau_source_muted;
+  obj->callbacks.free = &free_pulseaudio;
+  init_pulseaudio(obj);
 #endif /* BUILD_PULSEAUDIO */
 #ifdef BUILD_INTEL_BACKLIGHT
   END OBJ(intel_backlight, 0) obj->callbacks.print = &print_intel_backlight;
