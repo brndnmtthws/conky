@@ -660,12 +660,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
                                                                      EQUAL) {
     obj->data.i = PB_BATT_STATUS;
   }
-  else if (strcmp(arg, "percent") == EQUAL) {
-    obj->data.i = PB_BATT_PERCENT;
-  }
-  else if (strcmp(arg, "time") == EQUAL) {
-    obj->data.i = PB_BATT_TIME;
-  }
+  else if (strcmp(arg, "percent") == EQUAL) { obj->data.i = PB_BATT_PERCENT; }
+  else if (strcmp(arg, "time") == EQUAL) { obj->data.i = PB_BATT_TIME; }
   else {
     NORM_ERR("pb_battery: illegal argument '%s', defaulting to status", arg);
     obj->data.i = PB_BATT_STATUS;
@@ -2013,7 +2009,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(pa_card_name, 0) obj->callbacks.print = &print_puau_card_name;
   obj->callbacks.free = &free_pulseaudio;
   init_pulseaudio(obj);
-  END OBJ_IF(if_pa_source_running, 0) obj->callbacks.iftest = &puau_source_running;
+  END OBJ_IF(if_pa_source_running, 0) obj->callbacks.iftest =
+      &puau_source_running;
   obj->callbacks.free = &free_pulseaudio;
   init_pulseaudio(obj);
   END OBJ_IF(if_pa_source_muted, 0) obj->callbacks.iftest = &puau_source_muted;

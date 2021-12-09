@@ -40,20 +40,21 @@
 
 struct pulseaudio_default_results get_result_copy();
 
-const struct pulseaudio_default_results pulseaudio_result0 = {std::string(),
-                                                              std::string(),
-                                                              std::string(),
-                                                              std::string(),
-                                                              0,
-                                                              0,
-                                                              0,
-                                                              0,
-                                                              std::string(),
-                                                              PA_SOURCE_SUSPENDED,
-                                                              0,
-                                                              std::string(),
-                                                              std::string(),
-                                                              0};
+const struct pulseaudio_default_results pulseaudio_result0 = {
+    std::string(),
+    std::string(),
+    std::string(),
+    std::string(),
+    0,
+    0,
+    0,
+    0,
+    std::string(),
+    PA_SOURCE_SUSPENDED,
+    0,
+    std::string(),
+    std::string(),
+    0};
 pulseaudio_c *pulseaudio = nullptr;
 
 void pa_sink_info_callback(pa_context *c, const pa_sink_info *i, int eol,
@@ -80,9 +81,8 @@ void pa_sink_info_callback(pa_context *c, const pa_sink_info *i, int eol,
   ++eol;
 }
 
-
 void pa_source_info_callback(pa_context *c, const pa_source_info *i, int eol,
-                           void *data) {
+                             void *data) {
   if (i != nullptr && data) {
     struct pulseaudio_default_results *pdr =
         (struct pulseaudio_default_results *)data;
@@ -186,9 +186,10 @@ void subscribe_cb(pa_context *c, pa_subscription_event_type_t t, uint32_t index,
     case PA_SUBSCRIPTION_EVENT_SOURCE: {
       if (res->source_name.empty()) return;
       pa_operation *op;
-      PULSEAUDIO_OP(pa_context_get_source_info_by_name(
-                        c, res->source_name.c_str(), pa_source_info_callback, res),
-                    "pa_context_get_source_info_by_name failed");
+      PULSEAUDIO_OP(
+          pa_context_get_source_info_by_name(c, res->source_name.c_str(),
+                                             pa_source_info_callback, res),
+          "pa_context_get_source_info_by_name failed");
     } break;
 
     case PA_SUBSCRIPTION_EVENT_CARD:
