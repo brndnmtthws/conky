@@ -26,7 +26,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include <iostream> // REMOVE THIS
 #include "conky.h"
 #include <algorithm>
 #include <cerrno>
