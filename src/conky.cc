@@ -26,7 +26,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+#include <iostream> // REMOVE THIS
 #include "conky.h"
 #include <algorithm>
 #include <cerrno>
@@ -1505,13 +1505,21 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
                   }
                 }
                 /* this is mugfugly, but it works */
-                XDrawLine(display, window.drawable, window.gc,
-                          text_offset_x + cur_x + i + 1, text_offset_y + by + h,
-                          text_offset_x + cur_x + i + 1,
-                          text_offset_y + round_to_positive_int(
+                
+                int x1 = text_offset_x + cur_x + i + 1;
+                int y1 = text_offset_y + by + (current->invy?0:h);
+                int x2 = x1;
+                int y2 = text_offset_y + round_to_positive_int(
                                               static_cast<double>(by) + h -
                                               current->graph[j] * (h - 1) /
-                                                  current->scale));
+                                                  current->scale);
+                if(current->invy){
+                  y2 = text_offset_y + round_to_positive_int(
+                                              static_cast<double>(by) + 
+                                              current->graph[j] * (h - 1) /
+                                                  current->scale);
+                }
+                XDrawLine(display, window.drawable, window.gc, x1, y1, x2, y2);
                 ++j;
               }
             }

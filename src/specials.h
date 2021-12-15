@@ -36,6 +36,7 @@
 // don't use spaces in LOGGRAPH or NORMGRAPH if you change them
 #define LOGGRAPH "-l"
 #define TEMPGRAD "-t"
+#define INVY "-y"
 
 enum special_types {
   NONSPECIAL = 0,
@@ -73,6 +74,7 @@ struct special_t {
   unsigned long last_colour;
   short font_added;
   char tempgrad;
+  char invy;
   struct special_t *next;
 };
 

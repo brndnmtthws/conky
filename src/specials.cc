@@ -100,6 +100,7 @@ struct graph {
   unsigned int first_colour, last_colour;
   double scale;
   char tempgrad;
+  char invy;
 };
 
 struct stippled_hr {
@@ -215,6 +216,7 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
   g->last_colour = 0;
   g->scale = defscale;
   g->tempgrad = FALSE;
+  g->invy = FALSE;
   if (args != nullptr) {
     /* extract double-quoted command in case of execgraph */
     if (*args == '"') {
@@ -252,6 +254,12 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
       g->flags |= SF_SHOWLOG;
     }
 
+     /* set invert-y-axis-flag, if '-y' specified
+     * It doesn#t matter where the argument is exactly. */
+    if ((strstr(argstr, " " INVY) != nullptr) ||
+        strncmp(argstr, INVY, strlen(INVY)) == 0) {
+      g->invy = TRUE;
+    }
     /* all the following functions try to interpret the beginning of a
      * a string with different formaters. If successfully the return from
      * this whole function */
@@ -589,6 +597,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
     s->show_scale = 1;
   }
   s->tempgrad = g->tempgrad;
+  s->invy = g->invy;
 #ifdef BUILD_MATH
   if ((g->flags & SF_SHOWLOG) != 0) {
     s->scale_log = 1;
