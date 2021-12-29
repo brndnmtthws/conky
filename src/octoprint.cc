@@ -28,8 +28,10 @@
 #include "luamm.hh"
 
 #include <curl/curl.h>
+#include "json/json.h"
 
 
+#include <queue>
 #include <cmath>
 
 //single printer configs
@@ -72,7 +74,10 @@ protected:
       Json::Reader reader;
       bool parsingSuccessful = reader.parse( data, tmp );
       if ( !parsingSuccessful ) {
-        NORM_ERR("Error parsing the curl result into json");
+        NORM_ERR("Error parsing the curl result into json: %s",data.c_str());
+        // Json::StreamWriterBuilder wbuilder;
+        // wbuilder["indentation"] = "";
+        // auto conf_str = Json::writeString(wbuilder,conf_blob);
       }
       std::unique_lock<std::mutex> lock(Base::result_mutex);
       Base::result = tmp;
@@ -81,41 +86,48 @@ protected:
 public:
   octoprint_cb(uint32_t period, const std::string &url, const std::string& token) :
     Base(period, Base::Tuple(url)) {
-      NORM_ERR("creating curl cb with token %s",token.c_str());
       curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BEARER);
       curl_easy_setopt(curl, CURLOPT_XOAUTH2_BEARER, token.c_str());
-      curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+      curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
       Base::result = Json::Value(Json::nullValue);
     }
 };
 
-struct octoprint_data {
-  char *printer_id;
-  int tool_index;
-};
-
-void print_octoprint_printer_state(struct text_object *obj, char *p, unsigned int p_max_size) {
-  struct octoprint_data *od = static_cast<struct octoprint_data *>(obj->data.opaque);
-  if (!od) {
-    NORM_ERR("error processing Octoprint data");
-    return;
+const Json::Value& r_get(const Json::Value& obj, std::queue<std::string>& keys) {
+  if (keys.empty()) {
+    return obj;
   }
+  if (!obj.isObject() && !obj.isArray())
+    throw std::runtime_error("Can only index into array and object types");
 
-  auto state_json = octoprint_get_last_xfer(od->printer_id, "/api/printer");
+  const auto& value = obj.isObject() ? obj[keys.front()] : obj[std::stoi(keys.front())];
+  keys.pop();
+  return r_get(value, keys);
+}
 
-  if (state_json.isNull()) {
-    strncpy(p,"data not found", p_max_size);
-    return;
+Json::Value recursive_get(const Json::Value& obj, std::queue<std::string>& keys) {
+  try {
+    //walk using reference, but return a copy of the final object
+    return r_get(obj,keys);
+  } catch(const std::exception& e) {
+    NORM_ERR("Error indexing into JSON blob");
+    return Json::Value(Json::nullValue);
   }
+}
 
-  strncpy(p, state_json["state"]["text"].asCString(), p_max_size);
+Json::Value octoprint_get_last_xfer(const std::string &url, const std::string &token, double interval) {
+  //first extract the update rate for the printer id
+  uint32_t period = std::max(lround(interval / active_update_interval()), 1l);
+  auto cb = conky::register_cb<octoprint_cb>(period, url, token);
+
+  return cb->get_result_copy();
 }
 
 
 Json::Value octoprint_get_last_xfer(const std::string &printer_id, const std::string &endpoint) {
   std::string url;
   std::string token;
-  double interval;
+  double interval{octoprint_update_interval.get(*state)};
   if (printer_id.empty()) {
     url = octoprint_server.get(*state);
     if (url.empty()) {
@@ -128,13 +140,12 @@ Json::Value octoprint_get_last_xfer(const std::string &printer_id, const std::st
       NORM_ERR("octoprint: no default api key specified");
       return Json::Value(Json::nullValue);
     }
-    interval = octoprint_update_interval.get(*state);  
   } else {
     const auto conf_blob = octoprint_config.get(*state);
-      Json::StreamWriterBuilder wbuilder;
-      wbuilder["indentation"] = "";
-      auto conf_str = Json::writeString(wbuilder,conf_blob);
-    NORM_ERR("octoprint_config: %s",conf_str.c_str());
+      // Json::StreamWriterBuilder wbuilder;
+      // wbuilder["indentation"] = "";
+      // auto conf_str = Json::writeString(wbuilder,conf_blob);
+      // NORM_ERR("octoprint_config: %s",conf_str.c_str());
     if (!conf_blob.isMember(std::string{printer_id})) {
       NORM_ERR("octoprint: could not find printer_id: %s", printer_id.c_str());
       return Json::Value(Json::nullValue);
@@ -150,60 +161,284 @@ Json::Value octoprint_get_last_xfer(const std::string &printer_id, const std::st
       NORM_ERR("octoprint: token for printer '%s' not specified",printer_id.c_str());
       return Json::Value(Json::nullValue);
     }
-    interval = printer_conf["interval"].asDouble();
+    if (printer_conf.isMember("interval"))
+      interval = printer_conf["interval"].asDouble();
   }
   url += endpoint;
   return octoprint_get_last_xfer(url, token, interval);
 } 
 
-/* prints result data to text buffer, used by $curl */
-Json::Value octoprint_get_last_xfer(const std::string &url, const std::string &token, double interval) {
-  //first extract the update rate for the printer id
-  uint32_t period = std::max(lround(interval / active_update_interval()), 1l);
-  auto cb = conky::register_cb<octoprint_cb>(period, url, token);
 
-  return cb->get_result_copy();
+
+struct octoprint_data {
+  char* printer_id;
+  char* component_id;
+};
+
+
+Json::Value extract_common(struct text_object *obj, const std::string& endpoint, std::queue<std::string>& query_path) {
+  struct octoprint_data *od = static_cast<struct octoprint_data *>(obj->data.opaque);
+  if (!od) {
+    NORM_ERR("error processing Octoprint data");
+    return Json::Value(Json::nullValue);
+  }
+
+  const auto state_json = octoprint_get_last_xfer(od->printer_id ? od->printer_id : "", endpoint);
+  return recursive_get(state_json, query_path);
+}
+
+void print_common(const Json::Value& result, char *p, unsigned int p_max_size) {
+
+  if (result.isNull()) {
+    strncpy(p,"data not found", p_max_size);
+    return;
+  } else if (result.isIntegral()) {
+    strncpy(p, std::to_string(result.asLargestInt()).c_str(), p_max_size);
+  } else if (result.isDouble()) {
+    strncpy(p, std::to_string(result.asDouble()).c_str(), p_max_size);
+  } else if (result.isString()) {
+    strncpy(p, result.asCString(), p_max_size);
+  } else {
+    Json::StreamWriterBuilder wbuilder;
+    wbuilder["indentation"] = "";
+    strncpy(p, Json::writeString(wbuilder,result).c_str(), p_max_size);
+  }
+  
+}
+
+
+// /api/currentuser
+void print_octoprint_user(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"name"});
+  print_common(extract_common(obj, "/api/currentuser", q), p, p_max_size);
+}
+
+// /api/version
+void print_octoprint_version(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"server"});
+  print_common(extract_common(obj, "/api/version", q), p, p_max_size);
+}
+
+void print_octoprint_longversion(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"text"});
+  print_common(extract_common(obj, "/api/version", q), p, p_max_size);
+}
+
+// /api/server
+void print_octoprint_safemode(struct text_object *obj, char *p, unsigned int p_max_size) {
+
+  std::queue<std::string> q({"safemode"});
+  auto result = extract_common(obj, "/api/server", q);
+
+  if (result.isNull()) {
+    strncpy(p,"", p_max_size);
+    return;
+  }
+
+  strncpy(p, result.asCString(), p_max_size);
+}
+
+// /api/connection
+void print_octoprint_conn_baud(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"current", "baudrate"});
+  print_common(extract_common(obj, "/api/connection", q), p, p_max_size);
+}
+
+void print_octoprint_conn_port(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"current", "port"});
+  print_common(extract_common(obj, "/api/connection", q), p, p_max_size);
+}
+
+void print_octoprint_conn_state(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"current", "state"});
+  print_common(extract_common(obj, "/api/connection", q), p, p_max_size);
+}
+
+// /api/files
+// /api/files/<location>
+// /api/files/<location>/<file>
+void print_octoprint_local_used(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"files"});
+  auto result = extract_common(obj, "/api/files/local", q);
+
+  std::size_t bytes{0};
+  for (const auto& file : result) {
+    bytes += file["size"].asUInt();
+  }
+
+  human_readable(bytes, p, p_max_size);
+}
+
+void print_octoprint_local_free(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"free"});
+  human_readable(extract_common(obj, "/api/files/local", q).asLargestInt(), p, p_max_size);
+}
+
+void print_octoprint_local_total(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"total"});
+  human_readable(extract_common(obj, "/api/files/local", q).asLargestInt(), p, p_max_size);
+}
+
+void print_octoprint_local_filecount(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"files"});
+  auto result = extract_common(obj, "/api/files/local", q);
+  strncpy(p, std::to_string(result.size()).c_str(), p_max_size);
+}
+
+void print_octoprint_sdcard_filecount(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"files"});
+  auto result = extract_common(obj, "/api/files/sdcard", q);
+  strncpy(p, std::to_string(result.size()).c_str(), p_max_size);
+}
+
+// /api/job
+void print_octoprint_job_name(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"job", "file", "name"});
+  print_common(extract_common(obj, "/api/job", q), p, p_max_size);
+}
+
+
+uint8_t octoprint_job_progress_pct(struct text_object *obj) {
+  std::queue<std::string> q({"progress", "completion"});
+  return extract_common(obj, "/api/job", q).asUInt();
+}
+
+double octoprint_job_progress_barval(struct text_object *obj) {
+  std::queue<std::string> q({"progress", "completion"});
+  return extract_common(obj, "/api/job", q).asDouble();
+}
+
+
+void print_octoprint_job_time(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"progress", "printTime"});
+  print_common(extract_common(obj, "/api/job", q), p, p_max_size);
+}
+
+void print_octoprint_job_time_left(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"progress", "printTimeLeft"});
+  print_common(extract_common(obj, "/api/job", q), p, p_max_size);
+}
+
+void print_octoprint_job_state(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"state"});
+  print_common(extract_common(obj, "/api/job", q), p, p_max_size);
+}
+
+void print_octoprint_job_user(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"job", "user"});
+  print_common(extract_common(obj, "/api/job", q), p, p_max_size);
+}
+
+// /plugin/logging/logs
+void print_octoprint_logs_used(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"files"});
+  auto result = extract_common(obj, "/plugin/logging/logs", q);
+
+  std::size_t bytes{0};
+  for (const auto& file : result) {
+    bytes += file["size"].asUInt();
+  }
+
+  human_readable(bytes, p, p_max_size);
+}
+
+void print_octoprint_logs_free(struct text_object *obj, char *p, unsigned int p_max_size){
+  std::queue<std::string> q({"free"});
+  human_readable(extract_common(obj, "/plugin/logging/logs", q).asLargestInt(), p, p_max_size);
+}
+
+void print_octoprint_logs_total(struct text_object *obj, char *p, unsigned int p_max_size){
+  std::queue<std::string> q({"total"});
+  human_readable(extract_common(obj, "/plugin/logging/logs", q).asLargestInt(), p, p_max_size);
+}
+
+// /api/printer  -- use single endpoint for efficiency
+void print_octoprint_printer_state(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"state", "text"});
+  print_common(extract_common(obj, "/api/printer", q), p, p_max_size);
+}
+
+void print_octoprint_printer_error(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"state", "error"});
+  print_common(extract_common(obj, "/api/printer", q), p, p_max_size);
 }
 
 
 
+void print_octoprint_temperature(struct text_object *obj, char *p, unsigned int p_max_size) {
+  auto temperature = octoprint_temperature(obj);
+  snprintf(p, p_max_size, "%f", temperature);
+}
+
+void print_octoprint_target_temp(struct text_object *obj, char *p, unsigned int p_max_size) {
+  auto temperature = octoprint_target_temp(obj);
+  snprintf(p, p_max_size, "%f", temperature);
+}
+
+double octoprint_temperature(struct text_object *obj) {
+  struct octoprint_data *od = static_cast<struct octoprint_data *>(obj->data.opaque);
+  if (!od) {
+    NORM_ERR("error processing Octoprint data");
+    return 0;
+  }
+  if (!od->component_id) {
+    NORM_ERR("octoprint: component_id for temperature not specified");
+    return 0;
+  }
+  std::queue<std::string> q({"temperature", od->component_id, "actual"});
+  return extract_common(obj, "/api/printer", q).asDouble();
+}
+
+double octoprint_target_temp(struct text_object *obj) {
+  struct octoprint_data *od = static_cast<struct octoprint_data *>(obj->data.opaque);
+  if (!od) {
+    NORM_ERR("error processing Octoprint data");
+    return 0;
+  }
+  if (!od->component_id) {
+    NORM_ERR("octoprint: component_id for target temperature not specified");
+    return 0;
+  }
+  std::queue<std::string> q({"temperature", od->component_id, "target"});
+  return extract_common(obj, "/api/printer", q).asDouble();
+}
+
+
+void print_octoprint_sdcard_ready(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"sd", "ready"});
+  print_common(extract_common(obj, "/api/printer", q), p, p_max_size);
+}
+
+
+int check_for_component(const char* arg) {
+  int char_count{0};
+  if (sscanf(arg, "tool%*d%n ", &char_count) != EOF && char_count) {
+  } else if (sscanf(arg, "bed%n ", &char_count) != EOF && char_count) {
+  } else if (sscanf(arg, "chamber%n ", &char_count) != EOF && char_count) {
+  }
+  return char_count;
+}
+
 void octoprint_parse_arg(struct text_object *obj, const char *arg) {
   NORM_ERR("octoprint_parse_arg got arg '%s'",arg);
   struct octoprint_data *od;
-  // null values are perfectly acceptable here
   od = static_cast<struct octoprint_data *>(malloc(sizeof(struct octoprint_data)));
   memset(od, 0, sizeof(struct octoprint_data));
-  od->printer_id = strdup("");
   obj->data.opaque = od;
   if (arg == nullptr || strlen(arg) < 1) {
+    //leave pointers as null and return
     return;
   }
-
-  //we have some args.
-  // %s -> octoprint_config key
-  // %d -> tool index
-  // %s %d -> octoprint_config key and tool index
-  // there is a pathological case where a user could supply a single set of
-  //    number-compatible chars, expecting it to be treated as a config key 
-  //    and not a tool index. 
-
-  int tool_index;
-  int match = sscanf(arg, "%d", &tool_index);
-  if (match == 1) {
-    NORM_ERR("parsed numeric from arg '%d'",tool_index);
-    od->tool_index = tool_index;
-    return;
-  } 
 
   int char_count{0};
-  match = sscanf(arg, "%*s%n %d", &char_count, &tool_index);
-  if (char_count > 0) {
-    od->printer_id = strndup(arg,char_count);
-    NORM_ERR("parsed string from arg '%s'",od->printer_id);
-  }
-  if (match > 0) {
-    NORM_ERR("parsed numeric from arg '%d'",tool_index);
-    od->tool_index = tool_index;
+  const char* sep = strrchr(arg, ':');
+  if (sep && (char_count = check_for_component(sep+1))) {
+    od->component_id = strndup(sep+1,char_count);
+    od->printer_id = strndup(arg, sep-arg);
+  } else if (char_count = check_for_component(arg)) {
+    od->component_id = strndup(arg,char_count);
+  } else {
+    od->printer_id = strdup(arg);
   }
   
 }
@@ -211,5 +446,6 @@ void octoprint_parse_arg(struct text_object *obj, const char *arg) {
 void octoprint_free_obj_info(struct text_object *obj) {
   struct octoprint_data *od = static_cast<struct octoprint_data *>(obj->data.opaque);
   free_and_zero(od->printer_id);
+  free_and_zero(od->component_id);
   free_and_zero(obj->data.opaque);
 }

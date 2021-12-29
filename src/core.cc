@@ -1986,10 +1986,60 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   init_intel_backlight(obj);
 #endif /* BUILD_INTEL_BACKLIGHT */
 #ifdef BUILD_OCTOPRINT
-  END OBJ(octoprint_printer_state, 0)
-  octoprint_parse_arg(obj, arg);
-  obj->callbacks.print = &print_octoprint_printer_state;
+#define OCTOPRINT_OBJ(name) \
+  END OBJ(octoprint_##name, 0) \
+  octoprint_parse_arg(obj, arg); \
+  obj->callbacks.print = &print_octoprint_##name; \
   obj->callbacks.free = &octoprint_free_obj_info;
+  
+  OCTOPRINT_OBJ(user)
+  OCTOPRINT_OBJ(version)
+  OCTOPRINT_OBJ(longversion)
+  OCTOPRINT_OBJ(safemode)
+  OCTOPRINT_OBJ(conn_baud)
+  OCTOPRINT_OBJ(conn_port)
+  OCTOPRINT_OBJ(conn_state)
+  OCTOPRINT_OBJ(local_used)
+  OCTOPRINT_OBJ(local_free)
+  OCTOPRINT_OBJ(local_total)
+  OCTOPRINT_OBJ(local_filecount)
+  OCTOPRINT_OBJ(sdcard_filecount)
+  OCTOPRINT_OBJ(job_name)
+  OCTOPRINT_OBJ(job_time)
+  OCTOPRINT_OBJ(job_time_left)
+  OCTOPRINT_OBJ(job_state)
+  OCTOPRINT_OBJ(job_user)
+  OCTOPRINT_OBJ(logs_used)
+  OCTOPRINT_OBJ(logs_free)
+  OCTOPRINT_OBJ(logs_total)
+  OCTOPRINT_OBJ(printer_state)
+  OCTOPRINT_OBJ(printer_error)
+  OCTOPRINT_OBJ(temperature)
+  OCTOPRINT_OBJ(target_temp)
+  OCTOPRINT_OBJ(sdcard_ready)
+#undef OCTOPRINT_OBJ
+  
+  END OBJ(octoprint_job_progress_pct, 0)
+  octoprint_parse_arg(obj, arg);
+  obj->callbacks.percentage = &octoprint_job_progress_pct;
+  obj->callbacks.free = &octoprint_free_obj_info;
+  END OBJ(octoprint_job_progress_bar, 0)
+  arg = scan_bar(obj, arg, 100);
+  octoprint_parse_arg(obj, arg);
+  obj->callbacks.barval = &octoprint_job_progress_barval;
+  obj->callbacks.free = &gen_free_opaque;
+
+  END OBJ(octoprint_temperature_bar, 0)
+  arg = scan_bar(obj, arg, 100);
+  octoprint_parse_arg(obj, arg); //TODO: fixed scale view
+  obj->callbacks.barval = &octoprint_temperature;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(octoprint_temperature_graph, 0)
+  arg = scan_graph(obj, arg, 0);
+  octoprint_parse_arg(obj, arg);
+  obj->callbacks.graphval = &octoprint_temperature;
+  obj->callbacks.free = &gen_free_opaque;
+
 #endif /* BUILD_OCTOPRINT */
 
   END {

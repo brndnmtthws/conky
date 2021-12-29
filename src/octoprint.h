@@ -26,7 +26,7 @@
 #define OCTOPRINT_H_
 
 #include "conky.h"
-#include "json/json.h"
+// #include "json/json.h"
 
 //general variable format: ${octoprint_user printer_id <optional index>}
 
@@ -51,10 +51,13 @@ void print_octoprint_local_filecount(struct text_object *, char *, unsigned int)
 void print_octoprint_sdcard_filecount(struct text_object *, char *, unsigned int);
 // /api/job
 void print_octoprint_job_name(struct text_object *, char *, unsigned int);
-void print_octoprint_job_progress_pct(struct text_object *, char *, unsigned int);
+uint8_t octoprint_job_progress_pct(struct text_object *);
+double octoprint_job_progress_barval(struct text_object *);
+
 void print_octoprint_job_time(struct text_object *, char *, unsigned int);
 void print_octoprint_job_time_left(struct text_object *, char *, unsigned int);
 void print_octoprint_job_state(struct text_object *, char *, unsigned int);
+void print_octoprint_job_user(struct text_object *, char *, unsigned int);
 // /plugin/logging/logs
 void print_octoprint_logs_used(struct text_object *, char *, unsigned int);
 void print_octoprint_logs_free(struct text_object *, char *, unsigned int);
@@ -62,7 +65,16 @@ void print_octoprint_logs_total(struct text_object *, char *, unsigned int);
 // /api/printer  -- use single endpoint for efficiency
 void print_octoprint_printer_state(struct text_object *, char *, unsigned int);
 void print_octoprint_printer_error(struct text_object *, char *, unsigned int);
+
+void print_octoprint_temperature(struct text_object *, char *, unsigned int);
+void print_octoprint_target_temp(struct text_object *, char *, unsigned int);
+double octoprint_temperature(struct text_object *);
+double octoprint_target_temp(struct text_object *);
+
+
+
 void print_octoprint_tool_temperature(struct text_object *, char *, unsigned int);
+double octoprint_tool_temperature(struct text_object *);
 void print_octoprint_tool_target_temp(struct text_object *, char *, unsigned int);
 void print_octoprint_bed_temperature(struct text_object *, char *, unsigned int);
 void print_octoprint_bed_target_temp(struct text_object *, char *, unsigned int);
@@ -71,9 +83,9 @@ void print_octoprint_chamber_target_temp(struct text_object *, char *, unsigned 
 void print_octoprint_sdcard_ready(struct text_object *, char *, unsigned int);
 
 
-Json::Value octoprint_get_last_xfer(const std::string &printer_id, const std::string &endpoint);
+// Json::Value octoprint_get_last_xfer(const std::string &printer_id, const std::string &endpoint);
 
-Json::Value octoprint_get_last_xfer(const std::string &url, const std::string &token, double interval);
+// Json::Value octoprint_get_last_xfer(const std::string &url, const std::string &token, double interval);
 
 
 void octoprint_parse_arg(struct text_object *, const char *);
