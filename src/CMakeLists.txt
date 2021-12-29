@@ -232,6 +232,11 @@ if(BUILD_CURL)
   set(optional_sources ${optional_sources} ${ccurl_thread})
 endif(BUILD_CURL)
 
+if(BUILD_OCTOPRINT)
+  set(octoprint octoprint.cc octoprint.h)
+  set(optional_sources ${optional_sources} ${octoprint})
+endif(BUILD_OCTOPRINT)
+
 if(BUILD_RSS)
   set(rss rss.cc rss.h prss.cc prss.h)
   set(optional_sources ${optional_sources} ${rss})

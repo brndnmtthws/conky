@@ -436,6 +436,11 @@ if(BUILD_CURL)
   set(WANT_CURL true)
 endif(BUILD_CURL)
 
+if(BUILD_OCTOPRINT)
+  set(WANT_CURL true) #technically fulfilled by the curl threads dependency, but we do make direct library calls
+  set(WANT_JSON true)
+endif(BUILD_OCTOPRINT)
+
 if(BUILD_RSS)
   set(WANT_CURL true)
   set(WANT_LIBXML2 true)
@@ -488,6 +493,12 @@ if(WANT_CURL)
   set(conky_libs ${conky_libs} ${CURL_LIBRARIES})
   set(conky_includes ${conky_includes} ${CURL_INCLUDE_DIRS})
 endif(WANT_CURL)
+
+if(WANT_JSON)
+  pkg_check_modules(JSONCPP REQUIRED jsoncpp)
+  set(conky_libs ${conky_libs} ${JSONCPP_LIBRARIES})
+  set(conky_includes ${conky_includes} ${JSONCPP_INCLUDE_DIRS})
+endif(WANT_JSON)
 
 if(WANT_LIBXML2)
   include(FindLibXml2)

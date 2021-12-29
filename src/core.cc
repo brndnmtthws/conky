@@ -110,6 +110,9 @@
 #ifdef BUILD_INTEL_BACKLIGHT
 #include "intel_backlight.h"
 #endif /* BUILD_INTEL_BACKLIGHT */
+#ifdef BUILD_OCTOPRINT
+#include "octoprint.h"
+#endif /* BUILD_OCTOPRINT */
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
@@ -1982,6 +1985,13 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &free_intel_backlight;
   init_intel_backlight(obj);
 #endif /* BUILD_INTEL_BACKLIGHT */
+#ifdef BUILD_OCTOPRINT
+  END OBJ(octoprint_printer_state, 0)
+  octoprint_parse_arg(obj, arg);
+  obj->callbacks.print = &print_octoprint_printer_state;
+  obj->callbacks.free = &octoprint_free_obj_info;
+#endif /* BUILD_OCTOPRINT */
+
   END {
     auto *buf = static_cast<char *>(malloc(text_buffer_size.get(*state)));
 

@@ -80,6 +80,10 @@
 
 #cmakedefine BUILD_CURL 1
 
+#cmakedefine BUILD_OCTOPRINT 1
+
+#cmakedefine OCTOPRINT_MULTIPRINTER 1
+
 #cmakedefine BUILD_WEATHER_METAR 1
 
 #cmakedefine BUILD_IMLIB2 1
