@@ -3063,6 +3063,461 @@
     <varlistentry>
         <term>
             <command>
+                <option>octoprint_conn_baud</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Baud rate of the printer connection. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_conn_port</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Serial port of the printer connection. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_conn_state</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>State of the printer connection. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_job_name</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Name of the current print job. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_job_progress</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Progress of the current print job. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_job_progress_bar</option>
+            </command>
+            <option>(height)(,width)</option>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Progress of the current print job. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_job_progress_pct</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Percentage progress of the current print job as integer. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_job_state</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>State of the current print job. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_job_time</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Time in seconds spent on the current print job. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_job_time_left</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Estimated time left in seconds for the current print job. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_job_user</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>User who owns the current print job. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_local_filecount</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Number of local printable files stored on the server. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_local_free</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Free space for printable files on the server. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_local_used</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Space used by printable files on the server. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_logs_free</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Free space for log files on the server. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_logs_used</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Space used by log files on the server. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_longversion</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Version string of the server. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_printer_error</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Specific error state of the printer. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_printer_state</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Overall state of the printer. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+     <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_safemode</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Reason why server is running in safemode. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_sdcard_filecount</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Number files stored on the printer's sd card. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_sdcard_ready</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Prints "true" if printer's sd card is ready, else "false".
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_temperature</option>
+            </command>
+            <option>(server_id:)component_id</option>
+        </term>
+        <listitem>Temperature of the specified component.
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used. Note the use of ":"
+        to separate the server_id from the component_id if the server_id
+        is provided. The component id must match "bed", "chamber", or
+        "toolN" where N is some integer. Tool numbers start from 0. Not all
+        printers will have all components.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_temperature_bar</option>
+            </command>
+            <option>(height)(,width)(:scale)</option>
+            <option>(server_id:)component_id</option>
+        </term>
+        <listitem><para>Temperature of the specified component.
+        Width can only be specified if height is given. Note the "," separator.
+        Scale is the max value of the bar. May be specified regardless of 
+        height and width specification, but must always include the ":" char.
+        It is suggested to make this higher than the max temperature you can 
+        ever safely reach with that particular printer component. </para>
+        <para>
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used. Note the use of ":"
+        to separate the server_id from the component_id if the server_id
+        is provided. The component id must match "bed", "chamber", or
+        "toolN" where N is some integer. Tool numbers start from 0. Not all
+        printers will have all components. </para>
+        </listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_temperature_graph</option>
+            </command>
+            <option>(server_id:)component_id (height),(width) 
+            (gradient colour 1) (gradient colour 2) (scale) (-t) (-l)</option>
+        </term>
+        <listitem><para>Temperature of the specified component.
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used. Note the use of ":"
+        to separate the server_id from the component_id if the server_id
+        is provided. The component id must match "bed", "chamber", or
+        "toolN" where N is some integer. Tool numbers start from 0. Not all
+        printers will have all components.</para>
+        <para>Gradient colors can be specified as hexadecimal
+        values with no 0x or # prefix. Use the -t switch to enable a
+        temperature gradient, so that small values are "cold" with color 1
+        and large values are "hot" with color 2. Without the -t switch,
+        the colors produce a horizontal gradient spanning the width of the
+        graph. The scale parameter defines the maximum value of the graph.
+        It is suggested to make this higher than the max temperature you can 
+        ever safely reach with that particular printer component.
+        Use the -l switch to enable a logarithmic scale, which helps to
+        see small values. The default size for graphs can be controlled
+        via the default_graph_height and default_graph_width config
+        settings.</para>
+        </listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_target_temp</option>
+            </command>
+            <option>(server_id:)component_id</option>
+        </term>
+        <listitem>Target temperature of the specified component.
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used. Note the use of ":"
+        to separate the server_id from the component_id if the server_id
+        is provided. The component id must match "bed", "chamber", or
+        "toolN" where N is some integer. Tool numbers start from 0. Not all
+        printers will have all components.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_target_temp_bar</option>
+            </command>
+            <option>(height)(,width)(:scale)</option>
+            <option>(server_id:)component_id</option>
+        </term>
+        <listitem><para>Target temperature of the specified component.
+        Width can only be specified if height is given. Note the "," separator.
+        Scale is the max value of the bar. May be specified regardless of 
+        height and width specification, but must always include the ":" char.
+        It is suggested to make this higher than the max temperature you can 
+        ever safely reach with that particular printer component. </para>
+        <para>
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used. Note the use of ":"
+        to separate the server_id from the component_id if the server_id
+        is provided. The component id must match "bed", "chamber", or
+        "toolN" where N is some integer. Tool numbers start from 0. Not all
+        printers will have all components. </para>
+        </listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_target_temp_graph</option>
+            </command>
+            <option>(server_id:)component_id (height),(width) 
+            (gradient colour 1) (gradient colour 2) (scale) (-t) (-l)</option>
+        </term>
+        <listitem><para>Target temperature of the specified component.
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used. Note the use of ":"
+        to separate the server_id from the component_id if the server_id
+        is provided. The component id must match "bed", "chamber", or
+        "toolN" where N is some integer. Tool numbers start from 0. Not all
+        printers will have all components.</para>
+        <para>Gradient colors can be specified as hexadecimal
+        values with no 0x or # prefix. Use the -t switch to enable a
+        temperature gradient, so that small values are "cold" with color 1
+        and large values are "hot" with color 2. Without the -t switch,
+        the colors produce a horizontal gradient spanning the width of the
+        graph. The scale parameter defines the maximum value of the graph.
+        It is suggested to make this higher than the max temperature you can 
+        ever safely reach with that particular printer component.
+        Use the -l switch to enable a logarithmic scale, which helps to
+        see small values. The default size for graphs can be controlled
+        via the default_graph_height and default_graph_width config
+        settings.</para>
+        </listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_user</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>User name associated with this query to the server. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_version</option>
+            </command>
+            <option>(server_id)</option>
+        </term>
+        <listitem>Version string of the server. 
+        If a server_id is provided, it will be used as a lookup key in the 
+        conky setting 'octoprint_config'. Otherwise the server specified in 
+        conky setting 'octoprint_server' will be used.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>offset</option>
             </command>
             <option>(pixels)</option>

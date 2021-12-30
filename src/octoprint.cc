@@ -163,9 +163,9 @@ Json::Value octoprint_get_last_xfer(const std::string &printer_id, const std::st
       NORM_ERR("octoprint: url for printer '%s' not specified",printer_id.c_str());
       return Json::Value(Json::nullValue);
     }
-    token = printer_conf["token"].asString();
+    token = printer_conf["apikey"].asString();
     if (token.empty()) {
-      NORM_ERR("octoprint: token for printer '%s' not specified",printer_id.c_str());
+      NORM_ERR("octoprint: apikey for printer '%s' not specified",printer_id.c_str());
       return Json::Value(Json::nullValue);
     }
     if (printer_conf.isMember("interval"))
@@ -263,6 +263,7 @@ void print_octoprint_conn_state(struct text_object *obj, char *p, unsigned int p
 // /api/files/<location>/<file>
 void print_octoprint_local_used(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::queue<std::string> q({"files"});
+  //TODO: make recursive
   auto result = extract_common(obj, "/api/files/local", q);
 
   std::size_t bytes{0};

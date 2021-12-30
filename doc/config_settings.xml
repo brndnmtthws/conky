@@ -712,6 +712,58 @@
     <varlistentry>
         <term>
             <command>
+                <option>octoprint_apikey</option>
+            </command>
+        </term>
+        <listitem>The api key for the default octoprint server. It is suggested
+        to use an application key specific to your conky instance. 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_config</option>
+            </command>
+        </term>
+        <listitem><para>A string which can be parsed as JSON to set parameters 
+        for multiple servers. The top level value must be a JSON Object. The 
+        keys in this Object may be used by all $octoprint_* variables as the 
+        printer_id. The value associated with each printer_id key must also be 
+        a JSON Object. This inner Object requires keys "url" and "apikey". The 
+        optional key "interval" may also be provided to set the server-specific 
+        data query rate.</para>
+        <para><emphasis>WARNING: THE INTERNAL JSON READER IS UNFORGIVING.
+        </emphasis> To make your life easier, it is suggested that you validate 
+        your json before adding it to the conky config. You may also use 
+        pretty-print JSON by enclosing the multi-line JSON block in the lua
+        multi-line string indicator: [[ multi-line config ]].</para>
+        </listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_server</option>
+            </command>
+        </term>
+        <listitem>The url for the default octoprint server. Example: 
+        'http://my_octoprint_server:5000'
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>octoprint_update_interval</option>
+            </command>
+        </term>
+        <listitem>The default interval at which to query any octoprint server
+        for new data. Defaults to 1 second if not specified. May be overridden
+        on a per-server basis in the octoprint_config setting.
+        <para /></listitem>
+    </varlistentry>
+
+    <varlistentry>
+        <term>
+            <command>
                 <option>out_to_console</option>
             </command>
         </term>
