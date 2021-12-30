@@ -142,6 +142,9 @@ static void print_version() {
 #ifdef BUILD_PULSEAUDIO
             << _("  * PulseAudio\n")
 #endif /* BUIL_PULSEAUDIO */
+#ifdef BUILD_OCTOPRINT
+            << _("  * Octoprint\n")
+#endif /* BUILD_OCTOPRINT */
 #ifdef DEBUG
             << _("  * Debugging extensions\n")
 #endif
