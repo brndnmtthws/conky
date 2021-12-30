@@ -110,7 +110,14 @@ Json::Value recursive_get(const Json::Value& obj, std::queue<std::string>& keys)
     //walk using reference, but return a copy of the final object
     return r_get(obj,keys);
   } catch(const std::exception& e) {
-    NORM_ERR("Error indexing into JSON blob");
+    Json::StreamWriterBuilder wbuilder;
+    wbuilder["indentation"] = "";
+    auto conf_str = Json::writeString(wbuilder,obj);
+    NORM_ERR("Error indexing into JSON blob: %s",conf_str.c_str());
+    while (!keys.empty()) {
+      NORM_ERR("remaining keys: %s", keys.front().c_str());
+      keys.pop();
+    }
     return Json::Value(Json::nullValue);
   }
 }
@@ -190,7 +197,7 @@ Json::Value extract_common(struct text_object *obj, const std::string& endpoint,
 void print_common(const Json::Value& result, char *p, unsigned int p_max_size) {
 
   if (result.isNull()) {
-    strncpy(p,"data not found", p_max_size);
+    strncpy(p,"", p_max_size);
     return;
   } else if (result.isIntegral()) {
     strncpy(p, std::to_string(result.asLargestInt()).c_str(), p_max_size);
@@ -228,14 +235,7 @@ void print_octoprint_longversion(struct text_object *obj, char *p, unsigned int 
 void print_octoprint_safemode(struct text_object *obj, char *p, unsigned int p_max_size) {
 
   std::queue<std::string> q({"safemode"});
-  auto result = extract_common(obj, "/api/server", q);
-
-  if (result.isNull()) {
-    strncpy(p,"", p_max_size);
-    return;
-  }
-
-  strncpy(p, result.asCString(), p_max_size);
+  print_common(extract_common(obj, "/api/server", q), p, p_max_size);
 }
 
 // /api/connection
@@ -297,6 +297,10 @@ void print_octoprint_job_name(struct text_object *obj, char *p, unsigned int p_m
   print_common(extract_common(obj, "/api/job", q), p, p_max_size);
 }
 
+void print_octoprint_job_progress(struct text_object *obj, char *p, unsigned int p_max_size) {
+  std::queue<std::string> q({"progress", "completion"});
+  print_common(extract_common(obj, "/api/job", q), p, p_max_size);
+}
 
 uint8_t octoprint_job_progress_pct(struct text_object *obj) {
   std::queue<std::string> q({"progress", "completion"});
@@ -365,42 +369,45 @@ void print_octoprint_printer_error(struct text_object *obj, char *p, unsigned in
 
 
 
-void print_octoprint_temperature(struct text_object *obj, char *p, unsigned int p_max_size) {
-  auto temperature = octoprint_temperature(obj);
-  snprintf(p, p_max_size, "%f", temperature);
-}
-
-void print_octoprint_target_temp(struct text_object *obj, char *p, unsigned int p_max_size) {
-  auto temperature = octoprint_target_temp(obj);
-  snprintf(p, p_max_size, "%f", temperature);
-}
-
-double octoprint_temperature(struct text_object *obj) {
+Json::Value get_temperature(struct text_object *obj, const std::string& field) {
   struct octoprint_data *od = static_cast<struct octoprint_data *>(obj->data.opaque);
   if (!od) {
     NORM_ERR("error processing Octoprint data");
-    return 0;
+    return Json::Value(Json::nullValue);
   }
   if (!od->component_id) {
     NORM_ERR("octoprint: component_id for temperature not specified");
-    return 0;
+    return Json::Value(Json::nullValue);
   }
-  std::queue<std::string> q({"temperature", od->component_id, "actual"});
-  return extract_common(obj, "/api/printer", q).asDouble();
+  std::queue<std::string> q({"temperature", od->component_id, field});
+  return extract_common(obj, "/api/printer", q);
+}
+
+void print_octoprint_temperature(struct text_object *obj, char *p, unsigned int p_max_size) {
+  auto temperature = get_temperature(obj, "actual");
+  if (temperature.isNull()){
+    snprintf(p, p_max_size, "???");
+  } else {
+    snprintf(p, p_max_size, "%3.1f", temperature.asDouble());
+  }
+}
+
+void print_octoprint_target_temp(struct text_object *obj, char *p, unsigned int p_max_size) {
+  auto temperature = get_temperature(obj, "target");
+  if (temperature.isNull()){
+    snprintf(p, p_max_size, "???");
+  } else {
+    snprintf(p, p_max_size, "%3.1f", temperature.asDouble());
+  }
+}
+
+
+double octoprint_temperature(struct text_object *obj) {
+  return get_temperature(obj,"actual").asDouble();
 }
 
 double octoprint_target_temp(struct text_object *obj) {
-  struct octoprint_data *od = static_cast<struct octoprint_data *>(obj->data.opaque);
-  if (!od) {
-    NORM_ERR("error processing Octoprint data");
-    return 0;
-  }
-  if (!od->component_id) {
-    NORM_ERR("octoprint: component_id for target temperature not specified");
-    return 0;
-  }
-  std::queue<std::string> q({"temperature", od->component_id, "target"});
-  return extract_common(obj, "/api/printer", q).asDouble();
+  return get_temperature(obj,"target").asDouble();
 }
 
 
@@ -420,7 +427,6 @@ int check_for_component(const char* arg) {
 }
 
 void octoprint_parse_arg(struct text_object *obj, const char *arg) {
-  NORM_ERR("octoprint_parse_arg got arg '%s'",arg);
   struct octoprint_data *od;
   od = static_cast<struct octoprint_data *>(malloc(sizeof(struct octoprint_data)));
   memset(od, 0, sizeof(struct octoprint_data));

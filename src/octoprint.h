@@ -51,6 +51,7 @@ void print_octoprint_local_filecount(struct text_object *, char *, unsigned int)
 void print_octoprint_sdcard_filecount(struct text_object *, char *, unsigned int);
 // /api/job
 void print_octoprint_job_name(struct text_object *, char *, unsigned int);
+void print_octoprint_job_progress(struct text_object *, char *, unsigned int);
 uint8_t octoprint_job_progress_pct(struct text_object *);
 double octoprint_job_progress_barval(struct text_object *);
 

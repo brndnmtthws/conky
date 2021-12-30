@@ -2005,6 +2005,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   OCTOPRINT_OBJ(local_filecount)
   OCTOPRINT_OBJ(sdcard_filecount)
   OCTOPRINT_OBJ(job_name)
+  OCTOPRINT_OBJ(job_progress)
   OCTOPRINT_OBJ(job_time)
   OCTOPRINT_OBJ(job_time_left)
   OCTOPRINT_OBJ(job_state)
@@ -2034,12 +2035,13 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   octoprint_parse_arg(obj, arg); //TODO: fixed scale view
   obj->callbacks.barval = &octoprint_temperature;
   obj->callbacks.free = &gen_free_opaque;
+#ifdef BUILD_X11
   END OBJ(octoprint_temperature_graph, 0)
   arg = scan_graph(obj, arg, 0);
   octoprint_parse_arg(obj, arg);
   obj->callbacks.graphval = &octoprint_temperature;
   obj->callbacks.free = &gen_free_opaque;
-
+#endif /* BUILD_X11 */
 #endif /* BUILD_OCTOPRINT */
 
   END {
