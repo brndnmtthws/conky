@@ -378,7 +378,11 @@ pkg_search_module(LUA
                   lua53
                   lua5.2
                   lua-5.2
-                  lua52)
+                  lua52
+                  lua5.1
+                  lua-5.1
+                  lua51
+)
 set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
 set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIRS})
 link_directories(${LUA_LIBRARY_DIRS})
