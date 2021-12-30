@@ -149,30 +149,38 @@ const char *scan_gauge(struct text_object *obj, const char *args,
 }
 #endif
 
-const char *scan_bar(struct text_object *obj, const char *args, double scale) {
+const char *scan_bar(struct text_object *obj, const char *args, double def_scale) {
   struct bar *b;
 
   b = static_cast<struct bar *>(malloc(sizeof(struct bar)));
   memset(b, 0, sizeof(struct bar));
 
   /* zero width means all space that is available */
-  b->width = default_bar_width.get(*state);
-  b->height = default_bar_height.get(*state);
 
-  if (scale != 0.0) {
-    b->scale = scale;
-  } else {
-    b->flags |= SF_SCALED;
-  }
-
-  /* bar's argument is either height or height,width */
+  /* bar's argument is "height,width:scale" "height:scale" "height,width" "height" or ":scale" */
   if (args != nullptr) {
     int n = 0;
-
-    if (sscanf(args, "%d,%d %n", &b->height, &b->width, &n) <= 1) {
-      sscanf(args, "%d %n", &b->height, &n);
+    if (sscanf(args, "%d,%d:%lf %n", &b->height, &b->width, &b->scale, &n) == 3) {
+    } else if (sscanf(args, "%d,%d %n", &b->height, &b->width, &n) == 2) {
+      b->scale = def_scale;
+    } else if (sscanf(args, "%d:%lf %n", &b->height, &b->scale, &n) == 2) {
+      b->width = default_bar_width.get(*state);
+    } else if (sscanf(args, "%d %n", &b->height, &n) == 1) {
+      b->width = default_bar_width.get(*state);
+      b->scale = def_scale;
+    } else if (sscanf(args, ":%lf %n", &b->scale, &n) == 1) {
+      b->width = default_bar_width.get(*state);
+      b->height = default_bar_height.get(*state);
     }
     args += n;
+  } else {
+    b->width = default_bar_width.get(*state);
+    b->height = default_bar_height.get(*state);
+    b->scale = def_scale;
+  }
+
+  if (b->scale == 0.0) {
+    b->flags |= SF_SCALED;
   }
 
   obj->special_data = b;
