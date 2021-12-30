@@ -2029,10 +2029,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   octoprint_parse_arg(obj, arg);
   obj->callbacks.barval = &octoprint_job_progress_barval;
   obj->callbacks.free = &gen_free_opaque;
-
   END OBJ(octoprint_temperature_bar, 0)
-  arg = scan_bar(obj, arg, 100);
-  octoprint_parse_arg(obj, arg); //TODO: fixed scale view
+  arg = scan_bar(obj, arg, 0);
+  octoprint_parse_arg(obj, arg);
   obj->callbacks.barval = &octoprint_temperature;
   obj->callbacks.free = &gen_free_opaque;
 #ifdef BUILD_X11

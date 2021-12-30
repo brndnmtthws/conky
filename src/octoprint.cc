@@ -191,6 +191,10 @@ Json::Value extract_common(struct text_object *obj, const std::string& endpoint,
   }
 
   const auto state_json = octoprint_get_last_xfer(od->printer_id ? od->printer_id : "", endpoint);
+  if (state_json.isNull()) {
+    NORM_ERR("no data available for printer '%s' endpoint '%s'", (od->printer_id ? od->printer_id : "<default>"), endpoint.c_str());
+    return state_json;
+  }
   return recursive_get(state_json, query_path);
 }
 
@@ -416,7 +420,7 @@ void print_octoprint_sdcard_ready(struct text_object *obj, char *p, unsigned int
   print_common(extract_common(obj, "/api/printer", q), p, p_max_size);
 }
 
-
+//tries to match the specific component patterns
 int check_for_component(const char* arg) {
   int char_count{0};
   if (sscanf(arg, "tool%*d%n ", &char_count) != EOF && char_count) {
@@ -426,6 +430,7 @@ int check_for_component(const char* arg) {
   return char_count;
 }
 
+//tries to parse a string which may contain printer and/or component specifier
 void octoprint_parse_arg(struct text_object *obj, const char *arg) {
   struct octoprint_data *od;
   od = static_cast<struct octoprint_data *>(malloc(sizeof(struct octoprint_data)));
