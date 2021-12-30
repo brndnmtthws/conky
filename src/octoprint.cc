@@ -393,7 +393,7 @@ void print_octoprint_temperature(struct text_object *obj, char *p, unsigned int 
   if (temperature.isNull()){
     snprintf(p, p_max_size, "???");
   } else {
-    snprintf(p, p_max_size, "%3.1f", temperature.asDouble());
+    snprintf(p, p_max_size, "%5.1f", temperature.asDouble());
   }
 }
 
@@ -402,10 +402,9 @@ void print_octoprint_target_temp(struct text_object *obj, char *p, unsigned int 
   if (temperature.isNull()){
     snprintf(p, p_max_size, "???");
   } else {
-    snprintf(p, p_max_size, "%3.1f", temperature.asDouble());
+    snprintf(p, p_max_size, "%5.1f", temperature.asDouble());
   }
 }
-
 
 double octoprint_temperature(struct text_object *obj) {
   return get_temperature(obj,"actual").asDouble();

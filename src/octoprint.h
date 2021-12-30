@@ -72,26 +72,9 @@ void print_octoprint_target_temp(struct text_object *, char *, unsigned int);
 double octoprint_temperature(struct text_object *);
 double octoprint_target_temp(struct text_object *);
 
-
-
-void print_octoprint_tool_temperature(struct text_object *, char *, unsigned int);
-double octoprint_tool_temperature(struct text_object *);
-void print_octoprint_tool_target_temp(struct text_object *, char *, unsigned int);
-void print_octoprint_bed_temperature(struct text_object *, char *, unsigned int);
-void print_octoprint_bed_target_temp(struct text_object *, char *, unsigned int);
-void print_octoprint_chamber_temperature(struct text_object *, char *, unsigned int);
-void print_octoprint_chamber_target_temp(struct text_object *, char *, unsigned int);
 void print_octoprint_sdcard_ready(struct text_object *, char *, unsigned int);
 
-
-// Json::Value octoprint_get_last_xfer(const std::string &printer_id, const std::string &endpoint);
-
-// Json::Value octoprint_get_last_xfer(const std::string &url, const std::string &token, double interval);
-
-
 void octoprint_parse_arg(struct text_object *, const char *);
-
-
 void octoprint_free_obj_info(struct text_object *);
 
 #endif

@@ -171,6 +171,10 @@ const char *scan_bar(struct text_object *obj, const char *args, double def_scale
     } else if (sscanf(args, ":%lf %n", &b->scale, &n) == 1) {
       b->width = default_bar_width.get(*state);
       b->height = default_bar_height.get(*state);
+    } else {
+      b->width = default_bar_width.get(*state);
+      b->height = default_bar_height.get(*state);
+      b->scale = def_scale;
     }
     args += n;
   } else {
