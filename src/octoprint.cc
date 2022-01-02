@@ -55,6 +55,7 @@ struct conky::lua_traits<Json::Value, false, false, false> {
     Json::Reader reader;
     bool parsingSuccessful = reader.parse( str, root );
     if ( !parsingSuccessful ) {
+      NORM_ERR("Error interpreting string as JSON: %s", str.c_str());
       return {Json::Value(Json::nullValue), false};
     }
     return {root, true};
