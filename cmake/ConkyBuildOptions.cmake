@@ -232,13 +232,6 @@ option(BUILD_XMMS2 "Enable if you want XMMS2 (music player) support" false)
 option(BUILD_CURL "Enable if you want Curl support" false)
 
 option(BUILD_OCTOPRINT "Enable if you want Octoprint support" false)
-if (BUILD_OCTOPRINT)
-  option(OCTOPRINT_MULTIPRINTER 
-    "Enable support of multiple Octoprint servers" true)
-else (BUILD_OCTOPRINT)
-  set(OCTOPRINT_MULTIPRINTER false CACHE BOOL
-      "Enable support of multiple Octoprint servers" FORCE)
-endif(BUILD_OCTOPRINT)
 
 option(BUILD_RSS "Enable if you want RSS support" false)
 
