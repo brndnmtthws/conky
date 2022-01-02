@@ -320,12 +320,22 @@ double octoprint_job_progress_barval(struct text_object *obj) {
 
 void print_octoprint_job_time(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::queue<std::string> q({"progress", "printTime"});
-  print_common(extract_common(obj, "/api/job", q), p, p_max_size);
+  auto seconds = extract_common(obj, "/api/job", q);
+  if (seconds.isNull()) {
+    snprintf(p, p_max_size, "???");
+  } else {
+    format_seconds(p, p_max_size, seconds.asLargestInt());
+  }
 }
 
 void print_octoprint_job_time_left(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::queue<std::string> q({"progress", "printTimeLeft"});
-  print_common(extract_common(obj, "/api/job", q), p, p_max_size);
+  auto seconds = extract_common(obj, "/api/job", q);
+  if (seconds.isNull()) {
+    snprintf(p, p_max_size, "???");
+  } else {
+    format_seconds(p, p_max_size, seconds.asLargestInt());
+  }
 }
 
 void print_octoprint_job_state(struct text_object *obj, char *p, unsigned int p_max_size) {
