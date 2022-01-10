@@ -327,7 +327,8 @@ class nvidia_s {
         attribute(ATTR_GPU_TEMP),
         token(0),
         search(SEARCH_FIRST),
-        target_id(0) {}
+        target_id(0),
+        is_percentage(false) {}
   const char *command;
   const char *arg;
   QUERY_ID query;
@@ -337,6 +338,7 @@ class nvidia_s {
   SEARCH_ID search;
   //  added new field for GPU id
   int target_id;
+  bool is_percentage;
 };
 
 // Cache by value
@@ -590,6 +592,7 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
       nvs->attribute = ATTR_UTILS_STRING;
       nvs->token = (char *)"graphics";
       nvs->search = SEARCH_FIRST;
+      nvs->is_percentage = true;
       break;
     case ARG_MEM_BW_UTIL:  // Memory bandwidth utilization %
       nvs->query = QUERY_STRING_VALUE;
@@ -597,6 +600,7 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
       nvs->attribute = ATTR_UTILS_STRING;
       nvs->token = (char *)"memory";
       nvs->search = SEARCH_FIRST;
+      nvs->is_percentage = true;
       break;
     case ARG_VIDEO_UTIL:  // Video engine utilization %
       nvs->query = QUERY_STRING_VALUE;
@@ -604,6 +608,7 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
       nvs->attribute = ATTR_UTILS_STRING;
       nvs->token = (char *)"video";
       nvs->search = SEARCH_FIRST;
+      nvs->is_percentage = true;
       break;
     case ARG_PCIE_UTIL:  // PCIe bandwidth utilization %
       nvs->query = QUERY_STRING_VALUE;
@@ -611,6 +616,7 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
       nvs->attribute = ATTR_UTILS_STRING;
       nvs->token = (char *)"PCIe";
       nvs->search = SEARCH_FIRST;
+      nvs->is_percentage = true;
       break;
 
     case ARG_MEM:  // Amount of used memory
@@ -636,6 +642,7 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
       nvs->query = QUERY_SPECIAL;
       nvs->target = TARGET_GPU;
       nvs->attribute = ATTR_MEM_UTIL;
+      nvs->is_percentage = true;
       break;
 
     case ARG_FAN_SPEED:  // Fan speed
@@ -647,6 +654,7 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
       nvs->query = QUERY_VALUE;
       nvs->target = TARGET_COOLER;
       nvs->attribute = ATTR_FAN_LEVEL;
+      nvs->is_percentage = true;
       break;
 
     case ARG_IMAGEQUALITY:  // Image quality
@@ -1022,7 +1030,12 @@ void print_nvidia_value(struct text_object *obj, char *p,
 
   // Print result
   if (value != -1) {
-    snprintf(p, p_max_size, "%d", value);
+    if (nvs->is_percentage) {
+      percent_print(p, p_max_size, value);
+    }
+    else {
+      snprintf(p, p_max_size, "%d", value);
+    }
   } else if (str != nullptr) {
     snprintf(p, p_max_size, "%s", str);
     free_and_zero(str);
