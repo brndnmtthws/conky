@@ -359,8 +359,6 @@ struct nvidia_c_string {
   int perfmax = -1;
 };
 
-static Display *nvdisplay = nullptr;
-
 // Maximum number of GPU connected:
 // For cache default value: choosed a model of direct access to array instead of
 // list for speed improvement value based on the incoming quad Naples tech
@@ -376,8 +374,11 @@ class nvidia_display_setting
   virtual void lua_setter(lua::state &l, bool init);
   virtual void cleanup(lua::state &l);
 
+  std::string nvdisplay;
+
  public:
   nvidia_display_setting() : Base("nvidia_display", std::string(), false) {}
+  virtual Display *get_nvdisplay();
 };
 
 void nvidia_display_setting::lua_setter(lua::state &l, bool init) {
@@ -385,20 +386,27 @@ void nvidia_display_setting::lua_setter(lua::state &l, bool init) {
 
   Base::lua_setter(l, init);
 
-  std::string str = do_convert(l, -1).first;
-  if (!str.empty()) {
-    nvdisplay = XOpenDisplay(str.c_str());
-    if (nvdisplay == nullptr) {
-      CRIT_ERR(nullptr, NULL, "can't open nvidia display: %s",
-               XDisplayName(str.c_str()));
-    }
-  }
+  nvdisplay = do_convert(l, -1).first;
 
   ++s;
 }  // namespace
 
+Display *nvidia_display_setting::get_nvdisplay() {
+  if (!nvdisplay.empty()) {
+    Display *nvd = XOpenDisplay(nvdisplay.c_str());
+    if (nvd == nullptr) {
+      NORM_ERR(nullptr, NULL, "can't open nvidia display: %s",
+               XDisplayName(nvdisplay.c_str()));
+    }
+    return nvd;
+  }
+  return nullptr;
+}  // namespace
+
 void nvidia_display_setting::cleanup(lua::state &l) {
   lua::stack_sentry s(l, -1);
+
+  Display *nvdisplay = get_nvdisplay();
 
   if (nvdisplay && nvdisplay != display) {
     XCloseDisplay(nvdisplay);
@@ -746,7 +754,7 @@ static int cache_nvidia_value(TARGET_ID tid, ATTR_ID aid, Display *dpy,
 // Retrieve attribute value via nvidia interface
 static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid, int gid,
                             const char *arg) {
-  Display *dpy = nvdisplay ? nvdisplay : display;
+  Display *dpy = nvidia_display.get_nvdisplay() ?: display;
   int value;
 
   // Check if the aid is cacheable
@@ -776,7 +784,7 @@ static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid, int gid,
 // Retrieve attribute string via nvidia interface
 static char *get_nvidia_string(TARGET_ID tid, ATTR_ID aid, int gid,
                                const char *arg) {
-  Display *dpy = nvdisplay ? nvdisplay : display;
+  Display *dpy = nvidia_display.get_nvdisplay() ?: display;
   char *str;
 
   // Query nvidia interface
@@ -948,7 +956,7 @@ void print_nvidia_value(struct text_object *obj, char *p,
   int event_base;
   int error_base;
 
-  Display *dpy = nvdisplay ? nvdisplay : display;
+  Display *dpy = nvidia_display.get_nvdisplay() ?: display;
 
   if (!dpy) {
     NORM_ERR("%s: no display set (try setting nvidia_display)", __func__);
@@ -1052,7 +1060,7 @@ double get_nvidia_barval(struct text_object *obj) {
   int event_base;
   int error_base;
 
-  Display *dpy = nvdisplay ? nvdisplay : display;
+  Display *dpy = nvidia_display.get_nvdisplay() ?: display;
 
   if (!dpy) {
     NORM_ERR("%s: no display set (try setting nvidia_display)", __func__);
