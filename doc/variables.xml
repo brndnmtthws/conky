@@ -4617,6 +4617,7 @@
             <option>URI locID data_type (interval_in_minutes)</option>
         </term>
         <listitem>
+            <para>This feature is currently unimplemented.</para>
             <para>Download, parse and display METAR data.</para>
             <para>'URI' must be a valid METAR URI.</para>
             <simplelist>
@@ -4699,6 +4700,7 @@
             <option>URI locID day data_type (interval_in_minutes)</option>
         </term>
         <listitem>
+            <para>This feature is currently unimplemented.</para>
             <para>Download, parse and display weather forecast data for a
             given day (daytime only).</para>
             <para>'locID', see 'weather' above.</para>
