@@ -42,6 +42,7 @@ static void user_name(char *ptr) {
     if (usr->ut_type == USER_PROCESS) {
       if (strlen(ptr) + strnlen(usr->ut_name, UT_NAMESIZE - 1) + 1 <= BUFLEN) {
         strncat(ptr, usr->ut_name, UT_NAMESIZE);
+        strncat(ptr, ", ", 2);
       }
     }
   }
@@ -145,6 +146,7 @@ int update_users(void) {
   users_alloc(current_info);
   user_name(temp);
   if (*temp != 0) {
+    temp[strlen(temp) - 2] = 0; /* remove ", " from end of string */
     free_and_zero(current_info->users.names);
     current_info->users.names = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.names, temp, text_buffer_size.get(*state));
