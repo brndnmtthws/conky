@@ -172,8 +172,9 @@ static inline conky::display_output_base *display_output() {
   if (conky::current_display_outputs.size())
     return conky::current_display_outputs[0];
   // XXX; not really what intended yet...
-  return conky::active_display_outputs[0];
-  // return nullptr;
+  if (conky::active_display_outputs.size())
+    return conky::active_display_outputs[0];
+  return nullptr;
 }
 
 static inline void unset_display_output() {
