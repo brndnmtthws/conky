@@ -61,6 +61,8 @@ std::string webpage;
 struct MHD_Daemon *httpd;
 static conky::simple_config_setting<bool> http_refresh("http_refresh", false,
                                                        true);
+static conky::simple_config_setting<unsigned short> http_port("http_port",
+                                                              HTTPPORT, true);
 
 MHD_Result sendanswer(void *cls, struct MHD_Connection *connection,
                       const char *url, const char *method, const char *version,
@@ -85,8 +87,15 @@ class out_to_http_setting : public conky::simple_config_setting<bool> {
     Base::lua_setter(l, init);
 
     if (init && do_convert(l, -1).first) {
-      httpd = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, HTTPPORT, nullptr,
-                               NULL, &sendanswer, nullptr, MHD_OPTION_END);
+      /* warn about old default port */
+      if (http_port.get(*state) == 10080) {
+        NORM_ERR(
+            "warning: port 10080 is blocked by browsers "
+            "like Firefox and Chromium, you may want to change http_port.");
+      }
+      httpd =
+          MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, http_port.get(*state),
+                           nullptr, NULL, &sendanswer, nullptr, MHD_OPTION_END);
     }
 
     ++s;

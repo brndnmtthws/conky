@@ -404,6 +404,17 @@
     <varlistentry>
         <term>
             <command>
+                <option>http_port</option>
+            </command>
+        </term>
+        <listitem>Port to listen to for HTTP connections. Default value is
+        10080, but is blocked by Firefox and Chrome, so you really want to
+        change it.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>http_refresh</option>
             </command>
         </term>
