@@ -302,6 +302,14 @@ if(BUILD_GUI)
   endif(BUILD_MOUSE_EVENTS OR BUILD_XINPUT)
 endif(BUILD_GUI)
 
+if(BUILD_SDL)
+  set(sdl_srcs
+    output/display-sdl.cc
+    output/display-sdl.hh
+  )
+  set(optional_sources ${optional_sources} ${sdl_srcs})
+endif(BUILD_SDL)
+
 if(BUILD_WAYLAND)
   set(wl_sources
     output/wl.cc

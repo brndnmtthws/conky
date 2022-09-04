@@ -68,6 +68,9 @@ bool out_to_gui(lua::state &l) {
 #ifdef BUILD_WAYLAND
   to_gui |= out_to_wayland.get(l);
 #endif /* BUILD_WAYLAND */
+#ifdef BUILD_SDL
+  to_gui |= out_to_sdl.get(l);
+#endif /* BUILD_SDL */
   return to_gui;
 }
 
