@@ -185,6 +185,10 @@ else(BUILD_X11)
   set(BUILD_NVIDIA false)
 endif(BUILD_X11)
 
+option(BUILD_SDL "Build SDL 1.2 support" false)
+if(BUILD_SDL)
+endif(BUILD_SDL)
+
 # if we build with any GUI support
 if(BUILD_X11)
   set(BUILD_GUI true)
@@ -192,6 +196,9 @@ endif(BUILD_X11)
 if(BUILD_WAYLAND)
   set(BUILD_GUI true)
 endif(BUILD_WAYLAND)
+if(BUILD_SDL)
+  set(BUILD_GUI true)
+endif(BUILD_SDL)
 
 if(OWN_WINDOW)
   option(BUILD_ARGB "Build ARGB (real transparency) support" true)
