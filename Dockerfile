@@ -13,6 +13,7 @@ RUN apt-get update \
   libaudclient-dev \
   libcairo2-dev \
   libcurl4-openssl-dev \
+  libdbus-glib-1-dev \
   libical-dev \
   libimlib2-dev \
   libircclient-dev \
@@ -103,7 +104,7 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   && make -j5 all \
   && make -j5 install
 
-FROM ubuntu:focal
+FROM ubuntu:jammy
 
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
@@ -111,6 +112,7 @@ RUN apt-get update \
   libaudclient2 \
   libcairo2 \
   libcurl4 \
+  libdbus-glib-1-2 \
   libical3 \
   libimlib2 \
   libircclient1 \
