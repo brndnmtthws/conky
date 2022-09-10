@@ -31,6 +31,8 @@ jobs:
           - os: ubuntu-20.04
             compiler: gcc
             compiler_version: 11
+          - compiler: clang
+            compiler_version: 9
           - os: ubuntu-22.04
             compiler: clang
             compiler_version: 10
