@@ -60,6 +60,7 @@ jobs:
             libcairo2-dev \
             libcurl4-gnutls-dev \
             libcurl4-gnutls-dev \
+            libdbus-glib-1-dev \
             libglib2.0-dev \
             libical-dev \
             libimlib2-dev \
