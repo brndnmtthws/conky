@@ -87,7 +87,9 @@ typedef struct _RsvgRectangle {
 const char  *rsvg_handle_get_base_uri (RsvgHandle * handle);
 void         rsvg_handle_set_base_uri (RsvgHandle * handle, const char *base_uri);
 
-void rsvg_handle_get_dimensions (RsvgHandle * handle, RsvgDimensionData * dimension_data);
+gboolean     rsvg_handle_get_intrinsic_size_in_pixels  (RsvgHandle *handle,
+                                                        gdouble *out_width,
+                                                        gdouble *out_height);
 
 gboolean rsvg_handle_get_geometry_for_layer(RsvgHandle *handle,
                                             const char *id,
