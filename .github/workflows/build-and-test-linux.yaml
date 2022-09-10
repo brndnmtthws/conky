@@ -5,34 +5,32 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu-18.04
           - ubuntu-20.04
+          - ubuntu-22.04
         x11: [ON, OFF]
         compiler:
           - clang
           - gcc
         compiler_version:
-          - 7
-          - 9
           - 10
           - 11
+          - 12
+          - 13
+          - 14
+          - 15
         exclude:
-          - os: ubuntu-20.04
-            compiler: gcc
-            compiler_version: 7
           - compiler: gcc
+            compiler_version: 13
+          - compiler: gcc
+            compiler_version: 14
+          - compiler: gcc
+            compiler_version: 15
+          - compiler: clang
+            compiler_version: 10
+          - compiler: clang
             compiler_version: 11
           - compiler: clang
-            compiler_version: 7
-          - os: ubuntu-18.04
-            compiler: clang
-            compiler_version: 7
-          - os: ubuntu-18.04
-            compiler: clang
-            compiler_version: 10
-          - os: ubuntu-18.04
-            compiler: clang
-            compiler_version: 11
+            compiler_version: 12
     runs-on: ${{ matrix.os }}
     steps:
       - run: sudo apt-get -qq update
