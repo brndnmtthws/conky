@@ -104,7 +104,12 @@ RsvgHandle *rsvg_handle_new_from_data (const unsigned char * data, unsigned long
 RsvgHandle *rsvg_handle_new_from_file (const char * file_name, GError ** error);
 
 int         rsvg_handle_render_cairo     (RsvgHandle * handle, cairo_t * cr);
-int         rsvg_handle_render_cairo_sub (RsvgHandle * handle, cairo_t * cr, const char *id);
+
+gboolean    rsvg_handle_render_layer (RsvgHandle *handle,
+                          cairo_t *cr,
+                          const char *id,
+                          const RsvgRectangle *viewport,
+                          GError **error);
 
 void g_object_unref(gpointer object);
 
