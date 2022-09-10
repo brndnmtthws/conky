@@ -57,8 +57,6 @@ jobs:
             gawk \
             lcov \
             libaudclient-dev \
-            libc++-${{ matrix.compiler_version }}-dev \
-            libc++abi-${{ matrix.compiler_version }}-dev \
             libcairo2-dev \
             libcurl4-gnutls-dev \
             libcurl4-gnutls-dev \
@@ -82,6 +80,12 @@ jobs:
             libxmmsclient-dev \
             libxnvctrl-dev \
             ncurses-dev
+      - name: Install libc++
+        if: matrix.compiler == 'clang'
+        run: |
+          sudo apt-get install -yqq --no-install-recommends \
+            libc++-${{ matrix.compiler_version }}-dev \
+            libc++abi-${{ matrix.compiler_version }}-dev
       - name: Checkout
         uses: actions/checkout@v2
       - name: Configure with CMake
