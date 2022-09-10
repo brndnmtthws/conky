@@ -43,9 +43,9 @@ RUN apt-get update \
 # Compile CMake, we need the latest because the bug here (for armv7 builds):
 # https://gitlab.kitware.com/cmake/cmake/-/issues/20568
 WORKDIR /cmake
-RUN curl -Lq https://github.com/Kitware/CMake/releases/download/v3.19.6/cmake-3.19.6.tar.gz -o cmake-3.19.6.tar.gz \
-  && tar xf cmake-3.19.6.tar.gz \
-  && cd cmake-3.19.6 \
+RUN curl -Lq https://github.com/Kitware/CMake/releases/download/v3.24.1/cmake-3.24.1.tar.gz -o cmake-3.24.1.tar.gz \
+  && tar xf cmake-3.24.1.tar.gz \
+  && cd cmake-3.24.1 \
   && CC=clang CXX=clang++ CFLAGS="-D_FILE_OFFSET_BITS=64" CXXFLAGS="-D_FILE_OFFSET_BITS=64" ./bootstrap --system-libs --parallel=5 \
   && make -j5 \
   && make -j5 install \
@@ -69,9 +69,8 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   -DBUILD_IRC=ON \
   -DBUILD_JOURNAL=ON \
   -DBUILD_LUA_CAIRO=ON \
-  -DBUILD_LUA_CAIRO=ON \
   -DBUILD_LUA_IMLIB2=ON \
-  -DBUILD_LUA_RSVG=ON \
+  -DBUILD_LUA_RSVG=OFF \
   -DBUILD_MYSQL=ON \
   -DBUILD_NVIDIA=ON \
   -DBUILD_PULSEAUDIO=ON \
@@ -91,9 +90,8 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   -DBUILD_IRC=ON \
   -DBUILD_JOURNAL=ON \
   -DBUILD_LUA_CAIRO=ON \
-  -DBUILD_LUA_CAIRO=ON \
   -DBUILD_LUA_IMLIB2=ON \
-  -DBUILD_LUA_RSVG=ON \
+  -DBUILD_LUA_RSVG=OFF \
   -DBUILD_MYSQL=ON \
   -DBUILD_PULSEAUDIO=ON \
   -DBUILD_RSS=ON \
