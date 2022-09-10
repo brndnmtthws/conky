@@ -44,7 +44,6 @@
 
 $#include <glib.h>
 $#include <librsvg/rsvg.h>
-$#include <librsvg/rsvg-version.h>
 $#include "librsvg-helper.h"
 
 typedef struct _RsvgHandle RsvgHandle;
