@@ -99,9 +99,9 @@ jobs:
 
 
           # Enable librsvg by default, disable for older versions of Ubuntu
-          # because we need librsvg>=2.46
+          # because we need librsvg>=2.52
           RSVG_ENABLED=ON
-          [[ "${{ matrix.os }}" == "ubuntu-18.04"* ]] && RSVG_ENABLED=OFF
+          [[ "${{ matrix.os }}" == "ubuntu-20.04"* ]] && RSVG_ENABLED=OFF
 
           mkdir build
           cd build
