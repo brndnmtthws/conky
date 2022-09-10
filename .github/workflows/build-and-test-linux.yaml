@@ -18,7 +18,6 @@ jobs:
           - 12
           - 13
           - 14
-          - 15
         exclude:
           - compiler: gcc
             compiler_version: 12
@@ -26,8 +25,6 @@ jobs:
             compiler_version: 13
           - compiler: gcc
             compiler_version: 14
-          - compiler: gcc
-            compiler_version: 15
           - os: ubuntu-20.04
             compiler: gcc
             compiler_version: 11
@@ -48,9 +45,6 @@ jobs:
           - os: ubuntu-20.04
             compiler: clang
             compiler_version: 14
-          - os: ubuntu-20.04
-            compiler: clang
-            compiler_version: 15
     runs-on: ${{ matrix.os }}
     steps:
       - run: sudo apt-get -qq update
