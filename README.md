@@ -1,7 +1,5 @@
 [![Linux build](https://github.com/brndnmtthws/conky/actions/workflows/build-and-test-linux.yaml/badge.svg)](https://github.com/brndnmtthws/conky/actions/workflows/build-and-test-linux.yaml) [![macOS build](https://github.com/brndnmtthws/conky/actions/workflows/build-and-test-macos.yaml/badge.svg)](https://github.com/brndnmtthws/conky/actions/workflows/build-and-test-macos.yaml) [![Docker build](https://github.com/brndnmtthws/conky/actions/workflows/docker.yaml/badge.svg)](https://github.com/brndnmtthws/conky/actions/workflows/docker.yaml) [![AppImage build](https://github.com/brndnmtthws/conky/actions/workflows/publish-appimage.yml/badge.svg)](https://github.com/brndnmtthws/conky/actions/workflows/publish-appimage.yml)
 
-[![pipeline status](https://gitlab.com/brndnmtthws-oss/conky/badges/main/pipeline.svg)](https://gitlab.com/brndnmtthws-oss/conky/commits/main) [![coverage report](https://gitlab.com/brndnmtthws-oss/conky/badges/main/coverage.svg)](https://gitlab.com/brndnmtthws-oss/conky/commits/main)
-
 [💬 Join the Matrix chat](https://matrix.to/#/#conky:frens.io)
 
 <p align="center"><img width="300" src="logo/conky-logotype-horizontal-violet.png"></p>
