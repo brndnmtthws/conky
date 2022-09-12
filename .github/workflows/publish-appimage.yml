@@ -75,4 +75,5 @@ jobs:
           discussion_category_name: Announcement
           generate_release_notes: true
           files: |
-            conky*.AppImage
+            conky-x86_64.AppImage
+            conky-x86_64.AppImage.sha256
