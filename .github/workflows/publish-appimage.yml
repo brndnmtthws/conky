@@ -58,11 +58,13 @@ jobs:
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v3
         with:
-          path: conky*.AppImage
-      - name: Upload AppImage artifact
+          name: conky-x86_64.AppImage
+          path: conky-x86_64.AppImage
+      - name: Upload AppImage checksum artifact
         uses: actions/upload-artifact@v3
         with:
-          path: conky*.AppImage.sha256
+          name: conky-x86_64.AppImage.sha256
+          path: conky-x86_64.AppImage.sha256
       - name: Create Conky Release
         id: create_release
         uses: softprops/action-gh-release@v1
