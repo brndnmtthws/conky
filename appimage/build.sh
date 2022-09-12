@@ -74,4 +74,9 @@ chmod +x appimagetool-x86_64.AppImage
 
 ./appimagetool-x86_64.AppImage AppDir --sign --sign-key E3034071
 
-mv conky*.AppImage "$OLD_CWD"
+for f in conky*.AppImage
+do
+  sha256sum $f > $f.sha256
+done
+
+mv conky*.AppImage* "$OLD_CWD"

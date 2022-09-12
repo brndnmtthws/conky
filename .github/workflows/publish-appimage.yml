@@ -55,11 +55,14 @@ jobs:
           gpg --import appimage/secret.gpg
       - name: Build AppImage
         run: ./appimage/build.sh
-      - name: Archive AppImage
-        uses: actions/upload-artifact@v2
+      - name: Upload AppImage artifact
+        uses: actions/upload-artifact@v3
         with:
-          name: conky-appimage-amd64
           path: conky*.AppImage
+      - name: Upload AppImage artifact
+        uses: actions/upload-artifact@v3
+        with:
+          path: conky*.AppImage.sha256
       - name: Create Conky Release
         id: create_release
         uses: softprops/action-gh-release@v1
