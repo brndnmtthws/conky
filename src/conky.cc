@@ -1028,7 +1028,7 @@ static void draw_string(const char *s) {
 
 #ifdef BUILD_GUI
   if (display_output() && display_output()->graphical()) {
-    max = ((text_width - width_of_s) / get_string_width(" "));
+    max = ((text_width - width_of_s) / std::min(1, get_string_width(" ")));
   }
 #endif /* BUILD_GUI */
   /* This code looks for tabs in the text and coverts them to spaces.
