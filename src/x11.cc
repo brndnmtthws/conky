@@ -433,9 +433,11 @@ static void init_X11() {
 }
 
 static void deinit_X11() {
-  DBGP("deinit_X11()");
-  XCloseDisplay(display);
-  display = nullptr;
+  if (display) {
+    DBGP("deinit_X11()");
+    XCloseDisplay(display);
+    display = nullptr;
+  }
 }
 
 static void update_workarea() {
