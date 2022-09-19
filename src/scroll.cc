@@ -44,8 +44,6 @@ inline int scroll_character_length(char c) {
     auto uc = static_cast<unsigned char>(c);
     int len = 0;
 
-    if (c == -1) { return 1; }
-
     if ((uc & 0x80) == 0) { return 1; }
 
     while (len < 7 && (uc & (0x80 >> len)) != 0) { ++len; }
