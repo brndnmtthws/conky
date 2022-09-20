@@ -54,8 +54,11 @@ display_output_console::display_output_console(const std::string &name_)
 }
 
 bool display_output_console::detect() {
-  if ((out_to_stdout.get(*state) || out_to_stderr.get(*state)) &&
-      !out_to_ncurses.get(*state)) {
+  if ((out_to_stdout.get(*state) || out_to_stderr.get(*state))
+#ifdef BUILD_NCURSES
+      && !out_to_ncurses.get(*state)
+#endif
+  ) {
     DBGP2("Display output '%s' enabled in config.", name.c_str());
     return true;
   }
