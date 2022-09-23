@@ -191,7 +191,8 @@ int update_meminfo(void) {
 
   info.memmax = info.memdirty = info.swap = info.swapfree = info.swapmax =
       info.memwithbuffers = info.buffers = info.cached = info.memfree =
-          info.memeasyfree = info.legacymem = info.shmem = info.memavail = 0;
+          info.memeasyfree = info.legacymem = info.shmem = info.memavail =
+	      info.free_bufcache = 0;
 
   if (!(meminfo_fp = open_file("/proc/meminfo", &reported))) { return 0; }
 
@@ -260,6 +261,7 @@ int update_meminfo(void) {
   info.memeasyfree = cureasyfree;
   info.legacymem =
       info.memmax - (info.memfree + info.buffers + info.cached + sreclaimable);
+  info.free_bufcache = info.cached + info.buffers + sreclaimable;
 
   fclose(meminfo_fp);
   return 0;
