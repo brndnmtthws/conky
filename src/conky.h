@@ -168,7 +168,7 @@ struct information {
   unsigned long long mem, memwithbuffers, memavail, memeasyfree, memfree,
       memmax, memdirty, shmem, legacymem;
   unsigned long long swap, swapfree, swapmax;
-  unsigned long long bufmem, buffers, cached;
+  unsigned long long bufmem, buffers, cached, free_bufcache;
 
   unsigned short procs;
   unsigned short run_procs;

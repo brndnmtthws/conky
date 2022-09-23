@@ -525,6 +525,11 @@ void print_cached(struct text_object *obj, char *p, unsigned int p_max_size) {
                  p_max_size);
 }
 
+void print_free_bufcache(struct text_object *obj, char *p, unsigned int p_max_size) {
+  human_readable(apply_base_multiplier(obj->data.s, info.free_bufcache), p,
+                 p_max_size);
+}
+
 void print_evaluate(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::vector<char> buf(text_buffer_size.get(*state));
   evaluate(obj->data.s, &buf[0], buf.size());

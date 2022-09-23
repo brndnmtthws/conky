@@ -1301,6 +1301,15 @@
     <varlistentry>
         <term>
             <command>
+                <option>free_bufcache</option>
+            </command>
+        </term>
+        <listitem>Amount of memory cached or buffered, as reported by free. Linux only.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>freq</option>
             </command>
             <option>(n)</option>

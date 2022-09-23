@@ -140,6 +140,7 @@ void print_threads(struct text_object *, char *, unsigned int);
 
 void print_buffers(struct text_object *, char *, unsigned int);
 void print_cached(struct text_object *, char *, unsigned int);
+void print_free_bufcache(struct text_object *, char *, unsigned int);
 
 void print_evaluate(struct text_object *, char *, unsigned int);
 
