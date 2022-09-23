@@ -1192,6 +1192,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(memdirty, &update_meminfo) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_memdirty;
   obj->callbacks.free = &gen_free_opaque;
+  END OBJ(memavail, &update_meminfo) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_memavail;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(shmem, &update_meminfo) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_shmem;
+  obj->callbacks.free = &gen_free_opaque;
 #endif /* __linux__ */
 #ifdef BUILD_GUI
   END OBJ(memgauge, &update_meminfo) scan_gauge(obj, arg, 1);

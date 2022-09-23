@@ -2295,6 +2295,15 @@
     <varlistentry>
         <term>
             <command>
+                <option>memavail</option>
+            </command>
+        </term>
+	<listitem>Amount of available memory as recorded in /proc/meminfo. Linux 3.14+ only.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>memdirty</option>
             </command>
         </term>
@@ -3792,6 +3801,15 @@
             <option>(color)</option>
         </term>
         <listitem>Change shading color.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>shmem</option>
+            </command>
+        </term>
+	<listitem>Amount of shared memory. Linux only.
         <para /></listitem>
     </varlistentry>
     <varlistentry>

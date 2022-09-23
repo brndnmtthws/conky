@@ -186,12 +186,12 @@ int update_meminfo(void) {
    * information struct (they may be read by other functions in the meantime).
    * These variables keep the calculations local to the function and finish off
    * the function by assigning the results to the information struct */
-  unsigned long long shmem = 0, sreclaimable = 0, curmem = 0, curbufmem = 0,
-                     cureasyfree = 0, memavail = 0;
+  unsigned long long sreclaimable = 0, curmem = 0, curbufmem = 0,
+                     cureasyfree = 0;
 
   info.memmax = info.memdirty = info.swap = info.swapfree = info.swapmax =
       info.memwithbuffers = info.buffers = info.cached = info.memfree =
-          info.memeasyfree = info.legacymem = 0;
+          info.memeasyfree = info.legacymem = info.shmem = info.memavail = 0;
 
   if (!(meminfo_fp = open_file("/proc/meminfo", &reported))) { return 0; }
 
@@ -213,9 +213,9 @@ int update_meminfo(void) {
     } else if (strncmp(buf, "Dirty:", 6) == 0) {
       sscanf(buf, "%*s %llu", &info.memdirty);
     } else if (strncmp(buf, "MemAvailable:", 13) == 0) {
-      sscanf(buf, "%*s %llu", &memavail);
+      sscanf(buf, "%*s %llu", &info.memavail);
     } else if (strncmp(buf, "Shmem:", 6) == 0) {
-      sscanf(buf, "%*s %llu", &shmem);
+      sscanf(buf, "%*s %llu", &info.shmem);
     } else if (strncmp(buf, "SReclaimable:", 13) == 0) {
       sscanf(buf, "%*s %llu", &sreclaimable);
     }
@@ -230,7 +230,7 @@ int update_meminfo(void) {
      Note: when shared memory is swapped out, shmem decreases and swapfree
      decreases - we want this.
   */
-  curbufmem = (info.cached - shmem) + info.buffers + sreclaimable;
+  curbufmem = (info.cached - info.shmem) + info.buffers + sreclaimable;
 
   /* Calculate the memory usage.
    *
@@ -248,7 +248,7 @@ int update_meminfo(void) {
     curmem -= curbufmem;
     cureasyfree += curbufmem;
 #else  /* LINUX_VERSION_CODE <= KERNEL_VERSION(3, 14, 0) */
-    curmem = info.memmax - memavail;
+    curmem = info.memmax - info.memavail;
     cureasyfree += curbufmem;
 #endif /* LINUX_VERSION_CODE <= KERNEL_VERSION(3, 14, 0) */
   }
