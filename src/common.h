@@ -109,6 +109,8 @@ void print_legacymem(struct text_object *, char *, unsigned int);
 void print_memfree(struct text_object *, char *, unsigned int);
 void print_memmax(struct text_object *, char *, unsigned int);
 void print_memdirty(struct text_object *, char *, unsigned int);
+void print_shmem(struct text_object *, char *, unsigned int);
+void print_memavail(struct text_object *, char *, unsigned int);
 void print_swap(struct text_object *, char *, unsigned int);
 void print_swapfree(struct text_object *, char *, unsigned int);
 void print_swapmax(struct text_object *, char *, unsigned int);
