@@ -774,6 +774,17 @@
     <varlistentry>
         <term>
             <command>
+                <option>cpugovernor</option>
+            </command>
+            <option>(cpuN)</option>
+        </term>
+	<listitem>The active CPU scaling governor, defaulting to the first core.
+	See $cpu for more info on SMP. Linux only.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>cpugraph</option>
             </command>
             <option>(cpuN) (height),(width) (gradient colour 1) (gradient
