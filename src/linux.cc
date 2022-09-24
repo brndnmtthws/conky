@@ -1581,6 +1581,26 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
   return 1;
 }
 
+#define CPUFREQ_GOVERNOR "cpufreq/scaling_governor"
+
+/* print the CPU scaling governor */ 
+void print_cpugovernor(struct text_object *obj, char *p,
+		        unsigned int p_max_size) {
+  FILE *fp;
+  char buf[64];
+  unsigned int cpu = obj->data.i;
+
+  cpu--;
+  snprintf(buf, 63, "%s/cpu%d/%s", CPUFREQ_PREFIX, cpu, CPUFREQ_GOVERNOR);
+  if ((fp = fopen(buf, "r")) != nullptr) {
+    while (fscanf(fp, "%63s", buf) == 1) {
+      snprintf(p, p_max_size, "%s", buf);
+      fclose(fp);
+      return;
+    }
+  }
+}
+
 #define CPUFREQ_VOLTAGE "cpufreq/scaling_voltages"
 
 /* /sys/devices/system/cpu/cpu0/cpufreq/scaling_voltages looks something
