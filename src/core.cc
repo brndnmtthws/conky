@@ -455,8 +455,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_freq_g;
 #if defined(__linux__)
   END OBJ(cpugovernor, nullptr) get_cpu_count();
-  if ((arg == nullptr) || (isdigit(static_cast<unsigned char>(arg[0])) == 0) ||
-      strlen(arg) >= 3 || strtol(&arg[0], nullptr, 10) == 0 ||
+  if ((arg == nullptr) || strlen(arg) >= 3 ||
+      strtol(&arg[0], nullptr, 10) == 0 ||
       static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("cpugovernor: Invalid CPU number or you don't have that "
