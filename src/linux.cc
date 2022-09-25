@@ -954,9 +954,9 @@ void get_cpu_count(void) {
         subtoken = strtok_r(str2, "-", &saveptr2);
         if (subtoken == nullptr) break;
         if (subtoken1 < 0)
-          subtoken1 = atoi(subtoken);
+          subtoken1 = strtol(subtoken, nullptr, 10);
         else
-          subtoken2 = atoi(subtoken);
+          subtoken2 = strtol(subtoken, nullptr, 10);
       }
       if (subtoken2 > 0) info.cpu_count += subtoken2 - subtoken1;
     }
@@ -1339,7 +1339,7 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
       NORM_ERR("open_sysfs_sensor(): can't read from sysfs");
     } else {
       divbuf[divn] = '\0';
-      *divisor = atoi(divbuf);
+      *divisor = strtol(divbuf, nullptr, 10);
     }
     close(divfd);
   }
@@ -1365,7 +1365,7 @@ static double get_sysfs_info(int *fd, int divisor, char *devtype, char *type) {
       NORM_ERR("get_sysfs_info(): read from %s failed\n", devtype);
     } else {
       buf[n] = '\0';
-      val = atoi(buf);
+      val = strtol(buf, nullptr, 10);
     }
   }
 

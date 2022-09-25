@@ -2183,7 +2183,7 @@ void initialisation(int argc, char **argv) {
 #endif /* BUILD_X11 */
       case 'p':
         if (first_pass != 0) {
-          startup_pause = atoi(optarg);
+          startup_pause = strtol(optarg, nullptr, 10);
           sleep(startup_pause);
         }
         break;

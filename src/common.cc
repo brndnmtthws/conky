@@ -316,7 +316,7 @@ void scan_loadavg_arg(struct text_object *obj, const char *arg) {
   obj->data.i = 0;
   if ((arg != nullptr) && (arg[1] == 0) &&
       (isdigit(static_cast<unsigned char>(arg[0])) != 0)) {
-    obj->data.i = atoi(arg);
+    obj->data.i = strtol(arg, nullptr, 10);
     if (obj->data.i > 3 || obj->data.i < 1) {
       NORM_ERR("loadavg arg needs to be in range (1,3)");
       obj->data.i = 0;

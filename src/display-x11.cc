@@ -144,7 +144,7 @@ static void X11_create_window() {
 #ifdef BUILD_XFT
   if (use_xft.get(*state)) {
     auto dpi = XGetDefault(display, "Xft", "dpi");
-    if (dpi) { xft_dpi = atoi(dpi); }
+    if (dpi) { xft_dpi = strtol(dpi, nullptr, 10); }
   }
 #endif                /* BUILD_XFT */
   update_text_area(); /* to position text/window on screen */

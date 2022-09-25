@@ -61,7 +61,7 @@ void parse_read_tcpip_arg(struct text_object *obj, const char *arg,
   sscanf(arg, "%s", rtd->host);
   sscanf(arg + strlen(rtd->host), "%u", &(rtd->port));
   if (rtd->port == 0) {
-    rtd->port = atoi(rtd->host);
+    rtd->port = strtol(rtd->host, nullptr, 10);
     strncpy(rtd->host, "localhost", 10);
   }
   if (rtd->port < 1 || rtd->port > 65535) {
