@@ -432,25 +432,25 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &gen_free_opaque;
 #endif /* !__OpenBSD__ */
   END OBJ(freq, nullptr) get_cpu_count();
-  if ((arg == nullptr) || (isdigit(static_cast<unsigned char>(arg[0])) == 0) ||
-      strlen(arg) >= 3 || atoi(&arg[0]) == 0 ||
-      static_cast<unsigned int>(atoi(&arg[0])) > info.cpu_count) {
+  if ((arg == nullptr) || strlen(arg) >= 3 ||
+      strtol(&arg[0], nullptr, 10) == 0 ||
+      static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("freq: Invalid CPU number or you don't have that many CPUs! "
       "Displaying the clock for CPU 1."); */
   } else {
-    obj->data.i = atoi(&arg[0]);
+    obj->data.i = strtol(&arg[0], nullptr, 10);
   }
   obj->callbacks.print = &print_freq;
   END OBJ(freq_g, nullptr) get_cpu_count();
-  if ((arg == nullptr) || (isdigit(static_cast<unsigned char>(arg[0])) == 0) ||
-      strlen(arg) >= 3 || atoi(&arg[0]) == 0 ||
-      static_cast<unsigned int>(atoi(&arg[0])) > info.cpu_count) {
+  if ((arg == nullptr) || strlen(arg) >= 3 ||
+      strtol(&arg[0], nullptr, 10) == 0 ||
+      static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("freq_g: Invalid CPU number or you don't have that many "
       "CPUs! Displaying the clock for CPU 1."); */
   } else {
-    obj->data.i = atoi(&arg[0]);
+    obj->data.i = strtol(&arg[0], nullptr, 10);
   }
   obj->callbacks.print = &print_freq_g;
 #if defined(__linux__)
@@ -483,23 +483,23 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &free_tcp_ping;
 #if defined(__linux__)
   END OBJ(voltage_mv, 0) get_cpu_count();
-  if (!arg || !isdigit((unsigned char)arg[0]) || strlen(arg) >= 3 ||
-      atoi(&arg[0]) == 0 || (unsigned int)atoi(&arg[0]) > info.cpu_count) {
+  if (!arg || strlen(arg) >= 3 || strtol(&arg[0], nullptr, 10) == 0 ||
+    (unsigned int)strtol(&arg[0], nullptr, 10) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("voltage_mv: Invalid CPU number or you don't have that many "
       "CPUs! Displaying voltage for CPU 1."); */
   } else {
-    obj->data.i = atoi(&arg[0]);
+    obj->data.i = strtol(&arg[0], nullptr, 10);
   }
   obj->callbacks.print = &print_voltage_mv;
   END OBJ(voltage_v, 0) get_cpu_count();
-  if (!arg || !isdigit((unsigned char)arg[0]) || strlen(arg) >= 3 ||
-      atoi(&arg[0]) == 0 || (unsigned int)atoi(&arg[0]) > info.cpu_count) {
+  if (!arg || strlen(arg) >= 3 || strtol(&arg[0], nullptr, 10) == 0 ||
+    (unsigned int)strtol(&arg[0], nullptr, 10) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("voltage_v: Invalid CPU number or you don't have that many "
       "CPUs! Displaying voltage for CPU 1."); */
   } else {
-    obj->data.i = atoi(&arg[0]);
+    obj->data.i = strtol(&arg[0], nullptr, 10);
   }
   obj->callbacks.print = &print_voltage_v;
 
@@ -1017,20 +1017,20 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(fs_used, &update_fs_stats) init_fs(obj, arg);
   obj->callbacks.print = &print_fs_used;
 #ifdef BUILD_GUI
-  END OBJ(hr, nullptr) obj->data.l = arg != nullptr ? atoi(arg) : 1;
+  END OBJ(hr, nullptr) obj->data.l = arg != nullptr ? strtol(arg, nullptr, 10) : 1;
   obj->callbacks.print = &new_hr;
 #endif /* BUILD_GUI */
   END OBJ(nameserver, &update_dns_data) parse_nameserver_arg(obj, arg);
   obj->callbacks.print = &print_nameserver;
   obj->callbacks.free = &free_dns_data;
-  END OBJ(offset, nullptr) obj->data.l = arg != nullptr ? atoi(arg) : 1;
+  END OBJ(offset, nullptr) obj->data.l = arg != nullptr ? strtol(arg, nullptr, 10) : 1;
   obj->callbacks.print = &new_offset;
-  END OBJ(voffset, nullptr) obj->data.l = arg != nullptr ? atoi(arg) : 1;
+  END OBJ(voffset, nullptr) obj->data.l = arg != nullptr ? strtol(arg, nullptr, 10) : 1;
   obj->callbacks.print = &new_voffset;
   END OBJ(save_coordinates, nullptr) obj->data.l =
-      arg != nullptr ? atoi(arg) : 0;
+      arg != nullptr ? strtol(arg, nullptr, 10) : 0;
   obj->callbacks.print = &new_save_coordinates;
-  END OBJ_ARG(goto, nullptr, "goto needs arguments") obj->data.l = atoi(arg);
+  END OBJ_ARG(goto, nullptr, "goto needs arguments") obj->data.l = strtol(arg, nullptr, 10);
   obj->callbacks.print = &new_goto;
 #ifdef BUILD_GUI
   END OBJ(tab, nullptr) scan_tab(obj, arg);
@@ -1493,7 +1493,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       parse_net_stat_arg(obj, arg, free_at_crash);
   obj->callbacks.print = &print_totalup;
   END OBJ(updates, nullptr) obj->callbacks.print = &print_updates;
-  END OBJ_IF(if_updatenr, nullptr) obj->data.i = arg != nullptr ? atoi(arg) : 0;
+  END OBJ_IF(if_updatenr, nullptr) obj->data.i = arg != nullptr ? strtol(arg, nullptr, 10) : 0;
   if (obj->data.i == 0) {
     CRIT_ERR(obj, free_at_crash,
              "if_updatenr needs a number above 0 as argument");
@@ -1501,9 +1501,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   set_updatereset(obj->data.i > get_updatereset() ? obj->data.i
                                                   : get_updatereset());
   obj->callbacks.iftest = &updatenr_iftest;
-  END OBJ(alignr, nullptr) obj->data.l = arg != nullptr ? atoi(arg) : 1;
+  END OBJ(alignr, nullptr) obj->data.l = arg != nullptr ? strtol(arg, nullptr, 10) : 1;
   obj->callbacks.print = &new_alignr;
-  END OBJ(alignc, nullptr) obj->data.l = arg != nullptr ? atoi(arg) : 0;
+  END OBJ(alignc, nullptr) obj->data.l = arg != nullptr ? strtol(arg, nullptr, 10) : 0;
   obj->callbacks.print = &new_alignc;
   END OBJ(upspeed, &update_net_stats)
       parse_net_stat_arg(obj, arg, free_at_crash);

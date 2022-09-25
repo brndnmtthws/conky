@@ -620,7 +620,7 @@ int update_dns_data() {
 }
 
 void parse_nameserver_arg(struct text_object *obj, const char *arg) {
-  obj->data.l = arg != nullptr ? atoi(arg) : 0;
+  obj->data.l = arg != nullptr ? strtol(arg, nullptr, 10) : 0;
 }
 
 void print_nameserver(struct text_object *obj, char *p,
