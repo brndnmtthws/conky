@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwind variants;
+
+@layer base {
+  code {
+    @apply bg-indigo-100 dark:bg-indigo-900;
+  }
+}

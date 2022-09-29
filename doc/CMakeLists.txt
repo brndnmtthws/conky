@@ -18,9 +18,28 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-include(Docbook)
-
 if(BUILD_DOCS)
-  wrap_xsltproc(lua config_settings variables)
-  wrap_man(docs)
+    add_custom_target(man.md
+        ALL
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/docgen.py man.md.j2 > ${CMAKE_CURRENT_BINARY_DIR}/man.md
+        OUTPUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/man.md
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        SOURCES config_settings.yaml variables.yaml lua.yaml man.md.j2
+    )
+    add_custom_target(conky.1
+        ALL
+        COMMAND ${APP_PANDOC} -f markdown -t man ${CMAKE_CURRENT_BINARY_DIR}/man.md > ${CMAKE_CURRENT_BINARY_DIR}/conky.1
+        SOURCES config_settings.yaml variables.yaml lua.yaml man.md.j2
+    )
+    add_dependencies(conky.1 man.md)
+ 
+    set(MAN_PATH "share/man/man1")
+    set(MAN_FILES ${CMAKE_CURRENT_BINARY_DIR}/conky.1)
+
+    install(FILES ${DOC_FILES} DESTINATION ${DOC_PATH})
+
+    if(BUILD_DOCS)
+        install(FILES ${MAN_FILES} DESTINATION ${MAN_PATH})
+    endif(BUILD_DOCS)
+
 endif(BUILD_DOCS)
