@@ -1,0 +1,15 @@
+[build]
+command = "yarn run build"
+publish = ".next"
+
+[[plugins]]
+package = "@netlify/plugin-nextjs"
+
+[[plugins]]
+package = "netlify-plugin-cypress"
+
+[plugins.inputs.postBuild]
+enable = true
+
+[plugins.inputs]
+enable = false

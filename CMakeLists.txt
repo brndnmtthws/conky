@@ -76,23 +76,7 @@ if(NOT DEFINED DOC_PATH)
 endif(NOT DEFINED DOC_PATH)
 set(DOC_FILES extras/convert.lua data/conky_no_x11.conf data/conky.conf)
 
-set(HTML_PATH "${DOC_PATH}/html")
-set(HTML_FILES
-    doc/config_settings.html
-    doc/docs.html
-    doc/lua.html
-    doc/variables.html)
-
-set(MAN_PATH "share/man/man1")
-set(MAN_FILES doc/conky.1)
-
 install(FILES ${DOC_FILES} DESTINATION ${DOC_PATH})
-
-if(BUILD_DOCS)
-  install(FILES ${HTML_FILES} DESTINATION ${HTML_PATH})
-
-  install(FILES ${MAN_FILES} DESTINATION ${MAN_PATH})
-endif(BUILD_DOCS)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   install(FILES conky.desktop DESTINATION share/applications)

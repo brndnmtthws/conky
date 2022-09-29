@@ -1,0 +1,316 @@
+# NAME
+
+conky - A system monitor for X
+
+# SYNOPSIS
+
+**conky**
+
+\[ *options* \]
+
+# DESCRIPTION
+
+Conky is a system monitor for X originally based on torsmo. Since its
+inception, Conky has changed significantly from its predecessor, while
+maintaining simplicity and configurability. Conky can display just about
+anything, either on your root desktop or in its own window. Not only
+does Conky have many built-in objects, it can also display just about
+any piece of information by using scripts and other external programs.
+
+Conky has more than 250 built in objects, including support for a
+plethora of OS stats (uname, uptime, CPU usage, mem usage, disk usage,
+\"top\" like process stats, and network monitoring, just to name a few),
+built in IMAP and POP3 support, built in support for many popular music
+players (MPD, XMMS2, Audacious), and much much more. Conky can display
+this info either as text, or using simple progress bars and graph
+widgets, with different fonts and colours.
+
+We are always looking for help, whether its reporting bugs, writing
+patches, or writing docs. Please use the facilities on GitHub to
+make bug reports, feature requests, and submit patches.
+
+Thanks for your interest in Conky.
+
+# COMPILING
+
+For users compiling from source on a binary distro, make sure you have
+the X development libraries installed (Unless you configure your build
+without X11). This should be a package along the lines of \"libx11-dev\"
+or \"xorg-x11-dev\" for X11 libs, and similar \"-dev\" format for the
+other libs required (depending on your build options). You should be
+able to see which extra packages you need to install by reading errors
+that you get from running \`cmake\'. The easiest way to view the
+available build options is to run \`ccmake\' or \`cmake-gui\' from the
+source tree, but be careful when disabling certain features as you may
+lose desired functionality. E.g., with BUILD_MATH disabled you won\'t
+get errors but logarithmic graphs will be normal graphs and gauges will
+miss their line.
+
+Conky has (for some time) been available in the repositories of most
+popular distributions. Here are some installation instructions for a
+few:
+
+Gentoo users \-- Conky is in Gentoo\'s Portage\... simply use \"emerge
+app-admin/conky\" for installation.
+
+Debian, etc. users \-- Conky should be in your repositories, and can be
+installed by doing \"aptitude install conky\".
+
+Example to compile and run Conky with default components (note that some
+build options may differ for your system):
+
+**cmake** **-D CMAKE_INSTALL_PREFIX:string=/usr .** 
+
+:   
+
+**make** 
+
+:   
+
+**make install** **\# Optional** 
+
+:   
+
+**src/conky** 
+
+:   
+
+Conky has been tested to be compatible with C99 C and C++0x C++, however
+it has not been tested with anything other than gcc, and is not
+guaranteed to work with other compilers.
+
+TIP: Try configuring Conky with \`ccmake\' or \`cmake-gui\' instead of
+just \`cmake\'.
+
+# YOU SHOULD KNOW
+
+Conky is generally very good on resources. That said, the more you try
+to make Conky do, the more resources it is going to consume.
+
+An easy way to force Conky to reload your *\~/.config/conky/conky.conf*:
+\"killall -SIGUSR1 conky\". Saves you the trouble of having to kill and
+then restart.
+
+# OPTIONS
+
+Command line options override configurations defined in configuration
+file.
+
+**-a \| \--alignment=** **ALIGNMENT** 
+
+:   Text alignment on screen, {top,bottom,middle}\_{left,right,middle}
+    or none. Can also be abbreviated with first chars of position, ie.
+    tr for top_right. Only available with build flag BUILD_X11 enabled.
+
+**-b \| \--double-buffer** 
+
+:   Use double buffering (eliminates \"flicker\"). Only available with
+    build flag BUILD_X11 enabled.
+
+**-c \| \--config=** **FILE** 
+
+:   Config file to load instead of *\~/.config/conky/conky.conf*.
+
+**-C \| \--print-config** 
+
+:   Print builtin default config to stdout. See also the section
+    EXAMPLES for more information. Only available with build flag
+    BUILD_BUILTIN_CONFIG enabled.
+
+**-d \| \--daemonize** 
+
+:   Daemonize Conky, aka fork to background.
+
+**-D \| \--debug** 
+
+:   Increase debugging output, ie. -DD for more debugging.
+
+**-f \| \--font=** **FONT** 
+
+:   Font to use. Only available with build flag BUILD_X11 enabled.
+
+**-h \| \--help** 
+
+:   Prints command line help and exits.
+
+**-i** **COUNT** 
+
+:   Number of times to update Conky (and quit).
+
+**-o \| \--own-window** 
+
+:   Create own window to draw. Only available with build flag BUILD_X11
+    enabled.
+
+**-p \| \--pause=** **SECONDS** 
+
+:   Time to pause/wait before actually starting Conky.
+
+**-q \| \--quiet** 
+
+:   Run Conky in \'quiet mode\' (ie. no output).
+
+**-t \| \--text=** **TEXT** 
+
+:   Text to render, remember single quotes, like -t \' \$uptime \'.
+
+**-u \| \--interval=** **SECONDS** 
+
+:   Update interval.
+
+**-v \| -V \| \--version** 
+
+:   Prints version, build information and general info. Exits after
+    printing.
+
+**-w \| \--window-id=** **WIN_ID** 
+
+:   Window id to draw. Only available with build flag BUILD_X11 enabled.
+
+**-x** **X_COORDINATE** 
+
+:   X position.
+
+**-X \| \--display=** **DISPLAY** 
+
+:   X11 display to use. Only available with build flag BUILD_X11
+    enabled.
+
+**-y** **Y_COORDINATE** 
+
+:   Y position.
+
+# CONFIGURATION SETTINGS
+
+Default configuration file location is *\~/.config/conky/conky.conf* or
+*\${sysconfdir}/conky/conky.conf*. On most systems, sysconfdir is /etc,
+and you can find the sample config file there in
+*/etc/conky/conky.conf*.
+
+You might want to copy it to *\~/.config/conky/conky.conf* and then
+start modifying it. Other configs can be found at
+*https://github.com/brndnmtthws/conky*.
+
+{% for item in config_settings %}
+**{{ item.name }}** {{ item.args | map("reverse_format", "**{}**") | join(" ") }}
+
+:   {{ item.desc | indent(width=4) }}
+{%- if item.default %}
+
+    Default: {{ item.default }}
+{%- endif %}
+{% endfor %}
+
+# OBJECTS/VARIABLES
+
+Colours are parsed using XParsecolor(), there might be a list of them:
+*/usr/share/X11/rgb.txt*. Colour can be also in #rrggbb format (hex).
+
+Some objects may create threads, and sometimes these threads will not be
+destroyed until Conky terminates. There is no way to destroy or clean up
+threads while Conky is running. For example, if you use an MPD variable,
+the MPD thread will keep running until Conky dies. Some threaded objects
+will use one of the parameters as a \'key\', so that you only have 1
+relevant thread running (for example, the \$curl, \$rss and \$weather
+objects launch one thread per URI).
+
+{% for item in variables %}
+**{{ item.name }}** {{ item.args | map("reverse_format", "**{}**") | join(" ") }}
+
+:   {{ item.desc | indent(width=4) }}
+{%- if item.default %}
+
+    Default: {{ item.default }}
+{%- endif %}
+{% endfor %}
+
+# LUA API
+
+Conky features a Lua Programming API, and also ships with Lua bindings
+for some useful libraries. Note that the bindings require tolua++, which
+currently only compiles against Lua 5.1.
+
+To use Lua Conky, you first need to make sure you have a version of
+Conky with Lua support enabled (\`\`conky -v\'\' will report this).
+Conky defines certain global functions and variables which can be
+accessed from Lua code running in Conky. Scripts must first be loaded
+using the lua_load configuration option. You then call functions in Lua
+via Conky\'s \$lua, \$lua_read, and Lua hooks.
+
+Be careful when creating threaded objects through the Lua API. You could
+wind up with a whole bunch of threads running if a thread is created
+with each iteration.
+
+At this time, the Lua API should not be considered stable and may change
+drastically from one release to another as it matures.
+
+NOTE: In order to accommodate certain features in the cairo library\'s
+API, Conky will export a few additional functions for the creation of
+certain structures. These are documented below.
+
+{% for item in lua %}
+**{{ item.name }}** {{ item.args | map("reverse_format", "**{}**") | join(" ") }}
+
+:   {{ item.desc | indent(width=4) }}
+{%- if item.default %}
+
+    Default: {{ item.default }}
+{%- endif %}
+{% endfor %}
+
+# EXAMPLES
+
+**conky -t \'\${time %D %H:%M}\' -o -u 30** 
+
+:   Start Conky in its own window with date and clock as text and 30 sec
+    update interval.
+
+**conky -a top_left -x 5 -y 500 -d** 
+
+:   Start Conky to background at coordinates (5, 500).
+
+**conky -C \> \~/.config/conky/conky.conf** 
+
+:   Do not start Conky, but have it output the builtin default config
+    file to *\~/.config/conky/conky.conf* for later customising.
+
+# FILES
+
+*\${sysconfdir}/conky/conky.conf* 
+
+:   Default system-wide configuration file. The value of \${sysconfdir}
+    depends on the compile-time options (most likely /etc).
+
+*\~/.config/conky/conky.conf* 
+
+:   Default personal configuration file.
+
+# BUGS
+
+Drawing to root or some other desktop window directly doesn\'t work with
+all window managers. Especially doesn\'t work well with Gnome and it has
+been reported that it doesn\'t work with KDE either. Nautilus can be
+disabled from drawing to desktop with program gconf-editor. Uncheck
+show_desktop in /apps/nautilus/preferences/. There is -w switch in Conky
+to set some specific window id. You might find xwininfo -tree useful to
+find the window to draw to. You can also use -o argument which makes
+Conky to create its own window. If you do try running Conky in its own
+window, be sure to read up on the own_window_type settings and
+experiment.
+
+# SEE ALSO
+
+*https://github.com/brndnmtthws/conky*
+
+# COPYING
+
+Copyright (c) 2005-2022 Brenden Matthews, Philip Kovacs, et. al. Any
+original torsmo code is licensed under the BSD license (see LICENSE.BSD
+for a copy). All code written since the fork of torsmo is licensed under
+the GPL (see LICENSE.GPL for a copy), except where noted differently
+(such as in portmon and audacious code which are LGPL, and prss which is
+an MIT-style license).
+
+# AUTHORS
+
+The Conky dev team (see AUTHORS for a full list of contributors).
