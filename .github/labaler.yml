@@ -1,0 +1,26 @@
+documentation:
+  - docs/*
+
+extras:
+  - extras/*
+  - extras/**/*
+
+sources:
+  - src/*
+  - src/**/*
+
+tests:
+  - tests/**/*
+  - tests/*
+
+web:
+  - web/*
+  - web/**/*
+
+appimage:
+  - appimage/*
+  - appimage/**/*
+
+3rdparty:
+  - 3rdparty/*
+  - 3rdparty/**/*
