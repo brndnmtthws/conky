@@ -30,7 +30,7 @@ module.exports = {
         'Noto Color Emoji',
       ],
       serif: [
-        'Inter',
+        'Source Serif Pro',
         'ui-serif',
         'Georgia',
         'Cambria',
@@ -49,6 +49,32 @@ module.exports = {
         'Courier New',
         'monospace',
       ],
+      prose: [
+        'Source Sans Pro',
+        'ui-sans-serif',
+        'system-ui',
+        '-apple-system',
+        'BlinkMacSystemFont',
+        'Segoe UI',
+        'Roboto',
+        'Helvetica Neue',
+        'Arial',
+        'Noto Sans',
+        'sans-serif',
+        'Apple Color Emoji',
+        'Segoe UI Emoji',
+        'Segoe UI Symbol',
+        'Noto Color Emoji',
+      ],
+    },
+    extend: {
+      typography: (theme) => ({
+        DEFAULT: {
+          css: {
+            fontFamily: theme('fontFamily.prose').join(', '),
+          },
+        },
+      }),
     },
   },
   variants: {
