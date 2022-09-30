@@ -10,6 +10,13 @@ The `desc` field within the docs can be formatted with markdown, however _do
 not_ include headings within the `desc` fields, as it will mess up the man page
 output. In markdown, headings begin with `#`.
 
+The supported documentation fields are:
+
+* `name`: the name of the thing
+* `desc`: a markdown-formatted description of the thing
+* `args`: optional list of arguments
+* `default`: an optional default value, if applicable
+
 ## Updating docs
 
 The man page is based on [`man.md.j2`](man.md.j2) which is a Jinja2 template.

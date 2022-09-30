@@ -2,6 +2,13 @@
 #
 # The `desc` field can be formatted with markdown, but please do not include
 # headings (lines beginning with `#`) in the `desc` field.
+#
+# The supported fields are:
+#
+#  * `name`: the name of the thing
+#  * `desc`: a markdown-formatted description of the thing
+#  * `args`: optional list of arguments
+#  * `default`: an optional default value, if applicable
 ---
 - name: cairo_font_extents_t:create()
   desc: |-
