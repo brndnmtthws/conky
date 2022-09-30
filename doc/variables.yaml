@@ -464,7 +464,35 @@
     - (height),(width)
     - command
 - name: execgraph
-  desc: ""
+  desc: |-
+    Draws a horizontally scrolling graph with values from 0-100
+    plotted on the vertical axis. All parameters following the command
+    are optional. Gradient colors can be specified as hexadecimal
+    values with no 0x or # prefix. Use the -t switch to enable a
+    temperature gradient, so that small values are "cold" with color 1
+    and large values are "hot" with color 2. Without the -t switch,
+    the colors produce a horizontal gradient spanning the width of the
+    graph. The scale parameter defines the maximum value of the graph.
+    Use the -l switch to enable a logarithmic scale, which helps to
+    see small values. The default size for graphs can be controlled
+    via the default_graph_height and default_graph_width config
+    settings.
+
+    If you need to execute a command with spaces, you have a
+    couple options: 1) wrap your command in double-quotes, or 2) put
+    your command into a separate file, such as ~/bin/myscript.sh, and
+    use that as your execgraph command. Remember to make your script
+    executable!
+
+    In the following example, we set up execgraph to display
+    seconds (0-59) on a graph that is 50px high and 200px wide, using
+    a temperature gradient with colors ranging from red for small
+    values (FF0000) to yellow for large values (FFFF00). We set the
+    scale to 60.
+
+    ```
+    ${execgraph ~/seconds.sh 50,200 FF0000 FFFF00 60 -t}
+    ```
   args:
     - command
     - (height),(width)
@@ -473,36 +501,6 @@
     - (scale)
     - (-t)
     - (-l)
-  other:
-    para:
-      - |
-        Draws a horizontally scrolling graph with values from 0-100
-        plotted on the vertical axis. All parameters following the command
-        are optional. Gradient colors can be specified as hexadecimal
-        values with no 0x or # prefix. Use the -t switch to enable a
-        temperature gradient, so that small values are "cold" with color 1
-        and large values are "hot" with color 2. Without the -t switch,
-        the colors produce a horizontal gradient spanning the width of the
-        graph. The scale parameter defines the maximum value of the graph.
-        Use the -l switch to enable a logarithmic scale, which helps to
-        see small values. The default size for graphs can be controlled
-        via the default_graph_height and default_graph_width config
-        settings.
-      - |
-        If you need to execute a command with spaces, you have a
-        couple options: 1) wrap your command in double-quotes, or 2) put
-        your command into a separate file, such as ~/bin/myscript.sh, and
-        use that as your execgraph command. Remember to make your script
-        executable!
-      - |
-        In the following example, we set up execgraph to display
-        seconds (0-59) on a graph that is 50px high and 200px wide, using
-        a temperature gradient with colors ranging from red for small
-        values (FF0000) to yellow for large values (FFFF00). We set the
-        scale to 60.
-      - command: |
-          ${execgraph ~/seconds.sh 50,200 FF0000 FFFF00 60
-          -t}
 - name: execi
   desc: |-
     Same as exec, but with a specific interval in seconds. The
@@ -699,40 +697,40 @@
 - name: hwmon
   desc: |-
     Hwmon sensor from sysfs (Linux 2.6). Parameter dev can be:
-    1) Number. e.g '1' means hwmon1. 2) Module name. e.g. 'k10temp' means
-    the first hwmon device whose module name is 'k10temp. 3) Omitted. Then
-    the first hwmon device (hwmon0) will be used.
-    Parameter type is either
-    'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' meaning
-    temperature. Parameter n is number of the sensor. See&#160;on your local computer.
-    The optional arguments 'factor' and 'offset' allow precalculation of
-    the raw input, which is being modified as follows: 'input = input *
-    factor + offset'. Note that they have to be given as decimal values
-    (i.e. contain at least one decimal place).
+    1. Number. e.g `1` means hwmon1.
+    2. Module name. e.g. `k10temp` means the first hwmon device whose module
+    name is `k10temp.
+    3. Omitted. Then the first hwmon device (hwmon0) will be used.
+
+    Parameter type is either `in` or `vol` meaning voltage; `fan` meaning fan;
+    `temp` meaning temperature. Parameter n is number of the sensor. See
+    `/sys/class/hwmon/` on your local computer.  The optional arguments `factor`
+    and `offset` allow precalculation of the raw input, which is being modified
+    as follows: `input = input * factor + offset`. Note that they have to be
+    given as decimal values (i.e. contain at least one decimal place).
   args:
     - (height),(width)
   other:
-    filename: /sys/class/hwmon/
+    filename:
 - name: i2c
   desc: |-
-    I2C sensor from sysfs (Linux 2.6). Parameter dev may be
-    omitted if you have only one I2C device. Parameter type is either 'in'
-    or 'vol' meaning voltage; 'fan' meaning fan; 'temp' meaning
-    temperature. Parameter n is number of the sensor. See&#160;on your local
-    computer. The optional arguments 'factor' and 'offset' allow
-    precalculation of the raw input, which is being modified as follows:
-    'input = input * factor + offset'. Note that they have to be given as
-    decimal values (i.e. contain at least one decimal place).
+    I2C sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you have
+    only one I2C device. Parameter type is either `in` or `vol` meaning voltage;
+    `fan` meaning fan; `temp` meaning temperature. Parameter n is number of the
+    sensor. See `/sys/bus/i2c/devices/` on your local computer. The optional
+    arguments `factor` and `offset` allow precalculation of the raw input, which
+    is being modified as follows: `input = input * factor + offset`. Note that
+    they have to be given as decimal values (i.e. contain at least one decimal
+    place).
   args:
     - (height),(width)
   other:
-    filename: /sys/bus/i2c/devices/
+    filename:
 - name: i8k_ac_status
   desc: |-
-    If running the i8k kernel driver for Inspiron laptops,
-    displays whether ac power is on, as listed in /proc/i8k (translated to
-    human-readable). Beware that this is by default not enabled by i8k
-    itself.
+    If running the i8k kernel driver for Inspiron laptops, displays whether ac
+    power is on, as listed in `/proc/i8k` (translated to human-readable). Beware
+    that this is by default not enabled by i8k itself.
 - name: i8k_bios
   desc: |-
     If running the i8k kernel driver for Inspiron laptops,
@@ -839,24 +837,22 @@
     between $if_match and the matching $endif depending on whether the
     evaluation returns true or not. Valid expressions consist of a left
     side, an operator and a right side. Left and right sides are being
-    parsed for contained text objects before evaluation. Recognised left
-    and right side types are:Valid operands are: '>', '<', '>=', '<=',
-    '==', '!='.
+    parsed for contained text objects before evaluation.
+
+    Recognised left and right side types are:
+
+    * **double**: Argument consists of only digits and a single dot.
+    * **long**: Argument consists of only digits.
+    * **string**: Argument is enclosed in quotation marks (`"`).
+
+    Valid operands are:
+
+    * `<` or `>`
+    * `<=` or `>=`
+    * `==` or `!=`
+
   args:
     - (height),(width)
-  other:
-    simplelist:
-      member:
-        - command: double
-          text: |
-            Argument consists of only digits and a
-            single dot.
-        - command: long
-          text: Argument consists of only digits.
-        - command: string
-          text: |
-            Argument is enclosed in quotation marks.
-            (")
 - name: if_mixer_mute
   desc: |-
     If mixer exists, display everything between $if_mixer_mute
@@ -884,20 +880,15 @@
     may be either a full command line with arguments (without the
     directory prefix), or simply the name of an executable. For example,
     either of the following will be true if there is a running process
-    with the command line:It is important not to include trailing spaces. For
-    example,will be false.
+    with the command line `/usr/bin/conky -u 5`:
+
+    * `${if_running conky -u 5}` or
+    * `${if_running conky}`
+        
+    It is important not to include trailing spaces. For example, `${if_running
+    conky }` will be false.
   args:
     - (height),(width)
-  other:
-    command:
-      - /usr/bin/conky -u 5
-      - ${if_running conky }
-    simplelist:
-      member:
-        command:
-          - ${if_running conky -u 5}
-          - ${if_running conky}
-        text: or
 - name: if_smapi_bat_installed
   desc: |-
     when using smapi, if the battery with index INDEX is
@@ -1008,9 +999,7 @@
 - name: keyboard_layout
   desc: Display keyboard layout.
 - name: laptop_mode
-  desc: The value of.
-  other:
-    filename: /proc/sys/vm/laptop_mode
+  desc: The value of `/proc/sys/vm/laptop_mode`.
 - name: legacymem
   desc: Amount of memory used, calculated the same way as in the `free` program.
 - name: lines
