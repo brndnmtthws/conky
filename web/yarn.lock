@@ -114,6 +114,21 @@
   resolved "https://registry.yarnpkg.com/@fontsource/fira-code/-/fira-code-4.5.11.tgz#5908672a5811c9df0f4d9d54524dd1d3d4036964"
   integrity sha512-/o5QVmfPfkjlCGoWtrB66y4CtqeDPt9n8Ltz4VmFkLoO9Ov8L1thsbPbEQqKePUMJBVShnh9G448X36PCWlOYw==
 
+"@fontsource/inter@^4.5.12":
+  version "4.5.12"
+  resolved "https://registry.yarnpkg.com/@fontsource/inter/-/inter-4.5.12.tgz#a6236379bf710658db048d7087ec588754962cb6"
+  integrity sha512-bGKk4/8tube/nCk8hav0ZDBVbzJzc7m0Vt4xF5p15IN4YImwGdtKG38Oq5bU8xHNS+VfvbFFCepgQNj7Pr/Lvg==
+
+"@fontsource/source-sans-pro@^4.5.11":
+  version "4.5.11"
+  resolved "https://registry.yarnpkg.com/@fontsource/source-sans-pro/-/source-sans-pro-4.5.11.tgz#06b3f08ef1a5250d78c8198e5a0482b5d87a4d52"
+  integrity sha512-f7iw44q1EjBv3MNcHCGAgrW/QVyweaEouFsJzykPhTOGnZFSwFJRISToXornOmuAy7xUUGiVdqOLiykgZoYB8A==
+
+"@fontsource/source-serif-pro@^4.5.9":
+  version "4.5.9"
+  resolved "https://registry.yarnpkg.com/@fontsource/source-serif-pro/-/source-serif-pro-4.5.9.tgz#fbeacd0bb6d2860df6baa662e9827adfe3da13f4"
+  integrity sha512-VgDvUvd3An3v9HtKgYk9TJuhB/4ZXw4huv/uqTXO4gES7CUbqGcf6tSb69TwG6o5AZzEVt6jnN7FN18OaO5J9A==
+
 "@humanwhocodes/config-array@^0.10.5":
   version "0.10.5"
   resolved "https://registry.yarnpkg.com/@humanwhocodes/config-array/-/config-array-0.10.5.tgz#bb679745224745fff1e9a41961c1d45a49f81c04"
