@@ -1,10 +1,10 @@
 import Layout from '../components/Layout'
 import SEO from '../components/SEO'
-import { getLua, Doc } from '../utils/doc-utils'
+import { getLua, Documentation } from '../utils/doc-utils'
 import Docs from '../components/Docs'
 
 export interface LuaProps {
-  lua: Doc[]
+  lua: Documentation
 }
 
 export default function Lua(props: LuaProps) {
@@ -15,7 +15,7 @@ export default function Lua(props: LuaProps) {
         <div>
           <h1 className="text-2xl">Lua API</h1>
         </div>
-        <Docs docs={props.lua} />
+        <Docs docs={props.lua} braces={false} assign={false} />
       </main>
     </Layout>
   )
