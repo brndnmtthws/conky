@@ -6,14 +6,14 @@ import SEO from '../components/SEO'
 
 const pages = [
   {
-    slug: '/config_settings',
-    title: 'Configuration settings',
-    desc: 'Global configuration pramaters for Conky allow you to customize various behaviours.',
-  },
-  {
     slug: '/variables',
     title: 'Variables',
     desc: 'Variables let you define the various objects displayed in Conky including text, bars, graphs, and more.',
+  },
+  {
+    slug: '/config_settings',
+    title: 'Configuration settings',
+    desc: 'Global configuration pramaters for Conky allow you to customize various behaviours.',
   },
   {
     slug: '/lua',

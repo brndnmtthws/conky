@@ -7,7 +7,7 @@ export interface DocsProps {
 
 export default function Docs({ docs }: DocsProps) {
   return (
-    <>
+    <div className="prose dark:prose-invert prose-lg lg:prose-xl">
       {docs.map((doc) => (
         <div
           id={doc.name}
@@ -37,6 +37,6 @@ export default function Docs({ docs }: DocsProps) {
           </div>
         </div>
       ))}
-    </>
+    </div>
   )
 }
