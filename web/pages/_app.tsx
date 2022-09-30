@@ -1,6 +1,5 @@
 import '@fontsource/fira-code/400.css'
 import '@fontsource/inter/400.css'
-import '@fontsource/source-sans-pro/400.css'
 import '@fontsource/source-serif-pro/400.css'
 import 'prismjs/themes/prism-tomorrow.css'
 import '../styles/globals.css'

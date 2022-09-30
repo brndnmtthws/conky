@@ -17,7 +17,6 @@ export default function ConfigSettings(props: ConfigSettingsProps) {
       <main className="w-full">
         <div>
           <h1 className="text-2xl">Configuration settings</h1>
-          <p></p>
         </div>
         <Docs docs={props.config_settings} />
       </main>

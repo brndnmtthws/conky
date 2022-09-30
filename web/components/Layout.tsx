@@ -48,7 +48,7 @@ export default function Layout({ children }: LayoutProps) {
         <Header name="Conky" darkMode={darkMode} setDarkMode={setDarkMode} />
       </div>
       <div className="relative pb-24">
-        <div className="flex flex-col items-center max-w-2xl w-full mx-auto">
+        <div className="flex flex-col items-center max-w-3xl w-full mx-auto">
           {children}
         </div>
       </div>

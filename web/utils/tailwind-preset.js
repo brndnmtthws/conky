@@ -49,29 +49,20 @@ module.exports = {
         'Courier New',
         'monospace',
       ],
-      prose: [
-        'Source Sans Pro',
-        'ui-sans-serif',
-        'system-ui',
-        '-apple-system',
-        'BlinkMacSystemFont',
-        'Segoe UI',
-        'Roboto',
-        'Helvetica Neue',
-        'Arial',
-        'Noto Sans',
-        'sans-serif',
-        'Apple Color Emoji',
-        'Segoe UI Emoji',
-        'Segoe UI Symbol',
-        'Noto Color Emoji',
-      ],
     },
     extend: {
       typography: (theme) => ({
         DEFAULT: {
           css: {
-            fontFamily: theme('fontFamily.prose').join(', '),
+            code: {
+              '&::before': {
+                content: '"" !important',
+              },
+              '&::after': {
+                content: '"" !important',
+              },
+            },
+            fontFamily: theme('fontFamily.sans').join(', '),
           },
         },
       }),
