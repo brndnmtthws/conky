@@ -10,486 +10,501 @@
 #  * `args`: optional list of arguments
 #  * `default`: an optional default value, if applicable
 ---
-- name: alignment
-  desc: |-
-    Aligned position on screen, may be top_left, top_right,
-    top_middle, bottom_left, bottom_right, bottom_middle, middle_left,
-    middle_middle, middle_right, or none (also can be abbreviated as tl,
-    tr, tm, bl, br, bm, ml, mm, mr). See also gap_x and gap_y.
-- name: append_file
-  desc: Append the file given as argument.
-- name: background
-  desc: |-
-    Boolean value, if true, Conky will be forked to background
-    when started.
-- name: border_inner_margin
-  desc: |-
-    Inner border margin in pixels (the margin between the border
-    and text).
-- name: border_outer_margin
-  desc: |-
-    Outer border margin in pixels (the margin between the border
-    and the edge of the window).
-- name: border_width
-  desc: Border width in pixels.
-- name: colorN
-  desc: |-
-    Predefine a color for use inside conky.text segments.
-    Substitute N by a digit between 0 and 9, inclusively. When specifying
-    the color value in hex, omit the leading hash (#).
-- name: console_bar_fill
-  desc: "A character to fill the console bars."
-  default: "#"
-- name: console_bar_unfill
-  desc: "A character to unfill the console bars."
-  default: "."
-- name: console_graph_ticks
-  desc: |-
-    A comma-separated list of strings to use as the bars of a
-    graph output to console/shell. The first list item is used for the
-    minimum bar height and the last item is used for the maximum, e.g. \"
-    ,_,=,#\".
-- name: cpu_avg_samples
-  desc: The number of samples to average for CPU monitoring.
-- name: default_bar_height
-  desc: |-
-    Specify a default height for bars.
-  default: 6
-- name: default_bar_width
-  desc: |-
-    Specify a default width for bars. If not specified, the
-    default value is 0, which causes the bar to expand to fit the width of
-    your Conky window. If you set out_to_console = true, the default value
-    will be 10 for the text version of the bar.
-  default: 0
-- name: default_color
-  desc: Default color and border color.
-- name: default_gauge_height
-  desc: |-
-    Specify a default height for gauges.
-  default: 25
-- name: default_gauge_width
-  desc: |-
-    Specify a default width for gauges.
-  default: 40
-- name: default_graph_height
-  desc: |-
-    Specify a default height for graphs.
-  default: 25
-- name: default_graph_width
-  desc: |-
-    Specify a default width for graphs. If not specified, the
-    default value is 0, which causes the graph to expand to fit the width
-    of your Conky window. If you set out_to_console = true, the text
-    version of the graph will actually have no width and you will need to
-    set a sensible default or set the height and width of each graph
-    individually.
-  default: 0
-- name: default_outline_color
-  desc: Default outline color.
-- name: default_shade_color
-  desc: Default shading color and border's shading color.
-- name: detect_battery
-  desc: |-
-    One or more batteries to check in order to use
-    update_interval_on_battery (comma separated).
-  default: BAT0
-- name: disable_auto_reload
-  desc: |-
-    Enable to disable the inotify-based auto config reload
-    feature.
-- name: diskio_avg_samples
-  desc: The number of samples to average for disk I/O monitoring.
-- name: display
-  desc: Specify an X display to connect to.
-- name: double_buffer
-  desc: |-
-    Use the Xdbe extension? (eliminates flicker) It is highly
-    recommended to use own window with this one so double buffer won't be
-    so big.
-- name: draw_blended
-  desc: |-
-    Boolean, blend when rendering drawn image? Some images blend
-    incorrectly breaking alpha with ARBG visuals. This provides a possible
-    work around by disabling blending.
-  default: yes
-- name: draw_borders
-  desc: Draw borders around text.
-- name: draw_graph_borders
-  desc: Draw borders around graphs.
-- name: draw_outline
-  desc: Draw outlines.
-- name: draw_shades
-  desc: Draw shades.
-- name: extra_newline
-  desc: |-
-    Put an extra newline at the end when writing to stdout,
-    useful for writing to awesome's wiboxes.
-- name: font
-  desc: Font name in X, xfontsel can be used to get a nice font.
-- name: fontN
-  desc: |-
-    Predefine a font to be used in conky.text segments.
-    Substitute N by a number between 0 and 9 inclusive. Use the same
-    format as a font variable.
-- name: forced_redraw
-  desc: Boolean value, if true, Conky will redraw everything when you switch the workspace. This may cause delays/flickering on some WMs.
-- name: format_human_readable
-  desc: |-
-    If enabled, values which are in bytes will be printed in
-    human readable format (i.e., KiB, MiB, etc). If disabled, the number
-    of bytes is printed instead.
-- name: gap_x
-  desc: |-
-    Gap, in pixels, between right or left border of screen, same
-    as passing -x at command line, e.g. gap_x 10. For other position
-    related stuff, see 'alignment'.
-- name: gap_y
-  desc: |-
-    Gap, in pixels, between top or bottom border of screen, same
-    as passing -y at command line, e.g. gap_y 10. For other position
-    related stuff, see 'alignment'.
-- name: github_token
-  desc: |-
-    Specify API token for GitHub notifications.
+desc: |-
+  This is a listing of global configuration options for Conky. These are placed
+  in the `conky.config` section of your configuration file, before `conky.text`.
 
-    Create an API token at
-    https://github.com/settings/tokens/new?scopes=notifications&description=conky.
-- name: hddtemp_host
-  desc: |-
-    Hostname to connect to for hddtemp objects.
-  default: "127.0.0.1"
-- name: hddtemp_port
-  desc: Port to use for hddtemp connections.
-  default: 7634
-- name: http_port
-  desc: |-
-    Port to listen to for HTTP connections. Default value is
-    10080, but is blocked by Firefox and Chrome, so you really want to
-    change it.
-  default: 10080
-- name: http_refresh
-  desc: |-
-    When this is set the page generated with out_to_http will
-    automatically refresh each interval.
-  default: no
-- name: if_up_strictness
-  desc: |-
-    How strict should if_up be when testing an interface for
-    being up? The value is one of up, link or address, to check for the
-    interface being solely up, being up and having link or being up,
-    having link and an assigned IP address.
-- name: imap
-  desc: |-
-    Default global IMAP server. Default port is 143, default folder is 'INBOX',
-    default interval is 5 minutes, and default number of retries before giving
-    up is 5. If the password is supplied as '*', you will be prompted to enter
-    the password when Conky starts.
-  args:
-    - host
-    - user
-    - pass
-    - [-i interval (in seconds)]
-    - [-f 'folder']
-    - [-p port]
-    - [-e 'command']
-    - [-r retries]
-- name: imlib_cache_flush_interval
-  desc: Interval (in seconds) to flush Imlib2 cache.
-- name: imlib_cache_size
-  desc: |-
-    Imlib2 image cache size, in bytes.  Increase this value if you use $image
-    lots. Set to 0 to disable the image cache.
-  default: 4194304
-- name: lowercase
-  desc: Boolean value, if true, text is rendered in lower case.
-- name: lua_draw_hook_post
-  desc: |-
-    This function, if defined, will be called by Conky through
-    each iteration after drawing to the window. Requires X support. Takes
-    any number of optional arguments. Use this hook for drawing things on
-    top of what Conky draws. Conky puts 'conky_' in front of function_name
-    to prevent accidental calls to the wrong function unless you place
-    'conky_' in front of it yourself.
-  args:
-    - function_name
-    - [function arguments]
-- name: lua_draw_hook_pre
-  desc: |-
-    This function, if defined, will be called by Conky through
-    each iteration before drawing to the window. Requires X support. Takes
-    any number of optional arguments. Use this hook for drawing things on
-    top of what Conky draws. Conky puts 'conky_' in front of function_name
-    to prevent accidental calls to the wrong function unless you place
-    'conky_' in front of it yourself.
-  args:
-    - function_name
-    - [function arguments]
-- name: lua_load
-  desc: Loads the Lua scripts separated by spaces.
-- name: lua_shutdown_hook
-  desc: |-
-    This function, if defined, will be called by Conky at
-    shutdown or when the configuration is reloaded. Use this hook to clean
-    up after yourself, such as freeing memory which has been allocated by
-    external libraries via Lua. Conky puts 'conky_' in front of
-    function_name to prevent accidental calls to the wrong function unless
-    you place 'conky_' in front of it yourself.
-  args:
-    - function_name
-    - [function arguments]
-- name: lua_startup_hook
-  desc: |-
-    This function, if defined, will be called by Conky at
-    startup or when the configuration is reloaded. Use this hook to
-    initialize values, or for any run-once applications. Conky puts
-    'conky_' in front of function_name to prevent accidental calls to the
-    wrong function unless you place 'conky_' in front of it yourself.
-  args:
-    - function_name
-    - [function arguments]
-- name: mail_spool
-  desc: Mail spool for mail checking.
-- name: max_port_monitor_connections
-  desc: |-
-    Allow each port monitor to track at most this many
-    connections.
-  default: 256
-- name: max_text_width
-  desc: |-
-    When a line in the output contains 'width' chars and the end
-    isn't reached, the next char will start on a new line. If you want to
-    make sure that lines don't get broken, set 'width' to 0.
-  args:
-    - seconds
-- name: max_user_text
-  desc: |-
-    Maximum size of user text buffer in bytes, i.e. text inside
-    conky.text section in config file.
-  default: 16384
-  args:
-    - seconds
-- name: maximum_width
-  desc: Maximum width of window.
-  args:
-    - seconds
-- name: minimum_height
-  desc: Minimum height of the window.
-  args:
-    - seconds
-- name: minimum_width
-  desc: Minimum width of window.
-  args:
-    - seconds
-- name: mpd_host
-  desc: Host of MPD server.
-- name: mpd_password
-  desc: MPD server password.
-- name: mpd_port
-  desc: Port of MPD server.
-- name: music_player_interval
-  desc: |-
-    Music player thread update interval.
-  default: update interval
-- name: mysql_db
-  desc: MySQL database to use.
-  default: mysql
-- name: mysql_host
-  desc: Host of MySQL server
-  default: localhost
-- name: mysql_password
-  desc: |-
-    Password of the MySQL user. Place it between \"-chars. When
-    this is not set there is no password used.
-- name: mysql_port
-  desc: Port of MySQL server.
-  default: 0
-- name: mysql_user
-  desc: |-
-    MySQL user name to use when connecting to the server.
-    Defaults to your username.
-- name: net_avg_samples
-  desc: The number of samples to average for net data.
-- name: no_buffers
-  desc: Subtract (file system) buffers from used memory.
-- name: nvidia_display
-  desc: |-
-    The display that the nvidia variable will used.
-  default: $DISPLAY
-- name: out_to_console
-  desc: Print text to stdout.
-- name: out_to_http
-  desc: Let conky act as a small http-server serving its text.
-- name: out_to_ncurses
-  desc: |-
-    Print text in the console, but use ncurses so that conky can
-    print the text of a new update over the old text. (In the future this
-    will provide more useful things).
-- name: out_to_stderr
-  desc: Print text to stderr.
-- name: out_to_x
-  desc: |-
-    When set to no, there will be no output in X (useful when
-    you also use things like out_to_console). If you set it to no, make
-    sure that it's placed before all other X-related setting (take the
-    first line of your configfile to be sure).
-  default: yes
-- name: override_utf8_locale
-  desc: Force UTF8. Requires XFT.
-- name: overwrite_file
-  desc: Overwrite the file given as argument.
-- name: own_window
-  desc: Boolean, create own window to draw.
-- name: own_window_argb_value
-  desc: |-
-    When ARGB visuals are enabled, this use this to modify the
-    alpha value used. Valid range is 0-255, where 0 is 0% opacity, and 255
-    is 100% opacity.
-- name: own_window_argb_visual
-  desc: |-
-    Boolean, use ARGB visual? ARGB can be used for real
-    transparency, note that a composite manager is required for real
-    transparency. This option will not work as desired (in most cases) in
-    conjunction with 'own_window_type override'.
-- name: own_window_class
-  desc: Manually set the WM_CLASS name.
-  default: Conky
-- name: own_window_colour
-  desc: |-
-    If own_window_transparent no, set a specified background
-    colour. Takes either a hex value (e.g. '#ffffff'),
-    a shorthand hex value (e.g. '#fff'), or a valid RGB name (see `/usr/lib/X11/rgb.txt`).
-  default: black
-  args:
-    - seconds
-- name: own_window_hints
-  desc: |-
-    If own_window is yes, you may use these window manager hints
-    to affect the way Conky displays. Notes: Use own_window_type desktop
-    as another way to implement many of these hints implicitly. If you use
-    own_window_type override, window manager hints have no meaning and are
-    ignored.
-  args:
-    - seconds
-- name: own_window_title
-  desc: |-
-    Manually set the window name.
-  default: "conky (<hostname>)"
-- name: own_window_transparent
-  desc: |-
-    Boolean, set transparency? If ARGB visual is enabled, sets
-    background opacity to 0%.
-- name: own_window_type
-  desc: |-
-    if own_window is yes, you may specify type normal, desktop,
-    dock, panel or override. Desktop windows are special
-    windows that have no window decorations; are always visible on your
-    desktop; do not appear in your pager or taskbar; and are sticky across
-    all workspaces. Panel windows reserve space along a desktop edge, just
-    like panels and taskbars, preventing maximized windows from
-    overlapping them. The edge is chosen based on the alignment option.
-    Override windows are not under the control of the window manager.
-    Hints are ignored. This type of window can be useful for certain
-    situations.
-  default: normal
-- name: pad_percents
-  desc: Pad percentages to this many decimals (0 = no padding).
-- name: pop3
-  desc: |-
-    Default global POP3 server. Arguments are: \"host user pass
-    [-i interval (in seconds)] [-p port] [-e 'command'] [-r retries]\".
-    Default port is 110, default interval is 5 minutes, and default number
-    of retries before giving up is 5. If the password is supplied as '*',
-    you will be prompted to enter the password when Conky starts.
-  args:
-    - host
-    - user
-    - pass
-    - [-i interval (in seconds)]
-    - [-p port]
-    - [-e 'command']
-    - [-r retries]
-- name: short_units
-  desc: |-
-    Shortens units to a single character (kiB->k, GiB->G,
-    etc.).
-  default: no
-- name: show_graph_range
-  desc: Shows the time range covered by a graph.
-- name: show_graph_scale
-  desc: Shows the maximum value in scaled graphs.
-- name: stippled_borders
-  desc: Border stippling (dashing) in pixels.
-- name: temperature_unit
-  desc: |-
-    Desired output unit of all objects displaying a temperature.
-    Parameters are either `fahrenheit` or `celsius`.
-  default: celsius
-- name: templateN
-  desc: |-
-    Define a template for later use inside conky.text segments.
-    Substitute N by a digit between 0 and 9, inclusively. The value of the
-    variable is being inserted into the stuff inside conky.text at the
-    corresponding position, but before some substitutions are applied:
+  The default configuration file location is `~/.config/conky/conky.conf` or
+  `${sysconfdir}/conky/conky.conf`. On most systems, `$sysconfdir` is `/etc`,
+  and you can find the sample config file there in
+  `/etc/conky/conky.conf`.
 
-    * `\\n` -> newline
-    * `\\` -> backslash
-    * `\\ ` -> space
-    * `\\N` -> template argument N (starting from 1)
-- name: text_buffer_size
-  desc: |-
-    Size of the standard text buffer (default is 256 bytes).
-    This buffer is used for intermediary text, such as individual lines,
-    output from $exec vars, and various other variables. Increasing the
-    size of this buffer can drastically reduce Conky's performance, but
-    will allow for more text display per variable. The size of this buffer
-    cannot be smaller than the default value of 256 bytes.
-  args:
-    - seconds
-- name: times_in_seconds
-  desc: |-
-    If true, variables that output times output a number that
-    represents seconds. This doesn't affect $time, $tztime and $utime.
-- name: top_cpu_separate
-  desc: |-
-    If true, cpu in top will show usage of one processor's
-    power. If false, cpu in top will show the usage of all processors'
-    power combined.
-- name: top_name_verbose
-  desc: |-
-    If true, top name shows the full command line of each
-    process, including arguments (whenever possible). Otherwise, only the
-    basename is displayed. Default value is false.
-- name: top_name_width
-  desc: Width for $top name value (defaults to 15 characters).
-- name: total_run_times
-  desc: |-
-    Total number of times for Conky to update before quitting.
-    Zero makes Conky run forever.
-- name: units_spacer
-  desc: String to place between values and units.
-  default: ""
-- name: update_interval
-  desc: Update interval.
-  args:
-    - seconds
-- name: update_interval_on_battery
-  desc: Update interval when running on battery power.
-  args:
-    - seconds
-- name: uppercase
-  desc: Boolean value, if true, text is rendered in upper case.
-- name: use_spacer
-  desc: |-
-    Adds spaces around certain objects to stop them from moving
-    other things around. Arguments are left, right, and none (default).
-    The old true/false values are deprecated and default to right/none
-    respectively. Note that this only helps if you are using a mono font,
-    such as Bitstream Vera Sans Mono.
-  default: none
-- name: use_xft
-  desc: Use Xft (anti-aliased font and stuff).
-- name: xftalpha
-  desc: Alpha of Xft font. Must be a value at or between 1 and 0.
-- name: xinerama_head
-  desc: Specify a Xinerama head.
+  You might want to copy the default config to `~/.config/conky/conky.conf` and
+  then start modifying it. Other configs can be found at
+  https://github.com/brndnmtthws/conky.
+
+  Optional arguments are generally denoted with paretheses (i.e., `(optional)`).
+values:
+  - name: alignment
+    desc: |-
+      Aligned position on screen, may be top_left, top_right,
+      top_middle, bottom_left, bottom_right, bottom_middle, middle_left,
+      middle_middle, middle_right, or none (also can be abbreviated as tl,
+      tr, tm, bl, br, bm, ml, mm, mr). See also gap_x and gap_y.
+  - name: append_file
+    desc: Append the file given as argument.
+  - name: background
+    desc: |-
+      Boolean value, if true, Conky will be forked to background
+      when started.
+  - name: border_inner_margin
+    desc: |-
+      Inner border margin in pixels (the margin between the border
+      and text).
+  - name: border_outer_margin
+    desc: |-
+      Outer border margin in pixels (the margin between the border
+      and the edge of the window).
+  - name: border_width
+    desc: Border width in pixels.
+  - name: colorN
+    desc: |-
+      Predefine a color for use inside conky.text segments.
+      Substitute N by a digit between 0 and 9, inclusively. When specifying
+      the color value in hex, omit the leading hash (#).
+  - name: console_bar_fill
+    desc: "A character to fill the console bars."
+    default: "#"
+  - name: console_bar_unfill
+    desc: "A character to unfill the console bars."
+    default: "."
+  - name: console_graph_ticks
+    desc: |-
+      A comma-separated list of strings to use as the bars of a
+      graph output to console/shell. The first list item is used for the
+      minimum bar height and the last item is used for the maximum, e.g. \"
+      ,_,=,#\".
+  - name: cpu_avg_samples
+    desc: The number of samples to average for CPU monitoring.
+  - name: default_bar_height
+    desc: |-
+      Specify a default height for bars.
+    default: 6
+  - name: default_bar_width
+    desc: |-
+      Specify a default width for bars. If not specified, the
+      default value is 0, which causes the bar to expand to fit the width of
+      your Conky window. If you set out_to_console = true, the default value
+      will be 10 for the text version of the bar.
+    default: 0
+  - name: default_color
+    desc: Default color and border color.
+  - name: default_gauge_height
+    desc: |-
+      Specify a default height for gauges.
+    default: 25
+  - name: default_gauge_width
+    desc: |-
+      Specify a default width for gauges.
+    default: 40
+  - name: default_graph_height
+    desc: |-
+      Specify a default height for graphs.
+    default: 25
+  - name: default_graph_width
+    desc: |-
+      Specify a default width for graphs. If not specified, the
+      default value is 0, which causes the graph to expand to fit the width
+      of your Conky window. If you set out_to_console = true, the text
+      version of the graph will actually have no width and you will need to
+      set a sensible default or set the height and width of each graph
+      individually.
+    default: 0
+  - name: default_outline_color
+    desc: Default outline color.
+  - name: default_shade_color
+    desc: Default shading color and border's shading color.
+  - name: detect_battery
+    desc: |-
+      One or more batteries to check in order to use
+      update_interval_on_battery (comma separated).
+    default: BAT0
+  - name: disable_auto_reload
+    desc: |-
+      Enable to disable the inotify-based auto config reload
+      feature.
+  - name: diskio_avg_samples
+    desc: The number of samples to average for disk I/O monitoring.
+  - name: display
+    desc: Specify an X display to connect to.
+  - name: double_buffer
+    desc: |-
+      Use the Xdbe extension? (eliminates flicker) It is highly
+      recommended to use own window with this one so double buffer won't be
+      so big.
+  - name: draw_blended
+    desc: |-
+      Boolean, blend when rendering drawn image? Some images blend
+      incorrectly breaking alpha with ARBG visuals. This provides a possible
+      work around by disabling blending.
+    default: yes
+  - name: draw_borders
+    desc: Draw borders around text.
+  - name: draw_graph_borders
+    desc: Draw borders around graphs.
+  - name: draw_outline
+    desc: Draw outlines.
+  - name: draw_shades
+    desc: Draw shades.
+  - name: extra_newline
+    desc: |-
+      Put an extra newline at the end when writing to stdout,
+      useful for writing to awesome's wiboxes.
+  - name: font
+    desc: Font name in X, xfontsel can be used to get a nice font.
+  - name: fontN
+    desc: |-
+      Predefine a font to be used in conky.text segments.
+      Substitute N by a number between 0 and 9 inclusive. Use the same
+      format as a font variable.
+  - name: forced_redraw
+    desc: Boolean value, if true, Conky will redraw everything when you switch the workspace. This may cause delays/flickering on some WMs.
+  - name: format_human_readable
+    desc: |-
+      If enabled, values which are in bytes will be printed in
+      human readable format (i.e., KiB, MiB, etc). If disabled, the number
+      of bytes is printed instead.
+  - name: gap_x
+    desc: |-
+      Gap, in pixels, between right or left border of screen, same
+      as passing -x at command line, e.g. gap_x 10. For other position
+      related stuff, see 'alignment'.
+  - name: gap_y
+    desc: |-
+      Gap, in pixels, between top or bottom border of screen, same
+      as passing -y at command line, e.g. gap_y 10. For other position
+      related stuff, see 'alignment'.
+  - name: github_token
+    desc: |-
+      Specify API token for GitHub notifications.
+
+      Create an API token at
+      https://github.com/settings/tokens/new?scopes=notifications&description=conky.
+  - name: hddtemp_host
+    desc: |-
+      Hostname to connect to for hddtemp objects.
+    default: "127.0.0.1"
+  - name: hddtemp_port
+    desc: Port to use for hddtemp connections.
+    default: 7634
+  - name: http_port
+    desc: |-
+      Port to listen to for HTTP connections. Default value is
+      10080, but is blocked by Firefox and Chrome, so you really want to
+      change it.
+    default: 10080
+  - name: http_refresh
+    desc: |-
+      When this is set the page generated with out_to_http will
+      automatically refresh each interval.
+    default: no
+  - name: if_up_strictness
+    desc: |-
+      How strict should if_up be when testing an interface for
+      being up? The value is one of up, link or address, to check for the
+      interface being solely up, being up and having link or being up,
+      having link and an assigned IP address.
+  - name: imap
+    desc: |-
+      Default global IMAP server. Default port is 143, default folder is 'INBOX',
+      default interval is 5 minutes, and default number of retries before giving
+      up is 5. If the password is supplied as '*', you will be prompted to enter
+      the password when Conky starts.
+    args:
+      - host
+      - user
+      - pass
+      - [-i interval (in seconds)]
+      - [-f 'folder']
+      - [-p port]
+      - [-e 'command']
+      - [-r retries]
+  - name: imlib_cache_flush_interval
+    desc: Interval (in seconds) to flush Imlib2 cache.
+  - name: imlib_cache_size
+    desc: |-
+      Imlib2 image cache size, in bytes.  Increase this value if you use $image
+      lots. Set to 0 to disable the image cache.
+    default: 4194304
+  - name: lowercase
+    desc: Boolean value, if true, text is rendered in lower case.
+  - name: lua_draw_hook_post
+    desc: |-
+      This function, if defined, will be called by Conky through
+      each iteration after drawing to the window. Requires X support. Takes
+      any number of optional arguments. Use this hook for drawing things on
+      top of what Conky draws. Conky puts 'conky_' in front of function_name
+      to prevent accidental calls to the wrong function unless you place
+      'conky_' in front of it yourself.
+    args:
+      - function_name
+      - [function arguments]
+  - name: lua_draw_hook_pre
+    desc: |-
+      This function, if defined, will be called by Conky through
+      each iteration before drawing to the window. Requires X support. Takes
+      any number of optional arguments. Use this hook for drawing things on
+      top of what Conky draws. Conky puts 'conky_' in front of function_name
+      to prevent accidental calls to the wrong function unless you place
+      'conky_' in front of it yourself.
+    args:
+      - function_name
+      - [function arguments]
+  - name: lua_load
+    desc: Loads the Lua scripts separated by spaces.
+  - name: lua_shutdown_hook
+    desc: |-
+      This function, if defined, will be called by Conky at
+      shutdown or when the configuration is reloaded. Use this hook to clean
+      up after yourself, such as freeing memory which has been allocated by
+      external libraries via Lua. Conky puts 'conky_' in front of
+      function_name to prevent accidental calls to the wrong function unless
+      you place 'conky_' in front of it yourself.
+    args:
+      - function_name
+      - [function arguments]
+  - name: lua_startup_hook
+    desc: |-
+      This function, if defined, will be called by Conky at
+      startup or when the configuration is reloaded. Use this hook to
+      initialize values, or for any run-once applications. Conky puts
+      'conky_' in front of function_name to prevent accidental calls to the
+      wrong function unless you place 'conky_' in front of it yourself.
+    args:
+      - function_name
+      - [function arguments]
+  - name: mail_spool
+    desc: Mail spool for mail checking.
+  - name: max_port_monitor_connections
+    desc: |-
+      Allow each port monitor to track at most this many
+      connections.
+    default: 256
+  - name: max_text_width
+    desc: |-
+      When a line in the output contains 'width' chars and the end
+      isn't reached, the next char will start on a new line. If you want to
+      make sure that lines don't get broken, set 'width' to 0.
+    args:
+      - seconds
+  - name: max_user_text
+    desc: |-
+      Maximum size of user text buffer in bytes, i.e. text inside
+      conky.text section in config file.
+    default: 16384
+    args:
+      - seconds
+  - name: maximum_width
+    desc: Maximum width of window.
+    args:
+      - seconds
+  - name: minimum_height
+    desc: Minimum height of the window.
+    args:
+      - seconds
+  - name: minimum_width
+    desc: Minimum width of window.
+    args:
+      - seconds
+  - name: mpd_host
+    desc: Host of MPD server.
+  - name: mpd_password
+    desc: MPD server password.
+  - name: mpd_port
+    desc: Port of MPD server.
+  - name: music_player_interval
+    desc: |-
+      Music player thread update interval.
+    default: update interval
+  - name: mysql_db
+    desc: MySQL database to use.
+    default: mysql
+  - name: mysql_host
+    desc: Host of MySQL server
+    default: localhost
+  - name: mysql_password
+    desc: |-
+      Password of the MySQL user. Place it between \"-chars. When
+      this is not set there is no password used.
+  - name: mysql_port
+    desc: Port of MySQL server.
+    default: 0
+  - name: mysql_user
+    desc: |-
+      MySQL user name to use when connecting to the server.
+      Defaults to your username.
+  - name: net_avg_samples
+    desc: The number of samples to average for net data.
+  - name: no_buffers
+    desc: Subtract (file system) buffers from used memory.
+  - name: nvidia_display
+    desc: |-
+      The display that the nvidia variable will used.
+    default: $DISPLAY
+  - name: out_to_console
+    desc: Print text to stdout.
+  - name: out_to_http
+    desc: Let conky act as a small http-server serving its text.
+  - name: out_to_ncurses
+    desc: |-
+      Print text in the console, but use ncurses so that conky can
+      print the text of a new update over the old text. (In the future this
+      will provide more useful things).
+  - name: out_to_stderr
+    desc: Print text to stderr.
+  - name: out_to_x
+    desc: |-
+      When set to no, there will be no output in X (useful when
+      you also use things like out_to_console). If you set it to no, make
+      sure that it's placed before all other X-related setting (take the
+      first line of your configfile to be sure).
+    default: yes
+  - name: override_utf8_locale
+    desc: Force UTF8. Requires XFT.
+  - name: overwrite_file
+    desc: Overwrite the file given as argument.
+  - name: own_window
+    desc: Boolean, create own window to draw.
+  - name: own_window_argb_value
+    desc: |-
+      When ARGB visuals are enabled, this use this to modify the
+      alpha value used. Valid range is 0-255, where 0 is 0% opacity, and 255
+      is 100% opacity.
+  - name: own_window_argb_visual
+    desc: |-
+      Boolean, use ARGB visual? ARGB can be used for real
+      transparency, note that a composite manager is required for real
+      transparency. This option will not work as desired (in most cases) in
+      conjunction with 'own_window_type override'.
+  - name: own_window_class
+    desc: Manually set the WM_CLASS name.
+    default: Conky
+  - name: own_window_colour
+    desc: |-
+      If own_window_transparent no, set a specified background
+      colour. Takes either a hex value (e.g. '#ffffff'),
+      a shorthand hex value (e.g. '#fff'), or a valid RGB name (see `/usr/lib/X11/rgb.txt`).
+    default: black
+    args:
+      - seconds
+  - name: own_window_hints
+    desc: |-
+      If own_window is yes, you may use these window manager hints
+      to affect the way Conky displays. Notes: Use own_window_type desktop
+      as another way to implement many of these hints implicitly. If you use
+      own_window_type override, window manager hints have no meaning and are
+      ignored.
+    args:
+      - seconds
+  - name: own_window_title
+    desc: |-
+      Manually set the window name.
+    default: "conky (<hostname>)"
+  - name: own_window_transparent
+    desc: |-
+      Boolean, set transparency? If ARGB visual is enabled, sets
+      background opacity to 0%.
+  - name: own_window_type
+    desc: |-
+      if own_window is yes, you may specify type normal, desktop,
+      dock, panel or override. Desktop windows are special
+      windows that have no window decorations; are always visible on your
+      desktop; do not appear in your pager or taskbar; and are sticky across
+      all workspaces. Panel windows reserve space along a desktop edge, just
+      like panels and taskbars, preventing maximized windows from
+      overlapping them. The edge is chosen based on the alignment option.
+      Override windows are not under the control of the window manager.
+      Hints are ignored. This type of window can be useful for certain
+      situations.
+    default: normal
+  - name: pad_percents
+    desc: Pad percentages to this many decimals (0 = no padding).
+  - name: pop3
+    desc: |-
+      Default global POP3 server. Arguments are: `host user pass
+      [-i interval (in seconds)] [-p port] [-e 'command'] [-r retries]\".
+      Default port is 110, default interval is 5 minutes, and default number
+      of retries before giving up is 5. If the password is supplied as '*',
+      you will be prompted to enter the password when Conky starts.
+    args:
+      - host
+      - user
+      - pass
+      - [-i interval (in seconds)]
+      - [-p port]
+      - [-e 'command']
+      - [-r retries]
+  - name: short_units
+    desc: |-
+      Shortens units to a single character (kiB->k, GiB->G,
+      etc.).
+    default: no
+  - name: show_graph_range
+    desc: Shows the time range covered by a graph.
+  - name: show_graph_scale
+    desc: Shows the maximum value in scaled graphs.
+  - name: stippled_borders
+    desc: Border stippling (dashing) in pixels.
+  - name: temperature_unit
+    desc: |-
+      Desired output unit of all objects displaying a temperature.
+      Parameters are either `fahrenheit` or `celsius`.
+    default: celsius
+  - name: templateN
+    desc: |-
+      Define a template for later use inside conky.text segments.
+      Substitute N by a digit between 0 and 9, inclusively. The value of the
+      variable is being inserted into the stuff inside conky.text at the
+      corresponding position, but before some substitutions are applied:
+
+      * `\\n` -> newline
+      * `\\` -> backslash
+      * `\\ ` -> space
+      * `\\N` -> template argument N (starting from 1)
+  - name: text_buffer_size
+    desc: |-
+      Size of the standard text buffer (default is 256 bytes).
+      This buffer is used for intermediary text, such as individual lines,
+      output from $exec vars, and various other variables. Increasing the
+      size of this buffer can drastically reduce Conky's performance, but
+      will allow for more text display per variable. The size of this buffer
+      cannot be smaller than the default value of 256 bytes.
+    args:
+      - seconds
+  - name: times_in_seconds
+    desc: |-
+      If true, variables that output times output a number that
+      represents seconds. This doesn't affect $time, $tztime and $utime.
+  - name: top_cpu_separate
+    desc: |-
+      If true, cpu in top will show usage of one processor's
+      power. If false, cpu in top will show the usage of all processors'
+      power combined.
+  - name: top_name_verbose
+    desc: |-
+      If true, top name shows the full command line of each
+      process, including arguments (whenever possible). Otherwise, only the
+      basename is displayed. Default value is false.
+  - name: top_name_width
+    desc: Width for $top name value (defaults to 15 characters).
+  - name: total_run_times
+    desc: |-
+      Total number of times for Conky to update before quitting.
+      Zero makes Conky run forever.
+  - name: units_spacer
+    desc: String to place between values and units.
+    default: ""
+  - name: update_interval
+    desc: Update interval.
+    args:
+      - seconds
+  - name: update_interval_on_battery
+    desc: Update interval when running on battery power.
+    args:
+      - seconds
+  - name: uppercase
+    desc: Boolean value, if true, text is rendered in upper case.
+  - name: use_spacer
+    desc: |-
+      Adds spaces around certain objects to stop them from moving
+      other things around. Arguments are left, right, and none (default).
+      The old true/false values are deprecated and default to right/none
+      respectively. Note that this only helps if you are using a mono font,
+      such as Bitstream Vera Sans Mono.
+    default: none
+  - name: use_xft
+    desc: Use Xft (anti-aliased font and stuff).
+  - name: xftalpha
+    desc: Alpha of Xft font. Must be a value at or between 1 and 0.
+  - name: xinerama_head
+    desc: Specify a Xinerama head.

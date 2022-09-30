@@ -10,94 +10,114 @@
 #  * `args`: optional list of arguments
 #  * `default`: an optional default value, if applicable
 ---
-- name: cairo_font_extents_t:create()
-  desc: |-
-    Call this function to return a new cairo_font_extents_t
-    structure. A creation function for this structure is not provided
-    by the cairo API. After calling this, you should use
-    tolua.takeownership() on the return value to ensure ownership is
-    passed properly.
-- name: cairo_font_extents_t:destroy(structure)
-  desc: |-
-    Call this function to free memory allocated by
-    cairo_font_extents_t:create.
-- name: cairo_matrix_t:create()
-  desc: |-
-    Call this function to return a new cairo_matrix_t structure.
-    A creation function for this structure is not provided by the
-    cairo API. After calling this, you should use
-    tolua.takeownership() on the return value to ensure ownership is
-    passed properly.
-- name: cairo_matrix_t:destroy(structure)
-  desc: |-
-    Call this function to free memory allocated by
-    cairo_matrix_t:create.
-- name: cairo_text_extents_t:create()
-  desc: |-
-    Call this function to return a new cairo_text_extents_t
-    structure. A creation function for this structure is not provided
-    by the cairo API. After calling this, you should use
-    tolua.takeownership() on the return value to ensure ownership is
-    passed properly.
-- name: cairo_text_extents_t:destroy(structure)
-  desc: |-
-    Call this function to free memory allocated by
-    cairo_text_extents_t:create.
-- name: conky_build_arch
-  desc: |-
-    A string containing the build architecture for this
-    particular instance of Conky.
-- name: conky_build_date
-  desc: |-
-    A string containing the build date for this particular
-    instance of Conky.
-- name: conky_build_info
-  desc: |-
-    A string containing the build info for this particular
-    instance of Conky, including the version, build date, and
-    architecture.
-- name: conky_config
-  desc: |-
-    A string containing the path of the current Conky
-    configuration file.
-- name: conky_info
-  desc: |-
-    This table contains some information about Conky's internal
-    data. The following table describes the values contained:
+desc: |-
+  Conky features a Lua Programming API, and also ships with Lua bindings
+  for some useful libraries. Note that the bindings require tolua++, which
+  currently only compiles against Lua 5.1.
 
-    | Key             | Value                                 |
-    |-----------------|---------------------------------------|
-    | update_interval | Conky's update interval (in seconds). |
-- name: conky_parse(string)
-  desc: |-
-    This function takes a string that is evaluated as per
-    Conky's TEXT section, and then returns a string with the
-    result.
-- name: conky_set_update_interval(number)
-  desc: |-
-    Sets Conky's update interval (in seconds) to
-    'number'.
-- name: conky_version
-  desc: |-
-    A string containing the version of the current instance of
-    Conky.
-- name: conky_window
-  desc: |-
-    This table contains some information about Conky's window.
-    The following table describes the values contained:
-    NOTE: This table is only defined when X support is
-    enabled.
-    | Key                 | Value                                                                           |
-    |---------------------|---------------------------------------------------------------------------------|
-    | drawable            | Window's drawable (Xlib Drawable), requires Lua extras enabled at compile time. |
-    | visual              | Window's visual (Xlib Visual), requires Lua extras enabled at compile time.     |
-    | display             | Window's display (Xlib Display), requires Lua extras enabled at compile time.   |
-    | width               | Window width (in pixels).                                                       |
-    | height              | Window height (in pixels).                                                      |
-    | border_inner_margin | Window's inner border margin (in pixels).                                       |
-    | border_outer_margin | Window's outer border margin (in pixels).                                       |
-    | border_width        | Window's border width (in pixels).                                              |
-    | text_start_x        | The x component of the starting coordinate of text drawing.                     |
-    | text_start_y        | The y component of the starting coordinate of text drawing.                     |
-    | text_width          | The width of the text drawing region.                                           |
-    | text_height         | The height of the text drawing region.                                          |
+  To use Lua Conky, you first need to make sure you have a version of
+  Conky with Lua support enabled (`conky -v` will report this).
+  Conky defines certain global functions and variables which can be
+  accessed from Lua code running in Conky. Scripts must first be loaded
+  using the lua_load configuration option. You then call functions in Lua
+  via Conky's $lua, $lua_read, and Lua hooks.
+
+  Be careful when creating threaded objects through the Lua API. You could
+  wind up with a whole bunch of threads running if a thread is created
+  with each iteration.
+
+  NOTE: In order to accommodate certain features in the cairo library's
+  API, Conky will export a few additional functions for the creation of
+  certain structures. These are documented below.
+values:
+  - name: cairo_font_extents_t:create()
+    desc: |-
+      Call this function to return a new cairo_font_extents_t
+      structure. A creation function for this structure is not provided
+      by the cairo API. After calling this, you should use
+      tolua.takeownership() on the return value to ensure ownership is
+      passed properly.
+  - name: cairo_font_extents_t:destroy(structure)
+    desc: |-
+      Call this function to free memory allocated by
+      cairo_font_extents_t:create.
+  - name: cairo_matrix_t:create()
+    desc: |-
+      Call this function to return a new cairo_matrix_t structure.
+      A creation function for this structure is not provided by the
+      cairo API. After calling this, you should use
+      tolua.takeownership() on the return value to ensure ownership is
+      passed properly.
+  - name: cairo_matrix_t:destroy(structure)
+    desc: |-
+      Call this function to free memory allocated by
+      cairo_matrix_t:create.
+  - name: cairo_text_extents_t:create()
+    desc: |-
+      Call this function to return a new cairo_text_extents_t
+      structure. A creation function for this structure is not provided
+      by the cairo API. After calling this, you should use
+      tolua.takeownership() on the return value to ensure ownership is
+      passed properly.
+  - name: cairo_text_extents_t:destroy(structure)
+    desc: |-
+      Call this function to free memory allocated by
+      cairo_text_extents_t:create.
+  - name: conky_build_arch
+    desc: |-
+      A string containing the build architecture for this
+      particular instance of Conky.
+  - name: conky_build_date
+    desc: |-
+      A string containing the build date for this particular
+      instance of Conky.
+  - name: conky_build_info
+    desc: |-
+      A string containing the build info for this particular
+      instance of Conky, including the version, build date, and
+      architecture.
+  - name: conky_config
+    desc: |-
+      A string containing the path of the current Conky
+      configuration file.
+  - name: conky_info
+    desc: |-
+      This table contains some information about Conky's internal
+      data. The following table describes the values contained:
+
+      | Key             | Value                                 |
+      |-----------------|---------------------------------------|
+      | update_interval | Conky's update interval (in seconds). |
+  - name: conky_parse(string)
+    desc: |-
+      This function takes a string that is evaluated as per
+      Conky's TEXT section, and then returns a string with the
+      result.
+  - name: conky_set_update_interval(number)
+    desc: |-
+      Sets Conky's update interval (in seconds) to
+      'number'.
+  - name: conky_version
+    desc: |-
+      A string containing the version of the current instance of
+      Conky.
+  - name: conky_window
+    desc: |-
+      This table contains some information about Conky's window.
+      The following table describes the values contained:
+      NOTE: This table is only defined when X support is
+      enabled.
+      | Key                 | Value                                                                           |
+      |---------------------|---------------------------------------------------------------------------------|
+      | drawable            | Window's drawable (Xlib Drawable), requires Lua extras enabled at compile time. |
+      | visual              | Window's visual (Xlib Visual), requires Lua extras enabled at compile time.     |
+      | display             | Window's display (Xlib Display), requires Lua extras enabled at compile time.   |
+      | width               | Window width (in pixels).                                                       |
+      | height              | Window height (in pixels).                                                      |
+      | border_inner_margin | Window's inner border margin (in pixels).                                       |
+      | border_outer_margin | Window's outer border margin (in pixels).                                       |
+      | border_width        | Window's border width (in pixels).                                              |
+      | text_start_x        | The x component of the starting coordinate of text drawing.                     |
+      | text_start_y        | The y component of the starting coordinate of text drawing.                     |
+      | text_width          | The width of the text drawing region.                                           |
+      | text_height         | The height of the text drawing region.                                          |

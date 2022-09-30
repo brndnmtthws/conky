@@ -182,16 +182,9 @@ file.
 
 # CONFIGURATION SETTINGS
 
-Default configuration file location is *\~/.config/conky/conky.conf* or
-*\${sysconfdir}/conky/conky.conf*. On most systems, sysconfdir is /etc,
-and you can find the sample config file there in
-*/etc/conky/conky.conf*.
+{{ config_settings['desc'] }}
 
-You might want to copy it to *\~/.config/conky/conky.conf* and then
-start modifying it. Other configs can be found at
-*https://github.com/brndnmtthws/conky*.
-
-{% for item in config_settings %}
+{% for item in config_settings['values'] %}
 **{{ item.name }}** {% if item.args %}**{{ item.args | join(" ") }}**{% endif %}
 
 :   {{ item.desc | indent(width=4) }}
@@ -203,18 +196,9 @@ start modifying it. Other configs can be found at
 
 # OBJECTS/VARIABLES
 
-Colours are parsed using XParsecolor(), there might be a list of them:
-*/usr/share/X11/rgb.txt*. Colour can be also in #rrggbb format (hex).
+{{ variables['desc'] }}
 
-Some objects may create threads, and sometimes these threads will not be
-destroyed until Conky terminates. There is no way to destroy or clean up
-threads while Conky is running. For example, if you use an MPD variable,
-the MPD thread will keep running until Conky dies. Some threaded objects
-will use one of the parameters as a \'key\', so that you only have 1
-relevant thread running (for example, the \$curl, \$rss and \$weather
-objects launch one thread per URI).
-
-{% for item in variables %}
+{% for item in variables['values'] %}
 **{{ item.name }}** {% if item.args %}**{{ item.args | join(" ") }}**{% endif %}
 
 :   {{ item.desc | indent(width=4) }}
@@ -226,29 +210,9 @@ objects launch one thread per URI).
 
 # LUA API
 
-Conky features a Lua Programming API, and also ships with Lua bindings
-for some useful libraries. Note that the bindings require tolua++, which
-currently only compiles against Lua 5.1.
+{{ lua['desc'] }}
 
-To use Lua Conky, you first need to make sure you have a version of
-Conky with Lua support enabled (\`\`conky -v\'\' will report this).
-Conky defines certain global functions and variables which can be
-accessed from Lua code running in Conky. Scripts must first be loaded
-using the lua_load configuration option. You then call functions in Lua
-via Conky\'s \$lua, \$lua_read, and Lua hooks.
-
-Be careful when creating threaded objects through the Lua API. You could
-wind up with a whole bunch of threads running if a thread is created
-with each iteration.
-
-At this time, the Lua API should not be considered stable and may change
-drastically from one release to another as it matures.
-
-NOTE: In order to accommodate certain features in the cairo library\'s
-API, Conky will export a few additional functions for the creation of
-certain structures. These are documented below.
-
-{% for item in lua %}
+{% for item in lua['values'] %}
 **{{ item.name }}** {% if item.args %}**{{ item.args | join(" ") }}**{% endif %}
 
 :   {{ item.desc | indent(width=4) }}

@@ -10,2476 +10,2493 @@
 #  * `args`: optional list of arguments
 #  * `default`: an optional default value, if applicable
 ---
-- name: acpiacadapter
-  desc: |-
-    ACPI AC adapter state. On linux, the adapter option
-    specifies the subfolder of `/sys/class/power_supply` containing the state
-    information (tries `AC` and `ADP1` if there is no argument given).
-    Non-linux systems ignore it.
-  args:
-    - (adapter)
-- name: acpifan
-  desc: ACPI fan state.
-- name: acpitemp
-  desc: ACPI temperature in C.
-- name: addr
-  desc: |-
-    IP address for an interface, or "No Address" if no address
-    is assigned.
-  args:
-    - (interface)
-- name: addrs
-  desc: |-
-    IP addresses for an interface (if one - works like addr).
-    Linux only.
-  args:
-    - (interface)
-- name: adt746xcpu
-  desc: CPU temperature from therm_adt746x.
-- name: adt746xfan
-  desc: Fan speed from therm_adt746x.
-- name: alignc
-  desc: Align text to centre.
-  args:
-    - (num)
-- name: alignr
-  desc: Right-justify text, with space of N.
-  args:
-    - (num)
-- name: apcupsd
-  desc: |-
-    Sets up the connection to apcupsd daemon. Prints nothing.
-  default: localhost:3551
-  args:
-    - host
-    - port
-- name: apcupsd_cable
-  desc: Prints the UPS connection type.
-- name: apcupsd_charge
-  desc: Current battery capacity in percent.
-- name: apcupsd_lastxfer
-  desc: Reason for last transfer from line to battery.
-- name: apcupsd_linev
-  desc: Nominal input voltage.
-- name: apcupsd_load
-  desc: Current load in percent.
-- name: apcupsd_loadbar
-  desc: Bar showing current load.
-- name: apcupsd_loadgauge
-  desc: Gauge that shows current load.
-  args:
-    - (height),(width)
-- name: apcupsd_loadgraph
-  desc: History graph of current load.
-  args:
-    - (height),(width)
-    - (gradient colour 1)
-    - (gradient colour 2)
-    - (scale)
-    - (-t)
-    - (-l)
-- name: apcupsd_model
-  desc: Prints the model of the UPS.
-- name: apcupsd_name
-  desc: Prints the UPS user-defined name.
-- name: apcupsd_status
-  desc: Prints current status (on-line, on-battery).
-- name: apcupsd_temp
-  desc: Current internal temperature.
-- name: apcupsd_timeleft
-  desc: Time left to run on battery.
-- name: apcupsd_upsmode
-  desc: Prints the UPS mode (e.g. standalone).
-- name: apm_adapter
-  desc: Display APM AC adapter status. FreeBSD, OpenBSD only.
-- name: apm_battery_life
-  desc: Display APM battery life in percent. FreeBSD, OpenBSD only.
-- name: apm_battery_time
-  desc: |-
-    Display remaining APM battery life in hh:mm:ss or "unknown"
-    if AC adapterstatus is on-line or charging. FreeBSD, OpenBSD only.
-- name: audacious_bar
-  desc: Progress bar.
-  args:
-    - (height),(width)
-- name: audacious_bitrate
-  desc: Bitrate of current tune.
-- name: audacious_channels
-  desc: Number of audio channels of current tune.
-- name: audacious_filename
-  desc: Full path and filename of current tune.
-- name: audacious_frequency
-  desc: Sampling frequency of current tune.
-- name: audacious_length
-  desc: Total length of current tune as MM:SS.
-- name: audacious_length_seconds
-  desc: Total length of current tune in seconds.
-- name: audacious_main_volume
-  desc: The current volume fetched from Audacious.
-- name: audacious_playlist_length
-  desc: Number of tunes in playlist.
-- name: audacious_playlist_position
-  desc: Playlist position of current tune.
-- name: audacious_position
-  desc: Position of current tune (MM:SS).
-- name: audacious_position_seconds
-  desc: Position of current tune in seconds.
-- name: audacious_status
-  desc: Player status (Playing/Paused/Stopped/Not running).
-- name: audacious_title
-  desc: |-
-    Title of current tune with optional maximum length
-    specifier.
-  args:
-    - (max length)
-- name: battery
-  desc: |-
-    Battery status and remaining percentage capacity of ACPI or
-    APM battery. ACPI battery number can be given as argument.
-  default: BAT0
-  args:
-    - (num)
-- name: battery_bar
-  desc: |-
-    Battery percentage remaining of ACPI battery in a bar. ACPI battery number
-    can be given as argument (use `all` to get the mean percentage remaining for
-    all batteries).
-  default: BAT0
-  args:
-    - (height),(width)
-    - (num)
-- name: battery_percent
-  desc: |-
-    Battery percentage remaining for ACPI battery. ACPI battery
-    number can be given as argument (use `all` to get the
-    mean percentage remaining for all batteries).
-  default: BAT0
-  args:
-    - (num)
-- name: battery_short
-  desc: |-
-    Battery status and remaining percentage capacity of ACPI or APM battery.
-    ACPI battery number can be given as argument. This mode display a short
-    status, which means that C is displayed instead of charging, D for
-    discharging, F for full, N for not present, E for empty and U for unknown.
-  default: BAT0
-  args:
-    - (num)
-- name: battery_status
-  desc: |-
-    Battery status for ACPI battery. ACPI battery number can be
-    given as arguments.
-  default: BAT0
-  args:
-    - (num)
-- name: battery_time
-  desc: |-
-    Battery charge/discharge time remaining of ACPI battery.
-    ACPI battery number can be given as argument.
-  default: BAT0
-  args:
-    - (num)
-- name: blink
-  desc: Let 'text_and_other_conky_vars' blink on and off.
-  args:
-    - text_and_other_conky_vars
-- name: buffers
-  desc: Amount of memory buffered.
-- name: cached
-  desc: Amount of memory cached.
-- name: cat
-  desc: |-
-    Reads a file and displays the contents in conky. This is
-    useful if you have an independent process generating output that you
-    want to include in conky.
-  args:
-    - file
-- name: catp
-  desc: |-
-    Reads a file and displays the contents in conky. This is
-    useful if you have an independent process generating output that you
-    want to include in conky. This differs from $cat in that it parses the
-    contents of the file, so you can insert things like ${color
-    red}hi!${color} in your file and have it correctly parsed by Conky.
-  args:
-    - file
-- name: cmdline_to_pid
-  desc: PID of the first process that has string in its commandline.
-  args:
-    - string
-- name: cmus_aaa
-  desc: Print aaa status of cmus (all/artist/album).
-- name: cmus_album
-  desc: Prints the album of the current cmus song.
-- name: cmus_artist
-  desc: Prints the artist of the current cmus song.
-- name: cmus_curtime
-  desc: Current time of the current cmus song.
-- name: cmus_date
-  desc: Print the date of the current cmus song.
-- name: cmus_file
-  desc: Print the file name of the current cmus song.
-- name: cmus_genre
-  desc: Print the genre name of the current cmus song.
-- name: cmus_percent
-  desc: Percent of song's progress.
-- name: cmus_progress
-  desc: cmus' progress bar.
-  args:
-    - (height),(width)
-- name: cmus_random
-  desc: Random status of cmus (on/off).
-- name: cmus_repeat
-  desc: Repeat status of cmus (song/all/off).
-- name: cmus_state
-  desc: Current state of cmus (playing, paused, stopped etc).
-- name: cmus_timeleft
-  desc: Time left of the current cmus song.
-- name: cmus_title
-  desc: Prints the title of the current cmus song.
-- name: cmus_totaltime
-  desc: Total length of the current cmus song.
-- name: cmus_track
-  desc: Print track number of current cmus song.
-- name: color
-  desc: |-
-    Change drawing color to 'color' which is a name of a color
-    or a hexcode preceded with #, e.g. #0A1B2C. If you use ncurses only
-    the following colors are supported: red, green, yellow, blue, magenta,
-    cyan, black, and white.
-  args:
-    - (color)
-- name: colorN
-  desc: |-
-    Change drawing color to colorN configuration option, where N
-    is a digit between 0 and 9, inclusively.
-- name: combine
-  desc: |-
-    Places the lines of var2 to the right of the lines of var1
-    separated by the chars that are put between var1 and var2. For
-    example: ${combine ${head /proc/cpuinfo 2} - ${head /proc/meminfo 1}}
-    gives as output "cpuinfo_line1 - meminfo_line1" on line 1 and
-    "cpuinfo_line2 -" on line 2. $combine vars can also be nested to place
-    more vars next to each other.
-  args:
-    - var1
-    - var2
-- name: conky_build_arch
-  desc: CPU architecture Conky was built for.
-- name: conky_build_date
-  desc: Date Conky was built.
-- name: conky_version
-  desc: Conky version.
-- name: cpu
-  desc: |-
-    CPU usage in percents. For SMP machines, the CPU number can
-    be provided as an argument. ${cpu cpu0} is the total usage, and ${cpu
-    cpuX} (X >= 1) are individual CPUs.
-  args:
-    - (cpuN)
-- name: cpubar
-  desc: |-
-    Bar that shows CPU usage, height is bar's height in pixels.
-    See $cpu for more info on SMP.
-  args:
-    - (cpuN)
-    - (height),(width)
-- name: cpugauge
-  desc: |-
-    Elliptical gauge that shows CPU usage, height and width are
-    gauge's vertical and horizontal axis respectively. See $cpu for more
-    info on SMP.
-  args:
-    - (cpuN)
-    - (height),(width)
-- name: cpugovernor
-  desc: |-
-    The active CPU scaling governor, defaulting to the first core.
-    See $cpu for more info on SMP. Linux only.
-  args:
-    - (cpuN)
-- name: cpugraph
-  desc: |-
-    CPU usage graph, with optional colours in hex, minus the #.
-    See $cpu for more info on SMP. Uses a logarithmic scale (to see small
-    numbers) when you use the -l switch. Takes the switch '-t' to use a
-    temperature gradient, which makes the gradient values change depending
-    on the amplitude of a particular graph value (try it and see).
-  args:
-    - (cpuN)
-    - (height),(width)
-    - (gradient colour 1)
-    - (gradient colour 2)
-    - (scale)
-    - (-t)
-    - (-l)
-- name: curl
-  desc: |-
-    Download data from URI using Curl at the specified interval.
-    The interval may be a positive floating point value (0 is allowed),
-    otherwise defaults to 15 minutes. Most useful when used in conjunction
-    with Lua and the Lua API. This object is threaded, and once a thread
-    is created it can't be explicitly destroyed. One thread will run for
-    each URI specified. You can use any protocol that Curl supports.
-  args:
-    - url
-    - (interval_in_minutes)
-- name: desktop
-  desc: |-
-    Number of the desktop on which conky is running or the
-    message "Not running in X" if this is the case.
-- name: desktop_name
-  desc: |-
-    Name of the desktop on which conky is running or the message
-    "Not running in X" if this is the case.
-- name: desktop_number
-  desc: |-
-    Number of desktops or the message "Not running in X" if this
-    is the case.
-- name: disk_protect
-  desc: |-
-    Disk protection status, if supported (needs kernel-patch).
-    Prints either "frozen" or "free " (note the padding).
-  args:
-    - device
-- name: diskio
-  desc: |-
-    Displays current disk IO. Device is optional, and takes the
-    form of sda for /dev/sda. A block device label can be specified with
-    label:foo and a block device partuuid can be specified with
-    partuuid:40000000-01.
-  args:
-    - (device)
-- name: diskio_read
-  desc: Displays current disk IO for reads. Device as in diskio.
-  args:
-    - (device)
-- name: diskio_write
-  desc: Displays current disk IO for writes. Device as in diskio.
-  args:
-    - (device)
-- name: diskiograph
-  desc: |-
-    Disk IO graph, colours defined in hex, minus the #. If scale
-    is non-zero, it becomes the scale for the graph. Uses a logarithmic
-    scale (to see small numbers) when you use -l switch. Takes the switch
-    '-t' to use a temperature gradient, which makes the gradient values
-    change depending on the amplitude of a particular graph value (try it
-    and see).
-  args:
-    - (device)
-    - (height),(width)
-    - (gradient colour 1)
-    - (gradient colour 2)
-    - (scale)
-    - (-t)
-    - (-l)
-- name: diskiograph_read
-  desc: |-
-    Disk IO graph for reads, colours defined in hex, minus the
-    #. If scale is non-zero, it becomes the scale for the graph. Device as
-    in diskio. Uses a logarithmic scale (to see small numbers) when you
-    use -l switch. Takes the switch '-t' to use a temperature gradient,
-    which makes the gradient values change depending on the amplitude of a
-    particular graph value (try it and see).
-  args:
-    - (device)
-    - (height),(width)
-    - (gradient colour 1)
-    - (gradient colour 2)
-    - (scale)
-    - (-t)
-    - (-l)
-- name: diskiograph_write
-  desc: |-
-    Disk IO graph for writes, colours defined in hex, minus the
-    #. If scale is non-zero, it becomes the scale for the graph. Device as
-    in diskio. Uses a logarithmic scale (to see small numbers) when you
-    use -l switch. Takes the switch '-t' to use a temperature gradient,
-    which makes the gradient values change depending on the amplitude of a
-    particular graph value (try it and see).
-  args:
-    - (device)
-    - (height),(width)
-    - (gradient colour 1)
-    - (gradient colour 2)
-    - (scale)
-    - (-t)
-    - (-l)
-- name: distribution
-  desc: |-
-    The name of the distribution. It could be that some of the
-    untested distributions will show up wrong or as "unknown", if that's
-    the case post a bug on sourceforge, make sure it contains the name of
-    your distribution, the contents of&#160;and if there is a file that
-    only exists on your distribution, also add the path of that file in
-    the bug. If there is no such file, please add another way which we can
-    use to identify your distribution.
-  other:
-    filename: /proc/version
-- name: downspeed
-  desc: Download speed in suitable IEC units.
-  args:
-    - (net)
-- name: downspeedf
-  desc: Download speed in KiB with one decimal.
-  args:
-    - (net)
-- name: downspeedgraph
-  desc: |-
-    Download speed graph, colours defined in hex, minus the #.
-    If scale is non-zero, it becomes the scale for the graph. Uses a
-    logarithmic scale (to see small numbers) when you use -l switch. Takes
-    the switch '-t' to use a temperature gradient, which makes the
-    gradient values change depending on the amplitude of a particular
-    graph value (try it and see).
-  args:
-    - (netdev)
-    - (height),(width)
-    - (gradient colour 1)
-    - (gradient colour 2)
-    - (scale)
-    - (-t)
-    - (-l)
-- name: draft_mails
-  desc: |-
-    Number of mails marked as draft in the specified mailbox or
-    mail spool if not. Only maildir type mailboxes are supported, mbox
-    type will return -1.
-  args:
-    - (maildir)
-    - (interval)
-- name: else
-  desc: Text to show if any of the above are not true.
-- name: endif
-  desc: Ends an $if block.
-- name: entropy_avail
-  desc: Current entropy available for crypto freaks.
-- name: entropy_bar
-  desc: Normalized bar of available entropy for crypto freaks.
-  args:
-    - (height),(width)
-- name: entropy_perc
-  desc: |-
-    Percentage of entropy available in comparison to the
-    poolsize.
-- name: entropy_poolsize
-  desc: Total size of system entropy pool for crypto freaks.
-- name: eval
-  desc: |-
-    Evaluates given string according to the rules of conky.text
-    interpretation, i.e. parsing any contained text object specifications
-    into their output, any occurring '$$' into a single '$' and so on. The
-    output is then being parsed again.
-  args:
-    - string
-- name: exec
-  desc: |-
-    Executes a shell command and displays the output in conky.
-    Warning: this takes a lot more resources than other variables. I'd
-    recommend coding wanted behaviour in C/C++ and posting a patch.
-  args:
-    - command
-- name: execbar
-  desc: |-
-    Same as exec, except if the first value returned is a value
-    between 0-100, it will use that number to draw a horizontal bar. The
-    height and width parameters are optional, and default to the
-    default_bar_height and default_bar_width config settings,
-    respectively.
-  args:
-    - (height),(width)
-    - command
-- name: execgauge
-  desc: |-
-    Same as exec, except if the first value returned is a value
-    between 0-100, it will use that number to draw a round gauge (much
-    like a vehicle speedometer). The height and width parameters are
-    optional, and default to the default_gauge_height and
-    default_gauge_width config settings, respectively.
-  args:
-    - (height),(width)
-    - command
-- name: execgraph
-  desc: |-
-    Draws a horizontally scrolling graph with values from 0-100 plotted on the
-    vertical axis. All parameters following the command are optional. Gradient
-    colors can be specified as hexadecimal values with no 0x or # prefix. Use
-    the -t switch to enable a temperature gradient, so that small values are
-    "cold" with color 1 and large values are "hot" with color 2. Without the -t
-    switch, the colors produce a horizontal gradient spanning the width of the
-    graph. The scale parameter defines the maximum value of the graph.  Use the
-    -l switch to enable a logarithmic scale, which helps to see small values.
-    The default size for graphs can be controlled via the default_graph_height
-    and default_graph_width config settings.
+desc: |-
+  To configure what Conky displays, you must supply some variables in the
+  `conky.text` section of your configuration. In this secton you'll find a
+  listing of the available variables. Some of them may require build options to
+  be enabled at compile time for them to work.
 
-    If you need to execute a command with spaces, you have a
-    couple options:
+  Colours are parsed using XParsecolor(), there might be a list of them:
+  `/usr/share/X11/rgb.txt`. Colour can be also in `#rrggbb` format (hex).
 
-    1. wrap your command in double-quotes, or
-    2. put your command into a separate file, such as ~/bin/myscript.sh, and use
-    that as your execgraph command.
+  Some objects may create threads, and sometimes these threads will not be
+  destroyed until Conky terminates. There is no way to destroy or clean up
+  threads while Conky is running. For example, if you use an MPD variable,
+  the MPD thread will keep running until Conky dies. Some threaded objects
+  will use one of the parameters as a `key`, so that you only have 1
+  relevant thread running (for example, the $curl, $rss and $weather
+  objects launch one thread per URI).
+values:
+  - name: acpiacadapter
+    desc: |-
+      ACPI AC adapter state. On linux, the adapter option
+      specifies the subfolder of `/sys/class/power_supply` containing the state
+      information (tries `AC` and `ADP1` if there is no argument given).
+      Non-linux systems ignore it.
+    args:
+      - (adapter)
+  - name: acpifan
+    desc: ACPI fan state.
+  - name: acpitemp
+    desc: ACPI temperature in C.
+  - name: addr
+    desc: |-
+      IP address for an interface, or "No Address" if no address
+      is assigned.
+    args:
+      - (interface)
+  - name: addrs
+    desc: |-
+      IP addresses for an interface (if one - works like addr).
+      Linux only.
+    args:
+      - (interface)
+  - name: adt746xcpu
+    desc: CPU temperature from therm_adt746x.
+  - name: adt746xfan
+    desc: Fan speed from therm_adt746x.
+  - name: alignc
+    desc: Align text to centre.
+    args:
+      - (num)
+  - name: alignr
+    desc: Right-justify text, with space of N.
+    args:
+      - (num)
+  - name: apcupsd
+    desc: |-
+      Sets up the connection to apcupsd daemon. Prints nothing.
+    default: localhost:3551
+    args:
+      - host
+      - port
+  - name: apcupsd_cable
+    desc: Prints the UPS connection type.
+  - name: apcupsd_charge
+    desc: Current battery capacity in percent.
+  - name: apcupsd_lastxfer
+    desc: Reason for last transfer from line to battery.
+  - name: apcupsd_linev
+    desc: Nominal input voltage.
+  - name: apcupsd_load
+    desc: Current load in percent.
+  - name: apcupsd_loadbar
+    desc: Bar showing current load.
+  - name: apcupsd_loadgauge
+    desc: Gauge that shows current load.
+    args:
+      - (height),(width)
+  - name: apcupsd_loadgraph
+    desc: History graph of current load.
+    args:
+      - (height),(width)
+      - (gradient colour 1)
+      - (gradient colour 2)
+      - (scale)
+      - (-t)
+      - (-l)
+  - name: apcupsd_model
+    desc: Prints the model of the UPS.
+  - name: apcupsd_name
+    desc: Prints the UPS user-defined name.
+  - name: apcupsd_status
+    desc: Prints current status (on-line, on-battery).
+  - name: apcupsd_temp
+    desc: Current internal temperature.
+  - name: apcupsd_timeleft
+    desc: Time left to run on battery.
+  - name: apcupsd_upsmode
+    desc: Prints the UPS mode (e.g. standalone).
+  - name: apm_adapter
+    desc: Display APM AC adapter status. FreeBSD, OpenBSD only.
+  - name: apm_battery_life
+    desc: Display APM battery life in percent. FreeBSD, OpenBSD only.
+  - name: apm_battery_time
+    desc: |-
+      Display remaining APM battery life in hh:mm:ss or "unknown"
+      if AC adapterstatus is on-line or charging. FreeBSD, OpenBSD only.
+  - name: audacious_bar
+    desc: Progress bar.
+    args:
+      - (height),(width)
+  - name: audacious_bitrate
+    desc: Bitrate of current tune.
+  - name: audacious_channels
+    desc: Number of audio channels of current tune.
+  - name: audacious_filename
+    desc: Full path and filename of current tune.
+  - name: audacious_frequency
+    desc: Sampling frequency of current tune.
+  - name: audacious_length
+    desc: Total length of current tune as MM:SS.
+  - name: audacious_length_seconds
+    desc: Total length of current tune in seconds.
+  - name: audacious_main_volume
+    desc: The current volume fetched from Audacious.
+  - name: audacious_playlist_length
+    desc: Number of tunes in playlist.
+  - name: audacious_playlist_position
+    desc: Playlist position of current tune.
+  - name: audacious_position
+    desc: Position of current tune (MM:SS).
+  - name: audacious_position_seconds
+    desc: Position of current tune in seconds.
+  - name: audacious_status
+    desc: Player status (Playing/Paused/Stopped/Not running).
+  - name: audacious_title
+    desc: |-
+      Title of current tune with optional maximum length
+      specifier.
+    args:
+      - (max length)
+  - name: battery
+    desc: |-
+      Battery status and remaining percentage capacity of ACPI or
+      APM battery. ACPI battery number can be given as argument.
+    default: BAT0
+    args:
+      - (num)
+  - name: battery_bar
+    desc: |-
+      Battery percentage remaining of ACPI battery in a bar. ACPI battery number
+      can be given as argument (use `all` to get the mean percentage remaining for
+      all batteries).
+    default: BAT0
+    args:
+      - (height),(width)
+      - (num)
+  - name: battery_percent
+    desc: |-
+      Battery percentage remaining for ACPI battery. ACPI battery
+      number can be given as argument (use `all` to get the
+      mean percentage remaining for all batteries).
+    default: BAT0
+    args:
+      - (num)
+  - name: battery_short
+    desc: |-
+      Battery status and remaining percentage capacity of ACPI or APM battery.
+      ACPI battery number can be given as argument. This mode display a short
+      status, which means that C is displayed instead of charging, D for
+      discharging, F for full, N for not present, E for empty and U for unknown.
+    default: BAT0
+    args:
+      - (num)
+  - name: battery_status
+    desc: |-
+      Battery status for ACPI battery. ACPI battery number can be
+      given as arguments.
+    default: BAT0
+    args:
+      - (num)
+  - name: battery_time
+    desc: |-
+      Battery charge/discharge time remaining of ACPI battery.
+      ACPI battery number can be given as argument.
+    default: BAT0
+    args:
+      - (num)
+  - name: blink
+    desc: Let 'text_and_other_conky_vars' blink on and off.
+    args:
+      - text_and_other_conky_vars
+  - name: buffers
+    desc: Amount of memory buffered.
+  - name: cached
+    desc: Amount of memory cached.
+  - name: cat
+    desc: |-
+      Reads a file and displays the contents in conky. This is
+      useful if you have an independent process generating output that you
+      want to include in conky.
+    args:
+      - file
+  - name: catp
+    desc: |-
+      Reads a file and displays the contents in conky. This is
+      useful if you have an independent process generating output that you
+      want to include in conky. This differs from $cat in that it parses the
+      contents of the file, so you can insert things like ${color
+      red}hi!${color} in your file and have it correctly parsed by Conky.
+    args:
+      - file
+  - name: cmdline_to_pid
+    desc: PID of the first process that has string in its commandline.
+    args:
+      - string
+  - name: cmus_aaa
+    desc: Print aaa status of cmus (all/artist/album).
+  - name: cmus_album
+    desc: Prints the album of the current cmus song.
+  - name: cmus_artist
+    desc: Prints the artist of the current cmus song.
+  - name: cmus_curtime
+    desc: Current time of the current cmus song.
+  - name: cmus_date
+    desc: Print the date of the current cmus song.
+  - name: cmus_file
+    desc: Print the file name of the current cmus song.
+  - name: cmus_genre
+    desc: Print the genre name of the current cmus song.
+  - name: cmus_percent
+    desc: Percent of song's progress.
+  - name: cmus_progress
+    desc: cmus' progress bar.
+    args:
+      - (height),(width)
+  - name: cmus_random
+    desc: Random status of cmus (on/off).
+  - name: cmus_repeat
+    desc: Repeat status of cmus (song/all/off).
+  - name: cmus_state
+    desc: Current state of cmus (playing, paused, stopped etc).
+  - name: cmus_timeleft
+    desc: Time left of the current cmus song.
+  - name: cmus_title
+    desc: Prints the title of the current cmus song.
+  - name: cmus_totaltime
+    desc: Total length of the current cmus song.
+  - name: cmus_track
+    desc: Print track number of current cmus song.
+  - name: color
+    desc: |-
+      Change drawing color to 'color' which is a name of a color
+      or a hexcode preceded with #, e.g. #0A1B2C. If you use ncurses only
+      the following colors are supported: red, green, yellow, blue, magenta,
+      cyan, black, and white.
+    args:
+      - (color)
+  - name: colorN
+    desc: |-
+      Change drawing color to colorN configuration option, where N
+      is a digit between 0 and 9, inclusively.
+  - name: combine
+    desc: |-
+      Places the lines of var2 to the right of the lines of var1
+      separated by the chars that are put between var1 and var2. For
+      example: ${combine ${head /proc/cpuinfo 2} - ${head /proc/meminfo 1}}
+      gives as output "cpuinfo_line1 - meminfo_line1" on line 1 and
+      "cpuinfo_line2 -" on line 2. $combine vars can also be nested to place
+      more vars next to each other.
+    args:
+      - var1
+      - var2
+  - name: conky_build_arch
+    desc: CPU architecture Conky was built for.
+  - name: conky_build_date
+    desc: Date Conky was built.
+  - name: conky_version
+    desc: Conky version.
+  - name: cpu
+    desc: |-
+      CPU usage in percents. For SMP machines, the CPU number can
+      be provided as an argument. ${cpu cpu0} is the total usage, and ${cpu
+      cpuX} (X >= 1) are individual CPUs.
+    args:
+      - (cpuN)
+  - name: cpubar
+    desc: |-
+      Bar that shows CPU usage, height is bar's height in pixels.
+      See $cpu for more info on SMP.
+    args:
+      - (cpuN)
+      - (height),(width)
+  - name: cpugauge
+    desc: |-
+      Elliptical gauge that shows CPU usage, height and width are
+      gauge's vertical and horizontal axis respectively. See $cpu for more
+      info on SMP.
+    args:
+      - (cpuN)
+      - (height),(width)
+  - name: cpugovernor
+    desc: |-
+      The active CPU scaling governor, defaulting to the first core.
+      See $cpu for more info on SMP. Linux only.
+    args:
+      - (cpuN)
+  - name: cpugraph
+    desc: |-
+      CPU usage graph, with optional colours in hex, minus the #.
+      See $cpu for more info on SMP. Uses a logarithmic scale (to see small
+      numbers) when you use the -l switch. Takes the switch '-t' to use a
+      temperature gradient, which makes the gradient values change depending
+      on the amplitude of a particular graph value (try it and see).
+    args:
+      - (cpuN)
+      - (height),(width)
+      - (gradient colour 1)
+      - (gradient colour 2)
+      - (scale)
+      - (-t)
+      - (-l)
+  - name: curl
+    desc: |-
+      Download data from URI using Curl at the specified interval.
+      The interval may be a positive floating point value (0 is allowed),
+      otherwise defaults to 15 minutes. Most useful when used in conjunction
+      with Lua and the Lua API. This object is threaded, and once a thread
+      is created it can't be explicitly destroyed. One thread will run for
+      each URI specified. You can use any protocol that Curl supports.
+    args:
+      - url
+      - (interval_in_minutes)
+  - name: desktop
+    desc: |-
+      Number of the desktop on which conky is running or the
+      message "Not running in X" if this is the case.
+  - name: desktop_name
+    desc: |-
+      Name of the desktop on which conky is running or the message
+      "Not running in X" if this is the case.
+  - name: desktop_number
+    desc: |-
+      Number of desktops or the message "Not running in X" if this
+      is the case.
+  - name: disk_protect
+    desc: |-
+      Disk protection status, if supported (needs kernel-patch).
+      Prints either "frozen" or "free " (note the padding).
+    args:
+      - device
+  - name: diskio
+    desc: |-
+      Displays current disk IO. Device is optional, and takes the
+      form of sda for /dev/sda. A block device label can be specified with
+      label:foo and a block device partuuid can be specified with
+      partuuid:40000000-01.
+    args:
+      - (device)
+  - name: diskio_read
+    desc: Displays current disk IO for reads. Device as in diskio.
+    args:
+      - (device)
+  - name: diskio_write
+    desc: Displays current disk IO for writes. Device as in diskio.
+    args:
+      - (device)
+  - name: diskiograph
+    desc: |-
+      Disk IO graph, colours defined in hex, minus the #. If scale
+      is non-zero, it becomes the scale for the graph. Uses a logarithmic
+      scale (to see small numbers) when you use -l switch. Takes the switch
+      '-t' to use a temperature gradient, which makes the gradient values
+      change depending on the amplitude of a particular graph value (try it
+      and see).
+    args:
+      - (device)
+      - (height),(width)
+      - (gradient colour 1)
+      - (gradient colour 2)
+      - (scale)
+      - (-t)
+      - (-l)
+  - name: diskiograph_read
+    desc: |-
+      Disk IO graph for reads, colours defined in hex, minus the
+      #. If scale is non-zero, it becomes the scale for the graph. Device as
+      in diskio. Uses a logarithmic scale (to see small numbers) when you
+      use -l switch. Takes the switch '-t' to use a temperature gradient,
+      which makes the gradient values change depending on the amplitude of a
+      particular graph value (try it and see).
+    args:
+      - (device)
+      - (height),(width)
+      - (gradient colour 1)
+      - (gradient colour 2)
+      - (scale)
+      - (-t)
+      - (-l)
+  - name: diskiograph_write
+    desc: |-
+      Disk IO graph for writes, colours defined in hex, minus the
+      #. If scale is non-zero, it becomes the scale for the graph. Device as
+      in diskio. Uses a logarithmic scale (to see small numbers) when you
+      use -l switch. Takes the switch '-t' to use a temperature gradient,
+      which makes the gradient values change depending on the amplitude of a
+      particular graph value (try it and see).
+    args:
+      - (device)
+      - (height),(width)
+      - (gradient colour 1)
+      - (gradient colour 2)
+      - (scale)
+      - (-t)
+      - (-l)
+  - name: distribution
+    desc: |-
+      The name of the distribution. It could be that some of the
+      untested distributions will show up wrong or as "unknown", if that's
+      the case post a bug on sourceforge, make sure it contains the name of
+      your distribution, the contents of&#160;and if there is a file that
+      only exists on your distribution, also add the path of that file in
+      the bug. If there is no such file, please add another way which we can
+      use to identify your distribution.
+    other:
+      filename: /proc/version
+  - name: downspeed
+    desc: Download speed in suitable IEC units.
+    args:
+      - (net)
+  - name: downspeedf
+    desc: Download speed in KiB with one decimal.
+    args:
+      - (net)
+  - name: downspeedgraph
+    desc: |-
+      Download speed graph, colours defined in hex, minus the #.
+      If scale is non-zero, it becomes the scale for the graph. Uses a
+      logarithmic scale (to see small numbers) when you use -l switch. Takes
+      the switch '-t' to use a temperature gradient, which makes the
+      gradient values change depending on the amplitude of a particular
+      graph value (try it and see).
+    args:
+      - (netdev)
+      - (height),(width)
+      - (gradient colour 1)
+      - (gradient colour 2)
+      - (scale)
+      - (-t)
+      - (-l)
+  - name: draft_mails
+    desc: |-
+      Number of mails marked as draft in the specified mailbox or
+      mail spool if not. Only maildir type mailboxes are supported, mbox
+      type will return -1.
+    args:
+      - (maildir)
+      - (interval)
+  - name: else
+    desc: Text to show if any of the above are not true.
+  - name: endif
+    desc: Ends an $if block.
+  - name: entropy_avail
+    desc: Current entropy available for crypto freaks.
+  - name: entropy_bar
+    desc: Normalized bar of available entropy for crypto freaks.
+    args:
+      - (height),(width)
+  - name: entropy_perc
+    desc: |-
+      Percentage of entropy available in comparison to the
+      poolsize.
+  - name: entropy_poolsize
+    desc: Total size of system entropy pool for crypto freaks.
+  - name: eval
+    desc: |-
+      Evaluates given string according to the rules of conky.text
+      interpretation, i.e. parsing any contained text object specifications
+      into their output, any occurring '$$' into a single '$' and so on. The
+      output is then being parsed again.
+    args:
+      - string
+  - name: exec
+    desc: |-
+      Executes a shell command and displays the output in conky.
+      Warning: this takes a lot more resources than other variables. I'd
+      recommend coding wanted behaviour in C/C++ and posting a patch.
+    args:
+      - command
+  - name: execbar
+    desc: |-
+      Same as exec, except if the first value returned is a value
+      between 0-100, it will use that number to draw a horizontal bar. The
+      height and width parameters are optional, and default to the
+      default_bar_height and default_bar_width config settings,
+      respectively.
+    args:
+      - (height),(width)
+      - command
+  - name: execgauge
+    desc: |-
+      Same as exec, except if the first value returned is a value
+      between 0-100, it will use that number to draw a round gauge (much
+      like a vehicle speedometer). The height and width parameters are
+      optional, and default to the default_gauge_height and
+      default_gauge_width config settings, respectively.
+    args:
+      - (height),(width)
+      - command
+  - name: execgraph
+    desc: |-
+      Draws a horizontally scrolling graph with values from 0-100 plotted on the
+      vertical axis. All parameters following the command are optional. Gradient
+      colors can be specified as hexadecimal values with no 0x or # prefix. Use
+      the -t switch to enable a temperature gradient, so that small values are
+      "cold" with color 1 and large values are "hot" with color 2. Without the -t
+      switch, the colors produce a horizontal gradient spanning the width of the
+      graph. The scale parameter defines the maximum value of the graph.  Use the
+      -l switch to enable a logarithmic scale, which helps to see small values.
+      The default size for graphs can be controlled via the default_graph_height
+      and default_graph_width config settings.
 
-    Remember to make your script executable!
+      If you need to execute a command with spaces, you have a
+      couple options:
 
-    In the following example, we set up execgraph to display seconds (0-59) on a
-    graph that is 50px high and 200px wide, using a temperature gradient with
-    colors ranging from red for small values (FF0000) to yellow for large values
-    (FFFF00). We set the scale to 60.
+      1. wrap your command in double-quotes, or
+      2. put your command into a separate file, such as ~/bin/myscript.sh, and use
+      that as your execgraph command.
 
-    ```
-    ${execgraph ~/seconds.sh 50,200 FF0000 FFFF00 60 -t}
-    ```
-  args:
-    - command
-    - (height),(width)
-    - (gradient color 1)
-    - (gradient color 2)
-    - (scale)
-    - (-t)
-    - (-l)
-- name: execi
-  desc: |-
-    Same as exec, but with a specific interval in seconds. The
-    interval can't be less than the update_interval in your configuration.
-    See also $texeci.
-  args:
-    - interval
-    - command
-- name: execibar
-  desc: Same as execbar, but with an interval.
-  args:
-    - interval
-    - (height),(width)
-    - command
-- name: execigauge
-  desc: Same as execgauge, but with an interval.
-  args:
-    - interval
-    - (height),(width)
-    - command
-- name: execigraph
-  desc: Same as execgraph, but with an interval.
-  args:
-    - interval
-    - command
-    - (height),(width)
-    - (gradient color 1)
-    - (gradient color 2)
-    - (scale)
-    - (-t)
-    - (-l)
-- name: execp
-  desc: |-
-    Executes a shell command and displays the output in conky.
-    Warning: this takes a lot more resources than other variables. I'd
-    recommend coding wanted behaviour in C/C++ and posting a patch. This
-    differs from $exec in that it parses the output of the command, so you
-    can insert things like ${color red}hi!${color} in your script and have
-    it correctly parsed by Conky. Caveats: Conky parses and evaluates the
-    output of $execp every time Conky loops, and then destroys all the
-    objects. If you try to use anything like $execi within an $execp
-    statement, it will functionally run at the same interval that the
-    $execp statement runs, as it is created and destroyed at every
-    interval.
-  args:
-    - command
-- name: execpi
-  desc: |-
-    Same as execp, but with an interval. Note that the output
-    from the $execpi command is still parsed and evaluated at every
-    interval.
-  args:
-    - interval
-    - command
-- name: flagged_mails
-  desc: |-
-    Number of mails marked as flagged in the specified mailbox
-    or mail spool if not. Only maildir type mailboxes are supported, mbox
-    type will return -1.
-  args:
-    - (maildir)
-    - (interval)
-- name: font
-  desc: |-
-    Specify a different font. This new font will apply to the
-    current line and everything following. You can use a $font with no
-    arguments to change back to the default font (much like with $color).
-  args:
-    - (font)
-- name: fontN
-  desc: |-
-    Change font to fontN configuration option, where N is a
-    digit between 0 and 9, inclusively.
-- name: format_time
-  desc: |-
-    Format time given in seconds. This var only works when the
-    times_in_seconds configuration setting is on. Format is a string that
-    should start and end with a "-char. The "-chars are not part of the
-    output, \w,\d,\h,\m,\s,\(,\) and \\ are replaced by
-    weeks,days,hours,minutes,seconds,(,) and \. If you leave out a unit,
-    it's value will be expressed in the highest unit lower than the one
-    left out. Text between ()-chars will not be visible if a replaced unit
-    in this text is 0. If seconds is a decimal number then you can see the
-    numbers behind the point by using \S followed by a number that
-    specifies the amount of digits behind the point that you want to see
-    (maximum 9). You can also place a 'x' behind \S so you have all digits
-    behind the point and no trailing zero's. (also maximum 9).
-  args:
-    - seconds
-    - format
-- name: forwarded_mails
-  desc: |-
-    Number of mails marked as forwarded in the specified mailbox
-    or mail spool if not. Only maildir type mailboxes are supported, mbox
-    type will return -1.
-  args:
-    - (maildir)
-    - (interval)
-- name: free_bufcache
-  desc: Amount of memory cached or buffered, as reported by free. Linux only.
-- name: freq
-  desc: |-
-    Returns CPU #n's frequency in MHz. CPUs are counted from 1.
-  default: 1
-  args:
-    - (n)
-- name: freq2
-  desc: |-
-    Returns CPU #n's clock speed from assembly in MHz. CPUs are
-    counted from 1.
-  default: 1
-  args:
-    - (n)
-- name: freq_g
-  desc: |-
-    Returns CPU #n's frequency in GHz. CPUs are counted from 1.
-  default: 1
-  args:
-    - (n)
-- name: fs_bar
-  desc: |-
-    Bar that shows how much space is used on a file system.
-    height is the height in pixels. fs is any file on that file system.
-  args:
-    - (height),(width)
-    - fs
-- name: fs_bar_free
-  desc: |-
-    Bar that shows how much space is free on a file system.
-    height is the height in pixels. fs is any file on that file system.
-  args:
-    - (height),(width)
-    - fs
-- name: fs_free
-  desc: Free space on a file system available for users.
-  args:
-    - (fs)
-- name: fs_free_perc
-  desc: |-
-    Free percentage of space on a file system available for
-    users.
-  args:
-    - (fs)
-- name: fs_size
-  desc: File system size.
-  args:
-    - (fs)
-- name: fs_type
-  desc: File system type.
-  args:
-    - (fs)
-- name: fs_used
-  desc: File system used space.
-  args:
-    - (fs)
-- name: fs_used_perc
-  desc: Percent of file system used space.
-  args:
-    - (fs)
-- name: gid_name
-  desc: Name of group with this gid.
-  args:
-    - gid
-- name: github_notifications
-  desc: Number of GitHub notifications.
-- name: goto
-  desc: The next element will be printed at position 'x'.
-  args:
-    - x
-- name: gw_iface
-  desc: |-
-    Displays the default route's interface or "multiple"/"none"
-    accordingly.
-- name: gw_ip
-  desc: |-
-    Displays the default gateway's IP or "multiple"/"none"
-    accordingly.
-- name: hddtemp
-  desc: |-
-    Displays temperature of a selected hard disk drive as
-    reported by the hddtemp daemon. Use hddtemp_host and hddtemp_port to
-    specify a host and port for all hddtemp objects. If no dev parameter
-    is given, the first disk returned by the hddtemp daemon is used.
-  args:
-    - (dev)
-- name: head
-  desc: |-
-    Displays first N lines of supplied text file. The file is
-    checked every 'next_check' update. If next_check is not supplied,
-    Conky defaults to 2. Max of 30 lines can be displayed, or until the
-    text buffer is filled.
-  args:
-    - logfile
-    - lines
-    - (next_check)
-- name: hr
-  desc: Horizontal line, height is the height in pixels.
-  args:
-    - (height)
-- name: hwmon
-  desc: |-
-    Hwmon sensor from sysfs (Linux 2.6). Parameter dev can be:
-    1. Number. e.g `1` means hwmon1.
-    2. Module name. e.g. `k10temp` means the first hwmon device whose module
-    name is `k10temp.
-    3. Omitted. Then the first hwmon device (hwmon0) will be used.
+      Remember to make your script executable!
 
-    Parameter type is either `in` or `vol` meaning voltage; `fan` meaning fan;
-    `temp` meaning temperature. Parameter n is number of the sensor. See
-    `/sys/class/hwmon/` on your local computer.  The optional arguments `factor`
-    and `offset` allow precalculation of the raw input, which is being modified
-    as follows: `input = input * factor + offset`. Note that they have to be
-    given as decimal values (i.e. contain at least one decimal place).
-  args:
-    - (dev)
-    - type
-    - n
-    - (factor offset)
-  other:
-    filename: null
-- name: i2c
-  desc: |-
-    I2C sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you have
-    only one I2C device. Parameter type is either `in` or `vol` meaning voltage;
-    `fan` meaning fan; `temp` meaning temperature. Parameter n is number of the
-    sensor. See `/sys/bus/i2c/devices/` on your local computer. The optional
-    arguments `factor` and `offset` allow precalculation of the raw input, which
-    is being modified as follows: `input = input * factor + offset`. Note that
-    they have to be given as decimal values (i.e. contain at least one decimal
-    place).
-  args:
-    - (dev)
-    - type
-    - n
-    - (factor offset)
-  other:
-    filename: null
-- name: i8k_ac_status
-  desc: |-
-    If running the i8k kernel driver for Inspiron laptops, displays whether ac
-    power is on, as listed in `/proc/i8k` (translated to human-readable). Beware
-    that this is by default not enabled by i8k itself.
-- name: i8k_bios
-  desc: |-
-    If running the i8k kernel driver for Inspiron laptops,
-    displays the bios version as listed in /proc/i8k.
-- name: i8k_buttons_status
-  desc: |-
-    If running the i8k kernel driver for Inspiron laptops,
-    displays the volume buttons status as listed in /proc/i8k.
-- name: i8k_cpu_temp
-  desc: |-
-    If running the i8k kernel driver for Inspiron laptops,
-    displays the cpu temperature in Celsius, as reported by /proc/i8k.
-- name: i8k_left_fan_rpm
-  desc: |-
-    If running the i8k kernel driver for Inspiron laptops,
-    displays the left fan's rate of rotation, in revolutions per minute as
-    listed in /proc/i8k. Beware, some laptops i8k reports these fans in
-    reverse order.
-- name: i8k_left_fan_status
-  desc: |-
-    If running the i8k kernel driver for Inspiron laptops,
-    displays the left fan status as listed in /proc/i8k (translated to
-    human-readable). Beware, some laptops i8k reports these fans in
-    reverse order.
-- name: i8k_right_fan_rpm
-  desc: |-
-    If running the i8k kernel driver for Inspiron laptops,
-    displays the right fan's rate of rotation, in revolutions per minute
-    as listed in /proc/i8k. Beware, some laptops i8k reports these fans in
-    reverse order.
-- name: i8k_right_fan_status
-  desc: |-
-    If running the i8k kernel driver for Inspiron laptops,
-    displays the right fan status as listed in /proc/i8k (translated to
-    human-readable). Beware, some laptops i8k reports these fans in
-    reverse order.
-- name: i8k_serial
-  desc: |-
-    If running the i8k kernel driver for Inspiron laptops,
-    displays your laptop serial number as listed in /proc/i8k.
-- name: i8k_version
-  desc: |-
-    If running the i8k kernel driver for Inspiron laptops,
-    displays the version formatting of /proc/i8k.
-- name: ibm_brightness
-  desc: |-
-    If running the IBM ACPI, displays the brigtness of the
-    laptops's LCD (0-7).
-- name: ibm_fan
-  desc: If running the IBM ACPI, displays the fan speed.
-- name: ibm_temps
-  desc: |-
-    If running the IBM ACPI, displays the temperatures from the
-    IBM temperature sensors (N=0..7) Sensor 0 is on the CPU, 3 is on the
-    GPU.
-  args:
-    - N
-- name: ibm_thinklight
-  desc:
-    "If running the IBM ACPI, displays the status of your\nThinkLight\u2122. Value\
-    \ is either 'on', 'off' or 'unknown'."
-- name: ibm_volume
-  desc: |-
-    If running the IBM ACPI, displays the "master" volume,
-    controlled by the volume keys (0-14).
-- name: ical
-  desc: |-
-    Shows title of event number 'number' in the ical (RFC 5545)
-    file 'file'. The events are first ordered by starting time, events
-    that started in the past are ignored. The events that are shown are
-    the VEVENTS, the title that is shown is the SUMMARY and the starting
-    time used for sorting is DTSTART.
-  args:
-    - number
-    - file
-- name: iconv_start
-  desc: |-
-    Convert text from one codeset to another using GNU iconv.
-    Needs to be stopped with iconv_stop.
-  args:
-    - codeset_from
-    - codeset_to
-- name: iconv_stop
-  desc: Stop iconv codeset conversion.
-- name: if_empty
-  desc: |-
-    if conky variable VAR is empty, display everything between
-    $if_empty and the matching $endif.
-  args:
-    - (var)
-- name: if_existing
-  desc: |-
-    if FILE exists, display everything between if_existing and
-    the matching $endif. The optional second parameter checks for FILE
-    containing the specified string and prints everything between
-    $if_existing and the matching $endif.
-  args:
-    - file
-    - (string)
-- name: if_gw
-  desc: |-
-    if there is at least one default gateway, display everything
-    between $if_gw and the matching $endif.
-- name: if_match
-  desc: |-
-    Evaluates the given boolean expression, printing everything
-    between $if_match and the matching $endif depending on whether the
-    evaluation returns true or not. Valid expressions consist of a left
-    side, an operator and a right side. Left and right sides are being
-    parsed for contained text objects before evaluation.
+      In the following example, we set up execgraph to display seconds (0-59) on a
+      graph that is 50px high and 200px wide, using a temperature gradient with
+      colors ranging from red for small values (FF0000) to yellow for large values
+      (FFFF00). We set the scale to 60.
 
-    Recognised left and right side types are:
+      ```
+      ${execgraph ~/seconds.sh 50,200 FF0000 FFFF00 60 -t}
+      ```
+    args:
+      - command
+      - (height),(width)
+      - (gradient color 1)
+      - (gradient color 2)
+      - (scale)
+      - (-t)
+      - (-l)
+  - name: execi
+    desc: |-
+      Same as exec, but with a specific interval in seconds. The
+      interval can't be less than the update_interval in your configuration.
+      See also $texeci.
+    args:
+      - interval
+      - command
+  - name: execibar
+    desc: Same as execbar, but with an interval.
+    args:
+      - interval
+      - (height),(width)
+      - command
+  - name: execigauge
+    desc: Same as execgauge, but with an interval.
+    args:
+      - interval
+      - (height),(width)
+      - command
+  - name: execigraph
+    desc: Same as execgraph, but with an interval.
+    args:
+      - interval
+      - command
+      - (height),(width)
+      - (gradient color 1)
+      - (gradient color 2)
+      - (scale)
+      - (-t)
+      - (-l)
+  - name: execp
+    desc: |-
+      Executes a shell command and displays the output in conky.
+      Warning: this takes a lot more resources than other variables. I'd
+      recommend coding wanted behaviour in C/C++ and posting a patch. This
+      differs from $exec in that it parses the output of the command, so you
+      can insert things like ${color red}hi!${color} in your script and have
+      it correctly parsed by Conky. Caveats: Conky parses and evaluates the
+      output of $execp every time Conky loops, and then destroys all the
+      objects. If you try to use anything like $execi within an $execp
+      statement, it will functionally run at the same interval that the
+      $execp statement runs, as it is created and destroyed at every
+      interval.
+    args:
+      - command
+  - name: execpi
+    desc: |-
+      Same as execp, but with an interval. Note that the output
+      from the $execpi command is still parsed and evaluated at every
+      interval.
+    args:
+      - interval
+      - command
+  - name: flagged_mails
+    desc: |-
+      Number of mails marked as flagged in the specified mailbox
+      or mail spool if not. Only maildir type mailboxes are supported, mbox
+      type will return -1.
+    args:
+      - (maildir)
+      - (interval)
+  - name: font
+    desc: |-
+      Specify a different font. This new font will apply to the
+      current line and everything following. You can use a $font with no
+      arguments to change back to the default font (much like with $color).
+    args:
+      - (font)
+  - name: fontN
+    desc: |-
+      Change font to fontN configuration option, where N is a
+      digit between 0 and 9, inclusively.
+  - name: format_time
+    desc: |-
+      Format time given in seconds. This var only works when the
+      times_in_seconds configuration setting is on. Format is a string that
+      should start and end with a "-char. The "-chars are not part of the
+      output, \w,\d,\h,\m,\s,\(,\) and \\ are replaced by
+      weeks,days,hours,minutes,seconds,(,) and \. If you leave out a unit,
+      it's value will be expressed in the highest unit lower than the one
+      left out. Text between ()-chars will not be visible if a replaced unit
+      in this text is 0. If seconds is a decimal number then you can see the
+      numbers behind the point by using \S followed by a number that
+      specifies the amount of digits behind the point that you want to see
+      (maximum 9). You can also place a 'x' behind \S so you have all digits
+      behind the point and no trailing zero's. (also maximum 9).
+    args:
+      - seconds
+      - format
+  - name: forwarded_mails
+    desc: |-
+      Number of mails marked as forwarded in the specified mailbox
+      or mail spool if not. Only maildir type mailboxes are supported, mbox
+      type will return -1.
+    args:
+      - (maildir)
+      - (interval)
+  - name: free_bufcache
+    desc: Amount of memory cached or buffered, as reported by free. Linux only.
+  - name: freq
+    desc: |-
+      Returns CPU #n's frequency in MHz. CPUs are counted from 1.
+    default: 1
+    args:
+      - (n)
+  - name: freq2
+    desc: |-
+      Returns CPU #n's clock speed from assembly in MHz. CPUs are
+      counted from 1.
+    default: 1
+    args:
+      - (n)
+  - name: freq_g
+    desc: |-
+      Returns CPU #n's frequency in GHz. CPUs are counted from 1.
+    default: 1
+    args:
+      - (n)
+  - name: fs_bar
+    desc: |-
+      Bar that shows how much space is used on a file system.
+      height is the height in pixels. fs is any file on that file system.
+    args:
+      - (height),(width)
+      - fs
+  - name: fs_bar_free
+    desc: |-
+      Bar that shows how much space is free on a file system.
+      height is the height in pixels. fs is any file on that file system.
+    args:
+      - (height),(width)
+      - fs
+  - name: fs_free
+    desc: Free space on a file system available for users.
+    args:
+      - (fs)
+  - name: fs_free_perc
+    desc: |-
+      Free percentage of space on a file system available for
+      users.
+    args:
+      - (fs)
+  - name: fs_size
+    desc: File system size.
+    args:
+      - (fs)
+  - name: fs_type
+    desc: File system type.
+    args:
+      - (fs)
+  - name: fs_used
+    desc: File system used space.
+    args:
+      - (fs)
+  - name: fs_used_perc
+    desc: Percent of file system used space.
+    args:
+      - (fs)
+  - name: gid_name
+    desc: Name of group with this gid.
+    args:
+      - gid
+  - name: github_notifications
+    desc: Number of GitHub notifications.
+  - name: goto
+    desc: The next element will be printed at position 'x'.
+    args:
+      - x
+  - name: gw_iface
+    desc: |-
+      Displays the default route's interface or "multiple"/"none"
+      accordingly.
+  - name: gw_ip
+    desc: |-
+      Displays the default gateway's IP or "multiple"/"none"
+      accordingly.
+  - name: hddtemp
+    desc: |-
+      Displays temperature of a selected hard disk drive as
+      reported by the hddtemp daemon. Use hddtemp_host and hddtemp_port to
+      specify a host and port for all hddtemp objects. If no dev parameter
+      is given, the first disk returned by the hddtemp daemon is used.
+    args:
+      - (dev)
+  - name: head
+    desc: |-
+      Displays first N lines of supplied text file. The file is
+      checked every 'next_check' update. If next_check is not supplied,
+      Conky defaults to 2. Max of 30 lines can be displayed, or until the
+      text buffer is filled.
+    args:
+      - logfile
+      - lines
+      - (next_check)
+  - name: hr
+    desc: Horizontal line, height is the height in pixels.
+    args:
+      - (height)
+  - name: hwmon
+    desc: |-
+      Hwmon sensor from sysfs (Linux 2.6). Parameter dev can be:
+      1. Number. e.g `1` means hwmon1.
+      2. Module name. e.g. `k10temp` means the first hwmon device whose module
+      name is `k10temp.
+      3. Omitted. Then the first hwmon device (hwmon0) will be used.
 
-    * **double**: Argument consists of only digits and a single dot.
-    * **long**: Argument consists of only digits.
-    * **string**: Argument is enclosed in quotation marks (`"`).
+      Parameter type is either `in` or `vol` meaning voltage; `fan` meaning fan;
+      `temp` meaning temperature. Parameter n is number of the sensor. See
+      `/sys/class/hwmon/` on your local computer.  The optional arguments `factor`
+      and `offset` allow precalculation of the raw input, which is being modified
+      as follows: `input = input * factor + offset`. Note that they have to be
+      given as decimal values (i.e. contain at least one decimal place).
+    args:
+      - (dev)
+      - type
+      - n
+      - (factor offset)
+    other:
+      filename: null
+  - name: i2c
+    desc: |-
+      I2C sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you have
+      only one I2C device. Parameter type is either `in` or `vol` meaning voltage;
+      `fan` meaning fan; `temp` meaning temperature. Parameter n is number of the
+      sensor. See `/sys/bus/i2c/devices/` on your local computer. The optional
+      arguments `factor` and `offset` allow precalculation of the raw input, which
+      is being modified as follows: `input = input * factor + offset`. Note that
+      they have to be given as decimal values (i.e. contain at least one decimal
+      place).
+    args:
+      - (dev)
+      - type
+      - n
+      - (factor offset)
+    other:
+      filename: null
+  - name: i8k_ac_status
+    desc: |-
+      If running the i8k kernel driver for Inspiron laptops, displays whether ac
+      power is on, as listed in `/proc/i8k` (translated to human-readable). Beware
+      that this is by default not enabled by i8k itself.
+  - name: i8k_bios
+    desc: |-
+      If running the i8k kernel driver for Inspiron laptops,
+      displays the bios version as listed in /proc/i8k.
+  - name: i8k_buttons_status
+    desc: |-
+      If running the i8k kernel driver for Inspiron laptops,
+      displays the volume buttons status as listed in /proc/i8k.
+  - name: i8k_cpu_temp
+    desc: |-
+      If running the i8k kernel driver for Inspiron laptops,
+      displays the cpu temperature in Celsius, as reported by /proc/i8k.
+  - name: i8k_left_fan_rpm
+    desc: |-
+      If running the i8k kernel driver for Inspiron laptops,
+      displays the left fan's rate of rotation, in revolutions per minute as
+      listed in /proc/i8k. Beware, some laptops i8k reports these fans in
+      reverse order.
+  - name: i8k_left_fan_status
+    desc: |-
+      If running the i8k kernel driver for Inspiron laptops,
+      displays the left fan status as listed in /proc/i8k (translated to
+      human-readable). Beware, some laptops i8k reports these fans in
+      reverse order.
+  - name: i8k_right_fan_rpm
+    desc: |-
+      If running the i8k kernel driver for Inspiron laptops,
+      displays the right fan's rate of rotation, in revolutions per minute
+      as listed in /proc/i8k. Beware, some laptops i8k reports these fans in
+      reverse order.
+  - name: i8k_right_fan_status
+    desc: |-
+      If running the i8k kernel driver for Inspiron laptops,
+      displays the right fan status as listed in /proc/i8k (translated to
+      human-readable). Beware, some laptops i8k reports these fans in
+      reverse order.
+  - name: i8k_serial
+    desc: |-
+      If running the i8k kernel driver for Inspiron laptops,
+      displays your laptop serial number as listed in /proc/i8k.
+  - name: i8k_version
+    desc: |-
+      If running the i8k kernel driver for Inspiron laptops,
+      displays the version formatting of /proc/i8k.
+  - name: ibm_brightness
+    desc: |-
+      If running the IBM ACPI, displays the brigtness of the
+      laptops's LCD (0-7).
+  - name: ibm_fan
+    desc: If running the IBM ACPI, displays the fan speed.
+  - name: ibm_temps
+    desc: |-
+      If running the IBM ACPI, displays the temperatures from the
+      IBM temperature sensors (N=0..7) Sensor 0 is on the CPU, 3 is on the
+      GPU.
+    args:
+      - N
+  - name: ibm_thinklight
+    desc:
+      "If running the IBM ACPI, displays the status of your\nThinkLight\u2122. Value\
+      \ is either 'on', 'off' or 'unknown'."
+  - name: ibm_volume
+    desc: |-
+      If running the IBM ACPI, displays the "master" volume,
+      controlled by the volume keys (0-14).
+  - name: ical
+    desc: |-
+      Shows title of event number 'number' in the ical (RFC 5545)
+      file 'file'. The events are first ordered by starting time, events
+      that started in the past are ignored. The events that are shown are
+      the VEVENTS, the title that is shown is the SUMMARY and the starting
+      time used for sorting is DTSTART.
+    args:
+      - number
+      - file
+  - name: iconv_start
+    desc: |-
+      Convert text from one codeset to another using GNU iconv.
+      Needs to be stopped with iconv_stop.
+    args:
+      - codeset_from
+      - codeset_to
+  - name: iconv_stop
+    desc: Stop iconv codeset conversion.
+  - name: if_empty
+    desc: |-
+      if conky variable VAR is empty, display everything between
+      $if_empty and the matching $endif.
+    args:
+      - (var)
+  - name: if_existing
+    desc: |-
+      if FILE exists, display everything between if_existing and
+      the matching $endif. The optional second parameter checks for FILE
+      containing the specified string and prints everything between
+      $if_existing and the matching $endif.
+    args:
+      - file
+      - (string)
+  - name: if_gw
+    desc: |-
+      if there is at least one default gateway, display everything
+      between $if_gw and the matching $endif.
+  - name: if_match
+    desc: |-
+      Evaluates the given boolean expression, printing everything
+      between $if_match and the matching $endif depending on whether the
+      evaluation returns true or not. Valid expressions consist of a left
+      side, an operator and a right side. Left and right sides are being
+      parsed for contained text objects before evaluation.
 
-    Valid operands are:
+      Recognised left and right side types are:
 
-    * `<` or `>`
-    * `<=` or `>=`
-    * `==` or `!=`
-  args:
-    - expression
-- name: if_mixer_mute
-  desc: |-
-    If mixer exists, display everything between $if_mixer_mute
-    and the matching $endif. If no mixer is specified, "Vol" is used.
-  args:
-    - (mixer)
-- name: if_mounted
-  desc: |-
-    if MOUNTPOINT is mounted, display everything between
-    $if_mounted and the matching $endif.
-  args:
-    - (mountpoint)
-- name: if_mpd_playing
-  desc: |-
-    if mpd is playing or paused, display everything between
-    $if_mpd_playing and the matching $endif.
-- name: if_pa_sink_muted
-  desc: |-
-    If Pulseaudio's default sink is muted, display everything
-    between $if_pa_sink_muted and the corresponding $else or $endif.
-- name: if_running
-  desc:
-    "If PROCESS is running, display everything between\n$if_running and the corresponding\
-    \ $else or $endif. Note that PROCESS\nmay be either a full command line with arguments\
-    \ (without the\ndirectory prefix), or simply the name of an executable. For example,\n\
-    either of the following will be true if there is a running process\nwith the command\
-    \ line `/usr/bin/conky -u 5`:\n\n* `${if_running conky -u 5}` or\n* `${if_running\
-    \ conky}`\n    \nIt is important not to include trailing spaces. For example,\
-    \ `${if_running\nconky }` will be false."
-  args:
-    - (process)
-- name: if_smapi_bat_installed
-  desc: |-
-    when using smapi, if the battery with index INDEX is
-    installed, display everything between $if_smapi_bat_installed and the
-    matching $endif.
-  args:
-    - (INDEX)
-- name: if_up
-  desc: |-
-    if INTERFACE exists and is up, display everything between
-    $if_up and the matching $endif.
-  args:
-    - (interface)
-- name: if_updatenr
-  desc: |-
-    If it's the UPDATENR-th time that conky updates, display
-    everything between $if_updatenr and the matching $endif. The counter
-    resets when the highest UPDATENR is reached.
+      * **double**: Argument consists of only digits and a single dot.
+      * **long**: Argument consists of only digits.
+      * **string**: Argument is enclosed in quotation marks (`"`).
 
-    Example: `{$if_updatenr 1}foo$endif{$if_updatenr 2}bar$endif{$if_updatenr
-    4}$endif` shows foo 25% of the time followed by bar 25% of the time followed
-    by nothing the other half of the time.
-  args:
-    - (updatenr)
-- name: if_xmms2_connected
-  desc: |-
-    Display everything between $if_xmms2_connected and the
-    matching $endif if xmms2 is running.
-- name: iface
-  desc: Display interface names starting from 1, eg ${iface 1}.
-  args:
-    - (number)
-- name: image
-  desc: |-
-    Renders an image from the path specified using Imlib2. Takes
-    4 optional arguments: a position, a size, a no-cache switch, and a
-    cache flush interval. Changing the x,y position will move the position
-    of the image, and changing the WxH will scale the image. If you
-    specify the no-cache flag (-n), the image will not be cached.
-    Alternately, you can specify the -f int switch to specify a cache
-    flush interval for a particular image. Example: ${image
-    /home/brenden/cheeseburger.jpg -p 20,20 -s 200x200} will render
-    'cheeseburger.jpg' at (20,20) scaled to 200x200 pixels. Conky does not
-    make any attempt to adjust the position (or any other formatting) of
-    images, they are just rendered as per the arguments passed. The only
-    reason $image is part of the conky.text section, is to allow for
-    runtime modifications, through $execp $lua_parse, or some other
-    method.
-  args:
-    - <path to image>
-    - (-p x,y)
-    - (-s WxH)
-    - (-n)
-    - (-f interval)
-- name: imap_messages
-  desc: |-
-    Displays the number of messages in your global IMAP inbox by
-    default. You can define individual IMAP inboxes separately by passing
-    arguments to this object. Arguments are: "host user pass [-i interval
-    (in seconds)] [-f 'folder'] [-p port] [-e 'command'] [-r retries]".
-    Default port is 143, default folder is 'INBOX', default interval is 5
-    minutes, and default number of retries before giving up is 5. If the
-    password is supplied as '*', you will be prompted to enter the
-    password when Conky starts.
-  args:
-    - (args)
-- name: imap_unseen
-  desc: |-
-    Displays the number of unseen messages in your global IMAP
-    inbox by default. You can define individual IMAP inboxes separately by
-    passing arguments to this object. Arguments are: "host user pass [-i
-    interval (in seconds)] [-f 'folder'] [-p port] [-e 'command'] [-r
-    retries]". Default port is 143, default folder is 'INBOX', default
-    interval is 5 minutes, and default number of retries before giving up
-    is 5. If the password is supplied as '*', you will be prompted to
-    enter the password when Conky starts.
-  args:
-    - (args)
-- name: intel_backlight
-  desc: Display the brightness of your Intel backlight in percent.
-- name: ioscheduler
-  desc: |-
-    Prints the current ioscheduler used for the given disk name
-    (i.e. e.g. "hda" or "sdb").
-  args:
-    - disk
-- name: irc
-  desc: |-
-    Shows everything that's being told in #channel on IRCserver
-    'server'. TCP-port 6667 is used for the connection unless 'port' is
-    specified. Shows everything since the last time or the last
-    'max_msg_lines' entries if specified.
-  args:
-    - server(:port)
-    - "#channel"
-    - (max_msg_lines)
-- name: journal
-  desc: |-
-    Displays last N lines of the systemd journal. The optional
-    type can be 'user' or 'system' which will show only the user or system
-    journal respectively. By default, all journal lines visible to the
-    user are shown. A maximum of 200 lines can be displayed, or until the
-    text buffer is filled.
-  args:
-    - lines
-    - (type)
-- name: kernel
-  desc: Kernel version.
-- name: key_caps_lock
-  desc: An indicator for Capital Lock key.
-- name: key_num_lock
-  desc: An indicator for Number Lock key.
-- name: key_scroll_lock
-  desc: An indicator for Scrolling Lock key.
-- name: keyboard_layout
-  desc: Display keyboard layout.
-- name: laptop_mode
-  desc: The value of `/proc/sys/vm/laptop_mode`.
-- name: legacymem
-  desc: Amount of memory used, calculated the same way as in the `free` program.
-- name: lines
-  desc: Displays the number of lines in the given file.
-  args:
-    - textfile
-- name: loadavg
-  desc: |-
-    System load average, 1 is for past 1 minute, 2 for past 5
-    minutes and 3 for past 15 minutes. Without argument, prints all three
-    values separated by whitespace.
-  args:
-    - (1|2|3)
-- name: loadgraph
-  desc: |-
-    Load1 average graph, similar to xload, with optional colours
-    in hex, minus the #. Uses a logarithmic scale (to see small numbers)
-    when you use the -l switch. Takes the switch '-t' to use a temperature
-    gradient, which makes the gradient values change depending on the
-    amplitude of a particular graph value (try it and see).
-  args:
-    - (height),(width)
-    - (gradient colour 1)
-    - (gradient colour 2)
-    - (scale)
-    - (-t)
-    - (-l)
-- name: lowercase
-  desc: Converts all letters into lowercase.
-  args:
-    - text
-- name: lua
-  desc: |-
-    Executes a Lua function with given parameters, then prints
-    the returned string. See also 'lua_load' on how to load scripts. Conky
-    puts 'conky_' in front of function_name to prevent accidental calls to
-    the wrong function unless you place 'conky_' in front of it
-    yourself.
-  args:
-    - function_name
-    - (function parameters)
-- name: lua_bar
-  desc: |-
-    Executes a Lua function with given parameters and draws a
-    bar. Expects result value to be an integer between 0 and 100. See also
-    'lua_load' on how to load scripts. Conky puts 'conky_' in front of
-    function_name to prevent accidental calls to the wrong function unless
-    you place 'conky_' in front of it yourself.
-  args:
-    - (height,width)
-    - function_name
-    - (function parameters)
-- name: lua_gauge
-  desc: |-
-    Executes a Lua function with given parameters and draws a
-    gauge. Expects result value to be an integer between 0 and 100. See
-    also 'lua_load' on how to load scripts. Conky puts 'conky_' in front
-    of function_name to prevent accidental calls to the wrong function
-    unless you place 'conky_' in front of it yourself.
-  args:
-    - (height,width)
-    - function_name
-    - (function parameters)
-- name: lua_graph
-  desc: |-
-    Executes a Lua function with and draws a graph. Expects
-    result value to be any number, and by default will scale to show the
-    full range. See also 'lua_load' on how to load scripts. Takes the
-    switch '-t' to use a temperature gradient, which makes the gradient
-    values change depending on the amplitude of a particular graph value
-    (try it and see). Conky puts 'conky_' in front of function_name to
-    prevent accidental calls to the wrong function unless you put you
-    place 'conky_' in front of it yourself.
-  args:
-    - function_name
-    - (height),(width)
-    - (gradient colour 1)
-    - (gradient colour 2)
-    - (scale)
-    - (-t)
-    - (-l)
-- name: lua_parse
-  desc: |-
-    Executes a Lua function with given parameters as per $lua,
-    then parses and prints the result value as per the syntax for the
-    conky.text section. See also 'lua_load' on how to load scripts. Conky
-    puts 'conky_' in front of function_name to prevent accidental calls to
-    the wrong function unless you place 'conky_' in front of it
-    yourself.
-  args:
-    - function_name
-    - (function parameters)
-- name: machine
-  desc: Machine, e.g. i686, x86_64.
-- name: mails
-  desc: |-
-    Mail count in the specified mailbox or your mail spool if
-    not. Both mbox and maildir type mailboxes are supported. You can use a
-    program like fetchmail to get mails from some server using your
-    favourite protocol. See also new_mails.
-  args:
-    - (mailbox)
-    - (interval)
-- name: mboxscan
-  desc: |-
-    Print a summary of recent messages in an mbox format
-    mailbox. mbox parameter is the filename of the mailbox (can be
-    encapsulated using '"', ie. ${mboxscan -n 10 "/home/brenden/some box"}
-  args:
-    - (-n number of messages to print)
-    - (-fw from width)
-    - (-sw subject width)
-    - mbox
-- name: mem
-  desc: Amount of memory in use.
-- name: memavail
-  desc: Amount of available memory as recorded in /proc/meminfo. Linux 3.14+ only.
-- name: membar
-  desc: Bar that shows amount of memory in use.
-  args:
-    - (height),(width)
-- name: memdirty
-  desc: Amount of "dirty" memory. Linux only.
-- name: memeasyfree
-  desc: |-
-    Amount of free memory including the memory that is very
-    easily freed (buffers/cache).
-- name: memfree
-  desc: Amount of free memory.
-- name: memgauge
-  desc: Gauge that shows amount of memory in use (see cpugauge).
-  args:
-    - (height),(width)
-- name: memgraph
-  desc: |-
-    Memory usage graph. Uses a logarithmic scale (to see small
-    numbers) when you use the -l switch. Takes the switch '-t' to use a
-    temperature gradient, which makes the gradient values change depending
-    on the amplitude of a particular graph value (try it and see).
-  args:
-    - (height),(width)
-    - (gradient colour 1)
-    - (gradient colour 2)
-    - (scale)
-    - (-t)
-    - (-l)
-- name: memmax
-  desc: Total amount of memory.
-- name: memperc
-  desc: Percentage of memory in use.
-- name: memwithbuffers
-  desc: |-
-    Amount of memory in use, including that used by system
-    buffers and caches.
-- name: memwithbuffersbar
-  desc: |-
-    Bar that shows amount of memory in use (including memory
-    used by system buffers and caches).
-  args:
-    - (height),(width)
-- name: memwithbuffersgraph
-  desc: |-
-    Memory usage graph including memory used by system buffers
-    and cache. Uses a logarithmic scale (to see small numbers) when you
-    use the -l switch. Takes the switch '-t' to use a temperature
-    gradient, which makes the gradient values change depending on the
-    amplitude of a particular graph value (try it and see).
-  args:
-    - (height),(width)
-    - (gradient colour 1)
-    - (gradient colour 2)
-    - (scale)
-    - (-t)
-    - (-l)
-- name: mixer
-  desc: |-
-    Prints the mixer value as reported by the OS. On Linux, this
-    variable uses the OSS emulation, so you need the proper kernel module
-    loaded. Default mixer is "Vol", but you can specify one of the
-    available OSS controls: "Vol", "Bass", "Trebl", "Synth", "Pcm",
-    "Spkr", "Line", "Mic", "CD", "Mix", "Pcm2 ", "Rec", "IGain", "OGain",
-    "Line1", "Line2", "Line3", "Digital1", "Digital2", "Digital3",
-    "PhoneIn", "PhoneOut", "Video", "Radio" and "Monitor".
-  default: Vol
-  args:
-    - (device)
-- name: mixerbar
-  desc: |-
-    Displays mixer value in a bar as reported by the OS. See
-    docs for $mixer for details on arguments.
-  args:
-    - (device)
-- name: mixerl
-  desc: |-
-    Prints the left channel mixer value as reported by the OS.
-    See docs for $mixer for details on arguments.
-  args:
-    - (device)
-- name: mixerlbar
-  desc: |-
-    Displays the left channel mixer value in a bar as reported
-    by the OS. See docs for $mixer for details on arguments.
-  args:
-    - (device)
-- name: mixerr
-  desc: |-
-    Prints the right channel mixer value as reported by the OS.
-    See docs for $mixer for details on arguments.
-  args:
-    - (device)
-- name: mixerrbar
-  desc: |-
-    Displays the right channel mixer value in a bar as reported
-    by the OS. See docs for $mixer for details on arguments.
-  args:
-    - (device)
-- name: moc_album
-  desc: Album of the current MOC song.
-- name: moc_artist
-  desc: Artist of the current MOC song.
-- name: moc_bitrate
-  desc: Bitrate in the current MOC song.
-- name: moc_curtime
-  desc: Current time of the current MOC song.
-- name: moc_file
-  desc: File name of the current MOC song.
-- name: moc_rate
-  desc: Rate of the current MOC song.
-- name: moc_song
-  desc: The current song name being played in MOC.
-- name: moc_state
-  desc: Current state of MOC; playing, stopped etc.
-- name: moc_timeleft
-  desc: Time left in the current MOC song.
-- name: moc_title
-  desc: Title of the current MOC song.
-- name: moc_totaltime
-  desc: Total length of the current MOC song.
-- name: monitor
-  desc: |-
-    Number of the monitor on which conky is running or the
-    message "Not running in X" if this is the case.
-- name: monitor_number
-  desc: |-
-    Number of monitors or the message "Not running in X" if this
-    is the case.
-- name: mouse_speed
-  desc: Display mouse speed.
-- name: mpd_album
-  desc: Album in current MPD song.
-- name: mpd_albumartist
-  desc: Artist of the album of the current MPD song.
-- name: mpd_artist
-  desc: Artist in current MPD song must be enabled at compile.
-- name: mpd_bar
-  desc: Bar of mpd's progress.
-  args:
-    - (height),(width)
-- name: mpd_bitrate
-  desc: Bitrate of current song.
-- name: mpd_comment
-  desc: Comment of current MPD song.
-  args:
-    - (max
-    - length)
-- name: mpd_date
-  desc: Date of current song.
-- name: mpd_elapsed
-  desc: Song's elapsed time.
-- name: mpd_file
-  desc: Prints the file name of the current MPD song.
-- name: mpd_length
-  desc: Song's length.
-- name: mpd_name
-  desc: Prints the MPD name field.
-- name: mpd_percent
-  desc: Percent of song's progress.
-- name: mpd_random
-  desc: Random status (On/Off).
-- name: mpd_repeat
-  desc: Repeat status (On/Off).
-- name: mpd_smart
-  desc: |-
-    Prints the song name in either the form "artist - title" or
-    file name, depending on whats available.
-  args:
-    - (max
-    - length)
-- name: mpd_status
-  desc: Playing, stopped, et cetera.
-- name: mpd_title
-  desc: Title of current MPD song.
-  args:
-    - (max
-    - length)
-- name: mpd_track
-  desc: Prints the MPD track field.
-- name: mpd_vol
-  desc: MPD's volume.
-- name: mysql
-  desc: |-
-    Shows the first field of the first row of the result of the
-    query.
-  args:
-    - query
-- name: nameserver
-  desc: |-
-    Print a nameserver from /etc/resolv.conf.
-  default: 0
-  args:
-    - (index)
-- name: new_mails
-  desc: |-
-    Unread mail count in the specified mailbox or mail spool if
-    not. Both mbox and maildir type mailboxes are supported.
-  args:
-    - (mailbox)
-    - (interval)
-- name: no_update
-  desc: |-
-    Shows text and parses the vars in it, but doesn't update
-    them. Use this for things that do not change while conky is running,
-    like $machine, $conky_version,... By not updating this you can save
-    some resources.
-  args:
-    - text
-- name: nodename
-  desc: Hostname.
-- name: nodename_short
-  desc: Short hostname (same as 'hostname -s' shell command).
-- name: nvidia
-  desc: |-
-    Nvidia graphics card information via the XNVCtrl library.
+      Valid operands are:
 
-    *GPU_ID:* Optional parameter to choose the GPU to be used as 0,1,2,3,..
-    Default parameter is 0
+      * `<` or `>`
+      * `<=` or `>=`
+      * `==` or `!=`
+    args:
+      - expression
+  - name: if_mixer_mute
+    desc: |-
+      If mixer exists, display everything between $if_mixer_mute
+      and the matching $endif. If no mixer is specified, "Vol" is used.
+    args:
+      - (mixer)
+  - name: if_mounted
+    desc: |-
+      if MOUNTPOINT is mounted, display everything between
+      $if_mounted and the matching $endif.
+    args:
+      - (mountpoint)
+  - name: if_mpd_playing
+    desc: |-
+      if mpd is playing or paused, display everything between
+      $if_mpd_playing and the matching $endif.
+  - name: if_pa_sink_muted
+    desc: |-
+      If Pulseaudio's default sink is muted, display everything
+      between $if_pa_sink_muted and the corresponding $else or $endif.
+  - name: if_running
+    desc:
+      "If PROCESS is running, display everything between\n$if_running and the corresponding\
+      \ $else or $endif. Note that PROCESS\nmay be either a full command line with arguments\
+      \ (without the\ndirectory prefix), or simply the name of an executable. For example,\n\
+      either of the following will be true if there is a running process\nwith the command\
+      \ line `/usr/bin/conky -u 5`:\n\n* `${if_running conky -u 5}` or\n* `${if_running\
+      \ conky}`\n    \nIt is important not to include trailing spaces. For example,\
+      \ `${if_running\nconky }` will be false."
+    args:
+      - (process)
+  - name: if_smapi_bat_installed
+    desc: |-
+      when using smapi, if the battery with index INDEX is
+      installed, display everything between $if_smapi_bat_installed and the
+      matching $endif.
+    args:
+      - (INDEX)
+  - name: if_up
+    desc: |-
+      if INTERFACE exists and is up, display everything between
+      $if_up and the matching $endif.
+    args:
+      - (interface)
+  - name: if_updatenr
+    desc: |-
+      If it's the UPDATENR-th time that conky updates, display
+      everything between $if_updatenr and the matching $endif. The counter
+      resets when the highest UPDATENR is reached.
 
-    *Possible arguments:* (Temperatures are printed as float, all other
-    values as integer. Bracketed arguments are aliases)
+      Example: `{$if_updatenr 1}foo$endif{$if_updatenr 2}bar$endif{$if_updatenr
+      4}$endif` shows foo 25% of the time followed by bar 25% of the time followed
+      by nothing the other half of the time.
+    args:
+      - (updatenr)
+  - name: if_xmms2_connected
+    desc: |-
+      Display everything between $if_xmms2_connected and the
+      matching $endif if xmms2 is running.
+  - name: iface
+    desc: Display interface names starting from 1, eg ${iface 1}.
+    args:
+      - (number)
+  - name: image
+    desc: |-
+      Renders an image from the path specified using Imlib2. Takes
+      4 optional arguments: a position, a size, a no-cache switch, and a
+      cache flush interval. Changing the x,y position will move the position
+      of the image, and changing the WxH will scale the image. If you
+      specify the no-cache flag (-n), the image will not be cached.
+      Alternately, you can specify the -f int switch to specify a cache
+      flush interval for a particular image. Example: ${image
+      /home/brenden/cheeseburger.jpg -p 20,20 -s 200x200} will render
+      'cheeseburger.jpg' at (20,20) scaled to 200x200 pixels. Conky does not
+      make any attempt to adjust the position (or any other formatting) of
+      images, they are just rendered as per the arguments passed. The only
+      reason $image is part of the conky.text section, is to allow for
+      runtime modifications, through $execp $lua_parse, or some other
+      method.
+    args:
+      - <path to image>
+      - (-p x,y)
+      - (-s WxH)
+      - (-n)
+      - (-f interval)
+  - name: imap_messages
+    desc: |-
+      Displays the number of messages in your global IMAP inbox by
+      default. You can define individual IMAP inboxes separately by passing
+      arguments to this object. Arguments are: "host user pass [-i interval
+      (in seconds)] [-f 'folder'] [-p port] [-e 'command'] [-r retries]".
+      Default port is 143, default folder is 'INBOX', default interval is 5
+      minutes, and default number of retries before giving up is 5. If the
+      password is supplied as '*', you will be prompted to enter the
+      password when Conky starts.
+    args:
+      - (args)
+  - name: imap_unseen
+    desc: |-
+      Displays the number of unseen messages in your global IMAP
+      inbox by default. You can define individual IMAP inboxes separately by
+      passing arguments to this object. Arguments are: "host user pass [-i
+      interval (in seconds)] [-f 'folder'] [-p port] [-e 'command'] [-r
+      retries]". Default port is 143, default folder is 'INBOX', default
+      interval is 5 minutes, and default number of retries before giving up
+      is 5. If the password is supplied as '*', you will be prompted to
+      enter the password when Conky starts.
+    args:
+      - (args)
+  - name: intel_backlight
+    desc: Display the brightness of your Intel backlight in percent.
+  - name: ioscheduler
+    desc: |-
+      Prints the current ioscheduler used for the given disk name
+      (i.e. e.g. "hda" or "sdb").
+    args:
+      - disk
+  - name: irc
+    desc: |-
+      Shows everything that's being told in #channel on IRCserver
+      'server'. TCP-port 6667 is used for the connection unless 'port' is
+      specified. Shows everything since the last time or the last
+      'max_msg_lines' entries if specified.
+    args:
+      - server(:port)
+      - "#channel"
+      - (max_msg_lines)
+  - name: journal
+    desc: |-
+      Displays last N lines of the systemd journal. The optional
+      type can be 'user' or 'system' which will show only the user or system
+      journal respectively. By default, all journal lines visible to the
+      user are shown. A maximum of 200 lines can be displayed, or until the
+      text buffer is filled.
+    args:
+      - lines
+      - (type)
+  - name: kernel
+    desc: Kernel version.
+  - name: key_caps_lock
+    desc: An indicator for Capital Lock key.
+  - name: key_num_lock
+    desc: An indicator for Number Lock key.
+  - name: key_scroll_lock
+    desc: An indicator for Scrolling Lock key.
+  - name: keyboard_layout
+    desc: Display keyboard layout.
+  - name: laptop_mode
+    desc: The value of `/proc/sys/vm/laptop_mode`.
+  - name: legacymem
+    desc: Amount of memory used, calculated the same way as in the `free` program.
+  - name: lines
+    desc: Displays the number of lines in the given file.
+    args:
+      - textfile
+  - name: loadavg
+    desc: |-
+      System load average, 1 is for past 1 minute, 2 for past 5
+      minutes and 3 for past 15 minutes. Without argument, prints all three
+      values separated by whitespace.
+    args:
+      - (1|2|3)
+  - name: loadgraph
+    desc: |-
+      Load1 average graph, similar to xload, with optional colours
+      in hex, minus the #. Uses a logarithmic scale (to see small numbers)
+      when you use the -l switch. Takes the switch '-t' to use a temperature
+      gradient, which makes the gradient values change depending on the
+      amplitude of a particular graph value (try it and see).
+    args:
+      - (height),(width)
+      - (gradient colour 1)
+      - (gradient colour 2)
+      - (scale)
+      - (-t)
+      - (-l)
+  - name: lowercase
+    desc: Converts all letters into lowercase.
+    args:
+      - text
+  - name: lua
+    desc: |-
+      Executes a Lua function with given parameters, then prints
+      the returned string. See also 'lua_load' on how to load scripts. Conky
+      puts 'conky_' in front of function_name to prevent accidental calls to
+      the wrong function unless you place 'conky_' in front of it
+      yourself.
+    args:
+      - function_name
+      - (function parameters)
+  - name: lua_bar
+    desc: |-
+      Executes a Lua function with given parameters and draws a
+      bar. Expects result value to be an integer between 0 and 100. See also
+      'lua_load' on how to load scripts. Conky puts 'conky_' in front of
+      function_name to prevent accidental calls to the wrong function unless
+      you place 'conky_' in front of it yourself.
+    args:
+      - (height,width)
+      - function_name
+      - (function parameters)
+  - name: lua_gauge
+    desc: |-
+      Executes a Lua function with given parameters and draws a
+      gauge. Expects result value to be an integer between 0 and 100. See
+      also 'lua_load' on how to load scripts. Conky puts 'conky_' in front
+      of function_name to prevent accidental calls to the wrong function
+      unless you place 'conky_' in front of it yourself.
+    args:
+      - (height,width)
+      - function_name
+      - (function parameters)
+  - name: lua_graph
+    desc: |-
+      Executes a Lua function with and draws a graph. Expects
+      result value to be any number, and by default will scale to show the
+      full range. See also 'lua_load' on how to load scripts. Takes the
+      switch '-t' to use a temperature gradient, which makes the gradient
+      values change depending on the amplitude of a particular graph value
+      (try it and see). Conky puts 'conky_' in front of function_name to
+      prevent accidental calls to the wrong function unless you put you
+      place 'conky_' in front of it yourself.
+    args:
+      - function_name
+      - (height),(width)
+      - (gradient colour 1)
+      - (gradient colour 2)
+      - (scale)
+      - (-t)
+      - (-l)
+  - name: lua_parse
+    desc: |-
+      Executes a Lua function with given parameters as per $lua,
+      then parses and prints the result value as per the syntax for the
+      conky.text section. See also 'lua_load' on how to load scripts. Conky
+      puts 'conky_' in front of function_name to prevent accidental calls to
+      the wrong function unless you place 'conky_' in front of it
+      yourself.
+    args:
+      - function_name
+      - (function parameters)
+  - name: machine
+    desc: Machine, e.g. i686, x86_64.
+  - name: mails
+    desc: |-
+      Mail count in the specified mailbox or your mail spool if
+      not. Both mbox and maildir type mailboxes are supported. You can use a
+      program like fetchmail to get mails from some server using your
+      favourite protocol. See also new_mails.
+    args:
+      - (mailbox)
+      - (interval)
+  - name: mboxscan
+    desc: |-
+      Print a summary of recent messages in an mbox format
+      mailbox. mbox parameter is the filename of the mailbox (can be
+      encapsulated using '"', ie. ${mboxscan -n 10 "/home/brenden/some box"}
+    args:
+      - (-n number of messages to print)
+      - (-fw from width)
+      - (-sw subject width)
+      - mbox
+  - name: mem
+    desc: Amount of memory in use.
+  - name: memavail
+    desc: Amount of available memory as recorded in /proc/meminfo. Linux 3.14+ only.
+  - name: membar
+    desc: Bar that shows amount of memory in use.
+    args:
+      - (height),(width)
+  - name: memdirty
+    desc: Amount of "dirty" memory. Linux only.
+  - name: memeasyfree
+    desc: |-
+      Amount of free memory including the memory that is very
+      easily freed (buffers/cache).
+  - name: memfree
+    desc: Amount of free memory.
+  - name: memgauge
+    desc: Gauge that shows amount of memory in use (see cpugauge).
+    args:
+      - (height),(width)
+  - name: memgraph
+    desc: |-
+      Memory usage graph. Uses a logarithmic scale (to see small
+      numbers) when you use the -l switch. Takes the switch '-t' to use a
+      temperature gradient, which makes the gradient values change depending
+      on the amplitude of a particular graph value (try it and see).
+    args:
+      - (height),(width)
+      - (gradient colour 1)
+      - (gradient colour 2)
+      - (scale)
+      - (-t)
+      - (-l)
+  - name: memmax
+    desc: Total amount of memory.
+  - name: memperc
+    desc: Percentage of memory in use.
+  - name: memwithbuffers
+    desc: |-
+      Amount of memory in use, including that used by system
+      buffers and caches.
+  - name: memwithbuffersbar
+    desc: |-
+      Bar that shows amount of memory in use (including memory
+      used by system buffers and caches).
+    args:
+      - (height),(width)
+  - name: memwithbuffersgraph
+    desc: |-
+      Memory usage graph including memory used by system buffers
+      and cache. Uses a logarithmic scale (to see small numbers) when you
+      use the -l switch. Takes the switch '-t' to use a temperature
+      gradient, which makes the gradient values change depending on the
+      amplitude of a particular graph value (try it and see).
+    args:
+      - (height),(width)
+      - (gradient colour 1)
+      - (gradient colour 2)
+      - (scale)
+      - (-t)
+      - (-l)
+  - name: mixer
+    desc: |-
+      Prints the mixer value as reported by the OS. On Linux, this
+      variable uses the OSS emulation, so you need the proper kernel module
+      loaded. Default mixer is "Vol", but you can specify one of the
+      available OSS controls: "Vol", "Bass", "Trebl", "Synth", "Pcm",
+      "Spkr", "Line", "Mic", "CD", "Mix", "Pcm2 ", "Rec", "IGain", "OGain",
+      "Line1", "Line2", "Line3", "Digital1", "Digital2", "Digital3",
+      "PhoneIn", "PhoneOut", "Video", "Radio" and "Monitor".
+    default: Vol
+    args:
+      - (device)
+  - name: mixerbar
+    desc: |-
+      Displays mixer value in a bar as reported by the OS. See
+      docs for $mixer for details on arguments.
+    args:
+      - (device)
+  - name: mixerl
+    desc: |-
+      Prints the left channel mixer value as reported by the OS.
+      See docs for $mixer for details on arguments.
+    args:
+      - (device)
+  - name: mixerlbar
+    desc: |-
+      Displays the left channel mixer value in a bar as reported
+      by the OS. See docs for $mixer for details on arguments.
+    args:
+      - (device)
+  - name: mixerr
+    desc: |-
+      Prints the right channel mixer value as reported by the OS.
+      See docs for $mixer for details on arguments.
+    args:
+      - (device)
+  - name: mixerrbar
+    desc: |-
+      Displays the right channel mixer value in a bar as reported
+      by the OS. See docs for $mixer for details on arguments.
+    args:
+      - (device)
+  - name: moc_album
+    desc: Album of the current MOC song.
+  - name: moc_artist
+    desc: Artist of the current MOC song.
+  - name: moc_bitrate
+    desc: Bitrate in the current MOC song.
+  - name: moc_curtime
+    desc: Current time of the current MOC song.
+  - name: moc_file
+    desc: File name of the current MOC song.
+  - name: moc_rate
+    desc: Rate of the current MOC song.
+  - name: moc_song
+    desc: The current song name being played in MOC.
+  - name: moc_state
+    desc: Current state of MOC; playing, stopped etc.
+  - name: moc_timeleft
+    desc: Time left in the current MOC song.
+  - name: moc_title
+    desc: Title of the current MOC song.
+  - name: moc_totaltime
+    desc: Total length of the current MOC song.
+  - name: monitor
+    desc: |-
+      Number of the monitor on which conky is running or the
+      message "Not running in X" if this is the case.
+  - name: monitor_number
+    desc: |-
+      Number of monitors or the message "Not running in X" if this
+      is the case.
+  - name: mouse_speed
+    desc: Display mouse speed.
+  - name: mpd_album
+    desc: Album in current MPD song.
+  - name: mpd_albumartist
+    desc: Artist of the album of the current MPD song.
+  - name: mpd_artist
+    desc: Artist in current MPD song must be enabled at compile.
+  - name: mpd_bar
+    desc: Bar of mpd's progress.
+    args:
+      - (height),(width)
+  - name: mpd_bitrate
+    desc: Bitrate of current song.
+  - name: mpd_comment
+    desc: Comment of current MPD song.
+    args:
+      - (max
+      - length)
+  - name: mpd_date
+    desc: Date of current song.
+  - name: mpd_elapsed
+    desc: Song's elapsed time.
+  - name: mpd_file
+    desc: Prints the file name of the current MPD song.
+  - name: mpd_length
+    desc: Song's length.
+  - name: mpd_name
+    desc: Prints the MPD name field.
+  - name: mpd_percent
+    desc: Percent of song's progress.
+  - name: mpd_random
+    desc: Random status (On/Off).
+  - name: mpd_repeat
+    desc: Repeat status (On/Off).
+  - name: mpd_smart
+    desc: |-
+      Prints the song name in either the form "artist - title" or
+      file name, depending on whats available.
+    args:
+      - (max
+      - length)
+  - name: mpd_status
+    desc: Playing, stopped, et cetera.
+  - name: mpd_title
+    desc: Title of current MPD song.
+    args:
+      - (max
+      - length)
+  - name: mpd_track
+    desc: Prints the MPD track field.
+  - name: mpd_vol
+    desc: MPD's volume.
+  - name: mysql
+    desc: |-
+      Shows the first field of the first row of the result of the
+      query.
+    args:
+      - query
+  - name: nameserver
+    desc: |-
+      Print a nameserver from /etc/resolv.conf.
+    default: 0
+    args:
+      - (index)
+  - name: new_mails
+    desc: |-
+      Unread mail count in the specified mailbox or mail spool if
+      not. Both mbox and maildir type mailboxes are supported.
+    args:
+      - (mailbox)
+      - (interval)
+  - name: no_update
+    desc: |-
+      Shows text and parses the vars in it, but doesn't update
+      them. Use this for things that do not change while conky is running,
+      like $machine, $conky_version,... By not updating this you can save
+      some resources.
+    args:
+      - text
+  - name: nodename
+    desc: Hostname.
+  - name: nodename_short
+    desc: Short hostname (same as 'hostname -s' shell command).
+  - name: nvidia
+    desc: |-
+      Nvidia graphics card information via the XNVCtrl library.
 
-    **gputemp**( **temp**) **GPU temperature**
-    **gputempthreshold**( **threshold**) **Temperature threshold where the
-    GPU will reduce it\'s clock** speed
-    **ambienttemp**( **ambient**) **Ambient temperature outside the
-    graphics** card
-    **gpufreqcur**( **gpufreq**) **Current GPU clock speed**
-    **gpufreqmin** **Minimum GPU clock speed**
-    **gpufreqmax** **Maximum GPU clock speed**
-    **memfreqcur**( **memfreq**) **Current memory clock speed**
-    **memfreqmin** **Minimum memory clock speed**
-    **memfreqmax** **Maximum memory clock speed**
-    **mtrfreqcur**( **mtrfreq**) **Current memory transfer rate clock
-    speed**
-    **mtrfreqmin** **Minimum memory transfer rate clock speed**
-    **mtrfreqmax** **Maximum memory transfer rate clock speed**
-    **perflevelcur**( **perflevel**) **Current performance level**
-    **perflevelmin** **Lowest performance level**
-    **perflevelmax** **Highest performance level**
-    **perfmode** **Performance mode**
-    **gpuutil** **GPU utilization %**
-    **membwutil** **Memory bandwidth utilization %**
-    **videoutil** **Video engine utilization %**
-    **pcieutil** **PCIe bandwidth utilization %**
-    **memused**( **mem**) **Amount of used memory**
-    **memfree**( **memavail**) **Amount of free memory**
-    **memmax**( **memtotal**) **Total amount of memory**
-    **memutil**( **memperc**) **Memory utilization %**
-    **fanspeed** **Fan speed**
-    **fanlevel** **Fan level %**
-    **imagequality** **Image quality**
-    **modelname** **name of the GPU card**
-    **driverversion** **Driver version**
-  args:
-    - argument
-    - (GPU_ID)
-- name: nvidiabar
-  desc: |-
-    Same as nvidia, except it draws its output in a horizontal bar. The
-    height and width parameters are optional, and default to the
-    default_bar_height and default_bar_width config settings,
-    respectively.
+      *GPU_ID:* Optional parameter to choose the GPU to be used as 0,1,2,3,..
+      Default parameter is 0
 
-    *GPU_ID:* Optional parameter to choose the GPU to be used as 0,1,2,3,..
-    Default parameter is 0
+      *Possible arguments:* (Temperatures are printed as float, all other
+      values as integer. Bracketed arguments are aliases)
 
-    *Note the following arguments are* incompatible: **gputempthreshold**(
-    **threshold**)
-    **gpufreqmin**
-    **gpufreqmax**
-    **memfreqmin**
-    **memfreqmax**
-    **mtrfreqmin**
-    **mtrfreqmax**
-    **perflevelmin**
-    **perflevelmax**
-    **perfmode**
-    **memtotal**( **memmax**)
-    **fanspeed**
-  args:
-    - (height),(width)
-    - argument
-    - (GPU_ID)
-- name: nvidiagauge
-  desc: |-
-    Same as nvidiabar, except a round gauge (much like a vehicle
-    speedometer). The height and width parameters are optional, and
-    default to the default_gauge_height and default_gauge_width config
-    settings, respectively.
+      **gputemp**( **temp**) **GPU temperature**
+      **gputempthreshold**( **threshold**) **Temperature threshold where the
+      GPU will reduce it\'s clock** speed
+      **ambienttemp**( **ambient**) **Ambient temperature outside the
+      graphics** card
+      **gpufreqcur**( **gpufreq**) **Current GPU clock speed**
+      **gpufreqmin** **Minimum GPU clock speed**
+      **gpufreqmax** **Maximum GPU clock speed**
+      **memfreqcur**( **memfreq**) **Current memory clock speed**
+      **memfreqmin** **Minimum memory clock speed**
+      **memfreqmax** **Maximum memory clock speed**
+      **mtrfreqcur**( **mtrfreq**) **Current memory transfer rate clock
+      speed**
+      **mtrfreqmin** **Minimum memory transfer rate clock speed**
+      **mtrfreqmax** **Maximum memory transfer rate clock speed**
+      **perflevelcur**( **perflevel**) **Current performance level**
+      **perflevelmin** **Lowest performance level**
+      **perflevelmax** **Highest performance level**
+      **perfmode** **Performance mode**
+      **gpuutil** **GPU utilization %**
+      **membwutil** **Memory bandwidth utilization %**
+      **videoutil** **Video engine utilization %**
+      **pcieutil** **PCIe bandwidth utilization %**
+      **memused**( **mem**) **Amount of used memory**
+      **memfree**( **memavail**) **Amount of free memory**
+      **memmax**( **memtotal**) **Total amount of memory**
+      **memutil**( **memperc**) **Memory utilization %**
+      **fanspeed** **Fan speed**
+      **fanlevel** **Fan level %**
+      **imagequality** **Image quality**
+      **modelname** **name of the GPU card**
+      **driverversion** **Driver version**
+    args:
+      - argument
+      - (GPU_ID)
+  - name: nvidiabar
+    desc: |-
+      Same as nvidia, except it draws its output in a horizontal bar. The
+      height and width parameters are optional, and default to the
+      default_bar_height and default_bar_width config settings,
+      respectively.
 
-    *GPU_ID:*Optional parameter to choose the GPU to be used as 0,1,2,3,..
-    Default parameter is 0
+      *GPU_ID:* Optional parameter to choose the GPU to be used as 0,1,2,3,..
+      Default parameter is 0
 
-    For possible arguments see nvidia and nvidiabar.
-  args:
-    - (height),(width)
-    - argument
-    - (GPU_ID)
-- name: nvidiagraph
-  desc: |-
-    Same as nvidiabar, except a horizontally scrolling graph with values
-    from 0-100 plotted on the vertical axis. The height and width
-    parameters are optional, and default to the default_graph_height and
-    default_graph_width config settings, respectively.
+      *Note the following arguments are* incompatible: **gputempthreshold**(
+      **threshold**)
+      **gpufreqmin**
+      **gpufreqmax**
+      **memfreqmin**
+      **memfreqmax**
+      **mtrfreqmin**
+      **mtrfreqmax**
+      **perflevelmin**
+      **perflevelmax**
+      **perfmode**
+      **memtotal**( **memmax**)
+      **fanspeed**
+    args:
+      - (height),(width)
+      - argument
+      - (GPU_ID)
+  - name: nvidiagauge
+    desc: |-
+      Same as nvidiabar, except a round gauge (much like a vehicle
+      speedometer). The height and width parameters are optional, and
+      default to the default_gauge_height and default_gauge_width config
+      settings, respectively.
 
-    *GPU_ID:* NOT optional. This parameter allows to choose the GPU to be
-    used as 0,1,2,3,..
+      *GPU_ID:*Optional parameter to choose the GPU to be used as 0,1,2,3,..
+      Default parameter is 0
 
-    For possible arguments see nvidia and nvidiabar. To learn more about the
-    -t -l and gradient color options, see execgraph.
-  args:
-    - argument
-    - (height),(width)
-    - (gradient color 1)
-    - (gradient color 2)
-    - (scale)
-    - (-t)
-    - (-l)
-    - GPU_ID
-- name: offset
-  desc: Move text over by N pixels. See also $voffset.
-  args:
-    - (pixels)
-- name: outlinecolor
-  desc: Change outline color.
-  args:
-    - (color)
-- name: pa_card_active_profile
-  desc: Pulseaudio's default card active profile.
-- name: pa_card_name
-  desc: Pulseaudio's default card name.
-- name: pa_sink_active_port_description
-  desc: Pulseaudio's default sink active port description.
-- name: pa_sink_active_port_name
-  desc: Pulseaudio's default sink active port name.
-- name: pa_sink_description
-  desc: Pulseaudio's default sink description.
-- name: pa_sink_volume
-  desc: Pulseaudio's default sink volume percentage.
-- name: pa_sink_volumebar
-  desc: Pulseaudio's default sink volume bar.
-- name: password
-  desc: Generate random passwords.
-  args:
-    - (length)
-- name: pb_battery
-  desc: |-
-    If running on Apple powerbook/ibook, display information on battery
-    status. The item parameter specifies, what information to display.
-    Exactly one item must be specified. Valid items are:
+      For possible arguments see nvidia and nvidiabar.
+    args:
+      - (height),(width)
+      - argument
+      - (GPU_ID)
+  - name: nvidiagraph
+    desc: |-
+      Same as nvidiabar, except a horizontally scrolling graph with values
+      from 0-100 plotted on the vertical axis. The height and width
+      parameters are optional, and default to the default_graph_height and
+      default_graph_width config settings, respectively.
 
-    **status** **Display if battery is fully charged, charging,**
-    discharging or absent (running on AC)
-    **percent** **Display charge of battery in percent, if charging or**
-    discharging. Nothing will be displayed, if battery is fully charged or
-    absent.
-    **time** **Display the time remaining until the battery will be** fully
-    charged or discharged at current rate. Nothing is displayed, if battery
-    is absent or if it\'s present but fully charged and not discharging.
-  args:
-    - item
-- name: pid_chroot
-  desc: |-
-    Directory used as rootdirectory by the process (this will be
-    "/" unless the process did a chroot syscall).
-  args:
-    - pid
-- name: pid_cmdline
-  desc: Command line this process was invoked with.
-  args:
-    - pid
-- name: pid_cwd
-  desc: Current working directory of the process.
-  args:
-    - pid
-- name: pid_egid
-  desc: The effective gid of the process.
-  args:
-    - pid
-- name: pid_environ
-  desc: Contents of a environment-var of the process.
-  args:
-    - pid
-    - varname
-- name: pid_environ_list
-  desc: List of environment-vars that the process can see.
-  args:
-    - pid
-- name: pid_euid
-  desc: The effective uid of the process.
-  args:
-    - pid
-- name: pid_exe
-  desc: Path to executed command that started the process.
-  args:
-    - pid
-- name: pid_fsgid
-  desc: The file system gid of the process.
-  args:
-    - pid
-- name: pid_fsuid
-  desc: The file system uid of the process.
-  args:
-    - pid
-- name: pid_gid
-  desc: The real gid of the process.
-  args:
-    - pid
-- name: pid_nice
-  desc: The nice value of the process.
-  args:
-    - pid
-- name: pid_openfiles
-  desc: List of files that the process has open.
-  args:
-    - pid
-- name: pid_parent
-  desc: The pid of the parent of the process.
-  args:
-    - pid
-- name: pid_priority
-  desc: |-
-    The priority of the process (see 'priority' in "man 5
-    proc").
-  args:
-    - pid
-- name: pid_read
-  desc: Total number of bytes read by the process.
-  args:
-    - pid
-- name: pid_sgid
-  desc: The saved set gid of the process.
-  args:
-    - pid
-- name: pid_state
-  desc: State of the process.
-  args:
-    - pid
-- name: pid_state_short
-  desc: |-
-    One of the chars in "RSDZTW" representing the state of the
-    process where R is running, S is sleeping in an interruptible wait, D
-    is waiting in uninterruptible disk sleep, Z is zombie, T is traced or
-    stopped (on a signal), and W is paging.
-  args:
-    - pid
-- name: pid_stderr
-  desc: Filedescriptor binded to the STDERR of the process.
-  args:
-    - pid
-- name: pid_stdin
-  desc: Filedescriptor binded to the STDIN of the process.
-  args:
-    - pid
-- name: pid_stdout
-  desc: Filedescriptor binded to the STDOUT of the process.
-  args:
-    - pid
-- name: pid_suid
-  desc: The saved set uid of the process.
-  args:
-    - pid
-- name: pid_thread_list
-  desc: List with pid's from threads from this process.
-  args:
-    - pid
-- name: pid_threads
-  desc: Number of threads in process containing this thread.
-  args:
-    - pid
-- name: pid_time
-  desc: Sum of $pid_time_kernelmode and $pid_time_usermode.
-  args:
-    - pid
-- name: pid_time_kernelmode
-  desc: |-
-    Amount of time that the process has been scheduled in kernel
-    mode in seconds.
-  args:
-    - pid
-- name: pid_time_usermode
-  desc: |-
-    Amount of time that the process has been scheduled in user
-    mode in seconds.
-  args:
-    - pid
-- name: pid_uid
-  desc: The real uid of the process.
-  args:
-    - pid
-- name: pid_vmdata
-  desc: Data segment size of the process.
-  args:
-    - pid
-- name: pid_vmexe
-  desc: Text segment size of the process.
-  args:
-    - pid
-- name: pid_vmhwm
-  desc: Peak resident set size ("high water mark") of the process.
-  args:
-    - pid
-- name: pid_vmlck
-  desc: Locked memory size of the process.
-  args:
-    - pid
-- name: pid_vmlib
-  desc: Shared library code size of the process.
-  args:
-    - pid
-- name: pid_vmpeak
-  desc: Peak virtual memory size of the process.
-  args:
-    - pid
-- name: pid_vmpte
-  desc: Page table entries size of the process.
-  args:
-    - pid
-- name: pid_vmrss
-  desc: Resident set size of the process.
-  args:
-    - pid
-- name: pid_vmsize
-  desc: Virtual memory size of the process.
-  args:
-    - pid
-- name: pid_vmstk
-  desc: Stack segment size of the process.
-  args:
-    - pid
-- name: pid_write
-  desc: Total number of bytes written by the process.
-  args:
-    - pid
-- name: platform
-  desc: |-
-    Platform sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you
-    have only one platform device. Platform type is either `in` or `vol` meaning
-    voltage; `fan` meaning fan; `temp` meaning temperature. Parameter n is
-    number of the sensor. See `/sys/bus/platform/devices/` on your local
-    computer. The optional arguments `factor` and `offset` allow precalculation
-    of the raw input, which is being modified as follows: `input = input *
-    factor + offset`. Note that they have to be given as decimal values (i.e.
-    contain at least one decimal place).
-  args:
-    - (dev)
-    - type
-    - n
-    - (factor offset)
-- name: pop3_unseen
-  desc: |-
-    Displays the number of unseen messages in your global POP3
-    inbox by default. You can define individual POP3 inboxes separately by
-    passing arguments to this object. Arguments are: "host user pass [-i
-    interval (in seconds)] [-p port] [-e 'command'] [-r retries]". Default
-    port is 110, default interval is 5 minutes, and default number of
-    retries before giving up is 5. If the password is supplied as '*', you
-    will be prompted to enter the password when Conky starts.
-  args:
-    - (args)
-- name: pop3_used
-  desc: |-
-    Displays the amount of space (in MiB, 2^20) used in your
-    global POP3 inbox by default. You can define individual POP3 inboxes
-    separately by passing arguments to this object. Arguments are: "host
-    user pass [-i interval (in seconds)] [-p port] [-e 'command'] [-r
-    retries]". Default port is 110, default interval is 5 minutes, and
-    default number of retries before giving up is 5. If the password is
-    supplied as '*', you will be prompted to enter the password when Conky
-    starts.
-  args:
-    - (args)
-- name: processes
-  desc: Total processes (sleeping and running).
-- name: read_tcp
-  desc: |-
-    Connects to a tcp port on a host (default is localhost),
-    reads every char available at the moment and shows them.
-  args:
-    - (host)
-    - port
-- name: read_udp
-  desc: |-
-    Connects to a udp port on a host (default is localhost),
-    reads every char available at the moment and shows them.
-  args:
-    - (host)
-    - port
-- name: replied_mails
-  desc: |-
-    Number of mails marked as replied in the specified mailbox
-    or mail spool if not. Only maildir type mailboxes are supported, mbox
-    type will return -1.
-  args:
-    - (maildir)
-    - (interval)
-- name: rss
-  desc: |-
-    Download and parse RSS feeds. The interval may be a
-    (floating point) value greater than 0. Action may be one of the
-    following: feed_title, item_title (with num par), item_desc (with num
-    par) and item_titles (when using this action and spaces_in_front is
-    given conky places that many spaces in front of each item). This
-    object is threaded, and once a thread is created it can't be
-    explicitly destroyed. One thread will run for each URI specified. You
-    can use any protocol that Curl supports.
-  args:
-    - uri
-    - interval_in_seconds
-    - action
-    - (num_par (spaces_in_front))
-- name: rstrip
-  desc: Strips all trailing whitespace from input.
-  args:
-    - text
-- name: running_processes
-  desc: Running processes (not sleeping). Requires Linux 2.6.
-- name: running_threads
-  desc: Number of running (runnable) threads. Linux only.
-- name: scroll
-  desc: |-
-    Scroll 'text' by 'step' characters to the left or right (set
-    'direction' to 'left' or 'right' or 'wait') showing 'length' number of
-    characters at the same time. The text may also contain variables.
-    'step' is optional and defaults to 1 if not set. 'direction' is
-    optional and defaults to left if not set. When direction is 'wait'
-    then text will scroll left and wait for 'interval' itertations at the
-    beginning and end of the text. If a var creates output on multiple
-    lines then the lines are placed behind each other separated with a
-    '|'-sign. If you change the textcolor inside $scroll it will
-    automatically have it's old value back at the end of $scroll. The end
-    and the start of text will be separated by 'length' number of spaces
-    unless direction is 'wait'.
-  args:
-    - (direction)
-    - length
-    - (step)
-    - (interval)
-    - text
-- name: seen_mails
-  desc: |-
-    Number of mails marked as seen in the specified mailbox or
-    mail spool if not. Only maildir type mailboxes are supported, mbox
-    type will return -1.
-  args:
-    - (maildir)
-    - (interval)
-- name: shadecolor
-  desc: Change shading color.
-  args:
-    - (color)
-- name: shmem
-  desc: Amount of shared memory. Linux only.
-- name: sip_status
-  desc: |-
-    Prints info regarding System Integrity Protection (SIP) on
-    macOS. If no switch is provided, prints SIP status (enabled /
-    disabled), else, status of the specific SIP feature corresponding to
-    the switch provided.
+      *GPU_ID:* NOT optional. This parameter allows to choose the GPU to be
+      used as 0,1,2,3,..
 
-    Below are shown the available switches:
+      For possible arguments see nvidia and nvidiabar. To learn more about the
+      -t -l and gradient color options, see execgraph.
+    args:
+      - argument
+      - (height),(width)
+      - (gradient color 1)
+      - (gradient color 2)
+      - (scale)
+      - (-t)
+      - (-l)
+      - GPU_ID
+  - name: offset
+    desc: Move text over by N pixels. See also $voffset.
+    args:
+      - (pixels)
+  - name: outlinecolor
+    desc: Change outline color.
+    args:
+      - (color)
+  - name: pa_card_active_profile
+    desc: Pulseaudio's default card active profile.
+  - name: pa_card_name
+    desc: Pulseaudio's default card name.
+  - name: pa_sink_active_port_description
+    desc: Pulseaudio's default sink active port description.
+  - name: pa_sink_active_port_name
+    desc: Pulseaudio's default sink active port name.
+  - name: pa_sink_description
+    desc: Pulseaudio's default sink description.
+  - name: pa_sink_volume
+    desc: Pulseaudio's default sink volume percentage.
+  - name: pa_sink_volumebar
+    desc: Pulseaudio's default sink volume bar.
+  - name: password
+    desc: Generate random passwords.
+    args:
+      - (length)
+  - name: pb_battery
+    desc: |-
+      If running on Apple powerbook/ibook, display information on battery
+      status. The item parameter specifies, what information to display.
+      Exactly one item must be specified. Valid items are:
 
-    | SWITCH | RESULT                      | STATUS |
-    |--------|-----------------------------|--------|
-    | 0      | apple internal              | YES/NO |
-    | 1      | forbid untrusted kexts      | YES/NO |
-    | 2      | forbid task-for-pid         | YES/NO |
-    | 3      | restrict filesystem         | YES/NO |
-    | 4      | forbid kernel-debugger      | YES/NO |
-    | 5      | restrict dtrace             | YES/NO |
-    | 6      | restrict nvram              | YES/NO |
-    | 7      | forbid device-configuration | YES/NO |
-    | 8      | forbid any-recovery-os      | YES/NO |
-    | 9      | forbid user-approved-kexts  | YES/NO |
+      **status** **Display if battery is fully charged, charging,**
+      discharging or absent (running on AC)
+      **percent** **Display charge of battery in percent, if charging or**
+      discharging. Nothing will be displayed, if battery is fully charged or
+      absent.
+      **time** **Display the time remaining until the battery will be** fully
+      charged or discharged at current rate. Nothing is displayed, if battery
+      is absent or if it\'s present but fully charged and not discharging.
+    args:
+      - item
+  - name: pid_chroot
+    desc: |-
+      Directory used as rootdirectory by the process (this will be
+      "/" unless the process did a chroot syscall).
+    args:
+      - pid
+  - name: pid_cmdline
+    desc: Command line this process was invoked with.
+    args:
+      - pid
+  - name: pid_cwd
+    desc: Current working directory of the process.
+    args:
+      - pid
+  - name: pid_egid
+    desc: The effective gid of the process.
+    args:
+      - pid
+  - name: pid_environ
+    desc: Contents of a environment-var of the process.
+    args:
+      - pid
+      - varname
+  - name: pid_environ_list
+    desc: List of environment-vars that the process can see.
+    args:
+      - pid
+  - name: pid_euid
+    desc: The effective uid of the process.
+    args:
+      - pid
+  - name: pid_exe
+    desc: Path to executed command that started the process.
+    args:
+      - pid
+  - name: pid_fsgid
+    desc: The file system gid of the process.
+    args:
+      - pid
+  - name: pid_fsuid
+    desc: The file system uid of the process.
+    args:
+      - pid
+  - name: pid_gid
+    desc: The real gid of the process.
+    args:
+      - pid
+  - name: pid_nice
+    desc: The nice value of the process.
+    args:
+      - pid
+  - name: pid_openfiles
+    desc: List of files that the process has open.
+    args:
+      - pid
+  - name: pid_parent
+    desc: The pid of the parent of the process.
+    args:
+      - pid
+  - name: pid_priority
+    desc: |-
+      The priority of the process (see 'priority' in "man 5
+      proc").
+    args:
+      - pid
+  - name: pid_read
+    desc: Total number of bytes read by the process.
+    args:
+      - pid
+  - name: pid_sgid
+    desc: The saved set gid of the process.
+    args:
+      - pid
+  - name: pid_state
+    desc: State of the process.
+    args:
+      - pid
+  - name: pid_state_short
+    desc: |-
+      One of the chars in "RSDZTW" representing the state of the
+      process where R is running, S is sleeping in an interruptible wait, D
+      is waiting in uninterruptible disk sleep, Z is zombie, T is traced or
+      stopped (on a signal), and W is paging.
+    args:
+      - pid
+  - name: pid_stderr
+    desc: Filedescriptor binded to the STDERR of the process.
+    args:
+      - pid
+  - name: pid_stdin
+    desc: Filedescriptor binded to the STDIN of the process.
+    args:
+      - pid
+  - name: pid_stdout
+    desc: Filedescriptor binded to the STDOUT of the process.
+    args:
+      - pid
+  - name: pid_suid
+    desc: The saved set uid of the process.
+    args:
+      - pid
+  - name: pid_thread_list
+    desc: List with pid's from threads from this process.
+    args:
+      - pid
+  - name: pid_threads
+    desc: Number of threads in process containing this thread.
+    args:
+      - pid
+  - name: pid_time
+    desc: Sum of $pid_time_kernelmode and $pid_time_usermode.
+    args:
+      - pid
+  - name: pid_time_kernelmode
+    desc: |-
+      Amount of time that the process has been scheduled in kernel
+      mode in seconds.
+    args:
+      - pid
+  - name: pid_time_usermode
+    desc: |-
+      Amount of time that the process has been scheduled in user
+      mode in seconds.
+    args:
+      - pid
+  - name: pid_uid
+    desc: The real uid of the process.
+    args:
+      - pid
+  - name: pid_vmdata
+    desc: Data segment size of the process.
+    args:
+      - pid
+  - name: pid_vmexe
+    desc: Text segment size of the process.
+    args:
+      - pid
+  - name: pid_vmhwm
+    desc: Peak resident set size ("high water mark") of the process.
+    args:
+      - pid
+  - name: pid_vmlck
+    desc: Locked memory size of the process.
+    args:
+      - pid
+  - name: pid_vmlib
+    desc: Shared library code size of the process.
+    args:
+      - pid
+  - name: pid_vmpeak
+    desc: Peak virtual memory size of the process.
+    args:
+      - pid
+  - name: pid_vmpte
+    desc: Page table entries size of the process.
+    args:
+      - pid
+  - name: pid_vmrss
+    desc: Resident set size of the process.
+    args:
+      - pid
+  - name: pid_vmsize
+    desc: Virtual memory size of the process.
+    args:
+      - pid
+  - name: pid_vmstk
+    desc: Stack segment size of the process.
+    args:
+      - pid
+  - name: pid_write
+    desc: Total number of bytes written by the process.
+    args:
+      - pid
+  - name: platform
+    desc: |-
+      Platform sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you
+      have only one platform device. Platform type is either `in` or `vol` meaning
+      voltage; `fan` meaning fan; `temp` meaning temperature. Parameter n is
+      number of the sensor. See `/sys/bus/platform/devices/` on your local
+      computer. The optional arguments `factor` and `offset` allow precalculation
+      of the raw input, which is being modified as follows: `input = input *
+      factor + offset`. Note that they have to be given as decimal values (i.e.
+      contain at least one decimal place).
+    args:
+      - (dev)
+      - type
+      - n
+      - (factor offset)
+  - name: pop3_unseen
+    desc: |-
+      Displays the number of unseen messages in your global POP3
+      inbox by default. You can define individual POP3 inboxes separately by
+      passing arguments to this object. Arguments are: "host user pass [-i
+      interval (in seconds)] [-p port] [-e 'command'] [-r retries]". Default
+      port is 110, default interval is 5 minutes, and default number of
+      retries before giving up is 5. If the password is supplied as '*', you
+      will be prompted to enter the password when Conky starts.
+    args:
+      - (args)
+  - name: pop3_used
+    desc: |-
+      Displays the amount of space (in MiB, 2^20) used in your
+      global POP3 inbox by default. You can define individual POP3 inboxes
+      separately by passing arguments to this object. Arguments are: "host
+      user pass [-i interval (in seconds)] [-p port] [-e 'command'] [-r
+      retries]". Default port is 110, default interval is 5 minutes, and
+      default number of retries before giving up is 5. If the password is
+      supplied as '*', you will be prompted to enter the password when Conky
+      starts.
+    args:
+      - (args)
+  - name: processes
+    desc: Total processes (sleeping and running).
+  - name: read_tcp
+    desc: |-
+      Connects to a tcp port on a host (default is localhost),
+      reads every char available at the moment and shows them.
+    args:
+      - (host)
+      - port
+  - name: read_udp
+    desc: |-
+      Connects to a udp port on a host (default is localhost),
+      reads every char available at the moment and shows them.
+    args:
+      - (host)
+      - port
+  - name: replied_mails
+    desc: |-
+      Number of mails marked as replied in the specified mailbox
+      or mail spool if not. Only maildir type mailboxes are supported, mbox
+      type will return -1.
+    args:
+      - (maildir)
+      - (interval)
+  - name: rss
+    desc: |-
+      Download and parse RSS feeds. The interval may be a
+      (floating point) value greater than 0. Action may be one of the
+      following: feed_title, item_title (with num par), item_desc (with num
+      par) and item_titles (when using this action and spaces_in_front is
+      given conky places that many spaces in front of each item). This
+      object is threaded, and once a thread is created it can't be
+      explicitly destroyed. One thread will run for each URI specified. You
+      can use any protocol that Curl supports.
+    args:
+      - uri
+      - interval_in_seconds
+      - action
+      - (num_par (spaces_in_front))
+  - name: rstrip
+    desc: Strips all trailing whitespace from input.
+    args:
+      - text
+  - name: running_processes
+    desc: Running processes (not sleeping). Requires Linux 2.6.
+  - name: running_threads
+    desc: Number of running (runnable) threads. Linux only.
+  - name: scroll
+    desc: |-
+      Scroll 'text' by 'step' characters to the left or right (set
+      'direction' to 'left' or 'right' or 'wait') showing 'length' number of
+      characters at the same time. The text may also contain variables.
+      'step' is optional and defaults to 1 if not set. 'direction' is
+      optional and defaults to left if not set. When direction is 'wait'
+      then text will scroll left and wait for 'interval' itertations at the
+      beginning and end of the text. If a var creates output on multiple
+      lines then the lines are placed behind each other separated with a
+      '|'-sign. If you change the textcolor inside $scroll it will
+      automatically have it's old value back at the end of $scroll. The end
+      and the start of text will be separated by 'length' number of spaces
+      unless direction is 'wait'.
+    args:
+      - (direction)
+      - length
+      - (step)
+      - (interval)
+      - text
+  - name: seen_mails
+    desc: |-
+      Number of mails marked as seen in the specified mailbox or
+      mail spool if not. Only maildir type mailboxes are supported, mbox
+      type will return -1.
+    args:
+      - (maildir)
+      - (interval)
+  - name: shadecolor
+    desc: Change shading color.
+    args:
+      - (color)
+  - name: shmem
+    desc: Amount of shared memory. Linux only.
+  - name: sip_status
+    desc: |-
+      Prints info regarding System Integrity Protection (SIP) on
+      macOS. If no switch is provided, prints SIP status (enabled /
+      disabled), else, status of the specific SIP feature corresponding to
+      the switch provided.
 
-    uses unsupported configuration?: If yes, prints "unsupported
-    configuration, beware!" Else, prints "configuration is ok".
+      Below are shown the available switches:
 
-    USAGE:
-    ```
-    $ conky -t '${sip_status}'
-    # print SIP status
-    $ conky -t '${sip_status 0}'
-    # print allows apple-internal? Yes or No?
-    ```
+      | SWITCH | RESULT                      | STATUS |
+      |--------|-----------------------------|--------|
+      | 0      | apple internal              | YES/NO |
+      | 1      | forbid untrusted kexts      | YES/NO |
+      | 2      | forbid task-for-pid         | YES/NO |
+      | 3      | restrict filesystem         | YES/NO |
+      | 4      | forbid kernel-debugger      | YES/NO |
+      | 5      | restrict dtrace             | YES/NO |
+      | 6      | restrict nvram              | YES/NO |
+      | 7      | forbid device-configuration | YES/NO |
+      | 8      | forbid any-recovery-os      | YES/NO |
+      | 9      | forbid user-approved-kexts  | YES/NO |
 
-    NOTES:
+      uses unsupported configuration?: If yes, prints "unsupported
+      configuration, beware!" Else, prints "configuration is ok".
 
-    * Available for all macOS versions (even the ones prior El Capitan where
-    SIP was first introduced)
-    * If run on versions prior El Capitan SIP is unavailable, so all you will
-    get is "unsupported".
-  args:
-    - (switch)
-- name: smapi
-  desc: |-
-    When using smapi, display contents of the `/sys/devices/platform/smapi`
-    directory. ARGS are either `(FILENAME)` or `bat (INDEX) (FILENAME)` to
-    display the corresponding files' content. This is a very raw method of
-    accessing the smapi values. When available, better use one of the smapi_*
-    variables instead.
-  args:
-    - (ARGS)
-- name: smapi_bat_bar
-  desc: |-
-    when using smapi, display the remaining capacity of the
-    battery with index INDEX as a bar.
-  args:
-    - (INDEX),(height),(width)
-- name: smapi_bat_perc
-  desc: |-
-    when using smapi, display the remaining capacity in percent
-    of the battery with index INDEX. This is a separate variable because
-    it supports the 'use_spacer' configuration option.
-  args:
-    - (INDEX)
-- name: smapi_bat_power
-  desc: |-
-    when using smapi, display the current power of the battery
-    with index INDEX in watt. This is a separate variable because the
-    original read out value is being converted from mW. The sign of the
-    output reflects charging (positive) or discharging (negative) state.
-  args:
-    - INDEX
-- name: smapi_bat_temp
-  desc: |-
-    when using smapi, display the current temperature of the
-    battery with index INDEX in degree Celsius. This is a separate
-    variable because the original read out value is being converted from
-    milli degree Celsius.
-  args:
-    - INDEX
-- name: sony_fanspeed
-  desc: |-
-    Displays the Sony VAIO fanspeed information if sony-laptop
-    kernel support is enabled. Linux only.
-- name: startcase
-  desc: Capitalises the start of each word.
-  args:
-    - text
-- name: stippled_hr
-  desc: Stippled (dashed) horizontal line.
-  args:
-    - (space)
-- name: stock
-  desc: |-
-    Displays the data of a stock symbol. The following data is
-    supported: adv(Average Daily Volume), ask, asksize, bid, askrt(ask
-    realtime), bidrt(bid realtime), bookvalue, bidsize, change,
-    commission, changert(change realtime), ahcrt(After Hours Change
-    realtime), ds(dividend/share), ltd(Last Trade Date), tradedate,
-    es(earnings/share), ei(error indication), epsecy(EPS Estimate Current
-    Year), epseny(EPS Estimate Next Year), epsenq(EPS Estimate Next
-    Quarter), floatshares, dayslow, dayshigh, 52weeklow, 52weekhigh,
-    hgp(Holdings Gain Percent), ag(Annualized Gain), hg(Holdings Gain),
-    hgprt(Holdings Gain Percent realtime), hgrt(Holdings Gain realtime),
-    moreinfo, obrt(Order Book realtime), mc(Market Capitalization),
-    mcrt(Market Cap realtime), ebitda, c52wlow(Change From 52-week Low),
-    pc52wlow(Percent Change From 52-week Low), cprt(change percent
-    realtime), lts(Last Trade Size), c52whigh(Change from 52-week high),
-    pc52whigh(percent change from 52-week high), ltp(last trade price),
-    hl(high limit), ll(low limit), dr(day's range), drrt(day's range
-    realtime), 50ma(50-day Moving Average), 200ma(200-day Moving Average),
-    c200ma(Change From 200-day Moving Average), pc200ma(Percent Change
-    From 200-day Moving Average), c50ma(Change From 50-day Moving
-    Average), pc50ma(Percent Change From 50-day Moving Average), name,
-    notes, open, pc(previous close), pricepaid, cip(change in percent),
-    ps(price/sales), pb(price/book), edv(Ex-Dividend Date), per(P/E
-    Ratio), dpd(Dividend Pay Date), perrt(P/E Ratio realtime), pegr(PEG
-    Ratio), pepsecy(Price/EPS Estimate Current Year), pepseny(Price/EPS
-    Estimate Next Year), symbol, sharesowned, shortratio, ltt(Last Trade
-    Time), tradelinks, tt(Ticker Trend), 1ytp(1 yr Target Price), volume,
-    hv(Holdings Value), hvrt(Holdings Value realtime), 52weekrange,
-    dvc(Day's Value Change), dvcrt(Day's Value Change realtime), se(Stock
-    Exchange), dy(Dividend Yield).
-  args:
-    - symbol
-    - data
-- name: swap
-  desc: Amount of swap in use.
-- name: swapbar
-  desc: Bar that shows amount of swap in use.
-  args:
-    - (height),(width)
-- name: swapfree
-  desc: Amount of free swap.
-- name: swapmax
-  desc: Total amount of swap.
-- name: swapperc
-  desc: Percentage of swap in use.
-- name: sysctlbyname
-  desc: Print sysctl value by name. FreeBSD only.
-  args:
-    - (name)
-- name: sysname
-  desc: System name, e.g. Linux.
-- name: tab
-  desc: |-
-    Puts a tab of the specified width, starting from column
-    'start'. The unit is pixels for both arguments.
-  args:
-    - (width, (start))
-- name: tail
-  desc: |-
-    Displays last N lines of supplied text file. The file is
-    checked every 'next_check' update. If next_check is not supplied,
-    Conky defaults to 2. Max of 30 lines can be displayed, or until the
-    text buffer is filled.
-  args:
-    - logfile
-    - lines
-    - (next_check)
-- name: tcp_ping
-  desc: |-
-    Displays the number of microseconds it takes to get a reply
-    on a ping to to tcp 'port' on 'host'. 'port' is optional and has 80 as
-    default. This works on both open and closed ports, just make sure that
-    the port is not behind a firewall or you will get 'down' as answer.
-    It's best to test a closed port instead of an open port, you will get
-    a quicker response.
-  args:
-    - host
-    - (port)
-- name: tcp_portmon
-  desc: |-
-    TCP port (both IPv6 and IPv4) monitor for specified local ports.
-    Port numbers must be in the range 1 to 65535. Valid items are:
+      USAGE:
+      ```
+      $ conky -t '${sip_status}'
+      # print SIP status
+      $ conky -t '${sip_status 0}'
+      # print allows apple-internal? Yes or No?
+      ```
 
-    **count** **Total number of connections in the range**
-    **rip** **Remote ip address**
-    **rhost** **Remote host name**
-    **rport** **Remote port number**
-    **rservice** **Remote service name from /etc/services**
-    **lip** **Local ip address**
-    **lhost** **Local host name**
-    **lport** **Local port number**
-    **lservice** **Local service name from /etc/services**
+      NOTES:
 
-    The connection index provides you with access to each connection in the
-    port monitor. The monitor will return information for index values from
-    0 to n-1 connections. Values higher than n-1 are simply ignored. For the
-    \"count\" item, the connection index must be omitted. It is required for
-    all other items.
+      * Available for all macOS versions (even the ones prior El Capitan where
+      SIP was first introduced)
+      * If run on versions prior El Capitan SIP is unavailable, so all you will
+      get is "unsupported".
+    args:
+      - (switch)
+  - name: smapi
+    desc: |-
+      When using smapi, display contents of the `/sys/devices/platform/smapi`
+      directory. ARGS are either `(FILENAME)` or `bat (INDEX) (FILENAME)` to
+      display the corresponding files' content. This is a very raw method of
+      accessing the smapi values. When available, better use one of the smapi_*
+      variables instead.
+    args:
+      - (ARGS)
+  - name: smapi_bat_bar
+    desc: |-
+      when using smapi, display the remaining capacity of the
+      battery with index INDEX as a bar.
+    args:
+      - (INDEX),(height),(width)
+  - name: smapi_bat_perc
+    desc: |-
+      when using smapi, display the remaining capacity in percent
+      of the battery with index INDEX. This is a separate variable because
+      it supports the 'use_spacer' configuration option.
+    args:
+      - (INDEX)
+  - name: smapi_bat_power
+    desc: |-
+      when using smapi, display the current power of the battery
+      with index INDEX in watt. This is a separate variable because the
+      original read out value is being converted from mW. The sign of the
+      output reflects charging (positive) or discharging (negative) state.
+    args:
+      - INDEX
+  - name: smapi_bat_temp
+    desc: |-
+      when using smapi, display the current temperature of the
+      battery with index INDEX in degree Celsius. This is a separate
+      variable because the original read out value is being converted from
+      milli degree Celsius.
+    args:
+      - INDEX
+  - name: sony_fanspeed
+    desc: |-
+      Displays the Sony VAIO fanspeed information if sony-laptop
+      kernel support is enabled. Linux only.
+  - name: startcase
+    desc: Capitalises the start of each word.
+    args:
+      - text
+  - name: stippled_hr
+    desc: Stippled (dashed) horizontal line.
+    args:
+      - (space)
+  - name: stock
+    desc: |-
+      Displays the data of a stock symbol. The following data is
+      supported: adv(Average Daily Volume), ask, asksize, bid, askrt(ask
+      realtime), bidrt(bid realtime), bookvalue, bidsize, change,
+      commission, changert(change realtime), ahcrt(After Hours Change
+      realtime), ds(dividend/share), ltd(Last Trade Date), tradedate,
+      es(earnings/share), ei(error indication), epsecy(EPS Estimate Current
+      Year), epseny(EPS Estimate Next Year), epsenq(EPS Estimate Next
+      Quarter), floatshares, dayslow, dayshigh, 52weeklow, 52weekhigh,
+      hgp(Holdings Gain Percent), ag(Annualized Gain), hg(Holdings Gain),
+      hgprt(Holdings Gain Percent realtime), hgrt(Holdings Gain realtime),
+      moreinfo, obrt(Order Book realtime), mc(Market Capitalization),
+      mcrt(Market Cap realtime), ebitda, c52wlow(Change From 52-week Low),
+      pc52wlow(Percent Change From 52-week Low), cprt(change percent
+      realtime), lts(Last Trade Size), c52whigh(Change from 52-week high),
+      pc52whigh(percent change from 52-week high), ltp(last trade price),
+      hl(high limit), ll(low limit), dr(day's range), drrt(day's range
+      realtime), 50ma(50-day Moving Average), 200ma(200-day Moving Average),
+      c200ma(Change From 200-day Moving Average), pc200ma(Percent Change
+      From 200-day Moving Average), c50ma(Change From 50-day Moving
+      Average), pc50ma(Percent Change From 50-day Moving Average), name,
+      notes, open, pc(previous close), pricepaid, cip(change in percent),
+      ps(price/sales), pb(price/book), edv(Ex-Dividend Date), per(P/E
+      Ratio), dpd(Dividend Pay Date), perrt(P/E Ratio realtime), pegr(PEG
+      Ratio), pepsecy(Price/EPS Estimate Current Year), pepseny(Price/EPS
+      Estimate Next Year), symbol, sharesowned, shortratio, ltt(Last Trade
+      Time), tradelinks, tt(Ticker Trend), 1ytp(1 yr Target Price), volume,
+      hv(Holdings Value), hvrt(Holdings Value realtime), 52weekrange,
+      dvc(Day's Value Change), dvcrt(Day's Value Change realtime), se(Stock
+      Exchange), dy(Dividend Yield).
+    args:
+      - symbol
+      - data
+  - name: swap
+    desc: Amount of swap in use.
+  - name: swapbar
+    desc: Bar that shows amount of swap in use.
+    args:
+      - (height),(width)
+  - name: swapfree
+    desc: Amount of free swap.
+  - name: swapmax
+    desc: Total amount of swap.
+  - name: swapperc
+    desc: Percentage of swap in use.
+  - name: sysctlbyname
+    desc: Print sysctl value by name. FreeBSD only.
+    args:
+      - (name)
+  - name: sysname
+    desc: System name, e.g. Linux.
+  - name: tab
+    desc: |-
+      Puts a tab of the specified width, starting from column
+      'start'. The unit is pixels for both arguments.
+    args:
+      - (width, (start))
+  - name: tail
+    desc: |-
+      Displays last N lines of supplied text file. The file is
+      checked every 'next_check' update. If next_check is not supplied,
+      Conky defaults to 2. Max of 30 lines can be displayed, or until the
+      text buffer is filled.
+    args:
+      - logfile
+      - lines
+      - (next_check)
+  - name: tcp_ping
+    desc: |-
+      Displays the number of microseconds it takes to get a reply
+      on a ping to to tcp 'port' on 'host'. 'port' is optional and has 80 as
+      default. This works on both open and closed ports, just make sure that
+      the port is not behind a firewall or you will get 'down' as answer.
+      It's best to test a closed port instead of an open port, you will get
+      a quicker response.
+    args:
+      - host
+      - (port)
+  - name: tcp_portmon
+    desc: |-
+      TCP port (both IPv6 and IPv4) monitor for specified local ports.
+      Port numbers must be in the range 1 to 65535. Valid items are:
 
-    Examples:
+      **count** **Total number of connections in the range**
+      **rip** **Remote ip address**
+      **rhost** **Remote host name**
+      **rport** **Remote port number**
+      **rservice** **Remote service name from /etc/services**
+      **lip** **Local ip address**
+      **lhost** **Local host name**
+      **lport** **Local port number**
+      **lservice** **Local service name from /etc/services**
 
-    **\${tcp_portmon 6881 6999 count}** **Displays the number of connections
-    in the** bittorrent port range
-    **\${tcp_portmon 22 22 rip 0}** **Displays the remote host ip of the
-    first sshd** connection
-    **\${tcp_portmon 22 22 rip 9}** **Displays the remote host ip of the
-    tenth sshd** connection
-    **\${tcp_portmon 1 1024 rhost 0}** **Displays the remote host name of
-    the first** connection on a privileged port
-    **\${tcp_portmon 1 1024 rport 4}** **Displays the remote host port of
-    the fifth** connection on a privileged port
-    **\${tcp_portmon 1 65535 lservice 14}** **Displays the local service
-    name of the fifteenth** connection in the range of all ports
+      The connection index provides you with access to each connection in the
+      port monitor. The monitor will return information for index values from
+      0 to n-1 connections. Values higher than n-1 are simply ignored. For the
+      \"count\" item, the connection index must be omitted. It is required for
+      all other items.
 
-    Note that port monitor variables which share the same port range
-    actually refer to the same monitor, so many references to a single port
-    range for different items and different indexes all use the same monitor
-    internally. In other words, the program avoids creating redundant
-    monitors.
-  args:
-    - port_begin
-    - port_end
-    - item
-    - (index)
-- name: templateN
-  desc: |-
-    Evaluate the content of the templateN configuration variable (where
-    N is a value between 0 and 9, inclusively), applying substitutions
-    as described in the documentation of the corresponding configuration
-    variable. The number of arguments is optional, but must match the
-    highest referred index in the template. You can use the same special
-    sequences in each argument as the ones valid for a template
-    definition, e.g. to allow an argument to contain a whitespace. Also
-    simple nesting of templates is possible this way.
+      Examples:
 
-    Here are some examples of template definitions, note they are placed
-    between \[\[ \... \]\] instead of \' \... \':
+      **\${tcp_portmon 6881 6999 count}** **Displays the number of connections
+      in the** bittorrent port range
+      **\${tcp_portmon 22 22 rip 0}** **Displays the remote host ip of the
+      first sshd** connection
+      **\${tcp_portmon 22 22 rip 9}** **Displays the remote host ip of the
+      tenth sshd** connection
+      **\${tcp_portmon 1 1024 rhost 0}** **Displays the remote host name of
+      the first** connection on a privileged port
+      **\${tcp_portmon 1 1024 rport 4}** **Displays the remote host port of
+      the fifth** connection on a privileged port
+      **\${tcp_portmon 1 65535 lservice 14}** **Displays the local service
+      name of the fifteenth** connection in the range of all ports
 
-    template0 = \[\[\$\\1\\2\]\]\
-    template1 = \[\[\\1: \${fs_used \\2} / \${fs_size \\2}\]\]\
-    template2 = \[\[\\1 \\2\]\]
+      Note that port monitor variables which share the same port range
+      actually refer to the same monitor, so many references to a single port
+      range for different items and different indexes all use the same monitor
+      internally. In other words, the program avoids creating redundant
+      monitors.
+    args:
+      - port_begin
+      - port_end
+      - item
+      - (index)
+  - name: templateN
+    desc: |-
+      Evaluate the content of the templateN configuration variable (where
+      N is a value between 0 and 9, inclusively), applying substitutions
+      as described in the documentation of the corresponding configuration
+      variable. The number of arguments is optional, but must match the
+      highest referred index in the template. You can use the same special
+      sequences in each argument as the ones valid for a template
+      definition, e.g. to allow an argument to contain a whitespace. Also
+      simple nesting of templates is possible this way.
 
-    The following list shows sample usage of the templates defined above,
-    with the equivalent syntax when not using any template at all:
+      Here are some examples of template definitions, note they are placed
+      between \[\[ \... \]\] instead of \' \... \':
 
-      --------------------------------------------- ------------------------------------------
-      using template                                same without template
-      \${template0 node name}                       \$nodename
-      \${template1 root /}                          root: \${fs_free /} / \${fs_size /}
-      \${template1 \${template2\\ disk\\ root} /}   disk root: \${fs_free /} / \${fs_size /}
-      --------------------------------------------- ------------------------------------------
-  args:
-    - (arg1)
-    - (arg2)
-    - (arg3 ...)
-- name: texeci
-  desc: |-
-    Runs a command at an interval inside a thread and displays
-    the output. Same as $execi, except the command is run inside a thread.
-    Use this if you have a slow script to keep Conky updating. You should
-    make the interval slightly longer than the time it takes your script
-    to execute. For example, if you have a script that take 5 seconds to
-    execute, you should make the interval at least 6 seconds. See also
-    $execi. This object will clean up the thread when it is destroyed, so
-    it can safely be used in a nested fashion, though it may not produce
-    the desired behaviour if used this way.
-  args:
-    - interval
-    - command
-- name: texecpi
-  desc: Same as execpi, except the command is run inside a thread.
-  args:
-    - interval
-    - command
-- name: threads
-  desc: Total threads.
-- name: time
-  desc: |-
-    Local time, see "man strftime" to get more information about
-    format.
-  args:
-    - (format)
-- name: to_bytes
-  desc: |-
-    If 'size' is a number followed by a size-unit
-    (kilobyte,mb,GiB,...) then it converts the size to bytes and shows it
-    without unit, otherwise it just shows 'size'.
-  args:
-    - size
-- name: top
-  desc: |-
-    This takes arguments in the form:top (name) (number)
-    Basically, processes are ranked from highest to lowest in terms of cpu
-    usage, which is what (num) represents. The types are: "name", "pid",
-    "cpu", "mem", "mem_res", "mem_vsize", "time", "uid", "user",
-    "io_perc", "io_read" and "io_write". There can be a max of 10
-    processes listed.
-  args:
-    - type
-    - num
-- name: top_io
-  desc: |-
-    Same as top, except sorted by the amount of I/O the process
-    has done during the update interval.
-  args:
-    - type
-    - num
-- name: top_mem
-  desc: Same as top, except sorted by mem usage instead of cpu.
-  args:
-    - type
-    - num
-- name: top_time
-  desc: |-
-    Same as top, except sorted by total CPU time instead of
-    current CPU usage.
-  args:
-    - type
-    - num
-- name: totaldown
-  desc: |-
-    Total download, overflows at 4 GB on Linux with 32-bit arch
-    and there doesn't seem to be a way to know how many times it has
-    already done that before conky has started.
-  args:
-    - (net)
-- name: totalup
-  desc: Total upload, this one too, may overflow.
-  args:
-    - (net)
-- name: trashed_mails
-  desc: |-
-    Number of mails marked as trashed in the specified mailbox
-    or mail spool if not. Only maildir type mailboxes are supported, mbox
-    type will return -1.
-  args:
-    - (maildir)
-    - (interval)
-- name: tztime
-  desc: |-
-    Local time for specified timezone, see man strftime to get
-    more information about format. The timezone argument is specified in
-    similar fashion as TZ environment variable. For hints, look in
-    /usr/share/zoneinfo. e.g. US/Pacific, Europe/Zurich, etc.
-  args:
-    - (timezone
-    - (format))
-- name: uid_name
-  desc: Username of user with this uid.
-  args:
-    - uid
-- name: unflagged_mails
-  desc: |-
-    Number of mails not marked as flagged in the specified
-    mailbox or mail spool if not. Only maildir type mailboxes are
-    supported, mbox type will return -1.
-  args:
-    - (maildir)
-    - (interval)
-- name: unforwarded_mails
-  desc: |-
-    Number of mails not marked as forwarded in the specified
-    mailbox or mail spool if not. Only maildir type mailboxes are
-    supported, mbox type will return -1.
-  args:
-    - (maildir)
-    - (interval)
-- name: unreplied_mails
-  desc: |-
-    Number of mails not marked as replied in the specified
-    mailbox or mail spool if not. Only maildir type mailboxes are
-    supported, mbox type will return -1.
-  args:
-    - (maildir)
-    - (interval)
-- name: unseen_mails
-  desc: |-
-    Number of new or unseen mails in the specified mailbox or
-    mail spool if not. Only maildir type mailboxes are supported, mbox
-    type will return -1.
-  args:
-    - (maildir)
-    - (interval)
-- name: updates
-  desc: for debugging.
-  args:
-    - Number
-    - of
-    - updates
-- name: uppercase
-  desc: Converts all letters into uppercase.
-  args:
-    - text
-- name: upspeed
-  desc: Upload speed in suitable IEC units.
-  args:
-    - (net)
-- name: upspeedf
-  desc: Upload speed in KiB with one decimal.
-  args:
-    - (net)
-- name: upspeedgraph
-  desc: |-
-    Upload speed graph, colours defined in hex, minus the #. If
-    scale is non-zero, it becomes the scale for the graph. Uses a
-    logarithmic scale (to see small numbers) when you use the -l switch.
-    Takes the switch '-t' to use a temperature gradient, which makes the
-    gradient values change depending on the amplitude of a particular
-    graph value (try it and see).
-  args:
-    - (netdev)
-    - (height),(width)
-    - (gradient colour 1)
-    - (gradient colour 2)
-    - (scale)
-    - (-t)
-    - (-l)
-- name: uptime
-  desc: Uptime.
-- name: uptime_short
-  desc: Uptime in a shorter format.
-- name: user_names
-  desc: Lists the names of the users logged in.
-- name: user_number
-  desc: Number of users logged in.
-- name: user_terms
-  desc: Lists the consoles in use.
-- name: user_time
-  desc: |-
-    Lists how long the user for the given console has been
-    logged in for.
-  args:
-    - console
-- name: user_times
-  desc: Lists how long users have been logged in for.
-- name: utime
-  desc: Display time in UTC (universal coordinate time).
-  args:
-    - (format)
-- name: v6addrs
-  desc: |-
-    IPv6 addresses for an interface, followed by netmask if -n
-    is specified and scope with -s. Scopes are Global(G), Host-local(H),
-    Link-local(L), Site-local(S), Compat(C) and Unspecified(/). Linux
-    only.
-  args:
-    - (-n)
-    - (-s)
-    - (interface)
-- name: version
-  desc: Git version number. DragonFly only.
-- name: voffset
-  desc: |-
-    Change vertical offset by N pixels. Negative values will
-    cause text to overlap. See also $offset.
-  args:
-    - (pixels)
-- name: voltage_mv
-  desc: |-
-    Returns CPU #n's voltage in mV. CPUs are counted from 1.
-  default: 1
-  args:
-    - (n)
-- name: voltage_v
-  desc: |-
-    Returns CPU #n's voltage in V. CPUs are counted from 1.
-  default: 1
-  args:
-    - (n)
-- name: weather
-  desc: |-
-    This feature is currently unimplemented.
+      template0 = \[\[\$\\1\\2\]\]\
+      template1 = \[\[\\1: \${fs_used \\2} / \${fs_size \\2}\]\]\
+      template2 = \[\[\\1 \\2\]\]
 
-    Download, parse and display METAR data.
+      The following list shows sample usage of the templates defined above,
+      with the equivalent syntax when not using any template at all:
 
-    \'URI\' must be a valid METAR URI.
+        --------------------------------------------- ------------------------------------------
+        using template                                same without template
+        \${template0 node name}                       \$nodename
+        \${template1 root /}                          root: \${fs_free /} / \${fs_size /}
+        \${template1 \${template2\\ disk\\ root} /}   disk root: \${fs_free /} / \${fs_size /}
+        --------------------------------------------- ------------------------------------------
+    args:
+      - (arg1)
+      - (arg2)
+      - (arg3 ...)
+  - name: texeci
+    desc: |-
+      Runs a command at an interval inside a thread and displays
+      the output. Same as $execi, except the command is run inside a thread.
+      Use this if you have a slow script to keep Conky updating. You should
+      make the interval slightly longer than the time it takes your script
+      to execute. For example, if you have a script that take 5 seconds to
+      execute, you should make the interval at least 6 seconds. See also
+      $execi. This object will clean up the thread when it is destroyed, so
+      it can safely be used in a nested fashion, though it may not produce
+      the desired behaviour if used this way.
+    args:
+      - interval
+      - command
+  - name: texecpi
+    desc: Same as execpi, except the command is run inside a thread.
+    args:
+      - interval
+      - command
+  - name: threads
+    desc: Total threads.
+  - name: time
+    desc: |-
+      Local time, see "man strftime" to get more information about
+      format.
+    args:
+      - (format)
+  - name: to_bytes
+    desc: |-
+      If 'size' is a number followed by a size-unit
+      (kilobyte,mb,GiB,...) then it converts the size to bytes and shows it
+      without unit, otherwise it just shows 'size'.
+    args:
+      - size
+  - name: top
+    desc: |-
+      This takes arguments in the form:top (name) (number)
+      Basically, processes are ranked from highest to lowest in terms of cpu
+      usage, which is what (num) represents. The types are: "name", "pid",
+      "cpu", "mem", "mem_res", "mem_vsize", "time", "uid", "user",
+      "io_perc", "io_read" and "io_write". There can be a max of 10
+      processes listed.
+    args:
+      - type
+      - num
+  - name: top_io
+    desc: |-
+      Same as top, except sorted by the amount of I/O the process
+      has done during the update interval.
+    args:
+      - type
+      - num
+  - name: top_mem
+    desc: Same as top, except sorted by mem usage instead of cpu.
+    args:
+      - type
+      - num
+  - name: top_time
+    desc: |-
+      Same as top, except sorted by total CPU time instead of
+      current CPU usage.
+    args:
+      - type
+      - num
+  - name: totaldown
+    desc: |-
+      Total download, overflows at 4 GB on Linux with 32-bit arch
+      and there doesn't seem to be a way to know how many times it has
+      already done that before conky has started.
+    args:
+      - (net)
+  - name: totalup
+    desc: Total upload, this one too, may overflow.
+    args:
+      - (net)
+  - name: trashed_mails
+    desc: |-
+      Number of mails marked as trashed in the specified mailbox
+      or mail spool if not. Only maildir type mailboxes are supported, mbox
+      type will return -1.
+    args:
+      - (maildir)
+      - (interval)
+  - name: tztime
+    desc: |-
+      Local time for specified timezone, see man strftime to get
+      more information about format. The timezone argument is specified in
+      similar fashion as TZ environment variable. For hints, look in
+      /usr/share/zoneinfo. e.g. US/Pacific, Europe/Zurich, etc.
+    args:
+      - (timezone
+      - (format))
+  - name: uid_name
+    desc: Username of user with this uid.
+    args:
+      - uid
+  - name: unflagged_mails
+    desc: |-
+      Number of mails not marked as flagged in the specified
+      mailbox or mail spool if not. Only maildir type mailboxes are
+      supported, mbox type will return -1.
+    args:
+      - (maildir)
+      - (interval)
+  - name: unforwarded_mails
+    desc: |-
+      Number of mails not marked as forwarded in the specified
+      mailbox or mail spool if not. Only maildir type mailboxes are
+      supported, mbox type will return -1.
+    args:
+      - (maildir)
+      - (interval)
+  - name: unreplied_mails
+    desc: |-
+      Number of mails not marked as replied in the specified
+      mailbox or mail spool if not. Only maildir type mailboxes are
+      supported, mbox type will return -1.
+    args:
+      - (maildir)
+      - (interval)
+  - name: unseen_mails
+    desc: |-
+      Number of new or unseen mails in the specified mailbox or
+      mail spool if not. Only maildir type mailboxes are supported, mbox
+      type will return -1.
+    args:
+      - (maildir)
+      - (interval)
+  - name: updates
+    desc: for debugging.
+    args:
+      - Number
+      - of
+      - updates
+  - name: uppercase
+    desc: Converts all letters into uppercase.
+    args:
+      - text
+  - name: upspeed
+    desc: Upload speed in suitable IEC units.
+    args:
+      - (net)
+  - name: upspeedf
+    desc: Upload speed in KiB with one decimal.
+    args:
+      - (net)
+  - name: upspeedgraph
+    desc: |-
+      Upload speed graph, colours defined in hex, minus the #. If
+      scale is non-zero, it becomes the scale for the graph. Uses a
+      logarithmic scale (to see small numbers) when you use the -l switch.
+      Takes the switch '-t' to use a temperature gradient, which makes the
+      gradient values change depending on the amplitude of a particular
+      graph value (try it and see).
+    args:
+      - (netdev)
+      - (height),(width)
+      - (gradient colour 1)
+      - (gradient colour 2)
+      - (scale)
+      - (-t)
+      - (-l)
+  - name: uptime
+    desc: Uptime.
+  - name: uptime_short
+    desc: Uptime in a shorter format.
+  - name: user_names
+    desc: Lists the names of the users logged in.
+  - name: user_number
+    desc: Number of users logged in.
+  - name: user_terms
+    desc: Lists the consoles in use.
+  - name: user_time
+    desc: |-
+      Lists how long the user for the given console has been
+      logged in for.
+    args:
+      - console
+  - name: user_times
+    desc: Lists how long users have been logged in for.
+  - name: utime
+    desc: Display time in UTC (universal coordinate time).
+    args:
+      - (format)
+  - name: v6addrs
+    desc: |-
+      IPv6 addresses for an interface, followed by netmask if -n
+      is specified and scope with -s. Scopes are Global(G), Host-local(H),
+      Link-local(L), Site-local(S), Compat(C) and Unspecified(/). Linux
+      only.
+    args:
+      - (-n)
+      - (-s)
+      - (interface)
+  - name: version
+    desc: Git version number. DragonFly only.
+  - name: voffset
+    desc: |-
+      Change vertical offset by N pixels. Negative values will
+      cause text to overlap. See also $offset.
+    args:
+      - (pixels)
+  - name: voltage_mv
+    desc: |-
+      Returns CPU #n's voltage in mV. CPUs are counted from 1.
+    default: 1
+    args:
+      - (n)
+  - name: voltage_v
+    desc: |-
+      Returns CPU #n's voltage in V. CPUs are counted from 1.
+    default: 1
+    args:
+      - (n)
+  - name: weather
+    desc: |-
+      This feature is currently unimplemented.
 
-    http://tgftp.nws.noaa.gov/data/observations/metar/stations/
+      Download, parse and display METAR data.
 
-    \'locID\' must be a valid location identifier for the required uri. For
-    the NOAA site this must be a valid ICAO (see for instance
-    *https://pilotweb.nas.faa.gov/qryhtml/icao/*). For the weather.com site
-    this must be a valid location ID (see for instance
-    *http://aspnetresources.com/tools/locid.aspx*).
+      \'URI\' must be a valid METAR URI.
 
-    \'data_type\' must be one of the following:
+      http://tgftp.nws.noaa.gov/data/observations/metar/stations/
 
-    **last_update** The date and time stamp of the data. The result depends
-    on the URI used. For the NOAA site it is date (yyyy/mm/dd) and UTC time.
-    For the weather.com one it is date (\[m\]m/\[d\]d/yy) and Local Time of
-    the station.\
-    **temperature**
+      \'locID\' must be a valid location identifier for the required uri. For
+      the NOAA site this must be a valid ICAO (see for instance
+      *https://pilotweb.nas.faa.gov/qryhtml/icao/*). For the weather.com site
+      this must be a valid location ID (see for instance
+      *http://aspnetresources.com/tools/locid.aspx*).
 
-    Air temperature (you can use the \'temperature_unit\' config setting to
-    change units)\
-    **cloud_cover**
+      \'data_type\' must be one of the following:
 
-    The highest cloud cover status\
-    **pressure**
+      **last_update** The date and time stamp of the data. The result depends
+      on the URI used. For the NOAA site it is date (yyyy/mm/dd) and UTC time.
+      For the weather.com one it is date (\[m\]m/\[d\]d/yy) and Local Time of
+      the station.\
+      **temperature**
 
-    Air pressure in millibar\
-    **wind_speed**
+      Air temperature (you can use the \'temperature_unit\' config setting to
+      change units)\
+      **cloud_cover**
 
-    Wind speed in km/h\
-    **wind_dir**
+      The highest cloud cover status\
+      **pressure**
 
-    Wind direction\
-    **wind_dir_DEG**
+      Air pressure in millibar\
+      **wind_speed**
 
-    Compass wind direction\
-    **humidity**
+      Wind speed in km/h\
+      **wind_dir**
 
-    Relative humidity in %\
-    **weather**
+      Wind direction\
+      **wind_dir_DEG**
 
-    Any relevant weather event (rain, snow, etc.). This is not used if you
-    are querying the weather.com site since this data is aggregated into the
-    cloud_cover one\
-    **icon**
+      Compass wind direction\
+      **humidity**
 
-    Weather icon (only for www.weather.com). Can be used together with the
-    icon kit provided upon registering to their service.
+      Relative humidity in %\
+      **weather**
 
-    \'delay_in_minutes\' (optional, default 30) cannot be less than 30
-    minutes.
+      Any relevant weather event (rain, snow, etc.). This is not used if you
+      are querying the weather.com site since this data is aggregated into the
+      cloud_cover one\
+      **icon**
 
-    This object is threaded, and once a thread is created it can\'t be
-    explicitly destroyed. One thread will run for each URI specified.
+      Weather icon (only for www.weather.com). Can be used together with the
+      icon kit provided upon registering to their service.
 
-    Note that these variables are still EXPERIMENTAL and can be subject to
-    many future changes.
-  args:
-    - URI
-    - locID
-    - data_type
-    - (interval_in_minutes)
-- name: weather_forecast
-  desc: |-
-    This feature is currently unimplemented.
+      \'delay_in_minutes\' (optional, default 30) cannot be less than 30
+      minutes.
 
-    Download, parse and display weather forecast data for a given day
-    (daytime only).
+      This object is threaded, and once a thread is created it can\'t be
+      explicitly destroyed. One thread will run for each URI specified.
 
-    \'locID\', see \'weather\' above.
+      Note that these variables are still EXPERIMENTAL and can be subject to
+      many future changes.
+    args:
+      - URI
+      - locID
+      - data_type
+      - (interval_in_minutes)
+  - name: weather_forecast
+    desc: |-
+      This feature is currently unimplemented.
 
-    \'day\' is a number from 0 (today) to 4 (3 days after tomorrow).
+      Download, parse and display weather forecast data for a given day
+      (daytime only).
 
-    \'data_type\' must be one of the following:
+      \'locID\', see \'weather\' above.
 
-    **day** **Day of the week**\
-    **date** **Date, in the form MMM DD (ie. Jul 14)**\
-    **low** **Minimum temperature (you can use the** \'temperature_unit\'
-    config setting to change units)\
-    **hi** **Maximum temperature (you can use the** \'temperature_unit\'
-    config setting to change units)\
-    **icon** **Weather icon. Can be used together with the icon** kit
-    provided upon registering to the weather.com service\
-    **forecast** **Weather forecast (sunny, rainy, etc.)**\
-    **wind_speed** **Wind speed in km/h**\
-    **wind_dir** **Wind direction**\
-    **wind_dir_DEG** **Compass wind direction**\
-    **humidity** **Relative humidity in %**\
-    **precipitation** **Probability of having a precipitation (in** %)
+      \'day\' is a number from 0 (today) to 4 (3 days after tomorrow).
 
-    \'delay_in_minutes\' (optional, default 210) cannot be lower than 210
-    min.
+      \'data_type\' must be one of the following:
 
-    This object is threaded, and once a thread is created it can\'t be
-    explicitly destroyed. One thread will run for each URI specified. You
-    can use any protocol that Curl supports.
+      **day** **Day of the week**\
+      **date** **Date, in the form MMM DD (ie. Jul 14)**\
+      **low** **Minimum temperature (you can use the** \'temperature_unit\'
+      config setting to change units)\
+      **hi** **Maximum temperature (you can use the** \'temperature_unit\'
+      config setting to change units)\
+      **icon** **Weather icon. Can be used together with the icon** kit
+      provided upon registering to the weather.com service\
+      **forecast** **Weather forecast (sunny, rainy, etc.)**\
+      **wind_speed** **Wind speed in km/h**\
+      **wind_dir** **Wind direction**\
+      **wind_dir_DEG** **Compass wind direction**\
+      **humidity** **Relative humidity in %**\
+      **precipitation** **Probability of having a precipitation (in** %)
 
-    Note that these variables are still EXPERIMENTAL and can be subject to
-    many future changes.
-  args:
-    - URI
-    - locID
-    - day
-    - data_type
-    - (interval_in_minutes)
-- name: wireless_ap
-  desc: Wireless access point MAC address. Linux only.
-  args:
-    - (net)
-- name: wireless_bitrate
-  desc: Wireless bitrate (ie 11 Mb/s). Linux only.
-  args:
-    - (net)
-- name: wireless_channel
-  desc: WLAN channel on which device 'net' is listening.
-  args:
-    - (net)
-- name: wireless_essid
-  desc: Wireless access point ESSID. Linux only.
-  args:
-    - (net)
-- name: wireless_freq
-  desc: Frequency on which device 'net' is listening.
-  args:
-    - (net)
-- name: wireless_link_bar
-  desc: Wireless link quality bar. Linux only.
-  args:
-    - (height),(width)
-    - (net)
-- name: wireless_link_qual
-  desc: Wireless link quality. Linux only.
-  args:
-    - (net)
-- name: wireless_link_qual_max
-  desc: Wireless link quality maximum value. Linux only.
-  args:
-    - (net)
-- name: wireless_link_qual_perc
-  desc: Wireless link quality in percents. Linux only.
-  args:
-    - (net)
-- name: wireless_mode
-  desc: Wireless mode (Managed/Ad-Hoc/Master). Linux only.
-  args:
-    - (net)
-- name: words
-  desc: Displays the number of words in the given file.
-  args:
-    - textfile
-- name: xmms2_album
-  desc: Album in current XMMS2 song.
-- name: xmms2_artist
-  desc: Artist in current XMMS2 song.
-- name: xmms2_bar
-  desc: Bar of XMMS2's progress.
-  args:
-    - (height),(width)
-- name: xmms2_bitrate
-  desc: Bitrate of current song.
-- name: xmms2_comment
-  desc: Comment in current XMMS2 song.
-- name: xmms2_date
-  desc: Returns song's date.
-- name: xmms2_duration
-  desc: Duration of current song.
-- name: xmms2_elapsed
-  desc: Song's elapsed time.
-- name: xmms2_genre
-  desc: Genre in current XMMS2 song.
-- name: xmms2_id
-  desc: XMMS2 id of current song.
-- name: xmms2_percent
-  desc: Percent of song's progress.
-- name: xmms2_playlist
-  desc: Returns the XMMS2 playlist.
-- name: xmms2_size
-  desc: Size of current song.
-- name: xmms2_smart
-  desc: |-
-    Prints the song name in either the form "artist - title" or
-    file name, depending on whats available.
-- name: xmms2_status
-  desc: XMMS2 status (Playing, Paused, Stopped, or Disconnected).
-- name: xmms2_timesplayed
-  desc: Number of times a song was played (presumably).
-- name: xmms2_title
-  desc: Title in current XMMS2 song.
-- name: xmms2_tracknr
-  desc: Track number in current XMMS2 song.
-- name: xmms2_url
-  desc: Full path to current song.
+      \'delay_in_minutes\' (optional, default 210) cannot be lower than 210
+      min.
+
+      This object is threaded, and once a thread is created it can\'t be
+      explicitly destroyed. One thread will run for each URI specified. You
+      can use any protocol that Curl supports.
+
+      Note that these variables are still EXPERIMENTAL and can be subject to
+      many future changes.
+    args:
+      - URI
+      - locID
+      - day
+      - data_type
+      - (interval_in_minutes)
+  - name: wireless_ap
+    desc: Wireless access point MAC address. Linux only.
+    args:
+      - (net)
+  - name: wireless_bitrate
+    desc: Wireless bitrate (ie 11 Mb/s). Linux only.
+    args:
+      - (net)
+  - name: wireless_channel
+    desc: WLAN channel on which device 'net' is listening.
+    args:
+      - (net)
+  - name: wireless_essid
+    desc: Wireless access point ESSID. Linux only.
+    args:
+      - (net)
+  - name: wireless_freq
+    desc: Frequency on which device 'net' is listening.
+    args:
+      - (net)
+  - name: wireless_link_bar
+    desc: Wireless link quality bar. Linux only.
+    args:
+      - (height),(width)
+      - (net)
+  - name: wireless_link_qual
+    desc: Wireless link quality. Linux only.
+    args:
+      - (net)
+  - name: wireless_link_qual_max
+    desc: Wireless link quality maximum value. Linux only.
+    args:
+      - (net)
+  - name: wireless_link_qual_perc
+    desc: Wireless link quality in percents. Linux only.
+    args:
+      - (net)
+  - name: wireless_mode
+    desc: Wireless mode (Managed/Ad-Hoc/Master). Linux only.
+    args:
+      - (net)
+  - name: words
+    desc: Displays the number of words in the given file.
+    args:
+      - textfile
+  - name: xmms2_album
+    desc: Album in current XMMS2 song.
+  - name: xmms2_artist
+    desc: Artist in current XMMS2 song.
+  - name: xmms2_bar
+    desc: Bar of XMMS2's progress.
+    args:
+      - (height),(width)
+  - name: xmms2_bitrate
+    desc: Bitrate of current song.
+  - name: xmms2_comment
+    desc: Comment in current XMMS2 song.
+  - name: xmms2_date
+    desc: Returns song's date.
+  - name: xmms2_duration
+    desc: Duration of current song.
+  - name: xmms2_elapsed
+    desc: Song's elapsed time.
+  - name: xmms2_genre
+    desc: Genre in current XMMS2 song.
+  - name: xmms2_id
+    desc: XMMS2 id of current song.
+  - name: xmms2_percent
+    desc: Percent of song's progress.
+  - name: xmms2_playlist
+    desc: Returns the XMMS2 playlist.
+  - name: xmms2_size
+    desc: Size of current song.
+  - name: xmms2_smart
+    desc: |-
+      Prints the song name in either the form "artist - title" or
+      file name, depending on whats available.
+  - name: xmms2_status
+    desc: XMMS2 status (Playing, Paused, Stopped, or Disconnected).
+  - name: xmms2_timesplayed
+    desc: Number of times a song was played (presumably).
+  - name: xmms2_title
+    desc: Title in current XMMS2 song.
+  - name: xmms2_tracknr
+    desc: Track number in current XMMS2 song.
+  - name: xmms2_url
+    desc: Full path to current song.

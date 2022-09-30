@@ -1,10 +1,10 @@
 import Layout from '../components/Layout'
 import SEO from '../components/SEO'
-import { Doc, getConfigSettings } from '../utils/doc-utils'
+import { getConfigSettings, Documentation } from '../utils/doc-utils'
 import Docs from '../components/Docs'
 
 export interface ConfigSettingsProps {
-  config_settings: Doc[]
+  config_settings: Documentation
 }
 
 export default function ConfigSettings(props: ConfigSettingsProps) {
@@ -18,7 +18,7 @@ export default function ConfigSettings(props: ConfigSettingsProps) {
         <div>
           <h1 className="text-2xl">Configuration settings</h1>
         </div>
-        <Docs docs={props.config_settings} />
+        <Docs docs={props.config_settings} braces={false} assign={true} />
       </main>
     </Layout>
   )
