@@ -17,7 +17,7 @@
     information (tries `AC` and `ADP1` if there is no argument given).
     Non-linux systems ignore it.
   args:
-    - (height),(width)
+    - (adapter)
 - name: acpifan
   desc: ACPI fan state.
 - name: acpitemp
@@ -27,13 +27,13 @@
     IP address for an interface, or "No Address" if no address
     is assigned.
   args:
-    - (height),(width)
+    - (interface)
 - name: addrs
   desc: |-
     IP addresses for an interface (if one - works like addr).
     Linux only.
   args:
-    - (height),(width)
+    - (interface)
 - name: adt746xcpu
   desc: CPU temperature from therm_adt746x.
 - name: adt746xfan
@@ -41,15 +41,15 @@
 - name: alignc
   desc: Align text to centre.
   args:
-    - (height),(width)
+    - (num)
 - name: alignr
   desc: Right-justify text, with space of N.
   args:
-    - (height),(width)
+    - (num)
 - name: apcupsd
   desc: |-
-    Sets up the connection to apcupsd daemon. Prints nothing,
-    defaults to localhost:3551.
+    Sets up the connection to apcupsd daemon. Prints nothing.
+  default: localhost:3551
   args:
     - host
     - port
@@ -135,44 +135,48 @@
 - name: battery
   desc: |-
     Battery status and remaining percentage capacity of ACPI or
-    APM battery. ACPI battery number can be given as argument (default is
-    BAT0).
+    APM battery. ACPI battery number can be given as argument.
+  default: BAT0
   args:
     - (num)
 - name: battery_bar
   desc: |-
-    Battery percentage remaining of ACPI battery in a bar. ACPI
-    battery number can be given as argument (default is BAT0, use all to
-    get the mean percentage remaining for all batteries).
+    Battery percentage remaining of ACPI battery in a bar. ACPI battery number
+    can be given as argument (use `all` to get the mean percentage remaining for
+    all batteries).
+  default: BAT0
   args:
     - (height),(width)
     - (num)
 - name: battery_percent
   desc: |-
     Battery percentage remaining for ACPI battery. ACPI battery
-    number can be given as argument (default is BAT0, use all to get the
+    number can be given as argument (use `all` to get the
     mean percentage remaining for all batteries).
+  default: BAT0
   args:
     - (num)
 - name: battery_short
   desc: |-
-    Battery status and remaining percentage capacity of ACPI or
-    APM battery. ACPI battery number can be given as argument (default is
-    BAT0). This mode display a short status, which means that C is
-    displayed instead of charging, D for discharging, F for full, N for
-    not present, E for empty and U for unknown.
+    Battery status and remaining percentage capacity of ACPI or APM battery.
+    ACPI battery number can be given as argument. This mode display a short
+    status, which means that C is displayed instead of charging, D for
+    discharging, F for full, N for not present, E for empty and U for unknown.
+  default: BAT0
   args:
     - (num)
 - name: battery_status
   desc: |-
     Battery status for ACPI battery. ACPI battery number can be
-    given as argument (default is BAT0).
+    given as arguments.
+  default: BAT0
   args:
     - (num)
 - name: battery_time
   desc: |-
     Battery charge/discharge time remaining of ACPI battery.
-    ACPI battery number can be given as argument (default is BAT0).
+    ACPI battery number can be given as argument.
+  default: BAT0
   args:
     - (num)
 - name: blink
@@ -189,7 +193,7 @@
     useful if you have an independent process generating output that you
     want to include in conky.
   args:
-    - (height),(width)
+    - file
 - name: catp
   desc: |-
     Reads a file and displays the contents in conky. This is
@@ -198,11 +202,11 @@
     contents of the file, so you can insert things like ${color
     red}hi!${color} in your file and have it correctly parsed by Conky.
   args:
-    - (height),(width)
+    - file
 - name: cmdline_to_pid
   desc: PID of the first process that has string in its commandline.
   args:
-    - (height),(width)
+    - string
 - name: cmus_aaa
   desc: Print aaa status of cmus (all/artist/album).
 - name: cmus_album
@@ -244,7 +248,7 @@
     the following colors are supported: red, green, yellow, blue, magenta,
     cyan, black, and white.
   args:
-    - (height),(width)
+    - (color)
 - name: colorN
   desc: |-
     Change drawing color to colorN configuration option, where N
@@ -258,7 +262,8 @@
     "cpuinfo_line2 -" on line 2. $combine vars can also be nested to place
     more vars next to each other.
   args:
-    - (height),(width)
+    - var1
+    - var2
 - name: conky_build_arch
   desc: CPU architecture Conky was built for.
 - name: conky_build_date
@@ -285,13 +290,14 @@
     gauge's vertical and horizontal axis respectively. See $cpu for more
     info on SMP.
   args:
+    - (cpuN)
     - (height),(width)
 - name: cpugovernor
   desc: |-
     The active CPU scaling governor, defaulting to the first core.
     See $cpu for more info on SMP. Linux only.
   args:
-    - (height),(width)
+    - (cpuN)
 - name: cpugraph
   desc: |-
     CPU usage graph, with optional colours in hex, minus the #.
@@ -300,7 +306,13 @@
     temperature gradient, which makes the gradient values change depending
     on the amplitude of a particular graph value (try it and see).
   args:
+    - (cpuN)
     - (height),(width)
+    - (gradient colour 1)
+    - (gradient colour 2)
+    - (scale)
+    - (-t)
+    - (-l)
 - name: curl
   desc: |-
     Download data from URI using Curl at the specified interval.
@@ -310,7 +322,8 @@
     is created it can't be explicitly destroyed. One thread will run for
     each URI specified. You can use any protocol that Curl supports.
   args:
-    - (height),(width)
+    - url
+    - (interval_in_minutes)
 - name: desktop
   desc: |-
     Number of the desktop on which conky is running or the
@@ -328,7 +341,7 @@
     Disk protection status, if supported (needs kernel-patch).
     Prints either "frozen" or "free " (note the padding).
   args:
-    - (height),(width)
+    - device
 - name: diskio
   desc: |-
     Displays current disk IO. Device is optional, and takes the
@@ -336,15 +349,15 @@
     label:foo and a block device partuuid can be specified with
     partuuid:40000000-01.
   args:
-    - (height),(width)
+    - (device)
 - name: diskio_read
   desc: Displays current disk IO for reads. Device as in diskio.
   args:
-    - (height),(width)
+    - (device)
 - name: diskio_write
   desc: Displays current disk IO for writes. Device as in diskio.
   args:
-    - (height),(width)
+    - (device)
 - name: diskiograph
   desc: |-
     Disk IO graph, colours defined in hex, minus the #. If scale
@@ -354,7 +367,13 @@
     change depending on the amplitude of a particular graph value (try it
     and see).
   args:
+    - (device)
     - (height),(width)
+    - (gradient colour 1)
+    - (gradient colour 2)
+    - (scale)
+    - (-t)
+    - (-l)
 - name: diskiograph_read
   desc: |-
     Disk IO graph for reads, colours defined in hex, minus the
@@ -364,7 +383,13 @@
     which makes the gradient values change depending on the amplitude of a
     particular graph value (try it and see).
   args:
+    - (device)
     - (height),(width)
+    - (gradient colour 1)
+    - (gradient colour 2)
+    - (scale)
+    - (-t)
+    - (-l)
 - name: diskiograph_write
   desc: |-
     Disk IO graph for writes, colours defined in hex, minus the
@@ -374,7 +399,13 @@
     which makes the gradient values change depending on the amplitude of a
     particular graph value (try it and see).
   args:
+    - (device)
     - (height),(width)
+    - (gradient colour 1)
+    - (gradient colour 2)
+    - (scale)
+    - (-t)
+    - (-l)
 - name: distribution
   desc: |-
     The name of the distribution. It could be that some of the
@@ -389,11 +420,11 @@
 - name: downspeed
   desc: Download speed in suitable IEC units.
   args:
-    - (height),(width)
+    - (net)
 - name: downspeedf
   desc: Download speed in KiB with one decimal.
   args:
-    - (height),(width)
+    - (net)
 - name: downspeedgraph
   desc: |-
     Download speed graph, colours defined in hex, minus the #.
@@ -403,7 +434,13 @@
     gradient values change depending on the amplitude of a particular
     graph value (try it and see).
   args:
+    - (netdev)
     - (height),(width)
+    - (gradient colour 1)
+    - (gradient colour 2)
+    - (scale)
+    - (-t)
+    - (-l)
 - name: draft_mails
   desc: |-
     Number of mails marked as draft in the specified mailbox or
@@ -435,14 +472,14 @@
     into their output, any occurring '$$' into a single '$' and so on. The
     output is then being parsed again.
   args:
-    - (height),(width)
+    - string
 - name: exec
   desc: |-
     Executes a shell command and displays the output in conky.
     Warning: this takes a lot more resources than other variables. I'd
     recommend coding wanted behaviour in C/C++ and posting a patch.
   args:
-    - (height),(width)
+    - command
 - name: execbar
   desc: |-
     Same as exec, except if the first value returned is a value
@@ -546,7 +583,7 @@
     $execp statement runs, as it is created and destroyed at every
     interval.
   args:
-    - (height),(width)
+    - command
 - name: execpi
   desc: |-
     Same as execp, but with an interval. Note that the output
@@ -569,7 +606,7 @@
     current line and everything following. You can use a $font with no
     arguments to change back to the default font (much like with $color).
   args:
-    - (height),(width)
+    - (font)
 - name: fontN
   desc: |-
     Change font to fontN configuration option, where N is a
@@ -589,7 +626,8 @@
     (maximum 9). You can also place a 'x' behind \S so you have all digits
     behind the point and no trailing zero's. (also maximum 9).
   args:
-    - (height),(width)
+    - seconds
+    - format
 - name: forwarded_mails
   desc: |-
     Number of mails marked as forwarded in the specified mailbox
@@ -603,69 +641,72 @@
 - name: freq
   desc: |-
     Returns CPU #n's frequency in MHz. CPUs are counted from 1.
-    If omitted, the parameter defaults to 1.
+  default: 1
   args:
-    - (height),(width)
+    - (n)
 - name: freq2
   desc: |-
     Returns CPU #n's clock speed from assembly in MHz. CPUs are
-    counted from 1. If omitted, the parameter defaults to 1.
+    counted from 1.
+  default: 1
   args:
-    - (height),(width)
+    - (n)
 - name: freq_g
   desc: |-
     Returns CPU #n's frequency in GHz. CPUs are counted from 1.
-    If omitted, the parameter defaults to 1.
+  default: 1
   args:
-    - (height),(width)
+    - (n)
 - name: fs_bar
   desc: |-
     Bar that shows how much space is used on a file system.
     height is the height in pixels. fs is any file on that file system.
   args:
     - (height),(width)
+    - fs
 - name: fs_bar_free
   desc: |-
     Bar that shows how much space is free on a file system.
     height is the height in pixels. fs is any file on that file system.
   args:
     - (height),(width)
+    - fs
 - name: fs_free
   desc: Free space on a file system available for users.
   args:
-    - (height),(width)
+    - (fs)
 - name: fs_free_perc
   desc: |-
     Free percentage of space on a file system available for
     users.
   args:
-    - (height),(width)
+    - (fs)
 - name: fs_size
   desc: File system size.
   args:
-    - (height),(width)
+    - (fs)
 - name: fs_type
   desc: File system type.
   args:
-    - (height),(width)
+    - (fs)
 - name: fs_used
   desc: File system used space.
   args:
-    - (height),(width)
+    - (fs)
 - name: fs_used_perc
   desc: Percent of file system used space.
   args:
-    - (height),(width)
+    - (fs)
 - name: gid_name
   desc: Name of group with this gid.
   args:
-    - (height),(width)
+    - gid
 - name: github_notifications
   desc: Number of GitHub notifications.
 - name: goto
   desc: The next element will be printed at position 'x'.
   args:
-    - (height),(width)
+    - x
 - name: gw_iface
   desc: |-
     Displays the default route's interface or "multiple"/"none"
@@ -681,7 +722,7 @@
     specify a host and port for all hddtemp objects. If no dev parameter
     is given, the first disk returned by the hddtemp daemon is used.
   args:
-    - (height),(width)
+    - (dev)
 - name: head
   desc: |-
     Displays first N lines of supplied text file. The file is
@@ -689,11 +730,13 @@
     Conky defaults to 2. Max of 30 lines can be displayed, or until the
     text buffer is filled.
   args:
-    - (height),(width)
+    - logfile
+    - lines
+    - (next_check)
 - name: hr
   desc: Horizontal line, height is the height in pixels.
   args:
-    - (height),(width)
+    - (height)
 - name: hwmon
   desc: |-
     Hwmon sensor from sysfs (Linux 2.6). Parameter dev can be:
@@ -709,9 +752,12 @@
     as follows: `input = input * factor + offset`. Note that they have to be
     given as decimal values (i.e. contain at least one decimal place).
   args:
-    - (height),(width)
+    - (dev)
+    - type
+    - n
+    - (factor offset)
   other:
-    filename:
+    filename: null
 - name: i2c
   desc: |-
     I2C sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you have
@@ -723,9 +769,12 @@
     they have to be given as decimal values (i.e. contain at least one decimal
     place).
   args:
-    - (height),(width)
+    - (dev)
+    - type
+    - n
+    - (factor offset)
   other:
-    filename:
+    filename: null
 - name: i8k_ac_status
   desc: |-
     If running the i8k kernel driver for Inspiron laptops, displays whether ac
@@ -787,11 +836,11 @@
     IBM temperature sensors (N=0..7) Sensor 0 is on the CPU, 3 is on the
     GPU.
   args:
-    - (height),(width)
+    - N
 - name: ibm_thinklight
-  desc: |-
-    If running the IBM ACPI, displays the status of your
-    ThinkLight™. Value is either 'on', 'off' or 'unknown'.
+  desc:
+    "If running the IBM ACPI, displays the status of your\nThinkLight\u2122. Value\
+    \ is either 'on', 'off' or 'unknown'."
 - name: ibm_volume
   desc: |-
     If running the IBM ACPI, displays the "master" volume,
@@ -804,13 +853,15 @@
     the VEVENTS, the title that is shown is the SUMMARY and the starting
     time used for sorting is DTSTART.
   args:
-    - (height),(width)
+    - number
+    - file
 - name: iconv_start
   desc: |-
     Convert text from one codeset to another using GNU iconv.
     Needs to be stopped with iconv_stop.
   args:
-    - (height),(width)
+    - codeset_from
+    - codeset_to
 - name: iconv_stop
   desc: Stop iconv codeset conversion.
 - name: if_empty
@@ -818,7 +869,7 @@
     if conky variable VAR is empty, display everything between
     $if_empty and the matching $endif.
   args:
-    - (height),(width)
+    - (var)
 - name: if_existing
   desc: |-
     if FILE exists, display everything between if_existing and
@@ -826,7 +877,8 @@
     containing the specified string and prints everything between
     $if_existing and the matching $endif.
   args:
-    - (height),(width)
+    - file
+    - (string)
 - name: if_gw
   desc: |-
     if there is at least one default gateway, display everything
@@ -850,21 +902,20 @@
     * `<` or `>`
     * `<=` or `>=`
     * `==` or `!=`
-
   args:
-    - (height),(width)
+    - expression
 - name: if_mixer_mute
   desc: |-
     If mixer exists, display everything between $if_mixer_mute
     and the matching $endif. If no mixer is specified, "Vol" is used.
   args:
-    - (height),(width)
+    - (mixer)
 - name: if_mounted
   desc: |-
     if MOUNTPOINT is mounted, display everything between
     $if_mounted and the matching $endif.
   args:
-    - (height),(width)
+    - (mountpoint)
 - name: if_mpd_playing
   desc: |-
     if mpd is playing or paused, display everything between
@@ -874,34 +925,29 @@
     If Pulseaudio's default sink is muted, display everything
     between $if_pa_sink_muted and the corresponding $else or $endif.
 - name: if_running
-  desc: |-
-    If PROCESS is running, display everything between
-    $if_running and the corresponding $else or $endif. Note that PROCESS
-    may be either a full command line with arguments (without the
-    directory prefix), or simply the name of an executable. For example,
-    either of the following will be true if there is a running process
-    with the command line `/usr/bin/conky -u 5`:
-
-    * `${if_running conky -u 5}` or
-    * `${if_running conky}`
-        
-    It is important not to include trailing spaces. For example, `${if_running
-    conky }` will be false.
+  desc:
+    "If PROCESS is running, display everything between\n$if_running and the corresponding\
+    \ $else or $endif. Note that PROCESS\nmay be either a full command line with arguments\
+    \ (without the\ndirectory prefix), or simply the name of an executable. For example,\n\
+    either of the following will be true if there is a running process\nwith the command\
+    \ line `/usr/bin/conky -u 5`:\n\n* `${if_running conky -u 5}` or\n* `${if_running\
+    \ conky}`\n    \nIt is important not to include trailing spaces. For example,\
+    \ `${if_running\nconky }` will be false."
   args:
-    - (height),(width)
+    - (process)
 - name: if_smapi_bat_installed
   desc: |-
     when using smapi, if the battery with index INDEX is
     installed, display everything between $if_smapi_bat_installed and the
     matching $endif.
   args:
-    - (height),(width)
+    - (INDEX)
 - name: if_up
   desc: |-
     if INTERFACE exists and is up, display everything between
     $if_up and the matching $endif.
   args:
-    - (height),(width)
+    - (interface)
 - name: if_updatenr
   desc: |-
     If it's the UPDATENR-th time that conky updates, display
@@ -912,7 +958,7 @@
     4}$endif` shows foo 25% of the time followed by bar 25% of the time followed
     by nothing the other half of the time.
   args:
-    - (height),(width)
+    - (updatenr)
 - name: if_xmms2_connected
   desc: |-
     Display everything between $if_xmms2_connected and the
@@ -920,7 +966,7 @@
 - name: iface
   desc: Display interface names starting from 1, eg ${iface 1}.
   args:
-    - (height),(width)
+    - (number)
 - name: image
   desc: |-
     Renders an image from the path specified using Imlib2. Takes
@@ -938,7 +984,11 @@
     runtime modifications, through $execp $lua_parse, or some other
     method.
   args:
-    - (height),(width)
+    - <path to image>
+    - (-p x,y)
+    - (-s WxH)
+    - (-n)
+    - (-f interval)
 - name: imap_messages
   desc: |-
     Displays the number of messages in your global IMAP inbox by
@@ -950,7 +1000,7 @@
     password is supplied as '*', you will be prompted to enter the
     password when Conky starts.
   args:
-    - (height),(width)
+    - (args)
 - name: imap_unseen
   desc: |-
     Displays the number of unseen messages in your global IMAP
@@ -962,7 +1012,7 @@
     is 5. If the password is supplied as '*', you will be prompted to
     enter the password when Conky starts.
   args:
-    - (height),(width)
+    - (args)
 - name: intel_backlight
   desc: Display the brightness of your Intel backlight in percent.
 - name: ioscheduler
@@ -970,7 +1020,7 @@
     Prints the current ioscheduler used for the given disk name
     (i.e. e.g. "hda" or "sdb").
   args:
-    - (height),(width)
+    - disk
 - name: irc
   desc: |-
     Shows everything that's being told in #channel on IRCserver
@@ -978,7 +1028,9 @@
     specified. Shows everything since the last time or the last
     'max_msg_lines' entries if specified.
   args:
-    - (height),(width)
+    - server(:port)
+    - "#channel"
+    - (max_msg_lines)
 - name: journal
   desc: |-
     Displays last N lines of the systemd journal. The optional
@@ -987,7 +1039,8 @@
     user are shown. A maximum of 200 lines can be displayed, or until the
     text buffer is filled.
   args:
-    - (height),(width)
+    - lines
+    - (type)
 - name: kernel
   desc: Kernel version.
 - name: key_caps_lock
@@ -1005,14 +1058,14 @@
 - name: lines
   desc: Displays the number of lines in the given file.
   args:
-    - (height),(width)
+    - textfile
 - name: loadavg
   desc: |-
     System load average, 1 is for past 1 minute, 2 for past 5
     minutes and 3 for past 15 minutes. Without argument, prints all three
     values separated by whitespace.
   args:
-    - (height),(width)
+    - (1|2|3)
 - name: loadgraph
   desc: |-
     Load1 average graph, similar to xload, with optional colours
@@ -1022,10 +1075,15 @@
     amplitude of a particular graph value (try it and see).
   args:
     - (height),(width)
+    - (gradient colour 1)
+    - (gradient colour 2)
+    - (scale)
+    - (-t)
+    - (-l)
 - name: lowercase
   desc: Converts all letters into lowercase.
   args:
-    - (height),(width)
+    - text
 - name: lua
   desc: |-
     Executes a Lua function with given parameters, then prints
@@ -1034,7 +1092,8 @@
     the wrong function unless you place 'conky_' in front of it
     yourself.
   args:
-    - (height),(width)
+    - function_name
+    - (function parameters)
 - name: lua_bar
   desc: |-
     Executes a Lua function with given parameters and draws a
@@ -1043,7 +1102,9 @@
     function_name to prevent accidental calls to the wrong function unless
     you place 'conky_' in front of it yourself.
   args:
-    - (height),(width)
+    - (height,width)
+    - function_name
+    - (function parameters)
 - name: lua_gauge
   desc: |-
     Executes a Lua function with given parameters and draws a
@@ -1052,7 +1113,9 @@
     of function_name to prevent accidental calls to the wrong function
     unless you place 'conky_' in front of it yourself.
   args:
-    - (height),(width)
+    - (height,width)
+    - function_name
+    - (function parameters)
 - name: lua_graph
   desc: |-
     Executes a Lua function with and draws a graph. Expects
@@ -1064,7 +1127,13 @@
     prevent accidental calls to the wrong function unless you put you
     place 'conky_' in front of it yourself.
   args:
+    - function_name
     - (height),(width)
+    - (gradient colour 1)
+    - (gradient colour 2)
+    - (scale)
+    - (-t)
+    - (-l)
 - name: lua_parse
   desc: |-
     Executes a Lua function with given parameters as per $lua,
@@ -1074,7 +1143,8 @@
     the wrong function unless you place 'conky_' in front of it
     yourself.
   args:
-    - (height),(width)
+    - function_name
+    - (function parameters)
 - name: machine
   desc: Machine, e.g. i686, x86_64.
 - name: mails
@@ -1092,7 +1162,10 @@
     mailbox. mbox parameter is the filename of the mailbox (can be
     encapsulated using '"', ie. ${mboxscan -n 10 "/home/brenden/some box"}
   args:
-    - (height),(width)
+    - (-n number of messages to print)
+    - (-fw from width)
+    - (-sw subject width)
+    - mbox
 - name: mem
   desc: Amount of memory in use.
 - name: memavail
@@ -1121,6 +1194,11 @@
     on the amplitude of a particular graph value (try it and see).
   args:
     - (height),(width)
+    - (gradient colour 1)
+    - (gradient colour 2)
+    - (scale)
+    - (-t)
+    - (-l)
 - name: memmax
   desc: Total amount of memory.
 - name: memperc
@@ -1144,6 +1222,11 @@
     amplitude of a particular graph value (try it and see).
   args:
     - (height),(width)
+    - (gradient colour 1)
+    - (gradient colour 2)
+    - (scale)
+    - (-t)
+    - (-l)
 - name: mixer
   desc: |-
     Prints the mixer value as reported by the OS. On Linux, this
@@ -1153,38 +1236,39 @@
     "Spkr", "Line", "Mic", "CD", "Mix", "Pcm2 ", "Rec", "IGain", "OGain",
     "Line1", "Line2", "Line3", "Digital1", "Digital2", "Digital3",
     "PhoneIn", "PhoneOut", "Video", "Radio" and "Monitor".
+  default: Vol
   args:
-    - (height),(width)
+    - (device)
 - name: mixerbar
   desc: |-
     Displays mixer value in a bar as reported by the OS. See
     docs for $mixer for details on arguments.
   args:
-    - (height),(width)
+    - (device)
 - name: mixerl
   desc: |-
     Prints the left channel mixer value as reported by the OS.
     See docs for $mixer for details on arguments.
   args:
-    - (height),(width)
+    - (device)
 - name: mixerlbar
   desc: |-
     Displays the left channel mixer value in a bar as reported
     by the OS. See docs for $mixer for details on arguments.
   args:
-    - (height),(width)
+    - (device)
 - name: mixerr
   desc: |-
     Prints the right channel mixer value as reported by the OS.
     See docs for $mixer for details on arguments.
   args:
-    - (height),(width)
+    - (device)
 - name: mixerrbar
   desc: |-
     Displays the right channel mixer value in a bar as reported
     by the OS. See docs for $mixer for details on arguments.
   args:
-    - (height),(width)
+    - (device)
 - name: moc_album
   desc: Album of the current MOC song.
 - name: moc_artist
@@ -1232,7 +1316,8 @@
 - name: mpd_comment
   desc: Comment of current MPD song.
   args:
-    - (height),(width)
+    - (max
+    - length)
 - name: mpd_date
   desc: Date of current song.
 - name: mpd_elapsed
@@ -1254,13 +1339,15 @@
     Prints the song name in either the form "artist - title" or
     file name, depending on whats available.
   args:
-    - (height),(width)
+    - (max
+    - length)
 - name: mpd_status
   desc: Playing, stopped, et cetera.
 - name: mpd_title
   desc: Title of current MPD song.
   args:
-    - (height),(width)
+    - (max
+    - length)
 - name: mpd_track
   desc: Prints the MPD track field.
 - name: mpd_vol
@@ -1270,13 +1357,13 @@
     Shows the first field of the first row of the result of the
     query.
   args:
-    - (height),(width)
+    - query
 - name: nameserver
   desc: |-
-    Print a nameserver from /etc/resolv.conf. Index starts at
-    and defaults to 0.
+    Print a nameserver from /etc/resolv.conf.
+  default: 0
   args:
-    - (height),(width)
+    - (index)
 - name: new_mails
   desc: |-
     Unread mail count in the specified mailbox or mail spool if
@@ -1291,191 +1378,110 @@
     like $machine, $conky_version,... By not updating this you can save
     some resources.
   args:
-    - (height),(width)
+    - text
 - name: nodename
   desc: Hostname.
 - name: nodename_short
   desc: Short hostname (same as 'hostname -s' shell command).
 - name: nvidia
-  desc: Nvidia graphics card information via the XNVCtrl library.
+  desc: |-
+    Nvidia graphics card information via the XNVCtrl library.
+
+    *GPU_ID:* Optional parameter to choose the GPU to be used as 0,1,2,3,..
+    Default parameter is 0
+
+    *Possible arguments:* (Temperatures are printed as float, all other
+    values as integer. Bracketed arguments are aliases)
+
+    **gputemp**( **temp**) **GPU temperature**
+    **gputempthreshold**( **threshold**) **Temperature threshold where the
+    GPU will reduce it\'s clock** speed
+    **ambienttemp**( **ambient**) **Ambient temperature outside the
+    graphics** card
+    **gpufreqcur**( **gpufreq**) **Current GPU clock speed**
+    **gpufreqmin** **Minimum GPU clock speed**
+    **gpufreqmax** **Maximum GPU clock speed**
+    **memfreqcur**( **memfreq**) **Current memory clock speed**
+    **memfreqmin** **Minimum memory clock speed**
+    **memfreqmax** **Maximum memory clock speed**
+    **mtrfreqcur**( **mtrfreq**) **Current memory transfer rate clock
+    speed**
+    **mtrfreqmin** **Minimum memory transfer rate clock speed**
+    **mtrfreqmax** **Maximum memory transfer rate clock speed**
+    **perflevelcur**( **perflevel**) **Current performance level**
+    **perflevelmin** **Lowest performance level**
+    **perflevelmax** **Highest performance level**
+    **perfmode** **Performance mode**
+    **gpuutil** **GPU utilization %**
+    **membwutil** **Memory bandwidth utilization %**
+    **videoutil** **Video engine utilization %**
+    **pcieutil** **PCIe bandwidth utilization %**
+    **memused**( **mem**) **Amount of used memory**
+    **memfree**( **memavail**) **Amount of free memory**
+    **memmax**( **memtotal**) **Total amount of memory**
+    **memutil**( **memperc**) **Memory utilization %**
+    **fanspeed** **Fan speed**
+    **fanlevel** **Fan level %**
+    **imagequality** **Image quality**
+    **modelname** **name of the GPU card**
+    **driverversion** **Driver version**
   args:
     - argument
     - (GPU_ID)
-  other:
-    para:
-      - emphasis: "GPU_ID:"
-        text: |
-          Optional parameter to choose the GPU to be
-          used as 0,1,2,3,.. Default parameter is 0
-      - emphasis: "Possible arguments:"
-        simplelist:
-          member:
-            - command:
-                - gputemp
-                - temp
-              option: GPU temperature
-              text: ()
-            - command:
-                - gputempthreshold
-                - threshold
-              option: |
-                Temperature threshold where the GPU will reduce it's clock
-                speed
-              text: ()
-            - command:
-                - ambienttemp
-                - ambient
-              option: |
-                Ambient temperature outside the graphics
-                card
-              text: ()
-            - command:
-                - gpufreqcur
-                - gpufreq
-              option: Current GPU clock speed
-              text: ()
-            - command: gpufreqmin
-              option: Minimum GPU clock speed
-            - command: gpufreqmax
-              option: Maximum GPU clock speed
-            - command:
-                - memfreqcur
-                - memfreq
-              option: Current memory clock speed
-              text: ()
-            - command: memfreqmin
-              option: Minimum memory clock speed
-            - command: memfreqmax
-              option: Maximum memory clock speed
-            - command:
-                - mtrfreqcur
-                - mtrfreq
-              option: Current memory transfer rate clock speed
-              text: ()
-            - command: mtrfreqmin
-              option: Minimum memory transfer rate clock speed
-            - command: mtrfreqmax
-              option: Maximum memory transfer rate clock speed
-            - command:
-                - perflevelcur
-                - perflevel
-              option: Current performance level
-              text: ()
-            - command: perflevelmin
-              option: Lowest performance level
-            - command: perflevelmax
-              option: Highest performance level
-            - command: perfmode
-              option: Performance mode
-            - command: gpuutil
-              option: GPU utilization %
-            - command: membwutil
-              option: Memory bandwidth utilization %
-            - command: videoutil
-              option: Video engine utilization %
-            - command: pcieutil
-              option: PCIe bandwidth utilization %
-            - command:
-                - memused
-                - mem
-              option: Amount of used memory
-              text: ()
-            - command:
-                - memfree
-                - memavail
-              option: Amount of free memory
-              text: ()
-            - command:
-                - memmax
-                - memtotal
-              option: Total amount of memory
-              text: ()
-            - command:
-                - memutil
-                - memperc
-              option: Memory utilization %
-              text: ()
-            - command: fanspeed
-              option: Fan speed
-            - command: fanlevel
-              option: Fan level %
-            - command: imagequality
-              option: Image quality
-            - command: modelname
-              option: name of the GPU card
-            - command: driverversion
-              option: Driver version
-          "@_type": horiz
-          "@_columns": 2
-        text: |
-          (Temperatures are printed as
-          float, all other values as integer. Bracketed arguments are aliases)
 - name: nvidiabar
   desc: |-
-    Same as nvidia, except it draws its output in a horizontal
-    bar. The height and width parameters are optional, and default to the
+    Same as nvidia, except it draws its output in a horizontal bar. The
+    height and width parameters are optional, and default to the
     default_bar_height and default_bar_width config settings,
     respectively.
+
+    *GPU_ID:* Optional parameter to choose the GPU to be used as 0,1,2,3,..
+    Default parameter is 0
+
+    *Note the following arguments are* incompatible: **gputempthreshold**(
+    **threshold**)
+    **gpufreqmin**
+    **gpufreqmax**
+    **memfreqmin**
+    **memfreqmax**
+    **mtrfreqmin**
+    **mtrfreqmax**
+    **perflevelmin**
+    **perflevelmax**
+    **perfmode**
+    **memtotal**( **memmax**)
+    **fanspeed**
   args:
     - (height),(width)
     - argument
     - (GPU_ID)
-  other:
-    para:
-      - emphasis: "GPU_ID:"
-        text: |
-          Optional parameter to choose the GPU to be
-          used as 0,1,2,3,.. Default parameter is 0
-      - emphasis: |
-          Note the following arguments are
-          incompatible:
-        simplelist:
-          member:
-            - command:
-                - gputempthreshold
-                - threshold
-              text: ()
-            - command: gpufreqmin
-            - command: gpufreqmax
-            - command: memfreqmin
-            - command: memfreqmax
-            - command: mtrfreqmin
-            - command: mtrfreqmax
-            - command: perflevelmin
-            - command: perflevelmax
-            - command: perfmode
-            - command:
-                - memtotal
-                - memmax
-              text: ()
-            - command: fanspeed
-          "@_type": horiz
-          "@_columns": 3
 - name: nvidiagauge
   desc: |-
     Same as nvidiabar, except a round gauge (much like a vehicle
     speedometer). The height and width parameters are optional, and
     default to the default_gauge_height and default_gauge_width config
     settings, respectively.
+
+    *GPU_ID:*Optional parameter to choose the GPU to be used as 0,1,2,3,..
+    Default parameter is 0
+
+    For possible arguments see nvidia and nvidiabar.
   args:
     - (height),(width)
     - argument
     - (GPU_ID)
-  other:
-    para:
-      - emphasis: "GPU_ID:"
-        text: |
-          Optional parameter to choose the GPU to be
-          used as 0,1,2,3,.. Default parameter is 0
-      - |
-        For possible arguments see nvidia and
-        nvidiabar.
 - name: nvidiagraph
   desc: |-
-    Same as nvidiabar, except a horizontally scrolling graph
-    with values from 0-100 plotted on the vertical axis. The height and
-    width parameters are optional, and default to the default_graph_height
-    and default_graph_width config settings, respectively.
+    Same as nvidiabar, except a horizontally scrolling graph with values
+    from 0-100 plotted on the vertical axis. The height and width
+    parameters are optional, and default to the default_graph_height and
+    default_graph_width config settings, respectively.
+
+    *GPU_ID:* NOT optional. This parameter allows to choose the GPU to be
+    used as 0,1,2,3,..
+
+    For possible arguments see nvidia and nvidiabar. To learn more about the
+    -t -l and gradient color options, see execgraph.
   args:
     - argument
     - (height),(width)
@@ -1485,24 +1491,14 @@
     - (-t)
     - (-l)
     - GPU_ID
-  other:
-    para:
-      - emphasis: "GPU_ID:"
-        text: |
-          NOT optional. This parameter allows to
-          choose the GPU to be used as 0,1,2,3,..
-      - |
-        For possible arguments see nvidia and nvidiabar. To learn more
-        about the -t -l and gradient color options, see
-        execgraph.
 - name: offset
   desc: Move text over by N pixels. See also $voffset.
   args:
-    - (height),(width)
+    - (pixels)
 - name: outlinecolor
   desc: Change outline color.
   args:
-    - (height),(width)
+    - (color)
 - name: pa_card_active_profile
   desc: Pulseaudio's default card active profile.
 - name: pa_card_name
@@ -1520,108 +1516,100 @@
 - name: password
   desc: Generate random passwords.
   args:
-    - (height),(width)
+    - (length)
 - name: pb_battery
   desc: |-
-    If running on Apple powerbook/ibook, display information on
-    battery status. The item parameter specifies, what information to
-    display. Exactly one item must be specified. Valid items are:
+    If running on Apple powerbook/ibook, display information on battery
+    status. The item parameter specifies, what information to display.
+    Exactly one item must be specified. Valid items are:
+
+    **status** **Display if battery is fully charged, charging,**
+    discharging or absent (running on AC)
+    **percent** **Display charge of battery in percent, if charging or**
+    discharging. Nothing will be displayed, if battery is fully charged or
+    absent.
+    **time** **Display the time remaining until the battery will be** fully
+    charged or discharged at current rate. Nothing is displayed, if battery
+    is absent or if it\'s present but fully charged and not discharging.
   args:
-    - (height),(width)
-  other:
-    simplelist:
-      member:
-        - command: status
-          option: |
-            Display if battery is fully charged, charging,
-            discharging or absent (running on AC)
-        - command: percent
-          option: |
-            Display charge of battery in percent, if charging or
-            discharging. Nothing will be displayed, if battery is fully
-            charged or absent.
-        - command: time
-          option: |
-            Display the time remaining until the battery will be
-            fully charged or discharged at current rate. Nothing is
-            displayed, if battery is absent or if it's present but fully
-            charged and not discharging.
+    - item
 - name: pid_chroot
   desc: |-
     Directory used as rootdirectory by the process (this will be
     "/" unless the process did a chroot syscall).
   args:
-    - (height),(width)
+    - pid
 - name: pid_cmdline
   desc: Command line this process was invoked with.
   args:
-    - (height),(width)
+    - pid
 - name: pid_cwd
   desc: Current working directory of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_egid
   desc: The effective gid of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_environ
   desc: Contents of a environment-var of the process.
   args:
-    - (height),(width)
+    - pid
+    - varname
 - name: pid_environ_list
   desc: List of environment-vars that the process can see.
   args:
-    - (height),(width)
+    - pid
 - name: pid_euid
   desc: The effective uid of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_exe
   desc: Path to executed command that started the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_fsgid
   desc: The file system gid of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_fsuid
   desc: The file system uid of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_gid
   desc: The real gid of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_nice
   desc: The nice value of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_openfiles
   desc: List of files that the process has open.
   args:
-    - (height),(width)
+    - pid
 - name: pid_parent
   desc: The pid of the parent of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_priority
   desc: |-
     The priority of the process (see 'priority' in "man 5
     proc").
   args:
-    - (height),(width)
+    - pid
 - name: pid_read
   desc: Total number of bytes read by the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_sgid
   desc: The saved set gid of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_state
   desc: State of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_state_short
   desc: |-
     One of the chars in "RSDZTW" representing the state of the
@@ -1629,109 +1617,110 @@
     is waiting in uninterruptible disk sleep, Z is zombie, T is traced or
     stopped (on a signal), and W is paging.
   args:
-    - (height),(width)
+    - pid
 - name: pid_stderr
   desc: Filedescriptor binded to the STDERR of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_stdin
   desc: Filedescriptor binded to the STDIN of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_stdout
   desc: Filedescriptor binded to the STDOUT of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_suid
   desc: The saved set uid of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_thread_list
   desc: List with pid's from threads from this process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_threads
   desc: Number of threads in process containing this thread.
   args:
-    - (height),(width)
+    - pid
 - name: pid_time
   desc: Sum of $pid_time_kernelmode and $pid_time_usermode.
   args:
-    - (height),(width)
+    - pid
 - name: pid_time_kernelmode
   desc: |-
     Amount of time that the process has been scheduled in kernel
     mode in seconds.
   args:
-    - (height),(width)
+    - pid
 - name: pid_time_usermode
   desc: |-
     Amount of time that the process has been scheduled in user
     mode in seconds.
   args:
-    - (height),(width)
+    - pid
 - name: pid_uid
   desc: The real uid of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_vmdata
   desc: Data segment size of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_vmexe
   desc: Text segment size of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_vmhwm
   desc: Peak resident set size ("high water mark") of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_vmlck
   desc: Locked memory size of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_vmlib
   desc: Shared library code size of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_vmpeak
   desc: Peak virtual memory size of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_vmpte
   desc: Page table entries size of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_vmrss
   desc: Resident set size of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_vmsize
   desc: Virtual memory size of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_vmstk
   desc: Stack segment size of the process.
   args:
-    - (height),(width)
+    - pid
 - name: pid_write
   desc: Total number of bytes written by the process.
   args:
-    - (height),(width)
+    - pid
 - name: platform
   desc: |-
-    Platform sensor from sysfs (Linux 2.6). Parameter dev may be
-    omitted if you have only one platform device. Platform type is either
-    'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' meaning
-    temperature. Parameter n is number of the sensor. See&#160;on your local
-    computer. The optional arguments 'factor' and 'offset' allow
-    precalculation of the raw input, which is being modified as follows:
-    'input = input * factor + offset'. Note that they have to be given as
-    decimal values (i.e. contain at least one decimal place).
+    Platform sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you
+    have only one platform device. Platform type is either `in` or `vol` meaning
+    voltage; `fan` meaning fan; `temp` meaning temperature. Parameter n is
+    number of the sensor. See `/sys/bus/platform/devices/` on your local
+    computer. The optional arguments `factor` and `offset` allow precalculation
+    of the raw input, which is being modified as follows: `input = input *
+    factor + offset`. Note that they have to be given as decimal values (i.e.
+    contain at least one decimal place).
   args:
-    - (height),(width)
-  other:
-    filename: /sys/bus/platform/devices/
+    - (dev)
+    - type
+    - n
+    - (factor offset)
 - name: pop3_unseen
   desc: |-
     Displays the number of unseen messages in your global POP3
@@ -1742,7 +1731,7 @@
     retries before giving up is 5. If the password is supplied as '*', you
     will be prompted to enter the password when Conky starts.
   args:
-    - (height),(width)
+    - (args)
 - name: pop3_used
   desc: |-
     Displays the amount of space (in MiB, 2^20) used in your
@@ -1754,7 +1743,7 @@
     supplied as '*', you will be prompted to enter the password when Conky
     starts.
   args:
-    - (height),(width)
+    - (args)
 - name: processes
   desc: Total processes (sleeping and running).
 - name: read_tcp
@@ -1762,13 +1751,15 @@
     Connects to a tcp port on a host (default is localhost),
     reads every char available at the moment and shows them.
   args:
-    - (height),(width)
+    - (host)
+    - port
 - name: read_udp
   desc: |-
     Connects to a udp port on a host (default is localhost),
     reads every char available at the moment and shows them.
   args:
-    - (height),(width)
+    - (host)
+    - port
 - name: replied_mails
   desc: |-
     Number of mails marked as replied in the specified mailbox
@@ -1788,11 +1779,14 @@
     explicitly destroyed. One thread will run for each URI specified. You
     can use any protocol that Curl supports.
   args:
-    - (height),(width)
+    - uri
+    - interval_in_seconds
+    - action
+    - (num_par (spaces_in_front))
 - name: rstrip
   desc: Strips all trailing whitespace from input.
   args:
-    - (height),(width)
+    - text
 - name: running_processes
   desc: Running processes (not sleeping). Requires Linux 2.6.
 - name: running_threads
@@ -1812,7 +1806,11 @@
     and the start of text will be separated by 'length' number of spaces
     unless direction is 'wait'.
   args:
-    - (height),(width)
+    - (direction)
+    - length
+    - (step)
+    - (interval)
+    - text
 - name: seen_mails
   desc: |-
     Number of mails marked as seen in the specified mailbox or
@@ -1824,7 +1822,7 @@
 - name: shadecolor
   desc: Change shading color.
   args:
-    - (height),(width)
+    - (color)
 - name: shmem
   desc: Amount of shared memory. Linux only.
 - name: sip_status
@@ -1867,31 +1865,29 @@
     * If run on versions prior El Capitan SIP is unavailable, so all you will
     get is "unsupported".
   args:
-    - (height),(width)
+    - (switch)
 - name: smapi
   desc: |-
-    when using smapi, display contents of the&#160;directory. ARGS
-    are either '(FILENAME)' or 'bat (INDEX) (FILENAME)' to display the
-    corresponding files' content. This is a very raw method of accessing
-    the smapi values. When available, better use one of the smapi_*
+    When using smapi, display contents of the `/sys/devices/platform/smapi`
+    directory. ARGS are either `(FILENAME)` or `bat (INDEX) (FILENAME)` to
+    display the corresponding files' content. This is a very raw method of
+    accessing the smapi values. When available, better use one of the smapi_*
     variables instead.
   args:
-    - (height),(width)
-  other:
-    filename: /sys/devices/platform/smapi
+    - (ARGS)
 - name: smapi_bat_bar
   desc: |-
     when using smapi, display the remaining capacity of the
     battery with index INDEX as a bar.
   args:
-    - (height),(width)
+    - (INDEX),(height),(width)
 - name: smapi_bat_perc
   desc: |-
     when using smapi, display the remaining capacity in percent
     of the battery with index INDEX. This is a separate variable because
     it supports the 'use_spacer' configuration option.
   args:
-    - (height),(width)
+    - (INDEX)
 - name: smapi_bat_power
   desc: |-
     when using smapi, display the current power of the battery
@@ -1899,7 +1895,7 @@
     original read out value is being converted from mW. The sign of the
     output reflects charging (positive) or discharging (negative) state.
   args:
-    - (height),(width)
+    - INDEX
 - name: smapi_bat_temp
   desc: |-
     when using smapi, display the current temperature of the
@@ -1907,7 +1903,7 @@
     variable because the original read out value is being converted from
     milli degree Celsius.
   args:
-    - (height),(width)
+    - INDEX
 - name: sony_fanspeed
   desc: |-
     Displays the Sony VAIO fanspeed information if sony-laptop
@@ -1915,11 +1911,11 @@
 - name: startcase
   desc: Capitalises the start of each word.
   args:
-    - (height),(width)
+    - text
 - name: stippled_hr
   desc: Stippled (dashed) horizontal line.
   args:
-    - (height),(width)
+    - (space)
 - name: stock
   desc: |-
     Displays the data of a stock symbol. The following data is
@@ -1952,7 +1948,8 @@
     dvc(Day's Value Change), dvcrt(Day's Value Change realtime), se(Stock
     Exchange), dy(Dividend Yield).
   args:
-    - (height),(width)
+    - symbol
+    - data
 - name: swap
   desc: Amount of swap in use.
 - name: swapbar
@@ -1968,7 +1965,7 @@
 - name: sysctlbyname
   desc: Print sysctl value by name. FreeBSD only.
   args:
-    - (height),(width)
+    - (name)
 - name: sysname
   desc: System name, e.g. Linux.
 - name: tab
@@ -1976,7 +1973,7 @@
     Puts a tab of the specified width, starting from column
     'start'. The unit is pixels for both arguments.
   args:
-    - (height),(width)
+    - (width, (start))
 - name: tail
   desc: |-
     Displays last N lines of supplied text file. The file is
@@ -1984,7 +1981,9 @@
     Conky defaults to 2. Max of 30 lines can be displayed, or until the
     text buffer is filled.
   args:
-    - (height),(width)
+    - logfile
+    - lines
+    - (next_check)
 - name: tcp_ping
   desc: |-
     Displays the number of microseconds it takes to get a reply
@@ -1994,132 +1993,85 @@
     It's best to test a closed port instead of an open port, you will get
     a quicker response.
   args:
-    - (height),(width)
+    - host
+    - (port)
 - name: tcp_portmon
-  desc: ""
+  desc: |-
+    TCP port (both IPv6 and IPv4) monitor for specified local ports.
+    Port numbers must be in the range 1 to 65535. Valid items are:
+
+    **count** **Total number of connections in the range**
+    **rip** **Remote ip address**
+    **rhost** **Remote host name**
+    **rport** **Remote port number**
+    **rservice** **Remote service name from /etc/services**
+    **lip** **Local ip address**
+    **lhost** **Local host name**
+    **lport** **Local port number**
+    **lservice** **Local service name from /etc/services**
+
+    The connection index provides you with access to each connection in the
+    port monitor. The monitor will return information for index values from
+    0 to n-1 connections. Values higher than n-1 are simply ignored. For the
+    \"count\" item, the connection index must be omitted. It is required for
+    all other items.
+
+    Examples:
+
+    **\${tcp_portmon 6881 6999 count}** **Displays the number of connections
+    in the** bittorrent port range
+    **\${tcp_portmon 22 22 rip 0}** **Displays the remote host ip of the
+    first sshd** connection
+    **\${tcp_portmon 22 22 rip 9}** **Displays the remote host ip of the
+    tenth sshd** connection
+    **\${tcp_portmon 1 1024 rhost 0}** **Displays the remote host name of
+    the first** connection on a privileged port
+    **\${tcp_portmon 1 1024 rport 4}** **Displays the remote host port of
+    the fifth** connection on a privileged port
+    **\${tcp_portmon 1 65535 lservice 14}** **Displays the local service
+    name of the fifteenth** connection in the range of all ports
+
+    Note that port monitor variables which share the same port range
+    actually refer to the same monitor, so many references to a single port
+    range for different items and different indexes all use the same monitor
+    internally. In other words, the program avoids creating redundant
+    monitors.
   args:
-    - (height),(width)
-  other:
-    para:
-      - |
-        TCP port (both IPv6 and IPv4) monitor for specified local
-        ports. Port numbers must be in the range 1 to 65535. Valid items
-        are:
-      - |
-        The connection index provides you with access to each
-        connection in the port monitor. The monitor will return
-        information for index values from 0 to n-1 connections. Values
-        higher than n-1 are simply ignored. For the "count" item, the
-        connection index must be omitted. It is required for all other
-        items.
-      - "Examples:"
-      - |
-        Note that port monitor variables which share the same port
-        range actually refer to the same monitor, so many references to a
-        single port range for different items and different indexes all
-        use the same monitor internally. In other words, the program
-        avoids creating redundant monitors.
-    simplelist:
-      - member:
-          - command: count
-            option: Total number of connections in the range
-          - command: rip
-            option: Remote ip address
-          - command: rhost
-            option: Remote host name
-          - command: rport
-            option: Remote port number
-          - command: rservice
-            option: Remote service name from /etc/services
-          - command: lip
-            option: Local ip address
-          - command: lhost
-            option: Local host name
-          - command: lport
-            option: Local port number
-          - command: lservice
-            option: Local service name from /etc/services
-      - member:
-          - command: ${tcp_portmon 6881 6999 count}
-            option: |
-              Displays the number of connections in the
-              bittorrent port range
-          - command: ${tcp_portmon 22 22 rip 0}
-            option: |
-              Displays the remote host ip of the first sshd
-              connection
-          - command: ${tcp_portmon 22 22 rip 9}
-            option: |
-              Displays the remote host ip of the tenth sshd
-              connection
-          - command: ${tcp_portmon 1 1024 rhost 0}
-            option: |
-              Displays the remote host name of the first
-              connection on a privileged port
-          - command: ${tcp_portmon 1 1024 rport 4}
-            option: |
-              Displays the remote host port of the fifth
-              connection on a privileged port
-          - command: ${tcp_portmon 1 65535 lservice 14}
-            option: |
-              Displays the local service name of the fifteenth
-              connection in the range of all ports
+    - port_begin
+    - port_end
+    - item
+    - (index)
 - name: templateN
-  desc: ""
+  desc: |-
+    Evaluate the content of the templateN configuration variable (where
+    N is a value between 0 and 9, inclusively), applying substitutions
+    as described in the documentation of the corresponding configuration
+    variable. The number of arguments is optional, but must match the
+    highest referred index in the template. You can use the same special
+    sequences in each argument as the ones valid for a template
+    definition, e.g. to allow an argument to contain a whitespace. Also
+    simple nesting of templates is possible this way.
+
+    Here are some examples of template definitions, note they are placed
+    between \[\[ \... \]\] instead of \' \... \':
+
+    template0 = \[\[\$\\1\\2\]\]\
+    template1 = \[\[\\1: \${fs_used \\2} / \${fs_size \\2}\]\]\
+    template2 = \[\[\\1 \\2\]\]
+
+    The following list shows sample usage of the templates defined above,
+    with the equivalent syntax when not using any template at all:
+
+      --------------------------------------------- ------------------------------------------
+      using template                                same without template
+      \${template0 node name}                       \$nodename
+      \${template1 root /}                          root: \${fs_free /} / \${fs_size /}
+      \${template1 \${template2\\ disk\\ root} /}   disk root: \${fs_free /} / \${fs_size /}
+      --------------------------------------------- ------------------------------------------
   args:
     - (arg1)
     - (arg2)
     - (arg3 ...)
-  other:
-    para:
-      - |
-        Evaluate the content of the templateN configuration variable
-        (where N is a value between 0 and 9, inclusively), applying
-        substitutions as described in the documentation of the
-        corresponding configuration variable. The number of arguments is
-        optional, but must match the highest referred index in the
-        template. You can use the same special sequences in each argument
-        as the ones valid for a template definition, e.g. to allow an
-        argument to contain a whitespace. Also simple nesting of templates
-        is possible this way.
-      - |
-        Here are some examples of template definitions, note they
-        are placed between [[ ... ]] instead of ' ... ':
-      - |
-        The following list shows sample usage of the templates
-        defined above, with the equivalent syntax when not using any
-        template at all:
-    simplelist:
-      member:
-        - template0 = [[$\1\2]]
-        - |
-          template1 = [[\1: ${fs_used \2} / ${fs_size
-          \2}]]
-        - template2 = [[\1 \2]]
-    table:
-      tgroup:
-        thead:
-          row:
-            entry:
-              - using template
-              - same without template
-            "@_rowsep": 1
-        tbody:
-          row:
-            - entry:
-                - ${template0 node name}
-                - $nodename
-            - entry:
-                - ${template1 root /}
-                - "root: ${fs_free /} / ${fs_size /}"
-            - entry:
-                - |
-                  ${template1 ${template2\ disk\ root}
-                  /}
-                - |
-                  disk root: ${fs_free /} / ${fs_size
-                  /}
-        "@_cols": 2
 - name: texeci
   desc: |-
     Runs a command at an interval inside a thread and displays
@@ -2146,14 +2098,14 @@
     Local time, see "man strftime" to get more information about
     format.
   args:
-    - (height),(width)
+    - (format)
 - name: to_bytes
   desc: |-
     If 'size' is a number followed by a size-unit
     (kilobyte,mb,GiB,...) then it converts the size to bytes and shows it
     without unit, otherwise it just shows 'size'.
   args:
-    - (height),(width)
+    - size
 - name: top
   desc: |-
     This takes arguments in the form:top (name) (number)
@@ -2163,34 +2115,38 @@
     "io_perc", "io_read" and "io_write". There can be a max of 10
     processes listed.
   args:
-    - (height),(width)
+    - type
+    - num
 - name: top_io
   desc: |-
     Same as top, except sorted by the amount of I/O the process
     has done during the update interval.
   args:
-    - (height),(width)
+    - type
+    - num
 - name: top_mem
   desc: Same as top, except sorted by mem usage instead of cpu.
   args:
-    - (height),(width)
+    - type
+    - num
 - name: top_time
   desc: |-
     Same as top, except sorted by total CPU time instead of
     current CPU usage.
   args:
-    - (height),(width)
+    - type
+    - num
 - name: totaldown
   desc: |-
     Total download, overflows at 4 GB on Linux with 32-bit arch
     and there doesn't seem to be a way to know how many times it has
     already done that before conky has started.
   args:
-    - (height),(width)
+    - (net)
 - name: totalup
   desc: Total upload, this one too, may overflow.
   args:
-    - (height),(width)
+    - (net)
 - name: trashed_mails
   desc: |-
     Number of mails marked as trashed in the specified mailbox
@@ -2206,11 +2162,12 @@
     similar fashion as TZ environment variable. For hints, look in
     /usr/share/zoneinfo. e.g. US/Pacific, Europe/Zurich, etc.
   args:
-    - (height),(width)
+    - (timezone
+    - (format))
 - name: uid_name
   desc: Username of user with this uid.
   args:
-    - (height),(width)
+    - uid
 - name: unflagged_mails
   desc: |-
     Number of mails not marked as flagged in the specified
@@ -2246,19 +2203,21 @@
 - name: updates
   desc: for debugging.
   args:
-    - (height),(width)
+    - Number
+    - of
+    - updates
 - name: uppercase
   desc: Converts all letters into uppercase.
   args:
-    - (height),(width)
+    - text
 - name: upspeed
   desc: Upload speed in suitable IEC units.
   args:
-    - (height),(width)
+    - (net)
 - name: upspeedf
   desc: Upload speed in KiB with one decimal.
   args:
-    - (height),(width)
+    - (net)
 - name: upspeedgraph
   desc: |-
     Upload speed graph, colours defined in hex, minus the #. If
@@ -2268,7 +2227,13 @@
     gradient values change depending on the amplitude of a particular
     graph value (try it and see).
   args:
+    - (netdev)
     - (height),(width)
+    - (gradient colour 1)
+    - (gradient colour 2)
+    - (scale)
+    - (-t)
+    - (-l)
 - name: uptime
   desc: Uptime.
 - name: uptime_short
@@ -2284,13 +2249,13 @@
     Lists how long the user for the given console has been
     logged in for.
   args:
-    - (height),(width)
+    - console
 - name: user_times
   desc: Lists how long users have been logged in for.
 - name: utime
   desc: Display time in UTC (universal coordinate time).
   args:
-    - (height),(width)
+    - (format)
 - name: v6addrs
   desc: |-
     IPv6 addresses for an interface, followed by netmask if -n
@@ -2298,7 +2263,9 @@
     Link-local(L), Site-local(S), Compat(C) and Unspecified(/). Linux
     only.
   args:
-    - (height),(width)
+    - (-n)
+    - (-s)
+    - (interface)
 - name: version
   desc: Git version number. DragonFly only.
 - name: voffset
@@ -2306,186 +2273,174 @@
     Change vertical offset by N pixels. Negative values will
     cause text to overlap. See also $offset.
   args:
-    - (height),(width)
+    - (pixels)
 - name: voltage_mv
   desc: |-
-    Returns CPU #n's voltage in mV. CPUs are counted from 1. If
-    omitted, the parameter defaults to 1.
+    Returns CPU #n's voltage in mV. CPUs are counted from 1.
+  default: 1
   args:
-    - (height),(width)
+    - (n)
 - name: voltage_v
   desc: |-
-    Returns CPU #n's voltage in V. CPUs are counted from 1. If
-    omitted, the parameter defaults to 1.
+    Returns CPU #n's voltage in V. CPUs are counted from 1.
+  default: 1
   args:
-    - (height),(width)
+    - (n)
 - name: weather
-  desc: ""
+  desc: |-
+    This feature is currently unimplemented.
+
+    Download, parse and display METAR data.
+
+    \'URI\' must be a valid METAR URI.
+
+    http://tgftp.nws.noaa.gov/data/observations/metar/stations/
+
+    \'locID\' must be a valid location identifier for the required uri. For
+    the NOAA site this must be a valid ICAO (see for instance
+    *https://pilotweb.nas.faa.gov/qryhtml/icao/*). For the weather.com site
+    this must be a valid location ID (see for instance
+    *http://aspnetresources.com/tools/locid.aspx*).
+
+    \'data_type\' must be one of the following:
+
+    **last_update** The date and time stamp of the data. The result depends
+    on the URI used. For the NOAA site it is date (yyyy/mm/dd) and UTC time.
+    For the weather.com one it is date (\[m\]m/\[d\]d/yy) and Local Time of
+    the station.\
+    **temperature**
+
+    Air temperature (you can use the \'temperature_unit\' config setting to
+    change units)\
+    **cloud_cover**
+
+    The highest cloud cover status\
+    **pressure**
+
+    Air pressure in millibar\
+    **wind_speed**
+
+    Wind speed in km/h\
+    **wind_dir**
+
+    Wind direction\
+    **wind_dir_DEG**
+
+    Compass wind direction\
+    **humidity**
+
+    Relative humidity in %\
+    **weather**
+
+    Any relevant weather event (rain, snow, etc.). This is not used if you
+    are querying the weather.com site since this data is aggregated into the
+    cloud_cover one\
+    **icon**
+
+    Weather icon (only for www.weather.com). Can be used together with the
+    icon kit provided upon registering to their service.
+
+    \'delay_in_minutes\' (optional, default 30) cannot be less than 30
+    minutes.
+
+    This object is threaded, and once a thread is created it can\'t be
+    explicitly destroyed. One thread will run for each URI specified.
+
+    Note that these variables are still EXPERIMENTAL and can be subject to
+    many future changes.
   args:
-    - (height),(width)
-  other:
-    para:
-      - This feature is currently unimplemented.
-      - Download, parse and display METAR data.
-      - "'URI' must be a valid METAR URI."
-      - filename:
-          - https://pilotweb.nas.faa.gov/qryhtml/icao/
-          - http://aspnetresources.com/tools/locid.aspx
-        text: |
-          'locID' must be a valid location identifier for the required
-          uri. For the NOAA site this must be a valid ICAO (see for instance).
-          For the weather.com site this must be a valid location ID (see for
-          instance).
-      - "'data_type' must be one of the following:"
-      - |
-        'delay_in_minutes' (optional, default 30) cannot be less
-        than 30 minutes.
-      - |
-        This object is threaded, and once a thread is created it
-        can't be explicitly destroyed. One thread will run for each URI
-        specified.
-      - |
-        Note that these variables are still EXPERIMENTAL and can be
-        subject to many future changes.
-    simplelist:
-      - member: http://tgftp.nws.noaa.gov/data/observations/metar/stations/
-      - member:
-          - command: last_update
-            para: |
-              The date and time stamp of the data. The result
-              depends on the URI used. For the NOAA site it is date
-              (yyyy/mm/dd) and UTC time. For the weather.com one it is
-              date ([m]m/[d]d/yy) and Local Time of the station.
-          - command: temperature
-            para: |
-              Air temperature (you can use the 'temperature_unit'
-              config setting to change units)
-          - command: cloud_cover
-            para: The highest cloud cover status
-          - command: pressure
-            para: Air pressure in millibar
-          - command: wind_speed
-            para: Wind speed in km/h
-          - command: wind_dir
-            para: Wind direction
-          - command: wind_dir_DEG
-            para: Compass wind direction
-          - command: humidity
-            para: Relative humidity in %
-          - command: weather
-            para: |
-              Any relevant weather event (rain, snow, etc.). This
-              is not used if you are querying the weather.com site since
-              this data is aggregated into the cloud_cover one
-          - command: icon
-            para: |
-              Weather icon (only for www.weather.com). Can be used
-              together with the icon kit provided upon registering to
-              their service.
+    - URI
+    - locID
+    - data_type
+    - (interval_in_minutes)
 - name: weather_forecast
-  desc: ""
+  desc: |-
+    This feature is currently unimplemented.
+
+    Download, parse and display weather forecast data for a given day
+    (daytime only).
+
+    \'locID\', see \'weather\' above.
+
+    \'day\' is a number from 0 (today) to 4 (3 days after tomorrow).
+
+    \'data_type\' must be one of the following:
+
+    **day** **Day of the week**\
+    **date** **Date, in the form MMM DD (ie. Jul 14)**\
+    **low** **Minimum temperature (you can use the** \'temperature_unit\'
+    config setting to change units)\
+    **hi** **Maximum temperature (you can use the** \'temperature_unit\'
+    config setting to change units)\
+    **icon** **Weather icon. Can be used together with the icon** kit
+    provided upon registering to the weather.com service\
+    **forecast** **Weather forecast (sunny, rainy, etc.)**\
+    **wind_speed** **Wind speed in km/h**\
+    **wind_dir** **Wind direction**\
+    **wind_dir_DEG** **Compass wind direction**\
+    **humidity** **Relative humidity in %**\
+    **precipitation** **Probability of having a precipitation (in** %)
+
+    \'delay_in_minutes\' (optional, default 210) cannot be lower than 210
+    min.
+
+    This object is threaded, and once a thread is created it can\'t be
+    explicitly destroyed. One thread will run for each URI specified. You
+    can use any protocol that Curl supports.
+
+    Note that these variables are still EXPERIMENTAL and can be subject to
+    many future changes.
   args:
-    - (height),(width)
-  other:
-    para:
-      - This feature is currently unimplemented.
-      - |
-        Download, parse and display weather forecast data for a
-        given day (daytime only).
-      - "'locID', see 'weather' above."
-      - |
-        'day' is a number from 0 (today) to 4 (3 days after
-        tomorrow).
-      - "'data_type' must be one of the following:"
-      - |
-        'delay_in_minutes' (optional, default 210) cannot be lower
-        than 210 min.
-      - |
-        This object is threaded, and once a thread is created it
-        can't be explicitly destroyed. One thread will run for each URI
-        specified. You can use any protocol that Curl supports.
-      - |
-        Note that these variables are still EXPERIMENTAL and can be
-        subject to many future changes.
-    simplelist:
-      member:
-        - command: day
-          option: Day of the week
-        - command: date
-          option: Date, in the form MMM DD (ie. Jul 14)
-        - command: low
-          option: |
-            Minimum temperature (you can use the
-            'temperature_unit' config setting to change
-            units)
-        - command: hi
-          option: |
-            Maximum temperature (you can use the
-            'temperature_unit' config setting to change
-            units)
-        - command: icon
-          option: |
-            Weather icon. Can be used together with the icon
-            kit provided upon registering to the weather.com
-            service
-        - command: forecast
-          option: Weather forecast (sunny, rainy, etc.)
-        - command: wind_speed
-          option: Wind speed in km/h
-        - command: wind_dir
-          option: Wind direction
-        - command: wind_dir_DEG
-          option: Compass wind direction
-        - command: humidity
-          option: Relative humidity in %
-        - command: precipitation
-          option: |
-            Probability of having a precipitation (in
-            %)
+    - URI
+    - locID
+    - day
+    - data_type
+    - (interval_in_minutes)
 - name: wireless_ap
   desc: Wireless access point MAC address. Linux only.
   args:
-    - (height),(width)
+    - (net)
 - name: wireless_bitrate
   desc: Wireless bitrate (ie 11 Mb/s). Linux only.
   args:
-    - (height),(width)
+    - (net)
 - name: wireless_channel
   desc: WLAN channel on which device 'net' is listening.
   args:
-    - (height),(width)
+    - (net)
 - name: wireless_essid
   desc: Wireless access point ESSID. Linux only.
   args:
-    - (height),(width)
+    - (net)
 - name: wireless_freq
   desc: Frequency on which device 'net' is listening.
   args:
-    - (height),(width)
+    - (net)
 - name: wireless_link_bar
   desc: Wireless link quality bar. Linux only.
   args:
     - (height),(width)
+    - (net)
 - name: wireless_link_qual
   desc: Wireless link quality. Linux only.
   args:
-    - (height),(width)
+    - (net)
 - name: wireless_link_qual_max
   desc: Wireless link quality maximum value. Linux only.
   args:
-    - (height),(width)
+    - (net)
 - name: wireless_link_qual_perc
   desc: Wireless link quality in percents. Linux only.
   args:
-    - (height),(width)
+    - (net)
 - name: wireless_mode
   desc: Wireless mode (Managed/Ad-Hoc/Master). Linux only.
   args:
-    - (height),(width)
+    - (net)
 - name: words
   desc: Displays the number of words in the given file.
   args:
-    - (height),(width)
+    - textfile
 - name: xmms2_album
   desc: Album in current XMMS2 song.
 - name: xmms2_artist

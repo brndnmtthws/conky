@@ -192,7 +192,7 @@ start modifying it. Other configs can be found at
 *https://github.com/brndnmtthws/conky*.
 
 {% for item in config_settings %}
-**{{ item.name }}** {{ item.args | map("reverse_format", "**{}**") | join(" ") }}
+**{{ item.name }}** {% if item.args %}**{{ item.args | join(" ") }}**{% endif %}
 
 :   {{ item.desc | indent(width=4) }}
 {%- if item.default %}
@@ -215,7 +215,7 @@ relevant thread running (for example, the \$curl, \$rss and \$weather
 objects launch one thread per URI).
 
 {% for item in variables %}
-**{{ item.name }}** {{ item.args | map("reverse_format", "**{}**") | join(" ") }}
+**{{ item.name }}** {% if item.args %}**{{ item.args | join(" ") }}**{% endif %}
 
 :   {{ item.desc | indent(width=4) }}
 {%- if item.default %}
@@ -249,7 +249,7 @@ API, Conky will export a few additional functions for the creation of
 certain structures. These are documented below.
 
 {% for item in lua %}
-**{{ item.name }}** {{ item.args | map("reverse_format", "**{}**") | join(" ") }}
+**{{ item.name }}** {% if item.args %}**{{ item.args | join(" ") }}**{% endif %}
 
 :   {{ item.desc | indent(width=4) }}
 {%- if item.default %}
