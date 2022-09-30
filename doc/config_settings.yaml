@@ -150,10 +150,11 @@
     as passing -y at command line, e.g. gap_y 10. For other position
     related stuff, see 'alignment'.
 - name: github_token
-  desc: Specify API token for GitHub notifications.
-  other:
-    simplelist:
-      member: https://github.com/settings/tokens/new?scopes=notifications&description=conky
+  desc: |-
+    Specify API token for GitHub notifications.
+
+    Create an API token at
+    https://github.com/settings/tokens/new?scopes=notifications&description=conky.
 - name: hddtemp_host
   desc: |-
     Hostname to connect to for hddtemp objects.
