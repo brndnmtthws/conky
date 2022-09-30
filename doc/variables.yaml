@@ -1,3 +1,7 @@
+# See README.md for details on doc processing.
+#
+# The `desc` field can be formatted with markdown, but please do not include
+# headings (lines beginning with `#`) in the `desc` field.
 ---
 - name: acpiacadapter
   desc: |-
