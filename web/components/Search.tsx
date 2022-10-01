@@ -139,24 +139,18 @@ const Search: React.FunctionComponent<SearchProps> = (props) => {
             enter="ease-out duration-300"
             enterFrom="opacity-0"
             enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
           >
             <div className="fixed inset-0 bg-black bg-opacity-25 backdrop-blur-sm" />
           </Transition.Child>
 
-          <div className="fixed inset-0">
-            <div className="flex h-screen w-screen items-center justify-center p-16 text-center">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0 scale-95"
+            enterTo="opacity-100 scale-100"
+          >
+            <div className="fixed inset-0">
+              <div className="flex h-screen w-screen items-start justify-center p-16 text-center">
                 <Dialog.Panel className="flex flex-col max-h-full w-full max-w-2xl p-1 bg-gray-200 dark:bg-gray-800 transform rounded-xl text-left align-middle shadow transition-all border border-gray-800 dark:border-white border-opacity-10 dark:border-opacity-10">
                   <Combobox value={selected} nullable onChange={onChange}>
                     <div className="flex">
@@ -190,9 +184,9 @@ const Search: React.FunctionComponent<SearchProps> = (props) => {
                     </Combobox.Options>
                   </Combobox>
                 </Dialog.Panel>
-              </Transition.Child>
+              </div>
             </div>
-          </div>
+          </Transition.Child>
         </Dialog>
       </Transition>
     </>
