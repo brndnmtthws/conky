@@ -112,8 +112,8 @@ const Search: React.FunctionComponent<SearchProps> = (props) => {
       if (value.item.kind === 'lua') {
         router.push(`/lua#${value.item.name}`, undefined, { scroll: false })
       }
+      setIsOpen(false)
     }
-    setIsOpen(false)
   }
 
   const closeModal = () => {
