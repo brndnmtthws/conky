@@ -1610,6 +1610,7 @@ void draw_stuff() {
       text_offset_x = text_offset_y = 0;
     }
 
+    selected_font = 0;
     set_foreground_color(default_color.get(*state));
     unset_display_output();
   }
