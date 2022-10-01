@@ -8,9 +8,12 @@ type HeaderProps = {
   name: string
   darkMode: boolean
   setDarkMode: (state: boolean) => void
+  searchIndex: SearchIndex
 }
 
 import * as React from 'react'
+import Search from './Search'
+import { SearchIndex } from '../utils/search'
 
 interface NavLinkProps {
   href: string
@@ -33,7 +36,12 @@ const NavLink: React.FunctionComponent<NavLinkProps> = (props) => {
   )
 }
 
-export default function Header({ name, darkMode, setDarkMode }: HeaderProps) {
+export default function Header({
+  name,
+  darkMode,
+  setDarkMode,
+  searchIndex,
+}: HeaderProps) {
   const router = useRouter()
   return (
     <div className="border-b-1 backdrop-blur-lg bg-white dark:bg-black bg-opacity-20 dark:bg-opacity-20 transition">
@@ -52,7 +60,8 @@ export default function Header({ name, darkMode, setDarkMode }: HeaderProps) {
             <NavLink href="/lua" name="Lua" />
           </div>
         )}
-        <LineChart width={400} height={40} darkMode={darkMode} />
+        <LineChart width={300} height={40} darkMode={darkMode} />
+        <Search index={searchIndex} />
         <div className="flex">
           <div className="border-r mx-1 px-1 border-slate-700">
             <a href="https://github.com/brndnmtthws/conky">
