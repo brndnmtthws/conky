@@ -1,5 +1,5 @@
 import Fuse from 'fuse.js'
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useCallback, useEffect, useState } from 'react'
 import { Search as SearchIcon } from 'react-feather'
 import { SearchIndex, SearchItem } from '../utils/search'
 import { Dialog, Transition, Combobox } from '@headlessui/react'
@@ -74,24 +74,44 @@ const Search: React.FunctionComponent<SearchProps> = (props) => {
       Fuse.parseIndex(props.index.index)
     )
   })
-  let [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+  const handleKeyPress = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.key == '/' && !isOpen) {
+        setIsOpen(true)
+        event.preventDefault()
+      }
+    },
+    [isOpen]
+  )
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyPress)
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress)
+    }
+  }, [handleKeyPress])
 
   const setSearch = (value: string) => {
     setSearchText(value)
     const searchResult = fuse.search(value)
     setSearchResults(searchResult)
   }
-  const onChange = (value: Fuse.FuseResult<SearchItem>) => {
-    if (value.item.kind === 'var') {
-      router.push(`/variables#${value.item.name}`, undefined, { scroll: false })
-    }
-    if (value.item.kind === 'config') {
-      router.push(`/config_settings#${value.item.name}`, undefined, {
-        scroll: false,
-      })
-    }
-    if (value.item.kind === 'lua') {
-      router.push(`/lua#${value.item.name}`, undefined, { scroll: false })
+  const onChange = (value?: Fuse.FuseResult<SearchItem>) => {
+    if (value) {
+      if (value.item.kind === 'var') {
+        router.push(`/variables#${value.item.name}`, undefined, {
+          scroll: false,
+        })
+      }
+      if (value.item.kind === 'config') {
+        router.push(`/config_settings#${value.item.name}`, undefined, {
+          scroll: false,
+        })
+      }
+      if (value.item.kind === 'lua') {
+        router.push(`/lua#${value.item.name}`, undefined, { scroll: false })
+      }
     }
     setIsOpen(false)
   }
@@ -107,7 +127,7 @@ const Search: React.FunctionComponent<SearchProps> = (props) => {
   return (
     <>
       <div className="flex items-center ml-2">
-        <button onClick={openModal}>
+        <button onClick={openModal} title="Search (/)">
           <SearchIcon size={32} />
         </button>
       </div>
@@ -144,7 +164,7 @@ const Search: React.FunctionComponent<SearchProps> = (props) => {
                         <SearchIcon size={32} />
                       </Combobox.Label>
                       <Combobox.Input
-                        placeholder="Search docs"
+                        placeholder="Search docs (/)"
                         className="mx-1 p-2 w-full bg-gray-200 dark:bg-gray-800 outline-none"
                         onChange={(e) => setSearch(e.target.value)}
                       />
