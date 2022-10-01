@@ -60,7 +60,7 @@ export default function Header({
             <NavLink href="/lua" name="Lua" />
           </div>
         )}
-        <LineChart width={300} height={40} darkMode={darkMode} />
+        <LineChart width={400} height={40} darkMode={darkMode} />
         <Search index={searchIndex} />
         <div className="flex">
           <div className="border-r mx-1 px-1 border-slate-700">
