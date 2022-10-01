@@ -3,6 +3,7 @@ import { getDocuments, Document } from '../utils/mdx-utils'
 import Layout from '../components/Layout'
 import ArrowIcon from '../components/ArrowIcon'
 import SEO from '../components/SEO'
+import { getSearchIndex, SearchIndex } from '../utils/search'
 
 const pages = [
   {
@@ -24,10 +25,12 @@ const pages = [
 
 interface IndexProps {
   documents: Document[]
+  searchIndex: SearchIndex
 }
-export default function Index({ documents }: IndexProps) {
+
+export default function Index({ documents, searchIndex }: IndexProps) {
   return (
-    <Layout>
+    <Layout searchIndex={searchIndex}>
       <SEO title="Conky" description="Conky documentation" />
       <main className="w-full">
         <div className="w-full">
@@ -76,6 +79,7 @@ export default function Index({ documents }: IndexProps) {
 
 export function getStaticProps() {
   const documents = getDocuments()
+  const searchIndex = getSearchIndex()
 
-  return { props: { documents } }
+  return { props: { documents, searchIndex } }
 }

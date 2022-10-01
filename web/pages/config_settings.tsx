@@ -2,14 +2,16 @@ import Layout from '../components/Layout'
 import SEO from '../components/SEO'
 import { getConfigSettings, Documentation } from '../utils/doc-utils'
 import Docs from '../components/Docs'
+import { getSearchIndex, SearchIndex } from '../utils/search'
 
 export interface ConfigSettingsProps {
   config_settings: Documentation
+  searchIndex: SearchIndex
 }
 
 export default function ConfigSettings(props: ConfigSettingsProps) {
   return (
-    <Layout>
+    <Layout searchIndex={props.searchIndex}>
       <SEO
         title="Conky – Config settings"
         description="Conky configuration settings"
@@ -26,6 +28,7 @@ export default function ConfigSettings(props: ConfigSettingsProps) {
 
 export async function getStaticProps() {
   const config_settings = getConfigSettings()
+  const searchIndex = getSearchIndex()
 
-  return { props: { config_settings } }
+  return { props: { config_settings, searchIndex } }
 }

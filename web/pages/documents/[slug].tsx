@@ -11,6 +11,7 @@ import CustomLink from '../../components/CustomLink'
 import Layout from '../../components/Layout'
 import SEO from '../../components/SEO'
 import { GetStaticProps } from 'next'
+import { getSearchIndex, SearchIndex } from '../../utils/search'
 
 // Custom components/renderers to pass to MDX.
 // Since the MDX files aren't loaded by webpack, they have no knowledge of how
@@ -32,14 +33,16 @@ interface FrontMatter {
 interface DocumentPageProps {
   source: MDXRemoteProps
   frontMatter: FrontMatter
+  searchIndex: SearchIndex
 }
 
 export default function DocumentPage({
   source,
   frontMatter,
+  searchIndex,
 }: DocumentPageProps) {
   return (
-    <Layout>
+    <Layout searchIndex={searchIndex}>
       <SEO
         title={`${frontMatter.title}`}
         description={frontMatter.description}
@@ -68,9 +71,11 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     const { mdxSource, data } = await getDocumentBySlug(params.slug as string)
     const prevDocument = getPreviousDocumentBySlug(params.slug as string)
     const nextDocument = getNextDocumentBySlug(params.slug as string)
+    const searchIndex = getSearchIndex()
 
     return {
       props: {
+        searchIndex,
         source: mdxSource,
         frontMatter: data,
         prevDocument,

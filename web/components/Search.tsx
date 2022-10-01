@@ -1,0 +1,182 @@
+import Fuse from 'fuse.js'
+import React, { Fragment, useState } from 'react'
+import { Search as SearchIcon } from 'react-feather'
+import { SearchIndex, SearchItem } from '../utils/search'
+import { Dialog, Transition, Combobox } from '@headlessui/react'
+import { useRouter } from 'next/router'
+
+export interface SearchProps {
+  index: SearchIndex
+}
+
+interface SearchResultProps {
+  result: Fuse.FuseResult<SearchItem>
+  selected: boolean
+  active: boolean
+}
+
+const SearchResult: React.FunctionComponent<SearchResultProps> = (props) => {
+  const excerpt = (s: string) => {
+    if (s.length < 100) {
+      return <>{s}</>
+    } else {
+      return <>{s.substring(0, 100)}&hellip;</>
+    }
+  }
+  const bg_for = (s: string) => {
+    const bg = 'p-1 rounded bg-opacity-20 '
+    if (s === 'var') {
+      return bg + 'bg-blue-500'
+    }
+    if (s === 'config') {
+      return bg + 'bg-green-500'
+    }
+    if (s === 'lua') {
+      return bg + 'bg-red-500'
+    }
+    return bg
+  }
+  const selection = props.active ? 'bg-slate-300 dark:bg-slate-700' : ''
+
+  return (
+    <div className={`m-1 rounded flex flex-col p-2 ${selection}`}>
+      <div className="flex justify-between">
+        <div>
+          <code className="text-lg p-1 mx-1 bg-fuchsia-200 dark:bg-fuchsia-900 font-bold">
+            {props.result.item.name}
+          </code>
+        </div>
+        <div className={bg_for(props.result.item.kind)}>
+          {props.result.item.kind}
+        </div>
+      </div>
+      <div>
+        <p>{excerpt(props.result.item.desc)}</p>
+      </div>
+    </div>
+  )
+}
+
+const Search: React.FunctionComponent<SearchProps> = (props) => {
+  const router = useRouter()
+  const [searchText, setSearchText] = useState('')
+  const [selected, setSelected] = useState<
+    Fuse.FuseResult<SearchItem> | undefined
+  >(undefined)
+  const [searchResults, setSearchResults] = useState<
+    Fuse.FuseResult<SearchItem>[]
+  >([])
+  const [fuse, setFuse] = useState(() => {
+    const options: Fuse.IFuseOptions<SearchItem> = {}
+    return new Fuse(
+      props.index.list,
+      options,
+      Fuse.parseIndex(props.index.index)
+    )
+  })
+  let [isOpen, setIsOpen] = useState(false)
+
+  const setSearch = (value: string) => {
+    setSearchText(value)
+    const searchResult = fuse.search(value)
+    setSearchResults(searchResult)
+  }
+  const onChange = (value: Fuse.FuseResult<SearchItem>) => {
+    if (value.item.kind === 'var') {
+      router.push(`/variables#${value.item.name}`, undefined, { scroll: false })
+    }
+    if (value.item.kind === 'config') {
+      router.push(`/config_settings#${value.item.name}`, undefined, {
+        scroll: false,
+      })
+    }
+    if (value.item.kind === 'lua') {
+      router.push(`/lua#${value.item.name}`, undefined, { scroll: false })
+    }
+    setIsOpen(false)
+  }
+
+  const closeModal = () => {
+    setIsOpen(false)
+  }
+
+  const openModal = () => {
+    setIsOpen(true)
+  }
+
+  return (
+    <>
+      <div className="flex items-center ml-2">
+        <button onClick={openModal}>
+          <SearchIcon size={32} />
+        </button>
+      </div>
+
+      <Transition appear show={isOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-10" onClose={closeModal}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-25 backdrop-blur-sm" />
+          </Transition.Child>
+
+          <div className="fixed inset-0">
+            <div className="flex h-screen w-screen items-center justify-center p-16 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="flex flex-col max-h-full w-full max-w-2xl p-1 bg-gray-200 dark:bg-gray-800 transform rounded-xl text-left align-middle shadow transition-all border border-gray-800 dark:border-white border-opacity-10 dark:border-opacity-10">
+                  <Combobox value={selected} nullable onChange={onChange}>
+                    <div className="flex">
+                      <Combobox.Label className="flex items-center ml-2">
+                        <SearchIcon size={32} />
+                      </Combobox.Label>
+                      <Combobox.Input
+                        placeholder="Search docs"
+                        className="mx-1 p-2 w-full bg-gray-200 dark:bg-gray-800 outline-none"
+                        onChange={(e) => setSearch(e.target.value)}
+                      />
+                    </div>
+                    <Combobox.Options className="flex flex-col h-full overflow-auto">
+                      {searchResults.length === 0 && searchText !== '' ? (
+                        <div className="relative cursor-default select-none py-2 px-4 text-gray-500">
+                          No results.
+                        </div>
+                      ) : (
+                        searchResults.map((r) => (
+                          <Combobox.Option key={r.refIndex} value={r}>
+                            {({ selected, active }) => (
+                              <SearchResult
+                                result={r}
+                                selected={selected}
+                                active={active}
+                              />
+                            )}
+                          </Combobox.Option>
+                        ))
+                      )}
+                    </Combobox.Options>
+                  </Combobox>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+    </>
+  )
+}
+
+export default Search

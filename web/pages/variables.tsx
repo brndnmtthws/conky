@@ -2,14 +2,16 @@ import Layout from '../components/Layout'
 import SEO from '../components/SEO'
 import { getVariables, Documentation } from '../utils/doc-utils'
 import Docs from '../components/Docs'
+import { getSearchIndex, SearchIndex } from '../utils/search'
 
 export interface VariablesProps {
   variables: Documentation
+  searchIndex: SearchIndex
 }
 
 export default function Variables(props: VariablesProps) {
   return (
-    <Layout>
+    <Layout searchIndex={props.searchIndex}>
       <SEO
         title="Conky – Variables"
         description="Conky object variables documentation"
@@ -26,6 +28,7 @@ export default function Variables(props: VariablesProps) {
 
 export async function getStaticProps() {
   const variables = getVariables()
+  const searchIndex = getSearchIndex()
 
-  return { props: { variables } }
+  return { props: { variables, searchIndex } }
 }

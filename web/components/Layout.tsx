@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { SearchIndex } from '../utils/search'
 import Header from './Header'
 
 function darkModeDefault() {
@@ -15,9 +16,10 @@ function darkModeDefault() {
 
 interface LayoutProps {
   children: React.ReactNode
+  searchIndex: SearchIndex
 }
 
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({ children, searchIndex }: LayoutProps) {
   const [darkMode, setDarkMode] = useState(darkModeDefault())
 
   useEffect(() => {
@@ -45,7 +47,12 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div>
       <div className="sticky top-0 z-10 h-16">
-        <Header name="Conky" darkMode={darkMode} setDarkMode={setDarkMode} />
+        <Header
+          searchIndex={searchIndex}
+          name="Conky"
+          darkMode={darkMode}
+          setDarkMode={setDarkMode}
+        />
       </div>
       <div className="relative pb-24">
         <div className="flex flex-col items-center max-w-3xl w-full mx-auto">
