@@ -17,10 +17,10 @@ interface SearchResultProps {
 
 const SearchResult: React.FunctionComponent<SearchResultProps> = (props) => {
   const excerpt = (s: string) => {
-    if (s.length < 100) {
+    if (s.length < 120) {
       return <>{s}</>
     } else {
-      return <>{s.substring(0, 100)}&hellip;</>
+      return <>{s.substring(0, 120)}&hellip;</>
     }
   }
   const bg_for = (s: string) => {
