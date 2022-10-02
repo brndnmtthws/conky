@@ -17,22 +17,25 @@ export function getSearchIndex() {
   const cs: SearchItem[] = getConfigSettings().values.map((v) => ({
     kind: 'config',
     name: v.name,
-    desc: v.desc.substring(0, 200),
+    desc: v.desc,
   }))
   const vars: SearchItem[] = getVariables().values.map((v) => ({
     kind: 'var',
     name: v.name,
-    desc: v.desc.substring(0, 200),
+    desc: v.desc,
   }))
   const lua: SearchItem[] = getLua().values.map((v) => ({
     kind: 'lua',
     name: v.name,
-    desc: v.desc.substring(0, 200),
+    desc: v.desc,
   }))
   const list: SearchItem[] = [...cs, ...vars, ...lua]
 
   return {
-    list,
+    list: list.map((item) => ({
+      ...item,
+      desc: item.desc.substring(0, 121),
+    })),
     index: Fuse.createIndex<SearchItem>(['name', 'desc'], list).toJSON(),
   }
 }
