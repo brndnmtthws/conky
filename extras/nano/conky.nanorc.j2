@@ -1,0 +1,18 @@
+##
+## Syntax highlighting for conkyrc files.
+##
+##
+syntax "conky" "(\.*conkyrc.*$|conky.conf)"
+
+## Configuration items
+color green "\<({{ config_settings['values']|map(attribute="name")|join('|') }})\>"
+
+## Configuration item constants
+color yellow "\<(above|below|bottom_left|bottom_right|bottom_middle|desktop|dock|no|none|normal|override|skip_pager|skip_taskbar|sticky|top_left|top_right|top_middle|middle_left|middle_right|middle_middle|undecorated|yes)\>"
+
+## Variables
+color brightblue "\<({{ variables['values']|map(attribute="name")|join('|') }})\>"
+
+color brightblue "\$\{?[0-9A-Z_!@#$*?-]+\}?"
+color cyan "(\{|\}|\(|\)|\;|\]|\[|`|\\|\$|<|>|!|=|&|\|)"
+color brightred "^TEXT$"

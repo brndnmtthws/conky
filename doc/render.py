@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 
 import sys
-from warnings import filters
+import os
 import yaml
 
-with open("config_settings.yaml") as file:
+base_path = os.path.dirname(os.path.realpath(__file__))
+
+with open(os.path.join(base_path, "config_settings.yaml")) as file:
     config_settings = yaml.safe_load(file)
 
-with open("variables.yaml") as file:
+with open(os.path.join(base_path, "variables.yaml")) as file:
     variables = yaml.safe_load(file)
 
-with open("lua.yaml") as file:
+with open(os.path.join(base_path, "lua.yaml")) as file:
     lua = yaml.safe_load(file)
 
 data = {

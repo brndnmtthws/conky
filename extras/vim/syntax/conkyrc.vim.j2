@@ -1,0 +1,65 @@
+" Vim syntax file
+" Language:   conkyrc
+" Author:     Ciaran McCreesh <ciaranm@gentoo.org>
+" Version:    20060307
+" Copyright:  Copyright (c) 2005 Ciaran McCreesh
+" Licence:    You may redistribute this under the same terms as Vim itself
+"
+
+if exists("b:current_syntax")
+	finish
+endif
+
+syn region ConkyrcComment start=/^\s*#/ end=/$/
+
+syn keyword ConkyrcSetting {{ config_settings['values']|map(attribute="name")|join(' ') }}
+
+syn keyword ConkyrcConstant
+			\ above
+			\ below
+			\ bottom_left
+			\ bottom_right
+			\ bottom_middle
+			\ desktop
+			\ dock
+			\ no
+			\ none
+			\ normal
+			\ override
+			\ skip_pager
+			\ skip_taskbar
+			\ sticky
+			\ top_left
+			\ top_right
+			\ top_middle
+			\ middle_left
+			\ middle_right
+			\ middle_middle
+			\ undecorated
+			\ yes
+
+syn match ConkyrcNumber /\S\@<!\d\+\(\.\d\+\)\?\(\S\@!\|}\@=\)/
+			\ nextgroup=ConkyrcNumber,ConkyrcColour skipwhite
+syn match ConkyrcColour /\S\@<!#[a-fA-F0-9]\{6\}\(\S\@!\|}\@=\)/
+			\ nextgroup=ConkyrcNumber,ConkyrcColour skipwhite
+
+syn region ConkyrcText start=/^TEXT$/ end=/\%$/ contains=ConkyrcVar
+
+syn region ConkyrcVar start=/\${/ end=/}/ contained contains=ConkyrcVarStuff
+syn region ConkyrcVar start=/\$\w\@=/ end=/\W\@=\|$/ contained contains=ConkyrcVarName
+
+syn match ConkyrcVarStuff /{\@<=/ms=s contained nextgroup=ConkyrcVarName
+
+syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipwhite {{ variables['values']|map(attribute="name")|join(' ') }}
+
+hi def link ConkyrcComment   Comment
+hi def link ConkyrcSetting   Keyword
+hi def link ConkyrcConstant  Constant
+hi def link ConkyrcNumber    Number
+hi def link ConkyrcColour    Special
+
+hi def link ConkyrcText      String
+hi def link ConkyrcVar       Identifier
+hi def link ConkyrcVarName   Keyword
+
+let b:current_syntax = "conkyrc"

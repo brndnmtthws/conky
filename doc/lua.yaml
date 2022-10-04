@@ -105,8 +105,7 @@ values:
     desc: |-
       This table contains some information about Conky's window.
       The following table describes the values contained:
-      NOTE: This table is only defined when X support is
-      enabled.
+
       | Key                 | Value                                                                           |
       |---------------------|---------------------------------------------------------------------------------|
       | drawable            | Window's drawable (Xlib Drawable), requires Lua extras enabled at compile time. |
@@ -121,3 +120,6 @@ values:
       | text_start_y        | The y component of the starting coordinate of text drawing.                     |
       | text_width          | The width of the text drawing region.                                           |
       | text_height         | The height of the text drawing region.                                          |
+
+      NOTE: This table is only defined when X support is
+      enabled.
