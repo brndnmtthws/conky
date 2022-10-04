@@ -15,7 +15,7 @@ body:
     id: what-happened
     attributes:
       label: What happened?
-      description: |
+      description: >
         Describe the problem, what you expected to happen, and any other
         relevant info. You can attach logs, stack traces, and config below. If
         required, include screenshots here which demonstrate the problem.
@@ -51,7 +51,8 @@ body:
     attributes:
       value: |
         ## Getting a stack trace
-        If you want to report a crash, please attach a stack trace.
+
+        If you are reporting a crash, please attach a stack trace below.
 
         To create one with `gdb`, try the following steps:
 
@@ -67,24 +68,12 @@ body:
 
         # ... stack trace output here ...
         ```
-
-        We want that backtrace inside `gdb` triple backticks.
-
-        ```gdb
-        $ gdb conky
-        GNU gdb (GDB) 8.2
-        Copyright (C) 2018 Free Software Foundation, Inc.
-        License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
-        This is free software: you are free to change and redistribute it.
-        There is NO WARRANTY, to the extent permitted by law.
-        ...
-        ```
   - type: textarea
     id: stacktrace
     attributes:
       label: Stack trace
-      description: Paste your stacktrace here, if required.
-      render: Shell
+      description: Paste your stacktrace here if you have one.
+      render: GDB
   - type: textarea
     id: logs
     attributes:
