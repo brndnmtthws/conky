@@ -29,6 +29,8 @@ body:
       required: true
   - type: dropdown
     id: os
+    validations:
+      required: true
     attributes:
       label: Which OS/distro are you seeing the problem on?
       options:
