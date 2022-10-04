@@ -26,6 +26,8 @@ desc: |-
   will use one of the parameters as a `key`, so that you only have 1
   relevant thread running (for example, the $curl, $rss and $weather
   objects launch one thread per URI).
+
+  Optional arguments are generally denoted with paretheses (i.e., `(optional)`).
 values:
   - name: acpiacadapter
     desc: |-
