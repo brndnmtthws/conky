@@ -47,6 +47,7 @@ set(conky_sources ${CMAKE_BINARY_DIR}/config.h ${CMAKE_BINARY_DIR}/build.h)
 add_subdirectory(lua)
 add_subdirectory(data)
 add_subdirectory(doc)
+add_subdirectory(extras)
 
 # Include 3rdparty toluapp
 add_subdirectory(3rdparty/toluapp)
