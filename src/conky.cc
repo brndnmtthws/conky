@@ -130,9 +130,9 @@
 #include "openbsd.h"
 #endif /* __OpenBSD__ */
 
-#ifdef BUILD_HSV_GRADIENT
-#include "hsv_gradient.h"
-#endif /* BUILD_HSV_GRADIENT */
+#ifdef BUILD_HCL_GRADIENT
+#include "hcl_gradient.h"
+#endif /* BUILD_HCL_GRADIENT */
 
 #ifdef BUILD_OLD_CONFIG
 #include "convertconf.h"
@@ -1291,13 +1291,13 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
               std::unique_ptr<unsigned long[]> tmpcolour;
 
               if (current->last_colour != 0 || current->first_colour != 0) {
-#ifdef BUILD_HSV_GRADIENT
-                tmpcolour = do_hsv_gradient(w - 1, current->last_colour,
+#ifdef BUILD_HCL_GRADIENT
+                tmpcolour = do_hcl_gradient(w - 1, current->last_colour,
                                             current->first_colour);
-#else  /* BUILD_HSV_GRADIENT */
+#else  /* BUILD_HCL_GRADIENT */
                 tmpcolour = do_gradient(w - 1, current->last_colour,
                                         current->first_colour);
-#endif /* BUILD_HSV_GRADIENT */
+#endif /* BUILD_HCL_GRADIENT */
               }
               colour_idx = 0;
               for (i = w - 2; i > -1; i--) {
