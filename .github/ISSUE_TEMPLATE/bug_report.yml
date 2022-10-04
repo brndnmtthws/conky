@@ -6,11 +6,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report!
+        If you haven't done so already, please take a moment to search the [existing issues](https://github.com/brndnmtthws/conky/issues) to see if this has been previously reported. If not, carry on.
 
-        If you haven't done so already, please take a moment to search the
-        [existing issues](https://github.com/brndnmtthws/conky/issues) to see if
-        this has been previously reported. If not, carry on.
+        Thanks for taking the time to fill out this bug report!
   - type: textarea
     id: what-happened
     attributes:
