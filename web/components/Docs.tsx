@@ -14,7 +14,7 @@ export default function Docs({ docs, braces, assign }: DocsProps) {
   return (
     <div className="prose dark:prose-invert prose-lg lg:prose-xl">
       <div dangerouslySetInnerHTML={{ __html: docs.desc_md }} />
-      <div className="divide-y">
+      <div className="divide-y divide-gray-700/25 dark:divide-gray-300/25">
         {docs.values.map((doc) => {
           const target = router.asPath.endsWith(`#${doc.name}`)
           return (
