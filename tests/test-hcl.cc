@@ -29,11 +29,11 @@
 #include "catch2/catch.hpp"
 
 #include <conky.h>
-#include <hsv_gradient.h>
+#include <hcl_gradient.h>
 #include <lua-config.hh>
 
 int testColor(long *rgb, int scale) {
-  long hsv[3];
+  long hcl[3];
   long rgb1[3];
   long rgb2[3];
   long rgb3[3];
@@ -42,8 +42,8 @@ int testColor(long *rgb, int scale) {
   rgb1[1] = to_decimal_scale(rgb[1], scale);
   rgb1[2] = to_decimal_scale(rgb[2], scale);
 
-  scaled_rgb_to_scaled_hsv(rgb1, hsv);
-  scaled_hsv_to_scaled_rgb(hsv, rgb2);
+  scaled_rgb_to_scaled_hcl(rgb1, hcl);
+  scaled_hcl_to_scaled_rgb(hcl, rgb2);
 
   rgb3[0] = from_decimal_scale(rgb2[0], scale);
   rgb3[1] = from_decimal_scale(rgb2[1], scale);
@@ -52,8 +52,8 @@ int testColor(long *rgb, int scale) {
   return (rgb[0] != rgb3[0] || rgb[1] != rgb3[1] || rgb[2] != rgb3[2]);
 }
 
-TEST_CASE("hsv gradient tests") {
-  SECTION("rgb -> hsv -> rgb should returns original value") {
+TEST_CASE("hcl gradient tests") {
+  SECTION("rgb -> hcl -> rgb should returns original value") {
     int failedCount = 0;
     long rgb1[3];
 

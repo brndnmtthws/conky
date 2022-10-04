@@ -26,22 +26,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef _HSV_GRADIENT_H
-#define _HSV_GRADIENT_H
+
+// Use Hue-Chroma-Luma to create gradients
+#ifndef _HCL_GRADIENT_H
+#define _HCL_GRADIENT_H
 
 #include <memory>
 
-// needed by hsv_gradient
+// needed by hcl_gradient
 extern short colour_depth;
 extern long redmask, greenmask, bluemask;
 extern void set_up_gradient();
 
-std::unique_ptr<unsigned long[]> do_hsv_gradient(int, unsigned long,
+std::unique_ptr<unsigned long[]> do_hcl_gradient(int, unsigned long,
                                                  unsigned long);
 
 long to_decimal_scale(long value, long max_value);
 long from_decimal_scale(long value, long max_value);
-void scaled_rgb_to_scaled_hsv(long *const rgb, long *hsv);
-void scaled_hsv_to_scaled_rgb(long *const hsv, long *rgb);
+void scaled_rgb_to_scaled_hcl(long *const rgb, long *hcl);
+void scaled_hcl_to_scaled_rgb(long *const hcl, long *rgb);
 
-#endif /* _COLOURS_H */
+#endif /* _HCL_GRADIENT_H */
