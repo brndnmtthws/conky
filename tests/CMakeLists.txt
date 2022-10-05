@@ -19,6 +19,8 @@ set(test_srcs ${test_srcs} test-diskio.cc)
 set(test_srcs ${test_srcs} test-fs.cc)
 if(BUILD_HCL_GRADIENT)
   set(test_srcs ${test_srcs} test-hcl.cc)
+elseif(BUILD_HSV_GRADIENT)
+  set(test_srcs ${test_srcs} test-hsv.cc)
 endif(BUILD_HCL_GRADIENT)
 
 add_executable(test-conky test-common.cc ${test_srcs})

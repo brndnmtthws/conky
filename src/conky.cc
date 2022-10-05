@@ -133,6 +133,7 @@
 #ifdef BUILD_HCL_GRADIENT
 #include "hcl_gradient.h"
 #endif /* BUILD_HCL_GRADIENT */
+
 #ifdef BUILD_HSV_GRADIENT
 #include "hsv_gradient.h"
 #endif /* BUILD_HSV_GRADIENT */
