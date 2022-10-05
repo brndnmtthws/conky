@@ -21,8 +21,7 @@
 if(BUILD_DOCS)
     add_custom_target(man.md
         ALL
-        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/docgen.py man.md.j2 > ${CMAKE_CURRENT_BINARY_DIR}/man.md
-        OUTPUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/man.md
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/render.py man.md.j2 > ${CMAKE_CURRENT_BINARY_DIR}/man.md
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         SOURCES config_settings.yaml variables.yaml lua.yaml man.md.j2
     )
