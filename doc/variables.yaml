@@ -16,7 +16,7 @@ desc: |-
   listing of the available variables. Some of them may require build options to
   be enabled at compile time for them to work.
 
-  Colours are parsed using `XParsecolor()`, there might be a list of them:
+  Colours are parsed using `XParseColor()`, there might be a list of them:
   `/usr/share/X11/rgb.txt`. Colour can be also in `#rrggbb` format (hex).
 
   Some objects may create threads, and sometimes these threads will not be
