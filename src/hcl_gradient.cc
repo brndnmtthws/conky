@@ -75,10 +75,13 @@ long cap_scaled_color(long colour) {
 }
 
 void scaled_rgb_to_scaled_hcl(long *const rgb, long *hcl) {
-  long value = rgb[0] > rgb[1] ? std::max(rgb[0], rgb[2]) : std::max(rgb[1], rgb[2]);
-  long minimum = rgb[0] < rgb[1] ? std::min(rgb[0], rgb[2]) : std::min(rgb[1], rgb[2]);
+  long value =
+      rgb[0] > rgb[1] ? std::max(rgb[0], rgb[2]) : std::max(rgb[1], rgb[2]);
+  long minimum =
+      rgb[0] < rgb[1] ? std::min(rgb[0], rgb[2]) : std::min(rgb[1], rgb[2]);
   long chroma = value - minimum;
-  long luma = (2627L * rgb[0] + 6780L * rgb[1] + 593L * rgb[2]) / 10000L; //Use Rec.2020 color space
+  long luma = (2627L * rgb[0] + 6780L * rgb[1] + 593L * rgb[2]) /
+              10000L;  // Use Rec.2020 color space
   long hue;
 
   if (chroma == 0) {
@@ -112,7 +115,8 @@ void scaled_hcl_to_scaled_rgb(long *const hcl, long *rgb) {
   long luma = hcl[2] / 360L;
 
   long h = hue / 60L;
-  long x = (chroma * (CONST_SCALE - std::abs(h % CONST_SCALE2 - CONST_SCALE))) / CONST_SCALE;
+  long x = (chroma * (CONST_SCALE - std::abs(h % CONST_SCALE2 - CONST_SCALE))) /
+           CONST_SCALE;
   long m;
 
   // use Rec.2020 color space
@@ -153,7 +157,8 @@ void scaled_hcl_to_scaled_rgb(long *const hcl, long *rgb) {
   rgb[2] = cap_scaled_color(rgb[2]);
 }
 
-void rgb_to_scaled_rgb(unsigned long colour, long *scaled, int redshift, int greenshift) {
+void rgb_to_scaled_rgb(unsigned long colour, long *scaled, int redshift,
+                       int greenshift) {
   long red = (colour & redmask) >> redshift;
   long green = (colour & greenmask) >> greenshift;
   long blue = colour & bluemask;
@@ -167,7 +172,8 @@ void rgb_to_scaled_rgb(unsigned long colour, long *scaled, int redshift, int gre
   scaled[2] = to_decimal_scale(blue, blue_max);
 }
 
-unsigned long scaled_rgb_to_rgb(long *const scaled, int redshift, int greenshift) {
+unsigned long scaled_rgb_to_rgb(long *const scaled, int redshift,
+                                int greenshift) {
   long red_max = redmask >> redshift;
   long green_max = greenmask >> greenshift;
 
@@ -200,9 +206,7 @@ std::unique_ptr<unsigned long[]> do_hcl_gradient(int width,
 
   std::unique_ptr<unsigned long[]> colours(new unsigned long[width]);
 
-  if (colour_depth == 0) {
-    set_up_gradient();
-  }
+  if (colour_depth == 0) { set_up_gradient(); }
 
   rgb_to_scaled_rgb(first_colour, first_colour_rgb, redshift, greenshift);
   rgb_to_scaled_rgb(last_colour, last_colour_rgb, redshift, greenshift);
@@ -217,9 +221,9 @@ std::unique_ptr<unsigned long[]> do_hcl_gradient(int width,
   colours[width - 1] = last_colour;
 
   long divisor = width - 1;
-  long hueDelta = hueDiff/divisor;
-  long chromaDelta = chromaDiff/divisor;
-  long lumaDelta = lumaDiff/divisor;
+  long hueDelta = hueDiff / divisor;
+  long chromaDelta = chromaDiff / divisor;
+  long lumaDelta = lumaDiff / divisor;
 
   for (int i = 1; i < (width - 1); i++) {
     long h = first_colour_hcl[0] + hueDelta;

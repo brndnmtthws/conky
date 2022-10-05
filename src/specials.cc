@@ -419,7 +419,7 @@ void new_gauge(struct text_object *obj, char *p, unsigned int p_max_size,
   if (out_to_stdout.get(*state)) {
     new_gauge_in_shell(obj, p, p_max_size, usage);
   }
-#else /* BUILD_GUI */
+#else  /* BUILD_GUI */
   new_gauge_in_shell(obj, p, p_max_size, usage);
 #endif /* BUILD_GUI */
 }
@@ -728,7 +728,7 @@ void new_bar(struct text_object *obj, char *p, unsigned int p_max_size,
   if (out_to_stdout.get(*state)) {
     new_bar_in_shell(obj, p, p_max_size, usage);
   }
-#else /* BUILD_GUI */
+#else  /* BUILD_GUI */
   new_bar_in_shell(obj, p, p_max_size, usage);
 #endif /* BUILD_GUI */
 }

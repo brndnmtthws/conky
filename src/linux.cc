@@ -192,7 +192,7 @@ int update_meminfo(void) {
   info.memmax = info.memdirty = info.swap = info.swapfree = info.swapmax =
       info.memwithbuffers = info.buffers = info.cached = info.memfree =
           info.memeasyfree = info.legacymem = info.shmem = info.memavail =
-	      info.free_bufcache = 0;
+              info.free_bufcache = 0;
 
   if (!(meminfo_fp = open_file("/proc/meminfo", &reported))) { return 0; }
 
@@ -1583,9 +1583,9 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
 
 #define CPUFREQ_GOVERNOR "cpufreq/scaling_governor"
 
-/* print the CPU scaling governor */ 
+/* print the CPU scaling governor */
 void print_cpugovernor(struct text_object *obj, char *p,
-		        unsigned int p_max_size) {
+                       unsigned int p_max_size) {
   FILE *fp;
   char buf[64];
   unsigned int cpu = obj->data.i;
