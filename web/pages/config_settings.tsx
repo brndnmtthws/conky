@@ -1,6 +1,10 @@
 import Layout from '../components/Layout'
 import SEO from '../components/SEO'
-import { getConfigSettings, Documentation } from '../utils/doc-utils'
+import {
+  getConfigSettings,
+  Documentation,
+  filterDesc,
+} from '../utils/doc-utils'
 import Docs from '../components/Docs'
 import { getSearchIndex, SearchIndex } from '../utils/search'
 
@@ -27,7 +31,7 @@ export default function ConfigSettings(props: ConfigSettingsProps) {
 }
 
 export async function getStaticProps() {
-  const config_settings = getConfigSettings()
+  const config_settings = filterDesc(getConfigSettings())
   const searchIndex = getSearchIndex()
 
   return { props: { config_settings, searchIndex } }
