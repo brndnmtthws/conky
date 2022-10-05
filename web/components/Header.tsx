@@ -28,7 +28,7 @@ const NavLink: React.FunctionComponent<NavLinkProps> = (props) => {
   return (
     <Link href={props.href}>
       <a
-        className={`p-1 self-end hover:self-center hover:bg-rose-300 dark:hover:bg-rose-700 ${bg} rounded`}
+        className={`m-0.5 p-1 self-end hover:ring-1 ring-black dark:ring-white hover:bg-rose-300 dark:hover:bg-rose-700 ${bg} rounded`}
       >
         {props.name}
       </a>
@@ -60,7 +60,7 @@ export default function Header({
             <NavLink href="/lua" name="Lua" />
           </div>
         )}
-        <LineChart width={400} height={40} darkMode={darkMode} />
+        <LineChart width={380} height={40} darkMode={darkMode} />
         <Search index={searchIndex} />
         <div className="flex">
           <div className="border-r mx-1 px-1 border-slate-700">
