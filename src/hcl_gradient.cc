@@ -78,7 +78,7 @@ void scaled_rgb_to_scaled_hcl(long *const rgb, long *hcl) {
   long value = rgb[0] > rgb[1] ? std::max(rgb[0], rgb[2]) : std::max(rgb[1], rgb[2]);
   long minimum = rgb[0] < rgb[1] ? std::min(rgb[0], rgb[2]) : std::min(rgb[1], rgb[2]);
   long chroma = value - minimum;
-  long luma = (2627 * rgb[0] + 6780 * rgb[1] + 593 * rgb[2]) / 10000; //Use Rec.2020 color space
+  long luma = (2627L * rgb[0] + 6780L * rgb[1] + 593L * rgb[2]) / 10000L; //Use Rec.2020 color space
   long hue;
 
   if (chroma == 0) {
@@ -102,14 +102,14 @@ void scaled_rgb_to_scaled_hcl(long *const rgb, long *hcl) {
   }
 
   hcl[0] = hue;
-  hcl[1] = chroma * 360;
-  hcl[2] = luma * 360;
+  hcl[1] = chroma * 360L;
+  hcl[2] = luma * 360L;
 }
 
 void scaled_hcl_to_scaled_rgb(long *const hcl, long *rgb) {
   long hue = hcl[0] % CONST_SCALE360;
-  long chroma = hcl[1] / 360;
-  long luma = hcl[2] / 360;
+  long chroma = hcl[1] / 360L;
+  long luma = hcl[2] / 360L;
 
   long h = hue / 60L;
   long x = (chroma * (CONST_SCALE - std::abs(h % CONST_SCALE2 - CONST_SCALE))) / CONST_SCALE;
@@ -117,32 +117,32 @@ void scaled_hcl_to_scaled_rgb(long *const hcl, long *rgb) {
 
   // use Rec.2020 color space
   if (hue < CONST_SCALE60) {
-    m = luma - (2627 * chroma + 6780 * x) / 10000;
+    m = luma - (2627L * chroma + 6780L * x) / 10000L;
     rgb[0] = rgb[1] = rgb[2] = m;
     rgb[0] += chroma;
     rgb[1] += x;
   } else if (hue < CONST_SCALE120) {
-    m = luma - (2627 * x + 6780 * chroma) / 10000;
+    m = luma - (2627L * x + 6780L * chroma) / 10000L;
     rgb[0] = rgb[1] = rgb[2] = m;
     rgb[0] += x;
     rgb[1] += chroma;
   } else if (hue < CONST_SCALE180) {
-    m = luma - (6780 * chroma + 593 * x) / 10000;
+    m = luma - (6780L * chroma + 593L * x) / 10000L;
     rgb[0] = rgb[1] = rgb[2] = m;
     rgb[1] += chroma;
     rgb[2] += x;
   } else if (hue < CONST_SCALE240) {
-    m = luma - (6780 * x + 593 * chroma) / 10000;
+    m = luma - (6780L * x + 593L * chroma) / 10000L;
     rgb[0] = rgb[1] = rgb[2] = m;
     rgb[1] += x;
     rgb[2] += chroma;
   } else if (hue < CONST_SCALE300) {
-    m = luma - (2627 * x + 593 * chroma) / 10000;
+    m = luma - (2627L * x + 593L * chroma) / 10000L;
     rgb[0] = rgb[1] = rgb[2] = m;
     rgb[2] += chroma;
     rgb[0] += x;
   } else {
-    m = luma - (2627 * chroma + 593 * x) / 10000;
+    m = luma - (2627L * chroma + 593L * x) / 10000L;
     rgb[0] = rgb[1] = rgb[2] = m;
     rgb[2] += x;
     rgb[0] += chroma;
