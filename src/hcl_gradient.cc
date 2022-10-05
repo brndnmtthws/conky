@@ -51,18 +51,18 @@ long to_decimal_scale(long value, long max_value) {
   if (value == 0) {
     return 0;
   } else if (value > 0) {
-    return (value * CONST_SCALE + max_value - 1) / max_value;
+    return (value * CONST_SCALE) / max_value;
   }
-  return -((std::abs(value) * CONST_SCALE + max_value - 1) / max_value);
+  return -((std::abs(value) * CONST_SCALE) / max_value);
 }
 
 long from_decimal_scale(long value, long max_value) {
   if (value == 0) {
     return 0;
   } else if (value > 0) {
-    return (value * max_value + CONST_SCALE_HALF) / CONST_SCALE;
+    return (value * max_value) / CONST_SCALE;
   }
-  return -((std::abs(value) * max_value + CONST_SCALE_HALF) / CONST_SCALE);
+  return -((std::abs(value) * max_value) / CONST_SCALE);
 }
 
 long cap_scaled_color(long colour) {
