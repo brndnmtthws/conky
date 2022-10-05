@@ -1032,8 +1032,7 @@ void print_nvidia_value(struct text_object *obj, char *p,
   if (value != -1) {
     if (nvs->is_percentage) {
       percent_print(p, p_max_size, value);
-    }
-    else {
+    } else {
       snprintf(p, p_max_size, "%d", value);
     }
   } else if (str != nullptr) {

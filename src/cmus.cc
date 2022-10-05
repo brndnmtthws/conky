@@ -99,12 +99,12 @@ void cmus_cb::work() {
 
       } else if (strncmp(line, "position ", 9) == 0) {
         cmus.curtime = line + 9;
-        cmus.timeleft =
-            strtol(cmus.totaltime.c_str(), nullptr, 10) -
-                strtol(cmus.curtime.c_str(), nullptr, 10);
+        cmus.timeleft = strtol(cmus.totaltime.c_str(), nullptr, 10) -
+                        strtol(cmus.curtime.c_str(), nullptr, 10);
         if (cmus.curtime.size() > 0) {
-          cmus.progress = static_cast<float>(strtol(cmus.curtime.c_str(), nullptr, 10)) /
-                          strtol(cmus.totaltime.c_str(), nullptr, 10);
+          cmus.progress =
+              static_cast<float>(strtol(cmus.curtime.c_str(), nullptr, 10)) /
+              strtol(cmus.totaltime.c_str(), nullptr, 10);
         } else {
           cmus.progress = 0;
         }
@@ -189,7 +189,8 @@ void print_cmus_totaltime(struct text_object *obj, char *p,
       lround(music_player_interval.get(*state) / active_update_interval()), 1l);
   const cmus_result &cmus =
       conky::register_cb<cmus_cb>(period)->get_result_copy();
-  format_seconds_short(p, p_max_size, strtol(cmus.totaltime.c_str(), nullptr, 10));
+  format_seconds_short(p, p_max_size,
+                       strtol(cmus.totaltime.c_str(), nullptr, 10));
 }
 
 void print_cmus_timeleft(struct text_object *obj, char *p,
@@ -209,7 +210,8 @@ void print_cmus_curtime(struct text_object *obj, char *p,
       lround(music_player_interval.get(*state) / active_update_interval()), 1l);
   const cmus_result &cmus =
       conky::register_cb<cmus_cb>(period)->get_result_copy();
-  format_seconds_short(p, p_max_size, strtol(cmus.curtime.c_str(), nullptr, 10));
+  format_seconds_short(p, p_max_size,
+                       strtol(cmus.curtime.c_str(), nullptr, 10));
 }
 
 #undef CMUS_PRINT_GENERATOR
