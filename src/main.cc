@@ -185,6 +185,9 @@ static void print_version() {
 #ifdef BUILD_HCL_GRADIENT
             << _("  * HCL Gradient\n")
 #endif /* BUILD_HCL_GRADIENT */
+#ifdef BUILD_HSV_GRADIENT
+            << _("  * HSV Gradient\n")
+#endif /* BUILD_HSV_GRADIENT */
 #if defined BUILD_AUDACIOUS || defined BUILD_CMUS || defined BUILD_MPD || \
     defined BUILD_MOC || defined BUILD_XMMS2
             << _("\n Music detection:\n")

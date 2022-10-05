@@ -136,6 +136,9 @@
 #ifdef BUILD_HCL_GRADIENT
 #include "hcl_gradient.h"
 #endif /* BUILD_HCL_GRADIENT */
+#ifdef BUILD_HSV_GRADIENT
+#include "hsv_gradient.h"
+#endif /* BUILD_HSV_GRADIENT */
 
 #ifdef BUILD_OLD_CONFIG
 #include "convertconf.h"
@@ -1297,10 +1300,14 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 #ifdef BUILD_HCL_GRADIENT
                 tmpcolour = do_hcl_gradient(w - 1, current->last_colour,
                                             current->first_colour);
-#else  /* BUILD_HCL_GRADIENT */
+#endif /* BUILD_HCL_GRADIENT */
+#ifdef BUILD_HSV_GRADIENT
+                tmpcolour = do_hsv_gradient(w - 1, current->last_colour,
+                                            current->first_colour);
+#else  /* BUILD_HSV_GRADIENT */
                 tmpcolour = do_gradient(w - 1, current->last_colour,
                                         current->first_colour);
-#endif /* BUILD_HCL_GRADIENT */
+#endif /* BUILD_HSV_GRADIENT */
               }
               colour_idx = 0;
               for (i = w - 2; i > -1; i--) {
