@@ -77,7 +77,14 @@ const Search: React.FunctionComponent<SearchProps> = (props) => {
   const [isOpen, setIsOpen] = useState(false)
   const handleKeyPress = useCallback(
     (event: KeyboardEvent) => {
-      if (event.key == '/' && !isOpen) {
+      if (event.key === 'k' && (event.metaKey || event.ctrlKey) && isOpen) {
+        setIsOpen(false)
+        event.preventDefault()
+      } else if (
+        (event.key == '/' ||
+          (event.key === 'k' && (event.metaKey || event.ctrlKey))) &&
+        !isOpen
+      ) {
         setIsOpen(true)
         event.preventDefault()
       }
@@ -127,7 +134,7 @@ const Search: React.FunctionComponent<SearchProps> = (props) => {
   return (
     <>
       <div className="flex items-center ml-2">
-        <button onClick={openModal} title="Search (/)">
+        <button onClick={openModal} title="Search (/ or ⌘K)">
           <SearchIcon size={32} />
         </button>
       </div>
@@ -158,7 +165,7 @@ const Search: React.FunctionComponent<SearchProps> = (props) => {
                         <SearchIcon size={32} />
                       </Combobox.Label>
                       <Combobox.Input
-                        placeholder="Search docs (/)"
+                        placeholder="Search docs (/ or ⌘K)"
                         className="mx-1 p-2 w-full bg-gray-200 dark:bg-gray-800 outline-none"
                         onChange={(e) => setSearch(e.target.value)}
                       />

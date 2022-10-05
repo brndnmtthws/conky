@@ -1,5 +1,5 @@
 [build]
-command = "yarn run build"
+command = "npm run build"
 publish = ".next"
 
 # Include the doc dir in the build ignore command
