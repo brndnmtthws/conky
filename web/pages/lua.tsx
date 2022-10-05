@@ -1,6 +1,6 @@
 import Layout from '../components/Layout'
 import SEO from '../components/SEO'
-import { getLua, Documentation } from '../utils/doc-utils'
+import { getLua, Documentation, filterDesc } from '../utils/doc-utils'
 import Docs from '../components/Docs'
 import { getSearchIndex, SearchIndex } from '../utils/search'
 
@@ -24,7 +24,7 @@ export default function Lua(props: LuaProps) {
 }
 
 export async function getStaticProps() {
-  const lua = getLua()
+  const lua = filterDesc(getLua())
   const searchIndex = getSearchIndex()
 
   return { props: { lua, searchIndex } }

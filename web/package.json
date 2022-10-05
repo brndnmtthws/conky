@@ -24,7 +24,7 @@
     "@fontsource/source-serif-pro": "^4.5.9",
     "@headlessui/react": "^1.7.3",
     "@mapbox/rehype-prism": "^0.8.0",
-    "@netlify/plugin-nextjs": "4.23",
+    "@netlify/plugin-nextjs": "^4.24.0",
     "@tailwindcss/typography": "^0.5.0",
     "classnames": "^2.3.1",
     "colord": "^2.9.3",
@@ -50,7 +50,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-mdx": "^2.0.5",
     "js-yaml": "^4.1.0",
-    "netlify-plugin-cypress": "~2.2.0",
+    "netlify-plugin-cypress": "^2.2.0",
     "next-mdx-remote": "^4.1.0",
     "next-remote-watch": "2.0.0",
     "postcss": "^8.4.4",
@@ -58,7 +58,6 @@
     "remark-gfm": "^3.0.1",
     "tailwindcss": "^3.1.0",
     "tslint": "^6.1.3",
-    "tslint-config-airbnb": "^5.11.2",
     "typescript": "^4.8.3"
   }
 }

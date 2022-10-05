@@ -16,7 +16,7 @@ desc: |-
   listing of the available variables. Some of them may require build options to
   be enabled at compile time for them to work.
 
-  Colours are parsed using XParsecolor(), there might be a list of them:
+  Colours are parsed using `XParsecolor()`, there might be a list of them:
   `/usr/share/X11/rgb.txt`. Colour can be also in `#rrggbb` format (hex).
 
   Some objects may create threads, and sometimes these threads will not be
@@ -262,8 +262,8 @@ values:
     desc: Print track number of current cmus song.
   - name: color
     desc: |-
-      Change drawing color to 'color' which is a name of a color
-      or a hexcode preceded with #, e.g. #0A1B2C. If you use ncurses only
+      Change drawing color to _color_ which is a name of a color
+      or a hexcode preceded with #, e.g. `#0A1B2C`. If you use ncurses only
       the following colors are supported: red, green, yellow, blue, magenta,
       cyan, black, and white.
     args:
@@ -276,9 +276,9 @@ values:
     desc: |-
       Places the lines of var2 to the right of the lines of var1
       separated by the chars that are put between var1 and var2. For
-      example: ${combine ${head /proc/cpuinfo 2} - ${head /proc/meminfo 1}}
-      gives as output "cpuinfo_line1 - meminfo_line1" on line 1 and
-      "cpuinfo_line2 -" on line 2. $combine vars can also be nested to place
+      example: `${combine ${head /proc/cpuinfo 2} - ${head /proc/meminfo 1}}`
+      gives as output `cpuinfo_line1 - meminfo_line1` on line 1 and
+      `cpuinfo_line2 -` on line 2. $combine vars can also be nested to place
       more vars next to each other.
     args:
       - var1
@@ -594,7 +594,7 @@ values:
       Warning: this takes a lot more resources than other variables. I'd
       recommend coding wanted behaviour in C/C++ and posting a patch. This
       differs from $exec in that it parses the output of the command, so you
-      can insert things like ${color red}hi!${color} in your script and have
+      can insert things like `${color red}hi!${color}` in your script and have
       it correctly parsed by Conky. Caveats: Conky parses and evaluates the
       output of $execp every time Conky loops, and then destroys all the
       objects. If you try to use anything like $execi within an $execp
@@ -634,16 +634,16 @@ values:
     desc: |-
       Format time given in seconds. This var only works when the
       times_in_seconds configuration setting is on. Format is a string that
-      should start and end with a "-char. The "-chars are not part of the
-      output, \w,\d,\h,\m,\s,\(,\) and \\ are replaced by
-      weeks,days,hours,minutes,seconds,(,) and \. If you leave out a unit,
-      it's value will be expressed in the highest unit lower than the one
-      left out. Text between ()-chars will not be visible if a replaced unit
-      in this text is 0. If seconds is a decimal number then you can see the
-      numbers behind the point by using \S followed by a number that
-      specifies the amount of digits behind the point that you want to see
-      (maximum 9). You can also place a 'x' behind \S so you have all digits
-      behind the point and no trailing zero's. (also maximum 9).
+      should start and end with a double quote `"` character. The quote
+      characters are not part of the output, \w,\d,\h,\m,\s,\(,\) and \\ are
+      replaced by weeks,days,hours,minutes,seconds,(,) and \. If you leave out a
+      unit, it's value will be expressed in the highest unit lower than the one
+      left out. Text between ()-chars will not be visible if a replaced unit in
+      this text is 0. If seconds is a decimal number then you can see the
+      numbers behind the point by using \S followed by a number that specifies
+      the amount of digits behind the point that you want to see (maximum 9).
+      You can also place a 'x' behind \S so you have all digits behind the point
+      and no trailing zero's. (also maximum 9).
     args:
       - seconds
       - format
@@ -1406,44 +1406,44 @@ values:
     desc: |-
       Nvidia graphics card information via the XNVCtrl library.
 
-      *GPU_ID:* Optional parameter to choose the GPU to be used as 0,1,2,3,..
+      Temperatures are printed as float, all other values as integers.
+
+      **GPU_ID:** Optional parameter to choose the GPU to be used as 0,1,2,3,..
       Default parameter is 0
 
-      *Possible arguments:* (Temperatures are printed as float, all other
-      values as integer. Bracketed arguments are aliases)
+      **Possible arguments:**
 
-      **gputemp**( **temp**) **GPU temperature**
-      **gputempthreshold**( **threshold**) **Temperature threshold where the
-      GPU will reduce it\'s clock** speed
-      **ambienttemp**( **ambient**) **Ambient temperature outside the
-      graphics** card
-      **gpufreqcur**( **gpufreq**) **Current GPU clock speed**
-      **gpufreqmin** **Minimum GPU clock speed**
-      **gpufreqmax** **Maximum GPU clock speed**
-      **memfreqcur**( **memfreq**) **Current memory clock speed**
-      **memfreqmin** **Minimum memory clock speed**
-      **memfreqmax** **Maximum memory clock speed**
-      **mtrfreqcur**( **mtrfreq**) **Current memory transfer rate clock
-      speed**
-      **mtrfreqmin** **Minimum memory transfer rate clock speed**
-      **mtrfreqmax** **Maximum memory transfer rate clock speed**
-      **perflevelcur**( **perflevel**) **Current performance level**
-      **perflevelmin** **Lowest performance level**
-      **perflevelmax** **Highest performance level**
-      **perfmode** **Performance mode**
-      **gpuutil** **GPU utilization %**
-      **membwutil** **Memory bandwidth utilization %**
-      **videoutil** **Video engine utilization %**
-      **pcieutil** **PCIe bandwidth utilization %**
-      **memused**( **mem**) **Amount of used memory**
-      **memfree**( **memavail**) **Amount of free memory**
-      **memmax**( **memtotal**) **Total amount of memory**
-      **memutil**( **memperc**) **Memory utilization %**
-      **fanspeed** **Fan speed**
-      **fanlevel** **Fan level %**
-      **imagequality** **Image quality**
-      **modelname** **name of the GPU card**
-      **driverversion** **Driver version**
+      | Argument           | Alias       | Description                                                     |
+      |--------------------|-------------|-----------------------------------------------------------------|
+      | `gputemp`          | `temp`      | GPU temperature                                                 |
+      | `gputempthreshold` | `threshold` | Temperature threshold where the GPU will reduce its clock speed |
+      | `ambienttemp`      | `ambient`   | Ambient temperature outside the graphics card                   |
+      | `gpufreqcur`       | `gpufreq`   | Current GPU clock speed                                         |
+      | `gpufreqmin`       |             | Minimum GPU clock speed                                         |
+      | `gpufreqmax`       |             | Maximum GPU clock speed                                         |
+      | `memfreqcur`       | `memfreq`   | Current memory clock speed                                      |
+      | `memfreqmin`       |             | Minimum memory clock speed                                      |
+      | `memfreqmax`       |             | Maximum memory clock speed                                      |
+      | `mtrfreqcur`       | `mtrfreq`   | Current memory transfer rate clock speed                        |
+      | `mtrfreqmin`       |             | Minimum memory transfer rate clock speed                        |
+      | `mtrfreqmax`       |             | Maximum memory transfer rate clock speed                        |
+      | `perflevelcur`     | `perflevel` | Current performance level                                       |
+      | `perflevelmin`     |             | Lowest performance level                                        |
+      | `perflevelmax`     |             | Highest performance level                                       |
+      | `perfmode`         |             | Performance mode                                                |
+      | `gpuutil`          |             | GPU utilization %                                               |
+      | `membwutil`        |             | Memory bandwidth utilization %                                  |
+      | `videoutil`        |             | Video engine utilization %                                      |
+      | `pcieutil`         |             | PCIe bandwidth utilization %                                    |
+      | `memused`          | `mem`       | Amount of used memory                                           |
+      | `memfree`          | `memavail`  | Amount of free memory                                           |
+      | `memmax`           | `memtotal`  | Total amount of memory                                          |
+      | `memutil`          | `memperc`   | Memory utilization %                                            |
+      | `fanspeed`         |             | Fan speed                                                       |
+      | `fanlevel`         |             | Fan level %                                                     |
+      | `imagequality`     |             | Image quality                                                   |
+      | `modelname`        |             | Model name of the GPU card                                      |
+      | `driverversion`    |             | Driver version                                                  |
     args:
       - argument
       - (GPU_ID)
@@ -1454,22 +1454,23 @@ values:
       default_bar_height and default_bar_width config settings,
       respectively.
 
-      *GPU_ID:* Optional parameter to choose the GPU to be used as 0,1,2,3,..
+      **GPU_ID:** Optional parameter to choose the GPU to be used as 0,1,2,3,..
       Default parameter is 0
 
-      *Note the following arguments are* incompatible: **gputempthreshold**(
-      **threshold**)
-      **gpufreqmin**
-      **gpufreqmax**
-      **memfreqmin**
-      **memfreqmax**
-      **mtrfreqmin**
-      **mtrfreqmax**
-      **perflevelmin**
-      **perflevelmax**
-      **perfmode**
-      **memtotal**( **memmax**)
-      **fanspeed**
+      **Note the following arguments are** incompatible:
+
+      * `gputempthreshold` (`threshold`)
+      * `gpufreqmin`
+      * `gpufreqmax`
+      * `memfreqmin`
+      * `memfreqmax`
+      * `mtrfreqmin`
+      * `mtrfreqmax`
+      * `perflevelmin`
+      * `perflevelmax`
+      * `perfmode`
+      * `memtotal` (`memmax`)
+      * `fanspeed`
     args:
       - (height),(width)
       - argument
@@ -1481,7 +1482,7 @@ values:
       default to the default_gauge_height and default_gauge_width config
       settings, respectively.
 
-      *GPU_ID:*Optional parameter to choose the GPU to be used as 0,1,2,3,..
+      **GPU_ID:** Optional parameter to choose the GPU to be used as 0,1,2,3,..
       Default parameter is 0
 
       For possible arguments see nvidia and nvidiabar.
@@ -1496,7 +1497,7 @@ values:
       parameters are optional, and default to the default_graph_height and
       default_graph_width config settings, respectively.
 
-      *GPU_ID:* NOT optional. This parameter allows to choose the GPU to be
+      **GPU_ID:** NOT optional. This parameter allows to choose the GPU to be
       used as 0,1,2,3,..
 
       For possible arguments see nvidia and nvidiabar. To learn more about the
@@ -1542,14 +1543,11 @@ values:
       status. The item parameter specifies, what information to display.
       Exactly one item must be specified. Valid items are:
 
-      **status** **Display if battery is fully charged, charging,**
-      discharging or absent (running on AC)
-      **percent** **Display charge of battery in percent, if charging or**
-      discharging. Nothing will be displayed, if battery is fully charged or
-      absent.
-      **time** **Display the time remaining until the battery will be** fully
-      charged or discharged at current rate. Nothing is displayed, if battery
-      is absent or if it\'s present but fully charged and not discharging.
+      | Item      | Description                                                                                                                                                                                            |
+      |-----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+      | `status`  | Display if battery is fully charged, charging, discharging or absent (running on AC)                                                                                                                   |
+      | `percent` | Display charge of battery in percent, if charging or discharging. Nothing will be displayed, if battery is fully charged or absent.                                                                    |
+      | `time`    | Display the time remaining until the battery will be fully charged or discharged at current rate. Nothing is displayed, if battery is absent or if it's present but fully charged and not discharging. |
     args:
       - item
   - name: pid_chroot
@@ -2019,36 +2017,34 @@ values:
       TCP port (both IPv6 and IPv4) monitor for specified local ports.
       Port numbers must be in the range 1 to 65535. Valid items are:
 
-      **count** **Total number of connections in the range**
-      **rip** **Remote ip address**
-      **rhost** **Remote host name**
-      **rport** **Remote port number**
-      **rservice** **Remote service name from /etc/services**
-      **lip** **Local ip address**
-      **lhost** **Local host name**
-      **lport** **Local port number**
-      **lservice** **Local service name from /etc/services**
+      | Item       | Description                              |
+      |------------|------------------------------------------|
+      | `count`    | Total number of connections in the range |
+      | `rip`      | Remote ip address                        |
+      | `rhost`    | Remote host name                         |
+      | `rport`    | Remote port number                       |
+      | `rservice` | Remote service name from `/etc/services` |
+      | `lip`      | Local ip address                         |
+      | `lhost`    | Local host name                          |
+      | `lport`    | Local port number                        |
+      | `lservice` | Local service name from `/etc/services`  |
 
       The connection index provides you with access to each connection in the
       port monitor. The monitor will return information for index values from
       0 to n-1 connections. Values higher than n-1 are simply ignored. For the
-      \"count\" item, the connection index must be omitted. It is required for
+      `count` item, the connection index must be omitted. It is required for
       all other items.
 
       Examples:
 
-      **\${tcp_portmon 6881 6999 count}** **Displays the number of connections
-      in the** bittorrent port range
-      **\${tcp_portmon 22 22 rip 0}** **Displays the remote host ip of the
-      first sshd** connection
-      **\${tcp_portmon 22 22 rip 9}** **Displays the remote host ip of the
-      tenth sshd** connection
-      **\${tcp_portmon 1 1024 rhost 0}** **Displays the remote host name of
-      the first** connection on a privileged port
-      **\${tcp_portmon 1 1024 rport 4}** **Displays the remote host port of
-      the fifth** connection on a privileged port
-      **\${tcp_portmon 1 65535 lservice 14}** **Displays the local service
-      name of the fifteenth** connection in the range of all ports
+      | Example                              | Description                                                                           |
+      |--------------------------------------|---------------------------------------------------------------------------------------|
+      | `${tcp_portmon 6881 6999 count}`     | Displays the number of connections in the bittorrent port range                       |
+      | `${tcp_portmon 22 22 rip 0}`         | Displays the remote host ip of the first sshd connection                              |
+      | `${tcp_portmon 22 22 rip 9}`         | Displays the remote host ip of the tenth sshd connection                              |
+      | `${tcp_portmon 1 1024 rhost 0}`      | Displays the remote host name of the first connection on a privileged port            |
+      | `${tcp_portmon 1 1024 rport 4}`      | Displays the remote host port of the fifth connection on a privileged port            |
+      | `${tcp_portmon 1 65535 lservice 14}` | Displays the local service name of the fifteenth connection in the range of all ports |
 
       Note that port monitor variables which share the same port range
       actually refer to the same monitor, so many references to a single port

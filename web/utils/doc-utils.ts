@@ -40,6 +40,17 @@ function getDocumentation(source: string): Documentation {
   return docs
 }
 
+export function filterDesc(docs: Documentation): Documentation {
+  return {
+    ...docs,
+    desc: '',
+    values: docs.values.map((v) => ({
+      ...v,
+      desc: '',
+    })),
+  }
+}
+
 export function getConfigSettings(): Documentation {
   return getDocumentation('config_settings.yaml')
 }
