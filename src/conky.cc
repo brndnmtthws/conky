@@ -130,13 +130,7 @@
 #include "openbsd.h"
 #endif /* __OpenBSD__ */
 
-#ifdef BUILD_HCL_GRADIENT
-#include "hcl_gradient.h"
-#endif /* BUILD_HCL_GRADIENT */
-
-#ifdef BUILD_HSV_GRADIENT
-#include "hsv_gradient.h"
-#endif /* BUILD_HSV_GRADIENT */
+#include "gradient.h"
 
 #ifdef BUILD_OLD_CONFIG
 #include "convertconf.h"
@@ -295,11 +289,18 @@ conky::range_config_setting<int> diskio_avg_samples("diskio_avg_samples", 1, 14,
                                                     2, true);
 
 #ifdef BUILD_GUI
-
+/* graph */
 conky::simple_config_setting<bool> show_graph_scale("show_graph_scale", false,
                                                     false);
 conky::simple_config_setting<bool> show_graph_range("show_graph_range", false,
                                                     false);
+
+enum gradient_state { RGB_GRADIENT = 0, HSV_GRADIENT, HCL_GRADIENT };
+template <>
+conky::lua_traits<gradient_state>::Map conky::lua_traits<gradient_state>::map =
+    {{"rgb", RGB_GRADIENT}, {"hsv", HSV_GRADIENT}, {"hcl", HCL_GRADIENT}};
+static conky::simple_config_setting<gradient_state> graph_gradient_mode(
+    "graph_gradient_mode", RGB_GRADIENT, false);
 
 /* Position on the screen */
 conky::simple_config_setting<int> gap_x("gap_x", 5, true);
@@ -400,6 +401,20 @@ int dpi_scale(int value) {
 #else  /* BUILD_GUI */
   return value;
 #endif /* BUILD_GUI */
+}
+
+conky::gradient_factory *create_gradient_factory(int width,
+                                                 unsigned long first_colour,
+                                                 unsigned long last_colour) {
+  switch (graph_gradient_mode.get(*state)) {
+    case RGB_GRADIENT:
+      return new conky::rgb_gradient_factory(width, first_colour, last_colour);
+    case HSV_GRADIENT:
+      return new conky::hsv_gradient_factory(width, first_colour, last_colour);
+    case HCL_GRADIENT:
+      return new conky::hcl_gradient_factory(width, first_colour, last_colour);
+  }
+  return nullptr;
 }
 
 /* formatted text to render on screen, generated in generate_text(),
@@ -1295,17 +1310,10 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
               std::unique_ptr<unsigned long[]> tmpcolour;
 
               if (current->last_colour != 0 || current->first_colour != 0) {
-#ifdef BUILD_HCL_GRADIENT
-                tmpcolour = do_hcl_gradient(w - 1, current->last_colour,
-                                            current->first_colour);
-#endif /* BUILD_HCL_GRADIENT */
-#ifdef BUILD_HSV_GRADIENT
-                tmpcolour = do_hsv_gradient(w - 1, current->last_colour,
-                                            current->first_colour);
-#else  /* BUILD_HSV_GRADIENT */
-                tmpcolour = do_gradient(w - 1, current->last_colour,
-                                        current->first_colour);
-#endif /* BUILD_HSV_GRADIENT */
+                auto factory = create_gradient_factory(w, current->last_colour,
+                                                       current->first_colour);
+                tmpcolour = factory->create_gradient();
+                delete factory;
               }
               colour_idx = 0;
               for (i = w - 2; i > -1; i--) {

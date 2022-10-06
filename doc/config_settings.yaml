@@ -433,6 +433,10 @@ values:
     desc: Shows the time range covered by a graph.
   - name: show_graph_scale
     desc: Shows the maximum value in scaled graphs.
+  - name: graph_gradient_mode
+    desc: |-
+      Changes the color space used for interpolation. Arguments are hcl, hsv,
+      and rgb (default).
   - name: stippled_borders
     desc: Border stippling (dashing) in pixels.
   - name: temperature_unit
