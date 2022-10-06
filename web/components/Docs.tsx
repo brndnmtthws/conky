@@ -12,7 +12,7 @@ export interface DocsProps {
 export default function Docs({ docs, braces, assign }: DocsProps) {
   const router = useRouter()
   return (
-    <div className="prose dark:prose-invert prose-lg lg:prose-xl">
+    <div className="prose dark:prose-invert prose-lg">
       <div dangerouslySetInnerHTML={{ __html: docs.desc_md }} />
       <div className="divide-y divide-gray-700/25 dark:divide-gray-300/25">
         {docs.values.map((doc) => {
@@ -22,9 +22,11 @@ export default function Docs({ docs, braces, assign }: DocsProps) {
               id={doc.name}
               key={doc.name}
               className={
-                target
-                  ? 'pt-4 scroll-mt-16 bg-rose-300 dark:bg-rose-900 hover:bg-slate-100 dark:hover:bg-slate-800'
-                  : 'pt-4 scroll-mt-16 target:bg-rose-300 target:dark:bg-rose-900 hover:bg-slate-100 dark:hover:bg-slate-800'
+                'pt-4 scroll-mt-16 ' +
+                (target
+                  ? 'bg-rose-300 dark:bg-rose-900'
+                  : 'bg-slate-200 dark:bg-slate-800 target:bg-rose-300 target:dark:bg-rose-900') +
+                ' hover:bg-opacity-25 dark:hover:bg-opacity-25 hover:ring-1 ring-black dark:ring-white ring-inset'
               }
             >
               <div className="flex">

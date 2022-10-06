@@ -87,7 +87,7 @@ export const LineChart = ({ width, height, darkMode }: LineChartProps) => {
           (update) =>
             update
               .transition()
-              .duration(500)
+              .duration(1000)
               .style(
                 'stroke',
                 darkMode ? stroke.lighten().toHex() : stroke.darken().toHex()
@@ -103,7 +103,7 @@ export const LineChart = ({ width, height, darkMode }: LineChartProps) => {
 
       timerRef.current = setTimeout(() => {
         doIt(data)
-      }, 500)
+      }, 1000)
     }
 
     doIt(data)

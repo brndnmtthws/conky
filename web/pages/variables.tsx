@@ -1,6 +1,6 @@
 import Layout from '../components/Layout'
 import SEO from '../components/SEO'
-import { getVariables, Documentation } from '../utils/doc-utils'
+import { getVariables, Documentation, filterDesc } from '../utils/doc-utils'
 import Docs from '../components/Docs'
 import { getSearchIndex, SearchIndex } from '../utils/search'
 
@@ -27,7 +27,7 @@ export default function Variables(props: VariablesProps) {
 }
 
 export async function getStaticProps() {
-  const variables = getVariables()
+  const variables = filterDesc(getVariables())
   const searchIndex = getSearchIndex()
 
   return { props: { variables, searchIndex } }
