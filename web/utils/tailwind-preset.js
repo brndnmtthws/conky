@@ -13,7 +13,7 @@ module.exports = {
   theme: {
     fontFamily: {
       sans: [
-        'Inter',
+        'InterVariable',
         'ui-sans-serif',
         'system-ui',
         '-apple-system',
@@ -30,7 +30,7 @@ module.exports = {
         'Noto Color Emoji',
       ],
       serif: [
-        'Source Serif Pro',
+        'NewsreaderVariable',
         'ui-serif',
         'Georgia',
         'Cambria',
@@ -39,7 +39,7 @@ module.exports = {
         'serif',
       ],
       mono: [
-        'Fira Code',
+        'Fira CodeVariable',
         'ui-monospace',
         'SFMono-Regular',
         'Menlo',

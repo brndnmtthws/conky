@@ -20,8 +20,8 @@ desc: |-
   `/etc/conky/conky.conf`.
 
   You might want to copy the default config to `~/.config/conky/conky.conf` and
-  then start modifying it. Other configs can be found at
-  https://github.com/brndnmtthws/conky.
+  then start modifying it. User configs can be found at
+  https://github.com/brndnmtthws/conky/wiki/Configs.
 
   Optional arguments are generally denoted with paretheses (i.e., `(optional)`).
 values:
@@ -485,6 +485,7 @@ values:
       If true, top name shows the full command line of each
       process, including arguments (whenever possible). Otherwise, only the
       basename is displayed. Default value is false.
+    default: false
   - name: top_name_width
     desc: Width for $top name value (defaults to 15 characters).
   - name: total_run_times
