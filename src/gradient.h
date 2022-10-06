@@ -61,7 +61,7 @@ class gradient_factory {
   int convert_to_rgb(long *const array);
 
  protected:
-  virtual void fix_diff(long *diff) {}
+  virtual void fix_diff(long *) {}
 
   static long get_hue(long *const scaled, long chroma, long value);
   static long get_intermediate(long hue, long chroma);
