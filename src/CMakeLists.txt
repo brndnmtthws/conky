@@ -68,6 +68,8 @@ set(conky_sources
     exec.h
     fs.cc
     fs.h
+    gradient.cc
+    gradient.h
     mail.cc
     mail.h
     misc.cc
@@ -303,14 +305,6 @@ if(BUILD_INTEL_BACKLIGHT)
   set(intel_backlight intel_backlight.cc intel_backlight.h)
   set(optional_sources ${optional_sources} ${intel_backlight})
 endif(BUILD_INTEL_BACKLIGHT)
-
-if(BUILD_HCL_GRADIENT)
-  set(hcl_gradient hcl_gradient.cc hcl_gradient.h)
-  set(optional_sources ${optional_sources} ${hcl_gradient})
-elseif(BUILD_HSV_GRADIENT)
-  set(hsv_gradient hsv_gradient.cc hsv_gradient.h)
-  set(optional_sources ${optional_sources} ${hsv_gradient})
-endif(BUILD_HCL_GRADIENT)
 
 if(BUILD_TESTS)
   # Create a library strictly for testing
