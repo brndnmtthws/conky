@@ -78,7 +78,9 @@ void gradient_factory::setup_masks() {
 
 void gradient_factory::setup_colour_depth() {
 #ifdef BUILD_X11
-  if (out_to_x.get(*state)) {
+  if (state == nullptr) {
+    colour_depth = 24; // testing purposes
+  } else if (out_to_x.get(*state)) {
     colour_depth = DisplayPlanes(display, screen);
   } else
 #endif /* BUILD_X11 */
@@ -211,10 +213,10 @@ void hsv_gradient_factory::convert_from_scaled_rgb(long *const scaled,
   auto value = get_value(scaled);
   auto minimum = get_minimum(scaled);
   auto chroma = value - minimum;
-  auto saturation = (SCALE * chroma) / value;
+  auto saturation = (SCALE360 * chroma) / value;
 
   target[0] = get_hue(scaled, chroma, value);
-  target[1] = saturation * 360L;
+  target[1] = saturation;
   target[2] = value * 360L;
 }
 
@@ -254,7 +256,7 @@ namespace {
 // Using Rec.2020 color space
 // Y' = 0.2627 x R + 0.6780 x G + 0.0593 x B
 long get_luma(long *const rgb) {
-  return (2627L * rgb[0] + 6780L * rgb[1] + 593L * rgb[2]) / 10000L;
+  return 360L * (2627L * rgb[0] + 6780L * rgb[1] + 593L * rgb[2]) / 10000L;
 }
 
 // Using Rec.2020 color space
@@ -282,7 +284,7 @@ void hcl_gradient_factory::convert_from_scaled_rgb(long *const scaled,
 
   target[0] = get_hue(scaled, chroma, value);
   target[1] = chroma * 360L;
-  target[2] = luma * 360L;
+  target[2] = luma;
 }
 
 void hcl_gradient_factory::convert_to_scaled_rgb(long *const target,

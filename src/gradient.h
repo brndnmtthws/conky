@@ -56,12 +56,14 @@ class gradient_factory {
   virtual void convert_from_scaled_rgb(long *const scaled, long *target) = 0;
   virtual void convert_to_scaled_rgb(long *const target, long *scaled) = 0;
 
- protected:
   void convert_from_rgb(long original, long *array);
   int convert_to_rgb(long *const array);
-  long get_hue(long *const scaled, long chroma, long value);
-  long get_intermediate(long hue, long chroma);
+
+ protected:
   virtual void fix_diff(long *diff) {}
+
+  static long get_hue(long *const scaled, long chroma, long value);
+  static long get_intermediate(long hue, long chroma);
 
   static short colour_depth;
   static long mask[3];

@@ -263,8 +263,6 @@ option(BUILD_PULSEAUDIO
 option(BUILD_INTEL_BACKLIGHT
        "Enable support for Intel backlight" false)
 
-option(BUILD_HSV_GRADIENT "Enable gradient in HSV colour space" true)
-
 message(STATUS "CMAKE_C_FLAGS: " ${CMAKE_C_FLAGS})
 message(STATUS "CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS})
 
