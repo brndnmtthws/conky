@@ -50,6 +50,7 @@ class gradient_factory {
  public:
   gradient_factory(int width, unsigned long first_colour,
                    unsigned long last_colour);
+  virtual ~gradient_factory() { }
 
   colour_array create_gradient();
 
