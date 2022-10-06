@@ -148,7 +148,9 @@ values:
       Substitute N by a number between 0 and 9 inclusive. Use the same
       format as a font variable.
   - name: forced_redraw
-    desc: Boolean value, if true, Conky will redraw everything when you switch the workspace. This may cause delays/flickering on some WMs.
+    desc: |-
+      Boolean value, if true, Conky will redraw everything when you switch the
+      workspace. This may cause delays/flickering on some WMs.
   - name: format_human_readable
     desc: |-
       If enabled, values which are in bytes will be printed in
@@ -373,7 +375,8 @@ values:
     desc: |-
       If own_window_transparent no, set a specified background
       colour. Takes either a hex value (e.g. '#ffffff'),
-      a shorthand hex value (e.g. '#fff'), or a valid RGB name (see `/usr/lib/X11/rgb.txt`).
+      a shorthand hex value (e.g. '#fff'), or a valid RGB nam 
+      (see `/usr/lib/X11/rgb.txt`).
     default: black
     args:
       - seconds
@@ -437,6 +440,9 @@ values:
     desc: |-
       Changes the color space used for interpolation. Arguments are hcl, hsv,
       and rgb (default).
+    args:
+      - (rbg|hcl|hsv)
+    default: rgb
   - name: stippled_borders
     desc: Border stippling (dashing) in pixels.
   - name: temperature_unit
