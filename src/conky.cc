@@ -403,6 +403,7 @@ int dpi_scale(int value) {
 #endif /* BUILD_GUI */
 }
 
+#ifdef BUILD_GUI
 conky::gradient_factory *create_gradient_factory(int width,
                                                  unsigned long first_colour,
                                                  unsigned long last_colour) {
@@ -416,6 +417,7 @@ conky::gradient_factory *create_gradient_factory(int width,
   }
   return nullptr;
 }
+#endif /* BUILD_GUI */
 
 /* formatted text to render on screen, generated in generate_text(),
  * drawn in draw_stuff() */
