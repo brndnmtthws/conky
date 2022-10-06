@@ -2,7 +2,6 @@ documentation:
   - doc/*
   - doc/**/*
 
-
 extras:
   - extras/*
   - extras/**/*
@@ -26,3 +25,7 @@ appimage:
 3rdparty:
   - 3rdparty/*
   - 3rdparty/**/*
+
+gh-actions:
+  - .github/workflows/*
+  - .github/workflows/**/*
