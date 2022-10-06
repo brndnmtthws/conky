@@ -1,5 +1,7 @@
 documentation:
-  - docs/*
+  - doc/*
+  - doc/**/*
+
 
 extras:
   - extras/*
