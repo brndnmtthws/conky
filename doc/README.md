@@ -24,9 +24,9 @@ The generated markdown is used to generate a final man page using
 [`pandoc`](https://pandoc.org/). Generating the final man page is a 2 step
 process:
 
-1. Run `docgen.py` to process `man.md.j2`:
+1. Run `render.py` to process `man.md.j2`:
    ```console
-   $ ./docgen.py man.md.j2 > man.md
+   $ ./render.py man.md.j2 > man.md
    ```
 2. Run `pandoc` to convert the markdown into a man page:
    ```console
