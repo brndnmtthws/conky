@@ -85,6 +85,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
 void get_acpi_fan(char *, size_t);
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item);
 int get_battery_perct(const char *bat);
+void get_battery_power_draw(char *buffer, unsigned int n, const char *bat);
 double get_battery_perct_bar(struct text_object *);
 void get_battery_short_status(char *buf, unsigned int n, const char *bat);
 
@@ -162,6 +163,7 @@ void print_acpiacadapter(struct text_object *, char *, unsigned int);
 void print_battery(struct text_object *, char *, unsigned int);
 void print_battery_time(struct text_object *, char *, unsigned int);
 uint8_t battery_percentage(struct text_object *);
+void battery_power_draw(struct text_object *, char *, unsigned int);
 void print_battery_short(struct text_object *, char *, unsigned int);
 void print_battery_status(struct text_object *, char *, unsigned int);
 #endif /* !__OpenBSD__ */

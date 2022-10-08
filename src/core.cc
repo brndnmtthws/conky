@@ -586,6 +586,18 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->data.s = strndup(bat, text_buffer_size.get(*state));
   obj->callbacks.percentage = &battery_percentage;
   obj->callbacks.free = &gen_free_opaque;
+  END OBJ(battery_power_draw, nullptr) char bat[64];
+
+  if (arg != nullptr) {
+    sscanf(arg, "%63s", bat);
+  } else {
+    strncpy(bat, "BAT0", 5);
+  }
+  obj->data.s = strndup(bat, text_buffer_size.get(*state));
+  obj->callbacks.print = &battery_power_draw;
+  obj->callbacks.free = &gen_free_opaque;
+ 
+
   END OBJ(battery_bar, nullptr) char bat[64];
 
   arg = scan_bar(obj, arg, 100);
