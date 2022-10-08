@@ -175,6 +175,13 @@ values:
     default: BAT0
     args:
       - (num)
+  - name: battery_power_draw
+    desc: |-
+      Battery power draw in watts
+    default: BAT0
+    args:
+      - (num)
+   
   - name: battery_short
     desc: |-
       Battery status and remaining percentage capacity of ACPI or APM battery.
