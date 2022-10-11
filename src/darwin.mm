@@ -1036,6 +1036,10 @@ int get_battery_perct(const char * /*bat*/) {
   return 1;
 }
 
+void get_battery_power_draw(char * /*buffer*/, unsigned int /*n*/, const char * /*bat*/) {
+  printf("get_battery_power_draw: STUB\n");
+}
+
 double get_battery_perct_bar(struct text_object * /*obj*/) {
   printf("get_battery_perct_bar: STUB\n");
   return 0.0;

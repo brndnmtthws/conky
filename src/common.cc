@@ -639,6 +639,11 @@ void print_battery_time(struct text_object *obj, char *p,
   get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_TIME);
 }
 
+void battery_power_draw(struct text_object *obj, char *p,
+			unsigned int p_max_size) {
+  get_battery_power_draw(p, p_max_size, obj->data.s);
+}
+
 uint8_t battery_percentage(struct text_object *obj) {
   return get_battery_perct(obj->data.s);
 }

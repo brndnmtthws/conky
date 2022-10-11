@@ -91,6 +91,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Configure with CMake
         run: |
+          set -x # show the commands we're running
           [[ "${{ matrix.compiler }}" == "clang"* ]] && CC=clang-${{ matrix.compiler_version }}
           [[ "${{ matrix.compiler }}" == "clang"* ]] && CXX=clang++-${{ matrix.compiler_version }}
 
