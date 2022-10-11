@@ -49,8 +49,8 @@ gradient_factory::gradient_factory(int width, unsigned long first_colour,
 
   if (!is_set) {
     setup_colour_depth();
-    setup_masks();
     setup_shifts();
+    setup_masks();
     is_set = true;
   }
 }
@@ -70,17 +70,18 @@ void gradient_factory::setup_masks() {
     mask[2] |= 1 << i;
   }
 
-  if (colour_depth % 3 == 1) { mask[1] |= 1 << (colour_depth / 3); }
+  if (colour_depth % 3 == 1) {
+    mask[1] |= 1 << (colour_depth / 3);
+  }
 
-  mask[0] = mask[0] << (2 * colour_depth / 3 + colour_depth % 3);
-  mask[1] = mask[1] << (colour_depth / 3);
+  for (int i = 0; i < 3; i++) {
+    mask[i] = mask[i] << shift[i];
+  }
 }
 
 void gradient_factory::setup_colour_depth() {
 #ifdef BUILD_X11
-  if (state == nullptr) {
-    colour_depth = 24; // testing purposes
-  } else if (out_to_x.get(*state)) {
+  if (out_to_x.get(*state)) {
     colour_depth = DisplayPlanes(display, screen);
   } else
 #endif /* BUILD_X11 */
