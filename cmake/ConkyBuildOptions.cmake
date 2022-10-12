@@ -238,11 +238,6 @@ option(BUILD_CURL "Enable if you want Curl support" false)
 
 option(BUILD_RSS "Enable if you want RSS support" false)
 
-option(BUILD_WEATHER_METAR "Enable METAR weather support" true)
-if(BUILD_WEATHER_METAR OR BUILD_RSS)
-  set(BUILD_CURL true)
-endif(BUILD_WEATHER_METAR OR BUILD_RSS)
-
 option(BUILD_APCUPSD "Enable APCUPSD support" true)
 
 option(BUILD_ICAL "Enable if you want iCalendar (RFC 5545) support" false)

@@ -254,11 +254,6 @@ if(BUILD_RSS)
   set(optional_sources ${optional_sources} ${rss})
 endif(BUILD_RSS)
 
-if(BUILD_WEATHER)
-  set(weather weather.cc weather.h)
-  set(optional_sources ${optional_sources} ${weather})
-endif(BUILD_WEATHER)
-
 if(BUILD_NVIDIA)
   set(nvidia nvidia.cc nvidia.h)
   set(optional_sources ${optional_sources} ${nvidia})

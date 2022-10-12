@@ -114,9 +114,6 @@
 #ifdef BUILD_CURL
 #include "ccurl_thread.h"
 #endif /* BUILD_CURL */
-#ifdef BUILD_WEATHER_METAR
-#include "weather.h"
-#endif /* BUILD_WEATHER_METAR */
 
 #include "display-output.hh"
 #include "lua-config.hh"

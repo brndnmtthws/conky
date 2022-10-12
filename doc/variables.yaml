@@ -24,7 +24,7 @@ desc: |-
   threads while Conky is running. For example, if you use an MPD variable,
   the MPD thread will keep running until Conky dies. Some threaded objects
   will use one of the parameters as a `key`, so that you only have 1
-  relevant thread running (for example, the $curl, $rss and $weather
+  relevant thread running (for example, the $curl, and $rss
   objects launch one thread per URI).
 
   Optional arguments are generally denoted with paretheses (i.e., `(optional)`).
@@ -2369,116 +2369,6 @@ values:
     default: 1
     args:
       - (n)
-  - name: weather
-    desc: |-
-      This feature is currently unimplemented.
-
-      Download, parse and display METAR data.
-
-      \'URI\' must be a valid METAR URI.
-
-      http://tgftp.nws.noaa.gov/data/observations/metar/stations/
-
-      \'locID\' must be a valid location identifier for the required uri. For
-      the NOAA site this must be a valid ICAO (see for instance
-      *https://pilotweb.nas.faa.gov/qryhtml/icao/*). For the weather.com site
-      this must be a valid location ID (see for instance
-      *http://aspnetresources.com/tools/locid.aspx*).
-
-      \'data_type\' must be one of the following:
-
-      **last_update** The date and time stamp of the data. The result depends
-      on the URI used. For the NOAA site it is date (yyyy/mm/dd) and UTC time.
-      For the weather.com one it is date (\[m\]m/\[d\]d/yy) and Local Time of
-      the station.\
-      **temperature**
-
-      Air temperature (you can use the \'temperature_unit\' config setting to
-      change units)\
-      **cloud_cover**
-
-      The highest cloud cover status\
-      **pressure**
-
-      Air pressure in millibar\
-      **wind_speed**
-
-      Wind speed in km/h\
-      **wind_dir**
-
-      Wind direction\
-      **wind_dir_DEG**
-
-      Compass wind direction\
-      **humidity**
-
-      Relative humidity in %\
-      **weather**
-
-      Any relevant weather event (rain, snow, etc.). This is not used if you
-      are querying the weather.com site since this data is aggregated into the
-      cloud_cover one\
-      **icon**
-
-      Weather icon (only for www.weather.com). Can be used together with the
-      icon kit provided upon registering to their service.
-
-      \'delay_in_minutes\' (optional, default 30) cannot be less than 30
-      minutes.
-
-      This object is threaded, and once a thread is created it can\'t be
-      explicitly destroyed. One thread will run for each URI specified.
-
-      Note that these variables are still EXPERIMENTAL and can be subject to
-      many future changes.
-    args:
-      - URI
-      - locID
-      - data_type
-      - (interval_in_minutes)
-  - name: weather_forecast
-    desc: |-
-      This feature is currently unimplemented.
-
-      Download, parse and display weather forecast data for a given day
-      (daytime only).
-
-      \'locID\', see \'weather\' above.
-
-      \'day\' is a number from 0 (today) to 4 (3 days after tomorrow).
-
-      \'data_type\' must be one of the following:
-
-      **day** **Day of the week**\
-      **date** **Date, in the form MMM DD (ie. Jul 14)**\
-      **low** **Minimum temperature (you can use the** \'temperature_unit\'
-      config setting to change units)\
-      **hi** **Maximum temperature (you can use the** \'temperature_unit\'
-      config setting to change units)\
-      **icon** **Weather icon. Can be used together with the icon** kit
-      provided upon registering to the weather.com service\
-      **forecast** **Weather forecast (sunny, rainy, etc.)**\
-      **wind_speed** **Wind speed in km/h**\
-      **wind_dir** **Wind direction**\
-      **wind_dir_DEG** **Compass wind direction**\
-      **humidity** **Relative humidity in %**\
-      **precipitation** **Probability of having a precipitation (in** %)
-
-      \'delay_in_minutes\' (optional, default 210) cannot be lower than 210
-      min.
-
-      This object is threaded, and once a thread is created it can\'t be
-      explicitly destroyed. One thread will run for each URI specified. You
-      can use any protocol that Curl supports.
-
-      Note that these variables are still EXPERIMENTAL and can be subject to
-      many future changes.
-    args:
-      - URI
-      - locID
-      - day
-      - data_type
-      - (interval_in_minutes)
   - name: wireless_ap
     desc: Wireless access point MAC address. Linux only.
     args:
