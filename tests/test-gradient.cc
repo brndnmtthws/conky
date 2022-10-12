@@ -33,7 +33,6 @@
 
 const int width = 4;
 #ifdef BUILD_X11 // 24-bit color depth
-#include <x11.h>
 const long colour = 0x996633; // brown
 const long expected_hue = 256;
 const long expected_value = 0x99;  // max(0x99, 0x66, 0x33)
