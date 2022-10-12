@@ -2145,12 +2145,12 @@ values:
       The following list shows sample usage of the templates defined above,
       with the equivalent syntax when not using any template at all:
 
-        Using template                                Same without template
-        --------------------------------------------- ------------------------------------------
-        ${template0 node name}                        $nodename
-        ${template1 root /}                           root: ${fs_free /} / ${fs_size /}
-        ${template1 ${template2 disk root} /}         disk root: ${fs_free /} / ${fs_size /}
-        --------------------------------------------- ------------------------------------------
+      | Using template                                | Same without template                      |
+      |-----------------------------------------------|--------------------------------------------|
+      | `${template0 node name}`                      | `$nodename`                                |
+      | `${template1 root /}`                         | `root: ${fs_free /} / ${fs_size /}`        |
+      | `${template1 ${template2 disk root} /}`       | `disk root: ${fs_free /} / ${fs_size /}`   |
+      | --------------------------------------------- | ------------------------------------------ |
     args:
       - (arg1)
       - (arg2)
