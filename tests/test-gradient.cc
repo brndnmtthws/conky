@@ -32,7 +32,8 @@
 #include <gradient.h>
 
 const int width = 4;
-#ifdef BUILD_GUI // 24-bit color depth
+#ifdef BUILD_X11 // 24-bit color depth
+#include <x11.h>
 const long colour = 0x996633; // brown
 const long expected_hue = 256;
 const long expected_value = 0x99;  // max(0x99, 0x66, 0x33)
@@ -57,7 +58,9 @@ const long expected_blue = 0x06;
 const long full_scale = conky::gradient_factory::SCALE360;
 
 TEST_CASE("gradient_factory::convert_from_rgb returns correct value") {
+#ifdef BUILD_X11
   state = nullptr;
+#endif
   SECTION("rgb_gradient_factory") {
     auto factory = new conky::rgb_gradient_factory(width, colour, colour);
     long result[3];
@@ -135,7 +138,7 @@ TEST_CASE(
  * Due to lack of precision, the HSV and HCL functions are not reversible
  * if color depth is less than 24-bit
  */
-#ifdef BUILD_GUI
+#ifdef BUILD_X11
   SECTION("hsv_gradient_factory") {
     long tmp[3];
     auto factory = new conky::hsv_gradient_factory(width, colour, colour);

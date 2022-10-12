@@ -81,7 +81,9 @@ void gradient_factory::setup_masks() {
 
 void gradient_factory::setup_colour_depth() {
 #ifdef BUILD_X11
-  if (out_to_x.get(*state)) {
+  if (state == nullptr) { // testing purposes
+    colour_depth = 24;
+  } else if (out_to_x.get(*state)) {
     colour_depth = DisplayPlanes(display, screen);
   } else
 #endif /* BUILD_X11 */
