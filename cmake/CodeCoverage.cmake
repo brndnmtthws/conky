@@ -114,7 +114,7 @@ endif()
 
 set(
   COVERAGE_COMPILER_FLAGS
-  "-g -O0 -fprofile-arcs -ftest-coverage -fprofile-instr-generate -fcoverage-mapping"
+  -g -O0 -fprofile-arcs -ftest-coverage -fprofile-instr-generate -fcoverage-mapping
   CACHE INTERNAL "")
 
 set(CMAKE_CXX_FLAGS_COVERAGE ${COVERAGE_COMPILER_FLAGS}
@@ -145,8 +145,7 @@ endif() # NOT CMAKE_BUILD_TYPE STREQUAL "Debug"
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   link_libraries(gcov)
 else()
-  set(CMAKE_EXE_LINKER_FLAGS
-      "${CMAKE_EXE_LINKER_FLAGS} -fprofile-instr-generate")
+  add_link_options($<$<NOT:$<COMPILE_LANG_AND_ID:C,GNU>>:-fprofile-instr-generate>)
 endif()
 
 # Defines a target for running and collection code coverage information Builds
@@ -412,9 +411,10 @@ function(SETUP_TARGET_FOR_COVERAGE_GCOVR_HTML)
 endfunction() # SETUP_TARGET_FOR_COVERAGE_GCOVR_HTML
 
 function(APPEND_COVERAGE_COMPILER_FLAGS)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COVERAGE_COMPILER_FLAGS}" PARENT_SCOPE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COVERAGE_COMPILER_FLAGS}"
-      PARENT_SCOPE)
+  foreach(_opt ${COVERAGE_COMPILER_FLAGS})
+    add_compile_options($<$<COMPILE_LANGUAGE:C>:${_opt}>)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:${_opt}>)
+  endforeach()
   message(
     STATUS "Appending code coverage compiler flags: ${COVERAGE_COMPILER_FLAGS}")
 endfunction() # APPEND_COVERAGE_COMPILER_FLAGS
