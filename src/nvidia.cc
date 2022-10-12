@@ -754,7 +754,8 @@ static int cache_nvidia_value(TARGET_ID tid, ATTR_ID aid, Display *dpy,
 // Retrieve attribute value via nvidia interface
 static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid, int gid,
                             const char *arg) {
-  Display *dpy = nvidia_display.get_nvdisplay() ?: display;
+  Display *dpy = nvidia_display.get_nvdisplay();
+  if (!dpy) dpy = display;
   int value;
 
   // Check if the aid is cacheable
@@ -784,7 +785,8 @@ static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid, int gid,
 // Retrieve attribute string via nvidia interface
 static char *get_nvidia_string(TARGET_ID tid, ATTR_ID aid, int gid,
                                const char *arg) {
-  Display *dpy = nvidia_display.get_nvdisplay() ?: display;
+  Display *dpy = nvidia_display.get_nvdisplay();
+  if (!dpy) dpy = display;
   char *str;
 
   // Query nvidia interface
@@ -956,7 +958,8 @@ void print_nvidia_value(struct text_object *obj, char *p,
   int event_base;
   int error_base;
 
-  Display *dpy = nvidia_display.get_nvdisplay() ?: display;
+  Display *dpy = nvidia_display.get_nvdisplay();
+  if (!dpy) dpy = display;
 
   if (!dpy) {
     NORM_ERR("%s: no display set (try setting nvidia_display)", __func__);
@@ -1059,7 +1062,8 @@ double get_nvidia_barval(struct text_object *obj) {
   int event_base;
   int error_base;
 
-  Display *dpy = nvidia_display.get_nvdisplay() ?: display;
+  Display *dpy = nvidia_display.get_nvdisplay();
+  if (!dpy) dpy = display;
 
   if (!dpy) {
     NORM_ERR("%s: no display set (try setting nvidia_display)", __func__);
