@@ -101,9 +101,6 @@ static void print_version() {
 #ifdef BUILD_MYSQL
             << _("  * MySQL\n")
 #endif /* BUILD_MYSQL */
-#ifdef BUILD_WEATHER_METAR
-            << _("  * Weather (METAR)\n")
-#endif /* BUILD_WEATHER_METAR */
 #ifdef BUILD_WLAN
             << _("  * wireless\n")
 #endif /* BUILD_WLAN */

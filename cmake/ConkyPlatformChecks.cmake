@@ -424,11 +424,6 @@ if(BUILD_RSS)
   set(WANT_LIBXML2 true)
 endif(BUILD_RSS)
 
-if(BUILD_WEATHER_METAR)
-  set(WANT_CURL true)
-  set(BUILD_WEATHER true)
-endif(BUILD_WEATHER_METAR)
-
 if(BUILD_NVIDIA)
   find_path(XNVCtrl_INCLUDE_PATH NVCtrl/NVCtrl.h ${INCLUDE_SEARCH_PATH})
   find_library(XNVCtrl_LIB NAMES XNVCtrl)
