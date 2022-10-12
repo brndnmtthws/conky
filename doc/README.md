@@ -30,7 +30,7 @@ process:
    ```
 2. Run `pandoc` to convert the markdown into a man page:
    ```console
-   $ pandoc -f markdown -t man.md > conky.1
+   $ pandoc --standalone -f markdown -t man man.md > conky.1
    ```
 
 These steps are also part of the CMake build, and can be executed by configuring

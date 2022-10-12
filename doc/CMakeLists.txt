@@ -27,7 +27,7 @@ if(BUILD_DOCS)
     )
     add_custom_target(conky.1
         ALL
-        COMMAND ${APP_PANDOC} -f markdown -t man ${CMAKE_CURRENT_BINARY_DIR}/man.md > ${CMAKE_CURRENT_BINARY_DIR}/conky.1
+        COMMAND ${APP_PANDOC} --standalone -f markdown -t man ${CMAKE_CURRENT_BINARY_DIR}/man.md > ${CMAKE_CURRENT_BINARY_DIR}/conky.1
         SOURCES config_settings.yaml variables.yaml lua.yaml man.md.j2
     )
     add_dependencies(conky.1 man.md)
