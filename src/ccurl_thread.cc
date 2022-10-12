@@ -37,7 +37,7 @@
 
 /*
  * The following code is the conky curl thread lib, which can be re-used to
- * create any curl-based object (see weather and rss).  Below is an
+ * create any curl-based object (see rss).  Below is an
  * implementation of a curl-only object ($curl) which can also be used as an
  * example.
  */
