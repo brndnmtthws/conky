@@ -1,7 +1,6 @@
 # Checklist
-- [ ] I have described the changes below
-- [ ] I have linked to any relevant issues
-- [ ] All tests passing
+- [ ] I have described the changes
+- [ ] I have linked to any relevant GitHub issues, if applicable
 - [ ] Documentation in `doc/` has been updated
 - [ ] All new code is licensed under GPLv3
 
