@@ -85,6 +85,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
 void get_acpi_fan(char *, size_t);
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item);
 int get_battery_perct(const char *bat);
+void get_battery_power_draw(char *buffer, unsigned int n, const char *bat);
 double get_battery_perct_bar(struct text_object *);
 void get_battery_short_status(char *buf, unsigned int n, const char *bat);
 
@@ -94,10 +95,10 @@ void free_no_update(struct text_object *);
 
 void scan_loadavg_arg(struct text_object *, const char *);
 void print_loadavg(struct text_object *, char *, unsigned int);
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 void scan_loadgraph_arg(struct text_object *, const char *);
 double loadgraphval(struct text_object *);
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 
 uint8_t cpu_percentage(struct text_object *);
 double cpu_barval(struct text_object *);
@@ -109,6 +110,8 @@ void print_legacymem(struct text_object *, char *, unsigned int);
 void print_memfree(struct text_object *, char *, unsigned int);
 void print_memmax(struct text_object *, char *, unsigned int);
 void print_memdirty(struct text_object *, char *, unsigned int);
+void print_shmem(struct text_object *, char *, unsigned int);
+void print_memavail(struct text_object *, char *, unsigned int);
 void print_swap(struct text_object *, char *, unsigned int);
 void print_swapfree(struct text_object *, char *, unsigned int);
 void print_swapmax(struct text_object *, char *, unsigned int);
@@ -138,6 +141,7 @@ void print_threads(struct text_object *, char *, unsigned int);
 
 void print_buffers(struct text_object *, char *, unsigned int);
 void print_cached(struct text_object *, char *, unsigned int);
+void print_free_bufcache(struct text_object *, char *, unsigned int);
 
 void print_evaluate(struct text_object *, char *, unsigned int);
 
@@ -159,6 +163,7 @@ void print_acpiacadapter(struct text_object *, char *, unsigned int);
 void print_battery(struct text_object *, char *, unsigned int);
 void print_battery_time(struct text_object *, char *, unsigned int);
 uint8_t battery_percentage(struct text_object *);
+void battery_power_draw(struct text_object *, char *, unsigned int);
 void print_battery_short(struct text_object *, char *, unsigned int);
 void print_battery_status(struct text_object *, char *, unsigned int);
 #endif /* !__OpenBSD__ */

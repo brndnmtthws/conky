@@ -328,29 +328,12 @@ if(BUILD_X11)
 
     # check for Xft
     if(BUILD_XFT)
-      find_path(freetype_INCLUDE_PATH
-                config/ftconfig.h
-                ${INCLUDE_SEARCH_PATH}
-                /usr/include/freetype2
-                /usr/local/include/freetype2
-                /usr/pkg/include/freetype2)
-      if(freetype_INCLUDE_PATH)
-        set(freetype_FOUND true)
-        set(conky_includes ${conky_includes} ${freetype_INCLUDE_PATH})
-      else(freetype_INCLUDE_PATH)
-        find_path(freetype_INCLUDE_PATH
-                  freetype/config/ftconfig.h
-                  ${INCLUDE_SEARCH_PATH}
-                  /usr/include/freetype2
-                  /usr/local/include/freetype2
-                  /usr/pkg/include/freetype2)
-        if(freetype_INCLUDE_PATH)
-          set(freetype_FOUND true)
-          set(conky_includes ${conky_includes} ${freetype_INCLUDE_PATH})
-        else(freetype_INCLUDE_PATH)
-          message(FATAL_ERROR "Unable to find freetype library")
-        endif(freetype_INCLUDE_PATH)
-      endif(freetype_INCLUDE_PATH)
+      if(FREETYPE_INCLUDE_DIR_freetype2)
+        set(FREETYPE_FOUND true)
+        set(conky_includes ${conky_includes} ${FREETYPE_INCLUDE_DIR_freetype2})
+      else(FREETYPE_INCLUDE_DIR_freetype2)
+        message(FATAL_ERROR "Unable to find freetype library")
+      endif(FREETYPE_INCLUDE_DIR_freetype2)
       if(NOT X11_Xft_FOUND)
         message(FATAL_ERROR "Unable to find Xft library")
       endif(NOT X11_Xft_FOUND)
@@ -404,7 +387,7 @@ if(BUILD_X11)
         ${X11_INCLUDE_DIR})
   endif(BUILD_LUA_IMLIB2)
   if(BUILD_LUA_RSVG)
-    pkg_check_modules(RSVG REQUIRED librsvg-2.0>=2.46)
+    pkg_check_modules(RSVG REQUIRED librsvg-2.0>=2.52)
     set(luarsvg_libs ${RSVG_LIBRARIES} ${LUA_LIBRARIES})
     set(luarsvg_includes ${RSVG_INCLUDE_DIRS} ${LUA_INCLUDE_DIRS})
   endif(BUILD_LUA_RSVG)
@@ -501,36 +484,41 @@ endif(WANT_LIBXML2)
 # Look for doc generation programs
 if(BUILD_DOCS)
   # Used for doc generation
-  find_program(APP_DB2X_XSLTPROC db2x_xsltproc)
-  if(NOT APP_DB2X_XSLTPROC)
-    message(FATAL_ERROR "Unable to find program 'db2x_xsltproc'")
-  endif(NOT APP_DB2X_XSLTPROC)
-  find_program(APP_DB2X_MANXML db2x_manxml)
-  if(NOT APP_DB2X_MANXML)
-    message(FATAL_ERROR "Unable to find program 'db2x_manxml'")
-  endif(NOT APP_DB2X_MANXML)
-  find_program(APP_XSLTPROC xsltproc)
-  if(NOT APP_XSLTPROC)
-    message(FATAL_ERROR "Unable to find program 'xsltproc'")
-  endif(NOT APP_XSLTPROC)
-  find_program(APP_MAN man)
-  if(NOT APP_MAN)
-    message(FATAL_ERROR "Unable to find program 'man'")
-  endif(NOT APP_MAN)
-  find_program(APP_LESS less)
-  if(NOT APP_LESS)
-    message(FATAL_ERROR "Unable to find program 'less'")
-  endif(NOT APP_LESS)
-  find_program(APP_SED sed)
-  if(NOT APP_SED)
-    message(FATAL_ERROR "Unable to find program 'sed'")
-  endif(NOT APP_SED)
-  mark_as_advanced(APP_DB2X_XSLTPROC
-                   APP_DB2X_MANXML
-                   APP_XSLTPROC
-                   APP_MAN
-                   APP_SED
-                   APP_LESS)
+  find_program(APP_PANDOC pandoc)
+
+  if(NOT APP_PANDOC)
+    message(FATAL_ERROR "Unable to find program 'pandoc'")
+  endif(NOT APP_PANDOC)
+  mark_as_advanced(APP_PANDOC)
+
+  # Python3 with Jinja2 and PyYaml required for manpage generation.
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  include(CMakePrintHelpers)
+  execute_process(
+    COMMAND ${Python3_EXECUTABLE} -c "import yaml"
+    RESULT_VARIABLE EXIT_CODE
+    OUTPUT_QUIET
+  )
+
+  if(NOT ${EXIT_CODE} EQUAL 0)
+    message(
+      FATAL_ERROR
+      "The \"PyYAML\" Python3 package is not installed. Please install it using the following command: \"pip3 install pyyaml\"."
+    )
+  endif()
+
+  execute_process(
+    COMMAND ${Python3_EXECUTABLE} -c "import jinja2"
+    RESULT_VARIABLE EXIT_CODE
+    OUTPUT_QUIET
+  )
+
+  if(NOT ${EXIT_CODE} EQUAL 0)
+    message(
+      FATAL_ERROR
+      "The \"Jinja2\" Python3 package is not installed. Please install it using the following command: \"pip3 install Jinja2\"."
+    )
+  endif()
 endif(BUILD_DOCS)
 
 if(CMAKE_BUILD_TYPE MATCHES "Debug")

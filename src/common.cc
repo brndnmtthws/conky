@@ -316,7 +316,7 @@ void scan_loadavg_arg(struct text_object *obj, const char *arg) {
   obj->data.i = 0;
   if ((arg != nullptr) && (arg[1] == 0) &&
       (isdigit(static_cast<unsigned char>(arg[0])) != 0)) {
-    obj->data.i = atoi(arg);
+    obj->data.i = strtol(arg, nullptr, 10);
     if (obj->data.i > 3 || obj->data.i < 1) {
       NORM_ERR("loadavg arg needs to be in range (1,3)");
       obj->data.i = 0;
@@ -350,7 +350,7 @@ void print_no_update(struct text_object *obj, char *p,
   snprintf(p, p_max_size, "%s", obj->data.s);
 }
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 void scan_loadgraph_arg(struct text_object *obj, const char *arg) {
   char *buf = nullptr;
 
@@ -363,7 +363,7 @@ double loadgraphval(struct text_object *obj) {
 
   return info.loadavg[0];
 }
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 
 uint8_t cpu_percentage(struct text_object *obj) {
   if (static_cast<unsigned int>(obj->data.i) > info.cpu_count) {
@@ -399,6 +399,8 @@ PRINT_HR_GENERATOR(legacymem)
 PRINT_HR_GENERATOR(memfree)
 PRINT_HR_GENERATOR(memmax)
 PRINT_HR_GENERATOR(memdirty)
+PRINT_HR_GENERATOR(shmem)
+PRINT_HR_GENERATOR(memavail)
 PRINT_HR_GENERATOR(swap)
 PRINT_HR_GENERATOR(swapfree)
 PRINT_HR_GENERATOR(swapmax)
@@ -523,6 +525,11 @@ void print_cached(struct text_object *obj, char *p, unsigned int p_max_size) {
                  p_max_size);
 }
 
+void print_free_bufcache(struct text_object *obj, char *p, unsigned int p_max_size) {
+  human_readable(apply_base_multiplier(obj->data.s, info.free_bufcache), p,
+                 p_max_size);
+}
+
 void print_evaluate(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::vector<char> buf(text_buffer_size.get(*state));
   evaluate(obj->data.s, &buf[0], buf.size());
@@ -629,6 +636,11 @@ void print_battery(struct text_object *obj, char *p, unsigned int p_max_size) {
 void print_battery_time(struct text_object *obj, char *p,
                         unsigned int p_max_size) {
   get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_TIME);
+}
+
+void battery_power_draw(struct text_object *obj, char *p,
+			unsigned int p_max_size) {
+  get_battery_power_draw(p, p_max_size, obj->data.s);
 }
 
 uint8_t battery_percentage(struct text_object *obj) {

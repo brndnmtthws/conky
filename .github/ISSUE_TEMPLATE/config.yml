@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 🙏 General questions & help
+    url: https://github.com/brndnmtthws/conky/discussions/categories/q-a
+    about: Please ask and answer general questions using GitHub Discussions
+  - name: 💡 New ideas and feature requests
+    url: https://github.com/brndnmtthws/conky/discussions/categories/ideas
+    about: Request and discuss enhancements using GitHub Discussions

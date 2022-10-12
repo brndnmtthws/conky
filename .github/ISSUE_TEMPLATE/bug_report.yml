@@ -1,0 +1,82 @@
+name: 🐞 Bug Report
+description: "File a bug report: crashes, unexpected behaviour, and other errors go here."
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If you haven't done so already, please take a moment to search the [existing issues](https://github.com/brndnmtthws/conky/issues) to see if this has been previously reported. If not, carry on.
+
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: >
+        Describe the problem, what you expected to happen, and any other
+        relevant info. You can attach logs, stack traces, and config below. If
+        required, include screenshots here which demonstrate the problem.
+      placeholder: Here's what happened
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What version of Conky are you running?
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    validations:
+      required: true
+    attributes:
+      label: Which OS/distro are you seeing the problem on?
+      options:
+        - Ubuntu
+        - Fedora
+        - Debian
+        - Arch Linux
+        - Gentoo
+        - Linux (other)
+        - macOS
+  - type: textarea
+    id: config
+    attributes:
+      label: Conky config
+      description: Paste your Conky config here if it's relevant.
+      render: Lua
+  - type: markdown
+    attributes:
+      value: |
+        ## Getting a stack trace
+
+        If you are reporting a crash, please attach a stack trace below.
+
+        To create one with `gdb`, try the following steps:
+
+        ```shell
+        # Start 'conky'
+        $ gdb conky
+
+        # Run 'conky' with a config.
+        (gdb) run -c ~/.your_conky.conf
+
+        # Wait for a crash to occur, then run this.
+        (gdb) bt full
+
+        # ... stack trace output here ...
+        ```
+  - type: textarea
+    id: stacktrace
+    attributes:
+      label: Stack trace
+      description: Paste your stacktrace here if you have one.
+      render: GDB
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: Shell

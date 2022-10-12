@@ -1,13 +1,14 @@
 [![Linux build](https://github.com/brndnmtthws/conky/actions/workflows/build-and-test-linux.yaml/badge.svg)](https://github.com/brndnmtthws/conky/actions/workflows/build-and-test-linux.yaml) [![macOS build](https://github.com/brndnmtthws/conky/actions/workflows/build-and-test-macos.yaml/badge.svg)](https://github.com/brndnmtthws/conky/actions/workflows/build-and-test-macos.yaml) [![Docker build](https://github.com/brndnmtthws/conky/actions/workflows/docker.yaml/badge.svg)](https://github.com/brndnmtthws/conky/actions/workflows/docker.yaml) [![AppImage build](https://github.com/brndnmtthws/conky/actions/workflows/publish-appimage.yml/badge.svg)](https://github.com/brndnmtthws/conky/actions/workflows/publish-appimage.yml)
 
-[![pipeline status](https://gitlab.com/brndnmtthws-oss/conky/badges/main/pipeline.svg)](https://gitlab.com/brndnmtthws-oss/conky/commits/main) [![coverage report](https://gitlab.com/brndnmtthws-oss/conky/badges/main/coverage.svg)](https://gitlab.com/brndnmtthws-oss/conky/commits/main)
+[📕 Documentaton](https://conky.cc/)
 
 [💬 Join the Matrix chat](https://matrix.to/#/#conky:frens.io)
 
 <p align="center"><img width="300" src="logo/conky-logotype-horizontal-violet.png"></p>
 
 **Conky** is a free, light-weight system monitor for X, that displays
-any kind of information on your desktop.
+any kind of information on your desktop. It can also run on macOS, output
+to your console, a file, or even HTTP (oh my!).
 
 👉 Grab the [latest release from GitHub](https://github.com/brndnmtthws/conky/releases/latest).
 
@@ -71,8 +72,10 @@ _Note_: To use the AppImage, you may need to install additional runtime librarie
 
 ## Documentation
 
-The [GitHub Wiki](https://github.com/brndnmtthws/conky/wiki) serves as a central hub for all of
-Conky's documentation.
+&rarr; [**Reference documentation**](https://conky.cc/) &larr;
+
+The [Conky Wiki](https://github.com/brndnmtthws/conky/wiki) also serves as a central hub for
+Conky. Some resources from the Wiki include:
 
 - [Installation](https://github.com/brndnmtthws/conky/wiki/Installation)
 - [Configuration Settings](https://github.com/brndnmtthws/conky/wiki/Configurations)

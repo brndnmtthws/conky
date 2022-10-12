@@ -33,6 +33,7 @@
 #include "build.h"
 #include "config.h"
 #include "conky.h"
+#include "display-output.hh"
 #include "lua-config.hh"
 
 #ifdef BUILD_X11
@@ -367,6 +368,8 @@ int main(int argc, char **argv) {
     std::cerr << PACKAGE_NAME ": " << e.what() << std::endl;
     return EXIT_FAILURE;
   }
+
+  conky::shutdown_display_outputs();
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   kvm_close(kd);

@@ -106,6 +106,18 @@ set(conky_sources
     luamm.hh
     data-source.cc
     data-source.hh
+    display-output.cc
+    display-output.hh
+    display-console.cc
+    display-console.hh
+    display-file.cc
+    display-file.hh
+    display-ncurses.cc
+    display-ncurses.hh
+    display-http.cc
+    display-http.hh
+    display-x11.cc
+    display-x11.hh
     lua-config.cc
     lua-config.hh
     setting.cc
@@ -212,8 +224,13 @@ if(BUILD_PORT_MONITORS)
   set(optional_sources ${optional_sources} ${port_monitors})
 endif(BUILD_PORT_MONITORS)
 
+if(BUILD_GUI)
+  set(gui fonts.cc fonts.h)
+  set(optional_sources ${optional_sources} ${gui})
+endif(BUILD_GUI)
+
 if(BUILD_X11)
-  set(x11 x11.cc x11.h fonts.cc fonts.h)
+  set(x11 x11.cc x11.h)
   set(optional_sources ${optional_sources} ${x11})
 
   if(BUILD_XINERAMA)
@@ -295,8 +312,10 @@ endif(BUILD_HSV_GRADIENT)
 if(BUILD_TESTS)
   # Create a library strictly for testing
   add_library(conky_core ${conky_sources} ${optional_sources})
+  add_dependencies(conky_core generated_hdr_files)
   target_link_libraries(conky_core ${conky_libs})
   add_executable(conky main.cc)
+  add_dependencies(conky generated_hdr_files)
   target_link_libraries(conky conky_core ${conky_libs})
   install(TARGETS conky_core
           RUNTIME DESTINATION bin
@@ -304,6 +323,7 @@ if(BUILD_TESTS)
           ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
 else()
   add_executable(conky main.cc ${conky_sources} ${optional_sources})
+  add_dependencies(conky generated_hdr_files)
   target_link_libraries(conky ${conky_libs})
 endif()
 

@@ -89,7 +89,7 @@ mark_as_advanced(RELEASE)
 
 option(MAINTAINER_MODE "Enable maintainer mode" false)
 
-option(BUILD_DOCS "Build documentation" false)
+option(BUILD_DOCS "Build documentation & extras (syntax files for editors)" false)
 
 option(BUILD_I18N "Enable if you want internationalization support" true)
 if(BUILD_I18N)
@@ -205,6 +205,11 @@ else(BUILD_X11)
   set(BUILD_IMLIB2 false CACHE BOOL "Enable Imlib2 support" FORCE)
   set(BUILD_XSHAPE false CACHE BOOL "Enable Xshape support" FORCE)
   set(BUILD_NVIDIA false)
+endif(BUILD_X11)
+
+# if we build with any GUI support
+if(BUILD_X11)
+  set(BUILD_GUI true)
 endif(BUILD_X11)
 
 if(OWN_WINDOW)

@@ -731,17 +731,17 @@ mpd_Status *mpd_getStatus(mpd_Connection *connection) {
     mpd_ReturnElement *re = connection->returnElement;
 
     if (strcmp(re->name, "volume") == 0) {
-      status->volume = atoi(re->value);
+      status->volume = strtol(re->value, nullptr, 10);
     } else if (strcmp(re->name, "repeat") == 0) {
-      status->repeat = atoi(re->value);
+      status->repeat = strtol(re->value, nullptr, 10);
     } else if (strcmp(re->name, "random") == 0) {
-      status->random = atoi(re->value);
+      status->random = strtol(re->value, nullptr, 10);
     } else if (strcmp(re->name, "playlist") == 0) {
       status->playlist = strtol(re->value, nullptr, 10);
     } else if (strcmp(re->name, "playlistlength") == 0) {
-      status->playlistLength = atoi(re->value);
+      status->playlistLength = strtol(re->value, nullptr, 10);
     } else if (strcmp(re->name, "bitrate") == 0) {
-      status->bitRate = atoi(re->value);
+      status->bitRate = strtol(re->value, nullptr, 10);
     } else if (strcmp(re->name, "state") == 0) {
       if (strcmp(re->value, "play") == 0) {
         status->state = MPD_STATUS_STATE_PLAY;
@@ -753,33 +753,33 @@ mpd_Status *mpd_getStatus(mpd_Connection *connection) {
         status->state = MPD_STATUS_STATE_UNKNOWN;
       }
     } else if (strcmp(re->name, "song") == 0) {
-      status->song = atoi(re->value);
+      status->song = strtol(re->value, nullptr, 10);
     } else if (strcmp(re->name, "songid") == 0) {
-      status->songid = atoi(re->value);
+      status->songid = strtol(re->value, nullptr, 10);
     } else if (strcmp(re->name, "time") == 0) {
       char *tok = strchr(re->value, ':');
 
       /* the second strchr below is a safety check */
       if ((tok != nullptr) && (strchr(tok, 0) > (tok + 1))) {
-        /* atoi stops at the first non-[0-9] char: */
-        status->elapsedTime = atoi(re->value);
-        status->totalTime = atoi(tok + 1);
+        /* strtol stops at the first non-[0-9] char: */
+        status->elapsedTime = strtol(re->value, nullptr, 10);
+        status->totalTime = strtol(tok + 1, nullptr, 10);
       }
     } else if (strcmp(re->name, "error") == 0) {
       status->error = strndup(re->value, text_buffer_size.get(*state));
     } else if (strcmp(re->name, "xfade") == 0) {
-      status->crossfade = atoi(re->value);
+      status->crossfade = strtol(re->value, nullptr, 10);
     } else if (strcmp(re->name, "updating_db") == 0) {
-      status->updatingDb = atoi(re->value);
+      status->updatingDb = strtol(re->value, nullptr, 10);
     } else if (strcmp(re->name, "audio") == 0) {
       char *tok = strchr(re->value, ':');
 
       if ((tok != nullptr) && (strchr(tok, 0) > (tok + 1))) {
-        status->sampleRate = atoi(re->value);
-        status->bits = atoi(++tok);
+        status->sampleRate = strtol(re->value, nullptr, 10);
+        status->bits = strtol(++tok, nullptr, 10);
         tok = strchr(tok, ':');
         if ((tok != nullptr) && (strchr(tok, 0) > (tok + 1))) {
-          status->channels = atoi(tok + 1);
+          status->channels = strtol(tok + 1, nullptr, 10);
         }
       }
     }
@@ -848,11 +848,11 @@ mpd_Stats *mpd_getStats(mpd_Connection *connection) {
     mpd_ReturnElement *re = connection->returnElement;
 
     if (strcmp(re->name, "artists") == 0) {
-      stats->numberOfArtists = atoi(re->value);
+      stats->numberOfArtists = strtol(re->value, nullptr, 10);
     } else if (strcmp(re->name, "albums") == 0) {
-      stats->numberOfAlbums = atoi(re->value);
+      stats->numberOfAlbums = strtol(re->value, nullptr, 10);
     } else if (strcmp(re->name, "songs") == 0) {
-      stats->numberOfSongs = atoi(re->value);
+      stats->numberOfSongs = strtol(re->value, nullptr, 10);
     } else if (strcmp(re->name, "uptime") == 0) {
       stats->uptime = strtol(re->value, nullptr, 10);
     } else if (strcmp(re->name, "db_update") == 0) {
@@ -903,7 +903,7 @@ mpd_SearchStats *mpd_getSearchStats(mpd_Connection *connection) {
     re = connection->returnElement;
 
     if (strcmp(re->name, "songs") == 0) {
-      stats->numberOfSongs = atoi(re->value);
+      stats->numberOfSongs = strtol(re->value, nullptr, 10);
     } else if (strcmp(re->name, "playtime") == 0) {
       stats->playTime = strtol(re->value, nullptr, 10);
     }
@@ -1152,7 +1152,8 @@ mpd_InfoEntity *mpd_getNextInfoEntity(mpd_Connection *connection) {
       entity = mpd_newInfoEntity();
       entity->type = MPD_INFO_ENTITY_TYPE_SONG;
       entity->info.song = mpd_newSong();
-      entity->info.song->pos = atoi(connection->returnElement->value);
+      entity->info.song->pos =
+          strtol(connection->returnElement->value, nullptr, 10);
     } else {
       connection->error = 1;
       strncpy(connection->errorStr, "problem parsing song info",
@@ -1200,13 +1201,13 @@ mpd_InfoEntity *mpd_getNextInfoEntity(mpd_Connection *connection) {
             strndup(re->value, text_buffer_size.get(*state));
       } else if (entity->info.song->time == MPD_SONG_NO_TIME &&
                  strcmp(re->name, "Time") == 0) {
-        entity->info.song->time = atoi(re->value);
+        entity->info.song->time = strtol(re->value, nullptr, 10);
       } else if (entity->info.song->pos == MPD_SONG_NO_NUM &&
                  strcmp(re->name, "Pos") == 0) {
-        entity->info.song->pos = atoi(re->value);
+        entity->info.song->pos = strtol(re->value, nullptr, 10);
       } else if (entity->info.song->id == MPD_SONG_NO_ID &&
                  strcmp(re->name, "Id") == 0) {
-        entity->info.song->id = atoi(re->value);
+        entity->info.song->id = strtol(re->value, nullptr, 10);
       } else if ((entity->info.song->date == nullptr) &&
                  strcmp(re->name, "Date") == 0) {
         entity->info.song->date =
@@ -1425,7 +1426,7 @@ int mpd_sendAddIdCommand(mpd_Connection *connection, const char *file) {
 
   string = mpd_getNextReturnElementNamed(connection, "Id");
   if (string != nullptr) {
-    retval = atoi(string);
+    retval = strtol(string, nullptr, 10);
     free(string);
   }
 
@@ -1611,7 +1612,7 @@ int mpd_getUpdateId(mpd_Connection *connection) {
 
   jobid = mpd_getNextReturnElementNamed(connection, "updating_db");
   if (jobid != nullptr) {
-    ret = atoi(jobid);
+    ret = strtol(jobid, nullptr, 10);
     free(jobid);
   }
 
@@ -1740,11 +1741,11 @@ mpd_OutputEntity *mpd_getNextOutput(mpd_Connection *connection) {
 
     if (strcmp(re->name, "outputid") == 0) {
       if (output != nullptr && output->id >= 0) { return output; }
-      output->id = atoi(re->value);
+      output->id = strtol(re->value, nullptr, 10);
     } else if (strcmp(re->name, "outputname") == 0) {
       output->name = strndup(re->value, text_buffer_size.get(*state));
     } else if (strcmp(re->name, "outputenabled") == 0) {
-      output->enabled = atoi(re->value);
+      output->enabled = strtol(re->value, nullptr, 10);
     }
 
     mpd_getNextReturnElement(connection);

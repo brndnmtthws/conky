@@ -53,9 +53,9 @@
 #ifdef BUILD_IRC
 #include "irc.h"
 #endif /* BUILD_IRC */
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 #include "fonts.h"
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 #include "fs.h"
 #ifdef BUILD_IBM
 #include "ibm.h"
@@ -403,12 +403,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   }         \
   else
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   if (s[0] == '#') {
     obj->data.l = get_x11_color(s);
     obj->callbacks.print = &new_fg;
   } else
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 #ifndef __OpenBSD__
     OBJ(acpitemp, nullptr)
   obj->data.i = open_acpi_temperature(arg);
@@ -432,27 +432,40 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &gen_free_opaque;
 #endif /* !__OpenBSD__ */
   END OBJ(freq, nullptr) get_cpu_count();
-  if ((arg == nullptr) || (isdigit(static_cast<unsigned char>(arg[0])) == 0) ||
-      strlen(arg) >= 3 || atoi(&arg[0]) == 0 ||
-      static_cast<unsigned int>(atoi(&arg[0])) > info.cpu_count) {
+  if ((arg == nullptr) || strlen(arg) >= 3 ||
+      strtol(&arg[0], nullptr, 10) == 0 ||
+      static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("freq: Invalid CPU number or you don't have that many CPUs! "
       "Displaying the clock for CPU 1."); */
   } else {
-    obj->data.i = atoi(&arg[0]);
+    obj->data.i = strtol(&arg[0], nullptr, 10);
   }
   obj->callbacks.print = &print_freq;
   END OBJ(freq_g, nullptr) get_cpu_count();
-  if ((arg == nullptr) || (isdigit(static_cast<unsigned char>(arg[0])) == 0) ||
-      strlen(arg) >= 3 || atoi(&arg[0]) == 0 ||
-      static_cast<unsigned int>(atoi(&arg[0])) > info.cpu_count) {
+  if ((arg == nullptr) || strlen(arg) >= 3 ||
+      strtol(&arg[0], nullptr, 10) == 0 ||
+      static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("freq_g: Invalid CPU number or you don't have that many "
       "CPUs! Displaying the clock for CPU 1."); */
   } else {
-    obj->data.i = atoi(&arg[0]);
+    obj->data.i = strtol(&arg[0], nullptr, 10);
   }
   obj->callbacks.print = &print_freq_g;
+#if defined(__linux__)
+  END OBJ(cpugovernor, nullptr) get_cpu_count();
+  if ((arg == nullptr) || strlen(arg) >= 3 ||
+      strtol(&arg[0], nullptr, 10) == 0 ||
+      static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) > info.cpu_count) {
+    obj->data.i = 1;
+    /* NORM_ERR("cpugovernor: Invalid CPU number or you don't have that "
+      "many CPUs! Displaying the scaling governor for CPU 1."); */
+  } else {
+    obj->data.i = strtol(&arg[0], nullptr, 10);
+  }
+  obj->callbacks.print = &print_cpugovernor;
+#endif /* __linux__ */
   END OBJ_ARG(read_tcp, nullptr,
               "read_tcp: Needs \"(host) port\" as argument(s)")
       parse_read_tcpip_arg(obj, arg, free_at_crash);
@@ -470,23 +483,23 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &free_tcp_ping;
 #if defined(__linux__)
   END OBJ(voltage_mv, 0) get_cpu_count();
-  if (!arg || !isdigit((unsigned char)arg[0]) || strlen(arg) >= 3 ||
-      atoi(&arg[0]) == 0 || (unsigned int)atoi(&arg[0]) > info.cpu_count) {
+  if (!arg || strlen(arg) >= 3 || strtol(&arg[0], nullptr, 10) == 0 ||
+    (unsigned int)strtol(&arg[0], nullptr, 10) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("voltage_mv: Invalid CPU number or you don't have that many "
       "CPUs! Displaying voltage for CPU 1."); */
   } else {
-    obj->data.i = atoi(&arg[0]);
+    obj->data.i = strtol(&arg[0], nullptr, 10);
   }
   obj->callbacks.print = &print_voltage_mv;
   END OBJ(voltage_v, 0) get_cpu_count();
-  if (!arg || !isdigit((unsigned char)arg[0]) || strlen(arg) >= 3 ||
-      atoi(&arg[0]) == 0 || (unsigned int)atoi(&arg[0]) > info.cpu_count) {
+  if (!arg || strlen(arg) >= 3 || strtol(&arg[0], nullptr, 10) == 0 ||
+    (unsigned int)strtol(&arg[0], nullptr, 10) > info.cpu_count) {
     obj->data.i = 1;
     /* NORM_ERR("voltage_v: Invalid CPU number or you don't have that many "
       "CPUs! Displaying voltage for CPU 1."); */
   } else {
-    obj->data.i = atoi(&arg[0]);
+    obj->data.i = strtol(&arg[0], nullptr, 10);
   }
   obj->callbacks.print = &print_voltage_v;
 
@@ -573,6 +586,18 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->data.s = strndup(bat, text_buffer_size.get(*state));
   obj->callbacks.percentage = &battery_percentage;
   obj->callbacks.free = &gen_free_opaque;
+  END OBJ(battery_power_draw, nullptr) char bat[64];
+
+  if (arg != nullptr) {
+    sscanf(arg, "%63s", bat);
+  } else {
+    strncpy(bat, "BAT0", 5);
+  }
+  obj->data.s = strndup(bat, text_buffer_size.get(*state));
+  obj->callbacks.print = &battery_power_draw;
+  obj->callbacks.free = &gen_free_opaque;
+ 
+
   END OBJ(battery_bar, nullptr) char bat[64];
 
   arg = scan_bar(obj, arg, 100);
@@ -687,7 +712,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.percentage = &cpu_percentage;
   obj->callbacks.free = &free_cpu;
   DBGP2("Adding $cpu for CPU %d", obj->data.i);
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   END OBJ(cpugauge, &update_cpu_usage) get_cpu_count();
   SCAN_CPU(arg, obj->data.i);
   scan_gauge(obj, arg, 1);
@@ -701,7 +726,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.barval = &cpu_barval;
   obj->callbacks.free = &free_cpu;
   DBGP2("Adding $cpubar for CPU %d", obj->data.i);
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   END OBJ(cpugraph, &update_cpu_usage) get_cpu_count();
   char *buf = nullptr;
   SCAN_CPU(arg, obj->data.i);
@@ -712,29 +737,29 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &free_cpu;
   END OBJ(loadgraph, &update_load_average) scan_loadgraph_arg(obj, arg);
   obj->callbacks.graphval = &loadgraphval;
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
   END OBJ(diskio, &update_diskio) parse_diskio_arg(obj, arg);
   obj->callbacks.print = &print_diskio;
   END OBJ(diskio_read, &update_diskio) parse_diskio_arg(obj, arg);
   obj->callbacks.print = &print_diskio_read;
   END OBJ(diskio_write, &update_diskio) parse_diskio_arg(obj, arg);
   obj->callbacks.print = &print_diskio_write;
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   END OBJ(diskiograph, &update_diskio) parse_diskiograph_arg(obj, arg);
   obj->callbacks.graphval = &diskiographval;
   END OBJ(diskiograph_read, &update_diskio) parse_diskiograph_arg(obj, arg);
   obj->callbacks.graphval = &diskiographval_read;
   END OBJ(diskiograph_write, &update_diskio) parse_diskiograph_arg(obj, arg);
   obj->callbacks.graphval = &diskiographval_write;
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
   END OBJ(color, nullptr)
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
       if (out_to_x.get(*state)) {
     obj->data.l =
         arg != nullptr ? get_x11_color(arg) : default_color.get(*state);
     set_current_text_color(obj->data.l);
   }
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 #ifdef BUILD_NCURSES
   if (out_to_ncurses.get(*state)) {
     obj->data.l = COLOR_WHITE;
@@ -760,7 +785,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   }
 #endif /* BUILD_NCURSES */
   obj->callbacks.print = &new_fg;
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   END OBJ(color0, nullptr) obj->data.l = color[0].get(*state);
   set_current_text_color(obj->data.l);
   obj->callbacks.print = &new_fg;
@@ -824,7 +849,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(font9, nullptr) scan_font(obj, font_template[9].get(*state).c_str());
   obj->callbacks.print = &new_font;
   obj->callbacks.free = &gen_free_opaque;
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
   END OBJ(conky_version, nullptr) obj_be_plain_text(obj, VERSION);
   END OBJ(conky_build_date, nullptr) obj_be_plain_text(obj, BUILD_DATE);
   END OBJ(conky_build_arch, nullptr) obj_be_plain_text(obj, BUILD_ARCH);
@@ -834,11 +859,11 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(downspeedf, &update_net_stats)
       parse_net_stat_arg(obj, arg, free_at_crash);
   obj->callbacks.print = &print_downspeedf;
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   END OBJ(downspeedgraph, &update_net_stats)
       parse_net_stat_graph_arg(obj, arg, free_at_crash);
   obj->callbacks.graphval = &downspeedgraphval;
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
   END OBJ(else, nullptr) obj_be_ifblock_else(ifblock_opaque, obj);
   obj->callbacks.iftest = &gen_false_iftest;
   END OBJ(endif, nullptr) obj_be_ifblock_endif(ifblock_opaque, obj);
@@ -846,7 +871,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(eval, nullptr) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_evaluate;
   obj->callbacks.free = &gen_free_opaque;
-#if defined(BUILD_IMLIB2) && defined(BUILD_X11)
+#if defined(BUILD_IMLIB2) && defined(BUILD_GUI)
   END OBJ(image, nullptr) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_image_callback;
   obj->callbacks.free = &gen_free_opaque;
@@ -863,13 +888,13 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_cat;
   obj->callbacks.free = &gen_free_opaque;
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   END OBJ(key_num_lock, 0) obj->callbacks.print = &print_key_num_lock;
   END OBJ(key_caps_lock, 0) obj->callbacks.print = &print_key_caps_lock;
   END OBJ(key_scroll_lock, 0) obj->callbacks.print = &print_key_scroll_lock;
   END OBJ(keyboard_layout, 0) obj->callbacks.print = &print_keyboard_layout;
   END OBJ(mouse_speed, 0) obj->callbacks.print = &print_mouse_speed;
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 
 #ifdef __FreeBSD__
   END OBJ(sysctlbyname, 0) obj->data.s = STRNDUP_ARG;
@@ -944,7 +969,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   register_execi(obj);
   obj->callbacks.barval = &execbarval;
   obj->callbacks.free = &free_execi;
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   END OBJ_ARG(execgauge, nullptr,
               "execgauge needs arguments: [height],[width] <command>")
       scan_exec_arg(obj, arg, EF_EXEC | EF_GAUGE);
@@ -972,7 +997,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   register_execi(obj);
   obj->callbacks.graphval = &execbarval;
   obj->callbacks.free = &free_execi;
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
   END OBJ_ARG(texeci, nullptr, "texeci needs arguments: <interval> <command>")
       scan_exec_arg(obj, arg, EF_EXECI);
   obj->parse = false;
@@ -1003,26 +1028,26 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_fs_type;
   END OBJ(fs_used, &update_fs_stats) init_fs(obj, arg);
   obj->callbacks.print = &print_fs_used;
-#ifdef BUILD_X11
-  END OBJ(hr, nullptr) obj->data.l = arg != nullptr ? atoi(arg) : 1;
+#ifdef BUILD_GUI
+  END OBJ(hr, nullptr) obj->data.l = arg != nullptr ? strtol(arg, nullptr, 10) : 1;
   obj->callbacks.print = &new_hr;
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
   END OBJ(nameserver, &update_dns_data) parse_nameserver_arg(obj, arg);
   obj->callbacks.print = &print_nameserver;
   obj->callbacks.free = &free_dns_data;
-  END OBJ(offset, nullptr) obj->data.l = arg != nullptr ? atoi(arg) : 1;
+  END OBJ(offset, nullptr) obj->data.l = arg != nullptr ? strtol(arg, nullptr, 10) : 1;
   obj->callbacks.print = &new_offset;
-  END OBJ(voffset, nullptr) obj->data.l = arg != nullptr ? atoi(arg) : 1;
+  END OBJ(voffset, nullptr) obj->data.l = arg != nullptr ? strtol(arg, nullptr, 10) : 1;
   obj->callbacks.print = &new_voffset;
   END OBJ(save_coordinates, nullptr) obj->data.l =
-      arg != nullptr ? atoi(arg) : 0;
+      arg != nullptr ? strtol(arg, nullptr, 10) : 0;
   obj->callbacks.print = &new_save_coordinates;
-  END OBJ_ARG(goto, nullptr, "goto needs arguments") obj->data.l = atoi(arg);
+  END OBJ_ARG(goto, nullptr, "goto needs arguments") obj->data.l = strtol(arg, nullptr, 10);
   obj->callbacks.print = &new_goto;
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   END OBJ(tab, nullptr) scan_tab(obj, arg);
   obj->callbacks.print = &new_tab;
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 #ifdef __linux__
   END OBJ_ARG(i2c, 0, "i2c needs arguments") parse_i2c_sensor(obj, arg);
   obj->callbacks.print = &print_sysfs_sensor;
@@ -1192,16 +1217,25 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(memdirty, &update_meminfo) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_memdirty;
   obj->callbacks.free = &gen_free_opaque;
+  END OBJ(memavail, &update_meminfo) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_memavail;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(shmem, &update_meminfo) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_shmem;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(free_bufcache, &update_meminfo) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_free_bufcache;
+  obj->callbacks.free = &gen_free_opaque;
 #endif /* __linux__ */
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   END OBJ(memgauge, &update_meminfo) scan_gauge(obj, arg, 1);
   obj->callbacks.gaugeval = &mem_barval;
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
   END OBJ(membar, &update_meminfo) scan_bar(obj, arg, 1);
   obj->callbacks.barval = &mem_barval;
   END OBJ(memwithbuffersbar, &update_meminfo) scan_bar(obj, arg, 1);
   obj->callbacks.barval = &mem_with_buffers_barval;
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   END OBJ(memgraph, &update_meminfo) char *buf = nullptr;
   buf = scan_graph(obj, arg, 1);
   free_and_zero(buf);
@@ -1210,7 +1244,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   buf = scan_graph(obj, arg, 1);
   free_and_zero(buf);
   obj->callbacks.graphval = &mem_with_buffers_barval;
-#endif /* BUILD_X11*/
+#endif /* BUILD_GUI*/
 #ifdef HAVE_SOME_SOUNDCARD_H
   END OBJ(mixer, 0) parse_mixer_arg(obj, arg);
   obj->callbacks.percentage = &mixer_percentage;
@@ -1227,13 +1261,13 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ_IF(if_mixer_mute, 0) parse_mixer_arg(obj, arg);
   obj->callbacks.iftest = &check_mixer_muted;
 #endif /* HAVE_SOME_SOUNDCARD_H */
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   END OBJ(monitor, nullptr) obj->callbacks.print = &print_monitor;
   END OBJ(monitor_number, nullptr) obj->callbacks.print = &print_monitor_number;
   END OBJ(desktop, nullptr) obj->callbacks.print = &print_desktop;
   END OBJ(desktop_number, nullptr) obj->callbacks.print = &print_desktop_number;
   END OBJ(desktop_name, nullptr) obj->callbacks.print = &print_desktop_name;
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
   END OBJ_ARG(format_time, nullptr, "format_time needs a pid as argument")
       obj->sub = static_cast<text_object *>(malloc(sizeof(struct text_object)));
   extract_variable_text_internal(obj->sub, arg);
@@ -1405,22 +1439,22 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #endif
 #endif /* __linux__ */
   END OBJ(shadecolor, nullptr)
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
       obj->data.l =
       arg != nullptr ? get_x11_color(arg) : default_shade_color.get(*state);
   obj->callbacks.print = &new_bg;
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
   END OBJ(outlinecolor, nullptr)
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
       obj->data.l =
       arg != nullptr ? get_x11_color(arg) : default_outline_color.get(*state);
   obj->callbacks.print = &new_outline;
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
   END OBJ(stippled_hr, nullptr)
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
       scan_stippled_hr(obj, arg);
   obj->callbacks.print = &new_stippled_hr;
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
   END OBJ(swap, &update_meminfo) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_swap;
   obj->callbacks.free = &gen_free_opaque;
@@ -1471,7 +1505,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       parse_net_stat_arg(obj, arg, free_at_crash);
   obj->callbacks.print = &print_totalup;
   END OBJ(updates, nullptr) obj->callbacks.print = &print_updates;
-  END OBJ_IF(if_updatenr, nullptr) obj->data.i = arg != nullptr ? atoi(arg) : 0;
+  END OBJ_IF(if_updatenr, nullptr) obj->data.i = arg != nullptr ? strtol(arg, nullptr, 10) : 0;
   if (obj->data.i == 0) {
     CRIT_ERR(obj, free_at_crash,
              "if_updatenr needs a number above 0 as argument");
@@ -1479,9 +1513,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   set_updatereset(obj->data.i > get_updatereset() ? obj->data.i
                                                   : get_updatereset());
   obj->callbacks.iftest = &updatenr_iftest;
-  END OBJ(alignr, nullptr) obj->data.l = arg != nullptr ? atoi(arg) : 1;
+  END OBJ(alignr, nullptr) obj->data.l = arg != nullptr ? strtol(arg, nullptr, 10) : 1;
   obj->callbacks.print = &new_alignr;
-  END OBJ(alignc, nullptr) obj->data.l = arg != nullptr ? atoi(arg) : 0;
+  END OBJ(alignc, nullptr) obj->data.l = arg != nullptr ? strtol(arg, nullptr, 10) : 0;
   obj->callbacks.print = &new_alignc;
   END OBJ(upspeed, &update_net_stats)
       parse_net_stat_arg(obj, arg, free_at_crash);
@@ -1489,7 +1523,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(upspeedf, &update_net_stats)
       parse_net_stat_arg(obj, arg, free_at_crash);
   obj->callbacks.print = &print_upspeedf;
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   END OBJ(upspeedgraph, &update_net_stats)
       parse_net_stat_graph_arg(obj, arg, free_at_crash);
   obj->callbacks.graphval = &upspeedgraphval;
@@ -1782,7 +1816,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   }
   obj->callbacks.barval = &lua_barval;
   obj->callbacks.free = &gen_free_opaque;
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   END OBJ_ARG(
       lua_graph, nullptr,
       "lua_graph needs arguments: <function name> [height],[width] [gradient "
@@ -1809,7 +1843,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   }
   obj->callbacks.gaugeval = &lua_barval;
   obj->callbacks.free = &gen_free_opaque;
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 #ifdef BUILD_HDDTEMP
   END OBJ(hddtemp, &update_hddtemp) if (arg) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_hddtemp;
@@ -1843,9 +1877,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &free_stock;
 #endif /* BUILD_CURL */
   END OBJ(scroll, nullptr)
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   /* allocate a follower to reset any color changes */
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
       parse_scroll_arg(obj, arg, free_at_crash, s);
   obj->callbacks.print = &print_scroll;
   obj->callbacks.free = &free_scroll;
@@ -1923,14 +1957,14 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       &print_apcupsd_load;
   END OBJ(apcupsd_loadbar, &update_apcupsd) scan_bar(obj, arg, 100);
   obj->callbacks.barval = &apcupsd_loadbarval;
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
   END OBJ(apcupsd_loadgraph, &update_apcupsd) char *buf = nullptr;
   buf = scan_graph(obj, arg, 100);
   free_and_zero(buf);
   obj->callbacks.graphval = &apcupsd_loadbarval;
   END OBJ(apcupsd_loadgauge, &update_apcupsd) scan_gauge(obj, arg, 100);
   obj->callbacks.gaugeval = &apcupsd_loadbarval;
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
   END OBJ(apcupsd_charge, &update_apcupsd) obj->callbacks.print =
       &print_apcupsd_charge;
   END OBJ(apcupsd_timeleft, &update_apcupsd) obj->callbacks.print =

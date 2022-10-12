@@ -1,4 +1,4 @@
-FROM ubuntu:focal AS builder
+FROM ubuntu:jammy AS builder
 
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
@@ -13,6 +13,7 @@ RUN apt-get update \
   libaudclient-dev \
   libcairo2-dev \
   libcurl4-openssl-dev \
+  libdbus-glib-1-dev \
   libical-dev \
   libimlib2-dev \
   libircclient-dev \
@@ -43,9 +44,9 @@ RUN apt-get update \
 # Compile CMake, we need the latest because the bug here (for armv7 builds):
 # https://gitlab.kitware.com/cmake/cmake/-/issues/20568
 WORKDIR /cmake
-RUN curl -Lq https://github.com/Kitware/CMake/releases/download/v3.19.6/cmake-3.19.6.tar.gz -o cmake-3.19.6.tar.gz \
-  && tar xf cmake-3.19.6.tar.gz \
-  && cd cmake-3.19.6 \
+RUN curl -Lq https://github.com/Kitware/CMake/releases/download/v3.24.1/cmake-3.24.1.tar.gz -o cmake-3.24.1.tar.gz \
+  && tar xf cmake-3.24.1.tar.gz \
+  && cd cmake-3.24.1 \
   && CC=clang CXX=clang++ CFLAGS="-D_FILE_OFFSET_BITS=64" CXXFLAGS="-D_FILE_OFFSET_BITS=64" ./bootstrap --system-libs --parallel=5 \
   && make -j5 \
   && make -j5 install \
@@ -69,7 +70,6 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   -DBUILD_IRC=ON \
   -DBUILD_JOURNAL=ON \
   -DBUILD_LUA_CAIRO=ON \
-  -DBUILD_LUA_CAIRO=ON \
   -DBUILD_LUA_IMLIB2=ON \
   -DBUILD_LUA_RSVG=ON \
   -DBUILD_MYSQL=ON \
@@ -91,7 +91,6 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   -DBUILD_IRC=ON \
   -DBUILD_JOURNAL=ON \
   -DBUILD_LUA_CAIRO=ON \
-  -DBUILD_LUA_CAIRO=ON \
   -DBUILD_LUA_IMLIB2=ON \
   -DBUILD_LUA_RSVG=ON \
   -DBUILD_MYSQL=ON \
@@ -105,7 +104,7 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   && make -j5 all \
   && make -j5 install
 
-FROM ubuntu:focal
+FROM ubuntu:jammy
 
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
@@ -113,6 +112,7 @@ RUN apt-get update \
   libaudclient2 \
   libcairo2 \
   libcurl4 \
+  libdbus-glib-1-2 \
   libical3 \
   libimlib2 \
   libircclient1 \

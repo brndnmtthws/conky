@@ -134,6 +134,9 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
   if (arg == nullptr) { arg = DEFAULTNETDEV; }
 
   if (0 == (strcmp("$gw_iface", arg)) || 0 == (strcmp("${gw_iface}", arg))) {
+#if defined(__linux__)
+    update_gateway_info();
+#endif
     arg = e_iface;
   }
 
@@ -316,7 +319,7 @@ void print_v6addrs(struct text_object *obj, char *p, unsigned int p_max_size) {
 
 #endif /* __linux__ */
 
-#ifdef BUILD_X11
+#ifdef BUILD_GUI
 
 /**
  * This function is called periodically to update the download and upload graphs
@@ -335,6 +338,14 @@ void parse_net_stat_graph_arg(struct text_object *obj, const char *arg,
 
   // default to DEFAULTNETDEV
   if (buf != nullptr) {
+#if defined(__linux__)
+    if (0 == (strcmp("$gw_iface", buf)) || 0 == (strcmp("${gw_iface}", buf))) {
+      update_gateway_info();
+      obj->data.opaque = get_net_stat(e_iface, obj, free_at_crash);
+      free(buf);
+      return;
+    }
+#endif
     obj->data.opaque = get_net_stat(buf, obj, free_at_crash);
     free(buf);
     return;
@@ -359,7 +370,7 @@ double upspeedgraphval(struct text_object *obj) {
 
   return (ns != nullptr ? ns->trans_speed : 0);
 }
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 
 #ifdef BUILD_WLAN
 void print_wireless_essid(struct text_object *obj, char *p,
@@ -609,7 +620,7 @@ int update_dns_data() {
 }
 
 void parse_nameserver_arg(struct text_object *obj, const char *arg) {
-  obj->data.l = arg != nullptr ? atoi(arg) : 0;
+  obj->data.l = arg != nullptr ? strtol(arg, nullptr, 10) : 0;
 }
 
 void print_nameserver(struct text_object *obj, char *p,

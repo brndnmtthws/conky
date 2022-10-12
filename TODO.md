@@ -1,0 +1,14 @@
+- [X] fix crash when no output is enabled
+- [X] display: fix logging (stderr)
+- [X] display: test build without X11, ncurses
+- [ ] conky.cc: case GOTO: cur_x always = current->arg regardless !? (draw_mode == BG = dead code!!) -> per display ++ ? (but exists already in master if CONFIG_X11 && CONFIG_NCURSES)
+- [X] check for regression (changes in master missed since rebase)
+- [ ] move BUILD_IMLIB2 stuff from conky.cc to display-x11 ??
+- [ ] display: add required ignored -W pragmas for clang & GCC in new files (display-x11.*)
+- [X] move font handling to X11 code
+- [ ] drop x11.h include from font.h
+- [ ] display: profile code
+- [ ] display: remove extra virtual on final classes
+- [ ] display: use int*_t types from cstdint instead of plain int.
+- [ ] display: use std::string in draw_string() and friends
+- [ ] display: use std::pair for x,y arguments

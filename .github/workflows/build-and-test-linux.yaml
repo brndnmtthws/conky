@@ -5,34 +5,46 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu-18.04
           - ubuntu-20.04
+          - ubuntu-22.04
         x11: [ON, OFF]
         compiler:
           - clang
           - gcc
         compiler_version:
-          - 7
           - 9
           - 10
           - 11
+          - 12
+          - 13
+          - 14
         exclude:
+          - compiler: gcc
+            compiler_version: 12
+          - compiler: gcc
+            compiler_version: 13
+          - compiler: gcc
+            compiler_version: 14
           - os: ubuntu-20.04
             compiler: gcc
-            compiler_version: 7
-          - compiler: gcc
             compiler_version: 11
           - compiler: clang
-            compiler_version: 7
-          - os: ubuntu-18.04
-            compiler: clang
-            compiler_version: 7
-          - os: ubuntu-18.04
+            compiler_version: 9
+          - os: ubuntu-22.04
             compiler: clang
             compiler_version: 10
-          - os: ubuntu-18.04
+          - os: ubuntu-22.04
             compiler: clang
             compiler_version: 11
+          - os: ubuntu-22.04
+            compiler: clang
+            compiler_version: 12
+          - os: ubuntu-20.04
+            compiler: clang
+            compiler_version: 13
+          - os: ubuntu-20.04
+            compiler: clang
+            compiler_version: 14
     runs-on: ${{ matrix.os }}
     steps:
       - run: sudo apt-get -qq update
@@ -45,11 +57,10 @@ jobs:
             gawk \
             lcov \
             libaudclient-dev \
-            libc++-${{ matrix.compiler_version }}-dev \
-            libc++abi-${{ matrix.compiler_version }}-dev \
             libcairo2-dev \
             libcurl4-gnutls-dev \
             libcurl4-gnutls-dev \
+            libdbus-glib-1-dev \
             libglib2.0-dev \
             libical-dev \
             libimlib2-dev \
@@ -70,10 +81,17 @@ jobs:
             libxmmsclient-dev \
             libxnvctrl-dev \
             ncurses-dev
+      - name: Install libc++
+        if: matrix.compiler == 'clang'
+        run: |
+          sudo apt-get install -yqq --no-install-recommends \
+            libc++-${{ matrix.compiler_version }}-dev \
+            libc++abi-${{ matrix.compiler_version }}-dev
       - name: Checkout
         uses: actions/checkout@v2
       - name: Configure with CMake
         run: |
+          set -x # show the commands we're running
           [[ "${{ matrix.compiler }}" == "clang"* ]] && CC=clang-${{ matrix.compiler_version }}
           [[ "${{ matrix.compiler }}" == "clang"* ]] && CXX=clang++-${{ matrix.compiler_version }}
 
@@ -82,9 +100,9 @@ jobs:
 
 
           # Enable librsvg by default, disable for older versions of Ubuntu
-          # because we need librsvg>=2.46
+          # because we need librsvg>=2.52
           RSVG_ENABLED=ON
-          [[ "${{ matrix.os }}" == "ubuntu-18.04"* ]] && RSVG_ENABLED=OFF
+          [[ "${{ matrix.os }}" == "ubuntu-20.04"* ]] && RSVG_ENABLED=OFF
 
           mkdir build
           cd build
