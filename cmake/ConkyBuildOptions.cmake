@@ -37,12 +37,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 # -std options for all build types
-set(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}"
-    CACHE STRING "Flags used by the C compiler during all build types."
-    FORCE)
-set(CMAKE_CXX_FLAGS "-std=c++17 ${CMAKE_CXX_FLAGS}"
-    CACHE STRING "Flags used by the C++ compiler during all build types."
-    FORCE)
+set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -78,7 +73,8 @@ if(MAINTAINER_MODE)
 
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
       set(USING_CLANG true)
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+      add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>)
+      add_link_options($<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>)
     endif()
 endif(MAINTAINER_MODE)
 
