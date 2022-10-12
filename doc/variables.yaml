@@ -181,7 +181,7 @@ values:
     default: BAT0
     args:
       - (num)
-   
+
   - name: battery_short
     desc: |-
       Battery status and remaining percentage capacity of ACPI or APM battery.
@@ -225,8 +225,9 @@ values:
       Reads a file and displays the contents in conky. This is
       useful if you have an independent process generating output that you
       want to include in conky. This differs from $cat in that it parses the
-      contents of the file, so you can insert things like ${color
-      red}hi!${color} in your file and have it correctly parsed by Conky.
+      contents of the file, so you can insert things like
+      `${color red}hi!${color}` in your file and have it correctly parsed by
+      Conky.
     args:
       - file
   - name: cmdline_to_pid
@@ -1943,34 +1944,92 @@ values:
   - name: stock
     desc: |-
       Displays the data of a stock symbol. The following data is
-      supported: adv(Average Daily Volume), ask, asksize, bid, askrt(ask
-      realtime), bidrt(bid realtime), bookvalue, bidsize, change,
-      commission, changert(change realtime), ahcrt(After Hours Change
-      realtime), ds(dividend/share), ltd(Last Trade Date), tradedate,
-      es(earnings/share), ei(error indication), epsecy(EPS Estimate Current
-      Year), epseny(EPS Estimate Next Year), epsenq(EPS Estimate Next
-      Quarter), floatshares, dayslow, dayshigh, 52weeklow, 52weekhigh,
-      hgp(Holdings Gain Percent), ag(Annualized Gain), hg(Holdings Gain),
-      hgprt(Holdings Gain Percent realtime), hgrt(Holdings Gain realtime),
-      moreinfo, obrt(Order Book realtime), mc(Market Capitalization),
-      mcrt(Market Cap realtime), ebitda, c52wlow(Change From 52-week Low),
-      pc52wlow(Percent Change From 52-week Low), cprt(change percent
-      realtime), lts(Last Trade Size), c52whigh(Change from 52-week high),
-      pc52whigh(percent change from 52-week high), ltp(last trade price),
-      hl(high limit), ll(low limit), dr(day's range), drrt(day's range
-      realtime), 50ma(50-day Moving Average), 200ma(200-day Moving Average),
-      c200ma(Change From 200-day Moving Average), pc200ma(Percent Change
-      From 200-day Moving Average), c50ma(Change From 50-day Moving
-      Average), pc50ma(Percent Change From 50-day Moving Average), name,
-      notes, open, pc(previous close), pricepaid, cip(change in percent),
-      ps(price/sales), pb(price/book), edv(Ex-Dividend Date), per(P/E
-      Ratio), dpd(Dividend Pay Date), perrt(P/E Ratio realtime), pegr(PEG
-      Ratio), pepsecy(Price/EPS Estimate Current Year), pepseny(Price/EPS
-      Estimate Next Year), symbol, sharesowned, shortratio, ltt(Last Trade
-      Time), tradelinks, tt(Ticker Trend), 1ytp(1 yr Target Price), volume,
-      hv(Holdings Value), hvrt(Holdings Value realtime), 52weekrange,
-      dvc(Day's Value Change), dvcrt(Day's Value Change realtime), se(Stock
-      Exchange), dy(Dividend Yield).
+      supported:
+
+      | Name        | Description                                |
+      |-------------|--------------------------------------------|
+      | 1ytp        | 1 yr Target Price                          |
+      | 200ma       | 200-day Moving Average                     |
+      | 50ma        | 50-day Moving Average                      |
+      | 52weekhigh  |                                            |
+      | 52weeklow   |                                            |
+      | 52weekrange |                                            |
+      | adv         | Average Daily Volume                       |
+      | ag          | Annualized Gain                            |
+      | ahcrt       | After Hours Change realtime                |
+      | ask         |                                            |
+      | askrt       | ask realtime                               |
+      | asksize     |                                            |
+      | bid         |                                            |
+      | bidrt       | bid realtime                               |
+      | bidsize     |                                            |
+      | bookvalue   |                                            |
+      | c200ma      | Change From 200-day Moving Average         |
+      | c50ma       | Change From 50-day Moving Average          |
+      | c52whigh    | Change from 52-week high                   |
+      | c52wlow     | Change From 52-week Low                    |
+      | change      |                                            |
+      | changert    | change realtime                            |
+      | cip         | change in percent                          |
+      | commission  |                                            |
+      | cprt        | change percent realtime                    |
+      | dayshigh    |                                            |
+      | dayslow     |                                            |
+      | dpd         | Dividend Pay Date                          |
+      | dr          | day's range                                |
+      | drrt        | day's range realtime                       |
+      | ds          | dividend/share                             |
+      | dvc         | Day's Value Change                         |
+      | dvcrt       | Day's Value Change realtime                |
+      | dy          | Dividend Yield                             |
+      | ebitda      |                                            |
+      | edv         | Ex-Dividend Date                           |
+      | ei          | error indication                           |
+      | epsecy      | EPS Estimate Current Year                  |
+      | epsenq      | EPS Estimate Next Quarter                  |
+      | epseny      | EPS Estimate Next Year                     |
+      | es          | earnings/share                             |
+      | floatshares |                                            |
+      | hg          | Holdings Gain                              |
+      | hgp         | Holdings Gain Percent                      |
+      | hgprt       | Holdings Gain Percent realtime             |
+      | hgrt        | Holdings Gain realtime                     |
+      | hl          | high limit                                 |
+      | hv          | Holdings Value                             |
+      | hvrt        | Holdings Value realtime                    |
+      | ll          | low limit                                  |
+      | ltd         | Last Trade Date                            |
+      | ltp         | last trade price                           |
+      | lts         | Last Trade Size                            |
+      | ltt         | Last Trade Time                            |
+      | mc          | Market Capitalization                      |
+      | mcrt        | Market Cap realtime                        |
+      | moreinfo    |                                            |
+      | name        |                                            |
+      | notes       |                                            |
+      | obrt        | Order Book realtime                        |
+      | open        |                                            |
+      | pb          | price/book                                 |
+      | pc          | previous close                             |
+      | pc200ma     | Percent Change From 200-day Moving Average |
+      | pc50ma      | Percent Change From 50-day Moving Average  |
+      | pc52whigh   | percent change from 52-week high           |
+      | pc52wlow    | Percent Change From 52-week Low            |
+      | pegr        | PEG Ratio                                  |
+      | pepsecy     | Price/EPS Estimate Current Year            |
+      | pepseny     | Price/EPS Estimate Next Year               |
+      | per         | P/E Ratio                                  |
+      | perrt       | P/E Ratio realtime                         |
+      | pricepaid   |                                            |
+      | ps          | price/sales                                |
+      | se          | Stock Exchange                             |
+      | sharesowned |                                            |
+      | shortratio  |                                            |
+      | symbol      |                                            |
+      | tradedate   |                                            |
+      | tradelinks  |                                            |
+      | tt          | Ticker Trend                               |
+      | volume      |                                            |
     args:
       - symbol
       - data
@@ -2075,20 +2134,22 @@ values:
       simple nesting of templates is possible this way.
 
       Here are some examples of template definitions, note they are placed
-      between \[\[ \... \]\] instead of \' \... \':
+      between `[[ ... ]]` instead of ` ... `:
 
-      template0 = \[\[\$\\1\\2\]\]\
-      template1 = \[\[\\1: \${fs_used \\2} / \${fs_size \\2}\]\]\
-      template2 = \[\[\\1 \\2\]\]
+      ```lua
+      template0 = [[$12]]
+      template1 = [[1: ${fs_used 2} / ${fs_size 2}]]
+      template2 = [[1 2]]
+      ```
 
       The following list shows sample usage of the templates defined above,
       with the equivalent syntax when not using any template at all:
 
+        Using template                                Same without template
         --------------------------------------------- ------------------------------------------
-        using template                                same without template
-        \${template0 node name}                       \$nodename
-        \${template1 root /}                          root: \${fs_free /} / \${fs_size /}
-        \${template1 \${template2\\ disk\\ root} /}   disk root: \${fs_free /} / \${fs_size /}
+        ${template0 node name}                        $nodename
+        ${template1 root /}                           root: ${fs_free /} / ${fs_size /}
+        ${template1 ${template2 disk root} /}         disk root: ${fs_free /} / ${fs_size /}
         --------------------------------------------- ------------------------------------------
     args:
       - (arg1)

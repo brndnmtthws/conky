@@ -34,4 +34,6 @@ process:
    ```
 
 These steps are also part of the CMake build, and can be executed by configuring
-the build with `-DBUILD_DOCS=ON`.
+the build with `-DBUILD_DOCS=ON`. When building the docs with CMake, target
+files are written to the CMake build directory, and not necessarily the same
+path as the source files.
