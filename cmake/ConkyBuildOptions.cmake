@@ -238,6 +238,11 @@ option(BUILD_CURL "Enable if you want Curl support" false)
 
 option(BUILD_RSS "Enable if you want RSS support" false)
 
+if(BUILD_RSS)
+  # if RSS is enabled, curl is required
+  set(BUILD_CURL true)
+endif(BUILD_RSS)
+
 option(BUILD_APCUPSD "Enable APCUPSD support" true)
 
 option(BUILD_ICAL "Enable if you want iCalendar (RFC 5545) support" false)
