@@ -52,7 +52,7 @@ jobs:
             libxnvctrl-dev \
             ncurses-dev
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Import GPG Deploy Key
         run: |
           echo "${{ secrets.GPG_DEPLOY_KEY }}" > appimage/secret.gpg
