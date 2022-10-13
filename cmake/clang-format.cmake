@@ -17,6 +17,9 @@ endforeach()
 
 file(GLOB_RECURSE ClangFormat_SRCS ${ClangFormat_CXX_PATTERN})
 
+# Remove catch2 from format sources
+list(REMOVE_ITEM ClangFormat_SRCS ${CMAKE_SOURCE_DIR}/tests/catch2/catch.hpp)
+
 add_custom_target(clang-format
                   COMMAND ${ClangFormat_BIN} -style=file -i
                           ${ClangFormat_SRCS})
