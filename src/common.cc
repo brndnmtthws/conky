@@ -640,7 +640,7 @@ void print_battery_time(struct text_object *obj, char *p,
 }
 
 void battery_power_draw(struct text_object *obj, char *p,
-			unsigned int p_max_size) {
+                        unsigned int p_max_size) {
   get_battery_power_draw(p, p_max_size, obj->data.s);
 }
 

@@ -474,9 +474,7 @@ void get_battery_power_draw(char *buffer, unsigned int n, const char *bat) {
     fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.rate\"\n");
   }
 
-  if (rate > 0) {
-    ret = (double)rate/(double)1000;
-  }
+  if (rate > 0) { ret = (double)rate / (double)1000; }
 
   snprintf(buffer, n, "%.1f", ret);
 }

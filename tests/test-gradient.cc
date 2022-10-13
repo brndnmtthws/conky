@@ -32,21 +32,21 @@
 #include <gradient.h>
 
 const int width = 4;
-#ifdef BUILD_X11 // 24-bit color depth
-const long colour = 0x996633; // brown
+#ifdef BUILD_X11               // 24-bit color depth
+const long colour = 0x996633;  // brown
 const long expected_hue = 256;
-const long expected_value = 0x99;  // max(0x99, 0x66, 0x33)
-const long expected_chroma = 0x66; // (0x99 - 0x33)
+const long expected_value = 0x99;   // max(0x99, 0x66, 0x33)
+const long expected_chroma = 0x66;  // (0x99 - 0x33)
 const long expected_luma = 20712665L;
 const long expected_saturation = 122880L;
 const long expected_red = 0x99;
 const long expected_green = 0x66;
 const long expected_blue = 0x33;
-#else // 16-bit color depth
-const long colour = 0x99A6; // brown
+#else  // 16-bit color depth
+const long colour = 0x99A6;  // brown
 const long expected_hue = 275;
-const long expected_value = 0x13;  // max(0x13, 0x0d, 0x06)
-const long expected_chroma = 0x0d; // (0x1a - 0x06)
+const long expected_value = 0x13;   // max(0x13, 0x0d, 0x06)
+const long expected_chroma = 0x0d;  // (0x1a - 0x06)
 const long expected_luma = 2610173L;
 const long expected_saturation = 126113L;
 const long expected_red = 0x13;
@@ -66,15 +66,9 @@ TEST_CASE("gradient_factory::convert_from_rgb returns correct value") {
 
     factory->convert_from_rgb(colour, result);
 
-    SECTION("red") {
-      REQUIRE(result[0] == expected_red * full_scale);
-    }
-    SECTION("green") {
-      REQUIRE(result[1] == expected_green * full_scale);
-    }
-    SECTION("blue") {
-      REQUIRE(result[2] == expected_blue * full_scale);
-    }
+    SECTION("red") { REQUIRE(result[0] == expected_red * full_scale); }
+    SECTION("green") { REQUIRE(result[1] == expected_green * full_scale); }
+    SECTION("blue") { REQUIRE(result[2] == expected_blue * full_scale); }
 
     delete factory;
   }
@@ -85,15 +79,9 @@ TEST_CASE("gradient_factory::convert_from_rgb returns correct value") {
 
     factory->convert_from_rgb(colour, result);
 
-    SECTION("hue") {
-      REQUIRE(result[0] == expected_hue * 60);
-    }
-    SECTION("saturation") {
-      REQUIRE(result[1] == expected_saturation);
-    }
-    SECTION("value") {
-      REQUIRE(result[2] == expected_value * full_scale);
-    }
+    SECTION("hue") { REQUIRE(result[0] == expected_hue * 60); }
+    SECTION("saturation") { REQUIRE(result[1] == expected_saturation); }
+    SECTION("value") { REQUIRE(result[2] == expected_value * full_scale); }
 
     delete factory;
   }
@@ -104,15 +92,9 @@ TEST_CASE("gradient_factory::convert_from_rgb returns correct value") {
 
     factory->convert_from_rgb(colour, result);
 
-    SECTION("hue") {
-      REQUIRE(result[0] == expected_hue * 60);
-    }
-    SECTION("chroma") {
-      REQUIRE(result[1] == expected_chroma * full_scale);
-    }
-    SECTION("luma") {
-      REQUIRE(result[2] == expected_luma);
-    }
+    SECTION("hue") { REQUIRE(result[0] == expected_hue * 60); }
+    SECTION("chroma") { REQUIRE(result[1] == expected_chroma * full_scale); }
+    SECTION("luma") { REQUIRE(result[2] == expected_luma); }
 
     delete factory;
   }
@@ -121,7 +103,6 @@ TEST_CASE("gradient_factory::convert_from_rgb returns correct value") {
 TEST_CASE(
     "gradient_factory should convert to and from rgb "
     "and get the initial value") {
-
   SECTION("rgb_gradient_factory") {
     long tmp[3];
     auto factory = new conky::rgb_gradient_factory(width, colour, colour);
@@ -129,7 +110,7 @@ TEST_CASE(
     auto result = factory->convert_to_rgb(tmp);
 
     REQUIRE(result == colour);
-    
+
     delete factory;
   }
 
@@ -145,7 +126,7 @@ TEST_CASE(
     auto result = factory->convert_to_rgb(tmp);
 
     REQUIRE(result == colour);
-    
+
     delete factory;
   }
 
@@ -156,7 +137,7 @@ TEST_CASE(
     auto result = factory->convert_to_rgb(tmp);
 
     REQUIRE(result == colour);
-    
+
     delete factory;
   }
 #endif

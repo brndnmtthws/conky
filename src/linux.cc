@@ -2353,30 +2353,33 @@ void get_battery_short_status(char *buffer, unsigned int n, const char *bat) {
 
 void get_battery_power_draw(char *buffer, unsigned int n, const char *bat) {
   static int reported = 0;
-  char current_now_path[256], voltage_now_path[256], current_now_val[256], voltage_now_val[256];
+  char current_now_path[256], voltage_now_path[256], current_now_val[256],
+      voltage_now_val[256];
   char *ptr;
   long current_now, voltage_now;
   FILE *current_now_file;
   FILE *voltage_now_file;
   double result;
 
-  snprintf(current_now_path, 255, SYSFS_BATTERY_BASE_PATH "/%s/current_now", bat);
-  snprintf(voltage_now_path, 255, SYSFS_BATTERY_BASE_PATH "/%s/voltage_now", bat);
+  snprintf(current_now_path, 255, SYSFS_BATTERY_BASE_PATH "/%s/current_now",
+           bat);
+  snprintf(voltage_now_path, 255, SYSFS_BATTERY_BASE_PATH "/%s/voltage_now",
+           bat);
 
   current_now_file = open_file(current_now_path, &reported);
   voltage_now_file = open_file(voltage_now_path, &reported);
 
   if (current_now_file != nullptr && voltage_now_file != nullptr) {
-  	fgets(current_now_val, 256, current_now_file);
-  	fgets(voltage_now_val, 256, voltage_now_file);
+    fgets(current_now_val, 256, current_now_file);
+    fgets(voltage_now_val, 256, voltage_now_file);
 
-  	current_now = strtol(current_now_val, &ptr, 10);
-  	voltage_now = strtol(voltage_now_val, &ptr, 10);
+    current_now = strtol(current_now_val, &ptr, 10);
+    voltage_now = strtol(voltage_now_val, &ptr, 10);
 
-  	result = (double)(current_now*voltage_now)/(double)1000000000000;
-  	snprintf(buffer, n, "%.1f", result);
-	fclose(current_now_file);
-	fclose(voltage_now_file);
+    result = (double)(current_now * voltage_now) / (double)1000000000000;
+    snprintf(buffer, n, "%.1f", result);
+    fclose(current_now_file);
+    fclose(voltage_now_file);
   }
 }
 

@@ -70,18 +70,14 @@ void gradient_factory::setup_masks() {
     mask[2] |= 1 << i;
   }
 
-  if (colour_depth % 3 == 1) {
-    mask[1] |= 1 << (colour_depth / 3);
-  }
+  if (colour_depth % 3 == 1) { mask[1] |= 1 << (colour_depth / 3); }
 
-  for (int i = 0; i < 3; i++) {
-    mask[i] = mask[i] << shift[i];
-  }
+  for (int i = 0; i < 3; i++) { mask[i] = mask[i] << shift[i]; }
 }
 
 void gradient_factory::setup_colour_depth() {
 #ifdef BUILD_X11
-  if (state == nullptr) { // testing purposes
+  if (state == nullptr) {  // testing purposes
     colour_depth = 24;
   } else if (out_to_x.get(*state)) {
     colour_depth = DisplayPlanes(display, screen);
