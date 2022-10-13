@@ -772,7 +772,6 @@ static int get_string_width_special(char *s, int special_index) {
   if (display_output() == nullptr || !display_output()->graphical()) {
     return strlen(s);
   }
-  if (!out_to_x.get(*state)) { return strlen(s); }
 
   p = strndup(s, text_buffer_size.get(*state));
   final = p;
@@ -846,7 +845,8 @@ int last_font_height;
 void update_text_area() {
   int x = 0, y = 0;
 
-  if (!out_to_x.get(*state)) { return; }
+  if (display_output() == nullptr || !display_output()->graphical()) { return; }
+
   /* update text size if it isn't fixed */
 #ifdef OWN_WINDOW
   if (fixed_size == 0)
@@ -957,7 +957,6 @@ static int text_size_updater(char *s, int special_index) {
 
   for (int i = 0; i < special_index; i++) { current = current->next; }
 
-  if (!out_to_x.get(*state)) { return 0; }
   if (display_output() == nullptr || !display_output()->graphical()) {
     return 0;
   }
@@ -1168,7 +1167,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
       switch (current->type) {
 #ifdef BUILD_GUI
         case HORIZONTAL_LINE:
-          if (out_to_x.get(*state)) {
+          if (display_output() && display_output()->graphical()) {
             int h = current->height;
             int mid = font_ascent() / 2;
 
@@ -1184,7 +1183,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           break;
 
         case STIPPLED_HR:
-          if (out_to_x.get(*state)) {
+          if (display_output() && display_output()->graphical()) {
             int h = current->height;
             char tmp_s = current->arg;
             int mid = font_ascent() / 2;
@@ -1202,7 +1201,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           break;
 
         case BAR:
-          if (out_to_x.get(*state)) {
+          if (display_output() && display_output()->graphical()) {
             int h, by;
             double bar_usage, scale;
             if (cur_x - text_start_x > mw && mw > 0) { break; }
@@ -1230,7 +1229,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           break;
 
         case GAUGE: /* new GAUGE  */
-          if (out_to_x.get(*state)) {
+          if (display_output() && display_output()->graphical()) {
             int h, by = 0;
             unsigned long last_colour = current_color;
 #ifdef BUILD_MATH
@@ -1280,7 +1279,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           break;
 
         case GRAPH:
-          if (out_to_x.get(*state)) {
+          if (display_output() && display_output()->graphical()) {
             int h, by, i = 0, j = 0;
             int colour_idx = 0;
             unsigned long last_colour = current_color;
@@ -1416,7 +1415,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           break;
 
         case FONT:
-          if (out_to_x.get(*state)) {
+          if (display_output() && display_output()->graphical()) {
             int old = font_ascent();
 
             cur_y -= font_ascent();
@@ -1596,7 +1595,6 @@ void draw_stuff() {
   for (auto output : display_outputs()) output->begin_draw_stuff();
 #ifdef BUILD_GUI
   llua_draw_pre_hook();
-  //  if (out_to_x.get(*state)) {
   for (auto output : display_outputs()) {
     if (!output->graphical()) continue;
     // XXX: we assume a single graphical display
@@ -2212,7 +2210,9 @@ void initialisation(int argc, char **argv) {
   conky::set_config_settings(*state);
 
 #ifdef BUILD_GUI
-  if (out_to_x.get(*state)) { current_text_color = default_color.get(*state); }
+  if (display_output() && display_output()->graphical()) {
+    current_text_color = default_color.get(*state);
+  }
 #endif
 
   /* generate text and get initial size */
