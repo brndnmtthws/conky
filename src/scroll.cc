@@ -51,9 +51,9 @@ inline int scroll_character_length(char c) {
 
     return len;
   }
-#else  /* BUILD_X11 */
+#else  /* BUILD_GUI */
   (void)c;
-#endif /* BUILD_X11 */
+#endif /* BUILD_GUI */
 
   return 1;
 }
