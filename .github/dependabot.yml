@@ -2,9 +2,14 @@
 
 version: 2
 updates:
-
+  # Maintain dependencies for actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      # Check for updates to GitHub Actions every week
+      interval: "weekly"
+
+  # Maintain dependencies for web docs/npm
+  - package-ecosystem: "npm"
+    directory: "/web"
+    schedule:
       interval: "weekly"
