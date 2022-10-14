@@ -85,7 +85,8 @@ mark_as_advanced(RELEASE)
 
 option(MAINTAINER_MODE "Enable maintainer mode" false)
 
-option(BUILD_DOCS "Build documentation & extras (syntax files for editors)" false)
+option(BUILD_DOCS "Build documentation" false)
+option(BUILD_EXTRAS "Build extras (includes syntax files for editors)" false)
 
 option(BUILD_I18N "Enable if you want internationalization support" true)
 if(BUILD_I18N)
