@@ -485,10 +485,12 @@ if(BUILD_DOCS)
     message(FATAL_ERROR "Unable to find program 'pandoc'")
   endif(NOT APP_PANDOC)
   mark_as_advanced(APP_PANDOC)
+endif(BUILD_DOCS)
 
+
+if(BUILD_DOCS OR BUILD_EXTRAS)
   # Python3 with Jinja2 and PyYaml required for manpage generation.
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
-  include(CMakePrintHelpers)
   execute_process(
     COMMAND ${Python3_EXECUTABLE} -c "import yaml"
     RESULT_VARIABLE EXIT_CODE
@@ -514,7 +516,7 @@ if(BUILD_DOCS)
       "The \"Jinja2\" Python3 package is not installed. Please install it using the following command: \"pip3 install Jinja2\"."
     )
   endif()
-endif(BUILD_DOCS)
+endif(BUILD_DOCS OR BUILD_EXTRAS)
 
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
   set(DEBUG true)
