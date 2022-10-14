@@ -56,7 +56,6 @@ jobs:
           sudo apt-get install -yqq --no-install-recommends \
             audacious-dev \
             cmake \
-            docbook2x \
             gawk \
             lcov \
             libaudclient-dev \

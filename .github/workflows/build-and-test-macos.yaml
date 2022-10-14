@@ -15,7 +15,6 @@ jobs:
       - name: Install dependencies
         run: |
           brew install \
-            docbook2x \
             freetype \
             gettext \
             imlib2 \
