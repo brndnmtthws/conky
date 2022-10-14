@@ -23,7 +23,6 @@ jobs:
           sudo apt-get install -yqq --no-install-recommends \
             audacious-dev \
             cmake \
-            docbook2x \
             gawk \
             lcov \
             libaudclient-dev \
@@ -50,7 +49,11 @@ jobs:
             libxml2-dev \
             libxmmsclient-dev \
             libxnvctrl-dev \
-            ncurses-dev
+            ncurses-dev \
+            pandoc \
+            python3 \
+            &&
+            pip3 install --upgrade pyyaml
       - name: Checkout
         uses: actions/checkout@v3
       - name: Import GPG Deploy Key
@@ -69,6 +72,11 @@ jobs:
         with:
           name: conky-x86_64.AppImage.sha256
           path: conky-x86_64.AppImage.sha256
+      - name: Upload man page artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: conky.1
+          path: conky.1
       - name: Create Conky Release
         id: create_release
         uses: softprops/action-gh-release@v1
@@ -81,3 +89,4 @@ jobs:
           files: |
             conky-x86_64.AppImage
             conky-x86_64.AppImage.sha256
+            conky.1

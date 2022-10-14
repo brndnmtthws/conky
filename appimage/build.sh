@@ -34,6 +34,7 @@ cmake                                  \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo    \
   -DRELEASE=ON                         \
   -DBUILD_AUDACIOUS=ON                 \
+  -DBUILD_DOCS=ON                      \
   -DBUILD_HTTP=ON                      \
   -DBUILD_ICAL=ON                      \
   -DBUILD_ICONV=ON                     \
@@ -80,3 +81,6 @@ do
 done
 
 mv conky*.AppImage* "$OLD_CWD"
+
+# Copy the latest man page, which will be attached to releases
+mv doc/conky.1 "$OLD_CWD"
