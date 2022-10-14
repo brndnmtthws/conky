@@ -13,7 +13,7 @@ export default function ArrowIcon({ className }: ArrowIconProps) {
       className={className}
     >
       <path
-        className={`stroke-current text-primary`}
+        className="stroke-current text-primary"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="2"

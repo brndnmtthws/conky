@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { SearchIndex } from '../utils/search'
+import Footer from './Footer'
 import Header from './Header'
 
 function darkModeDefault() {
@@ -54,10 +55,13 @@ export default function Layout({ children, searchIndex }: LayoutProps) {
           setDarkMode={setDarkMode}
         />
       </div>
-      <div className="relative pb-24">
+      <div className="relative pb-4">
         <div className="flex flex-col items-center max-w-3xl w-full mx-auto">
           {children}
         </div>
+      </div>
+      <div className="relative">
+        <Footer />
       </div>
     </div>
   )
