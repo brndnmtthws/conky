@@ -75,8 +75,8 @@ jobs:
       - name: Upload man page artifact
         uses: actions/upload-artifact@v3
         with:
-          name: conky.1
-          path: conky.1
+          name: conky.1.gz
+          path: conky.1.gz
       - name: Create Conky Release
         id: create_release
         uses: softprops/action-gh-release@v1
@@ -89,4 +89,4 @@ jobs:
           files: |
             conky-x86_64.AppImage
             conky-x86_64.AppImage.sha256
-            conky.1
+            conky.1.gz

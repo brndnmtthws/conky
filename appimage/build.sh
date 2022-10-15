@@ -82,5 +82,6 @@ done
 
 mv conky*.AppImage* "$OLD_CWD"
 
-# Copy the latest man page, which will be attached to releases
-mv doc/conky.1 "$OLD_CWD"
+# gzip & copy the man page, which will be attached to releases
+gzip doc/conky.1
+mv doc/conky.1.gz "$OLD_CWD"
