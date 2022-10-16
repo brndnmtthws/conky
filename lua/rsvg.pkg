@@ -61,9 +61,12 @@ typedef struct _RsvgDimensionData {
     int height;
     double em;
     double ex;
-    static tolua_outside RsvgDimensionData * rsvgDimensionDataCreate @ create();
-    tolua_outside void rsvgDimensionDataGet @ get(int * width, int * height,
+    static tolua_outside RsvgDimensionData* rsvg_dimension_data_create @ create();
+    static tolua_outside void rsvg_dimension_data_destroy @ destroy(RsvgDimensionData *);
+    tolua_outside void rsvg_dimension_data_get @ get(int * width, int * height,
                                                   double * em, double * ex);
+    tolua_outside void rsvg_dimension_data_set @ get(int width, int height,
+                                                  double em, double ex);
 } RsvgDimensionData;
 
 /**
@@ -82,6 +85,11 @@ typedef struct _RsvgRectangle {
     double y;
     double width;
     double height;
+
+	static tolua_outside RsvgRectangle* rsvg_rectangle_create @ create();
+	static tolua_outside void rsvg_rectangle_destroy @ destroy(RsvgRectangle *pointer);
+	tolua_outside void rsvg_rectangle_set @ set(double x, double y, double width, double height);
+	tolua_outside void rsvg_rectangle_get @ get(double *x, double *y, double *width, double *height);
 } RsvgRectangle;
 
 const char  *rsvg_handle_get_base_uri (RsvgHandle * handle);

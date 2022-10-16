@@ -29,17 +29,31 @@
 #include <librsvg/rsvg.h>
 #include <stdlib.h>
 
-RsvgDimensionData *rsvgDimensionDataCreate(void) {
+RsvgDimensionData *rsvg_dimension_data_create(void) {
   return (RsvgDimensionData *)calloc(1, sizeof(RsvgDimensionData));
 }
 
-void rsvgDimensionDataGet(RsvgDimensionData *dd, int *width, int *height,
-                          double *em, double *ex) {
+void rsvg_dimension_data_destroy(RsvgDimensionData *pointer) {
+  if (pointer) { free(pointer); }
+}
+
+void rsvg_dimension_data_get(RsvgDimensionData *dd, int *width, int *height,
+                             double *em, double *ex) {
   if (dd) {
     *width = dd->width;
     *height = dd->height;
     *em = dd->em;
     *ex = dd->ex;
+  }
+}
+
+void rsvg_dimension_data_set(RsvgDimensionData *dd, int width, int height,
+                             double em, double ex) {
+  if (dd) {
+    dd->width = width;
+    dd->height = height;
+    dd->em = em;
+    dd->ex = ex;
   }
 }
 
@@ -76,6 +90,32 @@ int rsvg_destroy_handle(RsvgHandle *handle) {
   if (handle) { g_object_unref(handle); }
 
   return 0;
+}
+
+RsvgRectangle *rsvg_rectangle_create(void) {
+  return calloc(1, sizeof(RsvgRectangle));
+}
+
+void rsvg_rectangle_destroy(RsvgRectangle *rect) { free(rect); }
+
+void rsvg_rectangle_set(RsvgRectangle *rect, double x, double y, double width,
+                        double height) {
+  if (rect) {
+    rect->x = x;
+    rect->y = y;
+    rect->width = width;
+    rect->height = height;
+  }
+}
+
+void rsvg_rectangle_get(RsvgRectangle *rect, double *x, double *y,
+                        double *width, double *height) {
+  if (rect) {
+    *x = rect->x;
+    *y = rect->y;
+    *width = rect->width;
+    *height = rect->height;
+  }
 }
 
 #endif /* _LIBRSVG_HELPER_H_ */
