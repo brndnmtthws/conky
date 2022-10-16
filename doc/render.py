@@ -3,6 +3,7 @@
 import sys
 import os
 import yaml
+import datetime
 
 base_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -19,6 +20,8 @@ data = {
     "config_settings": config_settings,
     "variables": variables,
     "lua": lua,
+    "date": datetime.date.today().isoformat(),
+    "copyright_year": datetime.date.today().year,
 }
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
