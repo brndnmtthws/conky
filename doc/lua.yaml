@@ -34,35 +34,53 @@ values:
     desc: |-
       Call this function to return a new cairo_font_extents_t
       structure. A creation function for this structure is not provided
-      by the cairo API. After calling this, you should use
-      tolua.takeownership() on the return value to ensure ownership is
+      by the cairo API.
+
+      After calling this, you should use
+      `tolua.takeownership(cfe)` on the return value to ensure ownership is
       passed properly.
   - name: cairo_font_extents_t:destroy(structure)
     desc: |-
       Call this function to free memory allocated by
       cairo_font_extents_t:create.
+
+      You should call `tolua.releaseownership(cfe)` before calling this function to
+      avoid double-frees, but only if you previously called
+      `tolua.takeownership(cfe)`
   - name: cairo_matrix_t:create()
     desc: |-
       Call this function to return a new cairo_matrix_t structure.
       A creation function for this structure is not provided by the
-      cairo API. After calling this, you should use
-      tolua.takeownership() on the return value to ensure ownership is
+      cairo API.
+
+      After calling this, you should use
+      `tolua.takeownership(cm)` on the return value to ensure ownership is
       passed properly.
   - name: cairo_matrix_t:destroy(structure)
     desc: |-
       Call this function to free memory allocated by
       cairo_matrix_t:create.
+
+      You should call `tolua.releaseownership(cm)` before calling this function to
+      avoid double-frees, but only if you previously called
+      `tolua.takeownership(cm)`
   - name: cairo_text_extents_t:create()
     desc: |-
       Call this function to return a new cairo_text_extents_t
       structure. A creation function for this structure is not provided
-      by the cairo API. After calling this, you should use
-      tolua.takeownership() on the return value to ensure ownership is
+      by the cairo API.
+
+      After calling this, you should use
+      `tolua.takeownership(cte)` on the return value to ensure ownership is
       passed properly.
   - name: cairo_text_extents_t:destroy(structure)
     desc: |-
       Call this function to free memory allocated by
       cairo_text_extents_t:create.
+
+      You should call `tolua.releaseownership(cte)` before calling this function to
+      avoid double-frees, but only if you previously called
+      `tolua.takeownership(cte)`
   - name: conky_build_arch
     desc: |-
       A string containing the build architecture for this
@@ -123,3 +141,47 @@ values:
 
       NOTE: This table is only defined when X support is
       enabled.
+  - name: RsvgRectangle:create()
+    desc: |-
+      Call this method to return a new RsvgRectangle
+      structure. A creation function for this structure is not provided
+      by the Rsvg API.
+
+      After calling this, you should use `tolua.takeownership(rect)` on the return
+      value to ensure ownership is passed properly.
+  - name: RsvgRectangle:destroy()
+    desc: |-
+      Call this method to free memory allocated by
+      `RsvgRectangle:create`.
+
+      You should call `tolua.releaseownership(rect)` before calling this function to
+      avoid double-frees, but only if you previously called
+      `tolua.takeownership(rect)`
+  - name: RsvgRectangle:set(x, y, width, height)
+    desc: |-
+      Sets the values of an existing RsvgRectangle.
+  - name: RsvgRectangle:get()
+    desc: |-
+      Gets the values of an existing RsvgRectangle.
+  - name: RsvgDimensionData:create()
+    desc: |-
+      Call this method to return a new RsvgDimensionData
+      structure. A creation function for this structure is not provided
+      by the Rsvg API.
+
+      After calling this, you should use `tolua.takeownership(rect)` on the return
+      value to ensure ownership is passed properly.
+  - name: RsvgDimensionData:destroy()
+    desc: |-
+      Call this method to free memory allocated by
+      `RsvgDimensionData:create`.
+
+      You should call `tolua.releaseownership(dd)` before calling this function to
+      avoid double-frees, but only if you previously called
+      `tolua.takeownership(dd)`
+  - name: RsvgDimensionData:set(x, y, width, height)
+    desc: |-
+      Sets the values of an existing RsvgDimensionData.
+  - name: RsvgDimensionData:get()
+    desc: |-
+      Gets the values of an existing RsvgDimensionData.
