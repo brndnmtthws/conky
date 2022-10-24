@@ -42,7 +42,7 @@
     "@types/d3": "^7.4.0",
     "@types/mapbox__rehype-prism": "^0.8.0",
     "@types/node": "^18.11.4",
-    "@types/react": "^18.0.21",
+    "@types/react": "^18.0.22",
     "autoprefixer": "^10.4.12",
     "cypress": "^10.10.0",
     "eslint": "^8.25.0",
