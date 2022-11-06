@@ -41,6 +41,9 @@
 #ifdef BUILD_IMLIB2
 #include "imlib2.h"
 #endif /* BUILD_IMLIB2 */
+#ifdef BUILD_XSHAPE
+#include <X11/extensions/shape.h>
+#endif /* BUILD_XSHAPE */
 #endif /* BUILD_X11 */
 
 #include <iostream>
@@ -218,6 +221,15 @@ bool display_output_x11::initialize() {
 }
 
 bool display_output_x11::shutdown() { return false; }
+
+void find_parent(Window window, Window *parent) {
+  Window root, *children = nullptr;
+  unsigned int num_children;
+
+  if (XQueryTree(display, window, &root, parent, &children, &num_children)) {
+    if (children) { XFree((char *)children); }
+  }
+}
 
 bool display_output_x11::main_loop_wait(double t) {
   /* wait for X event or timeout */
@@ -480,6 +492,28 @@ bool display_output_x11::main_loop_wait(double t) {
           XSendEvent(display, ev.xbutton.window, False, ButtonReleaseMask, &ev);
         }
         break;
+#ifdef BUILD_XSHAPE
+      case MapNotify: {
+        if (window.has_xshape) {
+          Window root = DefaultRootWindow(display);
+          Window win = window.window;
+          while (win != None) {
+            Region region;
+            if ((region = XCreateRegion())) {
+              XSetRegion(display, window.gc, region);
+              XShapeCombineRegion(display, win, ShapeInput, 0, 0, region,
+                                  ShapeSet);
+              XDestroyRegion(region);
+            }
+            Window parent;
+            find_parent(win, &parent);
+            win = (parent == root ? None : parent);
+          }
+          XFlush(display);
+        }
+        break;
+      }
+#endif /* BUILD_XSHAPE */
 
 #endif
 

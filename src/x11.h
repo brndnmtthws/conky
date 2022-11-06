@@ -81,6 +81,9 @@ struct conky_window {
 #ifdef BUILD_XFT
   XftDraw *xftdraw;
 #endif
+#ifdef BUILD_XSHAPE
+  bool has_xshape;
+#endif /* BUILD_XSHAPE */
 
   int width;
   int height;

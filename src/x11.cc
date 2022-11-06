@@ -781,13 +781,7 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
         if (XShapeQueryVersion(display, &major_version, &minor_version) == 0) {
           NORM_ERR("Input shapes are not supported");
         } else {
-          if (own_window.get(*state) &&
-              (own_window_type.get(*state) != TYPE_NORMAL ||
-               ((TEST_HINT(own_window_hints.get(*state), HINT_UNDECORATED)) !=
-                0))) {
-            XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0,
-                                    nullptr, 0, ShapeSet, Unsorted);
-          }
+          window.has_xshape = true;
         }
       }
 #endif /* BUILD_XSHAPE */
