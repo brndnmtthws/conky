@@ -370,7 +370,7 @@ include_directories(3rdparty/toluapp/include)
 if(BUILD_X11)
   # Check for libraries used by Lua bindings
   if(BUILD_LUA_CAIRO)
-    pkg_check_modules(CAIRO REQUIRED cairo cairo-xlib)
+    pkg_check_modules(CAIRO REQUIRED cairo>=1.14 cairo-xlib)
     set(luacairo_libs ${CAIRO_LIBRARIES} ${LUA_LIBRARIES})
     set(luacairo_includes ${CAIRO_INCLUDE_DIRS} ${LUA_INCLUDE_DIRS})
     find_program(APP_PATCH patch)
