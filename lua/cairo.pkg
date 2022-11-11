@@ -908,3 +908,10 @@ void cairo_matrix_transform_distance(cairo_matrix_t * matrix, double *dx, double
 void cairo_matrix_transform_point(cairo_matrix_t * matrix, double *x, double *y);
 
 void cairo_debug_reset_static_data(void);
+
+void cairo_surface_set_device_scale (cairo_surface_t *surface,
+                                double x_scale,
+                                double y_scale);
+void cairo_surface_get_device_scale (cairo_surface_t *surface,
+                                double *x_scale,
+                                double *y_scale);
