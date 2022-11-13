@@ -773,7 +773,10 @@ void display_output_x11::setup_fonts(void) {
 }
 
 void display_output_x11::set_font(unsigned int f) {
-  assert(f < x_fonts.size());
+  if (f >= x_fonts.size()) {
+    DBGP("%d >= x_fonts.size()", f);
+    return;
+  }
 #ifdef BUILD_XFT
   if (use_xft.get(*state)) { return; }
 #endif /* BUILD_XFT */
