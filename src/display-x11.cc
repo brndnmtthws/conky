@@ -140,6 +140,9 @@ struct _x11_stuff_s {
 } x11_stuff;
 
 static void X11_create_window() {
+  if (!window.window) {
+    return;
+  }
   setup_fonts();
   load_fonts(utf8_mode.get(*state));
 #ifdef BUILD_XFT
