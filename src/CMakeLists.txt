@@ -244,9 +244,9 @@ if(BUILD_X11)
 endif(BUILD_X11)
 
 if(BUILD_WAYLAND)
-  set(wl_srcs wl.cc wl.h xdg-shell-protocol.c)
+  set(wl_srcs wl.cc wl.h xdg-shell-protocol.c wlr-layer-shell-protocol.c)
   set(optional_sources ${optional_sources} ${wl_srcs})
-  # generate protocol implementation
+  # generate protocol implementations
   set(XDG_PROT_DEF "${WAYLAND_PROTOCOLS_DIR}/stable/xdg-shell/xdg-shell.xml")
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/xdg-shell-client-protocol.h
@@ -255,6 +255,15 @@ if(BUILD_WAYLAND)
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/xdg-shell-protocol.c
     COMMAND ${WAYLAND_SCANNER} private-code ${XDG_PROT_DEF} xdg-shell-protocol.c
     DEPENDS xdg-shell-client-protocol.h)
+
+  set(WLR_LAYER_SHELL_PROT_DEF "${CMAKE_CURRENT_SOURCE_DIR}/wlr-layer-shell-unstable-v1.xml")
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-client-protocol.h
+    COMMAND ${WAYLAND_SCANNER} client-header ${WLR_LAYER_SHELL_PROT_DEF} wlr-layer-shell-client-protocol.h)
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-protocol.c
+    COMMAND ${WAYLAND_SCANNER} private-code ${WLR_LAYER_SHELL_PROT_DEF} wlr-layer-shell-protocol.c
+    DEPENDS wlr-layer-shell-client-protocol.h)
 
   # include output dir in include path
   include_directories(${CMAKE_CURRENT_BINARY_DIR})

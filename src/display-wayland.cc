@@ -40,7 +40,7 @@
 #include <sys/timerfd.h>
 
 #include <wayland-client-protocol.h>
-#include <xdg-shell-client-protocol.h>
+#include <wlr-layer-shell-client-protocol.h>
 
 #endif /* BUILD_WAYLAND */
 
@@ -289,8 +289,7 @@ struct window {
 	struct rectangle rectangle;
 	struct wl_shm *shm;
 	struct wl_surface *surface;
-	struct xdg_surface *xdg_surface;
-	struct xdg_toplevel *xdg_toplevel;
+	struct zwlr_layer_surface_v1 *layer_surface;
 	int scale;
 	cairo_surface_t *cairo_surface;
 	cairo_t *cr;
@@ -308,19 +307,9 @@ struct {
 	struct wl_seat *seat;
 /*	struct wl_pointer *pointer;*/
 	struct wl_output *output;
-	struct xdg_wm_base *shell;
+	struct zwlr_layer_shell_v1 *layer_shell;
 } wl_globals;
 
-
-static void
-xdg_wm_base_ping(void *data, struct xdg_wm_base *shell, uint32_t serial)
-{
-    xdg_wm_base_pong(shell, serial);
-}
-
-static const struct xdg_wm_base_listener xdg_wm_base_listener = {
-    .ping = &xdg_wm_base_ping,
-};
 
 static void
 output_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y,
@@ -394,9 +383,8 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t name,
 	} else if(strcmp(interface, "wl_output") == 0) {
 		wl_globals.output = static_cast<wl_output*>(wl_registry_bind(registry, name, &wl_output_interface, 2));
 		wl_output_add_listener(wl_globals.output, &output_listener, nullptr);
-	} else if(strcmp(interface, "xdg_wm_base") == 0) {
-		wl_globals.shell = static_cast<xdg_wm_base*>(wl_registry_bind(registry, name, &xdg_wm_base_interface, 1));
-		xdg_wm_base_add_listener(wl_globals.shell, &xdg_wm_base_listener, nullptr);
+	} else if(strcmp(interface, "zwlr_layer_shell_v1") == 0) {
+		wl_globals.layer_shell = static_cast<zwlr_layer_shell_v1*>(wl_registry_bind(registry, name, &zwlr_layer_shell_v1_interface, 1));
 	}
 }
 
@@ -412,30 +400,20 @@ static const struct wl_registry_listener registry_listener = {
 
 
 static void
-xdg_toplevel_configure(void *data, struct xdg_toplevel *xdg_toplevel,
-                       int32_t width, int32_t height, struct wl_array *states)
+layer_surface_configure(void *data, struct zwlr_layer_surface_v1 *layer_surface,
+                        uint32_t serial, uint32_t width, uint32_t height)
 {
+    zwlr_layer_surface_v1_ack_configure(layer_surface, serial);
 }
 
 static void
-xdg_toplevel_close(void *data, struct xdg_toplevel *xdg_toplevel)
+layer_surface_closed(void *data, struct zwlr_layer_surface_v1 *layer_surface)
 {
 }
 
-static const struct xdg_toplevel_listener xdg_toplevel_listener = {
-    .configure = &xdg_toplevel_configure,
-    .close = &xdg_toplevel_close,
-};
-
-static void
-xdg_surface_configure(void *data, struct xdg_surface *xdg_surface,
-                      uint32_t serial)
-{
-    xdg_surface_ack_configure(xdg_surface, serial);
-}
-
-static const struct xdg_surface_listener xdg_surface_listener = {
-    .configure = &xdg_surface_configure,
+static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
+    /*.configure =*/ &layer_surface_configure,
+    /*.closed =*/ &layer_surface_closed,
 };
 
 struct window *
@@ -455,6 +433,10 @@ window_commit_buffer(struct window *window);
 
 void
 window_get_width_height(struct window *window, int *w, int *h);
+
+void window_layer_surface_set_size(struct window *window) {
+	zwlr_layer_surface_v1_set_size(global_window->layer_surface, global_window->rectangle.width, global_window->rectangle.height);
+}
 
 bool display_output_wayland::initialize() {
 	epoll_fd = epoll_create1(0);
@@ -478,15 +460,11 @@ bool display_output_wayland::initialize() {
   global_window->scale = 1;
   window_allocate_buffer(global_window);
 
-  global_window->xdg_surface = xdg_wm_base_get_xdg_surface(wl_globals.shell, global_window->surface);
-  xdg_surface_add_listener(global_window->xdg_surface, &xdg_surface_listener, nullptr);
+  global_window->layer_surface = zwlr_layer_shell_v1_get_layer_surface(wl_globals.layer_shell,
+    global_window->surface, nullptr, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM, "conky_namespace");
+  window_layer_surface_set_size(global_window);
+  zwlr_layer_surface_v1_add_listener(global_window->layer_surface, &layer_surface_listener, nullptr);
 
-  global_window->xdg_toplevel = xdg_surface_get_toplevel(global_window->xdg_surface);
-  xdg_toplevel_add_listener(global_window->xdg_toplevel, &xdg_toplevel_listener, nullptr);
-
-  xdg_toplevel_set_app_id(global_window->xdg_toplevel, "conky");
-  xdg_toplevel_set_title(global_window->xdg_toplevel, "conky");
-  xdg_toplevel_set_parent(global_window->xdg_toplevel, 0);
   wl_surface_set_buffer_scale(global_window->surface, global_window->scale);
   wl_surface_commit(global_window->surface);
   wl_display_roundtrip(global_display);
@@ -583,30 +561,38 @@ bool display_output_wayland::main_loop_wait(double t) {
 
       /* update struts */
       if (changed != 0) {
-        int sidenum = -1;
+        int anchor = -1;
 
         DBGP("%s", _(PACKAGE_NAME ": defining struts\n"));
         fflush(stderr);
 
         switch (text_alignment.get(*state)) {
           case TOP_LEFT:
+            anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT;
+            break;
           case TOP_RIGHT:
+            anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
+            break;
           case TOP_MIDDLE: {
-            sidenum = 2;
+            anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP;
             break;
           }
           case BOTTOM_LEFT:
+            anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT;
+            break;
           case BOTTOM_RIGHT:
+            anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
+            break;
           case BOTTOM_MIDDLE: {
-            sidenum = 3;
+            anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
             break;
           }
           case MIDDLE_LEFT: {
-            sidenum = 0;
+            anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT;
             break;
           }
           case MIDDLE_RIGHT: {
-            sidenum = 1;
+            anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
             break;
           }
 
@@ -614,7 +600,10 @@ bool display_output_wayland::main_loop_wait(double t) {
           case MIDDLE_MIDDLE: /* XXX What about these? */;
         }
 
-        //set_struts(sidenum);
+        if (anchor != -1) {
+          zwlr_layer_surface_v1_set_anchor(global_window->layer_surface, anchor);
+          zwlr_layer_surface_v1_set_margin(global_window->layer_surface, gap_y.get(*state), gap_x.get(*state), gap_y.get(*state), gap_x.get(*state));
+        }
       }
 
     clear_text(1);
@@ -1160,6 +1149,7 @@ window_commit_buffer(struct window *window) {
 	wl_surface_set_buffer_scale(global_window->surface, global_window->scale);
 	wl_surface_attach(window->surface, get_buffer_from_cairo_surface(window->cairo_surface), 0, 0);
 	/* repaint all the pixels in the surface, change size to only repaint changed area*/
+	window_layer_surface_set_size(global_window);
 	wl_surface_damage(window->surface, window->rectangle.x,
 							window->rectangle.y,
 							window->rectangle.width,
