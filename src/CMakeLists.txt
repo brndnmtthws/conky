@@ -244,7 +244,7 @@ if(BUILD_X11)
 endif(BUILD_X11)
 
 if(BUILD_WAYLAND)
-  set(wl_srcs wl.cc wl.h xdg-shell-protocol.c wlr-layer-shell-protocol.c)
+  set(wl_srcs wl.cc wl.h xdg-shell-protocol.c wlr-layer-shell-protocol.c x11-color.cc x11-color.h)
   set(optional_sources ${optional_sources} ${wl_srcs})
   # generate protocol implementations
   set(XDG_PROT_DEF "${WAYLAND_PROTOCOLS_DIR}/stable/xdg-shell/xdg-shell.xml")
