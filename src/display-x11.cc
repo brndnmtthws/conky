@@ -51,6 +51,7 @@
 #include "display-x11.hh"
 #include "llua.h"
 #include "x11.h"
+#include "gui.h"
 #ifdef BUILD_X11
 #include "fonts.h"
 #endif
