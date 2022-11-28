@@ -40,6 +40,7 @@
 #include <sys/timerfd.h>
 
 #include <wayland-client-protocol.h>
+#include <xdg-shell-client-protocol.h>
 #include <wlr-layer-shell-client-protocol.h>
 
 #endif /* BUILD_WAYLAND */
@@ -301,14 +302,24 @@ struct {
 	struct wl_registry *registry;
 	struct wl_compositor *compositor;
 	struct wl_shm *shm;
-/*	struct wl_shell *shell;
-	struct wl_shell_surface *shell_surface;*/
 	struct wl_surface *surface;
 	struct wl_seat *seat;
 /*	struct wl_pointer *pointer;*/
 	struct wl_output *output;
+	struct xdg_wm_base *shell;
 	struct zwlr_layer_shell_v1 *layer_shell;
 } wl_globals;
+
+
+static void
+xdg_wm_base_ping(void *data, struct xdg_wm_base *shell, uint32_t serial)
+{
+	xdg_wm_base_pong(shell, serial);
+}
+
+static const struct xdg_wm_base_listener xdg_wm_base_listener = {
+	/*.ping =*/ &xdg_wm_base_ping,
+};
 
 
 static void
@@ -383,6 +394,9 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t name,
 	} else if(strcmp(interface, "wl_output") == 0) {
 		wl_globals.output = static_cast<wl_output*>(wl_registry_bind(registry, name, &wl_output_interface, 2));
 		wl_output_add_listener(wl_globals.output, &output_listener, nullptr);
+	} else if(strcmp(interface, "xdg_wm_base") == 0) {
+		wl_globals.shell = static_cast<xdg_wm_base*>(wl_registry_bind(registry, name, &xdg_wm_base_interface, 1));
+		xdg_wm_base_add_listener(wl_globals.shell, &xdg_wm_base_listener, nullptr);
 	} else if(strcmp(interface, "zwlr_layer_shell_v1") == 0) {
 		wl_globals.layer_shell = static_cast<zwlr_layer_shell_v1*>(wl_registry_bind(registry, name, &zwlr_layer_shell_v1_interface, 1));
 	}
