@@ -313,8 +313,12 @@ static void init_X11() {
                            ? dispstr.c_str()
                            : nullptr;
     if ((display = XOpenDisplay(disp)) == nullptr) {
+#ifdef BUILD_WAYLAND
+      return;
+#else
       throw std::runtime_error(std::string("can't open display: ") +
                                XDisplayName(disp));
+#endif
     }
   }
 
@@ -877,6 +881,10 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
     if (window.window == 0u) {
       window.window = find_desktop_window(&window.root, &window.desktop);
     }
+    if (window.window == 0u) {
+      return;
+    }
+
     window.visual = DefaultVisual(display, screen);
     window.colourmap = DefaultColormap(display, screen);
 

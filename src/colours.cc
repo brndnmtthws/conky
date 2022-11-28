@@ -89,7 +89,7 @@ unsigned int adjust_colours(unsigned int colour) {
 
 
 #ifdef BUILD_GUI
-#ifndef BUILD_X11
+#ifdef BUILD_WAYLAND
 static int hex_nibble_value(char c) {
     if (c >= '0' && c <= '9') {
         return c - '0';
@@ -100,34 +100,8 @@ static int hex_nibble_value(char c) {
     }
     return -1;
 }
-#endif /* !BUILD_X11 */
 
-long get_x11_color(const char *name) {
-#ifdef BUILD_X11
-  XColor color;
-
-  color.pixel = 0;
-  if (XParseColor(display, DefaultColormap(display, screen), name, &color) ==
-      0) {
-    /* lets check if it's a hex colour with the # missing in front
-     * if yes, then do something about it */
-    char newname[DEFAULT_TEXT_BUFFER_SIZE];
-
-    newname[0] = '#';
-    strncpy(&newname[1], name, DEFAULT_TEXT_BUFFER_SIZE - 1);
-    /* now lets try again */
-    if (XParseColor(display, DefaultColormap(display, screen), &newname[0],
-                    &color) == 0) {
-      NORM_ERR("can't parse X color '%s'", name);
-      return 0xFF00FF;
-    }
-  }
-  if (XAllocColor(display, DefaultColormap(display, screen), &color) == 0) {
-    NORM_ERR("can't allocate X color '%s'", name);
-  }
-
-  return static_cast<long>(color.pixel);
-#elif BUILD_WAYLAND
+long manually_get_x11_color(const char *name) {
     unsigned short r, g, b;
     size_t len = strlen(name);
     if (OsLookupColor(-1, name, len, &r, &g, &b)) {
@@ -157,7 +131,44 @@ long get_x11_color(const char *name) {
     err:
     NORM_ERR("can't parse X color '%s' (%d)", name, len);
     return 0xFF00FF;
-#endif
+}
+#endif /* BUILD_WAYLAND */
+
+long get_x11_color(const char *name) {
+#ifdef BUILD_X11
+#ifdef BUILD_WAYLAND
+  if (!display) {
+    return manually_get_x11_color(name);
+  }
+#endif /*BUILD_WAYLAND*/
+  assert(display != nullptr);
+  XColor color;
+
+  color.pixel = 0;
+  if (XParseColor(display, DefaultColormap(display, screen), name, &color) ==
+      0) {
+    /* lets check if it's a hex colour with the # missing in front
+     * if yes, then do something about it */
+    char newname[DEFAULT_TEXT_BUFFER_SIZE];
+
+    newname[0] = '#';
+    strncpy(&newname[1], name, DEFAULT_TEXT_BUFFER_SIZE - 1);
+    /* now lets try again */
+    if (XParseColor(display, DefaultColormap(display, screen), &newname[0],
+                    &color) == 0) {
+      NORM_ERR("can't parse X color '%s'", name);
+      return 0xFF00FF;
+    }
+  }
+  if (XAllocColor(display, DefaultColormap(display, screen), &color) == 0) {
+    NORM_ERR("can't allocate X color '%s'", name);
+  }
+
+  return static_cast<long>(color.pixel);
+#endif /*BUILD_X11*/
+#ifdef BUILD_WAYLAND
+  return manually_get_x11_color(name);
+#endif /*BUILD_WAYLAND*/
 }
 
 long get_x11_color(const std::string &colour) {
