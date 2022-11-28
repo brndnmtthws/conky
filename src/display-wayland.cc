@@ -291,6 +291,7 @@ struct window {
 	struct wl_surface *surface;
 	struct xdg_surface *xdg_surface;
 	struct xdg_toplevel *xdg_toplevel;
+	int scale;
 	cairo_surface_t *cairo_surface;
 	cairo_t *cr;
 	PangoLayout *layout;
@@ -321,6 +322,63 @@ static const struct xdg_wm_base_listener xdg_wm_base_listener = {
     .ping = &xdg_wm_base_ping,
 };
 
+static void
+output_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y,
+                int32_t physical_width, int32_t physical_height,
+                int32_t subpixel, const char *make, const char *model,
+                int32_t transform)
+{}
+
+static void
+output_mode(void *data, struct wl_output *wl_output, uint32_t flags,
+            int32_t width, int32_t height, int32_t refresh)
+{}
+
+#ifdef WL_OUTPUT_DONE_SINCE_VERSION
+static void
+output_done(void *data, struct wl_output *wl_output)
+{}
+#endif
+
+#ifdef WL_OUTPUT_SCALE_SINCE_VERSION
+void
+output_scale(void *data, struct wl_output *wl_output, int32_t factor)
+{
+	/* For now, assume we have one output and adopt its scale unconditionally. */
+	/* We should also re-render immediately when scale changes. */
+	global_window->scale = factor;
+}
+#endif
+
+#ifdef WL_OUTPUT_NAME_SINCE_VERSION
+static void
+output_name(void *data, struct wl_output *wl_output, const char *name)
+{}
+#endif
+
+#ifdef WL_OUTPUT_DESCRIPTION_SINCE_VERSION
+static void
+output_description(void *data, struct wl_output *wl_output,
+                   const char *description)
+{}
+#endif
+
+const struct wl_output_listener output_listener = {
+	/*.geometry =*/ output_geometry,
+	/*.mode =*/ output_mode,
+	#ifdef WL_OUTPUT_DONE_SINCE_VERSION
+	/*.done =*/ output_done,
+	#endif
+	#ifdef WL_OUTPUT_SCALE_SINCE_VERSION
+	/*.scale =*/ &output_scale,
+	#endif
+	#ifdef WL_OUTPUT_NAME_SINCE_VERSION
+	/*.name =*/ &output_name,
+	#endif
+	#ifdef WL_OUTPUT_DESCRIPTION_SINCE_VERSION
+	/*.description =*/ &output_description,
+	#endif
+};
 
 void
 registry_handle_global(void *data, struct wl_registry *registry, uint32_t name,
@@ -334,7 +392,8 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t name,
 		wl_globals.seat = static_cast<wl_seat*>(wl_registry_bind(registry, name,
 					   &wl_seat_interface, 1));
 	} else if(strcmp(interface, "wl_output") == 0) {
-		wl_globals.output = static_cast<wl_output*>(wl_registry_bind(registry, name, &wl_output_interface, 1));
+		wl_globals.output = static_cast<wl_output*>(wl_registry_bind(registry, name, &wl_output_interface, 2));
+		wl_output_add_listener(wl_globals.output, &output_listener, nullptr);
 	} else if(strcmp(interface, "xdg_wm_base") == 0) {
 		wl_globals.shell = static_cast<xdg_wm_base*>(wl_registry_bind(registry, name, &xdg_wm_base_interface, 1));
 		xdg_wm_base_add_listener(wl_globals.shell, &xdg_wm_base_listener, nullptr);
@@ -386,6 +445,9 @@ void
 window_resize(struct window *window, int width, int height);
 
 void
+window_allocate_buffer(struct window *window);
+
+void
 window_destroy(struct window *window);
 
 void
@@ -413,6 +475,8 @@ bool display_output_wayland::initialize() {
 
   struct wl_surface *surface = wl_compositor_create_surface(wl_globals.compositor);
   global_window = window_create(surface, wl_globals.shm, 1, 1);
+  global_window->scale = 1;
+  window_allocate_buffer(global_window);
 
   global_window->xdg_surface = xdg_wm_base_get_xdg_surface(wl_globals.shell, global_window->surface);
   xdg_surface_add_listener(global_window->xdg_surface, &xdg_surface_listener, nullptr);
@@ -423,7 +487,7 @@ bool display_output_wayland::initialize() {
   xdg_toplevel_set_app_id(global_window->xdg_toplevel, "conky");
   xdg_toplevel_set_title(global_window->xdg_toplevel, "conky");
   xdg_toplevel_set_parent(global_window->xdg_toplevel, 0);
-  wl_surface_set_buffer_scale(global_window->surface, 1);
+  wl_surface_set_buffer_scale(global_window->surface, global_window->scale);
   wl_surface_commit(global_window->surface);
   wl_display_roundtrip(global_display);
 
@@ -950,19 +1014,23 @@ shm_pool_destroy(struct shm_pool *pool)
 }
 
 static int
-data_length_for_shm_surface(struct rectangle *rect)
-{
+stride_for_shm_surface(struct rectangle *rect, int scale) {
+	return cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32, rect->width * scale);
+}
+
+static int
+data_length_for_shm_surface(struct rectangle *rect, int scale) {
 	int stride;
 
-	stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32,
-						rect->width);
-	return stride * rect->height;
+	stride = stride_for_shm_surface(rect, scale);
+	return stride * rect->height * scale;
 }
 
 static cairo_surface_t *
 create_shm_surface_from_pool(void *none,
 							struct rectangle *rectangle,
-							struct shm_pool *pool)
+							struct shm_pool *pool,
+							int scale)
 {
 	struct shm_surface_data *data;
 	uint32_t format;
@@ -977,8 +1045,8 @@ create_shm_surface_from_pool(void *none,
 
 	cairo_format = CAIRO_FORMAT_ARGB32; /*or CAIRO_FORMAT_RGB16_565 who knows??*/
 
-	stride = cairo_format_stride_for_width (cairo_format, rectangle->width);
-	length = stride * rectangle->height;
+	stride = stride_for_shm_surface (rectangle, scale);
+	length = data_length_for_shm_surface(rectangle, scale);
 	data->pool = NULL;
 	map = shm_pool_allocate(pool, length, &offset);
 
@@ -989,8 +1057,8 @@ create_shm_surface_from_pool(void *none,
 
 	surface = cairo_image_surface_create_for_data (static_cast<unsigned char*>(map),
 							cairo_format,
-							rectangle->width,
-							rectangle->height,
+							rectangle->width * scale,
+							rectangle->height * scale,
 							stride);
 
 	cairo_surface_set_user_data(surface, &shm_surface_data_key,
@@ -999,8 +1067,8 @@ create_shm_surface_from_pool(void *none,
 	format = WL_SHM_FORMAT_ARGB8888; /*or WL_SHM_FORMAT_RGB565*/
 	
 	data->buffer = wl_shm_pool_create_buffer(pool->pool, offset,
-							rectangle->width,
-							rectangle->height,
+							rectangle->width * scale,
+							rectangle->height * scale,
 							stride, format);
 
 	return surface;
@@ -1011,14 +1079,15 @@ window_allocate_buffer(struct window *window) {
 	assert(window->shm != nullptr);
 	struct shm_pool *pool;
 	pool = shm_pool_create(window->shm,
-			       data_length_for_shm_surface(&window->rectangle));
+			       data_length_for_shm_surface(&window->rectangle, window->scale));
 	if (!pool) {
 		fprintf(stderr, "could not allocate shm pool\n");
 		return;
 	}
 
 	window->cairo_surface =
-		create_shm_surface_from_pool(window->shm, &window->rectangle, pool);
+		create_shm_surface_from_pool(window->shm, &window->rectangle, pool, window->scale);
+	cairo_surface_set_device_scale(window->cairo_surface, window->scale, window->scale);
 
 	if (!window->cairo_surface) {
 		shm_pool_destroy(pool);
@@ -1044,11 +1113,15 @@ window_create(struct wl_surface* surface, struct wl_shm* shm, int width, int hei
 	window->rectangle.y = 0;
 	window->rectangle.width = width;
 	window->rectangle.height = height;
+	window->scale = 1;
 
 	window->surface = surface;
 	window->shm = shm;
 
-	window_allocate_buffer(window);
+	window->cairo_surface = nullptr;
+	window->cr = nullptr;
+	window->layout = nullptr;
+	window->pango_context = nullptr;
 
 	return window;
 }
@@ -1084,6 +1157,7 @@ window_resize(struct window *window, int width, int height) {
 void
 window_commit_buffer(struct window *window) {
 	assert(window->cairo_surface != nullptr);
+	wl_surface_set_buffer_scale(global_window->surface, global_window->scale);
 	wl_surface_attach(window->surface, get_buffer_from_cairo_surface(window->cairo_surface), 0, 0);
 	/* repaint all the pixels in the surface, change size to only repaint changed area*/
 	wl_surface_damage(window->surface, window->rectangle.x,
