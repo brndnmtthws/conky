@@ -1145,10 +1145,14 @@ window_free_buffer(struct window* window) {
 
 void
 window_destroy(struct window *window) {
-	cairo_surface_destroy(window->cairo_surface);
-	cairo_destroy(window->cr);
-	g_object_unref(window->layout);
-	g_object_unref(window->pango_context);
+	window_free_buffer(window);
+	zwlr_layer_surface_v1_destroy(window->layer_surface);
+	wl_surface_attach(window->surface, nullptr, 0, 0);
+	wl_surface_commit(window->surface);
+	wl_display_roundtrip(global_display);
+	wl_surface_destroy(window->surface);
+	wl_shm_destroy(window->shm);
+	delete window;
 }
 
 void
@@ -1157,6 +1161,7 @@ window_resize(struct window *window, int width, int height) {
 	window->rectangle.width = width;
 	window->rectangle.height = height;
 	window_allocate_buffer(window);
+	window_layer_surface_set_size(window);
 }
 
 void
@@ -1165,7 +1170,6 @@ window_commit_buffer(struct window *window) {
 	wl_surface_set_buffer_scale(global_window->surface, global_window->scale);
 	wl_surface_attach(window->surface, get_buffer_from_cairo_surface(window->cairo_surface), 0, 0);
 	/* repaint all the pixels in the surface, change size to only repaint changed area*/
-	window_layer_surface_set_size(global_window);
 	wl_surface_damage(window->surface, window->rectangle.x,
 							window->rectangle.y,
 							window->rectangle.width,
