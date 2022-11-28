@@ -516,6 +516,8 @@ bool display_output_wayland::main_loop_wait(double t) {
 		}
 	}
 
+	wl_display_read_events(global_display);
+
 	wl_display_dispatch_pending(global_display);
 
 	wl_display_flush(global_display);
