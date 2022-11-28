@@ -764,10 +764,13 @@ int get_border_total() {
          dpi_scale(border_width.get(*state));
 }
 
+void remove_first_char(char* s) {
+	memmove(s, s + 1, strlen(s));
+}
+
 static int get_string_width_special(char *s, int special_index) {
   char *p, *final;
   special_t *current = specials;
-  int idx = 1;
   int width = 0;
   long i;
 
@@ -780,16 +783,16 @@ static int get_string_width_special(char *s, int special_index) {
   p = strndup(s, text_buffer_size.get(*state));
   final = p;
 
-  for (i = 0; i < special_index; i++) { current = current->next; }
-  for (i = 0; i < idx; i++) { current = current->next; }
+  for (i = 0; i <= special_index; i++) { current = current->next; }
 
   while (*p != 0) {
     if (*p == SPECIAL_CHAR) {
       /* shift everything over by 1 so that the special char
        * doesn't mess up the size calculation */
-      for (i = 0; i < static_cast<long>(strlen(p)); i++) {
+      remove_first_char(p);
+      /*for (i = 0; i < static_cast<long>(strlen(p)); i++) {
         *(p + i) = *(p + i + 1);
-      }
+      }*/
       if (current->type == GRAPH || current->type == GAUGE ||
           current->type == BAR) {
         width += current->width;
@@ -799,6 +802,8 @@ static int get_string_width_special(char *s, int special_index) {
         // influenced_by_font but do not include specials
         char *influenced_by_font = strdup(p);
         special_t *current_after_font = current;
+        // influenced_by_font gets special chars removed, so after this loop i
+        // counts the number of letters (not special chars) influenced by font
         for (i = 0; influenced_by_font[i] != 0; i++) {
           if (influenced_by_font[i] == SPECIAL_CHAR) {
             // remove specials and stop at fontchange
@@ -807,10 +812,7 @@ static int get_string_width_special(char *s, int special_index) {
               influenced_by_font[i] = 0;
               break;
             }
-            {
-              memmove(&influenced_by_font[i], &influenced_by_font[i + 1],
-                      strlen(&influenced_by_font[i + 1]) + 1);
-            }
+            remove_first_char(&influenced_by_font[i]);
           }
         }
         // add the length of influenced_by_font in the new font to width
@@ -819,20 +821,19 @@ static int get_string_width_special(char *s, int special_index) {
         width += calc_text_width(influenced_by_font);
         selected_font = orig_font;
         free(influenced_by_font);
-        // make sure there chars counted in the new font are not again counted
+        // make sure the chars counted in the new font are not again counted
         // in the old font
         int specials_skipped = 0;
         while (i > 0) {
-          if (p[specials_skipped] != 1) {
-            memmove(&p[specials_skipped], &p[specials_skipped + 1],
-                    strlen(&p[specials_skipped + 1]) + 1);
+          if (p[specials_skipped] != SPECIAL_CHAR) {
+            remove_first_char(&p[specials_skipped]);
+            // i only counts non-special chars, so only decrement it for those
+            i--;
           } else {
             specials_skipped++;
           }
-          i--;
         }
       }
-      idx++;
       current = current->next;
     } else {
       p++;
