@@ -200,7 +200,6 @@ std::string gethostnamecxx() {
 
 conky::simple_config_setting<alignment> text_alignment("alignment", BOTTOM_LEFT,
                                                        false);
-conky::simple_config_setting<int> head_index("xinerama_head", 0, true);
 
 conky::simple_config_setting<std::string> display_name("display", std::string(),
                                                        false);
@@ -222,8 +221,6 @@ conky::range_config_setting<int> border_width("border_width", 0,
                                               std::numeric_limits<int>::max(),
                                               1, true);
 
-conky::simple_config_setting<bool> forced_redraw("forced_redraw", false, false);
-
 #ifdef OWN_WINDOW
 conky::simple_config_setting<bool> set_transparent("own_window_transparent",
                                                    false, false);
@@ -241,19 +238,10 @@ conky::simple_config_setting<uint16_t, window_hints_traits> own_window_hints(
 priv::colour_setting background_colour("own_window_colour", 0);
 
 #ifdef BUILD_ARGB
-conky::simple_config_setting<bool> use_argb_visual("own_window_argb_visual",
-                                                   false, false);
 conky::range_config_setting<int> own_window_argb_value("own_window_argb_value",
                                                        0, 255, 255, false);
 #endif /* BUILD_ARGB */
 #endif /* OWN_WINDOW */
 priv::own_window_setting own_window;
 
-#ifdef BUILD_IMLIB2
-/*
- * the only reason this is not in imlib2.cc is so that we can be sure it's
- * setter executes after use_xdbe
- */
-imlib_cache_size_setting imlib_cache_size;
-#endif
 /******************** </SETTINGS> ************************/
