@@ -32,6 +32,7 @@
 
 #ifdef BUILD_X11
 #include "x11.h"
+#include "gui.h"
 #endif /* BUILD_X11 */
 
 namespace conky {

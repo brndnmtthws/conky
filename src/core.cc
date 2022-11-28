@@ -54,6 +54,7 @@
 #include "irc.h"
 #endif /* BUILD_IRC */
 #ifdef BUILD_GUI
+#include "gui.h"
 #include "fonts.h"
 #endif /* BUILD_GUI */
 #include "fs.h"
@@ -749,7 +750,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #endif /* BUILD_GUI */
   END OBJ(color, nullptr)
 #ifdef BUILD_GUI
-      if (out_to_x.get(*state)) {
+  if (out_to_gui(*state)) {
     obj->data.l =
         arg != nullptr ? get_x11_color(arg) : default_color.get(*state);
     set_current_text_color(obj->data.l);
@@ -883,7 +884,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_cat;
   obj->callbacks.free = &gen_free_opaque;
 
-#ifdef BUILD_GUI
+#ifdef BUILD_X11
   END OBJ(key_num_lock, 0) obj->callbacks.print = &print_key_num_lock;
   END OBJ(key_caps_lock, 0) obj->callbacks.print = &print_key_caps_lock;
   END OBJ(key_scroll_lock, 0) obj->callbacks.print = &print_key_scroll_lock;

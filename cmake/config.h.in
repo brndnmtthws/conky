@@ -42,6 +42,8 @@
 
 #cmakedefine HAVE_CLOCK_GETTIME 1
 
+#cmakedefine BUILD_WAYLAND 1
+
 #cmakedefine BUILD_X11 1
 
 #cmakedefine OWN_WINDOW 1

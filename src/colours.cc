@@ -83,8 +83,23 @@ unsigned int adjust_colours(unsigned int colour) {
   return colour;
 }
 
-#ifdef BUILD_X11
+
+#ifdef BUILD_GUI
+#ifndef BUILD_X11
+static int hex_nibble_value(char c) {
+    if (c >= '0' && c <= '9') {
+        return c - '0';
+    } else if (c >= 'a' && c <= 'f') {
+        return c - 'a' + 10;
+    } else if (c >= 'A' && c <= 'F') {
+        return c - 'A' + 10;
+    }
+    return -1;
+}
+#endif /* !BUILD_X11 */
+
 long get_x11_color(const char *name) {
+#ifdef BUILD_X11
   XColor color;
 
   color.pixel = 0;
@@ -108,9 +123,35 @@ long get_x11_color(const char *name) {
   }
 
   return static_cast<long>(color.pixel);
+#else /*BUILD_X11*/
+    if (name[0] == '#') {
+      name++;
+    }
+    size_t len = strlen(name);
+    if (len == 6 || len == 8)
+    {
+        unsigned char argb[4] = {0xff, 0, 0, 0};
+        for (size_t i = 0; i + 1 < len; i += 2) {
+            int nib1 = hex_nibble_value(name[i]);
+            int nib2 = hex_nibble_value(name[i+1]);
+            if (nib1 < 0 || nib2 < 0) {
+              goto err;
+            }
+            int val = (nib1 << 4) + nib2;
+
+            argb[3 - i / 2] = val;
+        }
+        long out;
+        memcpy(static_cast<void*>(&out), argb, 4);
+        return out;
+    }
+    err:
+    NORM_ERR("can't parse X color '%s'", name);
+    return 0xFF00FF;
+#endif /*BUILD_X11*/
 }
 
 long get_x11_color(const std::string &colour) {
   return get_x11_color(colour.c_str());
 }
-#endif
+#endif /*BUILD_GUI*/

@@ -177,6 +177,8 @@ else(BUILD_NCURSES)
     FORCE)
 endif(BUILD_NCURSES)
 
+option(BUILD_WAYLAND "Build Wayland support" true)
+
 option(BUILD_X11 "Build X11 support" true)
 if(BUILD_X11)
   option(OWN_WINDOW "Enable own_window support" true)
@@ -208,6 +210,9 @@ endif(BUILD_X11)
 if(BUILD_X11)
   set(BUILD_GUI true)
 endif(BUILD_X11)
+if(BUILD_WAYLAND)
+  set(BUILD_GUI true)
+endif(BUILD_WAYLAND)
 
 if(OWN_WINDOW)
   option(BUILD_ARGB "Build ARGB (real transparency) support" true)
