@@ -26,27 +26,12 @@
 #ifndef GUI_H_
 #define GUI_H_
 
+#ifdef BUILD_X11
+#include "x11.h"
+#endif /*BUILD_X11*/
+
 #include "colours.h"
 #include "setting.hh"
-
-#ifdef OWN_WINDOW
-enum window_type {
-  TYPE_NORMAL = 0,
-  TYPE_DOCK,
-  TYPE_PANEL,
-  TYPE_DESKTOP,
-  TYPE_OVERRIDE
-};
-
-enum window_hints {
-  HINT_UNDECORATED = 0,
-  HINT_BELOW,
-  HINT_ABOVE,
-  HINT_STICKY,
-  HINT_SKIP_TASKBAR,
-  HINT_SKIP_PAGER
-};
-#endif /*OWN_WINDOW*/
 
 #if defined(BUILD_ARGB) && defined(OWN_WINDOW)
 /* true if use_argb_visual=true and argb visual was found*/
@@ -169,6 +154,7 @@ extern conky::simple_config_setting<uint16_t, window_hints_traits>
     own_window_hints;
 
 #ifdef BUILD_ARGB
+extern priv::colour_setting background_colour;
 extern conky::simple_config_setting<bool> use_argb_visual;
 
 /* range of 0-255 for alpha */
