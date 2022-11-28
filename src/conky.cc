@@ -1557,7 +1557,8 @@ static void draw_text() {
   for (auto output : display_outputs()) output->begin_draw_text();
 #ifdef BUILD_GUI
   // XXX:only works if inside set_display_output()
-  if (display_output() && display_output()->graphical()) {
+  for (auto output : display_outputs()) {
+  if (output && output->graphical()) {
     cur_y = text_start_y;
     int bw = dpi_scale(border_width.get(*state));
 
@@ -1566,20 +1567,21 @@ static void draw_text() {
       if (stippled_borders.get(*state) != 0) {
         char ss[2] = {(char)dpi_scale(stippled_borders.get(*state)),
                       (char)dpi_scale(stippled_borders.get(*state))};
-        display_output()->set_line_style(bw, false);
-        display_output()->set_dashes(ss);
+        output->set_line_style(bw, false);
+        output->set_dashes(ss);
       } else {
-        display_output()->set_line_style(bw, true);
+        output->set_line_style(bw, true);
       }
 
       int offset = dpi_scale(border_inner_margin.get(*state)) + bw;
-      display_output()->draw_rect(text_offset_x + text_start_x - offset,
+      output->draw_rect(text_offset_x + text_start_x - offset,
                                   text_offset_y + text_start_y - offset,
                                   text_width + 2 * offset,
                                   text_height + 2 * offset);
     }
 
     /* draw text */
+  }
   }
   setup_fonts();
 #endif /* BUILD_GUI */
