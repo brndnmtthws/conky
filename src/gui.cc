@@ -235,8 +235,6 @@ conky::simple_config_setting<window_type> own_window_type("own_window_type",
 conky::simple_config_setting<uint16_t, window_hints_traits> own_window_hints(
     "own_window_hints", 0, false);
 
-priv::colour_setting background_colour("own_window_colour", 0);
-
 #ifdef BUILD_ARGB
 conky::range_config_setting<int> own_window_argb_value("own_window_argb_value",
                                                        0, 255, 255, false);
