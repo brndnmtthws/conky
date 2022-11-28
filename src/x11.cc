@@ -94,7 +94,7 @@ void out_to_x_setting::cleanup(lua::state &l) {
 #ifdef BUILD_XDBE
 bool use_xdbe_setting::set_up(lua::state &l) {
   // double_buffer makes no sense when not drawing to X
-  if (!out_to_x.get(l)) { return false; }
+  if (!out_to_x.get(l) || !display || !window.window) { return false; }
 
   int major, minor;
 
