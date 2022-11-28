@@ -41,7 +41,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>
 #include <X11/Xutil.h>
-#include "x11.h"
+#include "gui.h"
 #ifdef BUILD_IMLIB2
 #include "imlib2.h"
 #endif /* BUILD_IMLIB2 */
@@ -173,81 +173,6 @@ void use_xpmdb_setting::lua_setter(lua::state &l, bool init) {
 #endif
 }  // namespace priv
 
-template <>
-conky::lua_traits<alignment>::Map conky::lua_traits<alignment>::map = {
-    {"top_left", TOP_LEFT},
-    {"top_right", TOP_RIGHT},
-    {"top_middle", TOP_MIDDLE},
-    {"bottom_left", BOTTOM_LEFT},
-    {"bottom_right", BOTTOM_RIGHT},
-    {"bottom_middle", BOTTOM_MIDDLE},
-    {"middle_left", MIDDLE_LEFT},
-    {"middle_middle", MIDDLE_MIDDLE},
-    {"middle_right", MIDDLE_RIGHT},
-    {"tl", TOP_LEFT},
-    {"tr", TOP_RIGHT},
-    {"tm", TOP_MIDDLE},
-    {"bl", BOTTOM_LEFT},
-    {"br", BOTTOM_RIGHT},
-    {"bm", BOTTOM_MIDDLE},
-    {"ml", MIDDLE_LEFT},
-    {"mm", MIDDLE_MIDDLE},
-    {"mr", MIDDLE_RIGHT},
-    {"none", NONE}};
-
-#ifdef OWN_WINDOW
-template <>
-conky::lua_traits<window_type>::Map conky::lua_traits<window_type>::map = {
-    {"normal", TYPE_NORMAL},
-    {"dock", TYPE_DOCK},
-    {"panel", TYPE_PANEL},
-    {"desktop", TYPE_DESKTOP},
-    {"override", TYPE_OVERRIDE}};
-
-template <>
-conky::lua_traits<window_hints>::Map conky::lua_traits<window_hints>::map = {
-    {"undecorated", HINT_UNDECORATED},
-    {"below", HINT_BELOW},
-    {"above", HINT_ABOVE},
-    {"sticky", HINT_STICKY},
-    {"skip_taskbar", HINT_SKIP_TASKBAR},
-    {"skip_pager", HINT_SKIP_PAGER}};
-
-std::pair<uint16_t, bool> window_hints_traits::convert(
-    lua::state &l, int index, const std::string &name) {
-  lua::stack_sentry s(l);
-  l.checkstack(1);
-
-  std::string hints = l.tostring(index);
-  // add a sentinel to simplify the following loop
-  hints += ',';
-  size_t pos = 0;
-  size_t newpos;
-  uint16_t ret = 0;
-  while ((newpos = hints.find_first_of(", ", pos)) != std::string::npos) {
-    if (newpos > pos) {
-      l.pushstring(hints.substr(pos, newpos - pos));
-      auto t = conky::lua_traits<window_hints>::convert(l, -1, name);
-      if (!t.second) { return {0, false}; }
-      SET_HINT(ret, t.first);
-      l.pop();
-    }
-    pos = newpos + 1;
-  }
-  return {ret, true};
-}
-#endif
-
-#ifdef OWN_WINDOW
-namespace {
-// used to set the default value for own_window_title
-std::string gethostnamecxx() {
-  update_uname();
-  return info.uname_s.nodename;
-}
-}  // namespace
-#endif /* OWN_WINDOW */
-
 conky::simple_config_setting<int> head_index("xinerama_head", 0, true);
 priv::out_to_x_setting out_to_x;
 
@@ -258,16 +183,9 @@ conky::simple_config_setting<bool> use_xft("use_xft", false, false);
 conky::simple_config_setting<bool> forced_redraw("forced_redraw", false, false);
 
 #ifdef OWN_WINDOW
-conky::simple_config_setting<window_type> own_window_x11_type("own_window_type",
-                                                              TYPE_NORMAL, false);
-conky::simple_config_setting<uint16_t, window_hints_traits> own_window_x11_hints(
-    "own_window_hints", 0, false);
-
 #ifdef BUILD_ARGB
 conky::simple_config_setting<bool> use_argb_visual("own_window_argb_visual",
                                                    false, false);
-conky::range_config_setting<int> own_window_argb_value("own_window_argb_value",
-                                                       0, 255, 255, false);
 #endif /* BUILD_ARGB */
 #endif /* OWN_WINDOW */
 
