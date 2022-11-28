@@ -54,6 +54,9 @@
 #include <sys/inotify.h>
 #pragma clang diagnostic pop
 #endif /* HAVE_SYS_INOTIFY_H */
+#ifdef BUILD_WAYLAND
+#include "wl.h"
+#endif /* BUILD_WAYLAND */
 #ifdef BUILD_X11
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
@@ -90,6 +93,7 @@
 #include "exec.h"
 #ifdef BUILD_GUI
 #include "fonts.h"
+#include "gui.h"
 #endif
 #include "fs.h"
 #ifdef BUILD_ICONV
@@ -1930,11 +1934,19 @@ static void set_default_configurations() {
   info.xmms2.status = nullptr;
   info.xmms2.playlist = nullptr;
 #endif /* BUILD_XMMS2 */
+
+/* Enable a single output by default based on what was enabled at build-time */
+#ifdef BUILD_WAYLAND
   state->pushboolean(true);
-#ifdef BUILD_GUI
+  out_to_wayland.lua_set(*state);
+#else
+#ifdef BUILD_X11
+  state->pushboolean(true);
   out_to_x.lua_set(*state);
 #else
+  state->pushboolean(true);
   out_to_stdout.lua_set(*state);
+#endif
 #endif
 
   info.users.number = 1;

@@ -26,45 +26,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef _FONTS_H
-#define _FONTS_H
 
-#include <vector>
+#if defined(BUILD_WAYLAND) && !defined(CONKY_WL_H)
+#define CONKY_WL_H
 
-#include "conky.h"
+#include <wayland-client.h>
 
-/* for fonts */
-struct font_list {
-  std::string name;
+#include "setting.hh"
 
-  font_list() : name() {}
-};
-
-/* direct access to registered fonts (FIXME: bad encapsulation) */
-extern std::vector<font_list> fonts;
-extern unsigned int selected_font;
-
-int font_height();
-int font_ascent();
-int font_descent();
-void setup_fonts(void);
-void set_font(void);
-int add_font(const char *);
-void free_fonts(bool utf8);
-void load_fonts(bool utf8);
-
-class font_setting : public conky::simple_config_setting<std::string> {
-  typedef conky::simple_config_setting<std::string> Base;
+namespace priv {
+class out_to_wayland_setting : public conky::simple_config_setting<bool> {
+  typedef conky::simple_config_setting<bool> Base;
 
  protected:
   virtual void lua_setter(lua::state &l, bool init);
+  virtual void cleanup(lua::state &l);
 
  public:
-  font_setting() : Base("font", "6x10", false) {}
+  out_to_wayland_setting() : Base("out_to_wayland", false, false) {}
 };
+}  // namespace priv
 
-extern font_setting font;
+extern priv::out_to_wayland_setting out_to_wayland;
 
-extern conky::simple_config_setting<std::string> font_template[10];
-
-#endif /* _FONTS_H */
+#endif /* CONKY_WL_H */

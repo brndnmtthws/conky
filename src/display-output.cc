@@ -56,6 +56,7 @@ extern void init_ncurses_output();
 extern void init_file_output();
 extern void init_http_output();
 extern void init_x11_output();
+extern void init_wayland_output();
 
 /*
  * The selected and active display output.
@@ -111,6 +112,7 @@ bool initialize_display_outputs() {
   init_file_output();
   init_http_output();
   init_x11_output();
+  init_wayland_output();
 
   std::vector<display_output_base *> outputs;
   outputs.reserve(display_outputs->size());
