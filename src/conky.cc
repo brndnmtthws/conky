@@ -1484,9 +1484,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             cur_x, get_string_width_special(s), gap_x,
             current->arg, window.border_inner_margin,
             window.border_width); */
-          if (pos_x > current->arg && pos_x > cur_x) {
-            cur_x = pos_x - current->arg;
-          }
+          cur_x = pos_x - current->arg;
           break;
         }
 
