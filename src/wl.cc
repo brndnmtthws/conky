@@ -63,7 +63,7 @@ priv::out_to_wayland_setting out_to_wayland;
 
 static const char NOT_IN_WAYLAND[] = "Not running in Wayland";
 
-void print_monitor(struct text_object *obj, char *p, unsigned int p_max_size) {
+__attribute__((weak)) void print_monitor(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
 
   if (!out_to_wayland.get(*state)) {
@@ -73,7 +73,7 @@ void print_monitor(struct text_object *obj, char *p, unsigned int p_max_size) {
   snprintf(p, p_max_size, "%d", -1);
 }
 
-void print_monitor_number(struct text_object *obj, char *p,
+__attribute__((weak)) void print_monitor_number(struct text_object *obj, char *p,
                           unsigned int p_max_size) {
   (void)obj;
 
@@ -84,7 +84,7 @@ void print_monitor_number(struct text_object *obj, char *p,
   snprintf(p, p_max_size, "%d", -1);
 }
 
-void print_desktop(struct text_object *obj, char *p, unsigned int p_max_size) {
+__attribute__((weak)) void print_desktop(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
 
   if (!out_to_wayland.get(*state)) {
@@ -94,7 +94,7 @@ void print_desktop(struct text_object *obj, char *p, unsigned int p_max_size) {
   snprintf(p, p_max_size, "%d", -1);
 }
 
-void print_desktop_number(struct text_object *obj, char *p,
+__attribute__((weak)) void print_desktop_number(struct text_object *obj, char *p,
                           unsigned int p_max_size) {
   (void)obj;
 
@@ -105,7 +105,7 @@ void print_desktop_number(struct text_object *obj, char *p,
   snprintf(p, p_max_size, "%d", -1);
 }
 
-void print_desktop_name(struct text_object *obj, char *p,
+__attribute__((weak)) void print_desktop_name(struct text_object *obj, char *p,
                         unsigned int p_max_size) {
   (void)obj;
 
