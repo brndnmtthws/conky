@@ -67,6 +67,9 @@ conky::range_config_setting<int> default_gauge_width(
     "default_gauge_width", 0, std::numeric_limits<int>::max(), 40, false);
 conky::range_config_setting<int> default_gauge_height(
     "default_gauge_height", 0, std::numeric_limits<int>::max(), 25, false);
+
+conky::simple_config_setting<bool> store_graph_data_explicitly(
+    "store_graph_data_explicitly", true, true);
 #endif /* BUILD_GUI */
 
 conky::simple_config_setting<std::string> console_graph_ticks(
@@ -596,11 +599,15 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
   }
 #endif
 
-  if (s->graph) { s->graph = retrieve_graph(g->id, s->graph_width); }
+  if (store_graph_data_explicitly.get(*state)) {
+    if (s->graph) { s->graph = retrieve_graph(g->id, s->graph_width); }
 
-  graph_append(s, val, g->flags);
+    graph_append(s, val, g->flags);
 
-  store_graph(g->id, s);
+    store_graph(g->id, s);
+  } else {
+    graph_append(s, val, g->flags);
+  }
 
   if (out_to_stdout.get(*state)) { new_graph_in_shell(s, buf, buf_max_size); }
 }
