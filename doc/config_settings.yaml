@@ -445,6 +445,13 @@ values:
     default: rgb
   - name: stippled_borders
     desc: Border stippling (dashing) in pixels.
+  - name: store_graph_data_explicitly
+    desc:  |-
+      Enable storing graph data explicitly by ID. This avoids resets while
+      using conditional colors. This option should be disabled while using
+      graphs indirectly e.g. via execpi or lua_parse. Otherwise the graph
+      stays emtpy. The default value is true.
+    default: true
   - name: temperature_unit
     desc: |-
       Desired output unit of all objects displaying a temperature.
