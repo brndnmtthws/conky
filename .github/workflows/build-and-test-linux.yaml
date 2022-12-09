@@ -11,6 +11,7 @@ jobs:
           - ubuntu-20.04
           - ubuntu-22.04
         x11: [ON, OFF]
+        wayland: [ON, OFF]
         compiler:
           - clang
           - gcc
@@ -74,6 +75,8 @@ jobs:
             libpulse-dev \
             librsvg2-dev \
             libsystemd-dev \
+            libwayland-bin \
+            libwayland-dev \
             libx11-dev \
             libxdamage-dev \
             libxext-dev \
@@ -82,7 +85,8 @@ jobs:
             libxml2-dev \
             libxmmsclient-dev \
             libxnvctrl-dev \
-            ncurses-dev
+            ncurses-dev \
+            wayland-protocols
       - name: Install libc++
         if: matrix.compiler == 'clang'
         run: |
@@ -125,6 +129,7 @@ jobs:
             -DBUILD_RSS=ON                       \
             -DBUILD_TESTS=ON                     \
             -DBUILD_WLAN=ON                      \
+            -DBUILD_WAYLAND=${{ matrix.wayland }}\
             -DBUILD_X11=${{ matrix.x11 }}        \
             -DBUILD_XMMS2=ON                     \
             -DCMAKE_C_COMPILER=$CC               \

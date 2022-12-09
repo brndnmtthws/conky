@@ -41,6 +41,7 @@ jobs:
             libpulse-dev \
             librsvg2-dev \
             libsystemd-dev \
+            libwayland-dev \
             libx11-dev \
             libxdamage-dev \
             libxext-dev \
