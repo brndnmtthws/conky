@@ -379,6 +379,10 @@ if(BUILD_WAYLAND)
   pkg_check_modules(PANGOFC pangofc)
   set(conky_libs ${conky_libs} ${PANGOFC_LIBRARIES})
   set(conky_includes ${conky_includes} ${PANGOFC_INCLUDE_DIRS})
+
+  pkg_check_modules(PANGOFT2 pangoft2)
+  set(conky_libs ${conky_libs} ${PANGOFT2_LIBRARIES})
+  set(conky_includes ${conky_includes} ${PANGOFT2_INCLUDE_DIRS})
 endif(BUILD_WAYLAND)
 
 # Otherwise, use the most recent Lua version
