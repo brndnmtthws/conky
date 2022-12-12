@@ -59,6 +59,8 @@
 #include "fonts.h"
 #endif
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 /* TODO: cleanup global namespace */
 #ifdef BUILD_WAYLAND
 
