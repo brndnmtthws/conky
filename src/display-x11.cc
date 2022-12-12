@@ -225,6 +225,8 @@ bool display_output_x11::shutdown() { return false; }
 
 bool display_output_x11::main_loop_wait(double t) {
   /* wait for X event or timeout */
+  if(!display || !window.gc)
+    return true;
 
   if (XPending(display) == 0) {
     fd_set fdsr;
