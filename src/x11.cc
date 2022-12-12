@@ -231,11 +231,13 @@ static void init_X11() {
                            ? dispstr.c_str()
                            : nullptr;
     if ((display = XOpenDisplay(disp)) == nullptr) {
+      std::string err = std::string("can't open display: ") +
+        XDisplayName(disp);
 #ifdef BUILD_WAYLAND
+      fprintf(stderr, "%s\n", err.c_str());
       return;
 #else
-      throw std::runtime_error(std::string("can't open display: ") +
-                               XDisplayName(disp));
+      throw std::runtime_error(err);
 #endif
     }
   }
