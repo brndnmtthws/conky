@@ -557,6 +557,13 @@ bool display_output_wayland::main_loop_wait(double t) {
       if ((fixed_size == 0) &&
           (text_width + 2 * border_total != width ||
            text_height + 2 * border_total != height)) {
+
+        /* clamp text_width to configured maximum */
+        if (maximum_width.get(*state)) {
+          int mw = global_window->scale * maximum_width.get(*state);
+          if (text_width > mw && mw > 0) { text_width = mw; }
+        }
+
         width = text_width + 2 * border_total;
         height = text_height + 2 * border_total;
         window_resize(global_window, width, height); /* resize window */
