@@ -41,7 +41,7 @@
   "devDependencies": {
     "@types/d3": "^7.4.0",
     "@types/mapbox__rehype-prism": "^0.8.0",
-    "@types/node": "^18.11.9",
+    "@types/node": "^18.11.17",
     "@types/react": "^18.0.25",
     "autoprefixer": "^10.4.13",
     "cypress": "^12.1.0",
