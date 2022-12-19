@@ -24,7 +24,7 @@
     "@fontsource/newsreader": "^4.5.9",
     "@headlessui/react": "^1.7.4",
     "@mapbox/rehype-prism": "^0.8.0",
-    "@netlify/plugin-nextjs": "^4.29.3",
+    "@netlify/plugin-nextjs": "^4.29.4",
     "@tailwindcss/typography": "^0.5.8",
     "classnames": "^2.3.2",
     "colord": "^2.9.3",
