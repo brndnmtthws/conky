@@ -1231,7 +1231,7 @@ values:
   - name: meminactive
     desc: Amount of inactive memory. FreeBSD only.
   - name: memlaundry
-    desc: Amount of memory in laundry. FreeBSD only.
+    desc: Amount of memory in the laundry queue. FreeBSD only.
   - name: memmax
     desc: Total amount of memory.
   - name: memperc
