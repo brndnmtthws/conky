@@ -166,7 +166,8 @@ struct information {
 
   /* memory information in kilobytes */
   unsigned long long mem, memwithbuffers, memavail, memeasyfree, memfree,
-      memmax, memdirty, shmem, legacymem;
+      memmax, memdirty, shmem, legacymem, memactive, meminactive, memwired,
+      memlaundry;
   unsigned long long swap, swapfree, swapmax;
   unsigned long long bufmem, buffers, cached, free_bufcache;
 
