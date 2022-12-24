@@ -76,6 +76,7 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   -DBUILD_NVIDIA=ON \
   -DBUILD_PULSEAUDIO=ON \
   -DBUILD_RSS=ON \
+  -DBUILD_WAYLAND=OFF \
   -DBUILD_WLAN=ON \
   -DBUILD_XMMS2=ON \
   ../ \
@@ -96,6 +97,7 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   -DBUILD_MYSQL=ON \
   -DBUILD_PULSEAUDIO=ON \
   -DBUILD_RSS=ON \
+  -DBUILD_WAYLAND=OFF \
   -DBUILD_WLAN=ON \
   -DBUILD_X11=OFF \
   -DBUILD_XMMS2=ON \

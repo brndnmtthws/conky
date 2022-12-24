@@ -353,22 +353,22 @@ if(BUILD_X11)
 endif(BUILD_X11)
 
 if(BUILD_WAYLAND)
-  find_package(Wayland  REQUIRED)
-  set(conky_libs ${conky_libs} ${WAYLAND_CLIENT_LIBRARY})
-  set(conky_includes ${conky_includes} ${WAYLAND_CLIENT_INCLUDE_DIR})
+  find_package(Wayland REQUIRED)
+  set(conky_libs ${conky_libs} ${Wayland_CLIENT_LIBRARY})
+  set(conky_includes ${conky_includes} ${Wayland_CLIENT_INCLUDE_DIR})
 
   find_package(PkgConfig)
 
   pkg_check_modules(wayland-protocols QUIET wayland-protocols>=1.13)
-  if(WAYLAND_CLIENT_FOUND AND wayland-protocols_FOUND)
+  if(Wayland_FOUND AND wayland-protocols_FOUND)
     # find Wayland protocols
-    pkg_get_variable(WAYLAND_PROTOCOLS_DIR wayland-protocols pkgdatadir)
+    pkg_get_variable(Wayland_PROTOCOLS_DIR wayland-protocols pkgdatadir)
 
     # find 'wayland-scanner' executable
-    pkg_get_variable(WAYLAND_SCANNER wayland-scanner wayland_scanner)
-  else(WAYLAND_CLIENT_FOUND AND wayland-protocols_FOUND)
+    pkg_get_variable(Wayland_SCANNER wayland-scanner wayland_scanner)
+  else(Wayland_FOUND AND wayland-protocols_FOUND)
     message(FATAL_ERROR "Unable to find wayland-scanner and xdg-shell protocol")
-  endif(WAYLAND_CLIENT_FOUND AND wayland-protocols_FOUND)
+  endif(Wayland_FOUND AND wayland-protocols_FOUND)
 
   pkg_check_modules(PANGOCAIRO pangocairo)
   set(conky_libs ${conky_libs} ${PANGOCAIRO_LIBRARIES})
