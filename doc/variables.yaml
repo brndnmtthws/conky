@@ -1195,6 +1195,8 @@ values:
       - mbox
   - name: mem
     desc: Amount of memory in use.
+  - name: memactive
+    desc: Amount of active memory. FreeBSD only.
   - name: memavail
     desc: Amount of available memory as recorded in /proc/meminfo. Linux 3.14+ only.
   - name: membar
@@ -1226,10 +1228,16 @@ values:
       - (scale)
       - (-t)
       - (-l)
+  - name: meminactive
+    desc: Amount of inactive memory. FreeBSD only.
+  - name: memlaundry
+    desc: Amount of memory in laundry. FreeBSD only.
   - name: memmax
     desc: Total amount of memory.
   - name: memperc
     desc: Percentage of memory in use.
+  - name: memwired
+    desc: Amount of wired memory. FreeBSD only.
   - name: memwithbuffers
     desc: |-
       Amount of memory in use, including that used by system

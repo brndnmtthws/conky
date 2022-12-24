@@ -1227,6 +1227,20 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_free_bufcache;
   obj->callbacks.free = &gen_free_opaque;
 #endif /* __linux__ */
+#ifdef __FreeBSD__
+  END OBJ(memactive, &update_meminfo) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_memactive;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(meminactive, &update_meminfo) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_meminactive;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(memwired, &update_meminfo) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_memwired;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(memlaundry, &update_meminfo) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_memlaundry;
+  obj->callbacks.free = &gen_free_opaque;
+#endif /* __FreeBSD__ */
 #ifdef BUILD_GUI
   END OBJ(memgauge, &update_meminfo) scan_gauge(obj, arg, 1);
   obj->callbacks.gaugeval = &mem_barval;
