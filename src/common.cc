@@ -396,11 +396,15 @@ PRINT_HR_GENERATOR(mem)
 PRINT_HR_GENERATOR(memwithbuffers)
 PRINT_HR_GENERATOR(memeasyfree)
 PRINT_HR_GENERATOR(legacymem)
+PRINT_HR_GENERATOR(memactive)
+PRINT_HR_GENERATOR(meminactive)
 PRINT_HR_GENERATOR(memfree)
 PRINT_HR_GENERATOR(memmax)
 PRINT_HR_GENERATOR(memdirty)
 PRINT_HR_GENERATOR(shmem)
 PRINT_HR_GENERATOR(memavail)
+PRINT_HR_GENERATOR(memwired)
+PRINT_HR_GENERATOR(memlaundry)
 PRINT_HR_GENERATOR(swap)
 PRINT_HR_GENERATOR(swapfree)
 PRINT_HR_GENERATOR(swapmax)
@@ -640,7 +644,7 @@ void print_battery_time(struct text_object *obj, char *p,
 }
 
 void battery_power_draw(struct text_object *obj, char *p,
-                        unsigned int p_max_size) {
+			unsigned int p_max_size) {
   get_battery_power_draw(p, p_max_size, obj->data.s);
 }
 
