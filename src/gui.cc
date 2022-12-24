@@ -27,11 +27,11 @@
  *
  */
 
+#include "gui.h"
 #include "common.h"
 #include "config.h"
 #include "conky.h"
 #include "logging.h"
-#include "gui.h"
 #include "wl.h"
 
 #ifdef BUILD_IMLIB2
@@ -62,7 +62,6 @@ void x11_init_window(lua::state &l, bool own);
 #endif /*BUILD_X11*/
 
 /********************* <SETTINGS> ************************/
-
 
 priv::colour_setting background_colour("own_window_colour", 0);
 
@@ -192,8 +191,8 @@ std::string gethostnamecxx() {
 /*
  * The order of these settings cannot be completely arbitrary. Some of them
  * depend on others, and the setters are called in the order in which they are
- * defined. The order should be: x11_display_name -> out_to_x -> everything colour
- * related
+ * defined. The order should be: x11_display_name -> out_to_x -> everything
+ * colour related
  *                          -> border_*, own_window_*, etc -> own_window ->
  * double_buffer ->  imlib_cache_size
  */

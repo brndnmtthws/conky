@@ -150,7 +150,7 @@ int check_mount(struct text_object *obj) {
 
 int update_meminfo(void) {
   u_int total_pages, inactive_pages, free_pages, wire_pages, active_pages,
-	bufferspace, laundry_pages;
+      bufferspace, laundry_pages;
   unsigned long swap_avail, swap_free;
 
   int pagesize = getpagesize();

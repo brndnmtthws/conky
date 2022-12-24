@@ -231,8 +231,8 @@ static void init_X11() {
                            ? dispstr.c_str()
                            : nullptr;
     if ((display = XOpenDisplay(disp)) == nullptr) {
-      std::string err = std::string("can't open display: ") +
-        XDisplayName(disp);
+      std::string err =
+          std::string("can't open display: ") + XDisplayName(disp);
 #ifdef BUILD_WAYLAND
       fprintf(stderr, "%s\n", err.c_str());
       return;
@@ -326,8 +326,7 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop) {
   int format, i;
   unsigned long nitems, bytes;
   unsigned int n;
-  if (!display)
-    return 0;
+  if (!display) return 0;
   Window root = RootWindow(display, screen);
   Window win;
   Window troot, parent, *children;
@@ -803,9 +802,7 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
     if (window.window == 0u) {
       window.window = find_desktop_window(&window.root, &window.desktop);
     }
-    if (window.window == 0u) {
-      return;
-    }
+    if (window.window == 0u) { return; }
 
     window.visual = DefaultVisual(display, screen);
     window.colourmap = DefaultColormap(display, screen);

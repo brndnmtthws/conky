@@ -59,7 +59,7 @@ class display_output_wayland : public display_output_base {
   virtual int calc_text_width(const char *);
 
   // GUI interface
-  virtual void draw_string_at(int, int, const char *, int );
+  virtual void draw_string_at(int, int, const char *, int);
   // X11 lookalikes
   virtual void set_line_style(int, bool);
   virtual void set_dashes(char *);

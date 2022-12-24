@@ -27,8 +27,8 @@
  *
  */
 #include "conky.h"
-#include "logging.h"
 #include "gui.h"
+#include "logging.h"
 #ifdef BUILD_X11
 #include "x11.h"
 #endif /*BUILD_X11*/
@@ -87,59 +87,54 @@ unsigned int adjust_colours(unsigned int colour) {
   return colour;
 }
 
-
 #ifdef BUILD_GUI
 #ifdef BUILD_WAYLAND
 static int hex_nibble_value(char c) {
-    if (c >= '0' && c <= '9') {
-        return c - '0';
-    } else if (c >= 'a' && c <= 'f') {
-        return c - 'a' + 10;
-    } else if (c >= 'A' && c <= 'F') {
-        return c - 'A' + 10;
-    }
-    return -1;
+  if (c >= '0' && c <= '9') {
+    return c - '0';
+  } else if (c >= 'a' && c <= 'f') {
+    return c - 'a' + 10;
+  } else if (c >= 'A' && c <= 'F') {
+    return c - 'A' + 10;
+  }
+  return -1;
 }
 
 long manually_get_x11_color(const char *name) {
-    unsigned short r, g, b;
-    size_t len = strlen(name);
-    if (OsLookupColor(-1, name, len, &r, &g, &b)) {
-      return 0x000000ff | ((r & 0xff) << 24) | ((g & 0xff) << 16) | ((b & 0xff) << 8);
-    }
-    if (name[0] == '#') {
-      name++;
-      len--;
-    }
-    if (len == 6 || len == 8)
-    {
-        unsigned char argb[4] = {0xff, 0, 0, 0};
-        for (size_t i = 0; i + 1 < len; i += 2) {
-            int nib1 = hex_nibble_value(name[i]);
-            int nib2 = hex_nibble_value(name[i+1]);
-            if (nib1 < 0 || nib2 < 0) {
-              goto err;
-            }
-            int val = (nib1 << 4) + nib2;
+  unsigned short r, g, b;
+  size_t len = strlen(name);
+  if (OsLookupColor(-1, name, len, &r, &g, &b)) {
+    return 0x000000ff | ((r & 0xff) << 24) | ((g & 0xff) << 16) |
+           ((b & 0xff) << 8);
+  }
+  if (name[0] == '#') {
+    name++;
+    len--;
+  }
+  if (len == 6 || len == 8) {
+    unsigned char argb[4] = {0xff, 0, 0, 0};
+    for (size_t i = 0; i + 1 < len; i += 2) {
+      int nib1 = hex_nibble_value(name[i]);
+      int nib2 = hex_nibble_value(name[i + 1]);
+      if (nib1 < 0 || nib2 < 0) { goto err; }
+      int val = (nib1 << 4) + nib2;
 
-            argb[3 - i / 2] = val;
-        }
-        long out;
-        memcpy(static_cast<void*>(&out), argb, 4);
-        return out;
+      argb[3 - i / 2] = val;
     }
-    err:
-    NORM_ERR("can't parse X color '%s' (%d)", name, len);
-    return 0xFF00FF;
+    long out;
+    memcpy(static_cast<void *>(&out), argb, 4);
+    return out;
+  }
+err:
+  NORM_ERR("can't parse X color '%s' (%d)", name, len);
+  return 0xFF00FF;
 }
 #endif /* BUILD_WAYLAND */
 
 long get_x11_color(const char *name) {
 #ifdef BUILD_X11
 #ifdef BUILD_WAYLAND
-  if (!display) {
-    return manually_get_x11_color(name);
-  }
+  if (!display) { return manually_get_x11_color(name); }
 #endif /*BUILD_WAYLAND*/
   assert(display != nullptr);
   XColor color;

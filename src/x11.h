@@ -77,7 +77,7 @@ struct conky_x11_window {
 
 #ifdef BUILD_XDBE
   XdbeBackBuffer back_buffer;
-#else /*BUILD_XDBE*/
+#else  /*BUILD_XDBE*/
   Pixmap back_buffer;
 #endif /*BUILD_XDBE*/
 #ifdef BUILD_XFT

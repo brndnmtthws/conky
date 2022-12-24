@@ -42,7 +42,7 @@ void out_to_wayland_setting::lua_setter(lua::state &l, bool init) {
   Base::lua_setter(l, init);
 
   if (init && do_convert(l, -1).first) {
-    //init
+    // init
   }
 
   ++s;
@@ -52,7 +52,7 @@ void out_to_wayland_setting::cleanup(lua::state &l) {
   lua::stack_sentry s(l, -1);
 
   if (do_convert(l, -1).first) {
-    //deinit
+    // deinit
   }
 
   l.pop();
@@ -63,7 +63,8 @@ priv::out_to_wayland_setting out_to_wayland;
 
 static const char NOT_IN_WAYLAND[] = "Not running in Wayland";
 
-__attribute__((weak)) void print_monitor(struct text_object *obj, char *p, unsigned int p_max_size) {
+__attribute__((weak)) void print_monitor(struct text_object *obj, char *p,
+                                         unsigned int p_max_size) {
   (void)obj;
 
   if (!out_to_wayland.get(*state)) {
@@ -73,8 +74,9 @@ __attribute__((weak)) void print_monitor(struct text_object *obj, char *p, unsig
   snprintf(p, p_max_size, "%d", -1);
 }
 
-__attribute__((weak)) void print_monitor_number(struct text_object *obj, char *p,
-                          unsigned int p_max_size) {
+__attribute__((weak)) void print_monitor_number(struct text_object *obj,
+                                                char *p,
+                                                unsigned int p_max_size) {
   (void)obj;
 
   if (!out_to_wayland.get(*state)) {
@@ -84,7 +86,8 @@ __attribute__((weak)) void print_monitor_number(struct text_object *obj, char *p
   snprintf(p, p_max_size, "%d", -1);
 }
 
-__attribute__((weak)) void print_desktop(struct text_object *obj, char *p, unsigned int p_max_size) {
+__attribute__((weak)) void print_desktop(struct text_object *obj, char *p,
+                                         unsigned int p_max_size) {
   (void)obj;
 
   if (!out_to_wayland.get(*state)) {
@@ -94,8 +97,9 @@ __attribute__((weak)) void print_desktop(struct text_object *obj, char *p, unsig
   snprintf(p, p_max_size, "%d", -1);
 }
 
-__attribute__((weak)) void print_desktop_number(struct text_object *obj, char *p,
-                          unsigned int p_max_size) {
+__attribute__((weak)) void print_desktop_number(struct text_object *obj,
+                                                char *p,
+                                                unsigned int p_max_size) {
   (void)obj;
 
   if (!out_to_wayland.get(*state)) {
@@ -106,7 +110,7 @@ __attribute__((weak)) void print_desktop_number(struct text_object *obj, char *p
 }
 
 __attribute__((weak)) void print_desktop_name(struct text_object *obj, char *p,
-                        unsigned int p_max_size) {
+                                              unsigned int p_max_size) {
   (void)obj;
 
   if (!out_to_wayland.get(*state)) {

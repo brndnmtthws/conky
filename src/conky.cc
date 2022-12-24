@@ -154,7 +154,7 @@ const char builtin_config_magic[] = "==builtin==";
 
 #define MAX_IF_BLOCK_DEPTH 5
 
-//#define SIGNAL_BLOCKING
+// #define SIGNAL_BLOCKING
 #undef SIGNAL_BLOCKING
 
 /* debugging level, used by logging.h */
@@ -764,9 +764,7 @@ int get_border_total() {
          dpi_scale(border_width.get(*state));
 }
 
-void remove_first_char(char* s) {
-	memmove(s, s + 1, strlen(s));
-}
+void remove_first_char(char *s) { memmove(s, s + 1, strlen(s)); }
 
 static int get_string_width_special(char *s, int special_index) {
   char *p, *final;
@@ -1559,30 +1557,29 @@ static void draw_text() {
 #ifdef BUILD_GUI
   // XXX:only works if inside set_display_output()
   for (auto output : display_outputs()) {
-  if (output && output->graphical()) {
-    cur_y = text_start_y;
-    int bw = dpi_scale(border_width.get(*state));
+    if (output && output->graphical()) {
+      cur_y = text_start_y;
+      int bw = dpi_scale(border_width.get(*state));
 
-    /* draw borders */
-    if (draw_borders.get(*state) && bw > 0) {
-      if (stippled_borders.get(*state) != 0) {
-        char ss[2] = {(char)dpi_scale(stippled_borders.get(*state)),
-                      (char)dpi_scale(stippled_borders.get(*state))};
-        output->set_line_style(bw, false);
-        output->set_dashes(ss);
-      } else {
-        output->set_line_style(bw, true);
+      /* draw borders */
+      if (draw_borders.get(*state) && bw > 0) {
+        if (stippled_borders.get(*state) != 0) {
+          char ss[2] = {(char)dpi_scale(stippled_borders.get(*state)),
+                        (char)dpi_scale(stippled_borders.get(*state))};
+          output->set_line_style(bw, false);
+          output->set_dashes(ss);
+        } else {
+          output->set_line_style(bw, true);
+        }
+
+        int offset = dpi_scale(border_inner_margin.get(*state)) + bw;
+        output->draw_rect(text_offset_x + text_start_x - offset,
+                          text_offset_y + text_start_y - offset,
+                          text_width + 2 * offset, text_height + 2 * offset);
       }
 
-      int offset = dpi_scale(border_inner_margin.get(*state)) + bw;
-      output->draw_rect(text_offset_x + text_start_x - offset,
-                                  text_offset_y + text_start_y - offset,
-                                  text_width + 2 * offset,
-                                  text_height + 2 * offset);
+      /* draw text */
     }
-
-    /* draw text */
-  }
   }
   setup_fonts();
 #endif /* BUILD_GUI */

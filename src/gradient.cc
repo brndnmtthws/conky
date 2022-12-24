@@ -31,8 +31,8 @@
 #include "logging.h"
 
 #ifdef BUILD_X11
-#include "x11.h"
 #include "gui.h"
+#include "x11.h"
 #endif /* BUILD_X11 */
 
 namespace conky {

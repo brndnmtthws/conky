@@ -370,9 +370,7 @@ const int MAXNUMGPU = 64;
 namespace {
 
 // Deleter for nv display to use with std::unique_ptr
-void close_nvdisplay(Display * dp) {
-  XCloseDisplay(dp);
-}
+void close_nvdisplay(Display *dp) { XCloseDisplay(dp); }
 
 using unique_display_t = std::unique_ptr<Display, decltype(&close_nvdisplay)>;
 
@@ -758,7 +756,7 @@ static int cache_nvidia_value(TARGET_ID tid, ATTR_ID aid, Display *dpy,
 static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid, int gid,
                             const char *arg) {
   auto nvdpy = nvidia_display.get_nvdisplay();
-  Display * dpy = nvdpy ? nvdpy.get() : display;
+  Display *dpy = nvdpy ? nvdpy.get() : display;
   int value;
 
   // Check if the aid is cacheable
@@ -789,7 +787,7 @@ static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid, int gid,
 static char *get_nvidia_string(TARGET_ID tid, ATTR_ID aid, int gid,
                                const char *arg) {
   auto nvdpy = nvidia_display.get_nvdisplay();
-  Display * dpy = nvdpy ? nvdpy.get() : display;
+  Display *dpy = nvdpy ? nvdpy.get() : display;
   char *str;
 
   // Query nvidia interface
@@ -962,7 +960,7 @@ void print_nvidia_value(struct text_object *obj, char *p,
   int error_base;
 
   auto nvdpy = nvidia_display.get_nvdisplay();
-  Display * dpy = nvdpy ? nvdpy.get() : display;
+  Display *dpy = nvdpy ? nvdpy.get() : display;
 
   if (!dpy) {
     NORM_ERR("%s: no display set (try setting nvidia_display)", __func__);
@@ -1066,7 +1064,7 @@ double get_nvidia_barval(struct text_object *obj) {
   int error_base;
 
   auto nvdpy = nvidia_display.get_nvdisplay();
-  Display * dpy = nvdpy ? nvdpy.get() : display;
+  Display *dpy = nvdpy ? nvdpy.get() : display;
 
   if (!dpy) {
     NORM_ERR("%s: no display set (try setting nvidia_display)", __func__);

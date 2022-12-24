@@ -99,9 +99,7 @@ static void unhash_all_processes() {
   }
 }
 
-struct process *get_first_process() {
-  return first_process;
-}
+struct process *get_first_process() { return first_process; }
 
 void free_all_processes() {
   struct process *next = nullptr, *pr = first_process;

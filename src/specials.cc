@@ -28,8 +28,8 @@
  */
 #include "conky.h"
 #ifdef BUILD_GUI
-#include "gui.h"
 #include "fonts.h"
+#include "gui.h"
 #endif /* BUILD_GUI */
 #include <cmath>
 #include "logging.h"

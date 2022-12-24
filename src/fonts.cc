@@ -28,8 +28,8 @@
  */
 
 #include "fonts.h"
-#include "gui.h"
 #include "display-output.hh"
+#include "gui.h"
 #include "logging.h"
 
 unsigned int selected_font = 0;
@@ -86,16 +86,16 @@ void load_fonts(bool utf8) {
 }
 
 int font_height() {
-  //assert(selected_font < fonts.size());
+  // assert(selected_font < fonts.size());
   return display_output()->font_height(selected_font);
 }
 
 int font_ascent() {
-  //assert(selected_font < fonts.size());
+  // assert(selected_font < fonts.size());
   return display_output()->font_ascent(selected_font);
 }
 
 int font_descent() {
-  //assert(selected_font < fonts.size());
+  // assert(selected_font < fonts.size());
   return display_output()->font_descent(selected_font);
 }

@@ -578,8 +578,7 @@ void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
     for (unsigned int k = 0; k < conf.ifc_len / sizeof(struct ifreq); k++) {
       struct net_stat *ns2;
 
-      ns2 = get_net_stat(conf.ifc_req[k].ifr_ifrn.ifrn_name,
-                         nullptr, NULL);
+      ns2 = get_net_stat(conf.ifc_req[k].ifr_ifrn.ifrn_name, nullptr, NULL);
       ns2->addr = conf.ifc_req[k].ifr_ifru.ifru_addr;
       char temp_addr[18];
       snprintf(temp_addr, sizeof(temp_addr), "%u.%u.%u.%u, ",
