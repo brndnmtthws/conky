@@ -21,14 +21,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+#pragma once
 
-#ifdef BUILD_GUI
-#ifndef GUI_H_
-#define GUI_H_
+#include "config.h"
 
 #ifdef BUILD_X11
 #include "x11.h"
-#endif /*BUILD_X11*/
+#endif /* BUILD_X11 */
 
 #include "colours.h"
 #include "setting.hh"
@@ -40,7 +39,7 @@ extern bool have_argb_visual;
 
 #ifdef BUILD_X11
 extern Display *display;
-#endif
+#endif /* BUILD_X11 */
 extern int display_width;
 extern int display_height;
 extern int screen;
@@ -162,6 +161,3 @@ extern conky::range_config_setting<int> own_window_argb_value;
 #endif /*BUILD_ARGB*/
 #endif /*OWN_WINDOW*/
 extern priv::own_window_setting own_window;
-
-#endif /*GUI_H_*/
-#endif /* BUILD_GUI */
