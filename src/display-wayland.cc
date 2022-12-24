@@ -38,6 +38,7 @@
 #include <sys/epoll.h>
 #include <sys/mman.h>
 #include <sys/timerfd.h>
+#include <unistd.h>
 
 #include <wayland-client-protocol.h>
 #include <wlr-layer-shell-client-protocol.h>
