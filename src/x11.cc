@@ -41,7 +41,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>
 #include <X11/Xutil.h>
-#include "x11.h"
+#include "gui.h"
 #ifdef BUILD_IMLIB2
 #include "imlib2.h"
 #endif /* BUILD_IMLIB2 */
@@ -58,22 +58,11 @@
 #include <X11/extensions/shape.h>
 #endif /* BUILD_XSHAPE */
 
-#ifdef BUILD_ARGB
-bool have_argb_visual;
-#endif /* BUILD_ARGB */
-
 /* some basic X11 stuff */
 Display *display = nullptr;
-int display_width;
-int display_height;
-int screen;
-
-/* workarea from _NET_WORKAREA, this is where window / text is aligned */
-int workarea[4];
 
 /* Window stuff */
-struct conky_window window;
-char window_created = 0;
+struct conky_x11_window window;
 
 /* local prototypes */
 static void update_workarea();
@@ -81,7 +70,6 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop);
 static Window find_subwindow(Window win, int w, int h);
 static void init_X11();
 static void deinit_X11();
-static void init_window(lua::state &l, bool own);
 
 /********************* <SETTINGS> ************************/
 namespace priv {
@@ -103,37 +91,10 @@ void out_to_x_setting::cleanup(lua::state &l) {
   l.pop();
 }
 
-void own_window_setting::lua_setter(lua::state &l, bool init) {
-  lua::stack_sentry s(l, -2);
-
-  Base::lua_setter(l, init);
-
-  if (init) {
-    if (do_convert(l, -1).first) {
-#ifndef OWN_WINDOW
-      std::cerr << "Support for the own_window setting has been "
-                   "disabled during compilation\n";
-      l.pop();
-      l.pushboolean(false);
-#endif
-    }
-
-    if (out_to_x.get(l)) {
-      init_window(l, do_convert(l, -1).first);
-    } else {
-      // own_window makes no sense when not drawing to X
-      l.pop();
-      l.pushboolean(false);
-    }
-  }
-
-  ++s;
-}
-
 #ifdef BUILD_XDBE
 bool use_xdbe_setting::set_up(lua::state &l) {
   // double_buffer makes no sense when not drawing to X
-  if (!out_to_x.get(l)) { return false; }
+  if (!out_to_x.get(l) || !display || !window.window) { return false; }
 
   int major, minor;
 
@@ -210,128 +171,11 @@ void use_xpmdb_setting::lua_setter(lua::state &l, bool init) {
   ++s;
 }
 #endif
-
-void colour_setting::lua_setter(lua::state &l, bool init) {
-  lua::stack_sentry s(l, -2);
-
-  if (!out_to_x.get(l)) {
-    // ignore if we're not using X
-    l.replace(-2);
-  } else {
-    Base::lua_setter(l, init);
-  }
-
-  ++s;
-}
 }  // namespace priv
 
-template <>
-conky::lua_traits<alignment>::Map conky::lua_traits<alignment>::map = {
-    {"top_left", TOP_LEFT},
-    {"top_right", TOP_RIGHT},
-    {"top_middle", TOP_MIDDLE},
-    {"bottom_left", BOTTOM_LEFT},
-    {"bottom_right", BOTTOM_RIGHT},
-    {"bottom_middle", BOTTOM_MIDDLE},
-    {"middle_left", MIDDLE_LEFT},
-    {"middle_middle", MIDDLE_MIDDLE},
-    {"middle_right", MIDDLE_RIGHT},
-    {"tl", TOP_LEFT},
-    {"tr", TOP_RIGHT},
-    {"tm", TOP_MIDDLE},
-    {"bl", BOTTOM_LEFT},
-    {"br", BOTTOM_RIGHT},
-    {"bm", BOTTOM_MIDDLE},
-    {"ml", MIDDLE_LEFT},
-    {"mm", MIDDLE_MIDDLE},
-    {"mr", MIDDLE_RIGHT},
-    {"none", NONE}};
-
-#ifdef OWN_WINDOW
-template <>
-conky::lua_traits<window_type>::Map conky::lua_traits<window_type>::map = {
-    {"normal", TYPE_NORMAL},
-    {"dock", TYPE_DOCK},
-    {"panel", TYPE_PANEL},
-    {"desktop", TYPE_DESKTOP},
-    {"override", TYPE_OVERRIDE}};
-
-template <>
-conky::lua_traits<window_hints>::Map conky::lua_traits<window_hints>::map = {
-    {"undecorated", HINT_UNDECORATED},
-    {"below", HINT_BELOW},
-    {"above", HINT_ABOVE},
-    {"sticky", HINT_STICKY},
-    {"skip_taskbar", HINT_SKIP_TASKBAR},
-    {"skip_pager", HINT_SKIP_PAGER}};
-
-std::pair<uint16_t, bool> window_hints_traits::convert(
-    lua::state &l, int index, const std::string &name) {
-  lua::stack_sentry s(l);
-  l.checkstack(1);
-
-  std::string hints = l.tostring(index);
-  // add a sentinel to simplify the following loop
-  hints += ',';
-  size_t pos = 0;
-  size_t newpos;
-  uint16_t ret = 0;
-  while ((newpos = hints.find_first_of(", ", pos)) != std::string::npos) {
-    if (newpos > pos) {
-      l.pushstring(hints.substr(pos, newpos - pos));
-      auto t = conky::lua_traits<window_hints>::convert(l, -1, name);
-      if (!t.second) { return {0, false}; }
-      SET_HINT(ret, t.first);
-      l.pop();
-    }
-    pos = newpos + 1;
-  }
-  return {ret, true};
-}
-#endif
-
-#ifdef OWN_WINDOW
-namespace {
-// used to set the default value for own_window_title
-std::string gethostnamecxx() {
-  update_uname();
-  return info.uname_s.nodename;
-}
-}  // namespace
-#endif /* OWN_WINDOW */
-
-/*
- * The order of these settings cannot be completely arbitrary. Some of them
- * depend on others, and the setters are called in the order in which they are
- * defined. The order should be: display_name -> out_to_x -> everything colour
- * related
- *                          -> border_*, own_window_*, etc -> own_window ->
- * double_buffer ->  imlib_cache_size
- */
-
-conky::simple_config_setting<alignment> text_alignment("alignment", BOTTOM_LEFT,
-                                                       false);
-conky::simple_config_setting<std::string> display_name("display", std::string(),
-                                                       false);
 conky::simple_config_setting<int> head_index("xinerama_head", 0, true);
 priv::out_to_x_setting out_to_x;
 
-priv::colour_setting color[10] = {{"color0", 0xffffff}, {"color1", 0xffffff},
-                                  {"color2", 0xffffff}, {"color3", 0xffffff},
-                                  {"color4", 0xffffff}, {"color5", 0xffffff},
-                                  {"color6", 0xffffff}, {"color7", 0xffffff},
-                                  {"color8", 0xffffff}, {"color9", 0xffffff}};
-priv::colour_setting default_color("default_color", 0xffffff);
-priv::colour_setting default_shade_color("default_shade_color", 0x000000);
-priv::colour_setting default_outline_color("default_outline_color", 0x000000);
-
-conky::range_config_setting<int> border_inner_margin(
-    "border_inner_margin", 0, std::numeric_limits<int>::max(), 3, true);
-conky::range_config_setting<int> border_outer_margin(
-    "border_outer_margin", 0, std::numeric_limits<int>::max(), 1, true);
-conky::range_config_setting<int> border_width("border_width", 0,
-                                              std::numeric_limits<int>::max(),
-                                              1, true);
 #ifdef BUILD_XFT
 conky::simple_config_setting<bool> use_xft("use_xft", false, false);
 #endif
@@ -339,29 +183,11 @@ conky::simple_config_setting<bool> use_xft("use_xft", false, false);
 conky::simple_config_setting<bool> forced_redraw("forced_redraw", false, false);
 
 #ifdef OWN_WINDOW
-conky::simple_config_setting<bool> set_transparent("own_window_transparent",
-                                                   false, false);
-conky::simple_config_setting<std::string> own_window_class("own_window_class",
-                                                           PACKAGE_NAME, false);
-
-conky::simple_config_setting<std::string> own_window_title(
-    "own_window_title", PACKAGE_NAME " (" + gethostnamecxx() + ")", false);
-
-conky::simple_config_setting<window_type> own_window_type("own_window_type",
-                                                          TYPE_NORMAL, false);
-conky::simple_config_setting<uint16_t, window_hints_traits> own_window_hints(
-    "own_window_hints", 0, false);
-
-priv::colour_setting background_colour("own_window_colour", 0);
-
 #ifdef BUILD_ARGB
 conky::simple_config_setting<bool> use_argb_visual("own_window_argb_visual",
                                                    false, false);
-conky::range_config_setting<int> own_window_argb_value("own_window_argb_value",
-                                                       0, 255, 255, false);
 #endif /* BUILD_ARGB */
 #endif /* OWN_WINDOW */
-priv::own_window_setting own_window;
 
 #ifdef BUILD_XDBE
 priv::use_xdbe_setting use_xdbe;
@@ -405,8 +231,14 @@ static void init_X11() {
                            ? dispstr.c_str()
                            : nullptr;
     if ((display = XOpenDisplay(disp)) == nullptr) {
-      throw std::runtime_error(std::string("can't open display: ") +
-                               XDisplayName(disp));
+      std::string err = std::string("can't open display: ") +
+        XDisplayName(disp);
+#ifdef BUILD_WAYLAND
+      fprintf(stderr, "%s\n", err.c_str());
+      return;
+#else
+      throw std::runtime_error(err);
+#endif
     }
   }
 
@@ -494,6 +326,8 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop) {
   int format, i;
   unsigned long nitems, bytes;
   unsigned int n;
+  if (!display)
+    return 0;
   Window root = RootWindow(display, screen);
   Window win;
   Window troot, parent, *children;
@@ -636,10 +470,10 @@ void destroy_window() {
   if (window.xftdraw != nullptr) { XftDrawDestroy(window.xftdraw); }
 #endif /* BUILD_XFT */
   if (window.gc != nullptr) { XFreeGC(display, window.gc); }
-  memset(&window, 0, sizeof(struct conky_window));
+  memset(&window, 0, sizeof(struct conky_x11_window));
 }
 
-static void init_window(lua::state &l __attribute__((unused)), bool own) {
+void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
   DBGP("enter init_window()");
   // own is unused if OWN_WINDOW is not defined
   (void)own;
@@ -969,6 +803,10 @@ static void init_window(lua::state &l __attribute__((unused)), bool own) {
     if (window.window == 0u) {
       window.window = find_desktop_window(&window.root, &window.desktop);
     }
+    if (window.window == 0u) {
+      return;
+    }
+
     window.visual = DefaultVisual(display, screen);
     window.colourmap = DefaultColormap(display, screen);
 

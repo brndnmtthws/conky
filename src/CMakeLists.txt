@@ -120,6 +120,8 @@ set(conky_sources
     display-http.hh
     display-x11.cc
     display-x11.hh
+    display-wayland.cc
+    display-wayland.hh
     lua-config.cc
     lua-config.hh
     setting.cc
@@ -227,7 +229,7 @@ if(BUILD_PORT_MONITORS)
 endif(BUILD_PORT_MONITORS)
 
 if(BUILD_GUI)
-  set(gui fonts.cc fonts.h)
+  set(gui fonts.cc fonts.h gui.cc gui.h)
   set(optional_sources ${optional_sources} ${gui})
 endif(BUILD_GUI)
 
@@ -240,6 +242,32 @@ if(BUILD_X11)
     set(conky_libs ${conky_libs} ${Xinerama_LIBRARIES})
   endif(BUILD_XINERAMA)
 endif(BUILD_X11)
+
+if(BUILD_WAYLAND)
+  set(wl_srcs wl.cc wl.h xdg-shell-protocol.c wlr-layer-shell-protocol.c x11-color.cc x11-color.h)
+  set(optional_sources ${optional_sources} ${wl_srcs})
+  # generate protocol implementations
+  set(XDG_PROT_DEF "${WAYLAND_PROTOCOLS_DIR}/stable/xdg-shell/xdg-shell.xml")
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/xdg-shell-client-protocol.h
+    COMMAND ${WAYLAND_SCANNER} client-header ${XDG_PROT_DEF} xdg-shell-client-protocol.h)
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/xdg-shell-protocol.c
+    COMMAND ${WAYLAND_SCANNER} private-code ${XDG_PROT_DEF} xdg-shell-protocol.c
+    DEPENDS xdg-shell-client-protocol.h)
+
+  set(WLR_LAYER_SHELL_PROT_DEF "${CMAKE_CURRENT_SOURCE_DIR}/wlr-layer-shell-unstable-v1.xml")
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-client-protocol.h
+    COMMAND ${WAYLAND_SCANNER} client-header ${WLR_LAYER_SHELL_PROT_DEF} wlr-layer-shell-client-protocol.h)
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-protocol.c
+    COMMAND ${WAYLAND_SCANNER} private-code ${WLR_LAYER_SHELL_PROT_DEF} wlr-layer-shell-protocol.c
+    DEPENDS wlr-layer-shell-client-protocol.h)
+
+  # include output dir in include path
+  include_directories(${CMAKE_CURRENT_BINARY_DIR})
+endif(BUILD_WAYLAND)
 
 if(BUILD_HDDTEMP)
   set(hddtemp hddtemp.cc hddtemp.h)

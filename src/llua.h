@@ -32,10 +32,6 @@ extern "C" {
 
 #include <config.h>
 
-#ifdef BUILD_X11
-#include "x11.h"
-#endif /* BUILD_X11 */
-
 #define LUAPREFIX "conky_"
 
 #ifdef HAVE_SYS_INOTIFY_H

@@ -32,6 +32,7 @@ jobs:
           cd build
           cmake ..                               \
             -DMAINTAINER_MODE=ON                 \
+            -DBUILD_WAYLAND=OFF                  \
             -DBUILD_TESTS=ON
       - name: Compile
         working-directory: build

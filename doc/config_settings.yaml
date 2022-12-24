@@ -344,6 +344,10 @@ values:
       will provide more useful things).
   - name: out_to_stderr
     desc: Print text to stderr.
+  - name: out_to_wayland
+    desc: |-
+      Open a Wayland window to display output.
+    default: no
   - name: out_to_x
     desc: |-
       When set to no, there will be no output in X (useful when
