@@ -361,8 +361,6 @@ if(BUILD_WAYLAND)
 
   pkg_check_modules(wayland-protocols QUIET wayland-protocols>=1.13)
   if(WAYLAND_CLIENT_FOUND AND wayland-protocols_FOUND)
-    #target_sources( ${COMPONENT} PRIVATE display-wayland.cxx )
-
     # find Wayland protocols
     pkg_get_variable(WAYLAND_PROTOCOLS_DIR wayland-protocols pkgdatadir)
 
