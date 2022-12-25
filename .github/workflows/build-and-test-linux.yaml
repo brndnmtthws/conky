@@ -86,6 +86,7 @@ jobs:
             libxmmsclient-dev \
             libxnvctrl-dev \
             ncurses-dev \
+            ninja \
             wayland-protocols
       - name: Install libc++
         if: matrix.compiler == 'clang'
@@ -112,7 +113,7 @@ jobs:
 
           mkdir build
           cd build
-          cmake ..                               \
+          cmake .. -G Ninja                      \
             -DBUILD_AUDACIOUS=ON                 \
             -DBUILD_HTTP=ON                      \
             -DBUILD_ICAL=ON                      \
@@ -137,7 +138,7 @@ jobs:
             -DMAINTAINER_MODE=ON
       - name: Compile
         working-directory: build
-        run: make -j5
+        run: ninja
       - name: Test
         working-directory: build
-        run: make test
+        run: ninja test
