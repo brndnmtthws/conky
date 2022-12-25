@@ -53,12 +53,11 @@ cmake -G Ninja                         \
   -DBUILD_X11=ON                       \
   -DBUILD_XMMS2=ON                     \
   -DCMAKE_INSTALL_PREFIX=/usr          \
-  "$REPO_ROOT"                         \
-  --target install -- DESTDIR=AppDir
+  "$REPO_ROOT"
 
 # build project and install files into AppDir
 ninja
-ninja install
+cmake --install AppDir --prefix "/usr"
 
 wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
 
