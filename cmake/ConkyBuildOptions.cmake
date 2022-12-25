@@ -177,7 +177,7 @@ else(BUILD_NCURSES)
     FORCE)
 endif(BUILD_NCURSES)
 
-option(BUILD_WAYLAND "Build Wayland support" true)
+option(BUILD_WAYLAND "Build Wayland support" false)
 
 option(BUILD_X11 "Build X11 support" true)
 if(BUILD_X11)
