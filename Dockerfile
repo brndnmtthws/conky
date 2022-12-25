@@ -37,6 +37,7 @@ RUN apt-get update \
   libxmmsclient-dev \
   libxnvctrl-dev \
   make \
+  ninja \
   patch \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
@@ -59,7 +60,7 @@ WORKDIR /conky/build
 ARG X11=yes
 
 RUN sh -c 'if [ "$X11" = "yes" ] ; then \
-  cmake \
+  cmake -G Ninja \
   -DCMAKE_C_COMPILER=clang \
   -DCMAKE_CXX_COMPILER=clang++ \
   -DCMAKE_INSTALL_PREFIX=/opt/conky \
@@ -81,7 +82,7 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   -DBUILD_XMMS2=ON \
   ../ \
   ; else \
-  cmake \
+  cmake -G Ninja \
   -DCMAKE_C_COMPILER=clang \
   -DCMAKE_CXX_COMPILER=clang++ \
   -DCMAKE_INSTALL_PREFIX=/opt/conky \
@@ -103,8 +104,8 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   -DBUILD_XMMS2=ON \
   ../ \
   ; fi' \
-  && make -j5 all \
-  && make -j5 install
+  && ninja \
+  && ninja install
 
 FROM ubuntu:jammy
 
