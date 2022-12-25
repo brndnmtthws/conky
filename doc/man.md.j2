@@ -91,7 +91,11 @@ to make Conky do, the more resources it is going to consume.
 
 An easy way to force Conky to reload your *\~/.config/conky/conky.conf*:
 \"killall -SIGUSR1 conky\". Saves you the trouble of having to kill and
-then restart.
+then restart. Alternatively, depending how the conky executable was 
+built, but as of 2022 this is the usual way, just replace the prevoius
+configuration file with a newer version. Write a newer version in place 
+of the old one. Conky will sense that, seemingly exit, and after a short 
+while will reappear. With the newer version of the configuration.
 
 # OPTIONS
 
