@@ -37,7 +37,7 @@ RUN apt-get update \
   libxmmsclient-dev \
   libxnvctrl-dev \
   make \
-  ninja \
+  ninja-build \
   patch \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*

@@ -86,7 +86,7 @@ jobs:
             libxmmsclient-dev \
             libxnvctrl-dev \
             ncurses-dev \
-            ninja \
+            ninja-build \
             wayland-protocols
       - name: Install libc++
         if: matrix.compiler == 'clang'
