@@ -51,6 +51,7 @@ jobs:
             libxmmsclient-dev \
             libxnvctrl-dev \
             ncurses-dev \
+            ninja-build \
             pandoc \
             python3 \
             &&
