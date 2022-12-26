@@ -22,9 +22,7 @@
  *
  */
 
-#ifdef BUILD_X11
-#ifndef X11_H_
-#define X11_H_
+#pragma once
 
 #include <X11/Xatom.h>
 #pragma GCC diagnostic push
@@ -93,6 +91,7 @@ struct conky_x11_window {
 };
 
 extern struct conky_x11_window window;
+extern conky::simple_config_setting<std::string> display_name;
 
 void destroy_window(void);
 void create_gc(void);
@@ -158,6 +157,3 @@ extern priv::use_xdbe_setting use_xdbe;
 #else
 extern priv::use_xpmdb_setting use_xpmdb;
 #endif
-
-#endif /*X11_H_*/
-#endif /* BUILD_X11 */

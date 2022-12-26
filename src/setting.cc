@@ -66,13 +66,73 @@ priv::config_setting_base *get_setting(lua::state &l, int index) {
   return iter->second;
 }
 
+const std::vector<std::string> settings_ordering{
+    "display",
+    "out_to_x",
+    "use_xft",
+    "font",
+    "font0",
+    "font1",
+    "font2",
+    "font3",
+    "font4",
+    "font5",
+    "font6",
+    "font7",
+    "font8",
+    "font9",
+    "color0",
+    "color1",
+    "color2",
+    "color3",
+    "color4",
+    "color5",
+    "color6",
+    "color7",
+    "color8",
+    "color9",
+    "default_color",
+    "default_shade_color",
+    "default_outline_color",
+    "border_inner_margin",
+    "border_outer_margin",
+    "border_width",
+    "alignment",
+    "own_window_transparent",
+    "own_window_class",
+    "own_window_title",
+    "own_window_type",
+    "own_window_hints",
+    "own_window_argb_value",
+    "own_window_argb_visual",
+    "own_window_colour",
+    "own_window",
+    "double_buffer",
+    "out_to_wayland",
+    "imlib_cache_size",
+};
+
 // returns a vector of all settings, sorted in order of registration
 settings_vector make_settings_vector() {
   settings_vector ret;
   ret.reserve(settings->size());
 
-  for (auto &setting : *settings) { ret.push_back(setting.second); }
-  sort(ret.begin(), ret.end(), &priv::config_setting_base::seq_compare);
+  // for _some_ settings, the order matters, for others it does not. first we
+  // fill the vec with the settings which are ordered, then we add the remainder
+  // in.
+  for (auto &name : settings_ordering) {
+    auto setting = settings->at(name);
+    ret.push_back(setting);
+  }
+  for (auto &setting : *settings) {
+    if (std::find(settings_ordering.begin(), settings_ordering.end(),
+                  setting.second->name) == settings_ordering.end()) {
+      ret.push_back(setting.second);
+    }
+  }
+  auto start = ret.begin();
+  std::advance(start, settings_ordering.size());
+  sort(start, ret.end(), &priv::config_setting_base::seq_compare);
 
   return ret;
 }
@@ -252,6 +312,4 @@ void cleanup_config_settings(lua::state &l) {
   l.pop();
 }
 
-/////////// example settings, remove after real settings are available ///////
-range_config_setting<int> asdf("asdf", 42, 47, 45, true);
 }  // namespace conky
