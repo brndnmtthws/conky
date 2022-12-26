@@ -139,4 +139,5 @@ jobs:
       - name: Compile
         run: cmake --build build
       - name: Test
-        run: cmake --test build
+        working-directory: build
+        run: ctest
