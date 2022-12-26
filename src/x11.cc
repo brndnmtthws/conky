@@ -245,7 +245,6 @@ static void init_x11() {
 #else /* BUILD_WAYLAND */
       throw std::runtime_error(err);
 #endif /* BUILD_WAYLAND */
-      throw std::runtime_error(err);
     }
   }
 
