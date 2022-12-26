@@ -1,5 +1,12 @@
 name: Build and test on macOS
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -36,8 +43,7 @@ jobs:
             -DBUILD_WAYLAND=OFF                  \
             -DBUILD_TESTS=ON
       - name: Compile
-        working-directory: build
-        run: ninja
+        run: cmake --build build
       - name: Test
         working-directory: build
-        run: ninja test
+        run: ctest
