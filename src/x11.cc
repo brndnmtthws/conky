@@ -97,10 +97,7 @@ void out_to_x_setting::cleanup(lua::state &l) {
 #ifdef BUILD_XDBE
 bool use_xdbe_setting::set_up(lua::state &l) {
   // double_buffer makes no sense when not drawing to X
-  if (!out_to_x.get(l) || !display || !window.window) {
-    DBGP("can't enable xdbe");
-    return false;
-  }
+  if (!out_to_x.get(l) || !display || !window.window) { return false; }
 
   int major, minor;
 
@@ -242,7 +239,7 @@ static void init_x11() {
 #ifdef BUILD_WAYLAND
       fprintf(stderr, "%s\n", err.c_str());
       return;
-#else /* BUILD_WAYLAND */
+#else  /* BUILD_WAYLAND */
       throw std::runtime_error(err);
 #endif /* BUILD_WAYLAND */
     }
