@@ -84,6 +84,7 @@ option(RELEASE "Build release package" false)
 mark_as_advanced(RELEASE)
 
 option(MAINTAINER_MODE "Enable maintainer mode" false)
+option(CODE_COVERAGE "Enable code coverage report generation" false)
 
 option(BUILD_DOCS "Build documentation" false)
 option(BUILD_EXTRAS "Build extras (includes syntax files for editors)" false)
