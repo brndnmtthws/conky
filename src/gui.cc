@@ -191,15 +191,14 @@ std::string gethostnamecxx() {
  * The order of these settings cannot be completely arbitrary. Some of them
  * depend on others, and the setters are called in the order in which they are
  * defined. The order should be: x11_display_name -> out_to_x -> everything
- * colour related
- *                          -> border_*, own_window_*, etc -> own_window ->
- * double_buffer ->  imlib_cache_size
+ * colour related -> border_*, own_window_*, etc -> own_window -> double_buffer
+ * ->  imlib_cache_size.
+ *
+ * The settings order can be modified with the settings_ordering vector in
+ * setting.cc.
  */
 
 conky::simple_config_setting<alignment> text_alignment("alignment", BOTTOM_LEFT,
-                                                       false);
-
-conky::simple_config_setting<std::string> display_name("display", std::string(),
                                                        false);
 
 priv::colour_setting color[10] = {{"color0", 0xffffff}, {"color1", 0xffffff},

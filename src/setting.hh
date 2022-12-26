@@ -359,8 +359,6 @@ class range_config_setting : public simple_config_setting<T, Traits> {
   }
 };
 
-/////////// example settings, remove after real settings are available ///////
-extern range_config_setting<int> asdf;
 }  // namespace conky
 
 #endif /* SETTING_HH */

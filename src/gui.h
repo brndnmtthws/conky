@@ -124,7 +124,6 @@ class colour_setting
 };
 }  // namespace priv
 
-extern conky::simple_config_setting<std::string> display_name;
 extern conky::simple_config_setting<int> head_index;
 extern priv::colour_setting color[10];
 extern priv::colour_setting default_color;

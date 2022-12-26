@@ -228,11 +228,6 @@ if(BUILD_PORT_MONITORS)
   set(optional_sources ${optional_sources} ${port_monitors})
 endif(BUILD_PORT_MONITORS)
 
-if(BUILD_GUI)
-  set(gui fonts.cc fonts.h gui.cc gui.h)
-  set(optional_sources ${optional_sources} ${gui})
-endif(BUILD_GUI)
-
 if(BUILD_X11)
   set(x11 x11.cc x11.h)
   set(optional_sources ${optional_sources} ${x11})
@@ -242,6 +237,11 @@ if(BUILD_X11)
     set(conky_libs ${conky_libs} ${Xinerama_LIBRARIES})
   endif(BUILD_XINERAMA)
 endif(BUILD_X11)
+
+if(BUILD_GUI)
+  set(gui fonts.cc fonts.h gui.cc gui.h)
+  set(optional_sources ${optional_sources} ${gui})
+endif(BUILD_GUI)
 
 if(BUILD_WAYLAND)
   set(wl_srcs wl.cc wl.h xdg-shell-protocol.c wlr-layer-shell-protocol.c x11-color.cc x11-color.h)

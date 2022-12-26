@@ -64,12 +64,15 @@ Display *display = nullptr;
 /* Window stuff */
 struct conky_x11_window window;
 
+conky::simple_config_setting<std::string> display_name("display", std::string(),
+                                                       false);
+
 /* local prototypes */
 static void update_workarea();
 static Window find_desktop_window(Window *p_root, Window *p_desktop);
 static Window find_subwindow(Window win, int w, int h);
-static void init_X11();
-static void deinit_X11();
+static void init_x11();
+static void deinit_x11();
 
 /********************* <SETTINGS> ************************/
 namespace priv {
@@ -78,7 +81,7 @@ void out_to_x_setting::lua_setter(lua::state &l, bool init) {
 
   Base::lua_setter(l, init);
 
-  if (init && do_convert(l, -1).first) { init_X11(); }
+  if (init && do_convert(l, -1).first) { init_x11(); }
 
   ++s;
 }
@@ -86,7 +89,7 @@ void out_to_x_setting::lua_setter(lua::state &l, bool init) {
 void out_to_x_setting::cleanup(lua::state &l) {
   lua::stack_sentry s(l, -1);
 
-  if (do_convert(l, -1).first) { deinit_X11(); }
+  if (do_convert(l, -1).first) { deinit_x11(); }
 
   l.pop();
 }
@@ -94,7 +97,10 @@ void out_to_x_setting::cleanup(lua::state &l) {
 #ifdef BUILD_XDBE
 bool use_xdbe_setting::set_up(lua::state &l) {
   // double_buffer makes no sense when not drawing to X
-  if (!out_to_x.get(l) || !display || !window.window) { return false; }
+  if (!out_to_x.get(l) || !display || !window.window) {
+    DBGP("can't enable xdbe");
+    return false;
+  }
 
   int major, minor;
 
@@ -222,8 +228,8 @@ static int __attribute__((noreturn)) x11_ioerror_handler(Display *d) {
 }
 
 /* X11 initializer */
-static void init_X11() {
-  DBGP("enter init_X11()");
+static void init_x11() {
+  DBGP("enter init_x11()");
   if (display == nullptr) {
     const std::string &dispstr = display_name.get(*state);
     // passing nullptr to XOpenDisplay should open the default display
@@ -233,12 +239,7 @@ static void init_X11() {
     if ((display = XOpenDisplay(disp)) == nullptr) {
       std::string err =
           std::string("can't open display: ") + XDisplayName(disp);
-#ifdef BUILD_WAYLAND
-      fprintf(stderr, "%s\n", err.c_str());
-      return;
-#else
       throw std::runtime_error(err);
-#endif
     }
   }
 
@@ -261,12 +262,12 @@ static void init_X11() {
   XSetErrorHandler(&x11_error_handler);
   XSetIOErrorHandler(&x11_ioerror_handler);
 
-  DBGP("leave init_X11()");
+  DBGP("leave init_x11()");
 }
 
-static void deinit_X11() {
+static void deinit_x11() {
   if (display) {
-    DBGP("deinit_X11()");
+    DBGP("deinit_x11()");
     XCloseDisplay(display);
     display = nullptr;
   }
@@ -457,9 +458,11 @@ static int get_argb_visual(Visual **visual, int *depth) {
       return 1;
     }
   }
+
   // no argb visual available
   DBGP("No ARGB Visual found");
   XFree(visual_list);
+
   return 0;
 }
 #endif /* BUILD_ARGB */
@@ -473,18 +476,19 @@ void destroy_window() {
 }
 
 void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
-  DBGP("enter init_window()");
+  DBGP("enter x11_init_window()");
   // own is unused if OWN_WINDOW is not defined
   (void)own;
-
-  window_created = 1;
 
 #ifdef OWN_WINDOW
   if (own) {
     int depth = 0, flags = CWOverrideRedirect | CWBackingStore;
     Visual *visual = nullptr;
 
-    if (find_desktop_window(&window.root, &window.desktop) == 0U) { return; }
+    if (find_desktop_window(&window.root, &window.desktop) == 0U) {
+      DBGP2("no desktop window found");
+      return;
+    }
 
 #ifdef BUILD_ARGB
     if (use_argb_visual.get(l) && (get_argb_visual(&visual, &depth) != 0)) {
@@ -802,7 +806,10 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
     if (window.window == 0u) {
       window.window = find_desktop_window(&window.root, &window.desktop);
     }
-    if (window.window == 0u) { return; }
+    if (window.window == 0u) {
+      DBGP2("no root window found");
+      return;
+    }
 
     window.visual = DefaultVisual(display, screen);
     window.colourmap = DefaultColormap(display, screen);
@@ -828,7 +835,9 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
                                         : 0)
 #endif
   );
-  DBGP("leave init_window()");
+
+  window_created = 1;
+  DBGP("leave x11_init_window()");
 }
 
 static Window find_subwindow(Window win, int w, int h) {

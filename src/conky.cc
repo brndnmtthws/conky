@@ -62,7 +62,6 @@
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
 #include <X11/Xutil.h>
 #pragma GCC diagnostic pop
-#include "x11.h"
 #ifdef BUILD_XDAMAGE
 #include <X11/extensions/Xdamage.h>
 #endif
@@ -94,7 +93,7 @@
 #ifdef BUILD_GUI
 #include "fonts.h"
 #include "gui.h"
-#endif
+#endif /* BUILD_GUI */
 #include "fs.h"
 #ifdef BUILD_ICONV
 #include "iconv_tools.h"
