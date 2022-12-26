@@ -37,7 +37,7 @@ jobs:
             -DBUILD_TESTS=ON
       - name: Compile
         working-directory: build
-        run: ninja
+        run: cmake --build
       - name: Test
         working-directory: build
-        run: ninja test
+        run: cmake --test
