@@ -121,8 +121,10 @@ settings_vector make_settings_vector() {
   // fill the vec with the settings which are ordered, then we add the remainder
   // in.
   for (auto &name : settings_ordering) {
-    auto setting = settings->at(name);
-    ret.push_back(setting);
+    if (settings->count(name) > 0) {
+      auto setting = settings->at(name);
+      ret.push_back(setting);
+    }
   }
   for (auto &setting : *settings) {
     if (std::find(settings_ordering.begin(), settings_ordering.end(),
