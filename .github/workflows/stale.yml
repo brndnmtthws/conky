@@ -11,7 +11,7 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v6
+      - uses: actions/stale@v7
         with:
           stale-issue-message: "This issue is stale because it has been open 365 days with no activity. Remove stale label or comment, or this issue will be closed in 30 days."
           stale-pr-message: "This PR is stale because it has been open 365 days with no activity. Remove stale label or comment, or this PR will be closed in 30 days."
