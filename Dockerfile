@@ -104,8 +104,8 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   -DBUILD_XMMS2=ON \
   ../ \
   ; fi' \
-  && cmake --build \
-  && cmake --install
+  && cmake --build . \
+  && cmake --install .
 
 FROM ubuntu:jammy
 

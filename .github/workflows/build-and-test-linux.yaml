@@ -137,8 +137,6 @@ jobs:
             -DCMAKE_CXX_COMPILER=$CXX            \
             -DMAINTAINER_MODE=ON
       - name: Compile
-        working-directory: build
-        run: cmake --build
+        run: cmake --build build
       - name: Test
-        working-directory: build
-        run: cmake --test
+        run: cmake --test build

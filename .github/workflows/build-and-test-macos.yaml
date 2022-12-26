@@ -36,8 +36,6 @@ jobs:
             -DBUILD_WAYLAND=OFF                  \
             -DBUILD_TESTS=ON
       - name: Compile
-        working-directory: build
-        run: cmake --build
+        run: cmake --build build
       - name: Test
-        working-directory: build
-        run: cmake --test
+        run: cmake --test build

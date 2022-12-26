@@ -56,8 +56,8 @@ cmake -G Ninja                         \
   "$REPO_ROOT"
 
 # build project and install files into AppDir
-cmake --build
-cmake --install
+cmake --build .
+cmake --install .
 
 wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
 
