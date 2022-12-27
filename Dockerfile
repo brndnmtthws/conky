@@ -11,6 +11,8 @@ RUN apt-get update \
   git \
   libarchive-dev \
   libaudclient-dev \
+  libc++-dev \
+  libc++abi-dev \
   libcairo2-dev \
   libcurl4-openssl-dev \
   libdbus-glib-1-dev \
@@ -113,6 +115,8 @@ RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
   apt-get install -qy --no-install-recommends \
   libaudclient2 \
+  libc++1 \
+  libc++abi1 \
   libcairo2 \
   libcurl4 \
   libdbus-glib-1-2 \
