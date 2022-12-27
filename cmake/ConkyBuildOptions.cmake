@@ -71,11 +71,13 @@ if(MAINTAINER_MODE)
       FORCE)
   endif()
 
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-      set(USING_CLANG true)
-      add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>)
-      add_link_options($<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>)
-    endif()
+  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(USING_CLANG true)
+  endif()
+
+  # Always use libc++ when compiling w/ clang
+  add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>)
+  add_link_options($<$<COMPILE_LANG_AND_ID:CXX,Clang>:"-stdlib=libc++ -lc++abi">)
 endif(MAINTAINER_MODE)
 
 option(CHECK_CODE_QUALITY "Check code formatting/quality with clang" false)
