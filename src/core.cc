@@ -352,7 +352,7 @@ void stock_parse_arg(struct text_object *obj, const char *arg) {
         data);
     return;
   }
-#define MAX_FINYAH_URL_LENGTH 64
+#define MAX_FINYAH_URL_LENGTH 75
   obj->data.s = static_cast<char *>(malloc(MAX_FINYAH_URL_LENGTH));
   snprintf(obj->data.s, MAX_FINYAH_URL_LENGTH,
            "http://download.finance.yahoo.com/d/quotes.csv?s=%s&f=%s", stock,
