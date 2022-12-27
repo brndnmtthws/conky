@@ -370,6 +370,12 @@ if(BUILD_WAYLAND)
     message(FATAL_ERROR "Unable to find wayland-scanner and xdg-shell protocol")
   endif(Wayland_FOUND AND wayland-protocols_FOUND)
 
+  if(OS_DARWIN OR OS_DRAGONFLY OR OS_FREEBSD OR OS_NETBSD OR OS_OPENBSD)
+    pkg_check_modules(EPOLL REQUIRED epoll-shim)
+    set(conky_libs ${conky_libs} ${EPOLL_LIBRARIES})
+    set(conky_includes ${conky_includes} ${EPOLL_INCLUDE_DIRS})
+  endif(OS_DARWIN OR OS_DRAGONFLY OR OS_FREEBSD OR OS_NETBSD OR OS_OPENBSD)
+
   pkg_check_modules(PANGOCAIRO pangocairo)
   set(conky_libs ${conky_libs} ${PANGOCAIRO_LIBRARIES})
   set(conky_includes ${conky_includes} ${PANGOCAIRO_INCLUDE_DIRS})
