@@ -99,7 +99,7 @@ struct sysfs {
 };
 
 /* To be used inside upspeed/f downspeed/f as ${gw_iface} variable */
-char e_iface[50];
+char e_iface[64];
 
 /* To use ${iface X} where X is a number and will
  * return the current X NIC name */
@@ -384,10 +384,10 @@ int update_gateway_info2(void) {
         break;
       }
       if (!(dest || mask) && ((flags & RTF_GATEWAY) || !gate)) {
-        snprintf(e_iface, 49, "%s", iface);
+        snprintf(e_iface, 64, "%s", iface);
       }
       if (1U == x) {
-        snprintf(interfaces_arr[x++], iface_len - 1, "%s", iface);
+        snprintf(interfaces_arr[x++], iface_len, "%s", iface);
         continue;
       } else if (0 == strcmp(iface, interfaces_arr[x - 1])) {
         continue;
@@ -396,7 +396,7 @@ int update_gateway_info2(void) {
         strcmpreturn = strcmp(iface, interfaces_arr[z]);
       }
       if (strcmpreturn == 1) {
-        snprintf(interfaces_arr[x++], iface_len - 1, "%s", iface);
+        snprintf(interfaces_arr[x++], iface_len, "%s", iface);
       }
     }
     fclose(fp);
@@ -423,7 +423,7 @@ int update_gateway_info(void) {
       }
       if (!(dest || mask) && ((flags & RTF_GATEWAY) || !gate)) {
         gw_info.count++;
-        snprintf(e_iface, 49, "%s", iface);
+        snprintf(e_iface, 64, "%s", iface);
         std::unique_lock<std::mutex> lock(gw_info.mutex);
         gw_info.iface = save_set_string(gw_info.iface, iface);
         ina.s_addr = gate;
@@ -1211,7 +1211,7 @@ static void get_dev_path(const char *dir, const char *dev, char *out_buf) {
   for (i = 0; i < n; i++) {
     if (found) continue;
 
-    snprintf(path, 256, "%s%s/name", dir, namelist[i]->d_name);
+    snprintf(path, 251, "%s%s/name", dir, namelist[i]->d_name);
     name_fd = open(path, O_RDONLY);
     if (name_fd < 0) continue;
     size = read(name_fd, name, strlen(dev));
@@ -1222,7 +1222,7 @@ static void get_dev_path(const char *dir, const char *dev, char *out_buf) {
     ret = strncmp(dev, name, strlen(dev));
     if (!ret) {
       found = true;
-      snprintf(out_buf, 255, "%s/device", namelist[i]->d_name);
+      snprintf(out_buf, 249, "%s/device", namelist[i]->d_name);
     }
     close(name_fd);
   }
@@ -1689,8 +1689,8 @@ void print_voltage_v(struct text_object *obj, char *p,
 
 void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
   static int reported = 0;
-  char buf[256];
-  char buf2[256];
+  char buf[512];
+  char buf2[512];
   FILE *fp;
 
   if (!p_client_buffer || client_buffer_size <= 0) { return; }
