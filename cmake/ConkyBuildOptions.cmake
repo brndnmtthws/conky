@@ -43,42 +43,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(MAINTAINER_MODE)
+  set(CMAKE_COMPILE_WARNING_AS_ERROR true)
   set(BUILD_TESTS true)
-  # some extra debug flags when in 'maintainer mode'
-  if(CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0)
-    # Some flags are only supported on GCC >= 7.0, such as -Wimplicit-
-    # fallthrough=2
-    set(
-      CMAKE_C_FLAGS_DEBUG
-      "-ggdb -Wall -W -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -pedantic -Werror -Wno-unknown-pragmas -Wno-error=pragmas -Wimplicit-fallthrough=2"
-      CACHE STRING "Flags used by the compiler during debug builds."
-      FORCE)
-    set(
-      CMAKE_CXX_FLAGS_DEBUG
-      "-ggdb -Wall -W -Wextra -Wunused -pedantic -Werror -Wno-format -Wno-unknown-pragmas -Wno-error=pragmas -Wimplicit-fallthrough=2"
-      CACHE STRING "Flags used by the compiler during debug builds."
-      FORCE)
-  else()
-    set(
-      CMAKE_C_FLAGS_DEBUG
-      "-ggdb -Wall -W -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -pedantic -Werror -Wno-unknown-pragmas -Wno-error=pragmas"
-      CACHE STRING "Flags used by the compiler during debug builds."
-      FORCE)
-    set(
-      CMAKE_CXX_FLAGS_DEBUG
-      "-ggdb -Wall -W -Wextra -Wunused -pedantic -Werror -Wno-format -Wno-unknown-pragmas -Wno-error=pragmas"
-      CACHE STRING "Flags used by the compiler during debug builds."
-      FORCE)
-  endif()
-
-  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set(USING_CLANG true)
-  endif()
-
-  # Always use libc++ when compiling w/ clang
-  add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>)
-  add_link_options($<$<COMPILE_LANG_AND_ID:CXX,Clang>:"-stdlib=libc++ -lc++abi">)
 endif(MAINTAINER_MODE)
+
+# Always use libc++ when compiling w/ clang
+add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>)
+add_link_options($<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>)
 
 option(CHECK_CODE_QUALITY "Check code formatting/quality with clang" false)
 
