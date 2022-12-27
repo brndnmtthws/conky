@@ -1183,8 +1183,8 @@ static int get_first_file_in_a_directory(const char *dir, char *s,
  */
 static void get_dev_path(const char *dir, const char *dev, char *out_buf) {
   struct dirent **namelist;
-  char path[256] = {'\0'};
-  char name[256] = {'\0'};
+  char path[512] = {'\0'};
+  char name[512] = {'\0'};
   bool found = false;
   size_t size;
   int name_fd;
@@ -1195,7 +1195,7 @@ static void get_dev_path(const char *dir, const char *dev, char *out_buf) {
   /* "0" numbered case */
   ret = sscanf(dev, "%d", &n);
   if (ret == 1) {
-    snprintf(out_buf, 255, "hwmon%d/device", n);
+    snprintf(out_buf, 256, "hwmon%d/device", n);
     return;
   }
 
@@ -1211,7 +1211,7 @@ static void get_dev_path(const char *dir, const char *dev, char *out_buf) {
   for (i = 0; i < n; i++) {
     if (found) continue;
 
-    snprintf(path, 251, "%s%s/name", dir, namelist[i]->d_name);
+    snprintf(path, 512, "%s%s/name", dir, namelist[i]->d_name);
     name_fd = open(path, O_RDONLY);
     if (name_fd < 0) continue;
     size = read(name_fd, name, strlen(dev));
@@ -1222,7 +1222,7 @@ static void get_dev_path(const char *dir, const char *dev, char *out_buf) {
     ret = strncmp(dev, name, strlen(dev));
     if (!ret) {
       found = true;
-      snprintf(out_buf, 249, "%s/device", namelist[i]->d_name);
+      snprintf(out_buf, 512, "%s/device", namelist[i]->d_name);
     }
     close(name_fd);
   }
@@ -1240,7 +1240,7 @@ not_found:
 static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
                              int n, int *divisor, char *devtype) {
   char path[256];
-  char buf[256];
+  char buf[512];
   int fd;
   int divfd;
 
@@ -1701,7 +1701,7 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
     return;
   }
 
-  snprintf(buf2, sizeof(buf2), "%s%s/state", ACPI_FAN_DIR, buf);
+  snprintf(buf2, sizeof(buf2), "%s%.256s/state", ACPI_FAN_DIR, buf);
 
   fp = open_file(buf2, &reported);
   if (!fp) {
@@ -1740,8 +1740,8 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
                          const char *adapter) {
   static int reported = 0;
 
-  char buf[256];
-  char buf2[256];
+  char buf[512];
+  char buf2[512];
   struct stat sb;
   FILE *fp;
 
@@ -1779,7 +1779,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
       return;
     }
 
-    snprintf(buf2, sizeof(buf2), "%s%s/state", ACPI_AC_ADAPTER_DIR, buf);
+    snprintf(buf2, sizeof(buf2), "%s%.256s/state", ACPI_AC_ADAPTER_DIR, buf);
 
     fp = open_file(buf2, &reported);
     if (!fp) {
