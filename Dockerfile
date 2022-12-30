@@ -11,6 +11,8 @@ RUN apt-get update \
   git \
   libarchive-dev \
   libaudclient-dev \
+  libc++-dev \
+  libc++abi-dev \
   libcairo2-dev \
   libcurl4-openssl-dev \
   libdbus-glib-1-dev \
@@ -37,6 +39,7 @@ RUN apt-get update \
   libxmmsclient-dev \
   libxnvctrl-dev \
   make \
+  ninja-build \
   patch \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
@@ -44,9 +47,9 @@ RUN apt-get update \
 # Compile CMake, we need the latest because the bug here (for armv7 builds):
 # https://gitlab.kitware.com/cmake/cmake/-/issues/20568
 WORKDIR /cmake
-RUN curl -Lq https://github.com/Kitware/CMake/releases/download/v3.24.1/cmake-3.24.1.tar.gz -o cmake-3.24.1.tar.gz \
-  && tar xf cmake-3.24.1.tar.gz \
-  && cd cmake-3.24.1 \
+RUN curl -Lq https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1.tar.gz -o cmake-3.25.1.tar.gz \
+  && tar xf cmake-3.25.1.tar.gz \
+  && cd cmake-3.25.1 \
   && CC=clang CXX=clang++ CFLAGS="-D_FILE_OFFSET_BITS=64" CXXFLAGS="-D_FILE_OFFSET_BITS=64" ./bootstrap --system-libs --parallel=5 \
   && make -j5 \
   && make -j5 install \
@@ -59,7 +62,7 @@ WORKDIR /conky/build
 ARG X11=yes
 
 RUN sh -c 'if [ "$X11" = "yes" ] ; then \
-  cmake \
+  cmake -G Ninja \
   -DCMAKE_C_COMPILER=clang \
   -DCMAKE_CXX_COMPILER=clang++ \
   -DCMAKE_INSTALL_PREFIX=/opt/conky \
@@ -76,11 +79,12 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   -DBUILD_NVIDIA=ON \
   -DBUILD_PULSEAUDIO=ON \
   -DBUILD_RSS=ON \
+  -DBUILD_WAYLAND=OFF \
   -DBUILD_WLAN=ON \
   -DBUILD_XMMS2=ON \
   ../ \
   ; else \
-  cmake \
+  cmake -G Ninja \
   -DCMAKE_C_COMPILER=clang \
   -DCMAKE_CXX_COMPILER=clang++ \
   -DCMAKE_INSTALL_PREFIX=/opt/conky \
@@ -96,13 +100,14 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   -DBUILD_MYSQL=ON \
   -DBUILD_PULSEAUDIO=ON \
   -DBUILD_RSS=ON \
+  -DBUILD_WAYLAND=OFF \
   -DBUILD_WLAN=ON \
   -DBUILD_X11=OFF \
   -DBUILD_XMMS2=ON \
   ../ \
   ; fi' \
-  && make -j5 all \
-  && make -j5 install
+  && cmake --build . \
+  && cmake --install .
 
 FROM ubuntu:jammy
 
@@ -110,6 +115,8 @@ RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
   apt-get install -qy --no-install-recommends \
   libaudclient2 \
+  libc++1 \
+  libc++abi1 \
   libcairo2 \
   libcurl4 \
   libdbus-glib-1-2 \

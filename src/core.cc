@@ -55,6 +55,7 @@
 #endif /* BUILD_IRC */
 #ifdef BUILD_GUI
 #include "fonts.h"
+#include "gui.h"
 #endif /* BUILD_GUI */
 #include "fs.h"
 #ifdef BUILD_IBM
@@ -351,7 +352,7 @@ void stock_parse_arg(struct text_object *obj, const char *arg) {
         data);
     return;
   }
-#define MAX_FINYAH_URL_LENGTH 64
+#define MAX_FINYAH_URL_LENGTH 75
   obj->data.s = static_cast<char *>(malloc(MAX_FINYAH_URL_LENGTH));
   snprintf(obj->data.s, MAX_FINYAH_URL_LENGTH,
            "http://download.finance.yahoo.com/d/quotes.csv?s=%s&f=%s", stock,
@@ -749,7 +750,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #endif /* BUILD_GUI */
   END OBJ(color, nullptr)
 #ifdef BUILD_GUI
-      if (out_to_x.get(*state)) {
+      if (out_to_gui(*state)) {
     obj->data.l =
         arg != nullptr ? get_x11_color(arg) : default_color.get(*state);
     set_current_text_color(obj->data.l);
@@ -883,7 +884,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_cat;
   obj->callbacks.free = &gen_free_opaque;
 
-#ifdef BUILD_GUI
+#ifdef BUILD_X11
   END OBJ(key_num_lock, 0) obj->callbacks.print = &print_key_num_lock;
   END OBJ(key_caps_lock, 0) obj->callbacks.print = &print_key_caps_lock;
   END OBJ(key_scroll_lock, 0) obj->callbacks.print = &print_key_scroll_lock;
@@ -1226,6 +1227,20 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_free_bufcache;
   obj->callbacks.free = &gen_free_opaque;
 #endif /* __linux__ */
+#ifdef __FreeBSD__
+  END OBJ(memactive, &update_meminfo) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_memactive;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(meminactive, &update_meminfo) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_meminactive;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(memwired, &update_meminfo) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_memwired;
+  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(memlaundry, &update_meminfo) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_memlaundry;
+  obj->callbacks.free = &gen_free_opaque;
+#endif /* __FreeBSD__ */
 #ifdef BUILD_GUI
   END OBJ(memgauge, &update_meminfo) scan_gauge(obj, arg, 1);
   obj->callbacks.gaugeval = &mem_barval;

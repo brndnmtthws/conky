@@ -31,6 +31,7 @@
 #include "logging.h"
 
 #ifdef BUILD_X11
+#include "gui.h"
 #include "x11.h"
 #endif /* BUILD_X11 */
 

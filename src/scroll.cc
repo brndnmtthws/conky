@@ -33,7 +33,6 @@
 #include "logging.h"
 #include "specials.h"
 #include "text_object.h"
-#include "x11.h"
 
 /**
  * Length of a character in bytes.

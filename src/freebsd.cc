@@ -149,7 +149,8 @@ int check_mount(struct text_object *obj) {
 }
 
 int update_meminfo(void) {
-  u_int total_pages, inactive_pages, free_pages;
+  u_int total_pages, inactive_pages, free_pages, wire_pages, active_pages,
+      bufferspace, laundry_pages;
   unsigned long swap_avail, swap_free;
 
   int pagesize = getpagesize();
@@ -166,11 +167,33 @@ int update_meminfo(void) {
     fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_inactive_count\"\n");
   }
 
+  if (GETSYSCTL("vm.stats.vm.v_wire_count", wire_pages)) {
+    fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_wire_count\"\n");
+  }
+
+  if (GETSYSCTL("vm.stats.vm.v_active_count", active_pages)) {
+    fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_active_count\"\n");
+  }
+
+  if (GETSYSCTL("vfs.bufspace", bufferspace)) {
+    fprintf(stderr, "Cannot read sysctl \"vfs.bufspace\"\n");
+  }
+
+  if (GETSYSCTL("vm.stats.vm.v_laundry_count", laundry_pages)) {
+    fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_laundry_count\"\n");
+  }
+
   info.memmax = total_pages * (pagesize >> 10);
   info.mem = (total_pages - free_pages - inactive_pages) * (pagesize >> 10);
   info.memwithbuffers = info.mem;
-  info.memeasyfree = info.memfree = info.memmax - info.mem;
+  info.memeasyfree = info.memmax - info.mem;
+  info.memfree = free_pages * (pagesize >> 10);
   info.legacymem = info.mem;
+  info.memwired = wire_pages * (pagesize >> 10);
+  info.memactive = active_pages * (pagesize >> 10);
+  info.meminactive = inactive_pages * (pagesize >> 10);
+  info.memlaundry = laundry_pages * (pagesize >> 10);
+  info.buffers = bufferspace / 1024;
 
   if ((swapmode(&swap_avail, &swap_free)) >= 0) {
     info.swapmax = swap_avail;

@@ -53,6 +53,7 @@
 
 #include "conky.h"
 #include "display-x11.hh"
+#include "gui.h"
 #include "llua.h"
 #include "x11.h"
 
@@ -140,6 +141,7 @@ struct _x11_stuff_s {
 } x11_stuff;
 
 static void X11_create_window() {
+  if (!window.window) { return; }
   setup_fonts();
   load_fonts(utf8_mode.get(*state));
 #ifdef BUILD_XFT
@@ -222,6 +224,7 @@ bool display_output_x11::shutdown() { return false; }
 
 bool display_output_x11::main_loop_wait(double t) {
   /* wait for X event or timeout */
+  if (!display || !window.gc) return true;
 
   if (XPending(display) == 0) {
     fd_set fdsr;
@@ -805,7 +808,10 @@ void display_output_x11::setup_fonts(void) {
 }
 
 void display_output_x11::set_font(unsigned int f) {
-  assert(f < x_fonts.size());
+  if (f >= x_fonts.size()) {
+    DBGP("%d >= x_fonts.size()", f);
+    return;
+  }
 #ifdef BUILD_XFT
   if (use_xft.get(*state)) { return; }
 #endif /* BUILD_XFT */

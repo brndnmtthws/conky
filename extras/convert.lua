@@ -36,6 +36,7 @@ local bool_setting = {
     background = true, disable_auto_reload = true, double_buffer = true, draw_borders = true,
     draw_graph_borders = true, draw_outline = true, draw_shades = true, extra_newline = true,
     format_human_readable = true, no_buffers = true, out_to_console = true,
+    out_to_wayland = true,
     out_to_ncurses = true, out_to_stderr = true, out_to_x = true, override_utf8_locale = true,
     own_window = true, own_window_argb_visual = true, own_window_transparent = true,
     short_units = true, show_graph_range = true, show_graph_scale = true,

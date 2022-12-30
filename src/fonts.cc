@@ -29,6 +29,7 @@
 
 #include "fonts.h"
 #include "display-output.hh"
+#include "gui.h"
 #include "logging.h"
 
 unsigned int selected_font = 0;
@@ -40,7 +41,7 @@ void font_setting::lua_setter(lua::state &l, bool init) {
 
   Base::lua_setter(l, init);
 
-  if (init && out_to_x.get(*state)) {
+  if (init) {
     if (fonts.empty()) { fonts.resize(1); }
     fonts[0].name = do_convert(l, -1).first;
   }
@@ -66,7 +67,7 @@ void setup_fonts() {
 }
 
 int add_font(const char *data_in) {
-  if (!out_to_x.get(*state)) { return 0; }
+  if (!out_to_gui(*state)) { return 0; }
   fonts.emplace_back();
   fonts.rbegin()->name = data_in;
 

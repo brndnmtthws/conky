@@ -27,6 +27,14 @@
 #include "conky.h"
 #include "logging.h"
 
+#ifdef BUILD_X11
+#include "x11.h"
+#endif /* BUILD_X11 */
+
+#ifdef BUILD_GUI
+#include "gui.h"
+#endif /* BUILD_GUI */
+
 extern "C" {
 #include <tolua++.h>
 }
@@ -523,13 +531,20 @@ void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
   if (lua_L == nullptr) { return; }
   lua_newtable(lua_L);
 
+#ifdef BUILD_X11
   if (out_to_x.get(*state)) {
     llua_set_userdata("drawable", "Drawable", (void *)&window.drawable);
     llua_set_userdata("visual", "Visual", window.visual);
     llua_set_userdata("display", "Display", display);
+  }
+#endif /*BUILD_X11*/
 
+#ifdef BUILD_GUI
+  if (out_to_gui(*state)) {
+#ifdef BUILD_X11
     llua_set_number("width", window.width);
     llua_set_number("height", window.height);
+#endif /*BUILD_X11*/
     llua_set_number("border_inner_margin", border_inner_margin.get(*state));
     llua_set_number("border_outer_margin", border_outer_margin.get(*state));
     llua_set_number("border_width", border_width.get(*state));
@@ -541,6 +556,7 @@ void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
 
     lua_setglobal(lua_L, "conky_window");
   }
+#endif /*BUILD_GUI*/
 }
 
 void llua_update_window_table(int text_start_x, int text_start_y,
@@ -554,8 +570,10 @@ void llua_update_window_table(int text_start_x, int text_start_y,
     return;
   }
 
+#ifdef BUILD_X11
   llua_set_number("width", window.width);
   llua_set_number("height", window.height);
+#endif /*BUILD_X11*/
 
   llua_set_number("text_start_x", text_start_x);
   llua_set_number("text_start_y", text_start_y);

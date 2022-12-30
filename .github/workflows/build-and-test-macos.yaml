@@ -1,5 +1,12 @@
 name: Build and test on macOS
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -22,7 +29,8 @@ jobs:
             librsvg \
             libxft \
             libxinerama \
-            lua
+            lua \
+            ninja
       - name: Checkout
         uses: actions/checkout@v3
       - name: Configure with CMake
@@ -30,12 +38,12 @@ jobs:
           set -x
           mkdir build
           cd build
-          cmake ..                               \
+          cmake .. -G Ninja                      \
             -DMAINTAINER_MODE=ON                 \
+            -DBUILD_WAYLAND=OFF                  \
             -DBUILD_TESTS=ON
       - name: Compile
-        working-directory: build
-        run: make -j5
+        run: cmake --build build
       - name: Test
         working-directory: build
-        run: make test
+        run: ctest

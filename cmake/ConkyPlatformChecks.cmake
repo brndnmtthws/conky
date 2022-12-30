@@ -352,6 +352,43 @@ if(BUILD_X11)
   endif(X11_FOUND)
 endif(BUILD_X11)
 
+if(BUILD_WAYLAND)
+  find_package(Wayland REQUIRED)
+  set(conky_libs ${conky_libs} ${Wayland_CLIENT_LIBRARY})
+  set(conky_includes ${conky_includes} ${Wayland_CLIENT_INCLUDE_DIR})
+
+  find_package(PkgConfig)
+
+  pkg_check_modules(wayland-protocols QUIET wayland-protocols>=1.13)
+  if(Wayland_FOUND AND wayland-protocols_FOUND)
+    # find Wayland protocols
+    pkg_get_variable(Wayland_PROTOCOLS_DIR wayland-protocols pkgdatadir)
+
+    # find 'wayland-scanner' executable
+    pkg_get_variable(Wayland_SCANNER wayland-scanner wayland_scanner)
+  else(Wayland_FOUND AND wayland-protocols_FOUND)
+    message(FATAL_ERROR "Unable to find wayland-scanner and xdg-shell protocol")
+  endif(Wayland_FOUND AND wayland-protocols_FOUND)
+
+  if(OS_DARWIN OR OS_DRAGONFLY OR OS_FREEBSD OR OS_NETBSD OR OS_OPENBSD)
+    pkg_check_modules(EPOLL REQUIRED epoll-shim)
+    set(conky_libs ${conky_libs} ${EPOLL_LIBRARIES})
+    set(conky_includes ${conky_includes} ${EPOLL_INCLUDE_DIRS})
+  endif(OS_DARWIN OR OS_DRAGONFLY OR OS_FREEBSD OR OS_NETBSD OR OS_OPENBSD)
+
+  pkg_check_modules(PANGOCAIRO pangocairo)
+  set(conky_libs ${conky_libs} ${PANGOCAIRO_LIBRARIES})
+  set(conky_includes ${conky_includes} ${PANGOCAIRO_INCLUDE_DIRS})
+
+  pkg_check_modules(PANGOFC pangofc)
+  set(conky_libs ${conky_libs} ${PANGOFC_LIBRARIES})
+  set(conky_includes ${conky_includes} ${PANGOFC_INCLUDE_DIRS})
+
+  pkg_check_modules(PANGOFT2 pangoft2)
+  set(conky_libs ${conky_libs} ${PANGOFT2_LIBRARIES})
+  set(conky_includes ${conky_includes} ${PANGOFT2_INCLUDE_DIRS})
+endif(BUILD_WAYLAND)
+
 # Otherwise, use the most recent Lua version
 pkg_search_module(LUA
                   REQUIRED
@@ -453,6 +490,12 @@ if(BUILD_PULSEAUDIO)
   set(conky_libs ${conky_libs} ${PULSEAUDIO_LIBRARIES})
   set(conky_includes ${conky_includes} ${PULSEAUDIO_INCLUDE_DIRS})
 endif(BUILD_PULSEAUDIO)
+
+if(WANT_CURL)
+  pkg_check_modules(CURL REQUIRED libcurl)
+  set(conky_libs ${conky_libs} ${CURL_LIBRARIES})
+  set(conky_includes ${conky_includes} ${CURL_INCLUDE_DIRS})
+endif(WANT_CURL)
 
 # Common libraries
 if(WANT_GLIB)

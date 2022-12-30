@@ -41,6 +41,7 @@ jobs:
             libpulse-dev \
             librsvg2-dev \
             libsystemd-dev \
+            libwayland-dev \
             libx11-dev \
             libxdamage-dev \
             libxext-dev \
@@ -50,6 +51,7 @@ jobs:
             libxmmsclient-dev \
             libxnvctrl-dev \
             ncurses-dev \
+            ninja-build \
             pandoc \
             python3 \
             &&
@@ -61,7 +63,7 @@ jobs:
           echo "${{ secrets.GPG_DEPLOY_KEY }}" > appimage/secret.gpg
           gpg --import appimage/secret.gpg
       - name: Build AppImage
-        run: ./appimage/build.sh
+        run: CC=clang-14 CXX=clang++-14 ./appimage/build.sh
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v3
         with:

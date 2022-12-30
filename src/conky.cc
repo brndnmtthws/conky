@@ -54,12 +54,14 @@
 #include <sys/inotify.h>
 #pragma clang diagnostic pop
 #endif /* HAVE_SYS_INOTIFY_H */
+#ifdef BUILD_WAYLAND
+#include "wl.h"
+#endif /* BUILD_WAYLAND */
 #ifdef BUILD_X11
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
 #include <X11/Xutil.h>
 #pragma GCC diagnostic pop
-#include "x11.h"
 #ifdef BUILD_XDAMAGE
 #include <X11/extensions/Xdamage.h>
 #endif
@@ -90,7 +92,8 @@
 #include "exec.h"
 #ifdef BUILD_GUI
 #include "fonts.h"
-#endif
+#include "gui.h"
+#endif /* BUILD_GUI */
 #include "fs.h"
 #ifdef BUILD_ICONV
 #include "iconv_tools.h"
@@ -150,7 +153,7 @@ const char builtin_config_magic[] = "==builtin==";
 
 #define MAX_IF_BLOCK_DEPTH 5
 
-//#define SIGNAL_BLOCKING
+// #define SIGNAL_BLOCKING
 #undef SIGNAL_BLOCKING
 
 /* debugging level, used by logging.h */
@@ -760,10 +763,11 @@ int get_border_total() {
          dpi_scale(border_width.get(*state));
 }
 
+void remove_first_char(char *s) { memmove(s, s + 1, strlen(s)); }
+
 static int get_string_width_special(char *s, int special_index) {
   char *p, *final;
   special_t *current = specials;
-  int idx = 1;
   int width = 0;
   long i;
 
@@ -776,16 +780,16 @@ static int get_string_width_special(char *s, int special_index) {
   p = strndup(s, text_buffer_size.get(*state));
   final = p;
 
-  for (i = 0; i < special_index; i++) { current = current->next; }
-  for (i = 0; i < idx; i++) { current = current->next; }
+  for (i = 0; i <= special_index; i++) { current = current->next; }
 
   while (*p != 0) {
     if (*p == SPECIAL_CHAR) {
       /* shift everything over by 1 so that the special char
        * doesn't mess up the size calculation */
-      for (i = 0; i < static_cast<long>(strlen(p)); i++) {
+      remove_first_char(p);
+      /*for (i = 0; i < static_cast<long>(strlen(p)); i++) {
         *(p + i) = *(p + i + 1);
-      }
+      }*/
       if (current->type == GRAPH || current->type == GAUGE ||
           current->type == BAR) {
         width += current->width;
@@ -795,6 +799,8 @@ static int get_string_width_special(char *s, int special_index) {
         // influenced_by_font but do not include specials
         char *influenced_by_font = strdup(p);
         special_t *current_after_font = current;
+        // influenced_by_font gets special chars removed, so after this loop i
+        // counts the number of letters (not special chars) influenced by font
         for (i = 0; influenced_by_font[i] != 0; i++) {
           if (influenced_by_font[i] == SPECIAL_CHAR) {
             // remove specials and stop at fontchange
@@ -803,10 +809,7 @@ static int get_string_width_special(char *s, int special_index) {
               influenced_by_font[i] = 0;
               break;
             }
-            {
-              memmove(&influenced_by_font[i], &influenced_by_font[i + 1],
-                      strlen(&influenced_by_font[i + 1]) + 1);
-            }
+            remove_first_char(&influenced_by_font[i]);
           }
         }
         // add the length of influenced_by_font in the new font to width
@@ -815,20 +818,19 @@ static int get_string_width_special(char *s, int special_index) {
         width += calc_text_width(influenced_by_font);
         selected_font = orig_font;
         free(influenced_by_font);
-        // make sure there chars counted in the new font are not again counted
+        // make sure the chars counted in the new font are not again counted
         // in the old font
         int specials_skipped = 0;
         while (i > 0) {
-          if (p[specials_skipped] != 1) {
-            memmove(&p[specials_skipped], &p[specials_skipped + 1],
-                    strlen(&p[specials_skipped + 1]) + 1);
+          if (p[specials_skipped] != SPECIAL_CHAR) {
+            remove_first_char(&p[specials_skipped]);
+            // i only counts non-special chars, so only decrement it for those
+            i--;
           } else {
             specials_skipped++;
           }
-          i--;
         }
       }
-      idx++;
       current = current->next;
     } else {
       p++;
@@ -1480,9 +1482,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             cur_x, get_string_width_special(s), gap_x,
             current->arg, window.border_inner_margin,
             window.border_width); */
-          if (pos_x > current->arg && pos_x > cur_x) {
-            cur_x = pos_x - current->arg;
-          }
+          cur_x = pos_x - current->arg;
           break;
         }
 
@@ -1555,29 +1555,30 @@ static void draw_text() {
   for (auto output : display_outputs()) output->begin_draw_text();
 #ifdef BUILD_GUI
   // XXX:only works if inside set_display_output()
-  if (display_output() && display_output()->graphical()) {
-    cur_y = text_start_y;
-    int bw = dpi_scale(border_width.get(*state));
+  for (auto output : display_outputs()) {
+    if (output && output->graphical()) {
+      cur_y = text_start_y;
+      int bw = dpi_scale(border_width.get(*state));
 
-    /* draw borders */
-    if (draw_borders.get(*state) && bw > 0) {
-      if (stippled_borders.get(*state) != 0) {
-        char ss[2] = {(char)dpi_scale(stippled_borders.get(*state)),
-                      (char)dpi_scale(stippled_borders.get(*state))};
-        display_output()->set_line_style(bw, false);
-        display_output()->set_dashes(ss);
-      } else {
-        display_output()->set_line_style(bw, true);
+      /* draw borders */
+      if (draw_borders.get(*state) && bw > 0) {
+        if (stippled_borders.get(*state) != 0) {
+          char ss[2] = {(char)dpi_scale(stippled_borders.get(*state)),
+                        (char)dpi_scale(stippled_borders.get(*state))};
+          output->set_line_style(bw, false);
+          output->set_dashes(ss);
+        } else {
+          output->set_line_style(bw, true);
+        }
+
+        int offset = dpi_scale(border_inner_margin.get(*state)) + bw;
+        output->draw_rect(text_offset_x + text_start_x - offset,
+                          text_offset_y + text_start_y - offset,
+                          text_width + 2 * offset, text_height + 2 * offset);
       }
 
-      int offset = dpi_scale(border_inner_margin.get(*state)) + bw;
-      display_output()->draw_rect(text_offset_x + text_start_x - offset,
-                                  text_offset_y + text_start_y - offset,
-                                  text_width + 2 * offset,
-                                  text_height + 2 * offset);
+      /* draw text */
     }
-
-    /* draw text */
   }
   setup_fonts();
 #endif /* BUILD_GUI */
@@ -1930,11 +1931,19 @@ static void set_default_configurations() {
   info.xmms2.status = nullptr;
   info.xmms2.playlist = nullptr;
 #endif /* BUILD_XMMS2 */
+
+/* Enable a single output by default based on what was enabled at build-time */
+#ifdef BUILD_WAYLAND
   state->pushboolean(true);
-#ifdef BUILD_GUI
+  out_to_wayland.lua_set(*state);
+#else
+#ifdef BUILD_X11
+  state->pushboolean(true);
   out_to_x.lua_set(*state);
 #else
+  state->pushboolean(true);
   out_to_stdout.lua_set(*state);
+#endif
 #endif
 
   info.users.number = 1;

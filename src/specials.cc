@@ -29,6 +29,7 @@
 #include "conky.h"
 #ifdef BUILD_GUI
 #include "fonts.h"
+#include "gui.h"
 #endif /* BUILD_GUI */
 #include <cmath>
 #include "logging.h"
@@ -389,7 +390,7 @@ void new_gauge_in_shell(struct text_object *obj, char *p,
 }
 
 #ifdef BUILD_GUI
-void new_gauge_in_x11(struct text_object *obj, char *buf, double usage) {
+void new_gauge_in_gui(struct text_object *obj, char *buf, double usage) {
   struct special_t *s = nullptr;
   auto *g = static_cast<struct gauge *>(obj->special_data);
 
@@ -420,7 +421,7 @@ void new_gauge(struct text_object *obj, char *p, unsigned int p_max_size,
 
 #ifdef BUILD_GUI
   if (display_output() && display_output()->graphical()) {
-    new_gauge_in_x11(obj, p, usage);
+    new_gauge_in_gui(obj, p, usage);
   }
   if (out_to_stdout.get(*state)) {
     new_gauge_in_shell(obj, p, p_max_size, usage);
@@ -705,7 +706,7 @@ static void new_bar_in_shell(struct text_object *obj, char *buffer,
 }
 
 #ifdef BUILD_GUI
-static void new_bar_in_x11(struct text_object *obj, char *buf, double usage) {
+static void new_bar_in_gui(struct text_object *obj, char *buf, double usage) {
   struct special_t *s = nullptr;
   auto *b = static_cast<struct bar *>(obj->special_data);
 
@@ -737,7 +738,7 @@ void new_bar(struct text_object *obj, char *p, unsigned int p_max_size,
 
 #ifdef BUILD_GUI
   if (display_output() && display_output()->graphical()) {
-    new_bar_in_x11(obj, p, usage);
+    new_bar_in_gui(obj, p, usage);
   }
   if (out_to_stdout.get(*state)) {
     new_bar_in_shell(obj, p, p_max_size, usage);

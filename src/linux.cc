@@ -99,7 +99,7 @@ struct sysfs {
 };
 
 /* To be used inside upspeed/f downspeed/f as ${gw_iface} variable */
-char e_iface[50];
+char e_iface[64];
 
 /* To use ${iface X} where X is a number and will
  * return the current X NIC name */
@@ -384,10 +384,10 @@ int update_gateway_info2(void) {
         break;
       }
       if (!(dest || mask) && ((flags & RTF_GATEWAY) || !gate)) {
-        snprintf(e_iface, 49, "%s", iface);
+        snprintf(e_iface, 64, "%s", iface);
       }
       if (1U == x) {
-        snprintf(interfaces_arr[x++], iface_len - 1, "%s", iface);
+        snprintf(interfaces_arr[x++], iface_len, "%s", iface);
         continue;
       } else if (0 == strcmp(iface, interfaces_arr[x - 1])) {
         continue;
@@ -396,7 +396,7 @@ int update_gateway_info2(void) {
         strcmpreturn = strcmp(iface, interfaces_arr[z]);
       }
       if (strcmpreturn == 1) {
-        snprintf(interfaces_arr[x++], iface_len - 1, "%s", iface);
+        snprintf(interfaces_arr[x++], iface_len, "%s", iface);
       }
     }
     fclose(fp);
@@ -423,7 +423,7 @@ int update_gateway_info(void) {
       }
       if (!(dest || mask) && ((flags & RTF_GATEWAY) || !gate)) {
         gw_info.count++;
-        snprintf(e_iface, 49, "%s", iface);
+        snprintf(e_iface, 64, "%s", iface);
         std::unique_lock<std::mutex> lock(gw_info.mutex);
         gw_info.iface = save_set_string(gw_info.iface, iface);
         ina.s_addr = gate;
@@ -578,8 +578,7 @@ void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
     for (unsigned int k = 0; k < conf.ifc_len / sizeof(struct ifreq); k++) {
       struct net_stat *ns2;
 
-      ns2 = get_net_stat(conf.ifc_req[k].ifr_ifrn.ifrn_name,
-                         nullptr, NULL);
+      ns2 = get_net_stat(conf.ifc_req[k].ifr_ifrn.ifrn_name, nullptr, NULL);
       ns2->addr = conf.ifc_req[k].ifr_ifru.ifru_addr;
       char temp_addr[18];
       snprintf(temp_addr, sizeof(temp_addr), "%u.%u.%u.%u, ",
@@ -1184,8 +1183,8 @@ static int get_first_file_in_a_directory(const char *dir, char *s,
  */
 static void get_dev_path(const char *dir, const char *dev, char *out_buf) {
   struct dirent **namelist;
-  char path[256] = {'\0'};
-  char name[256] = {'\0'};
+  char path[512] = {'\0'};
+  char name[512] = {'\0'};
   bool found = false;
   size_t size;
   int name_fd;
@@ -1196,7 +1195,7 @@ static void get_dev_path(const char *dir, const char *dev, char *out_buf) {
   /* "0" numbered case */
   ret = sscanf(dev, "%d", &n);
   if (ret == 1) {
-    snprintf(out_buf, 255, "hwmon%d/device", n);
+    snprintf(out_buf, 256, "hwmon%d/device", n);
     return;
   }
 
@@ -1212,7 +1211,7 @@ static void get_dev_path(const char *dir, const char *dev, char *out_buf) {
   for (i = 0; i < n; i++) {
     if (found) continue;
 
-    snprintf(path, 256, "%s%s/name", dir, namelist[i]->d_name);
+    snprintf(path, 512, "%s%s/name", dir, namelist[i]->d_name);
     name_fd = open(path, O_RDONLY);
     if (name_fd < 0) continue;
     size = read(name_fd, name, strlen(dev));
@@ -1223,7 +1222,7 @@ static void get_dev_path(const char *dir, const char *dev, char *out_buf) {
     ret = strncmp(dev, name, strlen(dev));
     if (!ret) {
       found = true;
-      snprintf(out_buf, 255, "%s/device", namelist[i]->d_name);
+      snprintf(out_buf, 512, "%s/device", namelist[i]->d_name);
     }
     close(name_fd);
   }
@@ -1241,7 +1240,7 @@ not_found:
 static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
                              int n, int *divisor, char *devtype) {
   char path[256];
-  char buf[256];
+  char buf[512];
   int fd;
   int divfd;
 
@@ -1690,8 +1689,8 @@ void print_voltage_v(struct text_object *obj, char *p,
 
 void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
   static int reported = 0;
-  char buf[256];
-  char buf2[256];
+  char buf[512];
+  char buf2[512];
   FILE *fp;
 
   if (!p_client_buffer || client_buffer_size <= 0) { return; }
@@ -1702,7 +1701,7 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
     return;
   }
 
-  snprintf(buf2, sizeof(buf2), "%s%s/state", ACPI_FAN_DIR, buf);
+  snprintf(buf2, sizeof(buf2), "%s%.256s/state", ACPI_FAN_DIR, buf);
 
   fp = open_file(buf2, &reported);
   if (!fp) {
@@ -1741,8 +1740,8 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
                          const char *adapter) {
   static int reported = 0;
 
-  char buf[256];
-  char buf2[256];
+  char buf[512];
+  char buf2[512];
   struct stat sb;
   FILE *fp;
 
@@ -1780,7 +1779,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
       return;
     }
 
-    snprintf(buf2, sizeof(buf2), "%s%s/state", ACPI_AC_ADAPTER_DIR, buf);
+    snprintf(buf2, sizeof(buf2), "%s%.256s/state", ACPI_AC_ADAPTER_DIR, buf);
 
     fp = open_file(buf2, &reported);
     if (!fp) {

@@ -30,7 +30,7 @@ pushd "$BUILD_DIR"
 
 # configure build files with cmake
 # we need to explicitly set the install prefix, as CMake's default is /usr/local for some reason...
-cmake                                  \
+cmake -G Ninja                         \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo    \
   -DRELEASE=ON                         \
   -DBUILD_AUDACIOUS=ON                 \
@@ -48,15 +48,16 @@ cmake                                  \
   -DBUILD_NVIDIA=ON                    \
   -DBUILD_PULSEAUDIO=ON                \
   -DBUILD_RSS=ON                       \
+  -DBUILD_WAYLAND=OFF                  \
   -DBUILD_WLAN=ON                      \
   -DBUILD_X11=ON                       \
   -DBUILD_XMMS2=ON                     \
-  -DCMAKE_INSTALL_PREFIX=/usr          \
+  -DCMAKE_INSTALL_PREFIX=./AppDir/usr  \
   "$REPO_ROOT"
 
 # build project and install files into AppDir
-make -j4
-make install DESTDIR=AppDir
+cmake --build .
+cmake --install .
 
 wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
 
