@@ -46,6 +46,8 @@
 
 #cmakedefine OWN_WINDOW 1
 
+#cmakedefine MOUSE_EVENTS 1
+
 #cmakedefine BUILD_XDAMAGE 1
 
 #cmakedefine BUILD_XINERAMA 1

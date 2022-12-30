@@ -180,6 +180,7 @@ endif(BUILD_NCURSES)
 option(BUILD_X11 "Build X11 support" true)
 if(BUILD_X11)
   option(OWN_WINDOW "Enable own_window support" true)
+  option(MOUSE_EVENTS "Enable mouse event support" true)
 
   # Mac Fix
   if(OS_DARWIN)
