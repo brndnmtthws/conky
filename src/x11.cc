@@ -835,13 +835,13 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
   if (own_window.get(l)) {
     input_mask |= StructureNotifyMask | ButtonPressMask | ButtonReleaseMask;
   }
-#endif
-#ifdef MOUSE_EVENTS
+#endif /* OWN_WINDOW */
+#ifdef BUILD_MOUSE_EVENTS
   /* it's not recommended to add event masks to special windows in X; causes a crash */
   if (own_window_type.get(l) != TYPE_DESKTOP) {
     input_mask |= ButtonPressMask | ButtonReleaseMask | PointerMotionMask | EnterWindowMask | LeaveWindowMask;
   }
-#endif
+#endif /* BUILD_MOUSE_EVENTS */
   XSelectInput(display, window.window, input_mask);
 
   window_created = 1;

@@ -178,7 +178,7 @@ static void print_version() {
 #ifdef OWN_WINDOW
             << _("  * Own window\n")
 #endif
-#ifdef MOUSE_EVENTS
+#ifdef BUILD_MOUSE_EVENTS
             << _("  * Mouse evenets\n")
 #endif
 #endif /* BUILD_X11 */

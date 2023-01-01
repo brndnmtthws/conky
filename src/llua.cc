@@ -108,10 +108,10 @@ conky::simple_config_setting<std::string> lua_draw_hook_pre("lua_draw_hook_pre",
 conky::simple_config_setting<std::string> lua_draw_hook_post(
     "lua_draw_hook_post", std::string(), true);
 
-#ifdef MOUSE_EVENTS
+#ifdef BUILD_MOUSE_EVENTS
 conky::simple_config_setting<std::string> lua_mouse_hook("lua_mouse_hook",
                                                          std::string(), true);
-#endif /* MOUSE_EVENTS */
+#endif /* BUILD_MOUSE_EVENTS */
 
 #endif
 }  // namespace
@@ -490,7 +490,7 @@ void llua_draw_post_hook() {
   llua_do_call(lua_draw_hook_post.get(*state).c_str(), 0);
 }
 
-#ifdef MOUSE_EVENTS
+#ifdef BUILD_MOUSE_EVENTS
 template <typename EventT>
 bool llua_mouse_hook(const EventT &ev) {
   if ((lua_L == nullptr) || lua_mouse_hook.get(*state).empty()) {
@@ -519,7 +519,7 @@ template bool llua_mouse_hook<mouse_button_event>(const mouse_button_event &ev);
 template bool llua_mouse_hook<mouse_move_event>(const mouse_move_event &ev);
 template bool llua_mouse_hook<mouse_crossing_event>(
     const mouse_crossing_event &ev);
-#endif /* MOUSE_EVENTS */
+#endif /* BUILD_MOUSE_EVENTS */
 
 void llua_set_userdata(const char *key, const char *type, void *value) {
   tolua_pushusertype(lua_L, value, type);

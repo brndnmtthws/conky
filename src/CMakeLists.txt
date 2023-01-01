@@ -237,10 +237,10 @@ if(BUILD_X11)
     set(conky_libs ${conky_libs} ${Xinerama_LIBRARIES})
   endif(BUILD_XINERAMA)
 
-  if(MOUSE_EVENTS)
+  if(BUILD_MOUSE_EVENTS)
     set(mouse_events mouse-events.cc mouse-events.h)
     set(optional_sources ${optional_sources} ${mouse_events})
-  endif(MOUSE_EVENTS)
+  endif(BUILD_MOUSE_EVENTS)
 endif(BUILD_X11)
 
 if(BUILD_GUI)

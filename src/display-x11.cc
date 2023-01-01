@@ -42,7 +42,7 @@
 #ifdef BUILD_IMLIB2
 #include "imlib2.h"
 #endif /* BUILD_IMLIB2 */
-#ifdef MOUSE_EVENTS
+#ifdef BUILD_MOUSE_EVENTS
 #include "mouse-events.h"
 #endif
 #endif /* BUILD_X11 */
@@ -452,13 +452,13 @@ bool display_output_x11::main_loop_wait(double t) {
         break;
 
       case ButtonPress:
-#ifdef MOUSE_EVENTS
+#ifdef BUILD_MOUSE_EVENTS
         if (ev.xbutton.button == 4 || ev.xbutton.button == 5) {
           consumed = llua_mouse_hook(mouse_scroll_event(&ev.xbutton));
         } else {
           consumed = llua_mouse_hook(mouse_press_event(&ev.xbutton));
         }
-#endif /* MOUSE_EVENTS */
+#endif /* BUILD_MOUSE_EVENTS */
         if (own_window.get(*state)) {
           /* if an ordinary window with decorations */
           if ((own_window_type.get(*state) == TYPE_NORMAL &&
@@ -481,12 +481,12 @@ bool display_output_x11::main_loop_wait(double t) {
         break;
 
       case ButtonRelease:
-#ifdef MOUSE_EVENTS
+#ifdef BUILD_MOUSE_EVENTS
         /* don't report scrollwheel release events */
         if (ev.xbutton.button != Button4 && ev.xbutton.button != Button5) {
           llua_mouse_hook(mouse_release_event(&ev.xbutton));
         }
-#endif /* MOUSE_EVENTS */
+#endif /* BUILD_MOUSE_EVENTS */
         if (own_window.get(*state)) {
           /* if an ordinary window with decorations */
           if ((own_window_type.get(*state) == TYPE_NORMAL) &&
@@ -501,7 +501,7 @@ bool display_output_x11::main_loop_wait(double t) {
           XSendEvent(display, ev.xbutton.window, False, ButtonReleaseMask, &ev);
         }
         break;
-#ifdef MOUSE_EVENTS
+#ifdef BUILD_MOUSE_EVENTS
       /*
       windows below are notified for the following events as well;
       can't forward the event without filtering XQueryTree output.
@@ -515,7 +515,7 @@ bool display_output_x11::main_loop_wait(double t) {
       case LeaveNotify:
         llua_mouse_hook(mouse_leave_event(&ev.xcrossing));
         break;
-#endif /* MOUSE_EVENTS */
+#endif /* BUILD_MOUSE_EVENTS */
 #endif
 
       default:
