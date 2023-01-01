@@ -25,3 +25,5 @@ lua/libimlib2.c
 *.code-workspace
 .idea/
 
+# Ignore nix stuff
+/result
