@@ -503,7 +503,7 @@ bool llua_mouse_hook(const EventT &ev) {
 
   bool result = false;
   if (lua_pcall(lua_L, 1, 1, 0) != 0) {
-    NORM_ERR("llua_mouse_hook: function %s execution failed: %s", func,
+    NORM_ERR("llua_mouse_hook: function %s execution failed: %s", func.c_str(),
              lua_tostring(lua_L, -1));
     lua_pop(lua_L, 1);
   } else {
