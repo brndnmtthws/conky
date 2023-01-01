@@ -179,9 +179,15 @@ static void print_version() {
             << _("  * Own window\n")
 #endif
 #ifdef BUILD_MOUSE_EVENTS
-            << _("  * Mouse evenets\n")
+            << _("  * Mouse events\n")
 #endif
 #endif /* BUILD_X11 */
+#ifdef BUILD_WAYLAND
+            << _(" X11:\n")
+#ifdef BUILD_MOUSE_EVENTS
+            << _("  * Mouse events\n")
+#endif
+#endif /* BUILD_WAYLAND */
 #if defined BUILD_AUDACIOUS || defined BUILD_CMUS || defined BUILD_MPD || \
     defined BUILD_MOC || defined BUILD_XMMS2
             << _("\n Music detection:\n")
