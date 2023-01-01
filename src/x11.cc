@@ -27,6 +27,7 @@
  *
  */
 
+#include <X11/X.h>
 #include "common.h"
 #include "config.h"
 #include "conky.h"
@@ -829,14 +830,19 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
 
   XFlush(display);
 
-  XSelectInput(display, window.window,
-               ExposureMask | PropertyChangeMask
+  long input_mask = ExposureMask | PropertyChangeMask;
 #ifdef OWN_WINDOW
-                   | (own_window.get(l) ? (StructureNotifyMask |
-                                           ButtonPressMask | ButtonReleaseMask)
-                                        : 0)
-#endif
-  );
+  if (own_window.get(l)) {
+    input_mask |= StructureNotifyMask | ButtonPressMask | ButtonReleaseMask;
+  }
+#endif /* OWN_WINDOW */
+#ifdef BUILD_MOUSE_EVENTS
+  /* it's not recommended to add event masks to special windows in X; causes a crash */
+  if (own_window_type.get(l) != TYPE_DESKTOP) {
+    input_mask |= ButtonPressMask | ButtonReleaseMask | PointerMotionMask | EnterWindowMask | LeaveWindowMask;
+  }
+#endif /* BUILD_MOUSE_EVENTS */
+  XSelectInput(display, window.window, input_mask);
 
   window_created = 1;
   DBGP("leave x11_init_window()");

@@ -178,6 +178,9 @@ static void print_version() {
 #ifdef OWN_WINDOW
             << _("  * Own window\n")
 #endif
+#ifdef BUILD_MOUSE_EVENTS
+            << _("  * Mouse evenets\n")
+#endif
 #endif /* BUILD_X11 */
 #if defined BUILD_AUDACIOUS || defined BUILD_CMUS || defined BUILD_MPD || \
     defined BUILD_MOC || defined BUILD_XMMS2

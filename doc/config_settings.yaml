@@ -218,6 +218,16 @@ values:
       Imlib2 image cache size, in bytes.  Increase this value if you use $image
       lots. Set to 0 to disable the image cache.
     default: 4194304
+  - name: lua_mouse_hook
+    desc: |-
+      This function, if defined, will be called by Conky upon receiving mouse
+      events from X. Requires X support. A table containing event information
+      will be passed to this function as the first argument. Use this hook for
+      detecting mouse input and acting on it. Conky puts 'conky_' in front of
+      function_name to prevent accidental calls to the wrong function unless
+      you place 'conky_' in front of it yourself.
+    args:
+      - function_name
   - name: lowercase
     desc: Boolean value, if true, text is rendered in lower case.
   - name: lua_draw_hook_post

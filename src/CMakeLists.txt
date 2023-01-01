@@ -236,6 +236,11 @@ if(BUILD_X11)
     find_package(Xinerama REQUIRED)
     set(conky_libs ${conky_libs} ${Xinerama_LIBRARIES})
   endif(BUILD_XINERAMA)
+
+  if(BUILD_MOUSE_EVENTS)
+    set(mouse_events mouse-events.cc mouse-events.h)
+    set(optional_sources ${optional_sources} ${mouse_events})
+  endif(BUILD_MOUSE_EVENTS)
 endif(BUILD_X11)
 
 if(BUILD_GUI)

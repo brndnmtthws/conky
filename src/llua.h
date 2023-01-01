@@ -32,6 +32,13 @@ extern "C" {
 
 #include <config.h>
 
+#ifdef BUILD_X11
+#include "x11.h"
+#ifdef BUILD_MOUSE_EVENTS
+#include "mouse-events.h"
+#endif /* BUILD_MOUSE_EVENTS */
+#endif /* BUILD_X11 */
+
 #define LUAPREFIX "conky_"
 
 #ifdef HAVE_SYS_INOTIFY_H
@@ -45,6 +52,15 @@ void llua_shutdown_hook(void);
 #ifdef BUILD_GUI
 void llua_draw_pre_hook(void);
 void llua_draw_post_hook(void);
+
+#ifdef BUILD_MOUSE_EVENTS
+/**
+  Takes a mouse_event as argument.
+  Returns true if event was properly consumed, false otherwise.
+ */
+template <typename EventT>
+bool llua_mouse_hook(const EventT &ev);
+#endif /* BUILD_MOUSE_EVENTS */
 
 void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
                              int text_height);
