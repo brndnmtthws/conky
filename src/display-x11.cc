@@ -52,6 +52,7 @@
 #include <unordered_map>
 
 #include "conky.h"
+#include "colours.h"
 #include "display-x11.hh"
 #include "gui.h"
 #include "llua.h"
@@ -73,7 +74,7 @@ void update_text();
 extern int need_to_update;
 int get_border_total();
 extern conky::range_config_setting<int> maximum_width;
-extern long current_color;
+extern Colour current_color;
 #ifdef BUILD_XFT
 static int xft_dpi = -1;
 #endif /* BUILD_XFT */
@@ -604,17 +605,18 @@ void display_output_x11::cleanup() {
   }
 }
 
-void display_output_x11::set_foreground_color(long c) {
+void display_output_x11::set_foreground_color(Colour c) {
 #ifdef BUILD_ARGB
   if (have_argb_visual) {
-    current_color = c | (own_window_argb_value.get(*state) << 24);
+    current_color = c;
+    current_color.alpha = own_window_argb_value.get(*state);
   } else {
 #endif /* BUILD_ARGB */
     current_color = c;
 #ifdef BUILD_ARGB
   }
 #endif /* BUILD_ARGB */
-  XSetForeground(display, window.gc, current_color);
+  XSetForeground(display, window.gc, current_color.to_x11_color(display, screen));
 }
 
 int display_output_x11::calc_text_width(const char *s) {
@@ -643,7 +645,7 @@ void display_output_x11::draw_string_at(int x, int y, const char *s, int w) {
     XColor c;
     XftColor c2;
 
-    c.pixel = current_color;
+    c.pixel = current_color.to_x11_color(display, screen);
     // query color on custom colormap
     XQueryColor(display, window.colourmap, &c);
 

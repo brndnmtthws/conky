@@ -572,11 +572,11 @@ void human_readable(long long num, char *buf, int size) {
 /* global object list root element */
 static struct text_object global_root_object;
 
-static long current_text_color;
+static Colour current_text_color;
 
-void set_current_text_color(long colour) { current_text_color = colour; }
+void set_current_text_color(Colour colour) { current_text_color = colour; }
 
-long get_current_text_color() { return current_text_color; }
+Colour get_current_text_color() { return current_text_color; }
 
 static void extract_variable_text(const char *p) {
   free_text_objects(&global_root_object);
@@ -944,7 +944,7 @@ static int cur_x, cur_y; /* current x and y for drawing */
 // FG
 static int draw_mode; /* FG, BG or OUTLINE */
 #ifdef BUILD_GUI
-/*static*/ long current_color;
+/*static*/ Colour current_color;
 
 static int saved_coordinates_x[100];
 static int saved_coordinates_y[100];
@@ -1015,7 +1015,7 @@ static int text_size_updater(char *s, int special_index) {
 }
 #endif /* BUILD_GUI */
 
-static inline void set_foreground_color(long c) {
+static inline void set_foreground_color(Colour c) {
   for (auto output : display_outputs()) output->set_foreground_color(c);
 }
 
@@ -1233,7 +1233,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
         case GAUGE: /* new GAUGE  */
           if (display_output() && display_output()->graphical()) {
             int h, by = 0;
-            unsigned long last_colour = current_color;
+            Colour last_colour = current_color;
 #ifdef BUILD_MATH
             float angle, px, py;
             double usage, scale;
@@ -1283,8 +1283,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
         case GRAPH:
           if (display_output() && display_output()->graphical()) {
             int h, by, i = 0, j = 0;
-            int colour_idx = 0;
-            unsigned long last_colour = current_color;
+            //int colour_idx = 0;
+            Colour last_colour = current_color;
             if (cur_x - text_start_x > mw && mw > 0) { break; }
             h = current->height;
             by = cur_y - (font_ascent() / 2) - 1;
@@ -1318,10 +1318,10 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
                 tmpcolour = factory->create_gradient();
                 delete factory;
               }
-              colour_idx = 0;
+              //colour_idx = 0;
               for (i = w - 2; i > -1; i--) {
                 if (current->last_colour != 0 || current->first_colour != 0) {
-                  if (current->tempgrad != 0) {
+                  /*if (current->tempgrad != 0) {
                     set_foreground_color(tmpcolour[static_cast<int>(
                         static_cast<float>(w - 2) -
                         current->graph[j] * (w - 2) /
@@ -1329,7 +1329,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
                                      1.0F))]);
                   } else {
                     set_foreground_color(tmpcolour[colour_idx++]);
-                  }
+                  }*/
                 }
                 /* this is mugfugly, but it works */
                 if (display_output()) {
@@ -1433,16 +1433,16 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           break;
 #endif /* BUILD_GUI */
         case FG:
-          if (draw_mode == FG) { set_foreground_color(current->arg); }
+          if (draw_mode == FG) { set_foreground_color(Colour::from_argb32(current->arg)); }
           break;
 
 #ifdef BUILD_GUI
         case BG:
-          if (draw_mode == BG) { set_foreground_color(current->arg); }
+          if (draw_mode == BG) { set_foreground_color(Colour::from_argb32(current->arg)); }
           break;
 
         case OUTLINE:
-          if (draw_mode == OUTLINE) { set_foreground_color(current->arg); }
+          if (draw_mode == OUTLINE) { set_foreground_color(Colour::from_argb32(current->arg)); }
           break;
 
         case OFFSET:

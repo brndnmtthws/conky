@@ -399,9 +399,11 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop) {
 #ifdef OWN_WINDOW
 namespace {
 /* helper function for set_transparent_background() */
-void do_set_background(Window win, int argb) {
-  unsigned long colour = background_colour.get(*state) | (argb << 24);
-  XSetWindowBackground(display, win, colour);
+void do_set_background(Window win, uint8_t alpha) {
+  Colour colour = background_colour.get(*state);
+  colour.alpha = alpha;
+  unsigned long xcolor = colour.to_x11_color(display, screen);
+  XSetWindowBackground(display, win, xcolor);
 }
 }  // namespace
 

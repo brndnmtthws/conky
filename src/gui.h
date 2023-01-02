@@ -103,7 +103,7 @@ class own_window_setting : public conky::simple_config_setting<bool> {
 
 struct colour_traits {
   static const lua::Type type = lua::TSTRING;
-  typedef unsigned long Type;
+  typedef Colour Type;
 
   static inline std::pair<Type, bool> convert(lua::state &l, int index,
                                               const std::string &) {
@@ -112,15 +112,15 @@ struct colour_traits {
 };
 
 class colour_setting
-    : public conky::simple_config_setting<unsigned long, colour_traits> {
-  typedef conky::simple_config_setting<unsigned long, colour_traits> Base;
+    : public conky::simple_config_setting<Colour, colour_traits> {
+  typedef conky::simple_config_setting<Colour, colour_traits> Base;
 
  protected:
   virtual void lua_setter(lua::state &l, bool init);
 
  public:
   colour_setting(const std::string &name_, unsigned long default_value_ = 0)
-      : Base(name_, default_value_, true) {}
+      : Base(name_, Colour::from_argb32(default_value_), true) {}
 };
 }  // namespace priv
 
