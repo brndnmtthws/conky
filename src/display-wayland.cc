@@ -166,7 +166,7 @@ void update_text();
 extern int need_to_update;
 int get_border_total();
 extern conky::range_config_setting<int> maximum_width;
-extern long current_color;
+extern Colour current_color;
 
 /* for pango_fonts */
 struct pango_font {
@@ -665,19 +665,17 @@ void display_output_wayland::cleanup() {
   free_fonts(utf8_mode.get(*state));
 }
 
-void display_output_wayland::set_foreground_color(long c) {
+void display_output_wayland::set_foreground_color(Colour c) {
   current_color = c;
 #ifdef BUILD_ARGB
-  uint8_t a = own_window_argb_value.get(*state);
-#else
-  uint8_t a = current_color >> 24;
+ current_color.alpha = own_window_argb_value.get(*state);
 #endif /* BUILD_ARGB */
-  uint8_t r = current_color >> 16;
-  uint8_t g = current_color >> 8;
-  uint8_t b = current_color;
   if (global_window->cr) {
-    cairo_set_source_rgba(global_window->cr, r / 255.0, g / 255.0, b / 255.0,
-                          a / 255.0);
+    cairo_set_source_rgba(global_window->cr,
+                          current_color.red / 255.0,
+                          current_color.green / 255.0,
+                          current_color.blue / 255.0,
+                          current_color.alpha / 255.0);
   }
 }
 
@@ -707,9 +705,9 @@ void display_output_wayland::draw_string_at(int x, int y, const char *s,
   adjust_coords(x, y);
   pango_layout_set_text(window->layout, s, strlen(s));
   cairo_save(window->cr);
-  uint8_t r = current_color >> 16;
-  uint8_t g = current_color >> 8;
-  uint8_t b = current_color;
+  uint8_t r = current_color.red;
+  uint8_t g = current_color.green;
+  uint8_t b = current_color.blue;
   unsigned int a = pango_fonts[selected_font].font_alpha;
   cairo_set_source_rgba(global_window->cr, r / 255.0, g / 255.0, b / 255.0,
                         a / 65535.);
@@ -802,24 +800,24 @@ void display_output_wayland::end_draw_stuff() {
 void display_output_wayland::clear_text(int exposures) {
   struct window *window = global_window;
   cairo_save(window->cr);
-  long color = 0;
+  Colour color;
 #ifdef OWN_WINDOW
   color = background_colour.get(*state);
   if (set_transparent.get(*state)) {
-    color &= ~0xff;
+    color.alpha = 0;
   } else {
 #ifdef BUILD_ARGB
-    color |= (own_window_argb_value.get(*state));
+    color.alpha = own_window_argb_value.get(*state);
 #else
-    color |= 0xff;
+    color.alpha = 0xff;
 #endif
   }
 #endif
-  uint8_t a = color >> 24;
-  uint8_t r = color >> 16;
-  uint8_t g = color >> 8;
-  uint8_t b = color;
-  cairo_set_source_rgba(window->cr, r / 255.0, g / 255.0, b / 255.0, a / 255.);
+  cairo_set_source_rgba(window->cr,
+                        color.red / 255.0,
+                        color.green / 255.0,
+                        color.blue / 255.0,
+                        color.alpha / 255.0);
   cairo_set_operator(window->cr, CAIRO_OPERATOR_SOURCE);
   cairo_paint(window->cr);
   cairo_restore(window->cr);

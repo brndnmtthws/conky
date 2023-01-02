@@ -80,8 +80,8 @@ bool display_output_ncurses::initialize() {
 
 bool display_output_ncurses::shutdown() { return false; }
 
-void display_output_ncurses::set_foreground_color(long c) {
-  attron(COLOR_PAIR(c));
+void display_output_ncurses::set_foreground_color(Colour c) {
+  attron(COLOR_PAIR(c.to_ncurses()));
 }
 
 void display_output_ncurses::begin_draw_text() {

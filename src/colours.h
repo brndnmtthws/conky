@@ -31,11 +31,91 @@
 
 #include <memory>
 #include <string>
+#include <cassert>
+#include <climits>
+#ifdef BUILD_X11
+#include "x11.h"
+#endif /* BUILD_X11 */
+#ifdef BUILD_NCURSES
+#include <ncurses.h>
+#endif
 
 unsigned int adjust_colours(unsigned int);
 
-long get_x11_color(const std::string &colour);
+struct Colour {
+  uint8_t red;
+  uint8_t green;
+  uint8_t blue;
+  uint8_t alpha;
+
+public:
+  // Express the color as a 32-bit ARGB integer (alpha in MSB).
+  uint32_t to_argb32(void) {
+    uint32_t out;
+    out = alpha << 24 | red << 16 | green << 8 | blue;
+    return out;
+  }
+
+  // Construct from a 32-bit ARGB integer (alpha in MSB).
+  static Colour from_argb32(uint32_t argb);
+
+#ifdef BUILD_X11
+  unsigned long to_x11_color(Display *display, int screen) {
+    if(display == nullptr) {
+      /* cannot work if display is not open */
+      return 0;
+    }
+
+    XColor xcolor;
+    xcolor.pixel = 0;
+    xcolor.red = red * 257;
+    xcolor.green = green * 257;
+    xcolor.blue = blue * 257;
+    if (XAllocColor(display, DefaultColormap(display, screen), &xcolor) == 0) {
+      //NORM_ERR("can't allocate X color");
+      return 0;
+    }
+
+    return static_cast<unsigned long>(xcolor.pixel);
+  }
+#endif /* BUILD_X11 */
+
+#ifdef BUILD_NCURSES
+  static Colour from_ncurses(int nccolor);
+
+  // Find the nearest ncurses color.
+  int to_ncurses() {
+    int nccolors[] = {
+      COLOR_WHITE,
+      COLOR_RED,
+      COLOR_GREEN,
+      COLOR_YELLOW,
+      COLOR_BLUE,
+      COLOR_MAGENTA,
+      COLOR_CYAN,
+      COLOR_BLACK,
+    };
+    int mindiff = INT_MAX;
+    int best_nccolor = nccolors[0];
+    for (int nccolor : nccolors) {
+      Colour other = Colour::from_ncurses(nccolor);
+      int diff = abs(red - other.red) +
+                 abs(green - other.green) +
+                 abs(blue - other.blue);
+
+      if (diff < mindiff) {
+        mindiff = diff;
+        best_nccolor = nccolor;
+      }
+    }
+    return best_nccolor;
+  }
+#endif /* BUILD_NCURSES */
+};
+
+
+Colour get_x11_color(const std::string &colour);
 // XXX: when everyone uses C++ strings, remove this C version
-long get_x11_color(const char *);
+Colour get_x11_color(const char *);
 
 #endif /* _COLOURS_H */

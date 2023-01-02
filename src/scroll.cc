@@ -29,6 +29,7 @@
 #include <vector>
 #include "conky.h"
 #include "core.h"
+#include "colours.h"
 #include "display-output.hh"
 #include "logging.h"
 #include "specials.h"
@@ -81,7 +82,7 @@ struct scroll_data {
   int wait;
   unsigned int wait_arg;
   signed int start;
-  long resetcolor;
+  Colour resetcolor;
   int direction;
 };
 
@@ -322,7 +323,7 @@ void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
 #ifdef BUILD_GUI
   // reset color when scroll is finished
   if (display_output() && display_output()->graphical()) {
-    new_special(p + strlen(p), FG)->arg = sd->resetcolor;
+    new_special(p + strlen(p), FG)->arg = sd->resetcolor.to_argb32();
   }
 #endif
 }

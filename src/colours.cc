@@ -35,6 +35,9 @@
 #ifdef BUILD_WAYLAND
 #include "x11-color.h"
 #endif /*BUILD_WAYLAND*/
+#ifdef BUILD_NCURSES
+#include <ncurses.h>
+#endif /*BUILD_NCURSES*/
 
 /* precalculated: 31/255, and 63/255 */
 #define CONST_8_TO_5_BITS 0.12156862745098
@@ -100,11 +103,48 @@ static int hex_nibble_value(char c) {
   return -1;
 }
 
-long manually_get_x11_color(const char *name) {
+Colour Colour::from_argb32(uint32_t argb) {
+  Colour out;
+  out.alpha = argb >> 24;
+  out.red = (argb >> 16) % 256;
+  out.green = (argb >> 8) % 256;
+  out.blue = argb % 256;
+  return out;
+}
+
+Colour error_colour { 0xff, 0x00, 0x00, 0xff };
+
+#ifdef BUILD_NCURSES
+Colour Colour::from_ncurses(int nccolor) {
+    switch(nccolor) {
+      case COLOR_WHITE:
+        return {0xff, 0xff, 0xff, 0xff};
+      case COLOR_RED:
+        return {0xff, 0x00, 0x00, 0xff};
+      case COLOR_GREEN:
+        return {0x00, 0xff, 0x00, 0xff};
+      case COLOR_YELLOW:
+        return {0xff, 0xff, 0x00, 0xff};
+      case COLOR_BLUE:
+        return {0x00, 0x00, 0xff, 0xff};
+      case COLOR_MAGENTA:
+        return {0xff, 0x00, 0xff, 0xff};
+      case COLOR_CYAN:
+        return {0x00, 0xff, 0xff, 0xff};
+      case COLOR_BLACK:
+        return {0x00, 0x00, 0x00, 0xff};
+      default:
+        return error_colour;
+    }
+}
+#endif /*BUILD_NCURSES*/
+
+Colour manually_get_x11_color(const char *name) {
   unsigned short r, g, b;
   size_t len = strlen(name);
   if (OsLookupColor(-1, name, len, &r, &g, &b)) {
-    return 0xff000000 | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
+    Colour out = {(uint8_t)r, (uint8_t)g, (uint8_t)b, 0xff};
+    return out;
   }
   if (name[0] == '#') {
     name++;
@@ -121,20 +161,26 @@ long manually_get_x11_color(const char *name) {
 
       argb[skip_alpha + i / 2] = val;
     }
-    long out = (argb[0] << 24) | (argb[1] << 16) | (argb[2] << 8) | argb[3];
+    Colour out;
+    out.alpha = argb[0];
+    out.red = argb[1];
+    out.green = argb[2];
+    out.blue = argb[3];
     return out;
   }
 err:
   NORM_ERR("can't parse X color '%s' (%d)", name, len);
-  return 0xFF00FF;
+  return error_colour;
 }
 #endif /* BUILD_WAYLAND */
 
-long get_x11_color(const char *name) {
+Colour get_x11_color(const char *name) {
 #ifdef BUILD_X11
 #ifdef BUILD_WAYLAND
   if (!display) { return manually_get_x11_color(name); }
 #endif /*BUILD_WAYLAND*/
+
+  if (out_to_x.get(*state)) {
   assert(display != nullptr);
   XColor color;
 
@@ -151,21 +197,27 @@ long get_x11_color(const char *name) {
     if (XParseColor(display, DefaultColormap(display, screen), &newname[0],
                     &color) == 0) {
       NORM_ERR("can't parse X color '%s'", name);
-      return 0xFF00FF;
+      return error_colour;
     }
   }
   if (XAllocColor(display, DefaultColormap(display, screen), &color) == 0) {
     NORM_ERR("can't allocate X color '%s'", name);
   }
 
-  return static_cast<long>(color.pixel);
+  Colour out;
+  out.red = color.red;
+  out.green = color.green;
+  out.blue = color.blue;
+  out.alpha = 0xff;
+  return out;
+  }
 #endif /*BUILD_X11*/
 #ifdef BUILD_WAYLAND
   return manually_get_x11_color(name);
 #endif /*BUILD_WAYLAND*/
 }
 
-long get_x11_color(const std::string &colour) {
+Colour get_x11_color(const std::string &colour) {
   return get_x11_color(colour.c_str());
 }
 #endif /*BUILD_GUI*/

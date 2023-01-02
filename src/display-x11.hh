@@ -53,7 +53,7 @@ class display_output_x11 : public display_output_base {
   virtual void cleanup();
 
   // drawing primitives
-  virtual void set_foreground_color(long);
+  virtual void set_foreground_color(Colour);
 
   virtual int calc_text_width(const char *);
 

@@ -39,6 +39,7 @@
 #include <memory>
 #include "common.h" /* at least for struct dns_data */
 #include "luamm.hh"
+#include "colours.h"
 
 #if defined(HAS_MCHECK_H)
 #include <mcheck.h>
@@ -303,8 +304,8 @@ extern conky::range_config_setting<char> stippled_borders;
 extern conky::simple_config_setting<bool> draw_shades;
 extern conky::simple_config_setting<bool> draw_outline;
 
-void set_current_text_color(long colour);
-long get_current_text_color(void);
+void set_current_text_color(Colour colour);
+Colour get_current_text_color(void);
 
 void set_updatereset(int);
 int get_updatereset(void);
