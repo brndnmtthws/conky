@@ -121,8 +121,7 @@ long manually_get_x11_color(const char *name) {
 
       argb[skip_alpha + i / 2] = val;
     }
-    long out;
-    memcpy(static_cast<void *>(&out), argb, 4);
+    long out = (argb[0] << 24) | (argb[1] << 16) | (argb[2] << 8) | argb[3];
     return out;
   }
 err:
