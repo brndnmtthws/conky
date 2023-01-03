@@ -279,7 +279,7 @@ struct window {
   struct wl_shm *shm;
   struct wl_surface *surface;
   struct zwlr_layer_surface_v1 *layer_surface;
-  int scale;
+  int scale, pending_scale;
   cairo_surface_t *cairo_surface;
   cairo_t *cr;
   PangoLayout *layout;
@@ -324,7 +324,7 @@ static void output_done(void *data, struct wl_output *wl_output) {}
 void output_scale(void *data, struct wl_output *wl_output, int32_t factor) {
   /* For now, assume we have one output and adopt its scale unconditionally. */
   /* We should also re-render immediately when scale changes. */
-  global_window->scale = factor;
+  global_window->pending_scale = factor;
 }
 #endif
 
@@ -441,7 +441,6 @@ bool display_output_wayland::initialize() {
   struct wl_surface *surface =
       wl_compositor_create_surface(wl_globals.compositor);
   global_window = window_create(surface, wl_globals.shm, 1, 1);
-  global_window->scale = 1;
   window_allocate_buffer(global_window);
 
   global_window->layer_surface = zwlr_layer_shell_v1_get_layer_surface(
@@ -451,7 +450,6 @@ bool display_output_wayland::initialize() {
   zwlr_layer_surface_v1_add_listener(global_window->layer_surface,
                                      &layer_surface_listener, nullptr);
 
-  wl_surface_set_buffer_scale(global_window->surface, global_window->scale);
   wl_surface_commit(global_window->surface);
   wl_display_roundtrip(global_display);
 
@@ -522,14 +520,20 @@ bool display_output_wayland::main_loop_wait(double t) {
 
     int fixed_size = 0;
 
+    bool scale_changed = global_window->scale != global_window->pending_scale;
+
     /* resize window if it isn't right size */
     if ((fixed_size == 0) && (text_width + 2 * border_total != width ||
-                              text_height + 2 * border_total != height)) {
+                              text_height + 2 * border_total != height ||
+                              scale_changed)) {
       /* clamp text_width to configured maximum */
       if (maximum_width.get(*state)) {
         int mw = global_window->scale * maximum_width.get(*state);
         if (text_width > mw && mw > 0) { text_width = mw; }
       }
+
+      /* pending scale will be applied by resizing the window */
+      global_window->scale = global_window->pending_scale;
 
       width = text_width + 2 * border_total;
       height = text_height + 2 * border_total;
@@ -1040,18 +1044,19 @@ static cairo_surface_t *create_shm_surface_from_pool(
 
 void window_allocate_buffer(struct window *window) {
   assert(window->shm != nullptr);
+
+  int scale = window->pending_scale;
   struct shm_pool *pool;
   pool = shm_pool_create(window->shm, data_length_for_shm_surface(
-                                          &window->rectangle, window->scale));
+                                          &window->rectangle, scale));
   if (!pool) {
     fprintf(stderr, "could not allocate shm pool\n");
     return;
   }
 
   window->cairo_surface = create_shm_surface_from_pool(
-      window->shm, &window->rectangle, pool, window->scale);
-  cairo_surface_set_device_scale(window->cairo_surface, window->scale,
-                                 window->scale);
+      window->shm, &window->rectangle, pool, scale);
+  cairo_surface_set_device_scale(window->cairo_surface, scale, scale);
 
   if (!window->cairo_surface) {
     shm_pool_destroy(pool);
@@ -1078,7 +1083,8 @@ struct window *window_create(struct wl_surface *surface, struct wl_shm *shm,
   window->rectangle.y = 0;
   window->rectangle.width = width;
   window->rectangle.height = height;
-  window->scale = 1;
+  window->scale = 0;
+  window->pending_scale = 1;
 
   window->surface = surface;
   window->shm = shm;
@@ -1123,7 +1129,7 @@ void window_resize(struct window *window, int width, int height) {
 
 void window_commit_buffer(struct window *window) {
   assert(window->cairo_surface != nullptr);
-  wl_surface_set_buffer_scale(global_window->surface, global_window->scale);
+  wl_surface_set_buffer_scale(global_window->surface, global_window->pending_scale);
   wl_surface_attach(window->surface,
                     get_buffer_from_cairo_surface(window->cairo_surface), 0, 0);
   /* repaint all the pixels in the surface, change size to only repaint changed
