@@ -662,15 +662,15 @@ void display_output_wayland::cleanup() {
 }
 
 void display_output_wayland::set_foreground_color(long c) {
-#ifdef BUILD_ARGB
-  current_color = (c & ~0xff) | own_window_argb_value.get(*state);
-#else
   current_color = c;
+#ifdef BUILD_ARGB
+  uint8_t a = own_window_argb_value.get(*state);
+#else
+  uint8_t a = current_color >> 24;
 #endif /* BUILD_ARGB */
-  uint8_t r = current_color >> 24;
-  uint8_t g = current_color >> 16;
-  uint8_t b = current_color >> 8;
-  uint8_t a = current_color;
+  uint8_t r = current_color >> 16;
+  uint8_t g = current_color >> 8;
+  uint8_t b = current_color;
   if (global_window->cr) {
     cairo_set_source_rgba(global_window->cr, r / 255.0, g / 255.0, b / 255.0,
                           a / 255.0);
@@ -703,9 +703,9 @@ void display_output_wayland::draw_string_at(int x, int y, const char *s,
   adjust_coords(x, y);
   pango_layout_set_text(window->layout, s, strlen(s));
   cairo_save(window->cr);
-  uint8_t r = current_color >> 24;
-  uint8_t g = current_color >> 16;
-  uint8_t b = current_color >> 8;
+  uint8_t r = current_color >> 16;
+  uint8_t g = current_color >> 8;
+  uint8_t b = current_color;
   unsigned int a = pango_fonts[selected_font].font_alpha;
   cairo_set_source_rgba(global_window->cr, r / 255.0, g / 255.0, b / 255.0,
                         a / 65535.);
@@ -811,10 +811,10 @@ void display_output_wayland::clear_text(int exposures) {
 #endif
   }
 #endif
-  uint8_t r = color >> 24;
-  uint8_t g = color >> 16;
-  uint8_t b = color >> 8;
-  uint8_t a = color;
+  uint8_t a = color >> 24;
+  uint8_t r = color >> 16;
+  uint8_t g = color >> 8;
+  uint8_t b = color;
   cairo_set_source_rgba(window->cr, r / 255.0, g / 255.0, b / 255.0, a / 255.);
   cairo_set_operator(window->cr, CAIRO_OPERATOR_SOURCE);
   cairo_paint(window->cr);

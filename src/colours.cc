@@ -104,14 +104,14 @@ long manually_get_x11_color(const char *name) {
   unsigned short r, g, b;
   size_t len = strlen(name);
   if (OsLookupColor(-1, name, len, &r, &g, &b)) {
-    return 0x000000ff | ((r & 0xff) << 24) | ((g & 0xff) << 16) |
-           ((b & 0xff) << 8);
+    return 0xff000000 | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
   }
   if (name[0] == '#') {
     name++;
     len--;
   }
   if (len == 6 || len == 8) {
+    bool skip_alpha = (len == 6);
     unsigned char argb[4] = {0xff, 0, 0, 0};
     for (size_t i = 0; i + 1 < len; i += 2) {
       int nib1 = hex_nibble_value(name[i]);
@@ -119,7 +119,7 @@ long manually_get_x11_color(const char *name) {
       if (nib1 < 0 || nib2 < 0) { goto err; }
       int val = (nib1 << 4) + nib2;
 
-      argb[3 - i / 2] = val;
+      argb[skip_alpha + i / 2] = val;
     }
     long out;
     memcpy(static_cast<void *>(&out), argb, 4);
