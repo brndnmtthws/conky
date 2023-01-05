@@ -107,7 +107,7 @@ struct colour_traits {
 
   static inline std::pair<Type, bool> convert(lua::state &l, int index,
                                               const std::string &) {
-    return {get_x11_color(l.tostring(index)), true};
+    return {parse_color(l.tostring(index)), true};
   }
 };
 

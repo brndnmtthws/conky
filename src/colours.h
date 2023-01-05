@@ -114,8 +114,8 @@ public:
 };
 
 
-Colour get_x11_color(const std::string &colour);
+Colour parse_color(const std::string &colour);
 // XXX: when everyone uses C++ strings, remove this C version
-Colour get_x11_color(const char *);
+Colour parse_color(const char *);
 
 #endif /* _COLOURS_H */
