@@ -91,7 +91,6 @@ unsigned int adjust_colours(unsigned int colour) {
 }
 
 #ifdef BUILD_GUI
-#ifdef BUILD_WAYLAND
 static int hex_nibble_value(char c) {
   if (c >= '0' && c <= '9') {
     return c - '0';
@@ -139,7 +138,7 @@ Colour Colour::from_ncurses(int nccolor) {
 }
 #endif /*BUILD_NCURSES*/
 
-Colour manually_get_x11_color(const char *name) {
+Colour parse_color(const char *name) {
   unsigned short r, g, b;
   size_t len = strlen(name);
   if (OsLookupColor(-1, name, len, &r, &g, &b)) {
@@ -172,52 +171,8 @@ err:
   NORM_ERR("can't parse X color '%s' (%d)", name, len);
   return error_colour;
 }
-#endif /* BUILD_WAYLAND */
 
-Colour get_x11_color(const char *name) {
-#ifdef BUILD_X11
-#ifdef BUILD_WAYLAND
-  if (!display) { return manually_get_x11_color(name); }
-#endif /*BUILD_WAYLAND*/
-
-  if (out_to_x.get(*state)) {
-  assert(display != nullptr);
-  XColor color;
-
-  color.pixel = 0;
-  if (XParseColor(display, DefaultColormap(display, screen), name, &color) ==
-      0) {
-    /* lets check if it's a hex colour with the # missing in front
-     * if yes, then do something about it */
-    char newname[DEFAULT_TEXT_BUFFER_SIZE];
-
-    newname[0] = '#';
-    strncpy(&newname[1], name, DEFAULT_TEXT_BUFFER_SIZE - 1);
-    /* now lets try again */
-    if (XParseColor(display, DefaultColormap(display, screen), &newname[0],
-                    &color) == 0) {
-      NORM_ERR("can't parse X color '%s'", name);
-      return error_colour;
-    }
-  }
-  if (XAllocColor(display, DefaultColormap(display, screen), &color) == 0) {
-    NORM_ERR("can't allocate X color '%s'", name);
-  }
-
-  Colour out;
-  out.red = color.red;
-  out.green = color.green;
-  out.blue = color.blue;
-  out.alpha = 0xff;
-  return out;
-  }
-#endif /*BUILD_X11*/
-#ifdef BUILD_WAYLAND
-  return manually_get_x11_color(name);
-#endif /*BUILD_WAYLAND*/
-}
-
-Colour get_x11_color(const std::string &colour) {
-  return get_x11_color(colour.c_str());
+Colour parse_color(const std::string &colour) {
+  return parse_color(colour.c_str());
 }
 #endif /*BUILD_GUI*/
