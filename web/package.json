@@ -51,7 +51,7 @@
     "eslint-plugin-mdx": "^2.0.5",
     "js-yaml": "^4.1.0",
     "netlify-plugin-cypress": "^2.2.0",
-    "next-mdx-remote": "^4.2.0",
+    "next-mdx-remote": "^4.2.1",
     "next-remote-watch": "2.0.0",
     "postcss": "^8.4.20",
     "rehype-stringify": "^9.0.3",
