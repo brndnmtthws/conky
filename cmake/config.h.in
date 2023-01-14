@@ -127,6 +127,8 @@
 
 #cmakedefine BUILD_LUA_RSVG 1
 
+#cmakedefine BUILD_LUA_TEXT 1
+
 #cmakedefine BUILD_IBM 1
 
 #cmakedefine BUILD_RSS 1
