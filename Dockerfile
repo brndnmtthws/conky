@@ -16,6 +16,9 @@ RUN apt-get update \
   libcairo2-dev \
   libcurl4-openssl-dev \
   libdbus-glib-1-dev \
+  libfontconfig-dev \
+  libfreetype-dev \
+  libharfbuzz-dev \
   libical-dev \
   libimlib2-dev \
   libircclient-dev \
@@ -76,6 +79,7 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   -DBUILD_LUA_CAIRO=ON \
   -DBUILD_LUA_IMLIB2=ON \
   -DBUILD_LUA_RSVG=ON \
+  -DBUILD_LUA_TEXT=ON \
   -DBUILD_MYSQL=ON \
   -DBUILD_NVIDIA=ON \
   -DBUILD_PULSEAUDIO=ON \
@@ -98,6 +102,7 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   -DBUILD_LUA_CAIRO=ON \
   -DBUILD_LUA_IMLIB2=ON \
   -DBUILD_LUA_RSVG=ON \
+  -DBUILD_LUA_TEXT=ON \
   -DBUILD_MYSQL=ON \
   -DBUILD_PULSEAUDIO=ON \
   -DBUILD_RSS=ON \
@@ -121,6 +126,9 @@ RUN apt-get update \
   libcairo2 \
   libcurl4 \
   libdbus-glib-1-2 \
+  libfontconfig1 \
+  libfreetype6 \
+  libharfbuzz-gobject0 \
   libical3 \
   libimlib2 \
   libircclient1 \

@@ -75,6 +75,7 @@ if(BUILD_X11)
     print_target_properties(conky-rsvg)
   endif(BUILD_LUA_RSVG)
 
+
   if(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
     include_directories(${luacairo_includes} ${luaimlib2_includes}
                         ${CMAKE_CURRENT_SOURCE_DIR})
@@ -90,6 +91,22 @@ if(BUILD_X11)
                           toluapp_lib_static)
     set(lua_libs ${lua_libs} conky-cairo_imlib2_helper)
   endif(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
+  
+  if(BUILD_LUA_CAIRO AND BUILD_LUA_TEXT)
+    include_directories(${luacairo_includes} ${luatext_includes}
+                        ${CMAKE_CURRENT_SOURCE_DIR})
+    wrap_tolua(luacairo_text_helper_src cairo_text_helper.pkg)
+
+    add_library(conky-cairo_text_helper SHARED ${luacairo_text_helper_src})
+    set_target_properties(conky-cairo_text_helper
+                          PROPERTIES OUTPUT_NAME "cairo_text_helper")
+
+    target_link_libraries(conky-cairo_text_helper
+                          ${luacairo_libs}
+                          ${luatext_libs}
+                          toluapp_lib_static)
+    set(lua_libs ${lua_libs} conky-cairo_text_helper)
+  endif(BUILD_LUA_CAIRO AND BUILD_LUA_TEXT)
 endif(BUILD_X11)
 
 install(TARGETS ${lua_libs}

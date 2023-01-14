@@ -1,0 +1,7 @@
+$#include <cairo.h>
+$#include <libcairo_text_helper.h>
+
+void cairo_draw_text(const char *text, const char *font, int size, 
+                      cairo_surface_t *cs, int x, int y, double scale_x,
+                      double scale_y, double *return_scale_w,
+                      double *return_scale_h);

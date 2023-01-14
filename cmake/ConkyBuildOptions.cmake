@@ -212,6 +212,7 @@ dependent_option(BUILD_LUA_IMLIB2 "Build Imlib2 bindings for Lua" false
   "BUILD_X11;BUILD_IMLIB2" false
   "Imlib2 Lua bindings require X11 and Imlib2")
 option(BUILD_LUA_RSVG "Build rsvg bindings for Lua" false)
+option(BUILD_LUA_TEXT "Build Fontconfig Freetype and Harfbuzz bindings for Lua" false)
 
 option(BUILD_AUDACIOUS "Build audacious (music player) support" false)
 
