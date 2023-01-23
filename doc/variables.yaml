@@ -58,10 +58,10 @@ values:
   - name: adt746xfan
     desc: Fan speed from therm_adt746x.
   - name: alignc
+    default: 0
     desc: |-
       Align text to centre, with a shift of N (num) pixels. A
-      negative N (num) shifts to the right. Defaults to 0. So
-      a value of 0 is optional.
+      negative N (num) shifts to the right.
     args:
       - (num)
   - name: alignr
