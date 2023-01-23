@@ -65,7 +65,10 @@ values:
     args:
       - (num)
   - name: alignr
-    desc: Right-justify text, with space of N.
+    default: 0
+    desc: |-
+      Right-justify text, with a shift of N (num) pixels. A
+      negative N (num) shifts to the right.
     args:
       - (num)
   - name: apcupsd
