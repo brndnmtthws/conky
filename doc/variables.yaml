@@ -68,7 +68,8 @@ values:
     default: 0
     desc: |-
       Right-justify text, with a shift of N (num) pixels. A
-      negative N (num) shifts to the right.
+      negative N (num) is accepted, and actually makes no
+      difference.
     args:
       - (num)
   - name: apcupsd
