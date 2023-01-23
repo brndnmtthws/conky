@@ -775,8 +775,11 @@ values:
     desc: |-
       Hwmon sensor from sysfs (Linux 2.6). Parameter dev can be:
       1. Number. e.g `1` means hwmon1.
-      2. Module name. e.g. `k10temp` means the first hwmon device whose module
-      name is `k10temp.
+      2. The way the name is stated by the appropriate 
+         `/sys/class/hwmon/*/name` file. Which might be slightly 
+         different compared to the output of the lsmod command.
+         e.g. `nct6793` means the first hwmon device which lsmod
+         reffers to as `nct6775`.
       3. Omitted. Then the first hwmon device (hwmon0) will be used.
 
       Parameter type is either `in` or `vol` meaning voltage; `fan` meaning fan;
