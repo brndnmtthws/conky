@@ -45,7 +45,7 @@
     "@types/react": "^18.0.26",
     "autoprefixer": "^10.4.13",
     "cypress": "^12.3.0",
-    "eslint": "^8.32.0",
+    "eslint": "^8.33.0",
     "eslint-config-next": "^13.1.1",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-mdx": "^2.0.5",
