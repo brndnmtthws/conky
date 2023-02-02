@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@fontsource/fira-code": "^4.5.13",
-    "@fontsource/inter": "^4.5.14",
+    "@fontsource/inter": "^4.5.15",
     "@fontsource/newsreader": "^4.5.9",
     "@headlessui/react": "^1.7.7",
     "@mapbox/rehype-prism": "^0.8.0",
