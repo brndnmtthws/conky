@@ -36,9 +36,6 @@
 #ifdef BUILD_X11
 #include "x11.h"
 #endif /* BUILD_X11 */
-#ifdef BUILD_NCURSES
-#include <ncurses.h>
-#endif
 
 unsigned int adjust_colours(unsigned int);
 
@@ -79,40 +76,10 @@ public:
     return static_cast<unsigned long>(xcolor.pixel);
   }
 #endif /* BUILD_X11 */
-
-#ifdef BUILD_NCURSES
-  static Colour from_ncurses(int nccolor);
-
-  // Find the nearest ncurses color.
-  int to_ncurses() {
-    int nccolors[] = {
-      COLOR_WHITE,
-      COLOR_RED,
-      COLOR_GREEN,
-      COLOR_YELLOW,
-      COLOR_BLUE,
-      COLOR_MAGENTA,
-      COLOR_CYAN,
-      COLOR_BLACK,
-    };
-    int mindiff = INT_MAX;
-    int best_nccolor = nccolors[0];
-    for (int nccolor : nccolors) {
-      Colour other = Colour::from_ncurses(nccolor);
-      int diff = abs(red - other.red) +
-                 abs(green - other.green) +
-                 abs(blue - other.blue);
-
-      if (diff < mindiff) {
-        mindiff = diff;
-        best_nccolor = nccolor;
-      }
-    }
-    return best_nccolor;
-  }
-#endif /* BUILD_NCURSES */
 };
 
+
+extern Colour error_colour;
 
 Colour parse_color(const std::string &colour);
 // XXX: when everyone uses C++ strings, remove this C version
