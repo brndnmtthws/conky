@@ -27,6 +27,7 @@
  *
  */
 #include "gui.h"
+#include "colour-settings.h"
 #include "common.h"
 #include "config.h"
 #include "conky.h"
@@ -102,12 +103,6 @@ void own_window_setting::lua_setter(lua::state &l, bool init) {
     }
   }
 
-  ++s;
-}
-
-void colour_setting::lua_setter(lua::state &l, bool init) {
-  lua::stack_sentry s(l, -2);
-  Base::lua_setter(l, init);
   ++s;
 }
 }  // namespace priv
@@ -201,19 +196,8 @@ std::string gethostnamecxx() {
 conky::simple_config_setting<alignment> text_alignment("alignment", BOTTOM_LEFT,
                                                        false);
 
-//Colour white = Colour::argb32(0xffffffff);
-//Colour black = Colour::argb32(0xff000000);
-unsigned long white = 0xffffffff;
-unsigned long black = 0xff000000;
-
-priv::colour_setting color[10] = {{"color0", white}, {"color1", white},
-                                  {"color2", white}, {"color3", white},
-                                  {"color4", white}, {"color5", white},
-                                  {"color6", white}, {"color7", white},
-                                  {"color8", white}, {"color9", white}};
-priv::colour_setting default_color("default_color", white);
-priv::colour_setting default_shade_color("default_shade_color", black);
-priv::colour_setting default_outline_color("default_outline_color", black);
+priv::colour_setting default_shade_color("default_shade_color", black_argb32);
+priv::colour_setting default_outline_color("default_outline_color", black_argb32);
 
 conky::range_config_setting<int> border_inner_margin(
     "border_inner_margin", 0, std::numeric_limits<int>::max(), 3, true);
