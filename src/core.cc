@@ -761,7 +761,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
     Colour c = arg != nullptr ? parse_color(arg) : default_color.get(*state);
     obj->data.l = c.to_argb32();
     set_current_text_color(c);
-    init_pair(c.to_ncurses(), c.to_ncurses(), COLOR_BLACK);
   }
 #endif /* BUILD_NCURSES */
   obj->callbacks.print = &new_fg;

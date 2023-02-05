@@ -81,6 +81,7 @@ bool display_output_ncurses::initialize() {
 bool display_output_ncurses::shutdown() { return false; }
 
 void display_output_ncurses::set_foreground_color(Colour c) {
+  init_pair(c.to_ncurses(), c.to_ncurses(), COLOR_BLACK);
   attron(COLOR_PAIR(c.to_ncurses()));
 }
 
