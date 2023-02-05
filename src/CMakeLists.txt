@@ -244,12 +244,12 @@ if(BUILD_X11)
 endif(BUILD_X11)
 
 if(BUILD_GUI)
-  set(gui fonts.cc fonts.h gui.cc gui.h)
+  set(gui fonts.cc fonts.h gui.cc gui.h x11-color.cc x11-color.h)
   set(optional_sources ${optional_sources} ${gui})
 endif(BUILD_GUI)
 
 if(BUILD_WAYLAND)
-  set(wl_srcs wl.cc wl.h xdg-shell-protocol.c wlr-layer-shell-protocol.c x11-color.cc x11-color.h)
+  set(wl_srcs wl.cc wl.h xdg-shell-protocol.c wlr-layer-shell-protocol.c)
   set(optional_sources ${optional_sources} ${wl_srcs})
   # generate protocol implementations
   set(XDG_PROT_DEF "${Wayland_PROTOCOLS_DIR}/stable/xdg-shell/xdg-shell.xml")

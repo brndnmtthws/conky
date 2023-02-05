@@ -32,9 +32,9 @@
 #ifdef BUILD_X11
 #include "x11.h"
 #endif /*BUILD_X11*/
-#ifdef BUILD_WAYLAND
+#ifdef BUILD_GUI
 #include "x11-color.h"
-#endif /*BUILD_WAYLAND*/
+#endif /*BUILD_GUI*/
 #ifdef BUILD_NCURSES
 #include <ncurses.h>
 #endif /*BUILD_NCURSES*/
