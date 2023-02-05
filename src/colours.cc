@@ -113,31 +113,6 @@ Colour Colour::from_argb32(uint32_t argb) {
 
 Colour error_colour { 0xff, 0x00, 0x00, 0xff };
 
-#ifdef BUILD_NCURSES
-Colour Colour::from_ncurses(int nccolor) {
-    switch(nccolor) {
-      case COLOR_WHITE:
-        return {0xff, 0xff, 0xff, 0xff};
-      case COLOR_RED:
-        return {0xff, 0x00, 0x00, 0xff};
-      case COLOR_GREEN:
-        return {0x00, 0xff, 0x00, 0xff};
-      case COLOR_YELLOW:
-        return {0xff, 0xff, 0x00, 0xff};
-      case COLOR_BLUE:
-        return {0x00, 0x00, 0xff, 0xff};
-      case COLOR_MAGENTA:
-        return {0xff, 0x00, 0xff, 0xff};
-      case COLOR_CYAN:
-        return {0x00, 0xff, 0xff, 0xff};
-      case COLOR_BLACK:
-        return {0x00, 0x00, 0x00, 0xff};
-      default:
-        return error_colour;
-    }
-}
-#endif /*BUILD_NCURSES*/
-
 Colour parse_color(const char *name) {
   unsigned short r, g, b;
   size_t len = strlen(name);
