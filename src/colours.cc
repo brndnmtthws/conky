@@ -32,12 +32,7 @@
 #ifdef BUILD_X11
 #include "x11.h"
 #endif /*BUILD_X11*/
-#ifdef BUILD_GUI
 #include "x11-color.h"
-#endif /*BUILD_GUI*/
-#ifdef BUILD_NCURSES
-#include <ncurses.h>
-#endif /*BUILD_NCURSES*/
 
 /* precalculated: 31/255, and 63/255 */
 #define CONST_8_TO_5_BITS 0.12156862745098
@@ -90,7 +85,6 @@ unsigned int adjust_colours(unsigned int colour) {
   return colour;
 }
 
-#ifdef BUILD_GUI
 static int hex_nibble_value(char c) {
   if (c >= '0' && c <= '9') {
     return c - '0';
@@ -150,4 +144,3 @@ err:
 Colour parse_color(const std::string &colour) {
   return parse_color(colour.c_str());
 }
-#endif /*BUILD_GUI*/

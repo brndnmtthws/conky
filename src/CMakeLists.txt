@@ -48,6 +48,8 @@ set(conky_sources
     ${conky_sources}
     c++wrap.cc
     c++wrap.hh
+    colour-settings.cc
+    colour-settings.h
     colours.cc
     colours.h
     combine.cc
@@ -131,7 +133,10 @@ set(conky_sources
     update-cb.cc
     update-cb.hh
     logging.h
-    semaphore.hh)
+    semaphore.hh
+    x11-color.cc
+    x11-color.h
+    )
 
 # Platform specific sources
 if(OS_LINUX)
@@ -244,7 +249,7 @@ if(BUILD_X11)
 endif(BUILD_X11)
 
 if(BUILD_GUI)
-  set(gui fonts.cc fonts.h gui.cc gui.h x11-color.cc x11-color.h)
+  set(gui fonts.cc fonts.h gui.cc gui.h)
   set(optional_sources ${optional_sources} ${gui})
 endif(BUILD_GUI)
 

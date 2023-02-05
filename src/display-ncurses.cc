@@ -63,7 +63,6 @@ extern void init_ncurses_output() {}
 #ifdef BUILD_NCURSES
 
 #define COLORS_BUILTIN 8
-#define COLORS_CUSTOM 10
 
 Colour ncurses_colors[COLORS_BUILTIN + COLORS_CUSTOM] = {
     {0x00, 0x00, 0x00, 0xff}, // BLACK

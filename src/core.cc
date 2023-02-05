@@ -33,6 +33,7 @@
 #include "bsdapm.h"
 #include "build.h"
 #include "colours.h"
+#include "colour-settings.h"
 #include "combine.h"
 #include "diskio.h"
 #include "entropy.h"
