@@ -1,7 +1,22 @@
 $#include <cairo.h>
 $#include <libcairo_text_helper.h>
 
-void cairo_draw_text(const char *text, const char *font, int size, 
-                      cairo_surface_t *cs, int x, int y, double scale_x,
-                      double scale_y, double *return_scale_w,
-                      double *return_scale_h);
+typedef struct _FontData {
+  cairo_font_face_t *cairo_ft_face;
+  hb_font_t *hb_ft_font;
+  hb_face_t *hb_ft_face;
+  int font_size;
+  /* Internally the following two are pointers */
+  /* Stored here so they can be freed later */
+  FT_Library ft_library;
+  FT_Face ft_face;
+}FontData;
+
+FontData * cairo_text_hp_load_font(const char *font, int font_size);
+
+void cairo_text_hp_destroy_font(FontData *font);
+
+void cairo_text_hp_simple_show(cairo_t *cr, int x, int y, const char *text, FontData *font);
+
+void cairo_text_hp_intl_show(cairo_t *cr, int x, int y, const char *text, FontData *font,
+                             const char *direction, const char *script, const char *language);
