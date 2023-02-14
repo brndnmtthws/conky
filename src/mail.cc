@@ -249,8 +249,7 @@ static void update_mail_count(struct local_mail_s *mail) {
       /* . and .. are skipped */
       if (dirent->d_name[0] != '.') {
         mail->mail_count++;
-        mailflags = static_cast<char *>(
-            malloc(sizeof(char) * strlen(strrchr(dirent->d_name, ','))));
+        mailflags = strdup(dirent->d_name);
         if (mailflags == nullptr) {
           NORM_ERR("malloc");
           return;
