@@ -48,8 +48,8 @@ jobs:
             gawk \
             lcov \
             libaudclient-dev \
-            libc++-${{ matrix.compiler_version }}-dev \
-            libc++abi-${{ matrix.compiler_version }}-dev \
+            libc++-14-dev \
+            libc++abi-14-dev \
             libcairo2-dev \
             libcurl4-gnutls-dev \
             libcurl4-gnutls-dev \
