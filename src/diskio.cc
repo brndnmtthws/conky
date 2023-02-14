@@ -49,7 +49,7 @@ void clear_diskio_stats() {
     cur = stats.next;
     stats.next = stats.next->next;
     free_and_zero(cur->dev);
-    free(cur);
+    delete cur;
   }
 }
 

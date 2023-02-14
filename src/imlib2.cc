@@ -107,7 +107,7 @@ void cimlib_cleanup() {
   while (cur != nullptr) {
     last = cur;
     cur = last->next;
-    free(last);
+    delete last;
   }
   image_list_start = image_list_end = nullptr;
 }
