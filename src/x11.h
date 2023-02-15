@@ -48,7 +48,8 @@ enum window_type {
   TYPE_DOCK,
   TYPE_PANEL,
   TYPE_DESKTOP,
-  TYPE_OVERRIDE
+  TYPE_OVERRIDE,
+  TYPE_UTILITY
 };
 
 enum window_hints {

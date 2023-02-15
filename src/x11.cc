@@ -573,22 +573,23 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
 
       /* A window managed by the window manager.
        * Process hints and buttons. */
-      XSetWindowAttributes attrs = {ParentRelative,
-                                    0L,
-                                    0,
-                                    0L,
-                                    0,
-                                    0,
-                                    Always,
-                                    0L,
-                                    0L,
-                                    False,
-                                    StructureNotifyMask | ExposureMask |
-                                        ButtonPressMask | ButtonReleaseMask,
-                                    0L,
-                                    False,
-                                    0,
-                                    0};
+      XSetWindowAttributes attrs = {
+          ParentRelative,
+          0L,
+          0,
+          0L,
+          0,
+          0,
+          Always,
+          0L,
+          0L,
+          False,
+          StructureNotifyMask | ExposureMask | ButtonPressMask |
+              ButtonReleaseMask,
+          0L,
+          own_window_type.get(l) == TYPE_UTILITY ? True : False,
+          0,
+          0};
 
       XWMHints wmHint;
       Atom xa;
@@ -665,6 +666,11 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
           case TYPE_PANEL:
             prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
             fprintf(stderr, PACKAGE_NAME ": window type - panel\n");
+            fflush(stderr);
+            break;
+          case TYPE_UTILITY:
+            prop = ATOM(_NET_WM_WINDOW_TYPE_UTILITY);
+            fprintf(stderr, PACKAGE_NAME ": window type - utility\n");
             fflush(stderr);
             break;
           case TYPE_NORMAL:
@@ -839,9 +845,11 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
   }
 #endif /* OWN_WINDOW */
 #ifdef BUILD_MOUSE_EVENTS
-  /* it's not recommended to add event masks to special windows in X; causes a crash */
+  /* it's not recommended to add event masks to special windows in X; causes a
+   * crash */
   if (own_window_type.get(l) != TYPE_DESKTOP) {
-    input_mask |= ButtonPressMask | ButtonReleaseMask | PointerMotionMask | EnterWindowMask | LeaveWindowMask;
+    input_mask |= ButtonPressMask | ButtonReleaseMask | PointerMotionMask |
+                  EnterWindowMask | LeaveWindowMask;
   }
 #endif /* BUILD_MOUSE_EVENTS */
   XSelectInput(display, window.window, input_mask);
