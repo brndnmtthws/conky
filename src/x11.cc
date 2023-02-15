@@ -57,6 +57,7 @@
 #endif
 #ifdef BUILD_XSHAPE
 #include <X11/extensions/shape.h>
+#include <X11/extensions/Xfixes.h>
 #endif /* BUILD_XSHAPE */
 
 /* some basic X11 stuff */
@@ -591,6 +592,7 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
           0,
           0};
 
+
       XWMHints wmHint;
       Atom xa;
 
@@ -617,6 +619,12 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
       /* allow decorated windows to be given input focus by WM */
       wmHint.input = TEST_HINT(hints, HINT_UNDECORATED) ? False : True;
 #ifdef BUILD_XSHAPE
+      if (own_window_type.get(l) == TYPE_UTILITY) {
+        XRectangle rect;
+        XserverRegion region = XFixesCreateRegion(display, &rect, 1);
+        XFixesSetWindowShapeRegion(display, window.window, ShapeInput, 0, 0, region);
+        XFixesDestroyRegion(display, region);
+      }
       if (!wmHint.input) {
         /* allow only decorated windows to be given mouse input */
         int major_version;

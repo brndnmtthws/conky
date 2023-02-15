@@ -54,6 +54,7 @@
           xorg.libXft
           xorg.libXinerama
           xorg.libXdamage
+          xorg.libXfixes
         ];
       };
     };
