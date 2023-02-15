@@ -53,6 +53,7 @@
           xorg.libXext
           xorg.libXft
           xorg.libXinerama
+          xorg.libXdamage
         ];
       };
     };
