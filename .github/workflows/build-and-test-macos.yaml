@@ -29,6 +29,7 @@ jobs:
             librsvg \
             libxft \
             libxinerama \
+            libxfixes \
             lua \
             ninja
       - name: Checkout
