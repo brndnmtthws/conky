@@ -57,8 +57,10 @@
 #endif
 #ifdef BUILD_XSHAPE
 #include <X11/extensions/shape.h>
-#include <X11/extensions/Xfixes.h>
 #endif /* BUILD_XSHAPE */
+#ifdef BUILD_XFIXES
+#include <X11/extensions/Xfixes.h>
+#endif /* BUILD_XFIXES */
 
 /* some basic X11 stuff */
 Display *display = nullptr;
@@ -619,12 +621,14 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
       /* allow decorated windows to be given input focus by WM */
       wmHint.input = TEST_HINT(hints, HINT_UNDECORATED) ? False : True;
 #ifdef BUILD_XSHAPE
+#ifdef BUILD_XFIXES
       if (own_window_type.get(l) == TYPE_UTILITY) {
         XRectangle rect;
         XserverRegion region = XFixesCreateRegion(display, &rect, 1);
         XFixesSetWindowShapeRegion(display, window.window, ShapeInput, 0, 0, region);
         XFixesDestroyRegion(display, region);
       }
+#endif /* BUILD_XFIXES */
       if (!wmHint.input) {
         /* allow only decorated windows to be given mouse input */
         int major_version;
