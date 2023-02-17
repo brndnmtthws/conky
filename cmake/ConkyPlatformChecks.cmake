@@ -445,6 +445,10 @@ endif(BUILD_WAYLAND)
 # Otherwise, use the most recent Lua version
 pkg_search_module(LUA
   REQUIRED
+  lua>=5.4
+  lua5.4
+  lua-5.4
+  lua54
   lua>=5.3
   lua5.3
   lua-5.3
