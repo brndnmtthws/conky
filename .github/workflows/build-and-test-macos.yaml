@@ -31,8 +31,8 @@ jobs:
             libxft \
             libxinerama \
             lua \
-            ninja
-            pkg-config \
+            ninja \
+            pkg-config
       - name: Checkout
         uses: actions/checkout@v3
       - name: Configure with CMake
