@@ -393,7 +393,6 @@ include(FindLua)
 
 set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
 set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIR})
-link_directories(${LUA_LIBRARY_DIRS})
 include_directories(3rdparty/toluapp/include)
 
 if(BUILD_X11)
