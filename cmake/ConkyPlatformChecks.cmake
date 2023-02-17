@@ -389,18 +389,10 @@ if(BUILD_WAYLAND)
   set(conky_includes ${conky_includes} ${PANGOFT2_INCLUDE_DIRS})
 endif(BUILD_WAYLAND)
 
-# Otherwise, use the most recent Lua version
-pkg_search_module(LUA
-                  REQUIRED
-                  lua>=5.3
-                  lua5.3
-                  lua-5.3
-                  lua53
-                  lua5.2
-                  lua-5.2
-                  lua52)
+include(FindLua)
+
 set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
-set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIRS})
+set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIR})
 link_directories(${LUA_LIBRARY_DIRS})
 include_directories(3rdparty/toluapp/include)
 
@@ -409,7 +401,7 @@ if(BUILD_X11)
   if(BUILD_LUA_CAIRO)
     pkg_check_modules(CAIRO REQUIRED cairo>=1.14 cairo-xlib)
     set(luacairo_libs ${CAIRO_LIBRARIES} ${LUA_LIBRARIES})
-    set(luacairo_includes ${CAIRO_INCLUDE_DIRS} ${LUA_INCLUDE_DIRS})
+    set(luacairo_includes ${CAIRO_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
     find_program(APP_PATCH patch)
     if(NOT APP_PATCH)
       message(FATAL_ERROR "Unable to find program 'patch'")
@@ -420,13 +412,13 @@ if(BUILD_X11)
     set(luaimlib2_libs ${IMLIB2_LIBS} ${IMLIB2_LDFLAGS} ${LUA_LIBRARIES})
     set(luaimlib2_includes
         ${IMLIB2_INCLUDE_DIRS}
-        ${LUA_INCLUDE_DIRS}
+        ${LUA_INCLUDE_DIR}
         ${X11_INCLUDE_DIR})
   endif(BUILD_LUA_IMLIB2)
   if(BUILD_LUA_RSVG)
     pkg_check_modules(RSVG REQUIRED librsvg-2.0>=2.52)
     set(luarsvg_libs ${RSVG_LIBRARIES} ${LUA_LIBRARIES})
-    set(luarsvg_includes ${RSVG_INCLUDE_DIRS} ${LUA_INCLUDE_DIRS})
+    set(luarsvg_includes ${RSVG_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
   endif(BUILD_LUA_RSVG)
 endif(BUILD_X11)
 
