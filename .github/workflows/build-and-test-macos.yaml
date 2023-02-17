@@ -35,14 +35,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Configure with CMake
-        run: |
-          set -x
-          mkdir build
-          cd build
-          cmake .. -G Ninja                      \
-            -DMAINTAINER_MODE=ON                 \
-            -DBUILD_WAYLAND=OFF                  \
-            -DBUILD_TESTS=ON
+        working-directory: build
+        run: cmake .. -G Ninja                 \
+          -DMAINTAINER_MODE=ON                 \
+          -DBUILD_WAYLAND=OFF                  \
+          -DBUILD_TESTS=ON
       - name: Compile
         run: cmake --build build
       - name: Test
