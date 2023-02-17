@@ -132,11 +132,9 @@ conky::lua_traits<alignment>::Map conky::lua_traits<alignment>::map = {
 #ifdef OWN_WINDOW
 template <>
 conky::lua_traits<window_type>::Map conky::lua_traits<window_type>::map = {
-    {"normal", TYPE_NORMAL},
-    {"dock", TYPE_DOCK},
-    {"panel", TYPE_PANEL},
-    {"desktop", TYPE_DESKTOP},
-    {"override", TYPE_OVERRIDE}};
+    {"normal", TYPE_NORMAL},   {"dock", TYPE_DOCK},
+    {"panel", TYPE_PANEL},     {"desktop", TYPE_DESKTOP},
+    {"utility", TYPE_UTILITY}, {"override", TYPE_OVERRIDE}};
 
 template <>
 conky::lua_traits<window_hints>::Map conky::lua_traits<window_hints>::map = {
@@ -197,7 +195,8 @@ conky::simple_config_setting<alignment> text_alignment("alignment", BOTTOM_LEFT,
                                                        false);
 
 priv::colour_setting default_shade_color("default_shade_color", black_argb32);
-priv::colour_setting default_outline_color("default_outline_color", black_argb32);
+priv::colour_setting default_outline_color("default_outline_color",
+                                           black_argb32);
 
 conky::range_config_setting<int> border_inner_margin(
     "border_inner_margin", 0, std::numeric_limits<int>::max(), 3, true);

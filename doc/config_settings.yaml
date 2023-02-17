@@ -414,10 +414,12 @@ values:
   - name: own_window_type
     desc: |-
       if own_window is yes, you may specify type normal, desktop,
-      dock, panel or override. Desktop windows are special
+      dock, panel, utility or override. Desktop windows are special
       windows that have no window decorations; are always visible on your
       desktop; do not appear in your pager or taskbar; and are sticky across
-      all workspaces. Panel windows reserve space along a desktop edge, just
+      all workspaces. Utility windows are like desktop windows, 
+      except they appear above everything else rather than below.
+      Panel windows reserve space along a desktop edge, just
       like panels and taskbars, preventing maximized windows from
       overlapping them. The edge is chosen based on the alignment option.
       Override windows are not under the control of the window manager.

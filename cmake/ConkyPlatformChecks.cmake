@@ -42,6 +42,7 @@ else(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
 ac_search_libs(clock_gettime "time.h" CLOCK_GETTIME_LIB "rt")
+
 if(NOT DEFINED CLOCK_GETTIME_LIB)
   if(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")
     message(FATAL_ERROR "clock_gettime not found.")
@@ -49,6 +50,7 @@ if(NOT DEFINED CLOCK_GETTIME_LIB)
 else(NOT DEFINED CLOCK_GETTIME_LIB)
   set(HAVE_CLOCK_GETTIME 1)
 endif(NOT DEFINED CLOCK_GETTIME_LIB)
+
 set(conky_libs ${conky_libs} ${CLOCK_GETTIME_LIB})
 
 # standard path to search for includes
@@ -62,6 +64,7 @@ endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
 if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
   set(OS_FREEBSD true)
   set(conky_libs ${conky_libs} -lkvm -ldevstat -lintl -linotify)
+
   if(BUILD_IRC)
     set(conky_libs ${conky_libs} -lssl -lcrypto)
   endif(BUILD_IRC)
@@ -95,36 +98,36 @@ if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
 if(NOT OS_LINUX
-   AND NOT OS_FREEBSD
-   AND NOT OS_OPENBSD
-   AND NOT OS_DRAGONFLY
-   AND NOT OS_SOLARIS
-   AND NOT OS_HAIKU
-   AND NOT OS_DARWIN)
+  AND NOT OS_FREEBSD
+  AND NOT OS_OPENBSD
+  AND NOT OS_DRAGONFLY
+  AND NOT OS_SOLARIS
+  AND NOT OS_HAIKU
+  AND NOT OS_DARWIN)
   message(
     FATAL_ERROR
-      "Your platform, '${CMAKE_SYSTEM_NAME}', is not currently supported.  Patches are welcome."
-    )
+    "Your platform, '${CMAKE_SYSTEM_NAME}', is not currently supported.  Patches are welcome."
+  )
 endif(NOT
-      OS_LINUX
-      AND
-      NOT
-      OS_FREEBSD
-      AND
-      NOT
-      OS_OPENBSD
-      AND
-      NOT
-      OS_DRAGONFLY
-      AND
-      NOT
-      OS_SOLARIS
-      AND
-      NOT
-      OS_HAIKU
-      AND
-      NOT
-      OS_DARWIN)
+  OS_LINUX
+  AND
+  NOT
+  OS_FREEBSD
+  AND
+  NOT
+  OS_OPENBSD
+  AND
+  NOT
+  OS_DRAGONFLY
+  AND
+  NOT
+  OS_SOLARIS
+  AND
+  NOT
+  OS_HAIKU
+  AND
+  NOT
+  OS_DARWIN)
 
 # Check for soundcard header
 if(OS_LINUX)
@@ -143,21 +146,23 @@ endif(BUILD_I18N AND OS_DRAGONFLY)
 
 if(BUILD_I18N AND OS_DARWIN)
   find_path(LIBINTL_H_N libintl.h
-            PATHS /usr/local/opt/gettext/include
-                  /usr/include
-                  /usr/local/include
-                  /usr/local/opt/include)
+    PATHS /usr/local/opt/gettext/include
+    /usr/include
+    /usr/local/include
+    /usr/local/opt/include)
+
   if(LIBINTL_H_N)
     include_directories(${LIBINTL_H_N})
   else(LIBINTL_H_N)
     message(FATAL_ERROR "Unable to find libintl.h (try `brew install gettext`)")
   endif(LIBINTL_H_N)
+
   find_library(INTL_LIB
-               NAMES intl
-               PATHS /usr/local/opt/gettext/lib
-                     /usr/lib
-                     /usr/local/lib
-                     /usr/local/opt/lib)
+    NAMES intl
+    PATHS /usr/local/opt/gettext/lib
+    /usr/lib
+    /usr/local/lib
+    /usr/local/opt/lib)
   set(conky_libs ${conky_libs} ${INTL_LIB})
 endif(BUILD_I18N AND OS_DARWIN)
 
@@ -183,28 +188,34 @@ endif(BUILD_MATH)
 
 if(BUILD_ICAL)
   check_include_files(libical/ical.h ICAL_H_)
+
   if(NOT ICAL_H_)
     message(FATAL_ERROR "Unable to find libical")
   endif(NOT ICAL_H_)
+
   set(conky_libs ${conky_libs} -lical)
 endif(BUILD_ICAL)
 
 if(BUILD_IRC)
   find_path(IRC_H_N libircclient.h PATHS /usr/include/libircclient)
   find_path(IRC_H_S libircclient.h PATHS /usr/include)
+
   if(IRC_H_N)
     include_directories(${IRC_H_N})
   endif(IRC_H_N)
+
   if(IRC_H_N OR IRC_H_S)
     set(IRC_H_ true)
   else()
     message(FATAL_ERROR "Unable to find libircclient")
   endif(IRC_H_N OR IRC_H_S)
+
   set(conky_libs ${conky_libs} -lircclient)
 endif(BUILD_IRC)
 
 if(BUILD_IPV6)
   find_file(IF_INET6 if_inet6 PATHS /proc/net)
+
   if(NOT IF_INET6)
     message(WARNING "/proc/net/if_inet6 unavailable")
   endif(NOT IF_INET6)
@@ -219,61 +230,74 @@ endif(BUILD_HTTP)
 if(BUILD_NCURSES)
   set(CURSES_NEED_NCURSES TRUE)
   include(FindCurses)
+
   if(NOT CURSES_FOUND)
     message(FATAL_ERROR "Unable to find ncurses library")
   endif(NOT CURSES_FOUND)
+
   set(conky_libs ${conky_libs} ${CURSES_LIBRARIES})
   set(conky_includes ${conky_includes} ${CURSES_INCLUDE_DIR})
 endif(BUILD_NCURSES)
 
 if(BUILD_MYSQL)
   find_path(mysql_INCLUDE_PATH
-            mysql.h
-            ${INCLUDE_SEARCH_PATH}
-            /usr/include/mysql
-            /usr/local/include/mysql)
+    mysql.h
+    ${INCLUDE_SEARCH_PATH}
+    /usr/include/mysql
+    /usr/local/include/mysql)
+
   if(NOT mysql_INCLUDE_PATH)
     message(FATAL_ERROR "Unable to find mysql.h")
   endif(NOT mysql_INCLUDE_PATH)
+
   set(conky_includes ${conky_includes} ${mysql_INCLUDE_PATH})
   find_library(MYSQLCLIENT_LIB
-               NAMES mysqlclient
-               PATHS /usr/lib
-                     /usr/lib64
-                     /usr/lib/mysql
-                     /usr/lib64/mysql
-                     /usr/local/lib
-                     /usr/local/lib64
-                     /usr/local/lib/mysql
-                     /usr/local/lib64/mysql)
+    NAMES mysqlclient
+    PATHS /usr/lib
+    /usr/lib64
+    /usr/lib/mysql
+    /usr/lib64/mysql
+    /usr/local/lib
+    /usr/local/lib64
+    /usr/local/lib/mysql
+    /usr/local/lib64/mysql)
+
   if(NOT MYSQLCLIENT_LIB)
     message(FATAL_ERROR "Unable to find mysqlclient library")
   endif(NOT MYSQLCLIENT_LIB)
+
   set(conky_libs ${conky_libs} ${MYSQLCLIENT_LIB})
 endif(BUILD_MYSQL)
 
 if(BUILD_WLAN AND OS_LINUX)
   set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
   check_include_files(iwlib.h IWLIB_H)
+
   if(NOT IWLIB_H)
     message(FATAL_ERROR "Unable to find iwlib.h")
   endif(NOT IWLIB_H)
+
   find_library(IWLIB_LIB NAMES iw)
+
   if(NOT IWLIB_LIB)
     message(FATAL_ERROR "Unable to find libiw.so")
   endif(NOT IWLIB_LIB)
+
   set(conky_libs ${conky_libs} ${IWLIB_LIB})
   check_function_exists(iw_sockets_open IWLIB_SOCKETS_OPEN_FUNC)
 endif(BUILD_WLAN AND OS_LINUX)
 
 if(BUILD_PORT_MONITORS)
   check_function_exists(getnameinfo HAVE_GETNAMEINFO)
+
   if(NOT HAVE_GETNAMEINFO)
     message(FATAL_ERROR "could not find getnameinfo()")
   endif(NOT HAVE_GETNAMEINFO)
+
   check_include_files(
     "netdb.h;netinet/in.h;netinet/tcp.h;sys/socket.h;arpa/inet.h"
     HAVE_PORTMON_HEADERS)
+
   if(NOT HAVE_PORTMON_HEADERS)
     message(FATAL_ERROR "missing needed network header(s) for port monitoring")
   endif(NOT HAVE_PORTMON_HEADERS)
@@ -283,15 +307,18 @@ endif(BUILD_PORT_MONITORS)
 if(BUILD_ICONV)
   check_include_files(iconv.h HAVE_ICONV_H)
   find_library(ICONV_LIBRARY NAMES iconv)
+
   if(NOT ICONV_LIBRARY)
     # maybe iconv() is provided by libc
     set(ICONV_LIBRARY ""
-        CACHE FILEPATH
-              "Path to the iconv library, if iconv is not provided by libc"
-        FORCE)
+      CACHE FILEPATH
+      "Path to the iconv library, if iconv is not provided by libc"
+      FORCE)
   endif(NOT ICONV_LIBRARY)
+
   set(CMAKE_REQUIRED_LIBRARIES ${ICONV_LIBRARY})
   check_function_exists(iconv ICONV_FUNC)
+
   if(HAVE_ICONV_H AND ICONV_FUNC)
     set(conky_includes ${conky_includes} ${ICONV_INCLUDE_DIR})
     set(conky_libs ${conky_libs} ${ICONV_LIBRARY})
@@ -304,6 +331,7 @@ endif(BUILD_ICONV)
 if(BUILD_X11)
   include(FindX11)
   find_package(X11)
+
   if(X11_FOUND)
     set(conky_includes ${conky_includes} ${X11_INCLUDE_DIR})
     set(conky_libs ${conky_libs} ${X11_LIBRARIES})
@@ -313,9 +341,11 @@ if(BUILD_X11)
       if(NOT X11_Xdamage_FOUND)
         message(FATAL_ERROR "Unable to find Xdamage library")
       endif(NOT X11_Xdamage_FOUND)
+
       if(NOT X11_Xfixes_FOUND)
         message(FATAL_ERROR "Unable to find Xfixes library")
       endif(NOT X11_Xfixes_FOUND)
+
       set(conky_libs ${conky_libs} ${X11_Xdamage_LIB} ${X11_Xfixes_LIB})
     endif(BUILD_XDAMAGE)
 
@@ -323,6 +353,7 @@ if(BUILD_X11)
       if(NOT X11_Xshape_FOUND)
         message(FATAL_ERROR "Unable to find Xshape library")
       endif(NOT X11_Xshape_FOUND)
+
       set(conky_libs ${conky_libs} ${X11_Xshape_LIB})
     endif(BUILD_XSHAPE)
 
@@ -334,9 +365,11 @@ if(BUILD_X11)
       else(FREETYPE_INCLUDE_DIR_freetype2)
         message(FATAL_ERROR "Unable to find freetype library")
       endif(FREETYPE_INCLUDE_DIR_freetype2)
+
       if(NOT X11_Xft_FOUND)
         message(FATAL_ERROR "Unable to find Xft library")
       endif(NOT X11_Xft_FOUND)
+
       set(conky_libs ${conky_libs} ${X11_Xft_LIB})
     endif(BUILD_XFT)
 
@@ -345,8 +378,27 @@ if(BUILD_X11)
       if(NOT X11_Xext_FOUND)
         message(FATAL_ERROR "Unable to find Xext library (needed for Xdbe)")
       endif(NOT X11_Xext_FOUND)
+
       set(conky_libs ${conky_libs} ${X11_Xext_LIB})
     endif(BUILD_XDBE)
+
+    # check for Xinerama
+    if(BUILD_XINERAMA)
+      if(NOT X11_Xinerama_FOUND)
+        message(FATAL_ERROR "Unable to find Xinerama library")
+      endif(NOT X11_Xinerama_FOUND)
+
+      set(conky_libs ${conky_libs} ${X11_Xinerama_LIB})
+    endif(BUILD_XINERAMA)
+
+    # check for Xfixes
+    if(BUILD_XFIXES)
+      if(NOT X11_Xfixes_FOUND)
+        message(FATAL_ERROR "Unable to find Xfixes library")
+      endif(NOT X11_Xfixes_FOUND)
+
+      set(conky_libs ${conky_libs} ${X11_Xfixes_LIB})
+    endif(BUILD_XFIXES)
   else(X11_FOUND)
     message(FATAL_ERROR "Unable to find X11 library")
   endif(X11_FOUND)
@@ -360,6 +412,7 @@ if(BUILD_WAYLAND)
   find_package(PkgConfig)
 
   pkg_check_modules(wayland-protocols QUIET wayland-protocols>=1.13)
+
   if(Wayland_FOUND AND wayland-protocols_FOUND)
     # find Wayland protocols
     pkg_get_variable(Wayland_PROTOCOLS_DIR wayland-protocols pkgdatadir)
@@ -402,10 +455,12 @@ if(BUILD_X11)
     set(luacairo_libs ${CAIRO_LIBRARIES} ${LUA_LIBRARIES})
     set(luacairo_includes ${CAIRO_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
     find_program(APP_PATCH patch)
+
     if(NOT APP_PATCH)
       message(FATAL_ERROR "Unable to find program 'patch'")
     endif(NOT APP_PATCH)
   endif(BUILD_LUA_CAIRO)
+
   if(BUILD_LUA_IMLIB2)
     pkg_search_module(IMLIB2 REQUIRED imlib2 Imlib2)
     set(luaimlib2_libs ${IMLIB2_LIBS} ${IMLIB2_LDFLAGS} ${LUA_LIBRARIES})
@@ -414,6 +469,7 @@ if(BUILD_X11)
         ${LUA_INCLUDE_DIR}
         ${X11_INCLUDE_DIR})
   endif(BUILD_LUA_IMLIB2)
+
   if(BUILD_LUA_RSVG)
     pkg_check_modules(RSVG REQUIRED librsvg-2.0>=2.52)
     set(luarsvg_libs ${RSVG_LIBRARIES} ${LUA_LIBRARIES})
@@ -424,17 +480,19 @@ endif(BUILD_X11)
 if(BUILD_AUDACIOUS)
   set(WANT_GLIB true)
   pkg_check_modules(NEW_AUDACIOUS audacious>=1.4.0)
+
   if(NEW_AUDACIOUS_FOUND)
     pkg_check_modules(AUDACIOUS REQUIRED audclient>=1.4.0)
     pkg_check_modules(DBUS_GLIB REQUIRED dbus-glib-1)
   else(NEW_AUDACIOUS_FOUND)
     pkg_check_modules(AUDACIOUS REQUIRED audacious<1.4.0)
   endif(NEW_AUDACIOUS_FOUND)
+
   set(conky_libs ${conky_libs} ${AUDACIOUS_LIBRARIES} ${DBUS_GLIB_LIBRARIES})
   set(conky_includes
-      ${conky_includes}
-      ${AUDACIOUS_INCLUDE_DIRS}
-      ${DBUS_GLIB_INCLUDE_DIRS})
+    ${conky_includes}
+    ${AUDACIOUS_INCLUDE_DIRS}
+    ${DBUS_GLIB_INCLUDE_DIRS})
 endif(BUILD_AUDACIOUS)
 
 if(BUILD_XMMS2)
@@ -455,6 +513,7 @@ endif(BUILD_RSS)
 if(BUILD_NVIDIA)
   find_path(XNVCtrl_INCLUDE_PATH NVCtrl/NVCtrl.h ${INCLUDE_SEARCH_PATH})
   find_library(XNVCtrl_LIB NAMES XNVCtrl)
+
   if(XNVCtrl_INCLUDE_PATH AND XNVCtrl_LIB)
     set(XNVCtrl_FOUND true)
     set(conky_libs ${conky_libs} ${XNVCtrl_LIB})
@@ -503,9 +562,11 @@ endif(WANT_CURL)
 
 if(WANT_LIBXML2)
   include(FindLibXml2)
+
   if(NOT LIBXML2_FOUND)
     message(FATAL_ERROR "Unable to find libxml2 library")
   endif(NOT LIBXML2_FOUND)
+
   set(conky_libs ${conky_libs} ${LIBXML2_LIBRARIES})
   set(conky_includes ${conky_includes} ${LIBXML2_INCLUDE_DIR})
 endif(WANT_LIBXML2)
@@ -518,9 +579,9 @@ if(BUILD_DOCS)
   if(NOT APP_PANDOC)
     message(FATAL_ERROR "Unable to find program 'pandoc'")
   endif(NOT APP_PANDOC)
+
   mark_as_advanced(APP_PANDOC)
 endif(BUILD_DOCS)
-
 
 if(BUILD_DOCS OR BUILD_EXTRAS)
   # Python3 with Jinja2 and PyYaml required for manpage generation.
@@ -560,11 +621,11 @@ endif(CMAKE_BUILD_TYPE MATCHES "Debug")
 # since start of month
 if(DEBUG)
   execute_process(COMMAND ${APP_GIT} --git-dir=${CMAKE_CURRENT_SOURCE_DIR}/.git
-                          log --since=${VERSION_MAJOR}-${VERSION_MINOR}-01
-                          --pretty=oneline
-                  COMMAND ${APP_WC} -l
-                  COMMAND ${APP_AWK} "{print $1}"
-                  RESULT_VARIABLE RETVAL
-                  OUTPUT_VARIABLE COMMIT_COUNT
-                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+    log --since=${VERSION_MAJOR}-${VERSION_MINOR}-01
+    --pretty=oneline
+    COMMAND ${APP_WC} -l
+    COMMAND ${APP_AWK} "{print $1}"
+    RESULT_VARIABLE RETVAL
+    OUTPUT_VARIABLE COMMIT_COUNT
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif(DEBUG)
