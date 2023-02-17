@@ -46,7 +46,14 @@ if(BUILD_X11)
 
   if(BUILD_LUA_IMLIB2)
     include_directories(${luaimlib2_includes} ${CMAKE_CURRENT_SOURCE_DIR})
-    wrap_tolua(luaimlib2_src imlib2.pkg)
+    include(CMakePrintHelpers)
+    cmake_print_variables(IMLIB2_VERSION)
+
+    if(IMLIB2_VERSION VERSION_GREATER_EQUAL "1.10.0")
+      wrap_tolua(luaimlib2_src imlib2.pkg)
+    else(IMLIB2_VERSION VERSION_GREATER_EQUAL "1.10.0")
+      wrap_tolua(luaimlib2_src imlib2-pre1.10.pkg)
+    endif(IMLIB2_VERSION VERSION_GREATER_EQUAL "1.10.0")
 
     add_library(conky-imlib2 SHARED ${luaimlib2_src})
     set_target_properties(conky-imlib2 PROPERTIES OUTPUT_NAME "imlib2")
