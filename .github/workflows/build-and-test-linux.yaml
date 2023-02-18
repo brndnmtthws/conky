@@ -29,6 +29,9 @@ jobs:
           - 13
           - 14
         exclude:
+          - os: ubuntu-20.04
+            compiler: gcc
+            compiler_version: 12
           - compiler: gcc
             compiler_version: 13
           - compiler: gcc
