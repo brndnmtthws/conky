@@ -27,9 +27,9 @@
  *
  */
 #include <vector>
+#include "colours.h"
 #include "conky.h"
 #include "core.h"
-#include "colours.h"
 #include "display-output.hh"
 #include "logging.h"
 #include "specials.h"
@@ -190,7 +190,7 @@ void parse_scroll_arg(struct text_object *obj, const char *arg,
     sd->text[0] = 0;
   }
 
-  strncat(sd->text, arg + n1, strlen(arg + n1));
+  strncat(sd->text, arg + n1, max_user_text.get(*state) - n1);
   sd->start = sd->direction == SCROLL_WAIT ? strlen(sd->text) : 0;
   obj->sub =
       static_cast<struct text_object *>(malloc(sizeof(struct text_object)));
