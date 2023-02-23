@@ -37,8 +37,6 @@
 #include "x11.h"
 #endif /* BUILD_X11 */
 
-unsigned int adjust_colours(unsigned int);
-
 struct Colour {
   uint8_t red;
   uint8_t green;

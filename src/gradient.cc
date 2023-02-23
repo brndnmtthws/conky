@@ -27,82 +27,17 @@
  *
  */
 #include "gradient.h"
+#include "colours.h"
 #include "conky.h"
 #include "logging.h"
 
-#ifdef BUILD_X11
-#include "gui.h"
-#include "x11.h"
-#endif /* BUILD_X11 */
-#ifdef BUILD_WAYLAND
-#include "wl.h"
-#endif /*BUILD_WAYLAND*/
-
 namespace conky {
-bool gradient_factory::is_set = false;
-short gradient_factory::colour_depth = 0;
-long gradient_factory::mask[3];
-short gradient_factory::shift[3];
-
 gradient_factory::gradient_factory(int width, Colour first_colour,
                                    Colour last_colour) {
   // Make sure the width is always at least 2
   this->width = std::max(2, width);
   this->first_colour = first_colour;
   this->last_colour = last_colour;
-
-  if (!is_set) {
-    setup_colour_depth();
-    setup_shifts();
-    setup_masks();
-    is_set = true;
-  }
-}
-
-void gradient_factory::setup_shifts() {
-  shift[0] = (2 * colour_depth / 3 + colour_depth % 3);
-  shift[1] = (colour_depth / 3);
-  shift[2] = 0;
-}
-
-void gradient_factory::setup_masks() {
-  mask[0] = mask[1] = mask[2] = 0;
-
-  for (int i = (colour_depth / 3) - 1; i >= 0; i--) {
-    mask[0] |= 1 << i;
-    mask[1] |= 1 << i;
-    mask[2] |= 1 << i;
-  }
-
-  if (colour_depth % 3 == 1) { mask[1] |= 1 << (colour_depth / 3); }
-
-  for (int i = 0; i < 3; i++) { mask[i] = mask[i] << shift[i]; }
-}
-
-void gradient_factory::setup_colour_depth() {
-#ifdef BUILD_WAYLAND
-  if (state == nullptr || out_to_wayland.get(*state)) {
-    colour_depth = 24;
-  } else
-#endif /* BUILD_WAYLAND */
-#ifdef BUILD_X11
-  if (state == nullptr) {  // testing purposes
-    colour_depth = 24;
-  } else if (out_to_x.get(*state)) {
-    if(display != nullptr) {
-      colour_depth = DisplayPlanes(display, screen);
-    }
-  } else
-#endif /* BUILD_X11 */
-  {
-    colour_depth = 16;
-  }
-
-  if (colour_depth != 24 && colour_depth != 16) {
-    NORM_ERR(
-        "using non-standard colour depth, "
-        "gradients may look like a lolly-pop");
-  }
 }
 
 void gradient_factory::convert_from_rgb(Colour original, long *array) {

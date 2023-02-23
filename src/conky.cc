@@ -1311,16 +1311,15 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             if (current->graph != nullptr) {
               std::unique_ptr<Colour[]> tmpcolour;
 
-              if (current->last_colour != 0 || current->first_colour != 0) {
-                auto factory = create_gradient_factory(
-                    w, Colour::from_argb32(current->last_colour),
-                    Colour::from_argb32(current->first_colour));
+              if (current->colours_set) {
+                auto factory = create_gradient_factory(w, current->last_colour,
+                                                       current->first_colour);
                 tmpcolour = factory->create_gradient();
                 delete factory;
               }
               colour_idx = 0;
               for (i = w - 2; i > -1; i--) {
-                if (current->last_colour != 0 || current->first_colour != 0) {
+                if (current->colours_set) {
                   if (current->tempgrad != 0) {
                     set_foreground_color(tmpcolour[static_cast<int>(
                         static_cast<float>(w - 2) -

@@ -66,19 +66,10 @@ class gradient_factory {
   static long get_hue(long *const scaled, long chroma, long value);
   static long get_intermediate(long hue, long chroma);
 
-  static short colour_depth;
-  static long mask[3];
-  static short shift[3];
-
  private:
   int width;
   Colour first_colour;
   Colour last_colour;
-
-  static bool is_set;
-  static void setup_colour_depth();
-  static void setup_masks();
-  static void setup_shifts();
 };
 
 class rgb_gradient_factory : public gradient_factory {
