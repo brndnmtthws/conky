@@ -407,9 +407,8 @@ int dpi_scale(int value) {
 }
 
 #ifdef BUILD_GUI
-conky::gradient_factory *create_gradient_factory(int width,
-                                                 unsigned long first_colour,
-                                                 unsigned long last_colour) {
+conky::gradient_factory *create_gradient_factory(int width, Colour first_colour,
+                                                 Colour last_colour) {
   switch (graph_gradient_mode.get(*state)) {
     case RGB_GRADIENT:
       return new conky::rgb_gradient_factory(width, first_colour, last_colour);
@@ -1019,11 +1018,6 @@ static inline void set_foreground_color(Colour c) {
   for (auto output : display_outputs()) output->set_foreground_color(c);
 }
 
-static inline void set_foreground_color_rgb(unsigned long rgb) {
-  Colour c = Colour::from_argb32(rgb);
-  set_foreground_color(c);
-}
-
 static void draw_string(const char *s) {
   int i;
   int i2;
@@ -1315,11 +1309,12 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 
             /* in case we don't have a graph yet */
             if (current->graph != nullptr) {
-              std::unique_ptr<unsigned long[]> tmpcolour;
+              std::unique_ptr<Colour[]> tmpcolour;
 
               if (current->last_colour != 0 || current->first_colour != 0) {
-                auto factory = create_gradient_factory(w, current->last_colour,
-                                                       current->first_colour);
+                auto factory = create_gradient_factory(
+                    w, Colour::from_argb32(current->last_colour),
+                    Colour::from_argb32(current->first_colour));
                 tmpcolour = factory->create_gradient();
                 delete factory;
               }
@@ -1327,13 +1322,13 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
               for (i = w - 2; i > -1; i--) {
                 if (current->last_colour != 0 || current->first_colour != 0) {
                   if (current->tempgrad != 0) {
-                    set_foreground_color_rgb(tmpcolour[static_cast<int>(
+                    set_foreground_color(tmpcolour[static_cast<int>(
                         static_cast<float>(w - 2) -
                         current->graph[j] * (w - 2) /
                             std::max(static_cast<float>(current->scale),
                                      1.0F))]);
                   } else {
-                    set_foreground_color_rgb(tmpcolour[colour_idx++]);
+                    set_foreground_color(tmpcolour[colour_idx++]);
                   }
                 }
                 /* this is mugfugly, but it works */

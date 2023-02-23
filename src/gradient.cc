@@ -44,8 +44,8 @@ short gradient_factory::colour_depth = 0;
 long gradient_factory::mask[3];
 short gradient_factory::shift[3];
 
-gradient_factory::gradient_factory(int width, unsigned long first_colour,
-                                   unsigned long last_colour) {
+gradient_factory::gradient_factory(int width, Colour first_colour,
+                                   Colour last_colour) {
   // Make sure the width is always at least 2
   this->width = std::max(2, width);
   this->first_colour = first_colour;
@@ -105,31 +105,29 @@ void gradient_factory::setup_colour_depth() {
   }
 }
 
-void gradient_factory::convert_from_rgb(long original, long *array) {
+void gradient_factory::convert_from_rgb(Colour original, long *array) {
   long scaled[3];
 
-  for (int i = 0; i < 3; i++) {
-    auto value = (original & mask[i]) >> shift[i];
-    scaled[i] = value * SCALE;
-  }
+  scaled[0] = original.red * SCALE;
+  scaled[1] = original.green * SCALE;
+  scaled[2] = original.blue * SCALE;
   convert_from_scaled_rgb(scaled, array);
 }
 
-int gradient_factory::convert_to_rgb(long *const array) {
+Colour gradient_factory::convert_to_rgb(long *const array) {
   long scaled_rgb[3];
-  int rgb = 0;
+  Colour c;
 
   convert_to_scaled_rgb(array, scaled_rgb);
-  for (int i = 0; i < 3; i++) {
-    auto value = scaled_rgb[i] / SCALE;
-    rgb |= value << shift[i];
-  }
+  c.red = scaled_rgb[0] / SCALE;
+  c.green = scaled_rgb[1] / SCALE;
+  c.blue = scaled_rgb[2] / SCALE;
 
-  return rgb;
+  return c;
 }
 
 gradient_factory::colour_array gradient_factory::create_gradient() {
-  colour_array colours(new unsigned long[width]);
+  colour_array colours(new Colour[width]);
 
   long first_converted[3];
   long last_converted[3];
