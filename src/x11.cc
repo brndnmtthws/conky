@@ -515,6 +515,7 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
       depth = CopyFromParent;
       visual = CopyFromParent;
 #ifdef BUILD_ARGB
+      have_argb_visual = false;
     }
 #endif /* BUILD_ARGB */
 
