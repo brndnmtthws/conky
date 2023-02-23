@@ -103,11 +103,6 @@ TEST_CASE(
     delete factory;
   }
 
-/*
- * Due to lack of precision, the HSV and HCL functions are not reversible
- * if color depth is less than 24-bit
- */
-#ifdef BUILD_X11
   SECTION("hsv_gradient_factory") {
     long tmp[3];
     auto factory = new conky::hsv_gradient_factory(width, colour, colour);
@@ -129,5 +124,4 @@ TEST_CASE(
 
     delete factory;
   }
-#endif
 }
