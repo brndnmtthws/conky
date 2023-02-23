@@ -34,6 +34,9 @@
 #include "gui.h"
 #include "x11.h"
 #endif /* BUILD_X11 */
+#ifdef BUILD_WAYLAND
+#include "wl.h"
+#endif /*BUILD_WAYLAND*/
 
 namespace conky {
 bool gradient_factory::is_set = false;
@@ -77,11 +80,18 @@ void gradient_factory::setup_masks() {
 }
 
 void gradient_factory::setup_colour_depth() {
+#ifdef BUILD_WAYLAND
+  if (state == nullptr || out_to_wayland.get(*state)) {
+    colour_depth = 24;
+  } else
+#endif /* BUILD_WAYLAND */
 #ifdef BUILD_X11
   if (state == nullptr) {  // testing purposes
     colour_depth = 24;
   } else if (out_to_x.get(*state)) {
-    colour_depth = DisplayPlanes(display, screen);
+    if(display != nullptr) {
+      colour_depth = DisplayPlanes(display, screen);
+    }
   } else
 #endif /* BUILD_X11 */
   {
