@@ -409,7 +409,7 @@ namespace {
 void do_set_background(Window win, uint8_t alpha) {
   Colour colour = background_colour.get(*state);
   colour.alpha = alpha;
-  unsigned long xcolor = colour.to_x11_color(display, screen);
+  unsigned long xcolor = colour.to_x11_color(display, screen, true);
   XSetWindowBackground(display, win, xcolor);
 }
 }  // namespace
