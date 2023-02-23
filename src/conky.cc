@@ -1019,6 +1019,11 @@ static inline void set_foreground_color(Colour c) {
   for (auto output : display_outputs()) output->set_foreground_color(c);
 }
 
+static inline void set_foreground_color_rgb(unsigned long rgb) {
+  Colour c = Colour::from_argb32(rgb);
+  set_foreground_color(c);
+}
+
 static void draw_string(const char *s) {
   int i;
   int i2;
@@ -1283,7 +1288,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
         case GRAPH:
           if (display_output() && display_output()->graphical()) {
             int h, by, i = 0, j = 0;
-            //int colour_idx = 0;
+            int colour_idx = 0;
             Colour last_colour = current_color;
             if (cur_x - text_start_x > mw && mw > 0) { break; }
             h = current->height;
@@ -1318,18 +1323,18 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
                 tmpcolour = factory->create_gradient();
                 delete factory;
               }
-              //colour_idx = 0;
+              colour_idx = 0;
               for (i = w - 2; i > -1; i--) {
                 if (current->last_colour != 0 || current->first_colour != 0) {
-                  /*if (current->tempgrad != 0) {
-                    set_foreground_color(tmpcolour[static_cast<int>(
+                  if (current->tempgrad != 0) {
+                    set_foreground_color_rgb(tmpcolour[static_cast<int>(
                         static_cast<float>(w - 2) -
                         current->graph[j] * (w - 2) /
                             std::max(static_cast<float>(current->scale),
                                      1.0F))]);
                   } else {
-                    set_foreground_color(tmpcolour[colour_idx++]);
-                  }*/
+                    set_foreground_color_rgb(tmpcolour[colour_idx++]);
+                  }
                 }
                 /* this is mugfugly, but it works */
                 if (display_output()) {
