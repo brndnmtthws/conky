@@ -642,8 +642,8 @@ int display_output_x11::calc_text_width(const char *s) {
 void display_output_x11::draw_string_at(int x, int y, const char *s, int w) {
 #ifdef BUILD_XFT
   if (use_xft.get(*state)) {
-    XColor c;
-    XftColor c2;
+    XColor c{};
+    XftColor c2{};
 
     c.pixel = current_color.to_x11_color(display, screen);
     // query color on custom colormap
