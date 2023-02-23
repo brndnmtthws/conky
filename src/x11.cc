@@ -68,6 +68,10 @@ Display *display = nullptr;
 /* Window stuff */
 struct conky_x11_window window;
 
+#ifdef BUILD_ARGB
+bool have_argb_visual;
+#endif /* BUILD_ARGB */
+
 conky::simple_config_setting<std::string> display_name("display", std::string(),
                                                        false);
 

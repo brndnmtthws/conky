@@ -41,10 +41,6 @@
 #include <iostream>
 #endif
 
-#ifdef BUILD_ARGB
-bool have_argb_visual;
-#endif /* BUILD_ARGB */
-
 /* basic display attributes */
 int display_width;
 int display_height;
