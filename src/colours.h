@@ -61,27 +61,35 @@ public:
   static Colour from_argb32(uint32_t argb);
 
 #ifdef BUILD_X11
-  unsigned long to_x11_color(Display *display, int screen) {
-    if(display == nullptr) {
+  unsigned long to_x11_color(Display *display, int screen,
+                             bool premultiply = false) {
+    if (display == nullptr) {
       /* cannot work if display is not open */
       return 0;
     }
 
-    XColor xcolor;
-    xcolor.pixel = 0;
+    XColor xcolor{};
     xcolor.red = red * 257;
     xcolor.green = green * 257;
     xcolor.blue = blue * 257;
     if (XAllocColor(display, DefaultColormap(display, screen), &xcolor) == 0) {
-      //NORM_ERR("can't allocate X color");
+      // NORM_ERR("can't allocate X color");
       return 0;
     }
 
-    return static_cast<unsigned long>(xcolor.pixel);
+    unsigned long pixel = static_cast<unsigned long>(xcolor.pixel) & 0xffffff;
+#ifdef BUILD_ARGB
+    if (have_argb_visual) {
+      if (premultiply)
+        pixel = (red * alpha / 255) << 16 | (green * alpha / 255) << 8 |
+                (blue * alpha / 255);
+      pixel |= ((unsigned long)alpha << 24);
+    }
+#endif /* BUILD_ARGB */
+    return pixel;
   }
 #endif /* BUILD_X11 */
 };
-
 
 extern Colour error_colour;
 

@@ -29,14 +29,9 @@
 #include "x11.h"
 #endif /* BUILD_X11 */
 
+#include "colour-settings.h"
 #include "colours.h"
 #include "setting.hh"
-#include "colour-settings.h"
-
-#if defined(BUILD_ARGB) && defined(OWN_WINDOW)
-/* true if use_argb_visual=true and argb visual was found*/
-extern bool have_argb_visual;
-#endif
 
 #ifdef BUILD_X11
 extern Display *display;

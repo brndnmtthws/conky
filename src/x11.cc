@@ -68,6 +68,10 @@ Display *display = nullptr;
 /* Window stuff */
 struct conky_x11_window window;
 
+#ifdef BUILD_ARGB
+bool have_argb_visual;
+#endif /* BUILD_ARGB */
+
 conky::simple_config_setting<std::string> display_name("display", std::string(),
                                                        false);
 
@@ -405,7 +409,7 @@ namespace {
 void do_set_background(Window win, uint8_t alpha) {
   Colour colour = background_colour.get(*state);
   colour.alpha = alpha;
-  unsigned long xcolor = colour.to_x11_color(display, screen);
+  unsigned long xcolor = colour.to_x11_color(display, screen, true);
   XSetWindowBackground(display, win, xcolor);
 }
 }  // namespace
@@ -511,6 +515,7 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
       depth = CopyFromParent;
       visual = CopyFromParent;
 #ifdef BUILD_ARGB
+      have_argb_visual = false;
     }
 #endif /* BUILD_ARGB */
 

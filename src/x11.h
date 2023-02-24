@@ -37,8 +37,12 @@
 #include <X11/extensions/Xdbe.h>
 #endif
 
-#include "colours.h"
 #include "setting.hh"
+
+#ifdef BUILD_ARGB
+/* true if use_argb_visual=true and argb visual was found*/
+extern bool have_argb_visual;
+#endif /* BUILD_ARGB */
 
 #define ATOM(a) XInternAtom(display, #a, False)
 
