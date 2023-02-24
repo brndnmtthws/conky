@@ -102,7 +102,8 @@ struct graph {
   int id;
   char flags;
   int width, height;
-  unsigned int first_colour, last_colour;
+  bool colours_set;
+  Colour first_colour, last_colour;
   double scale;
   char tempgrad;
 };
@@ -191,6 +192,13 @@ void scan_font(struct text_object *obj, const char *args) {
   }
 }
 
+void apply_graph_colours(struct graph *g, const char *first_colour_name,
+                         const char *last_colour_name) {
+  g->first_colour = parse_color(first_colour_name);
+  g->last_colour = parse_color(last_colour_name);
+  g->colours_set = true;
+}
+
 /**
  * parses for [height,width] [color1 color2] [scale] [-t] [-l]
  *
@@ -207,6 +215,8 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
   char quoted_cmd[1024] = {'\0'}; /* double-quoted execgraph command */
   char argstr[1024] = {'\0'};     /* args minus quoted_cmd */
   char buf[1024] = {'\0'};        /* first unquoted string argument in argstr */
+  char first_colour_name[1024] = {'\0'};
+  char last_colour_name[1024] = {'\0'};
 
   auto *g = static_cast<struct graph *>(malloc(sizeof(struct graph)));
   memset(g, 0, sizeof(struct graph));
@@ -216,8 +226,9 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
   g->id = ++graph_count;
   g->width = default_graph_width.get(*state);
   g->height = default_graph_height.get(*state);
-  g->first_colour = 0;
-  g->last_colour = 0;
+  g->colours_set = false;
+  g->first_colour = Colour();
+  g->last_colour = Colour();
   g->scale = defscale;
   g->tempgrad = FALSE;
   if (args != nullptr) {
@@ -264,59 +275,67 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
     /* interpret the beginning(!) of the argument string as:
      * '[height],[width] [color1] [color2] [scale]'
      * This means parameters like -t and -l may not be in the beginning */
-    if (sscanf(argstr, "%d,%d %x %x %lf", &g->height, &g->width,
-               &g->first_colour, &g->last_colour, &g->scale) == 5) {
+    if (sscanf(argstr, "%d,%d %s %s %lf", &g->height, &g->width,
+               first_colour_name, last_colour_name, &g->scale) == 5) {
+      apply_graph_colours(g, first_colour_name, last_colour_name);
       return *quoted_cmd != 0
                  ? strndup(quoted_cmd, text_buffer_size.get(*state))
                  : nullptr;
     }
     /* [height],[width] [color1] [color2] */
     g->scale = defscale;
-    if (sscanf(argstr, "%d,%d %x %x", &g->height, &g->width, &g->first_colour,
-               &g->last_colour) == 4) {
+    if (sscanf(argstr, "%d,%d %s %s", &g->height, &g->width, first_colour_name,
+               last_colour_name) == 4) {
+      apply_graph_colours(g, first_colour_name, last_colour_name);
       return *quoted_cmd != 0
                  ? strndup(quoted_cmd, text_buffer_size.get(*state))
                  : nullptr;
     }
     /* [command] [height],[width] [color1] [color2] [scale] */
-    if (sscanf(argstr, "%1023s %d,%d %x %x %lf", buf, &g->height, &g->width,
-               &g->first_colour, &g->last_colour, &g->scale) == 6) {
+    if (sscanf(argstr, "%1023s %d,%d %s %s %lf", buf, &g->height, &g->width,
+               first_colour_name, last_colour_name, &g->scale) == 6) {
+      apply_graph_colours(g, first_colour_name, last_colour_name);
       return strndup(buf, text_buffer_size.get(*state));
     }
     g->scale = defscale;
-    if (sscanf(argstr, "%1023s %d,%d %x %x", buf, &g->height, &g->width,
-               &g->first_colour, &g->last_colour) == 5) {
+    if (sscanf(argstr, "%1023s %d,%d %s %s", buf, &g->height, &g->width,
+               first_colour_name, last_colour_name) == 5) {
+      apply_graph_colours(g, first_colour_name, last_colour_name);
       return strndup(buf, text_buffer_size.get(*state));
     }
 
     buf[0] = '\0';
     g->height = default_graph_height.get(*state);
     g->width = default_graph_width.get(*state);
-    if (sscanf(argstr, "%x %x %lf", &g->first_colour, &g->last_colour,
+    if (sscanf(argstr, "%s %s %lf", first_colour_name, last_colour_name,
                &g->scale) == 3) {
+      apply_graph_colours(g, first_colour_name, last_colour_name);
       return *quoted_cmd != 0
                  ? strndup(quoted_cmd, text_buffer_size.get(*state))
                  : nullptr;
     }
     g->scale = defscale;
-    if (sscanf(argstr, "%x %x", &g->first_colour, &g->last_colour) == 2) {
+    if (sscanf(argstr, "%s %s", first_colour_name, last_colour_name) == 2) {
+      apply_graph_colours(g, first_colour_name, last_colour_name);
       return *quoted_cmd != 0
                  ? strndup(quoted_cmd, text_buffer_size.get(*state))
                  : nullptr;
     }
-    if (sscanf(argstr, "%1023s %x %x %lf", buf, &g->first_colour,
-               &g->last_colour, &g->scale) == 4) {
+    if (sscanf(argstr, "%1023s %s %s %lf", buf, first_colour_name,
+               last_colour_name, &g->scale) == 4) {
+      apply_graph_colours(g, first_colour_name, last_colour_name);
       return strndup(buf, text_buffer_size.get(*state));
     }
     g->scale = defscale;
-    if (sscanf(argstr, "%1023s %x %x", buf, &g->first_colour,
-               &g->last_colour) == 3) {
+    if (sscanf(argstr, "%1023s %s %s", buf, first_colour_name,
+               last_colour_name) == 3) {
+      apply_graph_colours(g, first_colour_name, last_colour_name);
       return strndup(buf, text_buffer_size.get(*state));
     }
 
     buf[0] = '\0';
-    g->first_colour = 0;
-    g->last_colour = 0;
+    first_colour_name[0] = '\0';
+    last_colour_name[0] = '\0';
     if (sscanf(argstr, "%d,%d %lf", &g->height, &g->width, &g->scale) == 3) {
       return *quoted_cmd != 0
                  ? strndup(quoted_cmd, text_buffer_size.get(*state))
@@ -584,8 +603,9 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
     graphs[g->id] = graph;
   }
   s->height = dpi_scale(g->height);
-  s->first_colour = adjust_colours(g->first_colour);
-  s->last_colour = adjust_colours(g->last_colour);
+  s->colours_set = g->colours_set;
+  s->first_colour = g->first_colour;
+  s->last_colour = g->last_colour;
   if (g->scale != 0) {
     s->scaled = 0;
     s->scale = g->scale;

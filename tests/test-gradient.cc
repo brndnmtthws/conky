@@ -28,12 +28,12 @@
 
 #include "catch2/catch.hpp"
 
+#include <colours.h>
 #include <conky.h>
 #include <gradient.h>
 
 const int width = 4;
-#ifdef BUILD_X11               // 24-bit color depth
-const long colour = 0x996633;  // brown
+const Colour colour = Colour::from_argb32(0x996633);  // brown
 const long expected_hue = 256;
 const long expected_value = 0x99;   // max(0x99, 0x66, 0x33)
 const long expected_chroma = 0x66;  // (0x99 - 0x33)
@@ -42,17 +42,6 @@ const long expected_saturation = 122880L;
 const long expected_red = 0x99;
 const long expected_green = 0x66;
 const long expected_blue = 0x33;
-#else  // 16-bit color depth
-const long colour = 0x99A6;  // brown
-const long expected_hue = 275;
-const long expected_value = 0x13;   // max(0x13, 0x0d, 0x06)
-const long expected_chroma = 0x0d;  // (0x1a - 0x06)
-const long expected_luma = 2610173L;
-const long expected_saturation = 126113L;
-const long expected_red = 0x13;
-const long expected_green = 0x0d;
-const long expected_blue = 0x06;
-#endif
 
 const long full_scale = conky::gradient_factory::SCALE360;
 
@@ -114,11 +103,6 @@ TEST_CASE(
     delete factory;
   }
 
-/*
- * Due to lack of precision, the HSV and HCL functions are not reversible
- * if color depth is less than 24-bit
- */
-#ifdef BUILD_X11
   SECTION("hsv_gradient_factory") {
     long tmp[3];
     auto factory = new conky::hsv_gradient_factory(width, colour, colour);
@@ -140,5 +124,4 @@ TEST_CASE(
 
     delete factory;
   }
-#endif
 }

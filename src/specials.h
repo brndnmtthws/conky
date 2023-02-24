@@ -29,6 +29,8 @@
 #ifndef _SPECIALS_H
 #define _SPECIALS_H
 
+#include "colours.h"
+
 /* special stuff in text_buffer */
 
 #define SPECIAL_CHAR '\x01'
@@ -69,8 +71,9 @@ struct special_t {
   int graph_allocated;
   int scaled; /* auto adjust maximum */
   int scale_log;
-  unsigned long first_colour;  // for graph gradient
-  unsigned long last_colour;
+  bool colours_set;
+  Colour first_colour;  // for graph gradient
+  Colour last_colour;
   short font_added;
   char tempgrad;
   struct special_t *next;

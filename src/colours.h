@@ -37,8 +37,6 @@
 #include "x11.h"
 #endif /* BUILD_X11 */
 
-unsigned int adjust_colours(unsigned int);
-
 struct Colour {
   uint8_t red;
   uint8_t green;
@@ -46,6 +44,12 @@ struct Colour {
   uint8_t alpha;
 
 public:
+  // Compare two instances.
+  bool operator==(const Colour &c) const {
+    return c.red == red && c.green == green && c.blue == blue &&
+           c.alpha == alpha;
+  }
+
   // Express the color as a 32-bit ARGB integer (alpha in MSB).
   uint32_t to_argb32(void) {
     uint32_t out;

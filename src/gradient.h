@@ -31,11 +31,12 @@
 #define _GRADIENT_H
 
 #include <memory>
+#include "colours.h"
 
 namespace conky {
 class gradient_factory {
  public:
-  typedef std::unique_ptr<unsigned long[]> colour_array;
+  typedef std::unique_ptr<Colour[]> colour_array;
   static const long SCALE = 512L;
   static const long SCALE2 = SCALE * 2;
   static const long SCALE4 = SCALE * 4;
@@ -48,8 +49,7 @@ class gradient_factory {
   static const long SCALE360 = SCALE * 360;
 
  public:
-  gradient_factory(int width, unsigned long first_colour,
-                   unsigned long last_colour);
+  gradient_factory(int width, Colour first_colour, Colour last_colour);
   virtual ~gradient_factory() {}
 
   colour_array create_gradient();
@@ -57,8 +57,8 @@ class gradient_factory {
   virtual void convert_from_scaled_rgb(long *const scaled, long *target) = 0;
   virtual void convert_to_scaled_rgb(long *const target, long *scaled) = 0;
 
-  void convert_from_rgb(long original, long *array);
-  int convert_to_rgb(long *const array);
+  void convert_from_rgb(Colour original, long *array);
+  Colour convert_to_rgb(long *const array);
 
  protected:
   virtual void fix_diff(long *) {}
@@ -66,19 +66,10 @@ class gradient_factory {
   static long get_hue(long *const scaled, long chroma, long value);
   static long get_intermediate(long hue, long chroma);
 
-  static short colour_depth;
-  static long mask[3];
-  static short shift[3];
-
  private:
   int width;
-  unsigned long first_colour;
-  unsigned long last_colour;
-
-  static bool is_set;
-  static void setup_colour_depth();
-  static void setup_masks();
-  static void setup_shifts();
+  Colour first_colour;
+  Colour last_colour;
 };
 
 class rgb_gradient_factory : public gradient_factory {

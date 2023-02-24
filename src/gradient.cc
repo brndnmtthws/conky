@@ -27,99 +27,42 @@
  *
  */
 #include "gradient.h"
+#include "colours.h"
 #include "conky.h"
 #include "logging.h"
 
-#ifdef BUILD_X11
-#include "gui.h"
-#include "x11.h"
-#endif /* BUILD_X11 */
-
 namespace conky {
-bool gradient_factory::is_set = false;
-short gradient_factory::colour_depth = 0;
-long gradient_factory::mask[3];
-short gradient_factory::shift[3];
-
-gradient_factory::gradient_factory(int width, unsigned long first_colour,
-                                   unsigned long last_colour) {
+gradient_factory::gradient_factory(int width, Colour first_colour,
+                                   Colour last_colour) {
   // Make sure the width is always at least 2
   this->width = std::max(2, width);
   this->first_colour = first_colour;
   this->last_colour = last_colour;
-
-  if (!is_set) {
-    setup_colour_depth();
-    setup_shifts();
-    setup_masks();
-    is_set = true;
-  }
 }
 
-void gradient_factory::setup_shifts() {
-  shift[0] = (2 * colour_depth / 3 + colour_depth % 3);
-  shift[1] = (colour_depth / 3);
-  shift[2] = 0;
-}
-
-void gradient_factory::setup_masks() {
-  mask[0] = mask[1] = mask[2] = 0;
-
-  for (int i = (colour_depth / 3) - 1; i >= 0; i--) {
-    mask[0] |= 1 << i;
-    mask[1] |= 1 << i;
-    mask[2] |= 1 << i;
-  }
-
-  if (colour_depth % 3 == 1) { mask[1] |= 1 << (colour_depth / 3); }
-
-  for (int i = 0; i < 3; i++) { mask[i] = mask[i] << shift[i]; }
-}
-
-void gradient_factory::setup_colour_depth() {
-#ifdef BUILD_X11
-  if (state == nullptr) {  // testing purposes
-    colour_depth = 24;
-  } else if (out_to_x.get(*state)) {
-    colour_depth = DisplayPlanes(display, screen);
-  } else
-#endif /* BUILD_X11 */
-  {
-    colour_depth = 16;
-  }
-
-  if (colour_depth != 24 && colour_depth != 16) {
-    NORM_ERR(
-        "using non-standard colour depth, "
-        "gradients may look like a lolly-pop");
-  }
-}
-
-void gradient_factory::convert_from_rgb(long original, long *array) {
+void gradient_factory::convert_from_rgb(Colour original, long *array) {
   long scaled[3];
 
-  for (int i = 0; i < 3; i++) {
-    auto value = (original & mask[i]) >> shift[i];
-    scaled[i] = value * SCALE;
-  }
+  scaled[0] = original.red * SCALE;
+  scaled[1] = original.green * SCALE;
+  scaled[2] = original.blue * SCALE;
   convert_from_scaled_rgb(scaled, array);
 }
 
-int gradient_factory::convert_to_rgb(long *const array) {
+Colour gradient_factory::convert_to_rgb(long *const array) {
   long scaled_rgb[3];
-  int rgb = 0;
+  Colour c;
 
   convert_to_scaled_rgb(array, scaled_rgb);
-  for (int i = 0; i < 3; i++) {
-    auto value = scaled_rgb[i] / SCALE;
-    rgb |= value << shift[i];
-  }
+  c.red = scaled_rgb[0] / SCALE;
+  c.green = scaled_rgb[1] / SCALE;
+  c.blue = scaled_rgb[2] / SCALE;
 
-  return rgb;
+  return c;
 }
 
 gradient_factory::colour_array gradient_factory::create_gradient() {
-  colour_array colours(new unsigned long[width]);
+  colour_array colours(new Colour[width]);
 
   long first_converted[3];
   long last_converted[3];

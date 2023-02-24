@@ -29,61 +29,7 @@
 #include "conky.h"
 #include "gui.h"
 #include "logging.h"
-#ifdef BUILD_X11
-#include "x11.h"
-#endif /*BUILD_X11*/
 #include "x11-color.h"
-
-/* precalculated: 31/255, and 63/255 */
-#define CONST_8_TO_5_BITS 0.12156862745098
-#define CONST_8_TO_6_BITS 0.247058823529412
-
-short colour_depth = 0;
-long redmask, greenmask, bluemask;
-
-void set_up_gradient() {
-#ifdef BUILD_X11
-  if (out_to_x.get(*state)) {
-    colour_depth = DisplayPlanes(display, screen);
-  } else
-#endif /* BUILD_X11 */
-  {
-    colour_depth = 16;
-  }
-  if (colour_depth != 24 && colour_depth != 16) {
-    NORM_ERR(
-        "using non-standard colour depth, gradients may look like a "
-        "lolly-pop");
-  }
-
-  redmask = 0;
-  greenmask = 0;
-  bluemask = 0;
-  for (int i = (colour_depth / 3) - 1; i >= 0; i--) {
-    redmask |= 1 << i;
-    greenmask |= 1 << i;
-    bluemask |= 1 << i;
-  }
-  if (colour_depth % 3 == 1) { greenmask |= 1 << (colour_depth / 3); }
-  redmask = redmask << (2 * colour_depth / 3 + colour_depth % 3);
-  greenmask = greenmask << (colour_depth / 3);
-}
-
-/* adjust colour values depending on colour depth */
-unsigned int adjust_colours(unsigned int colour) {
-  double r, g, b;
-
-  if (colour_depth == 0) { set_up_gradient(); }
-  if (colour_depth == 16) {
-    r = (colour & 0xff0000) >> 16;
-    g = (colour & 0xff00) >> 8;
-    b = colour & 0xff;
-    colour = static_cast<int>(r * CONST_8_TO_5_BITS) << 11;
-    colour |= static_cast<int>(g * CONST_8_TO_6_BITS) << 5;
-    colour |= static_cast<int>(b * CONST_8_TO_5_BITS);
-  }
-  return colour;
-}
 
 static int hex_nibble_value(char c) {
   if (c >= '0' && c <= '9') {
