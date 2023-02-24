@@ -2367,14 +2367,14 @@ void get_battery_power_draw(char *buffer, unsigned int n, const char *bat) {
   voltage_now_file = open_file(voltage_now_path, &reported);
 
   if (current_now_file != nullptr && voltage_now_file != nullptr) {
-    fgets(current_now_val, 256, current_now_file);
-    fgets(voltage_now_val, 256, voltage_now_file);
+    if (fgets(current_now_val, 256, current_now_file) &&
+        fgets(voltage_now_val, 256, voltage_now_file)) {
+      current_now = strtol(current_now_val, &ptr, 10);
+      voltage_now = strtol(voltage_now_val, &ptr, 10);
 
-    current_now = strtol(current_now_val, &ptr, 10);
-    voltage_now = strtol(voltage_now_val, &ptr, 10);
-
-    result = (double)(current_now * voltage_now) / (double)1000000000000;
-    snprintf(buffer, n, "%.1f", result);
+      result = (double)(current_now * voltage_now) / (double)1000000000000;
+      snprintf(buffer, n, "%.1f", result);
+    }
     fclose(current_now_file);
     fclose(voltage_now_file);
   }
