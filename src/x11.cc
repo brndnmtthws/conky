@@ -599,7 +599,6 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
           0,
           0};
 
-
       XWMHints wmHint;
       Atom xa;
 
@@ -630,7 +629,8 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
       if (own_window_type.get(l) == TYPE_UTILITY) {
         XRectangle rect;
         XserverRegion region = XFixesCreateRegion(display, &rect, 1);
-        XFixesSetWindowShapeRegion(display, window.window, ShapeInput, 0, 0, region);
+        XFixesSetWindowShapeRegion(display, window.window, ShapeInput, 0, 0,
+                                   region);
         XFixesDestroyRegion(display, region);
       }
 #endif /* BUILD_XFIXES */

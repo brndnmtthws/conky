@@ -51,8 +51,8 @@
 #include <sstream>
 #include <unordered_map>
 
-#include "conky.h"
 #include "colours.h"
+#include "conky.h"
 #include "display-x11.hh"
 #include "gui.h"
 #include "llua.h"
@@ -64,7 +64,7 @@
 // TODO: cleanup externs (move to conky.h ?)
 #ifdef OWN_WINDOW
 extern int fixed_size, fixed_pos;
-#endif /* OWN_WINDOW */
+#endif                                   /* OWN_WINDOW */
 extern int text_start_x, text_start_y;   /* text start position in window */
 extern int text_offset_x, text_offset_y; /* offset for start position */
 extern int text_width,
@@ -612,7 +612,8 @@ void display_output_x11::set_foreground_color(Colour c) {
     current_color.alpha = own_window_argb_value.get(*state);
   }
 #endif /* BUILD_ARGB */
-  XSetForeground(display, window.gc, current_color.to_x11_color(display, screen));
+  XSetForeground(display, window.gc,
+                 current_color.to_x11_color(display, screen));
 }
 
 int display_output_x11::calc_text_width(const char *s) {

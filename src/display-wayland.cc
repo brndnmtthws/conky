@@ -523,9 +523,9 @@ bool display_output_wayland::main_loop_wait(double t) {
     bool scale_changed = global_window->scale != global_window->pending_scale;
 
     /* resize window if it isn't right size */
-    if ((fixed_size == 0) && (text_width + 2 * border_total != width ||
-                              text_height + 2 * border_total != height ||
-                              scale_changed)) {
+    if ((fixed_size == 0) &&
+        (text_width + 2 * border_total != width ||
+         text_height + 2 * border_total != height || scale_changed)) {
       /* clamp text_width to configured maximum */
       if (maximum_width.get(*state)) {
         int mw = global_window->scale * maximum_width.get(*state);
@@ -668,11 +668,10 @@ void display_output_wayland::cleanup() {
 void display_output_wayland::set_foreground_color(Colour c) {
   current_color = c;
 #ifdef BUILD_ARGB
- current_color.alpha = own_window_argb_value.get(*state);
+  current_color.alpha = own_window_argb_value.get(*state);
 #endif /* BUILD_ARGB */
   if (global_window->cr) {
-    cairo_set_source_rgba(global_window->cr,
-                          current_color.red / 255.0,
+    cairo_set_source_rgba(global_window->cr, current_color.red / 255.0,
                           current_color.green / 255.0,
                           current_color.blue / 255.0,
                           current_color.alpha / 255.0);
@@ -813,11 +812,8 @@ void display_output_wayland::clear_text(int exposures) {
 #endif
   }
 #endif
-  cairo_set_source_rgba(window->cr,
-                        color.red / 255.0,
-                        color.green / 255.0,
-                        color.blue / 255.0,
-                        color.alpha / 255.0);
+  cairo_set_source_rgba(window->cr, color.red / 255.0, color.green / 255.0,
+                        color.blue / 255.0, color.alpha / 255.0);
   cairo_set_operator(window->cr, CAIRO_OPERATOR_SOURCE);
   cairo_paint(window->cr);
   cairo_restore(window->cr);
@@ -841,7 +837,8 @@ int display_output_wayland::font_descent(unsigned int f) {
   return pango_fonts[f].metrics.descent;
 }
 
-void display_output_wayland::setup_fonts(void) { /* Nothing to do here */ }
+void display_output_wayland::setup_fonts(void) { /* Nothing to do here */
+}
 
 void display_output_wayland::set_font(unsigned int f) {
   assert(f < pango_fonts.size());
@@ -1045,8 +1042,8 @@ void window_allocate_buffer(struct window *window) {
 
   int scale = window->pending_scale;
   struct shm_pool *pool;
-  pool = shm_pool_create(window->shm, data_length_for_shm_surface(
-                                          &window->rectangle, scale));
+  pool = shm_pool_create(
+      window->shm, data_length_for_shm_surface(&window->rectangle, scale));
   if (!pool) {
     fprintf(stderr, "could not allocate shm pool\n");
     return;
@@ -1127,7 +1124,8 @@ void window_resize(struct window *window, int width, int height) {
 
 void window_commit_buffer(struct window *window) {
   assert(window->cairo_surface != nullptr);
-  wl_surface_set_buffer_scale(global_window->surface, global_window->pending_scale);
+  wl_surface_set_buffer_scale(global_window->surface,
+                              global_window->pending_scale);
   wl_surface_attach(window->surface,
                     get_buffer_from_cairo_surface(window->cairo_surface), 0, 0);
   /* repaint all the pixels in the surface, change size to only repaint changed

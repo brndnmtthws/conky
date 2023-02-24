@@ -34,9 +34,10 @@ void colour_setting::lua_setter(lua::state &l, bool init) {
 }
 }  // namespace priv
 
-priv::colour_setting color[COLORS_CUSTOM] = {{"color0", white_argb32}, {"color1", white_argb32},
-                                             {"color2", white_argb32}, {"color3", white_argb32},
-                                             {"color4", white_argb32}, {"color5", white_argb32},
-                                             {"color6", white_argb32}, {"color7", white_argb32},
-                                             {"color8", white_argb32}, {"color9", white_argb32}};
+priv::colour_setting color[COLORS_CUSTOM] = {
+    {"color0", white_argb32}, {"color1", white_argb32},
+    {"color2", white_argb32}, {"color3", white_argb32},
+    {"color4", white_argb32}, {"color5", white_argb32},
+    {"color6", white_argb32}, {"color7", white_argb32},
+    {"color8", white_argb32}, {"color9", white_argb32}};
 priv::colour_setting default_color("default_color", white_argb32);

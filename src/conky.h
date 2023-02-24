@@ -37,9 +37,9 @@
 #include <sys/utsname.h> /* struct uname_s */
 #include <csignal>
 #include <memory>
+#include "colours.h"
 #include "common.h" /* at least for struct dns_data */
 #include "luamm.hh"
-#include "colours.h"
 
 #if defined(HAS_MCHECK_H)
 #include <mcheck.h>

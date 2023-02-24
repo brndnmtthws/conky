@@ -1432,16 +1432,22 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           break;
 #endif /* BUILD_GUI */
         case FG:
-          if (draw_mode == FG) { set_foreground_color(Colour::from_argb32(current->arg)); }
+          if (draw_mode == FG) {
+            set_foreground_color(Colour::from_argb32(current->arg));
+          }
           break;
 
 #ifdef BUILD_GUI
         case BG:
-          if (draw_mode == BG) { set_foreground_color(Colour::from_argb32(current->arg)); }
+          if (draw_mode == BG) {
+            set_foreground_color(Colour::from_argb32(current->arg));
+          }
           break;
 
         case OUTLINE:
-          if (draw_mode == OUTLINE) { set_foreground_color(Colour::from_argb32(current->arg)); }
+          if (draw_mode == OUTLINE) {
+            set_foreground_color(Colour::from_argb32(current->arg));
+          }
           break;
 
         case OFFSET:

@@ -29,10 +29,10 @@
 #ifndef _COLOURS_H
 #define _COLOURS_H
 
-#include <memory>
-#include <string>
 #include <cassert>
 #include <climits>
+#include <memory>
+#include <string>
 #ifdef BUILD_X11
 #include "x11.h"
 #endif /* BUILD_X11 */
@@ -43,7 +43,7 @@ struct Colour {
   uint8_t blue;
   uint8_t alpha;
 
-public:
+ public:
   // Compare two instances.
   bool operator==(const Colour &c) const {
     return c.red == red && c.green == green && c.blue == blue &&

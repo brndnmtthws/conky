@@ -29,8 +29,8 @@
 #include <type_traits>
 #include <vector>
 
-#include "luamm.hh"
 #include "colours.h"
+#include "luamm.hh"
 
 namespace conky {
 

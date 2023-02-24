@@ -23,8 +23,8 @@
  */
 #pragma once
 
-#include "config.h"
 #include "colours.h"
+#include "config.h"
 #include "setting.hh"
 
 namespace priv {
