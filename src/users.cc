@@ -40,9 +40,8 @@ static void user_name(char *ptr) {
   setutent();
   while ((usr = getutent()) != nullptr) {
     if (usr->ut_type == USER_PROCESS) {
-      if (strlen(ptr) + strnlen(usr->ut_name, UT_NAMESIZE - 1) + 1 <= BUFLEN) {
-        strncat(ptr, usr->ut_name, UT_NAMESIZE);
-      }
+      memcpy(ptr, usr->ut_name, UT_NAMESIZE);
+      ptr[UT_NAMESIZE] = 0;
     }
   }
 }
@@ -62,9 +61,8 @@ static void user_term(char *ptr) {
   setutent();
   while ((usr = getutent()) != nullptr) {
     if (usr->ut_type == USER_PROCESS) {
-      if (strlen(ptr) + strnlen(usr->ut_line, UT_LINESIZE) + 1 <= BUFLEN) {
-        strncat(ptr, usr->ut_line, UT_LINESIZE);
-      }
+      memcpy(ptr, usr->ut_line, UT_LINESIZE);
+      ptr[UT_LINESIZE] = 0;
     }
   }
 }
