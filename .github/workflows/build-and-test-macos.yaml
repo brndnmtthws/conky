@@ -39,7 +39,8 @@ jobs:
       - run: mkdir build
       - name: Configure with CMake
         working-directory: build
-        run: cmake .. -G Ninja                 \
+        run: |
+          cmake .. -G Ninja                    \
           -DMAINTAINER_MODE=ON                 \
           -DBUILD_WAYLAND=OFF                  \
           -DBUILD_TESTS=ON
