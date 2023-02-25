@@ -28,24 +28,24 @@ TEST_CASE("parse_color correctly parses colours", "[colours][parse_color]") {
     REQUIRE(colour.blue == 255);
   }
 
-  SECTION("parsing hex red") {
-    auto colour = parse_color("#ff0000");
+  SECTION("parsing red") {
+    auto colour = parse_color("ff0000");
     REQUIRE(colour.alpha == 255);
     REQUIRE(colour.red == 255);
     REQUIRE(colour.green == 0);
     REQUIRE(colour.blue == 0);
   }
 
-  SECTION("parsing hex green") {
-    auto colour = parse_color("#00ff00");
+  SECTION("parsing green") {
+    auto colour = parse_color("00ff00");
     REQUIRE(colour.alpha == 255);
     REQUIRE(colour.red == 0);
     REQUIRE(colour.green == 255);
     REQUIRE(colour.blue == 0);
   }
 
-  SECTION("parsing hex blue") {
-    auto colour = parse_color("#0000ff");
+  SECTION("parsing blue") {
+    auto colour = parse_color("0000ff");
     REQUIRE(colour.alpha == 255);
     REQUIRE(colour.red == 0);
     REQUIRE(colour.green == 0);
@@ -60,7 +60,7 @@ TEST_CASE("parse_color correctly parses colours", "[colours][parse_color]") {
     REQUIRE(colour.blue == 0x44);
   }
 
-  SECTION("it parses the colour red") {
+  SECTION("it parses the colour 'red'") {
     auto colour = parse_color("red");
     REQUIRE(colour.alpha == 255);
     REQUIRE(colour.red == 255);
@@ -68,7 +68,7 @@ TEST_CASE("parse_color correctly parses colours", "[colours][parse_color]") {
     REQUIRE(colour.blue == 0);
   }
 
-  SECTION("it parses the colour green") {
+  SECTION("it parses the colour 'green'") {
     auto colour = parse_color("green");
     REQUIRE(colour.alpha == 255);
     REQUIRE(colour.red == 0);
@@ -76,7 +76,7 @@ TEST_CASE("parse_color correctly parses colours", "[colours][parse_color]") {
     REQUIRE(colour.blue == 0);
   }
 
-  SECTION("it parses the colour blue") {
+  SECTION("it parses the colour 'blue'") {
     auto colour = parse_color("blue");
     REQUIRE(colour.alpha == 255);
     REQUIRE(colour.red == 0);
