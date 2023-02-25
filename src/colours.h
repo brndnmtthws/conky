@@ -26,9 +26,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef _COLOURS_H
-#define _COLOURS_H
+#pragma once
 
+#include <config.h>
 #include <cassert>
 #include <climits>
 #include <memory>
@@ -96,5 +96,3 @@ extern Colour error_colour;
 Colour parse_color(const std::string &colour);
 // XXX: when everyone uses C++ strings, remove this C version
 Colour parse_color(const char *);
-
-#endif /* _COLOURS_H */
