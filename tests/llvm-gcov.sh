@@ -1,27 +1,29 @@
 #!/usr/bin/env bash
 
-if hash llvm-cov-11 2>/dev/null; then
-    llvm_cov="llvm-cov-11"
-elif hash llvm-cov110 2>/dev/null; then
-    llvm_cov="llvm-cov110"
-elif hash llvm-cov100 2>/dev/null; then
-    llvm_cov="llvm-cov100"
-elif hash llvm-cov-10 2>/dev/null; then
-    llvm_cov="llvm-cov-10"
-elif hash llvm-cov90 2>/dev/null; then
-    llvm_cov="llvm-cov90"
-elif hash llvm-cov-9 2>/dev/null; then
-    llvm_cov="llvm-cov-9"
-elif hash llvm-cov80 2>/dev/null; then
-    llvm_cov="llvm-cov80"
-elif hash llvm-cov-8 2>/dev/null; then
-    llvm_cov="llvm-cov-8"
-elif hash llvm-cov70 2>/dev/null; then
-    llvm_cov="llvm-cov70"
-elif hash llvm-cov-7 2>/dev/null; then
-    llvm_cov="llvm-cov-7"
-elif hash llvm-cov 2>/dev/null; then
-    llvm_cov="llvm-cov"
-fi
+llvm_version_suffixes=(
+    ""
+    -15
+    150
+    -14
+    140
+    -13
+    130
+    -12
+    120
+    -11
+    110
+    100
+    -10
+    90
+    -9
+)
+
+for suffix in "${llvm_version_suffixes[@]}"; do
+    llvm_cov_test="llvm-cov${suffix}"
+    if hash $llvm_cov_test 2>/dev/null; then
+        llvm_cov=$llvm_cov_test
+        break
+    fi
+done
 
 exec $llvm_cov gcov "$@"
