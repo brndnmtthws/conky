@@ -4,7 +4,6 @@ import Layout from '../components/Layout'
 import ArrowIcon from '../components/ArrowIcon'
 import SEO from '../components/SEO'
 import { getSearchIndex, SearchIndex } from '../utils/search'
-import { Url } from 'url'
 
 const pages = [
   {
@@ -34,14 +33,14 @@ interface IndexItemProps {
 const IndexItem: React.FunctionComponent<IndexItemProps> = (props) => {
   return (
     <div className="md:first:rounded-t-lg md:last:rounded-b-lg backdrop-blur-lg bg-slate-300 dark:bg-black dark:bg-opacity-30 bg-opacity-10 hover:bg-opacity-30 dark:hover:bg-opacity-50 transition border border-gray-800 dark:border-white border-opacity-10 dark:border-opacity-10 border-b-0 last:border-b hover:border-b hovered-sibling:border-t-0">
-      <Link as={props.as} href={props.href}>
-        <a className="py-2 lg:py-4 px-2 lg:px-4 block focus:outline-none focus:ring-4">
-          <h2 className="text-xl md:text-2xl">{props.title}</h2>
-          {props.desc && (
-            <p className="mt-3 text-lg opacity-60">{props.desc}</p>
-          )}
-          <ArrowIcon className="mt-4" />
-        </a>
+      <Link
+        as={props.as}
+        href={props.href}
+        className="py-2 lg:py-4 px-2 lg:px-4 block focus:outline-none focus:ring-4"
+      >
+        <h2 className="text-xl md:text-2xl">{props.title}</h2>
+        {props.desc && <p className="mt-3 text-lg opacity-60">{props.desc}</p>}
+        <ArrowIcon className="mt-4" />
       </Link>
     </div>
   )

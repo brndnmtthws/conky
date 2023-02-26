@@ -7,18 +7,19 @@ import {
 
 import { MDXRemote, MDXRemoteProps } from 'next-mdx-remote'
 import Head from 'next/head'
-import CustomLink from '../../components/CustomLink'
 import Layout from '../../components/Layout'
 import SEO from '../../components/SEO'
 import { GetStaticProps } from 'next'
 import { getSearchIndex, SearchIndex } from '../../utils/search'
+import Link from 'next/link'
+import { MDXComponents } from 'mdx/types'
 
 // Custom components/renderers to pass to MDX.
 // Since the MDX files aren't loaded by webpack, they have no knowledge of how
 // to handle import statements. Instead, you must include components in scope
 // here.
 const components = {
-  a: CustomLink,
+  a: Link,
   // It also works with dynamically-imported components, which is especially
   // useful for conditionally loading components for certain routes.
   // See the notes in README.md for more details.
@@ -58,7 +59,7 @@ export default function DocumentPage({
         </header>
         <main>
           <article className="prose dark:prose-invert prose-lg lg:prose-xl">
-            <MDXRemote {...source} components={components as any} />
+            <MDXRemote {...source} components={components as MDXComponents} />
           </article>
         </main>
       </article>
