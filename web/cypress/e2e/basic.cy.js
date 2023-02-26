@@ -4,7 +4,7 @@ describe('check index renders', () => {
   })
 
   it('displays the title text', () => {
-    cy.get('[data-cy="top-link"]').contains('Conky')
+    cy.get('[data-cy="top-link"]').contains(/^Conky$/)
   })
 })
 describe('check config settings', () => {
@@ -13,7 +13,8 @@ describe('check config settings', () => {
   })
 
   it('displays the title text', () => {
-    cy.get('[data-cy="page-heading"]').contains('Configuration settings')
+    cy.get('[data-cy="top-link"]').contains(/^Conky$/)
+    cy.get('[data-cy="page-heading"]').contains(/^Configuration settings$/)
   })
 })
 describe('check variables', () => {
@@ -22,7 +23,8 @@ describe('check variables', () => {
   })
 
   it('displays the title text', () => {
-    cy.get('[data-cy="page-heading"]').contains('Variables')
+    cy.get('[data-cy="top-link"]').contains(/^Conky$/)
+    cy.get('[data-cy="page-heading"]').contains(/^Variables$/)
   })
   it('has anchor links and can focus on them', () => {
     cy.get('[data-anchor-name="cpu"]').click().and('be.visible')
@@ -34,6 +36,7 @@ describe('check lua', () => {
   })
 
   it('displays the title text', () => {
-    cy.get('[data-cy="page-heading"]').contains('Lua API')
+    cy.get('[data-cy="top-link"]').contains(/^Conky$/)
+    cy.get('[data-cy="page-heading"]').contains(/^Lua API$/)
   })
 })
