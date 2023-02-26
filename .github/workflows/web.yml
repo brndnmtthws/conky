@@ -14,9 +14,9 @@ jobs:
       - name: Use Node.js 18
         uses: actions/setup-node@v3
         with:
-          working-directory: web
           node-version: 18
           cache: npm
+          cache-dependency-path: '**/package-lock.json'
       - run: npm ci
         working-directory: web
       - run: npm run lint
