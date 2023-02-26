@@ -24,6 +24,15 @@ _Patches submitted in issues, email, or elsewhere may be ignored._
 
 Code should be formatted using `clang-format`. By configuring Conky with `cmake -DCHECK_CODE_QUALITY=ON`, you will be able to run `make clang-format` to automatically format code. If code in your PR is not formatted according to [`.clang-format`](.clang-format), the checks will not pass.
 
+## Git hooks
+
+To make life easier, you can use
+[lefthook](https://github.com/evilmartians/lefthook) to handle some basic
+linting with a pre-commit hook, as defined in [lefthook.yml](lefthook.yml).
+Follow the [installation guide for
+lefhook](https://github.com/evilmartians/lefthook/blob/master/docs/install.md),
+then run `lefthook install` to enable the hooks.
+
 ## Unit Testing
 
 Conky uses the [Catch2](https://github.com/catchorg/Catch2) unit testing framework. If you are adding new functions or methods, please consider adding unit tests for that code. Additionally, if you'd like to add tests for existing code, that would be a welcome contribution.
