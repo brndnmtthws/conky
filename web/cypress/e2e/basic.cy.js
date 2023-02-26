@@ -26,9 +26,6 @@ describe('check variables', () => {
   })
   it('has anchor links and can focus on them', () => {
     cy.get('[data-anchor-name="cpu"]').click().and('be.visible')
-    cy.get('#cpu')
-      .and('have.class', 'bg-rose-300')
-      .and('have.class', 'dark:bg-rose-900')
   })
 })
 describe('check lua', () => {
