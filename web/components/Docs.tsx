@@ -31,7 +31,7 @@ export default function Docs({ docs, braces, assign }: DocsProps) {
             >
               <div className="flex">
                 <div className="px-2 py-3">
-                  <Link href={`#${doc.name}`}>
+                  <Link href={`#${doc.name}`} data-anchor-name={doc.name}>
                     <LinkIcon size={20} />
                   </Link>
                 </div>

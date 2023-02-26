@@ -56,8 +56,8 @@ export default function Header({
     <div className="border-b-1 backdrop-blur-lg bg-white dark:bg-black bg-opacity-20 dark:bg-opacity-20 transition">
       <header className="max-w-3xl mx-auto m-0 p-1 grow flex w-full">
         <h1 className="px-2 text-3xl dark:text-white self-end">
-          <Link href="/">
-            <strong>{name}</strong>
+          <Link href="/" className="font-bold" data-cy="top-link">
+            {name}
           </Link>
         </h1>
         {router.asPath != '/' && (
