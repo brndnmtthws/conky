@@ -15,7 +15,9 @@ export default function Lua(props: LuaProps) {
       <SEO title="Conky – Lua API" description="Conky Lua API documentation" />
       <main className="w-full">
         <div>
-          <h1 className="text-2xl">Lua API</h1>
+          <h1 className="text-2xl" data-cy="page-heading">
+            Lua API
+          </h1>
         </div>
         <Docs docs={props.lua} braces={false} assign={false} />
       </main>

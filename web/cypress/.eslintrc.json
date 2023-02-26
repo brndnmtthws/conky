@@ -1,0 +1,7 @@
+{
+  "extends": ["eslint:recommended", "plugin:cypress/recommended", "prettier"],
+  "plugins": ["cypress"],
+  "settings": {
+    "sort-imports": "error"
+  }
+}

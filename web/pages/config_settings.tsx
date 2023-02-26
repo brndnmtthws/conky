@@ -22,7 +22,9 @@ export default function ConfigSettings(props: ConfigSettingsProps) {
       />
       <main className="w-full">
         <div>
-          <h1 className="text-2xl">Configuration settings</h1>
+          <h1 className="text-2xl" data-cy="page-heading">
+            Configuration settings
+          </h1>
         </div>
         <Docs docs={props.config_settings} braces={false} assign={true} />
       </main>

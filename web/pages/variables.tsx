@@ -17,9 +17,9 @@ export default function Variables(props: VariablesProps) {
         description="Conky object variables documentation"
       />
       <main className="w-full">
-        <div>
-          <h1 className="text-2xl">Variables</h1>
-        </div>
+        <h1 className="text-2xl" data-cy="page-heading">
+          Variables
+        </h1>
         <Docs docs={props.variables} braces={true} assign={false} />
       </main>
     </Layout>
