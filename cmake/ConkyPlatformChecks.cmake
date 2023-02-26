@@ -442,7 +442,7 @@ if(BUILD_WAYLAND)
   set(conky_includes ${conky_includes} ${PANGOFT2_INCLUDE_DIRS})
 endif(BUILD_WAYLAND)
 
-include(FindLua)
+find_package(Lua "5.3" REQUIRED)
 
 set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
 set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIR})
@@ -465,9 +465,9 @@ if(BUILD_X11)
     pkg_search_module(IMLIB2 REQUIRED imlib2 Imlib2)
     set(luaimlib2_libs ${IMLIB2_LIBS} ${IMLIB2_LDFLAGS} ${LUA_LIBRARIES})
     set(luaimlib2_includes
-        ${IMLIB2_INCLUDE_DIRS}
-        ${LUA_INCLUDE_DIR}
-        ${X11_INCLUDE_DIR})
+      ${IMLIB2_INCLUDE_DIRS}
+      ${LUA_INCLUDE_DIR}
+      ${X11_INCLUDE_DIR})
   endif(BUILD_LUA_IMLIB2)
 
   if(BUILD_LUA_RSVG)
