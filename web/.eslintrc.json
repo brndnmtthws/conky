@@ -10,6 +10,7 @@
   "root": true,
   "settings": {
     "mdx/code-blocks": true,
-    "mdx/language-mapper": {}
+    "mdx/language-mapper": {},
+    "sort-imports": "error"
   }
 }
