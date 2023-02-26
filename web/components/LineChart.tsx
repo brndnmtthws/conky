@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import * as d3 from 'd3'
 import { random } from 'colord'
 
@@ -40,12 +40,12 @@ function fetchData() {
   const data = JSON.parse(storedData)
   return data || []
 }
-var data = fetchData()
+const data = fetchData()
 
 export const LineChart = ({ width, height, darkMode }: LineChartProps) => {
   const timerRef = useRef<NodeJS.Timeout>()
   const svgRef = useRef(null)
-  const [stroke, setStroke] = useState(random())
+  const stroke = useMemo(() => random(), [])
 
   useEffect(() => {
     const doIt = (data: DataPoint[]) => {
@@ -59,7 +59,7 @@ export const LineChart = ({ width, height, darkMode }: LineChartProps) => {
         .range([height, 0])
 
       // X axis
-      const [xMin, xMax] = d3.extent(data, (d) => d.x)
+      const [, xMax] = d3.extent(data, (d) => d.x)
       const xScale = d3
         .scaleLinear()
         .domain([(xMax || 0) - width, xMax || 0])
@@ -83,7 +83,7 @@ export const LineChart = ({ width, height, darkMode }: LineChartProps) => {
               .attr('x', (d) => xScale(d.x))
               .attr('y', (d) => yScale(d.y))
               .attr('height', (d) => yScale((max || 0) - d.y))
-              .attr('width', (d) => 1),
+              .attr('width', () => 1),
           (update) =>
             update
               .transition()
@@ -95,7 +95,7 @@ export const LineChart = ({ width, height, darkMode }: LineChartProps) => {
               .attr('x', (d) => xScale(d.x))
               .attr('y', (d) => yScale(d.y))
               .attr('height', (d) => yScale((max || 0) - d.y))
-              .attr('width', (d) => 1),
+              .attr('width', () => 1),
           (exit) => exit.call((d) => d.transition().remove())
         )
 

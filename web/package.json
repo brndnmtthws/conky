@@ -11,18 +11,20 @@
     "url": "https://github.com/brndnmtthws/conky/issues"
   },
   "scripts": {
-    "dev": "next",
+    "dev": "next dev",
     "dev:watch": "next-remote-watch ./documents",
     "build": "next build",
     "start": "next start",
     "export": "next build && next export",
-    "lint": "next lint"
+    "lint": "next lint",
+    "e2e": "start-server-and-test dev http://localhost:3000 \"cypress open --e2e\"",
+    "e2e:headless": "start-server-and-test dev http://localhost:3000 \"cypress run --e2e\""
   },
   "dependencies": {
     "@fontsource/fira-code": "^4.5.13",
     "@fontsource/inter": "^4.5.15",
     "@fontsource/newsreader": "^4.5.10",
-    "@headlessui/react": "^1.7.11",
+    "@headlessui/react": "^1.7.12",
     "@mapbox/rehype-prism": "^0.8.0",
     "@netlify/plugin-nextjs": "^4.30.4",
     "@tailwindcss/typography": "^0.5.9",
@@ -32,7 +34,7 @@
     "fuse.js": "^6.6.2",
     "gray-matter": "^4.0.3",
     "inter-ui": "^3.19.3",
-    "next": "^13.1.6",
+    "next": "^13.2.1",
     "prismjs": "^1.29.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -41,23 +43,25 @@
   "devDependencies": {
     "@types/d3": "^7.4.0",
     "@types/mapbox__rehype-prism": "^0.8.0",
-    "@types/node": "^18.14.0",
+    "@types/node": "^18.14.1",
     "@types/react": "^18.0.28",
+    "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "@typescript-eslint/parser": "^5.53.0",
     "autoprefixer": "^10.4.13",
-    "cypress": "^12.6.0",
+    "cypress": "^12.7.0",
     "eslint": "^8.34.0",
-    "eslint-config-next": "^13.1.6",
+    "eslint-config-next": "^13.2.1",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-mdx": "^2.0.5",
     "js-yaml": "^4.1.0",
-    "netlify-plugin-cypress": "^2.2.0",
+    "netlify-plugin-cypress": "^2.2.1",
     "next-mdx-remote": "^4.3.0",
     "next-remote-watch": "2.0.0",
     "postcss": "^8.4.21",
     "rehype-stringify": "^9.0.3",
     "remark-gfm": "^3.0.1",
+    "start-server-and-test": "^1.15.4",
     "tailwindcss": "^3.2.7",
-    "tslint": "^6.1.3",
     "typescript": "^4.9.5"
   }
 }

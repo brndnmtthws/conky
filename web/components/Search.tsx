@@ -1,12 +1,12 @@
 import Fuse from 'fuse.js'
 import React, { Fragment, useCallback, useEffect, useState } from 'react'
 import { Search as SearchIcon } from 'react-feather'
-import { SearchIndex, SearchItem } from '../utils/search'
+import { SearchItem } from '../utils/search'
 import { Dialog, Transition, Combobox } from '@headlessui/react'
 import { useRouter } from 'next/router'
 
 export interface SearchProps {
-  index: SearchIndex
+  fuse: Fuse<SearchItem>
 }
 
 interface SearchResultProps {
@@ -57,23 +57,13 @@ const SearchResult: React.FunctionComponent<SearchResultProps> = (props) => {
   )
 }
 
-const Search: React.FunctionComponent<SearchProps> = (props) => {
+const Search: React.FunctionComponent<SearchProps> = ({ fuse }) => {
   const router = useRouter()
   const [searchText, setSearchText] = useState('')
-  const [selected, setSelected] = useState<
-    Fuse.FuseResult<SearchItem> | undefined
-  >(undefined)
   const [searchResults, setSearchResults] = useState<
     Fuse.FuseResult<SearchItem>[]
   >([])
-  const [fuse, setFuse] = useState(() => {
-    const options: Fuse.IFuseOptions<SearchItem> = {}
-    return new Fuse(
-      props.index.list,
-      options,
-      Fuse.parseIndex(props.index.index)
-    )
-  })
+
   const [isOpen, setIsOpen] = useState(false)
   const handleKeyPress = useCallback(
     (event: KeyboardEvent) => {
@@ -159,7 +149,7 @@ const Search: React.FunctionComponent<SearchProps> = (props) => {
             <div className="fixed inset-0">
               <div className="flex h-screen w-screen items-start justify-center p-16 text-center">
                 <Dialog.Panel className="flex flex-col max-h-full w-full max-w-2xl p-1 bg-gray-200 dark:bg-gray-800 transform rounded-xl text-left align-middle shadow transition-all border border-gray-800 dark:border-white border-opacity-10 dark:border-opacity-10">
-                  <Combobox value={selected} nullable onChange={onChange}>
+                  <Combobox nullable onChange={onChange}>
                     <div className="flex">
                       <Combobox.Label className="flex items-center ml-2">
                         <SearchIcon size={32} />
