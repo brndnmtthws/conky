@@ -45,7 +45,7 @@
     "@types/mapbox__rehype-prism": "^0.8.0",
     "@types/node": "^18.14.1",
     "@types/react": "^18.0.28",
-    "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "@typescript-eslint/eslint-plugin": "^5.54.0",
     "@typescript-eslint/parser": "^5.53.0",
     "autoprefixer": "^10.4.13",
     "cypress": "^12.7.0",
