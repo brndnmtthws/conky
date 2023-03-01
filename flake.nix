@@ -33,7 +33,7 @@
         name = "conky";
         src = ./.;
         nativeBuildInputs = [
-          clang_14
+          clang_15
           cmake
           git
           ninja
@@ -43,9 +43,9 @@
           freetype
           gettext
           imlib2
-          llvmPackages_14.libcxx
-          llvmPackages_14.libcxxabi
-          lua
+          llvmPackages_15.libcxx
+          llvmPackages_15.libcxxabi
+          lua5_4
           ncurses
           xorg.libICE
           xorg.libSM
