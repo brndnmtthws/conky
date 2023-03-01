@@ -53,11 +53,11 @@ values:
       Substitute N by a digit between 0 and 9, inclusively. When specifying
       the color value in hex, omit the leading hash (#).
   - name: console_bar_fill
-    desc: "A character to fill the console bars."
-    default: "#"
+    desc: 'A character to fill the console bars.'
+    default: '#'
   - name: console_bar_unfill
-    desc: "A character to unfill the console bars."
-    default: "."
+    desc: 'A character to unfill the console bars.'
+    default: '.'
   - name: console_graph_ticks
     desc: |-
       A comma-separated list of strings to use as the bars of a
@@ -175,7 +175,7 @@ values:
   - name: hddtemp_host
     desc: |-
       Hostname to connect to for hddtemp objects.
-    default: "127.0.0.1"
+    default: '127.0.0.1'
   - name: hddtemp_port
     desc: Port to use for hddtemp connections.
     default: 7634
@@ -406,7 +406,7 @@ values:
   - name: own_window_title
     desc: |-
       Manually set the window name.
-    default: "conky (<hostname>)"
+    default: 'conky (<hostname>)'
   - name: own_window_transparent
     desc: |-
       Boolean, set transparency? If ARGB visual is enabled, sets
@@ -462,7 +462,7 @@ values:
   - name: stippled_borders
     desc: Border stippling (dashing) in pixels.
   - name: store_graph_data_explicitly
-    desc:  |-
+    desc: |-
       Enable storing graph data explicitly by ID. This avoids resets while
       using conditional colors. This option should be disabled while using
       graphs indirectly e.g. via execpi or lua_parse. Otherwise the graph
@@ -517,7 +517,7 @@ values:
       Zero makes Conky run forever.
   - name: units_spacer
     desc: String to place between values and units.
-    default: ""
+    default: ''
   - name: update_interval
     desc: Update interval.
     args:

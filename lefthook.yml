@@ -1,7 +1,7 @@
 pre-commit:
+  parallel: true
   commands:
     web-linter:
-      parallel: true
       run: |
         npx eslint --fix {staged_files} \
           && git add {staged_files}
