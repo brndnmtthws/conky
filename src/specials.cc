@@ -231,143 +231,136 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
   g->last_colour = Colour();
   g->scale = defscale;
   g->tempgrad = FALSE;
-  if (args != nullptr) {
-    /* extract double-quoted command in case of execgraph */
-    if (*args == '"') {
-      char *_ptr;
-      size_t _size;
-      if (((_ptr = const_cast<char *>(strrchr(args, '"'))) != nullptr) &&
-          _ptr != args) {
-        _size = _ptr - args - 1;
-      } else {
-        NORM_ERR("mismatched double-quote in execgraph object");
-        return nullptr;
-      }
 
-      _size = _size < 1024 ? _size : 1023;
-      strncpy(quoted_cmd, args + 1, _size);
-      quoted_cmd[_size] = '\0';
+  if (args == nullptr) return nullptr;
 
-      /* copy everything after the last quote into argstr */
-      if (_size + 2 < strlen(args)) { strncpy(argstr, args + _size + 2, 1023); }
+  /* extract double-quoted command in case of execgraph */
+  if (*args == '"') {
+    char *_ptr;
+    size_t _size;
+    if (((_ptr = const_cast<char *>(strrchr(args, '"'))) != nullptr) &&
+        _ptr != args) {
+      _size = _ptr - args - 1;
     } else {
-      /* redundant, but simplifies the code below */
-      strncpy(argstr, args, 1023);
+      NORM_ERR("mismatched double-quote in execgraph object");
+      return nullptr;
     }
 
-    /* set tempgrad to true, if '-t' specified.
-     * It doesn#t matter where the argument is exactly. */
-    if ((strstr(argstr, " " TEMPGRAD) != nullptr) ||
-        strncmp(argstr, TEMPGRAD, strlen(TEMPGRAD)) == 0) {
-      g->tempgrad = TRUE;
-    }
-    /* set showlog-flag, if '-l' specified
-     * It doesn#t matter where the argument is exactly. */
-    if ((strstr(argstr, " " LOGGRAPH) != nullptr) ||
-        strncmp(argstr, LOGGRAPH, strlen(LOGGRAPH)) == 0) {
-      g->flags |= SF_SHOWLOG;
-    }
+    _size = _size < 1024 ? _size : 1023;
+    strncpy(quoted_cmd, args + 1, _size);
+    quoted_cmd[_size] = '\0';
 
-    /* all the following functions try to interpret the beginning of a
-     * a string with different formaters. If successfully the return from
-     * this whole function */
-
-    /* interpret the beginning(!) of the argument string as:
-     * '[height],[width] [color1] [color2] [scale]'
-     * This means parameters like -t and -l may not be in the beginning */
-    if (sscanf(argstr, "%d,%d %s %s %lf", &g->height, &g->width,
-               first_colour_name, last_colour_name, &g->scale) == 5) {
-      apply_graph_colours(g, first_colour_name, last_colour_name);
-      return *quoted_cmd != 0
-                 ? strndup(quoted_cmd, text_buffer_size.get(*state))
-                 : nullptr;
-    }
-    /* [height],[width] [color1] [color2] */
-    g->scale = defscale;
-    if (sscanf(argstr, "%d,%d %s %s", &g->height, &g->width, first_colour_name,
-               last_colour_name) == 4) {
-      apply_graph_colours(g, first_colour_name, last_colour_name);
-      return *quoted_cmd != 0
-                 ? strndup(quoted_cmd, text_buffer_size.get(*state))
-                 : nullptr;
-    }
-    /* [command] [height],[width] [color1] [color2] [scale] */
-    if (sscanf(argstr, "%1023s %d,%d %s %s %lf", buf, &g->height, &g->width,
-               first_colour_name, last_colour_name, &g->scale) == 6) {
-      apply_graph_colours(g, first_colour_name, last_colour_name);
-      return strndup(buf, text_buffer_size.get(*state));
-    }
-    g->scale = defscale;
-    /* [command] [height],[width] [color1] [color2] */
-    if (sscanf(argstr, "%1023s %d,%d %s %s", buf, &g->height, &g->width,
-               first_colour_name, last_colour_name) == 5) {
-      apply_graph_colours(g, first_colour_name, last_colour_name);
-      return strndup(buf, text_buffer_size.get(*state));
-    }
-
-    buf[0] = '\0';
-    g->height = default_graph_height.get(*state);
-    g->width = default_graph_width.get(*state);
-    /* [color1] [color2] [scale] */
-    if (sscanf(argstr, "%s %s %lf", first_colour_name, last_colour_name,
-               &g->scale) == 3) {
-      apply_graph_colours(g, first_colour_name, last_colour_name);
-      return *quoted_cmd != 0
-                 ? strndup(quoted_cmd, text_buffer_size.get(*state))
-                 : nullptr;
-    }
-    g->scale = defscale;
-    /* [color1] [color2] */
-    if (sscanf(argstr, "%s %s", first_colour_name, last_colour_name) == 2) {
-      apply_graph_colours(g, first_colour_name, last_colour_name);
-      return *quoted_cmd != 0
-                 ? strndup(quoted_cmd, text_buffer_size.get(*state))
-                 : nullptr;
-    }
-    /* [command] [color1] [color2] [scale] */
-    if (sscanf(argstr, "%1023s %s %s %lf", buf, first_colour_name,
-               last_colour_name, &g->scale) == 4) {
-      apply_graph_colours(g, first_colour_name, last_colour_name);
-      return strndup(buf, text_buffer_size.get(*state));
-    }
-    g->scale = defscale;
-    /* [command] [color1] [color2] */
-    if (sscanf(argstr, "%1023s %s %s", buf, first_colour_name,
-               last_colour_name) == 3) {
-      apply_graph_colours(g, first_colour_name, last_colour_name);
-      return strndup(buf, text_buffer_size.get(*state));
-    }
-
-    buf[0] = '\0';
-    first_colour_name[0] = '\0';
-    last_colour_name[0] = '\0';
-    /* [height],[width] [scale] */
-    if (sscanf(argstr, "%d,%d %lf", &g->height, &g->width, &g->scale) == 3) {
-      return *quoted_cmd != 0
-                 ? strndup(quoted_cmd, text_buffer_size.get(*state))
-                 : nullptr;
-    }
-    g->scale = defscale;
-    /* [height],[width] */
-    if (sscanf(argstr, "%d,%d", &g->height, &g->width) == 2) {
-      return *quoted_cmd != 0
-                 ? strndup(quoted_cmd, text_buffer_size.get(*state))
-                 : nullptr;
-    }
-    /* [command] [height],[width] [scale] */
-    if (sscanf(argstr, "%1023s %d,%d %lf", buf, &g->height, &g->width,
-               &g->scale) < 4) {
-      g->scale = defscale;
-      // TODO(brenden): check the return value and throw an error?
-      sscanf(argstr, "%1023s %d,%d", buf, &g->height, &g->width);
-    }
-
-    if ((*quoted_cmd == 0) && (*buf == 0)) { return nullptr; }
-    return strndup(*quoted_cmd != 0 ? quoted_cmd : buf,
-                   text_buffer_size.get(*state));
+    /* copy everything after the last quote into argstr */
+    if (_size + 2 < strlen(args)) { strncpy(argstr, args + _size + 2, 1023); }
+  } else {
+    /* redundant, but simplifies the code below */
+    strncpy(argstr, args, 1023);
   }
 
-  return nullptr;
+  /* set tempgrad to true, if '-t' specified.
+   * It doesn#t matter where the argument is exactly. */
+  if ((strstr(argstr, " " TEMPGRAD) != nullptr) ||
+      strncmp(argstr, TEMPGRAD, strlen(TEMPGRAD)) == 0) {
+    g->tempgrad = TRUE;
+  }
+  /* set showlog-flag, if '-l' specified
+   * It doesn#t matter where the argument is exactly. */
+  if ((strstr(argstr, " " LOGGRAPH) != nullptr) ||
+      strncmp(argstr, LOGGRAPH, strlen(LOGGRAPH)) == 0) {
+    g->flags |= SF_SHOWLOG;
+  }
+
+  /* all the following functions try to interpret the beginning of a
+   * a string with different formaters. If successfully the return from
+   * this whole function */
+
+  /* interpret the beginning(!) of the argument string as:
+   * '[height],[width] [color1] [color2] [scale]'
+   * This means parameters like -t and -l may not be in the beginning */
+  if (sscanf(argstr, "%d,%d %s %s %lf", &g->height, &g->width,
+             first_colour_name, last_colour_name, &g->scale) == 5) {
+    apply_graph_colours(g, first_colour_name, last_colour_name);
+    return *quoted_cmd != 0 ? strndup(quoted_cmd, text_buffer_size.get(*state))
+                            : nullptr;
+  }
+  /* [height],[width] [color1] [color2] */
+  g->scale = defscale;
+  if (sscanf(argstr, "%d,%d %s %s", &g->height, &g->width, first_colour_name,
+             last_colour_name) == 4) {
+    apply_graph_colours(g, first_colour_name, last_colour_name);
+    return *quoted_cmd != 0 ? strndup(quoted_cmd, text_buffer_size.get(*state))
+                            : nullptr;
+  }
+  /* [command] [height],[width] [color1] [color2] [scale] */
+  if (sscanf(argstr, "%1023s %d,%d %s %s %lf", buf, &g->height, &g->width,
+             first_colour_name, last_colour_name, &g->scale) == 6) {
+    apply_graph_colours(g, first_colour_name, last_colour_name);
+    return strndup(buf, text_buffer_size.get(*state));
+  }
+  g->scale = defscale;
+  /* [command] [height],[width] [color1] [color2] */
+  if (sscanf(argstr, "%1023s %d,%d %s %s", buf, &g->height, &g->width,
+             first_colour_name, last_colour_name) == 5) {
+    apply_graph_colours(g, first_colour_name, last_colour_name);
+    return strndup(buf, text_buffer_size.get(*state));
+  }
+
+  buf[0] = '\0';
+  g->height = default_graph_height.get(*state);
+  g->width = default_graph_width.get(*state);
+  /* [color1] [color2] [scale] */
+  if (sscanf(argstr, "%s %s %lf", first_colour_name, last_colour_name,
+             &g->scale) == 3) {
+    apply_graph_colours(g, first_colour_name, last_colour_name);
+    return *quoted_cmd != 0 ? strndup(quoted_cmd, text_buffer_size.get(*state))
+                            : nullptr;
+  }
+  g->scale = defscale;
+  /* [color1] [color2] */
+  if (sscanf(argstr, "%s %s", first_colour_name, last_colour_name) == 2) {
+    apply_graph_colours(g, first_colour_name, last_colour_name);
+    return *quoted_cmd != 0 ? strndup(quoted_cmd, text_buffer_size.get(*state))
+                            : nullptr;
+  }
+  /* [command] [color1] [color2] [scale] */
+  if (sscanf(argstr, "%1023s %s %s %lf", buf, first_colour_name,
+             last_colour_name, &g->scale) == 4) {
+    apply_graph_colours(g, first_colour_name, last_colour_name);
+    return strndup(buf, text_buffer_size.get(*state));
+  }
+  g->scale = defscale;
+  /* [command] [color1] [color2] */
+  if (sscanf(argstr, "%1023s %s %s", buf, first_colour_name,
+             last_colour_name) == 3) {
+    apply_graph_colours(g, first_colour_name, last_colour_name);
+    return strndup(buf, text_buffer_size.get(*state));
+  }
+
+  buf[0] = '\0';
+  first_colour_name[0] = '\0';
+  last_colour_name[0] = '\0';
+  /* [height],[width] [scale] */
+  if (sscanf(argstr, "%d,%d %lf", &g->height, &g->width, &g->scale) == 3) {
+    return *quoted_cmd != 0 ? strndup(quoted_cmd, text_buffer_size.get(*state))
+                            : nullptr;
+  }
+  g->scale = defscale;
+  /* [height],[width] */
+  if (sscanf(argstr, "%d,%d", &g->height, &g->width) == 2) {
+    return *quoted_cmd != 0 ? strndup(quoted_cmd, text_buffer_size.get(*state))
+                            : nullptr;
+  }
+  /* [command] [height],[width] [scale] */
+  if (sscanf(argstr, "%1023s %d,%d %lf", buf, &g->height, &g->width,
+             &g->scale) < 4) {
+    g->scale = defscale;
+    // TODO(brenden): check the return value and throw an error?
+    sscanf(argstr, "%1023s %d,%d", buf, &g->height, &g->width);
+  }
+
+  if ((*quoted_cmd == 0) && (*buf == 0)) { return nullptr; }
+  return strndup(*quoted_cmd != 0 ? quoted_cmd : buf,
+                 text_buffer_size.get(*state));
 }
 #endif /* BUILD_GUI */
 
