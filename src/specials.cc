@@ -298,6 +298,7 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
       return strndup(buf, text_buffer_size.get(*state));
     }
     g->scale = defscale;
+    /* [command] [height],[width] [color1] [color2] */
     if (sscanf(argstr, "%1023s %d,%d %s %s", buf, &g->height, &g->width,
                first_colour_name, last_colour_name) == 5) {
       apply_graph_colours(g, first_colour_name, last_colour_name);
@@ -307,6 +308,7 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
     buf[0] = '\0';
     g->height = default_graph_height.get(*state);
     g->width = default_graph_width.get(*state);
+    /* [color1] [color2] [scale] */
     if (sscanf(argstr, "%s %s %lf", first_colour_name, last_colour_name,
                &g->scale) == 3) {
       apply_graph_colours(g, first_colour_name, last_colour_name);
@@ -315,18 +317,21 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
                  : nullptr;
     }
     g->scale = defscale;
+    /* [color1] [color2] */
     if (sscanf(argstr, "%s %s", first_colour_name, last_colour_name) == 2) {
       apply_graph_colours(g, first_colour_name, last_colour_name);
       return *quoted_cmd != 0
                  ? strndup(quoted_cmd, text_buffer_size.get(*state))
                  : nullptr;
     }
+    /* [command] [color1] [color2] [scale] */
     if (sscanf(argstr, "%1023s %s %s %lf", buf, first_colour_name,
                last_colour_name, &g->scale) == 4) {
       apply_graph_colours(g, first_colour_name, last_colour_name);
       return strndup(buf, text_buffer_size.get(*state));
     }
     g->scale = defscale;
+    /* [command] [color1] [color2] */
     if (sscanf(argstr, "%1023s %s %s", buf, first_colour_name,
                last_colour_name) == 3) {
       apply_graph_colours(g, first_colour_name, last_colour_name);
@@ -336,17 +341,20 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale) {
     buf[0] = '\0';
     first_colour_name[0] = '\0';
     last_colour_name[0] = '\0';
+    /* [height],[width] [scale] */
     if (sscanf(argstr, "%d,%d %lf", &g->height, &g->width, &g->scale) == 3) {
       return *quoted_cmd != 0
                  ? strndup(quoted_cmd, text_buffer_size.get(*state))
                  : nullptr;
     }
     g->scale = defscale;
+    /* [height],[width] */
     if (sscanf(argstr, "%d,%d", &g->height, &g->width) == 2) {
       return *quoted_cmd != 0
                  ? strndup(quoted_cmd, text_buffer_size.get(*state))
                  : nullptr;
     }
+    /* [command] [height],[width] [scale] */
     if (sscanf(argstr, "%1023s %d,%d %lf", buf, &g->height, &g->width,
                &g->scale) < 4) {
       g->scale = defscale;
