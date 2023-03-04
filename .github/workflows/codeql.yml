@@ -1,13 +1,17 @@
-name: "CodeQL"
+name: 'CodeQL'
 
 on:
   push:
-    branches: ["main"]
+    branches: ['main']
+    paths:
+      - src/**
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: ["main"]
+    branches: ['main']
+    paths:
+      - src/**
   schedule:
-    - cron: "20 2 * * 0"
+    - cron: '20 2 * * 0'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -25,7 +29,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: ["cpp", "javascript", "python"]
+        language: ['cpp', 'javascript', 'python']
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
         # Use only 'java' to analyze code written in Java, Kotlin or both
         # Use only 'javascript' to analyze code written in JavaScript, TypeScript or both
@@ -94,4 +98,4 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
         with:
-          category: "/language:${{matrix.language}}"
+          category: '/language:${{matrix.language}}'

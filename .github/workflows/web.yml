@@ -1,12 +1,21 @@
 name: Web CI
+
 on:
   push:
     branches: [main]
+    paths:
+      - web/**
+      - doc/**
   pull_request:
     branches: [main]
+    paths:
+      - web/**
+      - doc/**
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
