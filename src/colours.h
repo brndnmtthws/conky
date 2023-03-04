@@ -33,6 +33,7 @@
 #include <climits>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #ifdef BUILD_X11
 #include "x11.h"
 #endif /* BUILD_X11 */
@@ -51,7 +52,7 @@ struct Colour {
   }
 
   // Express the color as a 32-bit ARGB integer (alpha in MSB).
-  uint32_t to_argb32(void) {
+  uint32_t to_argb32(void) const {
     uint32_t out;
     out = alpha << 24 | red << 16 | green << 8 | blue;
     return out;
@@ -61,6 +62,12 @@ struct Colour {
   static Colour from_argb32(uint32_t argb);
 
 #ifdef BUILD_X11
+  class Hash {
+   public:
+    size_t operator()(const Colour &c) const { return c.to_argb32(); }
+  };
+
+  static std::unordered_map<Colour, unsigned long, Hash> x11_pixels;
   unsigned long to_x11_color(Display *display, int screen,
                              bool premultiply = false) {
     if (display == nullptr) {
@@ -68,16 +75,29 @@ struct Colour {
       return 0;
     }
 
-    XColor xcolor{};
-    xcolor.red = red * 257;
-    xcolor.green = green * 257;
-    xcolor.blue = blue * 257;
-    if (XAllocColor(display, DefaultColormap(display, screen), &xcolor) == 0) {
-      // NORM_ERR("can't allocate X color");
-      return 0;
+    unsigned long pixel;
+
+    /* Either get a cached X11 pixel or allocate one */
+    if (auto pixel_iter = x11_pixels.find(*this);
+        pixel_iter != x11_pixels.end()) {
+      pixel = pixel_iter->second;
+    } else {
+      XColor xcolor{};
+      xcolor.red = red * 257;
+      xcolor.green = green * 257;
+      xcolor.blue = blue * 257;
+      if (XAllocColor(display, DefaultColormap(display, screen), &xcolor) ==
+          0) {
+        // NORM_ERR("can't allocate X color");
+        return 0;
+      }
+
+      /* Save pixel value in the cache to avoid reallocating it */
+      x11_pixels[*this] = xcolor.pixel;
+      pixel = static_cast<unsigned long>(xcolor.pixel);
     }
 
-    unsigned long pixel = static_cast<unsigned long>(xcolor.pixel) & 0xffffff;
+    pixel &= 0xffffff;
 #ifdef BUILD_ARGB
     if (have_argb_visual) {
       if (premultiply)
