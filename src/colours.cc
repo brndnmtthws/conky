@@ -31,6 +31,10 @@
 #include "logging.h"
 #include "x11-color.h"
 
+#ifdef BUILD_X11
+std::unordered_map<Colour, unsigned long, Colour::Hash> Colour::x11_pixels;
+#endif /* BUILD_X11 */
+
 static int hex_nibble_value(char c) {
   if (c >= '0' && c <= '9') {
     return c - '0';
