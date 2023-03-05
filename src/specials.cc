@@ -257,8 +257,8 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale) {
   memset(g, 0, sizeof(struct graph));
   obj->special_data = g;
 
-  /* zero width means all space that is available */
   g->id = ++graph_count;
+  /* zero width means all space that is available */
   g->width = default_graph_width.get(*state);
   g->height = default_graph_height.get(*state);
   g->colours_set = false;
@@ -269,22 +269,22 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale) {
 
   if (argstr == nullptr) return false;
 
-  /* set tempgrad to true, if '-t' specified.
-   * It doesn#t matter where the argument is exactly. */
+  /* set tempgrad to true if '-t' specified.
+   * It doesn't matter where the argument is exactly. */
   if ((strstr(argstr, " " TEMPGRAD) != nullptr) ||
       strncmp(argstr, TEMPGRAD, strlen(TEMPGRAD)) == 0) {
     g->tempgrad = TRUE;
   }
-  /* set showlog-flag, if '-l' specified
-   * It doesn#t matter where the argument is exactly. */
+  /* set showlog flag if '-l' specified.
+   * It doesn't matter where the argument is exactly. */
   if ((strstr(argstr, " " LOGGRAPH) != nullptr) ||
       strncmp(argstr, LOGGRAPH, strlen(LOGGRAPH)) == 0) {
     g->flags |= SF_SHOWLOG;
   }
 
   /* all the following functions try to interpret the beginning of a
-   * a string with different formaters. If successfully the return from
-   * this whole function */
+   * a string with different format strings. If successful, they return from
+   * the function */
 
   /* interpret the beginning(!) of the argument string as:
    * '[height],[width] [color1] [color2] [scale]'
