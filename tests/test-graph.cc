@@ -52,13 +52,13 @@ struct graph {
   char tempgrad;
 };
 
-static std::pair<struct graph, char *> test_parse(const char *s) {
+static std::pair<struct graph, bool> test_parse(const char *s) {
   struct text_object obj;
-  char *command = scan_graph(&obj, s, default_scale);
+  bool result = scan_graph(&obj, s, default_scale);
   auto g = static_cast<struct graph *>(obj.special_data);
   struct graph graph = *g;
   free(g);
-  return {graph, command};
+  return {graph, result};
 }
 
 std::string unquote(const std::string &s) {
@@ -72,14 +72,13 @@ TEST_CASE("scan_graph correctly parses input strings") {
   conky::export_symbols(*state);
 
   SECTION("Trivial parse") {
-    auto [g, command] = test_parse("");
+    auto [g, success] = test_parse("");
 
     REQUIRE(g.width == default_width);
     REQUIRE(g.height == default_height);
   }
 
   /* test parsing combinations of options */
-  const char *command_options[] = {"\"foo bar\"", "\"ls -t\"", "foo-test", ""};
   const char *size_options[][2] = {{"30", "500"}, {"80", ""}, {"", ""}};
   const char *color_options[][2] = {{"orange", "blue"},
                                     {"#deadff", "#392014"},
@@ -87,93 +86,81 @@ TEST_CASE("scan_graph correctly parses input strings") {
                                     {"", ""}};
   const char *scale_options[] = {"0.5", ""};
 
-  SECTION(
-      "subset of [command] [height,width] [color1 color2] [scale] [-t] [-l]") {
-    for (auto command : command_options) {
-      for (auto size : size_options) {
-        for (auto colors : color_options) {
-          for (auto scale : scale_options) {
-            bool ends_at_first_size = false;
+  SECTION("subset of [height,width] [color1 color2] [scale] [-t] [-l]") {
+    for (auto size : size_options) {
+      for (auto colors : color_options) {
+        for (auto scale : scale_options) {
+          bool ends_at_first_size = false;
 
-            /* build an argument string by combining the selected options */
-            std::string s;
-            s += command;
+          /* build an argument string by combining the selected options */
+          std::string s;
+          if (*size[0] != '\0') {
+            s += size[0];
+            s += ",";
+            if (*size[1] == '\0') {
+              /* if the size is just a height, it has to be the end of the
+               * argument string */
+              ends_at_first_size = true;
+            } else {
+              s += size[1];
+            }
             s += " ";
-            if (*size[0] != '\0') {
-              s += size[0];
-              s += ",";
-              if (*size[1] == '\0') {
-                /* if the size is just a height, it has to be the end of the
-                 * argument string */
-                ends_at_first_size = true;
-              } else {
-                s += size[1];
-              }
-              s += " ";
-            }
-            if (!ends_at_first_size) {
-              s += colors[0];
-              s += " ";
-              s += colors[1];
-              s += " ";
-              s += scale;
-            }
-
-            /* parse the argument string */
-            auto [g, parsed_command] = test_parse(s.c_str());
-
-            printf("command: %s\n", s.c_str());
-
-            /* validate parsing of each component */
-            if (*command == '\0') {
-              REQUIRE(parsed_command == nullptr);
-            } else {
-              REQUIRE(parsed_command != nullptr);
-              REQUIRE(std::string(parsed_command) == unquote(command));
-            }
-
-            if (*size[0] == '\0') {
-              REQUIRE(g.width == default_width);
-              REQUIRE(g.height == default_height);
-            } else {
-              REQUIRE(g.height == atoi(size[0]));
-              REQUIRE(g.width == atoi(size[1]));
-            }
-
-            /* if second half of size is empty, no subsequent values should be
-             * set
-             */
-            if (ends_at_first_size) {
-              REQUIRE(g.colours_set == false);
-              continue;
-            }
-
-            if (*colors[0] == '\0') {
-              REQUIRE(g.colours_set == false);
-            } else {
-              REQUIRE(g.colours_set == true);
-              REQUIRE(g.first_colour == parse_color(colors[0]));
-              REQUIRE(g.last_colour == parse_color(colors[1]));
-            }
-
-            if (*scale == '\0') {
-              REQUIRE(g.scale == default_scale);
-            } else {
-              REQUIRE(g.scale == 0.5);
-            }
-
-            REQUIRE(g.flags == 0);
-            REQUIRE(g.tempgrad == 0);
           }
+          if (!ends_at_first_size) {
+            s += colors[0];
+            s += " ";
+            s += colors[1];
+            s += " ";
+            s += scale;
+          }
+
+          /* parse the argument string */
+          auto [g, success] = test_parse(s.c_str());
+
+          printf("command: %s\n", s.c_str());
+
+          /* validate parsing of each component */
+          if (*size[0] == '\0') {
+            REQUIRE(g.width == default_width);
+            REQUIRE(g.height == default_height);
+          } else {
+            REQUIRE(g.height == atoi(size[0]));
+            REQUIRE(g.width == atoi(size[1]));
+          }
+
+          /* if second half of size is empty, no subsequent values should be
+           * set
+           */
+          if (ends_at_first_size) {
+            REQUIRE(g.colours_set == false);
+            continue;
+          }
+
+          if (*colors[0] == '\0') {
+            REQUIRE(g.colours_set == false);
+          } else {
+            REQUIRE(g.colours_set == true);
+            REQUIRE(g.first_colour == parse_color(colors[0]));
+            REQUIRE(g.last_colour == parse_color(colors[1]));
+          }
+
+          if (*scale == '\0') {
+            REQUIRE(g.scale == default_scale);
+          } else {
+            REQUIRE(g.scale == 0.5);
+          }
+
+          REQUIRE(g.flags == 0);
+          REQUIRE(g.tempgrad == 0);
         }
       }
     }
   }
 
   SECTION("[height,width] [color1 color2] [scale] [-t] [-l]") {
-    auto [g, command] = test_parse("21,340 orange blue 0.5 -t -l");
+    auto [g, success] = test_parse("21,340 orange blue 0.5 -t -l");
 
-    REQUIRE(command == nullptr);
+    REQUIRE(success);
     REQUIRE(g.width == 340);
     REQUIRE(g.height == 21);
     REQUIRE(g.colours_set == true);
@@ -184,19 +171,19 @@ TEST_CASE("scan_graph correctly parses input strings") {
 
   SECTION("-t location") {
     {
-      auto [g, command] = test_parse("\"ls -t\" 21,340 red blue 0.5");
+      auto [g, success] = test_parse("21,340 red blue 0.5");
       REQUIRE(g.tempgrad == false);
     }
     {
-      auto [g, command] = test_parse("foo-test 21,340 red blue 0.5");
+      auto [g, success] = test_parse("21,340 red blue 0.5");
       REQUIRE(g.tempgrad == false);
     }
     {
-      auto [g, command] = test_parse("foo-test -t 21,340 red blue 0.5");
+      auto [g, success] = test_parse("-t 21,340 red blue 0.5");
       REQUIRE(g.tempgrad == true);
     }
     {
-      auto [g, command] = test_parse("21,340 -t red blue 0.5");
+      auto [g, success] = test_parse("21,340 -t red blue 0.5");
       REQUIRE(g.tempgrad == true);
     }
   }
