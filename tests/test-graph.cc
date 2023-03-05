@@ -202,4 +202,28 @@ TEST_CASE("scan_graph correctly parses input strings") {
   }
 }
 
+TEST_CASE("scan_command correctly parses input strings") {
+  SECTION("parse commands") {
+    const char *command_options[][2] = {{"\"foo bar\"", "foo bar"},
+                                        {"\"foo bar\"\tbaz", "foo bar"},
+                                        {"\"foo bar\"\nbaz", "foo bar"},
+                                        {"\"foo bar\" baz", "foo bar"},
+                                        {"one two", "one"},
+                                        {"\"ls -t\"", "ls -t"},
+                                        {"\"ls -t\" 4309", "ls -t"},
+                                        {"foo-test", "foo-test"},
+                                        {"foo-test a b c", "foo-test"},
+                                        {"", ""}};
+    for (auto [command, expected_parsed] : command_options) {
+      auto [parsed, len] = scan_command(command);
+      REQUIRE(std::string(parsed) == expected_parsed);
+      if (command[0] == '"') {
+        REQUIRE(len == strlen(expected_parsed) + 2);
+      } else {
+        REQUIRE(len == strlen(expected_parsed));
+      }
+    }
+  }
+}
+
 #endif /* BUILD_GUI */

@@ -274,7 +274,9 @@ void scan_exec_arg(struct text_object *obj, const char *arg,
   } else if ((execflag & EF_GAUGE) != 0u) {
     cmd = scan_gauge(obj, cmd, 100);
   } else if ((execflag & EF_GRAPH) != 0u) {
-    cmd = scan_graph(obj, cmd, 100);
+    auto [buf, skip] = scan_command(cmd);
+    scan_graph(obj, cmd + skip, 100);
+    cmd = buf;
     if (cmd == nullptr) {
       NORM_ERR("error parsing arguments to execgraph object");
     }

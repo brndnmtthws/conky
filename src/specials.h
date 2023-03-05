@@ -29,6 +29,7 @@
 #ifndef _SPECIALS_H
 #define _SPECIALS_H
 
+#include <tuple>
 #include "colours.h"
 
 /* special stuff in text_buffer */
@@ -92,7 +93,8 @@ const char *scan_bar(struct text_object *, const char *, double);
 const char *scan_gauge(struct text_object *, const char *, double);
 #ifdef BUILD_GUI
 void scan_font(struct text_object *, const char *);
-char *scan_graph(struct text_object *, const char *, double);
+std::pair<char *, size_t> scan_command(const char *);
+bool scan_graph(struct text_object *, const char *, double);
 void scan_tab(struct text_object *, const char *);
 void scan_stippled_hr(struct text_object *, const char *);
 
