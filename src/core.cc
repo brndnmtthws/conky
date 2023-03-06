@@ -725,11 +725,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   DBGP2("Adding $cpubar for CPU %d", obj->data.i);
 #ifdef BUILD_GUI
   END OBJ(cpugraph, &update_cpu_usage) get_cpu_count();
-  char *buf = nullptr;
   SCAN_CPU(arg, obj->data.i);
-  buf = scan_graph(obj, arg, 1);
+  scan_graph(obj, arg, 1);
   DBGP2("Adding $cpugraph for CPU %d", obj->data.i);
-  free_and_zero(buf);
   obj->callbacks.graphval = &cpu_barval;
   obj->callbacks.free = &free_cpu;
   END OBJ(loadgraph, &update_load_average) scan_loadgraph_arg(obj, arg);
@@ -1244,13 +1242,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(memwithbuffersbar, &update_meminfo) scan_bar(obj, arg, 1);
   obj->callbacks.barval = &mem_with_buffers_barval;
 #ifdef BUILD_GUI
-  END OBJ(memgraph, &update_meminfo) char *buf = nullptr;
-  buf = scan_graph(obj, arg, 1);
-  free_and_zero(buf);
+  END OBJ(memgraph, &update_meminfo) scan_graph(obj, arg, 1);
   obj->callbacks.graphval = &mem_barval;
-  END OBJ(memwithbuffersgraph, &update_meminfo) char *buf = nullptr;
-  buf = scan_graph(obj, arg, 1);
-  free_and_zero(buf);
+  END OBJ(memwithbuffersgraph, &update_meminfo) scan_graph(obj, arg, 1);
   obj->callbacks.graphval = &mem_with_buffers_barval;
 #endif /* BUILD_GUI*/
 #ifdef HAVE_SOME_SOUNDCARD_H
@@ -1829,8 +1823,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ_ARG(
       lua_graph, nullptr,
       "lua_graph needs arguments: <function name> [height],[width] [gradient "
-      "colour 1] [gradient colour 2] [scale] [-t] [-l]") char *buf = nullptr;
-  buf = scan_graph(obj, arg, 100);
+      "colour 1] [gradient colour 2] [scale] [-t] [-l]") auto [buf, skip] =
+      scan_command(arg);
+  scan_graph(obj, arg + skip, 100);
   if (buf != nullptr) {
     obj->data.s = buf;
   } else {
@@ -1967,9 +1962,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(apcupsd_loadbar, &update_apcupsd) scan_bar(obj, arg, 100);
   obj->callbacks.barval = &apcupsd_loadbarval;
 #ifdef BUILD_GUI
-  END OBJ(apcupsd_loadgraph, &update_apcupsd) char *buf = nullptr;
-  buf = scan_graph(obj, arg, 100);
-  free_and_zero(buf);
+  END OBJ(apcupsd_loadgraph, &update_apcupsd) scan_graph(obj, arg, 100);
   obj->callbacks.graphval = &apcupsd_loadbarval;
   END OBJ(apcupsd_loadgauge, &update_apcupsd) scan_gauge(obj, arg, 100);
   obj->callbacks.gaugeval = &apcupsd_loadbarval;

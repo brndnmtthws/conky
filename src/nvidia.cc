@@ -454,9 +454,11 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
     case BAR:
       arg = scan_bar(obj, arg, 100);
       break;
-    case GRAPH:
-      arg = scan_graph(obj, arg, 100);
-      break;
+    case GRAPH: {
+      auto [buf, skip] = scan_command(arg);
+      scan_graph(obj, arg + skip, 100);
+      arg = buf;
+    } break;
     case GAUGE:
       arg = scan_gauge(obj, arg, 100);
       break;
