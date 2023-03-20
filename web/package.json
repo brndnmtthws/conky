@@ -49,7 +49,7 @@
     "@types/prismjs": "^1.26.0",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
-    "@typescript-eslint/eslint-plugin": "^5.55.0",
+    "@typescript-eslint/eslint-plugin": "^5.56.0",
     "@typescript-eslint/parser": "^5.55.0",
     "autoprefixer": "^10.4.14",
     "cypress": "^12.7.0",
