@@ -156,7 +156,7 @@ void hsv_gradient_factory::convert_from_scaled_rgb(long *const scaled,
   auto value = get_value(scaled);
   auto minimum = get_minimum(scaled);
   auto chroma = value - minimum;
-  auto saturation = (SCALE360 * chroma) / value;
+  long saturation = (SCALE360 * (uint64_t)chroma) / value;
 
   target[0] = get_hue(scaled, chroma, value);
   target[1] = saturation;
