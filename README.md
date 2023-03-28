@@ -4,7 +4,7 @@
 
 [💬 Join the Matrix chat](https://matrix.to/#/#conky:frens.io)
 
-<p align="center"><img width="300" src="logo/conky-logotype-horizontal-violet.png"></p>
+<p align="center"><img width="300" src="data/logo/conky-logotype-horizontal-violet.png"></p>
 
 **Conky** is a free, light-weight system monitor for X, that displays
 any kind of information on your desktop. It can also run on Wayland, macOS, output
