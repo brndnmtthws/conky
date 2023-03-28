@@ -1,4 +1,4 @@
-FROM ubuntu:jammy AS builder
+FROM ubuntu:18.04
 
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
