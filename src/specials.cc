@@ -666,14 +666,16 @@ void new_stippled_hr(struct text_object *obj, char *p,
 #endif /* BUILD_GUI */
 
 void new_fg(struct text_object *obj, char *p, unsigned int p_max_size) {
+  if (false
 #ifdef BUILD_GUI
-  if (display_output() && display_output()->graphical()) {
-    new_special(p, FG)->arg = obj->data.l;
-  }
+  || (display_output() && display_output()->graphical())
 #endif /* BUILD_GUI */
 #ifdef BUILD_NCURSES
-  if (out_to_ncurses.get(*state)) { new_special(p, FG)->arg = obj->data.l; }
+  || out_to_ncurses.get(*state)
 #endif /* BUILD_NCURSES */
+  ) {
+    new_special(p, FG)->arg = obj->data.l;
+  }
   UNUSED(obj);
   UNUSED(p);
   UNUSED(p_max_size);
