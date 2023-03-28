@@ -58,7 +58,7 @@ export default function DocumentPage({
           )}
         </header>
         <main>
-          <article className="prose dark:prose-invert prose-lg lg:prose-xl">
+          <article className="prose dark:prose-invert">
             <MDXRemote {...source} components={components as MDXComponents} />
           </article>
         </main>

@@ -78,12 +78,6 @@ set(DOC_FILES extras/convert.lua data/conky_no_x11.conf data/conky.conf)
 
 install(FILES ${DOC_FILES} DESTINATION ${DOC_PATH})
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-  install(FILES conky.desktop DESTINATION share/applications)
-  install(FILES logo/conky-logomark-violet.svg
-          DESTINATION share/icons/hicolor/scalable/apps)
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-
 if(CHECK_CODE_QUALITY)
   find_package(ClangTidy)
   find_package(ClangFormat)
