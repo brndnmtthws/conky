@@ -7,7 +7,7 @@ class MyDocument extends Document {
       <Html lang="en" className="theme-compiled scroll-smooth">
         <Head />
         <body
-          className={`antialiased text-lg bg-white dark:bg-gray-900 dark:text-white leading-base`}
+          className={`antialiased bg-white dark:bg-gray-900 dark:text-white leading-base`}
         >
           <Main />
           <NextScript />
