@@ -154,7 +154,7 @@ bool initialize_display_outputs() {
   if (active_display_outputs.size()) return true;
 
   std::cerr << "Unable to find a usable display output." << std::endl;
-  return false;
+  return true;
 }
 
 bool shutdown_display_outputs() {
