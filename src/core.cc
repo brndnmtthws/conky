@@ -748,20 +748,18 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.graphval = &diskiographval_write;
 #endif /* BUILD_GUI */
   END OBJ(color, nullptr)
+  if (false
 #ifdef BUILD_GUI
-      if (out_to_gui(*state)) {
-    Colour c = arg != nullptr ? parse_color(arg) : default_color.get(*state);
-    obj->data.l = c.to_argb32();
-    set_current_text_color(c);
-  }
+  || out_to_gui(*state)
 #endif /* BUILD_GUI */
 #ifdef BUILD_NCURSES
-  if (out_to_ncurses.get(*state)) {
+  || out_to_ncurses.get(*state)
+#endif /* BUILD_NCURSES */
+) {
     Colour c = arg != nullptr ? parse_color(arg) : default_color.get(*state);
     obj->data.l = c.to_argb32();
     set_current_text_color(c);
   }
-#endif /* BUILD_NCURSES */
   obj->callbacks.print = &new_fg;
 #ifdef BUILD_GUI
   END OBJ(color0, nullptr) Colour c = color[0].get(*state);

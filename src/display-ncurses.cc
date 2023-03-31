@@ -128,8 +128,8 @@ bool display_output_ncurses::shutdown() { return false; }
 
 void display_output_ncurses::set_foreground_color(Colour c) {
   int nccolor = to_ncurses(c);
-  init_pair(nccolor, nccolor, COLOR_BLACK);
-  attron(COLOR_PAIR(nccolor));
+  init_pair(nccolor+1, nccolor, COLOR_BLACK);
+  attron(COLOR_PAIR(nccolor+1));
 }
 
 void display_output_ncurses::begin_draw_text() {
