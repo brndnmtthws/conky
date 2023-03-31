@@ -370,7 +370,10 @@ if(BUILD_X11)
         message(FATAL_ERROR "Unable to find Xft library")
       endif(NOT X11_Xft_FOUND)
 
-      set(conky_libs ${conky_libs} ${X11_Xft_LIB})
+      find_package(Fontconfig REQUIRED)
+
+      set(conky_libs ${conky_libs} ${X11_Xft_LIB} ${Fontconfig_LIBRARIES})
+      set(conky_includes ${conky_includes} ${FREETYPE_INCLUDE_DIR_freetype2} ${Fontconfig_INCLUDE_DIRS})
     endif(BUILD_XFT)
 
     # check for Xdbe
