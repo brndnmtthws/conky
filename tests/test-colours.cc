@@ -4,6 +4,22 @@
 #include <config.h>
 
 TEST_CASE("parse_color correctly parses colours", "[colours][parse_color]") {
+  SECTION("parsing abbreviated hex color") {
+    auto colour = parse_color("#abc");
+    REQUIRE(colour.alpha == 255);
+    REQUIRE(colour.red == 0xaa);
+    REQUIRE(colour.green == 0xbb);
+    REQUIRE(colour.blue == 0xcc);
+  }
+
+  SECTION("parsing abbreviated hex color with alpha") {
+    auto colour = parse_color("#4abc");
+    REQUIRE(colour.alpha == 0x44);
+    REQUIRE(colour.red == 0xaa);
+    REQUIRE(colour.green == 0xbb);
+    REQUIRE(colour.blue == 0xcc);
+  }
+
   SECTION("parsing hex red") {
     auto colour = parse_color("#ff0000");
     REQUIRE(colour.alpha == 255);

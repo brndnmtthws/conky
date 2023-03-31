@@ -60,17 +60,31 @@ Colour error_colour{0xff, 0x00, 0x00, 0xff};
 Colour parse_color(const char *name) {
   unsigned short r, g, b;
   size_t len = strlen(name);
+  // Parse X11 color names.
   if (OsLookupColor(-1, name, len, &r, &g, &b)) {
     Colour out = {(uint8_t)r, (uint8_t)g, (uint8_t)b, 0xff};
     return out;
   }
+
+  // Remove a leading '#' if present.
   if (name[0] == '#') {
     name++;
     len--;
   }
-  if (len == 6 || len == 8) {
+
+  unsigned char argb[4] = {0xff, 0, 0, 0};
+  if (len == 3 || len == 4) {
+    bool skip_alpha = (len == 3);
+    for (size_t i = 0; i < len; i ++) {
+      int nib = hex_nibble_value(name[i]);
+      if (nib < 0) { goto err; }
+      // Duplicate the nibble, so "#abc" -> 0xaa, 0xbb, 0xcc
+      int val = (nib << 4) + nib;
+
+      argb[skip_alpha + i] = val;
+    }
+  } else if (len == 6 || len == 8) {
     bool skip_alpha = (len == 6);
-    unsigned char argb[4] = {0xff, 0, 0, 0};
     for (size_t i = 0; i + 1 < len; i += 2) {
       int nib1 = hex_nibble_value(name[i]);
       int nib2 = hex_nibble_value(name[i + 1]);
@@ -79,13 +93,17 @@ Colour parse_color(const char *name) {
 
       argb[skip_alpha + i / 2] = val;
     }
-    Colour out;
-    out.alpha = argb[0];
-    out.red = argb[1];
-    out.green = argb[2];
-    out.blue = argb[3];
-    return out;
+  } else {
+    goto err;
   }
+
+  Colour out;
+  out.alpha = argb[0];
+  out.red = argb[1];
+  out.green = argb[2];
+  out.blue = argb[3];
+  return out;
+
 err:
   NORM_ERR("can't parse X color '%s' (%d)", name, len);
   return error_colour;
