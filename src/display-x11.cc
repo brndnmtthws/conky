@@ -603,6 +603,9 @@ void display_output_x11::cleanup() {
     XDestroyRegion(x11_stuff.region);
     x11_stuff.region = nullptr;
   }
+#ifdef BUILD_XFT
+  FcFini();
+#endif /* BUILD_XFT */
 }
 
 void display_output_x11::set_foreground_color(Colour c) {
@@ -824,13 +827,8 @@ void display_output_x11::free_fonts(bool utf8) {
   for (auto &font : x_fonts) {
 #ifdef BUILD_XFT
     if (use_xft.get(*state)) {
-      /*
-       * Do we not need to close fonts with Xft? Unsure.  Not freeing the
-       * fonts seems to incur a slight memory leak, but it also prevents
-       * a crash.
-       *
-       * XftFontClose(display, x_fonts[i].xftfont);
-       */
+      /* Close each font if it has been initialized */
+      if (font.xftfont) { XftFontClose(display, font.xftfont); }
     } else
 #endif /* BUILD_XFT */
     {
