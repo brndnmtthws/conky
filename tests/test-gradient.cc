@@ -32,8 +32,11 @@
 #include <conky.h>
 #include <gradient.h>
 
+#include <iomanip>
+#include <iostream>
+
 const int width = 4;
-const Colour colour = Colour::from_argb32(0x996633);  // brown
+const Colour colour = Colour::from_argb32(0xff996633);  // brown
 const long expected_hue = 256;
 const long expected_value = 0x99;   // max(0x99, 0x66, 0x33)
 const long expected_chroma = 0x66;  // (0x99 - 0x33)
@@ -44,6 +47,15 @@ const long expected_green = 0x66;
 const long expected_blue = 0x33;
 
 const long full_scale = conky::gradient_factory::SCALE360;
+
+std::ostream& operator<<(std::ostream& s, const Colour& c) {
+  s << '#';
+  s << std::setfill('0');
+  s << std::setw(2);
+  s << std::setbase(16);
+  s << (int)c.alpha << (int)c.red << (int)c.green << (int)c.blue;
+  return s;
+}
 
 TEST_CASE("gradient_factory::convert_from_rgb returns correct value") {
 #ifdef BUILD_X11

@@ -57,6 +57,7 @@ Colour gradient_factory::convert_to_rgb(long *const array) {
   c.red = scaled_rgb[0] / SCALE;
   c.green = scaled_rgb[1] / SCALE;
   c.blue = scaled_rgb[2] / SCALE;
+  c.alpha = 255;
 
   return c;
 }
