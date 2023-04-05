@@ -706,6 +706,12 @@ const char *cairo_status_to_string(cairo_status_t status);
 cairo_surface_t *cairo_surface_create_similar(cairo_surface_t * other,
 		cairo_content_t content, int width, int height);
 
+cairo_surface_t *cairo_surface_create_for_rectangle (cairo_surface_t	*target,
+		double x,
+		double y,
+		double width,
+		double height);
+
 cairo_surface_t *cairo_surface_reference(cairo_surface_t * surface);
 
 void cairo_surface_finish(cairo_surface_t * surface);
