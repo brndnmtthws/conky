@@ -866,6 +866,12 @@ void display_output_wayland::load_fonts(bool utf8) {
     auto &pango_font_entry = pango_fonts[i];
     FcPattern *fc_pattern =
         FcNameParse(reinterpret_cast<const unsigned char *>(font.name.c_str()));
+    // pango_fc_font_description_from_pattern requires a FAMILY to be set,
+    // so set an empty one if none is present.
+    FcValue dummy;
+    if (FcPatternGet (fc_pattern, FC_FAMILY, 0, &dummy) != FcResultMatch) {
+        FcPatternAddString (fc_pattern, FC_FAMILY, (FcChar8 *) "");
+    }
     pango_font_entry.desc =
         pango_fc_font_description_from_pattern(fc_pattern, true);
 
