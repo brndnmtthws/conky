@@ -25,6 +25,8 @@
 #ifndef _LIBCAIRO_TEXT_HELPER_H_
 #define _LIBCAIRO_TEXT_HELPER_H_
 
+#include <math.h>
+
 #include <cairo/cairo.h>
 #include <cairo/cairo-ft.h>
 
@@ -51,6 +53,12 @@ typedef struct _FontData {
   FT_Library ft_library;
   FT_Face ft_face;
 }FontData;
+
+typedef enum _cairo_text_alignment {
+  CAIRO_TEXT_ALIGN_LEFT = 0,
+  CAIRO_TEXT_ALIGN_RIGHT,
+  CAIRO_TEXT_ALIGN_CENTER
+} cairo_text_alignment_t;
 
 FontData *cairo_text_hp_load_font(const char *font, int font_size)
 {
@@ -121,10 +129,113 @@ void cairo_text_hp_destroy_font(FontData *font)
  *  https://harfbuzz.github.io/harfbuzz-hb-common.html#hb-script-from-string
  * Language is a BCP 47 language tag. eg "en" or "en-US"
  */
-void cairo_text_hp_intl_show(cairo_t *cr, int x, int y, const char *text, FontData *font,
+void cairo_text_hp_intl_show(cairo_t *cr, int x, int y, cairo_text_alignment_t alignment, const char *text, FontData *font,
                              const char *direction, const char *script, const char *language)
 {  
   /* FIXME: Support others */
+  hb_direction_t text_direction = hb_direction_from_string(direction, -1);
+  if (text_direction == HB_DIRECTION_INVALID) {
+    text_direction = HB_DIRECTION_LTR;
+  }
+  hb_script_t text_script = hb_script_from_string(script, -1);
+  if (text_script == HB_SCRIPT_UNKNOWN) {
+    text_script = HB_SCRIPT_COMMON;
+  }
+    
+  hb_language_t text_language = hb_language_from_string (language, -1);
+  
+  /* Draw text */
+  /* Create a buffer for harfbuzz to use */
+  hb_buffer_t *buf = hb_buffer_create();
+
+  //alternatively you can use hb_buffer_set_unicode_funcs(buf, hb_glib_get_unicode_funcs());
+  hb_buffer_set_unicode_funcs(buf, hb_glib_get_unicode_funcs());
+  hb_buffer_set_direction(buf, text_direction); /* or LTR */
+  hb_buffer_set_script(buf, text_script); /* see hb-unicode.h */
+  hb_buffer_set_language(buf, text_language);
+
+  /* Layout the text */
+  hb_buffer_add_utf8(buf, text, strlen(text), 0, strlen(text));
+  hb_shape(font->hb_ft_font, buf, NULL, 0);
+
+  /* Hand the layout to cairo to render */
+  unsigned int         glyph_count;
+  hb_glyph_info_t     *glyph_info   = hb_buffer_get_glyph_infos(buf, &glyph_count);
+  hb_glyph_position_t *glyph_pos    = hb_buffer_get_glyph_positions(buf, &glyph_count);
+  cairo_glyph_t       *cairo_glyphs = malloc(sizeof(cairo_glyph_t) * glyph_count);
+
+  double x1=0, x2=0, y1=0, y2=0;
+  cairo_clip_extents(cr, &x1, &y1, &x2, &y2);
+  int width = floor(x2-x1);
+  int height = floor(y2-y1);
+
+  unsigned int string_width_in_pixels = 0;
+  for (int i=0; i < glyph_count; ++i) {
+      string_width_in_pixels += glyph_pos[i].x_advance/64;
+  }
+  int draw_x = x;
+
+  if (HB_DIRECTION_IS_VERTICAL(text_direction)) { 
+    /* FIXME */
+    draw_x = width/2 - string_width_in_pixels/2 + x;
+  }
+  else {
+    if (alignment == CAIRO_TEXT_ALIGN_LEFT) {
+      if (text_direction == HB_DIRECTION_RTL) {
+        draw_x = width - x - string_width_in_pixels;
+      }
+      // LTR handled as default.
+    }
+    else if (alignment == CAIRO_TEXT_ALIGN_RIGHT) {
+      if (text_direction == HB_DIRECTION_RTL) {
+        draw_x = x;
+      }
+      else {
+        draw_x = width - x - string_width_in_pixels;
+      }
+    }
+    else if (alignment == CAIRO_TEXT_ALIGN_CENTER) {
+      draw_x = width/2 - string_width_in_pixels/2 + x;
+    }
+  }
+
+  x = draw_x;
+  for (int i=0; i < glyph_count; ++i) {
+      cairo_glyphs[i].index = glyph_info[i].codepoint;
+      cairo_glyphs[i].x = x + (glyph_pos[i].x_offset/64.0);
+      cairo_glyphs[i].y = y - (glyph_pos[i].y_offset/64.0);
+      x += glyph_pos[i].x_advance/64.0;
+      y -= glyph_pos[i].y_advance/64.0;
+  }
+  
+  cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1.0);
+  cairo_set_font_face(cr, font->cairo_ft_face);
+  cairo_set_font_size(cr, font->font_size);
+  cairo_show_glyphs(cr, cairo_glyphs, glyph_count);
+
+  free(cairo_glyphs);
+  hb_buffer_destroy(buf);
+}
+
+void cairo_text_hp_simple_show(cairo_t *cr, int x, int y, const char *text, FontData *font)
+{
+  cairo_text_hp_intl_show(cr, x, y, CAIRO_TEXT_ALIGN_LEFT, text, font, "LTR", "Zyyy", "en");
+}
+
+void cairo_text_hp_simple_show_center(cairo_t *cr, int x, int y, const char *text, FontData *font)
+{
+  cairo_text_hp_intl_show(cr, x, y, CAIRO_TEXT_ALIGN_CENTER, text, font, "LTR", "Zyyy", "en");
+}
+
+void cairo_text_hp_simple_show_right(cairo_t *cr, int x, int y, const char *text, FontData *font)
+{
+  cairo_text_hp_intl_show(cr, x, y, CAIRO_TEXT_ALIGN_RIGHT, text, font, "LTR", "Zyyy", "en");
+}
+
+int cairo_text_hp_text_width(const char *text, FontData *font, 
+                             const char *direction, const char *script, const char *language)
+{
+ /* FIXME: Support others */
   hb_direction_t text_direction = hb_direction_from_string(direction, -1);
   if (text_direction == HB_DIRECTION_INVALID) {
     text_direction = HB_DIRECTION_LTR;
@@ -160,34 +271,11 @@ void cairo_text_hp_intl_show(cairo_t *cr, int x, int y, const char *text, FontDa
   for (int i=0; i < glyph_count; ++i) {
       string_width_in_pixels += glyph_pos[i].x_advance/64;
   }
-  int draw_x = x;
-  if (HB_DIRECTION_IS_VERTICAL(text_direction)) { 
-    /* FIXME */
-    //draw_x = width/2 - string_width_in_pixels/2;
-  } else if (text_direction == HB_DIRECTION_RTL){
-    draw_x = cairo_image_surface_get_width(cairo_get_target(cr)) + x;
-  }
 
-  for (int i=0; i < glyph_count; ++i) {
-      cairo_glyphs[i].index = glyph_info[i].codepoint;
-      cairo_glyphs[i].x = x + (glyph_pos[i].x_offset/64.0);
-      cairo_glyphs[i].y = y - (glyph_pos[i].y_offset/64.0);
-      x += glyph_pos[i].x_advance/64.0;
-      y -= glyph_pos[i].y_advance/64.0;
-  }
-  
-  cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1.0);
-  cairo_set_font_face(cr, font->cairo_ft_face);
-  cairo_set_font_size(cr, font->font_size);
-  cairo_show_glyphs(cr, cairo_glyphs, glyph_count);
-
-  free(cairo_glyphs);
-  hb_buffer_destroy(buf);
+  return string_width_in_pixels;
 }
 
-void cairo_text_hp_simple_show(cairo_t *cr, int x, int y, const char *text, FontData *font)
-{
-  cairo_text_hp_intl_show(cr, x, y, text, font, "LTR", "Zyyy", "en");
+int cairo_text_hp_simple_text_width(const char *text, FontData *font) {
+  return cairo_text_hp_text_width(text, font, "LTR", "Zyyy", "en");
 }
-
 #endif
