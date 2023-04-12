@@ -33,5 +33,3 @@ int cairo_text_hp_text_width(const char *text, FontData *font,
                              const char *direction, const char *script, const char *language);
 
 int cairo_text_hp_simple_text_width(const char *text, FontData *font);
-
-void cairo_text_hp_test(cairo_surface_t *t);
