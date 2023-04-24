@@ -62,7 +62,7 @@
     "netlify-plugin-cypress": "^2.2.1",
     "next-mdx-remote": "^4.4.1",
     "next-remote-watch": "2.0.0",
-    "postcss": "^8.4.21",
+    "postcss": "^8.4.23",
     "rehype-stringify": "^9.0.3",
     "remark-gfm": "^3.0.1",
     "start-server-and-test": "^2.0.0",
