@@ -64,7 +64,6 @@ int update_i8k(void) {
     NORM_ERR(
         "/proc/i8k doesn't exist! use insmod to make sure the kernel driver is "
         "loaded...");
-    clean_up_without_threads(nullptr, NULL);
     return 1;
   }
 
