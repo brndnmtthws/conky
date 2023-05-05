@@ -79,15 +79,21 @@ void NORM_ERR(const char *format, Args &&...args) {
   fputs("\n", stderr);
 }
 
-/* critical error */
+/* critical error with additional cleanup */
 template <typename... Args>
-inline void CRIT_ERR(void *memtofree1, void *memtofree2, const char *format,
-                     Args &&...args) {
+inline void CRIT_ERR_FREE(void *memtofree1, void *memtofree2,
+                          const char *format, Args &&...args) {
   NORM_ERR(format, args...);
   free(memtofree1);
   free(memtofree2);
   clean_up();
   exit(EXIT_FAILURE);
+}
+
+/* critical error */
+template <typename... Args>
+inline void CRIT_ERR(const char *format, Args &&...args) {
+  CRIT_ERR_FREE(nullptr, nullptr, format, args...);
 }
 
 namespace conky {

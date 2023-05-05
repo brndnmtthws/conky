@@ -382,10 +382,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (!strcmp(s, #a)) {  \
     obj->cb_handle = create_cb_handle(n);
 #define __OBJ_IF obj_be_ifblock_if(ifblock_opaque, obj)
-#define __OBJ_ARG(...)                         \
-  if (!arg) {                                  \
-    free(s);                                   \
-    CRIT_ERR(obj, free_at_crash, __VA_ARGS__); \
+#define __OBJ_ARG(...)                              \
+  if (!arg) {                                       \
+    free(s);                                        \
+    CRIT_ERR_FREE(obj, free_at_crash, __VA_ARGS__); \
   }
 
 /* defines to be used below */
@@ -1510,8 +1510,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ_IF(if_updatenr, nullptr) obj->data.i =
       arg != nullptr ? strtol(arg, nullptr, 10) : 0;
   if (obj->data.i == 0) {
-    CRIT_ERR(obj, free_at_crash,
-             "if_updatenr needs a number above 0 as argument");
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "if_updatenr needs a number above 0 as argument");
   }
   set_updatereset(obj->data.i > get_updatereset() ? obj->data.i
                                                   : get_updatereset());
@@ -1754,7 +1754,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (obj->data.i > 0) {
     ++obj->data.i;
   } else {
-    CRIT_ERR(obj, free_at_crash, "audacious_title: invalid length argument");
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "audacious_title: invalid length argument");
   }
   obj->callbacks.print = &print_audacious_title;
   END OBJ(audacious_length, 0) obj->callbacks.print = &print_audacious_length;
@@ -1811,9 +1812,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (arg != nullptr) {
     obj->data.s = STRNDUP_ARG;
   } else {
-    CRIT_ERR(obj, free_at_crash,
-             "lua_bar needs arguments: <height>,<width> <function name> "
-             "[function parameters]");
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "lua_bar needs arguments: <height>,<width> <function name> "
+                  "[function parameters]");
   }
   obj->callbacks.barval = &lua_barval;
   obj->callbacks.free = &gen_free_opaque;
@@ -1827,9 +1828,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (buf != nullptr) {
     obj->data.s = buf;
   } else {
-    CRIT_ERR(obj, free_at_crash,
-             "lua_graph needs arguments: <function name> [height],[width] "
-             "[gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "lua_graph needs arguments: <function name> [height],[width] "
+                  "[gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
   }
   obj->callbacks.graphval = &lua_barval;
   obj->callbacks.free = &gen_free_opaque;
@@ -1839,9 +1840,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (arg != nullptr) {
     obj->data.s = STRNDUP_ARG;
   } else {
-    CRIT_ERR(obj, free_at_crash,
-             "lua_gauge needs arguments: <height>,<width> <function name> "
-             "[function parameters]");
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "lua_gauge needs arguments: <height>,<width> <function name> "
+                  "[function parameters]");
   }
   obj->callbacks.gaugeval = &lua_barval;
   obj->callbacks.free = &gen_free_opaque;
@@ -1897,40 +1898,40 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ_ARG(
       nvidia, 0,
       "nvidia needs an argument") if (set_nvidia_query(obj, arg, NONSPECIAL)) {
-    CRIT_ERR(obj, free_at_crash,
-             "nvidia: invalid argument"
-             " specified: '%s'",
-             arg);
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "nvidia: invalid argument"
+                  " specified: '%s'",
+                  arg);
   }
   obj->callbacks.print = &print_nvidia_value;
   obj->callbacks.free = &free_nvidia;
   END OBJ_ARG(
       nvidiabar, 0,
       "nvidiabar needs an argument") if (set_nvidia_query(obj, arg, BAR)) {
-    CRIT_ERR(obj, free_at_crash,
-             "nvidiabar: invalid argument"
-             " specified: '%s'",
-             arg);
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "nvidiabar: invalid argument"
+                  " specified: '%s'",
+                  arg);
   }
   obj->callbacks.barval = &get_nvidia_barval;
   obj->callbacks.free = &free_nvidia;
   END OBJ_ARG(
       nvidiagraph, 0,
       "nvidiagraph needs an argument") if (set_nvidia_query(obj, arg, GRAPH)) {
-    CRIT_ERR(obj, free_at_crash,
-             "nvidiagraph: invalid argument"
-             " specified: '%s'",
-             arg);
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "nvidiagraph: invalid argument"
+                  " specified: '%s'",
+                  arg);
   }
   obj->callbacks.graphval = &get_nvidia_barval;
   obj->callbacks.free = &free_nvidia;
   END OBJ_ARG(
       nvidiagauge, 0,
       "nvidiagauge needs an argument") if (set_nvidia_query(obj, arg, GAUGE)) {
-    CRIT_ERR(obj, free_at_crash,
-             "nvidiagauge: invalid argument"
-             " specified: '%s'",
-             arg);
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "nvidiagauge: invalid argument"
+                  " specified: '%s'",
+                  arg);
   }
   obj->callbacks.gaugeval = &get_nvidia_barval;
   obj->callbacks.free = &free_nvidia;
@@ -1940,7 +1941,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       apcupsd, &update_apcupsd,
       "apcupsd needs arguments: <host> <port>") if (apcupsd_scan_arg(arg) !=
                                                     0) {
-    CRIT_ERR(obj, free_at_crash, "apcupsd needs arguments: <host> <port>");
+    CRIT_ERR_FREE(obj, free_at_crash, "apcupsd needs arguments: <host> <port>");
   }
   obj->callbacks.print = &gen_print_nothing;
   END OBJ(apcupsd_name, &update_apcupsd) obj->callbacks.print =

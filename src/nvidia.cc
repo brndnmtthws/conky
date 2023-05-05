@@ -1150,10 +1150,10 @@ double get_nvidia_barval(struct text_object *obj) {
       case ATTR_FREQS_STRING:  // mtrfreq (calculate out of memfreqmax)
         if (strcmp(nvs->token, "memTransferRate") != 0) {
           // Just in case error for silly devs
-          CRIT_ERR(nullptr, NULL,
-                   "%s: attribute is 'ATTR_FREQS_STRING' but token is not "
-                   "\"memTransferRate\" (arg: '%s')",
-                   nvs->command, nvs->arg);
+          CRIT_ERR(
+              "%s: attribute is 'ATTR_FREQS_STRING' but token is not "
+              "\"memTransferRate\" (arg: '%s')",
+              nvs->command, nvs->arg);
           return 0;
         }
         temp1 =
@@ -1171,8 +1171,8 @@ double get_nvidia_barval(struct text_object *obj) {
         break;
 
       default:  // Throw error if unsupported args are used
-        CRIT_ERR(nullptr, NULL, "%s: invalid argument specified: '%s'",
-                 nvs->command, nvs->arg);
+        CRIT_ERR("%s: invalid argument specified: '%s'", nvs->command,
+                 nvs->arg);
     }
   }
 

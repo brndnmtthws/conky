@@ -309,7 +309,7 @@ void get_cpu_count(void) {
   }
 
   info.cpu_usage = (float *)malloc((info.cpu_count + 1) * sizeof(float));
-  if (info.cpu_usage == nullptr) { CRIT_ERR(nullptr, NULL, "malloc"); }
+  if (info.cpu_usage == nullptr) { CRIT_ERR("malloc"); }
 }
 
 struct cpu_info {

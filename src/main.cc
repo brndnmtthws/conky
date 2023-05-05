@@ -317,7 +317,7 @@ int main(int argc, char **argv) {
         break;
       case 'q':
         if (freopen("/dev/null", "w", stderr) == nullptr) {
-          CRIT_ERR(nullptr, nullptr, "could not open /dev/null as stderr!");
+          CRIT_ERR("could not open /dev/null as stderr!");
         }
         break;
       case 'h':

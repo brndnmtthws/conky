@@ -137,10 +137,10 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
       free(copy_args);
     }
     if (strlen(mbox_mail_spool) < 1) {
-      CRIT_ERR(nullptr, nullptr,
-               "Usage: ${mboxscan [-n <number of messages to print>] "
-               "[-fw <from width>] [-sw <subject width>] "
-               "[-t <delay in sec> mbox]}");
+      CRIT_ERR(
+          "Usage: ${mboxscan [-n <number of messages to print>] "
+          "[-fw <from width>] [-sw <subject width>] "
+          "[-t <delay in sec> mbox]}");
     }
 
     /* allowing $MAIL in the config */
@@ -150,8 +150,7 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
     }
 
     if (stat(mbox_mail_spool, &statbuf) != 0) {
-      CRIT_ERR(nullptr, nullptr, "can't stat %s: %s", mbox_mail_spool,
-               strerror(errno));
+      CRIT_ERR("can't stat %s: %s", mbox_mail_spool, strerror(errno));
     }
     args_ok = 1; /* args-computing necessary only once */
   }

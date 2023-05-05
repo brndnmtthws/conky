@@ -97,7 +97,7 @@ void get_cpu_count(void) {
   info.cpu_count = si.cpu_count;
 
   info.cpu_usage = (float *)malloc((info.cpu_count + 1) * sizeof(float));
-  if (info.cpu_usage == nullptr) { CRIT_ERR(nullptr, NULL, "malloc"); }
+  if (info.cpu_usage == nullptr) { CRIT_ERR("malloc"); }
 }
 
 int update_cpu_usage() {
@@ -117,14 +117,14 @@ int update_cpu_usage() {
 
   if (!prev_cpuinfo) {
     prev_cpuinfo = (cpu_info *)malloc(malloc_cpu_size);
-    if (prev_cpuinfo == nullptr) { CRIT_ERR(nullptr, NULL, "malloc"); }
+    if (prev_cpuinfo == nullptr) { CRIT_ERR("malloc"); }
     memset(prev_cpuinfo, 0, malloc_cpu_size);
   }
 
   cpuinfo = (cpu_info *)malloc(malloc_cpu_size);
   memset(cpuinfo, 0, malloc_cpu_size);
 
-  if (cpuinfo == nullptr) { CRIT_ERR(nullptr, NULL, "malloc"); }
+  if (cpuinfo == nullptr) { CRIT_ERR("malloc"); }
 
   now = system_time();
   if (get_cpu_info(0, info.cpu_count, &cpuinfo[1]) == B_OK) {
