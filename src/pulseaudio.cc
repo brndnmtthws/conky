@@ -221,7 +221,7 @@ void init_pulseaudio(struct text_object *obj) {
   // This function connects to the pulse server
   if (pa_context_connect(pulseaudio->context, nullptr, (pa_context_flags_t)0,
                          nullptr) < 0) {
-    CRIT_ERR(nullptr, NULL, "Cannot connect to pulseaudio");
+    CRIT_ERR("Cannot connect to pulseaudio");
     return;
   }
   pa_threaded_mainloop_start(pulseaudio->mainloop);

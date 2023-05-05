@@ -91,14 +91,14 @@ void init_tailhead(const char *type, const char *arg, struct text_object *obj,
   args = sscanf(arg, "%s %d %d", tmp.get(), &ht->wantedlines, &ht->max_uses);
   if (args < 2 || args > 3) {
     free_tailhead(obj);
-    CRIT_ERR(obj, free_at_crash,
-             "%s needs a file as 1st and a number of lines as 2nd argument",
-             type);
+    CRIT_ERR_FREE(
+        obj, free_at_crash,
+        "%s needs a file as 1st and a number of lines as 2nd argument", type);
   }
   if (ht->max_uses < 1) {
     free_tailhead(obj);
-    CRIT_ERR(obj, free_at_crash,
-             "invalid arg for %s, next_check must be larger than 0", type);
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "invalid arg for %s, next_check must be larger than 0", type);
   }
   if (ht->wantedlines > 0 && ht->wantedlines <= MAX_HEADTAIL_LINES) {
     ht->logfile = to_real_path(tmp.get());
@@ -106,9 +106,10 @@ void init_tailhead(const char *type, const char *arg, struct text_object *obj,
     ht->current_use = 0;
   } else {
     free_tailhead(obj);
-    CRIT_ERR(obj, free_at_crash,
-             "invalid arg for %s, number of lines must be between 1 and %d",
-             type, MAX_HEADTAIL_LINES);
+    CRIT_ERR_FREE(
+        obj, free_at_crash,
+        "invalid arg for %s, number of lines must be between 1 and %d", type,
+        MAX_HEADTAIL_LINES);
   }
   obj->data.opaque = ht;
 }
@@ -147,9 +148,9 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
             i = read(fd, p, p_max_size - 1);
             tailstring(p, i, ht->wantedlines);
           } else {
-            CRIT_ERR(nullptr, nullptr,
-                     "If you are seeing this then there is a bug in the code, "
-                     "report it !");
+            CRIT_ERR(
+                "If you are seeing this then there is a bug in the code, "
+                "report it !");
           }
         }
         close(fd);
@@ -169,16 +170,16 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
             i = fread(p, 1, p_max_size - 1, fp);
             tailstring(p, i, ht->wantedlines);
           } else {
-            CRIT_ERR(nullptr, nullptr,
-                     "If you are seeing this then there is a bug in the code, "
-                     "report it !");
+            CRIT_ERR(
+                "If you are seeing this then there is a bug in the code, "
+                "report it !");
           }
           fclose(fp);
         }
       }
       ht->buffer = strdup(p);
     } else {
-      CRIT_ERR(nullptr, nullptr, "$%s can't find information about %s", type,
+      CRIT_ERR("$%s can't find information about %s", type,
                ht->logfile.c_str());
     }
   }

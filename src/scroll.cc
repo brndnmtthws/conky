@@ -160,9 +160,9 @@ void parse_scroll_arg(struct text_object *obj, const char *arg,
     free(obj->next);
 #endif
     free(free_at_crash2);
-    CRIT_ERR(obj, free_at_crash,
-             "scroll needs arguments: [left|right|wait] <length> [<step>] "
-             "[interval] <text>");
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "scroll needs arguments: [left|right|wait] <length> [<step>] "
+                  "[interval] <text>");
   }
   n1 += n2;
 
