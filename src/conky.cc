@@ -1828,7 +1828,7 @@ void main_loop() {
 
     llua_update_info(&info, active_update_interval());
   }
-  clean_up(nullptr, nullptr);
+  clean_up();
 
 #ifdef HAVE_SYS_INOTIFY_H
   if (inotify_fd != -1) {
@@ -1850,7 +1850,7 @@ static void reload_config() {
              current_config.c_str(), getpid());
     return;
   }
-  clean_up(nullptr, nullptr);
+  clean_up();
   state = std::make_unique<lua::state>();
   conky::export_symbols(*state);
   sleep(1); /* slight pause */
@@ -1868,10 +1868,8 @@ void free_specials(special_t *&current) {
   clear_stored_graphs();
 }
 
-void clean_up_without_threads(void *memtofree1, void *memtofree2) {
-  free_and_zero(memtofree1);
-  free_and_zero(memtofree2);
-
+void clean_up(void) {
+  /* free_update_callbacks(); XXX: some new equivalent of this? */
   free_and_zero(info.cpu_usage);
   for (auto output : display_outputs()) output->cleanup();
   conky::shutdown_display_outputs();
@@ -1909,11 +1907,6 @@ void clean_up_without_threads(void *memtofree1, void *memtofree2) {
 
   conky::cleanup_config_settings(*state);
   state.reset();
-}
-
-void clean_up(void *memtofree1, void *memtofree2) {
-  /* free_update_callbacks(); XXX: some new equivalent of this? */
-  clean_up_without_threads(memtofree1, memtofree2);
 }
 
 static void set_default_configurations() {

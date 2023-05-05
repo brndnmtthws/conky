@@ -61,7 +61,7 @@ class obj_create_error : public std::runtime_error {
   obj_create_error(const std::string &msg) : std::runtime_error(msg) {}
 };
 
-void clean_up(void *memtofree1, void *memtofree2);
+void clean_up(void);
 
 template <typename... Args>
 inline void gettextize_format(const char *format, Args &&...args) {
@@ -84,7 +84,9 @@ template <typename... Args>
 inline void CRIT_ERR(void *memtofree1, void *memtofree2, const char *format,
                      Args &&...args) {
   NORM_ERR(format, args...);
-  clean_up(memtofree1, memtofree2);
+  free(memtofree1);
+  free(memtofree2);
+  clean_up();
   exit(EXIT_FAILURE);
 }
 
