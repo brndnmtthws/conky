@@ -359,7 +359,7 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   } catch (obj_create_error &e) {
     std::cerr << e.what() << std::endl;
-    clean_up(nullptr, nullptr);
+    clean_up();
     return EXIT_FAILURE;
   } catch (std::exception &e) {
     std::cerr << PACKAGE_NAME ": " << e.what() << std::endl;
