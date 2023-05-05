@@ -139,7 +139,8 @@ void print_i8k_ac_status(struct text_object *obj, char *p,
   void print_i8k_##name(struct text_object *obj, char *p, \
                         unsigned int p_max_size) {        \
     (void)obj;                                            \
-    snprintf(p, p_max_size, "%s", i8k.name);              \
+    const char *str = i8k.name ? i8k.name : "error";      \
+    snprintf(p, p_max_size, "%s", str);                   \
   }
 
 I8K_PRINT_GENERATOR(version)
