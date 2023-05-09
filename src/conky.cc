@@ -1874,10 +1874,12 @@ void clean_up(void) {
   for (auto output : display_outputs()) output->cleanup();
   conky::shutdown_display_outputs();
 #ifdef BUILD_GUI
-  if (!display_output() || !display_output()->graphical())
+  if (!display_output() || !display_output()->graphical()) {
     fonts.clear();  // in set_default_configurations a font is set but not
                     // loaded
-#endif              /* BUILD_GUI */
+    selected_font = 0;
+  }
+#endif /* BUILD_GUI */
 
   if (info.first_process != nullptr) {
     free_all_processes();
