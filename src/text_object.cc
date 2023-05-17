@@ -72,7 +72,7 @@ int append_object(struct text_object *root, struct text_object *obj) {
 
   /* update pointers of the list to append to */
   if (end != nullptr) {
-    if (end->next != nullptr) { CRIT_ERR("houston, we have a lift-off"); }
+    if (end->next != nullptr) { CRIT_ERR("Houston, we have lift-off"); }
     end->next = obj;
   } else {
     root->next = obj;
