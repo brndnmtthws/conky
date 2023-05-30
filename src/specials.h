@@ -57,6 +57,7 @@ enum special_types {
   SAVE_COORDINATES,
   FONT,
   GOTO,
+  VGOTO,
   TAB
 };
 
@@ -115,6 +116,7 @@ void new_save_coordinates(struct text_object *, char *, unsigned int);
 void new_alignr(struct text_object *, char *, unsigned int);
 void new_alignc(struct text_object *, char *, unsigned int);
 void new_goto(struct text_object *, char *, unsigned int);
+void new_vgoto(struct text_object *, char *, unsigned int);
 void new_tab(struct text_object *, char *, unsigned int);
 
 void clear_stored_graphs();

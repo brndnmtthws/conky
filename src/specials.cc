@@ -794,6 +794,11 @@ void new_goto(struct text_object *obj, char *p, unsigned int p_max_size) {
   new_special(p, GOTO)->arg = dpi_scale(obj->data.l);
 }
 
+void new_vgoto(struct text_object *obj, char *p, unsigned int p_max_size) {
+  if (p_max_size == 0) { return; }
+  new_special(p, VGOTO)->arg = dpi_scale(obj->data.l);
+}
+
 void scan_tab(struct text_object *obj, const char *arg) {
   struct tab *t;
 

@@ -982,6 +982,10 @@ static int text_size_updater(char *s, int special_index) {
         last_font_height += current->arg;
       } else if (current->type == GOTO) {
         if (current->arg > cur_x) { w = static_cast<int>(current->arg); }
+      } else if (current->type == VGOTO) {
+        if (current->arg > cur_y) {
+          last_font_height = static_cast<int>(current->arg);
+        }
       } else if (current->type == TAB) {
         int start = current->arg;
         int step = current->width;
@@ -1516,6 +1520,20 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 #endif /* BUILD_GUI */
             cur_x = static_cast<int>(current->arg) + text_start_x;
             for (auto output : display_outputs()) output->gotox(cur_x);
+          }
+          break;
+
+        case VGOTO:
+          if (current->arg >= 0) {
+#ifdef BUILD_GUI
+            cur_y =
+                static_cast<int>(current->arg) + text_start_y + font_ascent();
+            // make sure shades are 1 pixel to the bottom of the text
+            if (draw_mode == BG) cur_y++;
+#endif /* BUILD_GUI */
+            cur_y =
+                static_cast<int>(current->arg) + text_start_y + font_ascent();
+            for (auto output : display_outputs()) output->gotoy(cur_y);
           }
           break;
       }
