@@ -1510,11 +1510,11 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
         case GOTO:
           if (current->arg >= 0) {
 #ifdef BUILD_GUI
-            cur_x = static_cast<int>(current->arg);
+            cur_x = static_cast<int>(current->arg) + text_start_x;
             // make sure shades are 1 pixel to the right of the text
             if (draw_mode == BG) { cur_x++; }
 #endif /* BUILD_GUI */
-            cur_x = static_cast<int>(current->arg);
+            cur_x = static_cast<int>(current->arg) + text_start_x;
             for (auto output : display_outputs()) output->gotox(cur_x);
           }
           break;
