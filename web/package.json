@@ -21,7 +21,7 @@
     "e2e:headless": "start-server-and-test dev http://localhost:3000 \"cypress run --e2e\""
   },
   "dependencies": {
-    "@fontsource/fira-code": "^4.5.13",
+    "@fontsource/fira-code": "^5.0.2",
     "@fontsource/inter": "^4.5.15",
     "@fontsource/newsreader": "^4.5.10",
     "@headlessui/react": "^1.7.14",
