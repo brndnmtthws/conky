@@ -9,13 +9,13 @@ indexWeight: 0
 Build the image with:
 
 ```shell-session
-$ docker build --tag=conky .
+docker build --tag=conky .
 ```
 
 or if you want the commandline version:
 
 ```shell-session
-$ docker build --build-arg X11=no --tag=conkycmd .
+docker build --build-arg X11=no --tag=conkycmd .
 ```
 
 ## Running the container
@@ -23,38 +23,38 @@ $ docker build --build-arg X11=no --tag=conkycmd .
 After building you can run the graphical version with:
 
 ```shell-session
-$ docker run --rm -ti --net=host -e DISPLAY -v ~/.Xauthority:/root/.Xauthority conky
+docker run --rm -ti --net=host -e DISPLAY -v ~/.Xauthority:/root/.Xauthority conky
 ```
 
 The commandline version is easier:
 
 ```shell-session
-$ docker run --rm -ti conkycmd
+docker run --rm -ti conkycmd
 ```
 
 If you want to pass some options to conky you can just add them if you mention
 'conky' twice. Once for the image and once for the command. For example:
 
 ```shell-session
-$ docker run --rm -ti --net=host -e DISPLAY -v ~/.Xauthority:/root/.Xauthority conky conky --version
+docker run --rm -ti --net=host -e DISPLAY -v ~/.Xauthority:/root/.Xauthority conky conky --version
 ```
 
 will show you the version of conky. Since you don't need X for this you could also do:
 
 ```shell-session
-$ docker run --rm -ti conkycmd conky --version
+docker run --rm -ti conkycmd conky --version
 ```
 
 If you want to fiddle around a bit with the configuration first you could do:
 
 ```shell-session
-$ docker run --rm -ti --net=host -e DISPLAY -v ~/.Xauthority:/root/.Xauthority conky bash
+docker run --rm -ti --net=host -e DISPLAY -v ~/.Xauthority:/root/.Xauthority conky bash
 ```
 
 _change things is in the configuration_
 
 ```shell-session
-$ conky -c configurationfile ; exit
+conky -c configurationfile ; exit
 ```
 
 See the docker docs to a lot of other ways to (ab)use this container
