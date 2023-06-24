@@ -9,27 +9,27 @@ Using CMake to build Conky is pretty easy, and here is how I do it:
 1. From the top level source dir, create a build working dir, and cd into it
 
 ```shell-session
-$ mkdir build
-$ cd build
+mkdir build
+cd build
 ```
 
 2. Run the cmake configuration process
 
 ```shell-session
-$ cmake ../ # pass the path to the sources to cmake
+cmake ../ # pass the path to the sources to cmake
 ```
 
 OR
 
 ```shell-session
-$ ccmake ../ # you can also use the fance curses interface, or try cmake-gui
+ccmake ../ # you can also use the fance curses interface, or try cmake-gui
 ```
 
 3. Compile as usual, and enjoy the out-of-source goodness
 
 ```shell-session
-$ make
-# make install # if you want
+make
+sudo make install # if you want
 ```
 
 There are a number of build options for Conky, and the best way to discover
