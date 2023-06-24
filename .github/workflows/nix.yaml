@@ -1,0 +1,34 @@
+name: 'Nix build'
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - web/**
+      - doc/**
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - web/**
+      - doc/**
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-and-check:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: cachix/install-nix-action@v22
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: cachix/cachix-action@v12
+        with:
+          name: conky
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+      - run: nix build
+      - run: nix flake check

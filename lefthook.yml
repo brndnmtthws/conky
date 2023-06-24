@@ -17,3 +17,8 @@ pre-commit:
         npx prettier --write {staged_files} \
           && git add {staged_files}
       glob: '*.{md,json,yml,yaml}'
+    nix-linter:
+      run: |
+        alejandra -q {staged_files} \
+          && git add {staged_files}
+      glob: '*.{nix}'
