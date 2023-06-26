@@ -1,13 +1,5 @@
 {
   description = "A Nix flake for Conky, including a dev shell";
-  nixConfig = {
-    substituters = [
-      "https://conky.cachix.org"
-    ];
-    trusted-public-keys = [
-      "conky.cachix.org-1:4H7kaqUIbxZO5LReWGyzwh3ktfYJb/K7E9au2gssyzM="
-    ];
-  };
   inputs = {
     nixpkgs = {
       url = "github:nixos/nixpkgs/nixos-unstable";
