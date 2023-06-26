@@ -23,12 +23,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      - uses: cachix/install-nix-action@v22
-        with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: cachix/cachix-action@v12
-        with:
-          name: conky
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v4
+      - name: Setup Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v1
       - run: nix build
       - run: nix flake check

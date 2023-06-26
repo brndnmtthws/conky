@@ -3,7 +3,7 @@ pre-commit:
   commands:
     web-linter:
       run: |
-        npx eslint --fix {staged_files} \
+        npx -y eslint --fix {staged_files} \
           && git add {staged_files}
       root: web/
       glob: '*.{ts,tsx,js,jsx}'
@@ -14,7 +14,7 @@ pre-commit:
       glob: '*.{c,cc,cxx,h,cpp}'
     misc-linter:
       run: |
-        npx prettier --write {staged_files} \
+        npx -y prettier --write {staged_files} \
           && git add {staged_files}
       glob: '*.{md,json,yml,yaml}'
     nix-linter:
