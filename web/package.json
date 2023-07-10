@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@types/d3": "^7.4.0",
-    "@types/eslint": "^8.40.2",
+    "@types/eslint": "^8.44.0",
     "@types/js-yaml": "^4.0.5",
     "@types/mapbox__rehype-prism": "^0.8.0",
     "@types/node": "^20.3.1",
