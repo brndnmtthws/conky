@@ -35,6 +35,7 @@
 #include <clocale>
 #include <cstring>
 #include <ctime>
+#include <stdio.h>
 #include "conky.h"
 #include "logging.h"
 #include "text_object.h"
