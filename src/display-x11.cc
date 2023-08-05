@@ -56,10 +56,11 @@
 #include "display-x11.hh"
 #include "gui.h"
 #include "llua.h"
-#include "x11.h"
 
 /* TODO: cleanup global namespace */
 #ifdef BUILD_X11
+
+#include "x11.h"
 
 // TODO: cleanup externs (move to conky.h ?)
 #ifdef OWN_WINDOW
