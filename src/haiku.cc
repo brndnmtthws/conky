@@ -175,6 +175,10 @@ double get_battery_perct_bar(struct text_object *obj) {
   return batperct;
 }
 
+void get_battery_power_draw(char *buffer, unsigned int n, const char *bat) {
+  // TODO
+}
+
 int open_acpi_temperature(const char *name) { return -1; }
 
 void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
