@@ -222,7 +222,10 @@ bool display_output_x11::initialize() {
   return true;
 }
 
-bool display_output_x11::shutdown() { return false; }
+bool display_output_x11::shutdown() {
+  deinit_x11();
+  return true;
+}
 
 bool display_output_x11::main_loop_wait(double t) {
   /* wait for X event or timeout */
