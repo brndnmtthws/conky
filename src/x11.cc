@@ -80,7 +80,6 @@ static void update_workarea();
 static Window find_desktop_window(Window *p_root, Window *p_desktop);
 static Window find_subwindow(Window win, int w, int h);
 static void init_x11();
-static void deinit_x11();
 
 /********************* <SETTINGS> ************************/
 namespace priv {
@@ -275,7 +274,7 @@ static void init_x11() {
   DBGP("leave init_x11()");
 }
 
-static void deinit_x11() {
+void deinit_x11() {
   if (display) {
     DBGP("deinit_x11()");
     XCloseDisplay(display);

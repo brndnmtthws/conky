@@ -104,6 +104,7 @@ void set_transparent_background(Window win);
 void get_x11_desktop_info(Display *current_display, Atom atom);
 void set_struts(int);
 void x11_init_window(lua::state &l, bool own);
+void deinit_x11();
 
 #ifdef BUILD_XDBE
 void xdbe_swap_buffers(void);
