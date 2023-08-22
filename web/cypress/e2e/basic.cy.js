@@ -27,7 +27,8 @@ describe('check variables', () => {
     cy.get('[data-cy="page-heading"]').contains(/^Variables$/)
   })
   it('has anchor links and can focus on them', () => {
-    cy.get('[data-anchor-name="cpu"]').click().and('be.visible')
+    cy.get('[data-anchor-name="acpiacadapter"]').click()
+    cy.get('[data-anchor-name="acpiacadapter"]').and('be.visible')
   })
 })
 describe('check lua', () => {
