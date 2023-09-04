@@ -41,7 +41,7 @@ jobs:
             ninja \
             pkg-config
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - run: mkdir build
       - name: Configure with CMake
         working-directory: build
