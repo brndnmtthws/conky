@@ -1213,7 +1213,12 @@ static void get_dev_path(const char *dir, const char *dev, char *out_buf) {
 
     snprintf(path, 512, "%s%s/name", dir, namelist[i]->d_name);
     name_fd = open(path, O_RDONLY);
-    if (name_fd < 0) continue;
+    if (name_fd < 0) {
+      snprintf(path, 512, "%s%s/device/name", dir, namelist[i]->d_name);
+      name_fd = open(path, O_RDONLY);
+      if (name_fd < 0)
+        continue;
+    }
     size = read(name_fd, name, strlen(dev));
     if (size < strlen(dev)) {
       close(name_fd);
