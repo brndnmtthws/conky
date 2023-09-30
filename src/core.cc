@@ -747,15 +747,14 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(diskiograph_write, &update_diskio) parse_diskiograph_arg(obj, arg);
   obj->callbacks.graphval = &diskiographval_write;
 #endif /* BUILD_GUI */
-  END OBJ(color, nullptr)
-  if (false
+  END OBJ(color, nullptr) if (false
 #ifdef BUILD_GUI
-  || out_to_gui(*state)
+                              || out_to_gui(*state)
 #endif /* BUILD_GUI */
 #ifdef BUILD_NCURSES
-  || out_to_ncurses.get(*state)
+                              || out_to_ncurses.get(*state)
 #endif /* BUILD_NCURSES */
-) {
+  ) {
     Colour c = arg != nullptr ? parse_color(arg) : default_color.get(*state);
     obj->data.l = c.to_argb32();
     set_current_text_color(c);
@@ -1058,9 +1057,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
        * nothing else than just that, using an ugly switch(). */
       if (strncmp(s, "top", 3) == EQUAL) {
     if (parse_top_args(s, arg, obj) != 0) {
-#ifdef __linux__
-      determine_longstat_file();
-#endif
       obj->cb_handle = create_cb_handle(update_top);
     } else {
       free(obj);
