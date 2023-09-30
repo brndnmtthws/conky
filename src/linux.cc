@@ -902,7 +902,11 @@ void determine_longstat_file(void) {
 #define MAX_PROCSTAT_LINELEN 255
   FILE *stat_fp;
   static int reported = 0;
+  static bool first = true;
   char buf[MAX_PROCSTAT_LINELEN + 1];
+
+  if (! first) return;
+  first = false;
 
   if (!(stat_fp = open_file("/proc/stat", &reported))) return;
   while (!feof(stat_fp) &&
@@ -1000,6 +1004,7 @@ int update_stat(void) {
   }
 
   if (!stat_template) {
+    determine_longstat_file();
     stat_template =
         KFLAG_ISSET(KFLAG_IS_LONGSTAT) ? TMPL_LONGSTAT : TMPL_SHORTSTAT;
   }
