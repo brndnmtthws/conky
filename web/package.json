@@ -44,7 +44,7 @@
     "@types/d3": "^7.4.0",
     "@types/eslint": "^8.44.2",
     "@types/js-yaml": "^4.0.5",
-    "@types/mapbox__rehype-prism": "^0.8.0",
+    "@types/mapbox__rehype-prism": "^0.8.1",
     "@types/node": "^20.5.1",
     "@types/prismjs": "^1.26.0",
     "@types/react": "^18.2.20",
