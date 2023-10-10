@@ -134,7 +134,7 @@ endif(OS_HAIKU)
 # Do version stuff
 set(VERSION_MAJOR "1")
 set(VERSION_MINOR "19")
-set(VERSION_PATCH "5")
+set(VERSION_PATCH "6")
 
 find_program(APP_AWK awk)
 if(NOT APP_AWK)
