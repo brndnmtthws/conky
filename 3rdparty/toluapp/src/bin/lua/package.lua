@@ -21,6 +21,8 @@ classPackage = {
 classPackage.__index = classPackage
 setmetatable(classPackage,classContainer)
 
+require 'orderedPairs'
+
 -- Print method
 function classPackage:print ()
  print("Package: "..self.name)
@@ -133,7 +135,7 @@ function classPackage:preamble ()
 		output('\n')
 		output('/* function to release collected object via destructor */')
 		output('#ifdef __cplusplus\n')
-		for i,v in ipairs(_collect) do
+		for i,v in orderedPairs(_collect) do
 		 output('\nstatic int '..v..' (lua_State* tolua_S)')
 			output('{')
 			output(' '..i..'* self = ('..i..'*) tolua_tousertype(tolua_S,1,0);')
@@ -152,7 +154,7 @@ function classPackage:preamble ()
 	if flags.t then
 		output("#ifndef Mtolua_typeid\n#define Mtolua_typeid(L,TI,T)\n#endif\n")
 	end
-	for n,v in ipairs(_usertype) do
+	for n,v in orderedPairs(_usertype) do
 		if (not _global_classes[v]) or _global_classes[v]:check_public_access() then
 			output(' tolua_usertype(tolua_S,"',v,'");')
 			if flags.t then
