@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@fontsource-variable/fira-code": "^5.0.13",
-    "@fontsource-variable/inter": "^5.0.13",
+    "@fontsource-variable/inter": "^5.0.15",
     "@fontsource-variable/newsreader": "^5.0.14",
     "@headlessui/react": "^1.7.17",
     "@mapbox/rehype-prism": "^0.8.0",
