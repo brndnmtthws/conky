@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@types/d3": "^7.4.1",
-    "@types/eslint": "^8.44.4",
+    "@types/eslint": "^8.44.6",
     "@types/js-yaml": "^4.0.6",
     "@types/mapbox__rehype-prism": "^0.8.1",
     "@types/node": "^20.8.4",
@@ -53,7 +53,7 @@
     "@typescript-eslint/parser": "^6.7.5",
     "autoprefixer": "^10.4.15",
     "cypress": "^13.3.0",
-    "eslint": "^8.51.0",
+    "eslint": "^8.52.0",
     "eslint-config-next": "^13.5.4",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-cypress": "^2.15.1",
