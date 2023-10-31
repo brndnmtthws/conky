@@ -123,6 +123,8 @@ set(conky_sources
   display-ncurses.hh
   display-http.cc
   display-http.hh
+  display-sdl.cc
+  display-sdl.hh
   display-x11.cc
   display-x11.hh
   display-wayland.cc
@@ -250,6 +252,11 @@ if(BUILD_GUI)
   set(gui fonts.cc fonts.h gui.cc gui.h)
   set(optional_sources ${optional_sources} ${gui})
 endif(BUILD_GUI)
+
+if(BUILD_SDL)
+  set(sdl_srcs )
+  set(optional_sources ${optional_sources} ${sdl_srcs})
+endif(BUILD_SDL)
 
 if(BUILD_WAYLAND)
   set(wl_srcs wl.cc wl.h xdg-shell-protocol.c wlr-layer-shell-protocol.c)

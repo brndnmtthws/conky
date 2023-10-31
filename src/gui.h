@@ -132,3 +132,5 @@ extern conky::range_config_setting<int> own_window_argb_value;
 #endif /*BUILD_ARGB*/
 #endif /*OWN_WINDOW*/
 extern priv::own_window_setting own_window;
+
+extern conky::simple_config_setting<bool> out_to_sdl;
