@@ -455,10 +455,10 @@ values:
   - name: downspeedgraph
     desc: |-
       Download speed graph, colours defined in hex, minus the #.
-      If scale is non-zero, it becomes the scale for the graph. Uses a
-      logarithmic scale (to see small numbers) when you use -l switch. Takes
-      the switch '-t' to use a temperature gradient, which makes the
-      gradient values change depending on the amplitude of a particular
+      If scale is non-zero, it defines the maximum value of the graph (in bytes
+      per second). Uses a logarithmic scale (to see small numbers) when you use
+      -l switch. Takes the switch '-t' to use a temperature gradient, which makes
+      the gradient values change depending on the amplitude of a particular
       graph value (try it and see).
     args:
       - (netdev)
@@ -2253,8 +2253,7 @@ values:
       similar fashion as TZ environment variable. For hints, look in
       /usr/share/zoneinfo. e.g. US/Pacific, Europe/Zurich, etc.
     args:
-      - (timezone
-      - (format))
+      - (timezone (format))
   - name: uid_name
     desc: Username of user with this uid.
     args:
@@ -2312,11 +2311,12 @@ values:
   - name: upspeedgraph
     desc: |-
       Upload speed graph, colours defined in hex, minus the #. If
-      scale is non-zero, it becomes the scale for the graph. Uses a
-      logarithmic scale (to see small numbers) when you use the -l switch.
-      Takes the switch '-t' to use a temperature gradient, which makes the
-      gradient values change depending on the amplitude of a particular
-      graph value (try it and see).
+      scale is non-zero, it defines the maximum value of the graph
+      (in bytes per second). Uses a logarithmic scale (to see small
+      numbers) when you use the -l switch. Takes the switch '-t' to
+      use a temperature gradient, which makes the gradient values
+      change depending on the amplitude of a particular graph value
+      (try it and see).
     args:
       - (netdev)
       - (height),(width)
