@@ -22,7 +22,10 @@
 
 #include <array>
 #include <string>
+
+#ifdef BUILD_X11
 #include "X11/Xlib.h"
+#endif /* BUILD_X11 */
 
 std::string event_type_to_str(int type) {
   switch (type) {
@@ -122,6 +125,7 @@ void mouse_positioned_event::push_lua_data(lua_State *L) const {
   push_table_value(L, "time", this->time);
 }
 
+#ifdef BUILD_X11
 mouse_move_event::mouse_move_event(XMotionEvent *ev) {
   this->type = MOUSE_MOVE;
   this->x = ev->x;
@@ -130,12 +134,14 @@ mouse_move_event::mouse_move_event(XMotionEvent *ev) {
   this->y_abs = ev->y_root;
   this->time = ev->time;
 }
+#endif /* BUILD_X11 */
 
 void mouse_move_event::push_lua_data(lua_State *L) const {
   mouse_positioned_event::push_lua_data(L);
   push_mods(L, this->mods);
 }
 
+#ifdef BUILD_X11
 mouse_scroll_event::mouse_scroll_event(XButtonEvent *ev) {
   this->type = MOUSE_SCROLL;
   this->x = ev->x;
@@ -146,6 +152,7 @@ mouse_scroll_event::mouse_scroll_event(XButtonEvent *ev) {
   this->mods = ev->state;
   this->up = ev->button == 4;
 }
+#endif /* BUILD_X11 */
 
 void mouse_scroll_event::push_lua_data(lua_State *L) const {
   mouse_positioned_event::push_lua_data(L);
@@ -153,6 +160,7 @@ void mouse_scroll_event::push_lua_data(lua_State *L) const {
   push_mods(L, this->mods);
 }
 
+#ifdef BUILD_X11
 mouse_button_event::mouse_button_event(XButtonEvent *ev) {
   this->type = ev->type == ButtonPress ? MOUSE_DOWN : MOUSE_UP;
   this->x = ev->x;
@@ -163,6 +171,7 @@ mouse_button_event::mouse_button_event(XButtonEvent *ev) {
   this->mods = ev->state;
   this->button = ev->button;
 }
+#endif /* BUILD_X11 */
 
 void mouse_button_event::push_lua_data(lua_State *L) const {
   mouse_positioned_event::push_lua_data(L);
@@ -170,6 +179,7 @@ void mouse_button_event::push_lua_data(lua_State *L) const {
   push_mods(L, this->mods);
 }
 
+#ifdef BUILD_X11
 mouse_crossing_event::mouse_crossing_event(XCrossingEvent *ev) {
   this->type = ev->type == EnterNotify ? AREA_ENTER : AREA_LEAVE;
   this->x = ev->x;
@@ -178,3 +188,4 @@ mouse_crossing_event::mouse_crossing_event(XCrossingEvent *ev) {
   this->y_abs = ev->y_root;
   this->time = ev->time;
 }
+#endif /* BUILD_X11 */
