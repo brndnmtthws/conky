@@ -33,6 +33,10 @@
 
 #ifdef BUILD_GUI
 #include "gui.h"
+
+#ifdef BUILD_MOUSE_EVENTS
+#include "mouse-events.h"
+#endif /* BUILD_MOUSE_EVENTS */
 #endif /* BUILD_GUI */
 
 extern "C" {
