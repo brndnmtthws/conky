@@ -29,13 +29,9 @@
 #include "x11.h"
 #endif /* BUILD_X11 */
 
+#include "colour-settings.h"
 #include "colours.h"
 #include "setting.hh"
-
-#if defined(BUILD_ARGB) && defined(OWN_WINDOW)
-/* true if use_argb_visual=true and argb visual was found*/
-extern bool have_argb_visual;
-#endif
 
 #ifdef BUILD_X11
 extern Display *display;
@@ -100,33 +96,9 @@ class own_window_setting : public conky::simple_config_setting<bool> {
  public:
   own_window_setting() : Base("own_window", false, false) {}
 };
-
-struct colour_traits {
-  static const lua::Type type = lua::TSTRING;
-  typedef unsigned long Type;
-
-  static inline std::pair<Type, bool> convert(lua::state &l, int index,
-                                              const std::string &) {
-    return {get_x11_color(l.tostring(index)), true};
-  }
-};
-
-class colour_setting
-    : public conky::simple_config_setting<unsigned long, colour_traits> {
-  typedef conky::simple_config_setting<unsigned long, colour_traits> Base;
-
- protected:
-  virtual void lua_setter(lua::state &l, bool init);
-
- public:
-  colour_setting(const std::string &name_, unsigned long default_value_ = 0)
-      : Base(name_, default_value_, true) {}
-};
 }  // namespace priv
 
 extern conky::simple_config_setting<int> head_index;
-extern priv::colour_setting color[10];
-extern priv::colour_setting default_color;
 extern priv::colour_setting default_shade_color;
 extern priv::colour_setting default_outline_color;
 

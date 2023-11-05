@@ -5,6 +5,9 @@ on:
     # Publish `main` as Docker `latest` image.
     branches:
       - main
+    paths-ignore:
+      - web/**
+      - doc/**
 
     # Publish `v1.2.3` tags as releases.
     tags:
@@ -24,12 +27,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
       - name: Log into Dockerhub registry
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u $DOCKERHUB_ACCOUNT --password-stdin
       - name: Build

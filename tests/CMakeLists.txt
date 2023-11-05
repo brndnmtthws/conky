@@ -18,6 +18,8 @@ set(test_srcs ${test_srcs} test-core.cc)
 set(test_srcs ${test_srcs} test-diskio.cc)
 set(test_srcs ${test_srcs} test-fs.cc)
 set(test_srcs ${test_srcs} test-gradient.cc)
+set(test_srcs ${test_srcs} test-graph.cc)
+set(test_srcs ${test_srcs} test-colours.cc)
 
 add_executable(test-conky test-common.cc ${test_srcs})
 target_link_libraries(test-conky conky_core)

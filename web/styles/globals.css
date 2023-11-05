@@ -2,3 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 @tailwind variants;
+
+code[class*='language-'],
+pre[class*='language-'] {
+  font-family: 'Fira Code Variable', 'ui-monospace', 'SFMono-Regular', 'Menlo',
+    'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace';
+}

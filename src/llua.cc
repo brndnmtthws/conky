@@ -496,8 +496,8 @@ bool llua_mouse_hook(const EventT &ev) {
   if ((lua_L == nullptr) || lua_mouse_hook.get(*state).empty()) {
     return false;
   }
-  const std::string func = "conky_" + lua_mouse_hook.get(*state);
-  lua_getglobal(lua_L, func.c_str());
+  const std::string func = lua_mouse_hook.get(*state);
+  lua_getglobal(lua_L, lua_mouse_hook.get(*state).c_str());
 
   ev.push_lua_table(lua_L);
 

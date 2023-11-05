@@ -27,6 +27,7 @@
  *
  */
 #include <vector>
+#include "colours.h"
 #include "conky.h"
 #include "core.h"
 #include "display-output.hh"
@@ -81,7 +82,7 @@ struct scroll_data {
   int wait;
   unsigned int wait_arg;
   signed int start;
-  long resetcolor;
+  Colour resetcolor;
   int direction;
 };
 
@@ -159,9 +160,9 @@ void parse_scroll_arg(struct text_object *obj, const char *arg,
     free(obj->next);
 #endif
     free(free_at_crash2);
-    CRIT_ERR(obj, free_at_crash,
-             "scroll needs arguments: [left|right|wait] <length> [<step>] "
-             "[interval] <text>");
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "scroll needs arguments: [left|right|wait] <length> [<step>] "
+                  "[interval] <text>");
   }
   n1 += n2;
 
@@ -189,7 +190,7 @@ void parse_scroll_arg(struct text_object *obj, const char *arg,
     sd->text[0] = 0;
   }
 
-  strncat(sd->text, arg + n1, strlen(arg + n1));
+  strncat(sd->text, arg + n1, max_user_text.get(*state) - n1);
   sd->start = sd->direction == SCROLL_WAIT ? strlen(sd->text) : 0;
   obj->sub =
       static_cast<struct text_object *>(malloc(sizeof(struct text_object)));
@@ -322,7 +323,7 @@ void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
 #ifdef BUILD_GUI
   // reset color when scroll is finished
   if (display_output() && display_output()->graphical()) {
-    new_special(p + strlen(p), FG)->arg = sd->resetcolor;
+    new_special(p + strlen(p), FG)->arg = sd->resetcolor.to_argb32();
   }
 #endif
 }

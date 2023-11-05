@@ -34,7 +34,7 @@ export default function Layout({ children, searchIndex }: LayoutProps) {
   }, [darkMode])
 
   useEffect(() => {
-    var darkQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const darkQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
     darkQuery.onchange = (e) => {
       if (e.matches) {

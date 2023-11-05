@@ -1,0 +1,37 @@
+name: Web CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - web/**
+      - doc/**
+  pull_request:
+    branches: [main]
+    paths:
+      - web/**
+      - doc/**
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: '**/package-lock.json'
+      - run: npm ci
+        working-directory: web
+      - run: npm run lint
+        working-directory: web
+      - run: npm run build --if-present
+        working-directory: web
+      - run: npm run e2e:headless
+        working-directory: web

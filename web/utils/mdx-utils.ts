@@ -21,7 +21,7 @@ export interface Document {
 }
 
 export const getDocuments = (): Document[] => {
-  let documents = documentFilePaths.map((filePath) => {
+  const documents = documentFilePaths.map((filePath) => {
     const source = fs.readFileSync(path.join(DOCUMENTS_PATH, filePath), 'utf-8')
     const { content, data } = matter(source)
 
@@ -30,6 +30,16 @@ export const getDocuments = (): Document[] => {
       data,
       filePath,
     }
+  })
+
+  documents.sort((a, b) => {
+    if (a.data.indexWeight > b.data.indexWeight) {
+      return 1
+    }
+    if (a.data.indexWeight < b.data.indexWeight) {
+      return -1
+    }
+    return a.data.title.localeCompare(b.data.title)
   })
 
   return documents

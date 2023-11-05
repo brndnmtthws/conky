@@ -43,3 +43,10 @@ if(BUILD_OLD_CONFIG)
 endif(BUILD_OLD_CONFIG)
 
 add_custom_target(generated_hdr_files DEPENDS ${generated_hdr_files})
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+  install(FILES conky.desktop DESTINATION share/applications)
+  install(FILES logo/conky-logomark-violet.svg
+          DESTINATION share/icons/hicolor/scalable/apps)
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+

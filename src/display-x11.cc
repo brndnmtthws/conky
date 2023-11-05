@@ -51,19 +51,21 @@
 #include <sstream>
 #include <unordered_map>
 
+#include "colours.h"
 #include "conky.h"
 #include "display-x11.hh"
 #include "gui.h"
 #include "llua.h"
-#include "x11.h"
 
 /* TODO: cleanup global namespace */
 #ifdef BUILD_X11
 
+#include "x11.h"
+
 // TODO: cleanup externs (move to conky.h ?)
 #ifdef OWN_WINDOW
 extern int fixed_size, fixed_pos;
-#endif /* OWN_WINDOW */
+#endif                                   /* OWN_WINDOW */
 extern int text_start_x, text_start_y;   /* text start position in window */
 extern int text_offset_x, text_offset_y; /* offset for start position */
 extern int text_width,
@@ -73,7 +75,7 @@ void update_text();
 extern int need_to_update;
 int get_border_total();
 extern conky::range_config_setting<int> maximum_width;
-extern long current_color;
+extern Colour current_color;
 #ifdef BUILD_XFT
 static int xft_dpi = -1;
 #endif /* BUILD_XFT */
@@ -220,7 +222,10 @@ bool display_output_x11::initialize() {
   return true;
 }
 
-bool display_output_x11::shutdown() { return false; }
+bool display_output_x11::shutdown() {
+  deinit_x11();
+  return true;
+}
 
 bool display_output_x11::main_loop_wait(double t) {
   /* wait for X event or timeout */
@@ -602,19 +607,20 @@ void display_output_x11::cleanup() {
     XDestroyRegion(x11_stuff.region);
     x11_stuff.region = nullptr;
   }
+#ifdef BUILD_XFT
+  FcFini();
+#endif /* BUILD_XFT */
 }
 
-void display_output_x11::set_foreground_color(long c) {
+void display_output_x11::set_foreground_color(Colour c) {
+  current_color = c;
 #ifdef BUILD_ARGB
   if (have_argb_visual) {
-    current_color = c | (own_window_argb_value.get(*state) << 24);
-  } else {
-#endif /* BUILD_ARGB */
-    current_color = c;
-#ifdef BUILD_ARGB
+    current_color.alpha = own_window_argb_value.get(*state);
   }
 #endif /* BUILD_ARGB */
-  XSetForeground(display, window.gc, current_color);
+  XSetForeground(display, window.gc,
+                 current_color.to_x11_color(display, screen));
 }
 
 int display_output_x11::calc_text_width(const char *s) {
@@ -640,10 +646,10 @@ int display_output_x11::calc_text_width(const char *s) {
 void display_output_x11::draw_string_at(int x, int y, const char *s, int w) {
 #ifdef BUILD_XFT
   if (use_xft.get(*state)) {
-    XColor c;
-    XftColor c2;
+    XColor c{};
+    XftColor c2{};
 
-    c.pixel = current_color;
+    c.pixel = current_color.to_x11_color(display, screen);
     // query color on custom colormap
     XQueryColor(display, window.colourmap, &c);
 
@@ -825,13 +831,8 @@ void display_output_x11::free_fonts(bool utf8) {
   for (auto &font : x_fonts) {
 #ifdef BUILD_XFT
     if (use_xft.get(*state)) {
-      /*
-       * Do we not need to close fonts with Xft? Unsure.  Not freeing the
-       * fonts seems to incur a slight memory leak, but it also prevents
-       * a crash.
-       *
-       * XftFontClose(display, x_fonts[i].xftfont);
-       */
+      /* Close each font if it has been initialized */
+      if (font.xftfont) { XftFontClose(display, font.xftfont); }
     } else
 #endif /* BUILD_XFT */
     {
@@ -869,7 +870,7 @@ void display_output_x11::load_fonts(bool utf8) {
         continue;
       }
 
-      CRIT_ERR(nullptr, nullptr, "can't load Xft font '%s'", "courier-12");
+      CRIT_ERR("can't load Xft font '%s'", "courier-12");
 
       continue;
     }
@@ -886,7 +887,7 @@ void display_output_x11::load_fonts(bool utf8) {
         xfont.fontset = XCreateFontSet(display, "fixed", &missing, &missingnum,
                                        &missingdrawn);
         if (xfont.fontset == nullptr) {
-          CRIT_ERR(nullptr, nullptr, "can't load font '%s'", "fixed");
+          CRIT_ERR("can't load font '%s'", "fixed");
         }
       }
     }
@@ -895,7 +896,7 @@ void display_output_x11::load_fonts(bool utf8) {
         (xfont.font = XLoadQueryFont(display, font.name.c_str())) == nullptr) {
       NORM_ERR("can't load font '%s'", font.name.c_str());
       if ((xfont.font = XLoadQueryFont(display, "fixed")) == nullptr) {
-        CRIT_ERR(nullptr, nullptr, "can't load font '%s'", "fixed");
+        CRIT_ERR("can't load font '%s'", "fixed");
       }
     }
   }

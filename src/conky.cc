@@ -407,9 +407,8 @@ int dpi_scale(int value) {
 }
 
 #ifdef BUILD_GUI
-conky::gradient_factory *create_gradient_factory(int width,
-                                                 unsigned long first_colour,
-                                                 unsigned long last_colour) {
+conky::gradient_factory *create_gradient_factory(int width, Colour first_colour,
+                                                 Colour last_colour) {
   switch (graph_gradient_mode.get(*state)) {
     case RGB_GRADIENT:
       return new conky::rgb_gradient_factory(width, first_colour, last_colour);
@@ -572,11 +571,11 @@ void human_readable(long long num, char *buf, int size) {
 /* global object list root element */
 static struct text_object global_root_object;
 
-static long current_text_color;
+static Colour current_text_color;
 
-void set_current_text_color(long colour) { current_text_color = colour; }
+void set_current_text_color(Colour colour) { current_text_color = colour; }
 
-long get_current_text_color() { return current_text_color; }
+Colour get_current_text_color() { return current_text_color; }
 
 static void extract_variable_text(const char *p) {
   free_text_objects(&global_root_object);
@@ -944,7 +943,7 @@ static int cur_x, cur_y; /* current x and y for drawing */
 // FG
 static int draw_mode; /* FG, BG or OUTLINE */
 #ifdef BUILD_GUI
-/*static*/ long current_color;
+/*static*/ Colour current_color;
 
 static int saved_coordinates_x[100];
 static int saved_coordinates_y[100];
@@ -1015,7 +1014,7 @@ static int text_size_updater(char *s, int special_index) {
 }
 #endif /* BUILD_GUI */
 
-static inline void set_foreground_color(long c) {
+static inline void set_foreground_color(Colour c) {
   for (auto output : display_outputs()) output->set_foreground_color(c);
 }
 
@@ -1233,7 +1232,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
         case GAUGE: /* new GAUGE  */
           if (display_output() && display_output()->graphical()) {
             int h, by = 0;
-            unsigned long last_colour = current_color;
+            Colour last_colour = current_color;
 #ifdef BUILD_MATH
             float angle, px, py;
             double usage, scale;
@@ -1284,7 +1283,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           if (display_output() && display_output()->graphical()) {
             int h, by, i = 0, j = 0;
             int colour_idx = 0;
-            unsigned long last_colour = current_color;
+            Colour last_colour = current_color;
             if (cur_x - text_start_x > mw && mw > 0) { break; }
             h = current->height;
             by = cur_y - (font_ascent() / 2) - 1;
@@ -1310,9 +1309,9 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 
             /* in case we don't have a graph yet */
             if (current->graph != nullptr) {
-              std::unique_ptr<unsigned long[]> tmpcolour;
+              std::unique_ptr<Colour[]> tmpcolour;
 
-              if (current->last_colour != 0 || current->first_colour != 0) {
+              if (current->colours_set) {
                 auto factory = create_gradient_factory(w, current->last_colour,
                                                        current->first_colour);
                 tmpcolour = factory->create_gradient();
@@ -1320,7 +1319,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
               }
               colour_idx = 0;
               for (i = w - 2; i > -1; i--) {
-                if (current->last_colour != 0 || current->first_colour != 0) {
+                if (current->colours_set) {
                   if (current->tempgrad != 0) {
                     set_foreground_color(tmpcolour[static_cast<int>(
                         static_cast<float>(w - 2) -
@@ -1433,16 +1432,22 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           break;
 #endif /* BUILD_GUI */
         case FG:
-          if (draw_mode == FG) { set_foreground_color(current->arg); }
+          if (draw_mode == FG) {
+            set_foreground_color(Colour::from_argb32(current->arg));
+          }
           break;
 
 #ifdef BUILD_GUI
         case BG:
-          if (draw_mode == BG) { set_foreground_color(current->arg); }
+          if (draw_mode == BG) {
+            set_foreground_color(Colour::from_argb32(current->arg));
+          }
           break;
 
         case OUTLINE:
-          if (draw_mode == OUTLINE) { set_foreground_color(current->arg); }
+          if (draw_mode == OUTLINE) {
+            set_foreground_color(Colour::from_argb32(current->arg));
+          }
           break;
 
         case OFFSET:
@@ -1719,7 +1724,7 @@ void main_loop() {
 #ifdef SIGNAL_BLOCKING
     /* block signals.  we will inspect for pending signals later */
     if (sigprocmask(SIG_BLOCK, &newmask, &oldmask) < 0) {
-      CRIT_ERR(nullptr, NULL, "unable to sigprocmask()");
+      CRIT_ERR("unable to sigprocmask()");
     }
 #endif
 
@@ -1746,7 +1751,7 @@ void main_loop() {
 #ifdef SIGNAL_BLOCKING
     /* unblock signals of interest and let handler fly */
     if (sigprocmask(SIG_SETMASK, &oldmask, nullptr) < 0) {
-      CRIT_ERR(nullptr, NULL, "unable to sigprocmask()");
+      CRIT_ERR("unable to sigprocmask()");
     }
 #endif
 
@@ -1823,7 +1828,7 @@ void main_loop() {
 
     llua_update_info(&info, active_update_interval());
   }
-  clean_up(nullptr, nullptr);
+  clean_up();
 
 #ifdef HAVE_SYS_INOTIFY_H
   if (inotify_fd != -1) {
@@ -1845,7 +1850,7 @@ static void reload_config() {
              current_config.c_str(), getpid());
     return;
   }
-  clean_up(nullptr, nullptr);
+  clean_up();
   state = std::make_unique<lua::state>();
   conky::export_symbols(*state);
   sleep(1); /* slight pause */
@@ -1863,18 +1868,18 @@ void free_specials(special_t *&current) {
   clear_stored_graphs();
 }
 
-void clean_up_without_threads(void *memtofree1, void *memtofree2) {
-  free_and_zero(memtofree1);
-  free_and_zero(memtofree2);
-
+void clean_up(void) {
+  /* free_update_callbacks(); XXX: some new equivalent of this? */
   free_and_zero(info.cpu_usage);
   for (auto output : display_outputs()) output->cleanup();
   conky::shutdown_display_outputs();
 #ifdef BUILD_GUI
-  if (!display_output() || !display_output()->graphical())
+  if (!display_output() || !display_output()->graphical()) {
     fonts.clear();  // in set_default_configurations a font is set but not
                     // loaded
-#endif              /* BUILD_GUI */
+    selected_font = 0;
+  }
+#endif /* BUILD_GUI */
 
   if (info.first_process != nullptr) {
     free_all_processes();
@@ -1904,11 +1909,6 @@ void clean_up_without_threads(void *memtofree1, void *memtofree2) {
 
   conky::cleanup_config_settings(*state);
   state.reset();
-}
-
-void clean_up(void *memtofree1, void *memtofree2) {
-  /* free_update_callbacks(); XXX: some new equivalent of this? */
-  clean_up_without_threads(memtofree1, memtofree2);
 }
 
 static void set_default_configurations() {
@@ -2107,7 +2107,7 @@ void initialisation(int argc, char **argv) {
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null", O_RDONLY,
                      "kvm_open")) == nullptr) {
-    CRIT_ERR(nullptr, NULL, "cannot read kvm");
+    CRIT_ERR("cannot read kvm");
   }
 #endif
 
@@ -2135,8 +2135,7 @@ void initialisation(int argc, char **argv) {
       case 'm':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR(nullptr, nullptr, "'%s' is a wrong xinerama-head index",
-                   optarg);
+          CRIT_ERR("'%s' is a wrong xinerama-head index", optarg);
         }
         head_index.lua_set(*state);
         break;
@@ -2172,7 +2171,7 @@ void initialisation(int argc, char **argv) {
       case 'u':
         state->pushinteger(dpi_scale(strtol(optarg, &conv_end, 10)));
         if (*conv_end != 0) {
-          CRIT_ERR(nullptr, nullptr, "'%s' is a wrong update-interval", optarg);
+          CRIT_ERR("'%s' is a wrong update-interval", optarg);
         }
         update_interval.lua_set(*state);
         break;
@@ -2180,8 +2179,7 @@ void initialisation(int argc, char **argv) {
       case 'i':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR(nullptr, nullptr, "'%s' is a wrong number of update-times",
-                   optarg);
+          CRIT_ERR("'%s' is a wrong number of update-times", optarg);
         }
         total_run_times.lua_set(*state);
         break;
@@ -2189,8 +2187,7 @@ void initialisation(int argc, char **argv) {
       case 'x':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR(nullptr, nullptr, "'%s' is a wrong value for the X-position",
-                   optarg);
+          CRIT_ERR("'%s' is a wrong value for the X-position", optarg);
         }
         gap_x.lua_set(*state);
         break;
@@ -2198,8 +2195,7 @@ void initialisation(int argc, char **argv) {
       case 'y':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR(nullptr, nullptr, "'%s' is a wrong value for the Y-position",
-                   optarg);
+          CRIT_ERR("'%s' is a wrong value for the Y-position", optarg);
         }
         gap_y.lua_set(*state);
         break;
@@ -2261,7 +2257,7 @@ void initialisation(int argc, char **argv) {
   memset(tmpstring2, 0, text_buffer_size.get(*state));
 
   if (!conky::initialize_display_outputs()) {
-    CRIT_ERR(nullptr, nullptr, "initialize_display_outputs() failed.");
+    CRIT_ERR("initialize_display_outputs() failed.");
   }
 #ifdef BUILD_GUI
   /* setup lua window globals */

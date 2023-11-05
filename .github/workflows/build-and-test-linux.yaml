@@ -3,9 +3,15 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - web/**
+      - doc/**
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - web/**
+      - doc/**
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -29,7 +35,8 @@ jobs:
           - 13
           - 14
         exclude:
-          - compiler: gcc
+          - os: ubuntu-20.04
+            compiler: gcc
             compiler_version: 12
           - compiler: gcc
             compiler_version: 13
@@ -101,7 +108,7 @@ jobs:
             libc++-${{ matrix.compiler_version }}-dev \
             libc++abi-${{ matrix.compiler_version }}-dev
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Configure with CMake
         run: |
           set -x # show the commands we're running

@@ -1,5 +1,5 @@
-const plugin = require('tailwindcss/plugin')
-const pluginTypography = require('@tailwindcss/typography')
+import plugin = require('tailwindcss/plugin')
+import pluginTypography = require('@tailwindcss/typography')
 
 const hoveredSiblingPlugin = plugin(function ({ addVariant, e }) {
   addVariant('hovered-sibling', ({ container }) => {
@@ -13,7 +13,7 @@ module.exports = {
   theme: {
     fontFamily: {
       sans: [
-        'InterVariable',
+        'Inter Variable',
         'ui-sans-serif',
         'system-ui',
         '-apple-system',
@@ -30,7 +30,7 @@ module.exports = {
         'Noto Color Emoji',
       ],
       serif: [
-        'NewsreaderVariable',
+        'Newsreader Variable',
         'ui-serif',
         'Georgia',
         'Cambria',
@@ -39,7 +39,7 @@ module.exports = {
         'serif',
       ],
       mono: [
-        'Fira CodeVariable',
+        'Fira Code Variable',
         'ui-monospace',
         'SFMono-Regular',
         'Menlo',

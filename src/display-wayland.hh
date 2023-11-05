@@ -27,6 +27,7 @@
 #include <string>
 #include <type_traits>
 
+#include "colours.h"
 #include "display-output.hh"
 #include "luamm.hh"
 #include "wl.h"
@@ -54,7 +55,7 @@ class display_output_wayland : public display_output_base {
   virtual void cleanup();
 
   // drawing primitives
-  virtual void set_foreground_color(long);
+  virtual void set_foreground_color(Colour);
 
   virtual int calc_text_width(const char *);
 

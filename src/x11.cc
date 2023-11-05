@@ -58,12 +58,19 @@
 #ifdef BUILD_XSHAPE
 #include <X11/extensions/shape.h>
 #endif /* BUILD_XSHAPE */
+#ifdef BUILD_XFIXES
+#include <X11/extensions/Xfixes.h>
+#endif /* BUILD_XFIXES */
 
 /* some basic X11 stuff */
 Display *display = nullptr;
 
 /* Window stuff */
 struct conky_x11_window window;
+
+#ifdef BUILD_ARGB
+bool have_argb_visual;
+#endif /* BUILD_ARGB */
 
 conky::simple_config_setting<std::string> display_name("display", std::string(),
                                                        false);
@@ -73,7 +80,6 @@ static void update_workarea();
 static Window find_desktop_window(Window *p_root, Window *p_desktop);
 static Window find_subwindow(Window win, int w, int h);
 static void init_x11();
-static void deinit_x11();
 
 /********************* <SETTINGS> ************************/
 namespace priv {
@@ -268,7 +274,7 @@ static void init_x11() {
   DBGP("leave init_x11()");
 }
 
-static void deinit_x11() {
+void deinit_x11() {
   if (display) {
     DBGP("deinit_x11()");
     XCloseDisplay(display);
@@ -399,9 +405,11 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop) {
 #ifdef OWN_WINDOW
 namespace {
 /* helper function for set_transparent_background() */
-void do_set_background(Window win, int argb) {
-  unsigned long colour = background_colour.get(*state) | (argb << 24);
-  XSetWindowBackground(display, win, colour);
+void do_set_background(Window win, uint8_t alpha) {
+  Colour colour = background_colour.get(*state);
+  colour.alpha = alpha;
+  unsigned long xcolor = colour.to_x11_color(display, screen, true);
+  XSetWindowBackground(display, win, xcolor);
 }
 }  // namespace
 
@@ -506,6 +514,7 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
       depth = CopyFromParent;
       visual = CopyFromParent;
 #ifdef BUILD_ARGB
+      have_argb_visual = false;
     }
 #endif /* BUILD_ARGB */
 
@@ -571,22 +580,23 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
 
       /* A window managed by the window manager.
        * Process hints and buttons. */
-      XSetWindowAttributes attrs = {ParentRelative,
-                                    0L,
-                                    0,
-                                    0L,
-                                    0,
-                                    0,
-                                    Always,
-                                    0L,
-                                    0L,
-                                    False,
-                                    StructureNotifyMask | ExposureMask |
-                                        ButtonPressMask | ButtonReleaseMask,
-                                    0L,
-                                    False,
-                                    0,
-                                    0};
+      XSetWindowAttributes attrs = {
+          ParentRelative,
+          0L,
+          0,
+          0L,
+          0,
+          0,
+          Always,
+          0L,
+          0L,
+          False,
+          StructureNotifyMask | ExposureMask | ButtonPressMask |
+              ButtonReleaseMask,
+          0L,
+          own_window_type.get(l) == TYPE_UTILITY ? True : False,
+          0,
+          0};
 
       XWMHints wmHint;
       Atom xa;
@@ -614,6 +624,15 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
       /* allow decorated windows to be given input focus by WM */
       wmHint.input = TEST_HINT(hints, HINT_UNDECORATED) ? False : True;
 #ifdef BUILD_XSHAPE
+#ifdef BUILD_XFIXES
+      if (own_window_type.get(l) == TYPE_UTILITY) {
+        XRectangle rect;
+        XserverRegion region = XFixesCreateRegion(display, &rect, 1);
+        XFixesSetWindowShapeRegion(display, window.window, ShapeInput, 0, 0,
+                                   region);
+        XFixesDestroyRegion(display, region);
+      }
+#endif /* BUILD_XFIXES */
       if (!wmHint.input) {
         /* allow only decorated windows to be given mouse input */
         int major_version;
@@ -663,6 +682,11 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
           case TYPE_PANEL:
             prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
             fprintf(stderr, PACKAGE_NAME ": window type - panel\n");
+            fflush(stderr);
+            break;
+          case TYPE_UTILITY:
+            prop = ATOM(_NET_WM_WINDOW_TYPE_UTILITY);
+            fprintf(stderr, PACKAGE_NAME ": window type - utility\n");
             fflush(stderr);
             break;
           case TYPE_NORMAL:
@@ -837,9 +861,11 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
   }
 #endif /* OWN_WINDOW */
 #ifdef BUILD_MOUSE_EVENTS
-  /* it's not recommended to add event masks to special windows in X; causes a crash */
+  /* it's not recommended to add event masks to special windows in X; causes a
+   * crash */
   if (own_window_type.get(l) != TYPE_DESKTOP) {
-    input_mask |= ButtonPressMask | ButtonReleaseMask | PointerMotionMask | EnterWindowMask | LeaveWindowMask;
+    input_mask |= ButtonPressMask | ButtonReleaseMask | PointerMotionMask |
+                  EnterWindowMask | LeaveWindowMask;
   }
 #endif /* BUILD_MOUSE_EVENTS */
   XSelectInput(display, window.window, input_mask);

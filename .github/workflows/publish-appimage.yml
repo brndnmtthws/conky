@@ -5,6 +5,9 @@ on:
       - main
     tags:
       - v*
+    paths-ignore:
+      - web/**
+      - doc/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -57,7 +60,7 @@ jobs:
             &&
             pip3 install --upgrade pyyaml
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Import GPG Deploy Key
         run: |
           echo "${{ secrets.GPG_DEPLOY_KEY }}" > appimage/secret.gpg

@@ -27,6 +27,7 @@
 #include <string>
 #include <type_traits>
 
+#include "colours.h"
 #include "display-console.hh"
 #include "luamm.hh"
 
@@ -49,7 +50,7 @@ class display_output_ncurses : public display_output_console {
   virtual bool draw_line_inner_required() { return true; }
 
   // drawing primitives
-  virtual void set_foreground_color(long c);
+  virtual void set_foreground_color(Colour c);
 
   virtual void begin_draw_text();
   virtual void end_draw_text();

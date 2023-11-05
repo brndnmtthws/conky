@@ -23,10 +23,15 @@ lua/libimlib2.c
 # Compiler cache
 .cache
 
-# Ignore vscode stuff
-.vscode
+# Ignore (most) vscode stuff
+.vscode/*
 *.code-workspace
+# Allow vscode recommended extensions
+!.vscode/extensions.json
 .idea/
 
 # Ignore nix stuff
 /result
+
+# Ignore direnv
+.direnv

@@ -1,0 +1,24 @@
+pre-commit:
+  parallel: true
+  commands:
+    web-linter:
+      run: |
+        npx -y eslint --fix {staged_files} \
+          && git add {staged_files}
+      root: web/
+      glob: '*.{ts,tsx,js,jsx}'
+    cpp-linter:
+      run: |
+        clang-format -i {staged_files} \
+          && git add {staged_files}
+      glob: '*.{c,cc,cxx,h,cpp}'
+    misc-linter:
+      run: |
+        npx -y prettier --write {staged_files} \
+          && git add {staged_files}
+      glob: '*.{md,json,yml,yaml}'
+    nix-linter:
+      run: |
+        alejandra -q {staged_files} \
+          && git add {staged_files}
+      glob: '*.{nix}'

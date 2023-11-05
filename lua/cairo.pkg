@@ -108,7 +108,20 @@ typedef enum _cairo_status {
 	CAIRO_STATUS_NEGATIVE_COUNT,
 	CAIRO_STATUS_INVALID_CLUSTERS,
 	CAIRO_STATUS_INVALID_SLANT,
-	CAIRO_STATUS_INVALID_WEIGHT
+	CAIRO_STATUS_INVALID_WEIGHT,
+	CAIRO_STATUS_INVALID_SIZE,
+	CAIRO_STATUS_USER_FONT_NOT_IMPLEMENTED,
+	CAIRO_STATUS_DEVICE_TYPE_MISMATCH,
+	CAIRO_STATUS_DEVICE_ERROR,
+	CAIRO_STATUS_INVALID_MESH_CONSTRUCTION,
+	CAIRO_STATUS_DEVICE_FINISHED,
+	CAIRO_STATUS_JBIG2_GLOBAL_MISSING,
+	CAIRO_STATUS_PNG_ERROR,
+	CAIRO_STATUS_FREETYPE_ERROR,
+	CAIRO_STATUS_WIN32_GDI_ERROR,
+	CAIRO_STATUS_TAG_ERROR,
+
+	CAIRO_STATUS_LAST_STATUS
 } cairo_status_t;
 
 typedef enum _cairo_content {
@@ -706,6 +719,12 @@ const char *cairo_status_to_string(cairo_status_t status);
 cairo_surface_t *cairo_surface_create_similar(cairo_surface_t * other,
 		cairo_content_t content, int width, int height);
 
+cairo_surface_t *cairo_surface_create_for_rectangle (cairo_surface_t	*target,
+		double x,
+		double y,
+		double width,
+		double height);
+
 cairo_surface_t *cairo_surface_reference(cairo_surface_t * surface);
 
 void cairo_surface_finish(cairo_surface_t * surface);
@@ -833,7 +852,9 @@ typedef enum _cairo_pattern_type {
 	CAIRO_PATTERN_TYPE_SOLID,
 	CAIRO_PATTERN_TYPE_SURFACE,
 	CAIRO_PATTERN_TYPE_LINEAR,
-	CAIRO_PATTERN_TYPE_RADIAL
+	CAIRO_PATTERN_TYPE_RADIAL,
+	CAIRO_PATTERN_TYPE_MESH,
+    CAIRO_PATTERN_TYPE_RASTER_SOURCE
 } cairo_pattern_type_t;
 
 cairo_pattern_type_t cairo_pattern_get_type(cairo_pattern_t * pattern);
@@ -880,6 +901,46 @@ cairo_status_t cairo_pattern_get_linear_points(cairo_pattern_t * pattern,
 cairo_status_t cairo_pattern_get_radial_circles(cairo_pattern_t * pattern,
 		double *x0, double *y0, double *r0,
 		double *x1, double *y1, double *r1);
+
+cairo_pattern_t *cairo_pattern_create_mesh (void);
+
+void cairo_mesh_pattern_begin_patch (cairo_pattern_t *pattern);
+
+void cairo_mesh_pattern_end_patch (cairo_pattern_t *pattern);
+
+void cairo_mesh_pattern_curve_to (cairo_pattern_t *pattern,
+		double x1, double y1,
+		double x2, double y2,
+		double x3, double y3);
+
+void cairo_mesh_pattern_line_to (cairo_pattern_t *pattern,
+		double x, double y);
+
+void cairo_mesh_pattern_move_to (cairo_pattern_t *pattern,
+		double x, double y);
+
+void cairo_mesh_pattern_set_control_point (cairo_pattern_t *pattern,
+		unsigned int point_num, double x, double y);
+
+void cairo_mesh_pattern_set_corner_color_rgb (cairo_pattern_t *pattern,
+		unsigned int corner_num, double red, double green, double blue);
+
+void cairo_mesh_pattern_set_corner_color_rgba (cairo_pattern_t *pattern,
+		unsigned int corner_num, double red, double green, double blue,
+		double alpha);
+
+cairo_status_t cairo_mesh_pattern_get_patch_count (cairo_pattern_t *pattern,
+		unsigned int *count);
+
+cairo_path_t *cairo_mesh_pattern_get_path (cairo_pattern_t *pattern,
+		unsigned int patch_num);
+
+cairo_status_t cairo_mesh_pattern_get_corner_color_rgba (cairo_pattern_t *pattern,
+		unsigned int patch_num, unsigned int corner_num,
+		double *red, double *green, double *blue, double *alpha);
+
+cairo_status_t cairo_mesh_pattern_get_control_point (cairo_pattern_t *pattern,
+		unsigned int patch_num, unsigned int point_num, double *x, double *y);
 
 void cairo_matrix_init(cairo_matrix_t * matrix, double xx, double yx, double
 		xy, double yy, double x0, double y0);

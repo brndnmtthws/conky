@@ -309,7 +309,7 @@ void get_cpu_count(void) {
   }
 
   info.cpu_usage = (float *)malloc((info.cpu_count + 1) * sizeof(float));
-  if (info.cpu_usage == nullptr) { CRIT_ERR(nullptr, NULL, "malloc"); }
+  if (info.cpu_usage == nullptr) { CRIT_ERR("malloc"); }
 }
 
 struct cpu_info {
@@ -544,17 +544,14 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
 char get_freq(char *p_client_buffer, size_t client_buffer_size,
               const char *p_format, int divisor, unsigned int cpu) {
   int freq;
-  char *freq_sysctl;
+  char freq_sysctl[16] = {0};
 
   if (!p_client_buffer || client_buffer_size <= 0 || !p_format ||
       divisor <= 0) {
     return 0;
   }
 
-  freq_sysctl = (char *)calloc(16, sizeof(char));
-  if (freq_sysctl == nullptr) { exit(-1); }
-
-  snprintf(freq_sysctl, 16, "dev.cpu.%d.freq", (cpu - 1));
+  snprintf(freq_sysctl, sizeof(freq_sysctl), "dev.cpu.%d.freq", (cpu - 1));
 
   if (GETSYSCTL(freq_sysctl, freq) == 0) {
     snprintf(p_client_buffer, client_buffer_size, p_format,
@@ -563,7 +560,6 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
     snprintf(p_client_buffer, client_buffer_size, p_format, 0.0f);
   }
 
-  free(freq_sysctl);
   return 1;
 }
 

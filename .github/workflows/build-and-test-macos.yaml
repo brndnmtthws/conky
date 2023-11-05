@@ -3,9 +3,15 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - web/**
+      - doc/**
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - web/**
+      - doc/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -22,6 +28,7 @@ jobs:
       - name: Install dependencies
         run: |
           brew install \
+            cmake \
             freetype \
             gettext \
             imlib2 \
@@ -29,19 +36,20 @@ jobs:
             librsvg \
             libxft \
             libxinerama \
+            libxfixes \
             lua \
-            ninja
+            ninja \
+            pkg-config
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+      - run: mkdir build
       - name: Configure with CMake
+        working-directory: build
         run: |
-          set -x
-          mkdir build
-          cd build
-          cmake .. -G Ninja                      \
-            -DMAINTAINER_MODE=ON                 \
-            -DBUILD_WAYLAND=OFF                  \
-            -DBUILD_TESTS=ON
+          cmake .. -G Ninja                    \
+          -DMAINTAINER_MODE=ON                 \
+          -DBUILD_WAYLAND=OFF                  \
+          -DBUILD_TESTS=ON
       - name: Compile
         run: cmake --build build
       - name: Test

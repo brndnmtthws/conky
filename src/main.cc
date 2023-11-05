@@ -323,7 +323,7 @@ int main(int argc, char **argv) {
         break;
       case 'q':
         if (freopen("/dev/null", "w", stderr) == nullptr) {
-          CRIT_ERR(nullptr, nullptr, "could not open /dev/null as stderr!");
+          CRIT_ERR("could not open /dev/null as stderr!");
         }
         break;
       case 'h':
@@ -365,7 +365,7 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   } catch (obj_create_error &e) {
     std::cerr << e.what() << std::endl;
-    clean_up(nullptr, nullptr);
+    clean_up();
     return EXIT_FAILURE;
   } catch (std::exception &e) {
     std::cerr << PACKAGE_NAME ": " << e.what() << std::endl;

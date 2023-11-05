@@ -930,7 +930,7 @@ void get_cpu_count() {
      */
     info.cpu_usage =
         static_cast<float *>(malloc((info.cpu_count + 1) * sizeof(float)));
-    if (info.cpu_usage == nullptr) { CRIT_ERR(nullptr, nullptr, "malloc"); }
+    if (info.cpu_usage == nullptr) { CRIT_ERR("malloc"); }
   }
 }
 

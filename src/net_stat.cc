@@ -333,8 +333,8 @@ void print_v6addrs(struct text_object *obj, char *p, unsigned int p_max_size) {
 void parse_net_stat_graph_arg(struct text_object *obj, const char *arg,
                               void *free_at_crash) {
   /* scan arguments and get interface name back */
-  char *buf = nullptr;
-  buf = scan_graph(obj, arg, 0);
+  auto [buf, skip] = scan_command(arg);
+  scan_graph(obj, arg + skip, 0);
 
   // default to DEFAULTNETDEV
   if (buf != nullptr) {
@@ -530,7 +530,7 @@ int interface_up(struct text_object *obj) {
 #else
   if ((fd = socket(PF_INET, SOCK_DGRAM | SOCK_CLOEXEC, 0)) < 0) {
 #endif
-    CRIT_ERR(nullptr, nullptr, "could not create sockfd");
+    CRIT_ERR("could not create sockfd");
     return 0;
   }
   strncpy(ifr.ifr_name, dev, IFNAMSIZ);

@@ -19,6 +19,7 @@
 #
 
 include_directories(${conky_includes})
+
 if(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
   # include config output dir
   include_directories(${CMAKE_BINARY_DIR}/data)
@@ -28,110 +29,117 @@ endif(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
   message(
     FATAL_ERROR
-      "You must remove the autotools generated file '${CMAKE_CURRENT_SOURCE_DIR}/config.h' in order to build with CMake."
-    )
+    "You must remove the autotools generated file '${CMAKE_CURRENT_SOURCE_DIR}/config.h' in order to build with CMake."
+  )
 endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
+
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
   message(
     FATAL_ERROR
-      "You must remove the autotools generated file '${CMAKE_CURRENT_SOURCE_DIR}/build.h' in order to build with CMake."
-    )
+    "You must remove the autotools generated file '${CMAKE_CURRENT_SOURCE_DIR}/build.h' in order to build with CMake."
+  )
 endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
+
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h)
   message(
     FATAL_ERROR
-      "You must remove the autotools generated file '${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h' in order to build with CMake."
-    )
+    "You must remove the autotools generated file '${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h' in order to build with CMake."
+  )
 endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h)
 
 set(conky_sources
-    ${conky_sources}
-    c++wrap.cc
-    c++wrap.hh
-    colours.cc
-    colours.h
-    combine.cc
-    combine.h
-    common.cc
-    common.h
-    conky.cc
-    conky.h
-    core.cc
-    core.h
-    cpu.cc
-    cpu.h
-    diskio.cc
-    diskio.h
-    entropy.cc
-    entropy.h
-    exec.cc
-    exec.h
-    fs.cc
-    fs.h
-    gradient.cc
-    gradient.h
-    mail.cc
-    mail.h
-    misc.cc
-    misc.h
-    net_stat.cc
-    net_stat.h
-    template.cc
-    template.h
-    mboxscan.cc
-    mboxscan.h
-    read_tcpip.cc
-    read_tcpip.h
-    scroll.cc
-    scroll.h
-    specials.cc
-    specials.h
-    tailhead.cc
-    tailhead.h
-    temphelper.cc
-    temphelper.h
-    text_object.cc
-    text_object.h
-    timeinfo.cc
-    timeinfo.h
-    top.cc
-    top.h
-    algebra.cc
-    algebra.h
-    prioqueue.cc
-    prioqueue.h
-    proc.cc
-    proc.h
-    user.cc
-    user.h
-    luamm.cc
-    luamm.hh
-    data-source.cc
-    data-source.hh
-    display-output.cc
-    display-output.hh
-    display-console.cc
-    display-console.hh
-    display-file.cc
-    display-file.hh
-    display-ncurses.cc
-    display-ncurses.hh
-    display-http.cc
-    display-http.hh
-    display-x11.cc
-    display-x11.hh
-    display-wayland.cc
-    display-wayland.hh
-    lua-config.cc
-    lua-config.hh
-    setting.cc
-    setting.hh
-    llua.cc
-    llua.h
-    update-cb.cc
-    update-cb.hh
-    logging.h
-    semaphore.hh)
+  ${conky_sources}
+  c++wrap.cc
+  c++wrap.hh
+  colour-settings.cc
+  colour-settings.h
+  colours.cc
+  colours.h
+  combine.cc
+  combine.h
+  common.cc
+  common.h
+  conky.cc
+  conky.h
+  core.cc
+  core.h
+  cpu.cc
+  cpu.h
+  diskio.cc
+  diskio.h
+  entropy.cc
+  entropy.h
+  exec.cc
+  exec.h
+  fs.cc
+  fs.h
+  gradient.cc
+  gradient.h
+  mail.cc
+  mail.h
+  misc.cc
+  misc.h
+  net_stat.cc
+  net_stat.h
+  template.cc
+  template.h
+  mboxscan.cc
+  mboxscan.h
+  read_tcpip.cc
+  read_tcpip.h
+  scroll.cc
+  scroll.h
+  specials.cc
+  specials.h
+  tailhead.cc
+  tailhead.h
+  temphelper.cc
+  temphelper.h
+  text_object.cc
+  text_object.h
+  timeinfo.cc
+  timeinfo.h
+  top.cc
+  top.h
+  algebra.cc
+  algebra.h
+  prioqueue.cc
+  prioqueue.h
+  proc.cc
+  proc.h
+  user.cc
+  user.h
+  luamm.cc
+  luamm.hh
+  data-source.cc
+  data-source.hh
+  display-output.cc
+  display-output.hh
+  display-console.cc
+  display-console.hh
+  display-file.cc
+  display-file.hh
+  display-ncurses.cc
+  display-ncurses.hh
+  display-http.cc
+  display-http.hh
+  display-x11.cc
+  display-x11.hh
+  display-wayland.cc
+  display-wayland.hh
+  lua-config.cc
+  lua-config.hh
+  setting.cc
+  setting.hh
+  llua.cc
+  llua.h
+  update-cb.cc
+  update-cb.hh
+  logging.h
+  semaphore.hh
+  x11-color.cc
+  x11-color.h
+)
 
 # Platform specific sources
 if(OS_LINUX)
@@ -232,10 +240,10 @@ if(BUILD_X11)
   set(x11 x11.cc x11.h)
   set(optional_sources ${optional_sources} ${x11})
 
-  if(BUILD_XINERAMA)
-    find_package(Xinerama REQUIRED)
-    set(conky_libs ${conky_libs} ${Xinerama_LIBRARIES})
-  endif(BUILD_XINERAMA)
+  if(BUILD_MOUSE_EVENTS)
+    set(mouse_events mouse-events.cc mouse-events.h)
+    set(optional_sources ${optional_sources} ${mouse_events})
+  endif(BUILD_MOUSE_EVENTS)
 endif(BUILD_X11)
 
 if(BUILD_GUI)
@@ -244,8 +252,9 @@ if(BUILD_GUI)
 endif(BUILD_GUI)
 
 if(BUILD_WAYLAND)
-  set(wl_srcs wl.cc wl.h xdg-shell-protocol.c wlr-layer-shell-protocol.c x11-color.cc x11-color.h)
+  set(wl_srcs wl.cc wl.h xdg-shell-protocol.c wlr-layer-shell-protocol.c)
   set(optional_sources ${optional_sources} ${wl_srcs})
+
   # generate protocol implementations
   set(XDG_PROT_DEF "${Wayland_PROTOCOLS_DIR}/stable/xdg-shell/xdg-shell.xml")
   add_custom_command(
@@ -264,6 +273,11 @@ if(BUILD_WAYLAND)
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-protocol.c
     COMMAND ${Wayland_SCANNER} private-code ${WLR_LAYER_SHELL_PROT_DEF} wlr-layer-shell-protocol.c
     DEPENDS wlr-layer-shell-client-protocol.h)
+    
+  if(BUILD_MOUSE_EVENTS)
+    set(mouse_events mouse-events.cc mouse-events.h)
+    set(optional_sources ${optional_sources} ${mouse_events})
+  endif(BUILD_MOUSE_EVENTS)
 
   # include output dir in include path
   include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -343,9 +357,9 @@ if(BUILD_TESTS)
   add_dependencies(conky generated_hdr_files)
   target_link_libraries(conky conky_core ${conky_libs})
   install(TARGETS conky_core
-          RUNTIME DESTINATION bin
-          LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-          ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+    ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
 else()
   add_executable(conky main.cc ${conky_sources} ${optional_sources})
   add_dependencies(conky generated_hdr_files)
@@ -353,15 +367,15 @@ else()
 endif()
 
 install(TARGETS conky
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-        ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+  ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
 
 if(BUILD_PORT_MONITORS)
   install(TARGETS tcp-portmon
-          RUNTIME DESTINATION bin
-          LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-          ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+    ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
 endif(BUILD_PORT_MONITORS)
 
 print_target_properties(conky)

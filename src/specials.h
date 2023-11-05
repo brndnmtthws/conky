@@ -29,6 +29,9 @@
 #ifndef _SPECIALS_H
 #define _SPECIALS_H
 
+#include <tuple>
+#include "colours.h"
+
 /* special stuff in text_buffer */
 
 #define SPECIAL_CHAR '\x01'
@@ -69,8 +72,9 @@ struct special_t {
   int graph_allocated;
   int scaled; /* auto adjust maximum */
   int scale_log;
-  unsigned long first_colour;  // for graph gradient
-  unsigned long last_colour;
+  bool colours_set;
+  Colour first_colour;  // for graph gradient
+  Colour last_colour;
   short font_added;
   char tempgrad;
   struct special_t *next;
@@ -89,7 +93,8 @@ const char *scan_bar(struct text_object *, const char *, double);
 const char *scan_gauge(struct text_object *, const char *, double);
 #ifdef BUILD_GUI
 void scan_font(struct text_object *, const char *);
-char *scan_graph(struct text_object *, const char *, double);
+std::pair<char *, size_t> scan_command(const char *);
+bool scan_graph(struct text_object *, const char *, double);
 void scan_tab(struct text_object *, const char *);
 void scan_stippled_hr(struct text_object *, const char *);
 

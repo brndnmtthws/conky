@@ -29,6 +29,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "colours.h"
 #include "luamm.hh"
 
 namespace conky {
@@ -84,7 +85,7 @@ class display_output_base {
   virtual void cleanup() {}
 
   // drawing primitives
-  virtual void set_foreground_color(long /*c*/) {}
+  virtual void set_foreground_color(Colour /*c*/) {}
 
   virtual int calc_text_width(const char *s) { return strlen(s); }
 

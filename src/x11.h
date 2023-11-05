@@ -37,8 +37,12 @@
 #include <X11/extensions/Xdbe.h>
 #endif
 
-#include "colours.h"
 #include "setting.hh"
+
+#ifdef BUILD_ARGB
+/* true if use_argb_visual=true and argb visual was found*/
+extern bool have_argb_visual;
+#endif /* BUILD_ARGB */
 
 #define ATOM(a) XInternAtom(display, #a, False)
 
@@ -48,7 +52,8 @@ enum window_type {
   TYPE_DOCK,
   TYPE_PANEL,
   TYPE_DESKTOP,
-  TYPE_OVERRIDE
+  TYPE_OVERRIDE,
+  TYPE_UTILITY
 };
 
 enum window_hints {
@@ -99,6 +104,7 @@ void set_transparent_background(Window win);
 void get_x11_desktop_info(Display *current_display, Atom atom);
 void set_struts(int);
 void x11_init_window(lua::state &l, bool own);
+void deinit_x11();
 
 #ifdef BUILD_XDBE
 void xdbe_swap_buffers(void);

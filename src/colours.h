@@ -26,16 +26,93 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef _COLOURS_H
-#define _COLOURS_H
+#pragma once
 
+#include <config.h>
+#include <cassert>
+#include <climits>
 #include <memory>
 #include <string>
+#include <unordered_map>
+#ifdef BUILD_X11
+#include "x11.h"
+#endif /* BUILD_X11 */
 
-unsigned int adjust_colours(unsigned int);
+struct Colour {
+  uint8_t red;
+  uint8_t green;
+  uint8_t blue;
+  uint8_t alpha;
 
-long get_x11_color(const std::string &colour);
+ public:
+  // Compare two instances.
+  bool operator==(const Colour &c) const {
+    return c.red == red && c.green == green && c.blue == blue &&
+           c.alpha == alpha;
+  }
+
+  // Express the color as a 32-bit ARGB integer (alpha in MSB).
+  uint32_t to_argb32(void) const {
+    uint32_t out;
+    out = alpha << 24 | red << 16 | green << 8 | blue;
+    return out;
+  }
+
+  // Construct from a 32-bit ARGB integer (alpha in MSB).
+  static Colour from_argb32(uint32_t argb);
+
+#ifdef BUILD_X11
+  class Hash {
+   public:
+    size_t operator()(const Colour &c) const { return c.to_argb32(); }
+  };
+
+  static std::unordered_map<Colour, unsigned long, Hash> x11_pixels;
+  unsigned long to_x11_color(Display *display, int screen,
+                             bool premultiply = false) {
+    if (display == nullptr) {
+      /* cannot work if display is not open */
+      return 0;
+    }
+
+    unsigned long pixel;
+
+    /* Either get a cached X11 pixel or allocate one */
+    if (auto pixel_iter = x11_pixels.find(*this);
+        pixel_iter != x11_pixels.end()) {
+      pixel = pixel_iter->second;
+    } else {
+      XColor xcolor{};
+      xcolor.red = red * 257;
+      xcolor.green = green * 257;
+      xcolor.blue = blue * 257;
+      if (XAllocColor(display, DefaultColormap(display, screen), &xcolor) ==
+          0) {
+        // NORM_ERR("can't allocate X color");
+        return 0;
+      }
+
+      /* Save pixel value in the cache to avoid reallocating it */
+      x11_pixels[*this] = xcolor.pixel;
+      pixel = static_cast<unsigned long>(xcolor.pixel);
+    }
+
+    pixel &= 0xffffff;
+#ifdef BUILD_ARGB
+    if (have_argb_visual) {
+      if (premultiply)
+        pixel = (red * alpha / 255) << 16 | (green * alpha / 255) << 8 |
+                (blue * alpha / 255);
+      pixel |= ((unsigned long)alpha << 24);
+    }
+#endif /* BUILD_ARGB */
+    return pixel;
+  }
+#endif /* BUILD_X11 */
+};
+
+extern Colour error_colour;
+
+Colour parse_color(const std::string &colour);
 // XXX: when everyone uses C++ strings, remove this C version
-long get_x11_color(const char *);
-
-#endif /* _COLOURS_H */
+Colour parse_color(const char *);

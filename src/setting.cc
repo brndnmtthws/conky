@@ -98,6 +98,7 @@ const std::vector<std::string> settings_ordering{
     "border_outer_margin",
     "border_width",
     "alignment",
+    "xinerama_head",
     "own_window_transparent",
     "own_window_class",
     "own_window_title",

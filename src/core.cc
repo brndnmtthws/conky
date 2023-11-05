@@ -32,6 +32,7 @@
 #include "algebra.h"
 #include "bsdapm.h"
 #include "build.h"
+#include "colour-settings.h"
 #include "colours.h"
 #include "combine.h"
 #include "diskio.h"
@@ -381,10 +382,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (!strcmp(s, #a)) {  \
     obj->cb_handle = create_cb_handle(n);
 #define __OBJ_IF obj_be_ifblock_if(ifblock_opaque, obj)
-#define __OBJ_ARG(...)                         \
-  if (!arg) {                                  \
-    free(s);                                   \
-    CRIT_ERR(obj, free_at_crash, __VA_ARGS__); \
+#define __OBJ_ARG(...)                              \
+  if (!arg) {                                       \
+    free(s);                                        \
+    CRIT_ERR_FREE(obj, free_at_crash, __VA_ARGS__); \
   }
 
 /* defines to be used below */
@@ -403,7 +404,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 
 #ifdef BUILD_GUI
   if (s[0] == '#') {
-    obj->data.l = get_x11_color(s);
+    obj->data.l = parse_color(s).to_argb32();
     obj->callbacks.print = &new_fg;
   } else
 #endif /* BUILD_GUI */
@@ -724,11 +725,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   DBGP2("Adding $cpubar for CPU %d", obj->data.i);
 #ifdef BUILD_GUI
   END OBJ(cpugraph, &update_cpu_usage) get_cpu_count();
-  char *buf = nullptr;
   SCAN_CPU(arg, obj->data.i);
-  buf = scan_graph(obj, arg, 1);
+  scan_graph(obj, arg, 1);
   DBGP2("Adding $cpugraph for CPU %d", obj->data.i);
-  free_and_zero(buf);
   obj->callbacks.graphval = &cpu_barval;
   obj->callbacks.free = &free_cpu;
   END OBJ(loadgraph, &update_load_average) scan_loadgraph_arg(obj, arg);
@@ -748,69 +747,59 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(diskiograph_write, &update_diskio) parse_diskiograph_arg(obj, arg);
   obj->callbacks.graphval = &diskiographval_write;
 #endif /* BUILD_GUI */
-  END OBJ(color, nullptr)
+  END OBJ(color, nullptr) if (false
 #ifdef BUILD_GUI
-      if (out_to_gui(*state)) {
-    obj->data.l =
-        arg != nullptr ? get_x11_color(arg) : default_color.get(*state);
-    set_current_text_color(obj->data.l);
-  }
+                              || out_to_gui(*state)
 #endif /* BUILD_GUI */
 #ifdef BUILD_NCURSES
-  if (out_to_ncurses.get(*state)) {
-    obj->data.l = COLOR_WHITE;
-    if (arg != nullptr) {
-      if (strcasecmp(arg, "red") == 0) {
-        obj->data.l = COLOR_RED;
-      } else if (strcasecmp(arg, "green") == 0) {
-        obj->data.l = COLOR_GREEN;
-      } else if (strcasecmp(arg, "yellow") == 0) {
-        obj->data.l = COLOR_YELLOW;
-      } else if (strcasecmp(arg, "blue") == 0) {
-        obj->data.l = COLOR_BLUE;
-      } else if (strcasecmp(arg, "magenta") == 0) {
-        obj->data.l = COLOR_MAGENTA;
-      } else if (strcasecmp(arg, "cyan") == 0) {
-        obj->data.l = COLOR_CYAN;
-      } else if (strcasecmp(arg, "black") == 0) {
-        obj->data.l = COLOR_BLACK;
-      }
-    }
-    set_current_text_color(obj->data.l);
-    init_pair(obj->data.l, obj->data.l, COLOR_BLACK);
-  }
+                              || out_to_ncurses.get(*state)
 #endif /* BUILD_NCURSES */
+  ) {
+    Colour c = arg != nullptr ? parse_color(arg) : default_color.get(*state);
+    obj->data.l = c.to_argb32();
+    set_current_text_color(c);
+  }
   obj->callbacks.print = &new_fg;
 #ifdef BUILD_GUI
-  END OBJ(color0, nullptr) obj->data.l = color[0].get(*state);
-  set_current_text_color(obj->data.l);
+  END OBJ(color0, nullptr) Colour c = color[0].get(*state);
+  obj->data.l = c.to_argb32();
+  set_current_text_color(c);
   obj->callbacks.print = &new_fg;
-  END OBJ(color1, nullptr) obj->data.l = color[1].get(*state);
-  set_current_text_color(obj->data.l);
+  END OBJ(color1, nullptr) Colour c = color[1].get(*state);
+  obj->data.l = c.to_argb32();
+  set_current_text_color(c);
   obj->callbacks.print = &new_fg;
-  END OBJ(color2, nullptr) obj->data.l = color[2].get(*state);
-  set_current_text_color(obj->data.l);
+  END OBJ(color2, nullptr) Colour c = color[2].get(*state);
+  obj->data.l = c.to_argb32();
+  set_current_text_color(c);
   obj->callbacks.print = &new_fg;
-  END OBJ(color3, nullptr) obj->data.l = color[3].get(*state);
-  set_current_text_color(obj->data.l);
+  END OBJ(color3, nullptr) Colour c = color[3].get(*state);
+  obj->data.l = c.to_argb32();
+  set_current_text_color(c);
   obj->callbacks.print = &new_fg;
-  END OBJ(color4, nullptr) obj->data.l = color[4].get(*state);
-  set_current_text_color(obj->data.l);
+  END OBJ(color4, nullptr) Colour c = color[4].get(*state);
+  obj->data.l = c.to_argb32();
+  set_current_text_color(c);
   obj->callbacks.print = &new_fg;
-  END OBJ(color5, nullptr) obj->data.l = color[5].get(*state);
-  set_current_text_color(obj->data.l);
+  END OBJ(color5, nullptr) Colour c = color[5].get(*state);
+  obj->data.l = c.to_argb32();
+  set_current_text_color(c);
   obj->callbacks.print = &new_fg;
-  END OBJ(color6, nullptr) obj->data.l = color[6].get(*state);
-  set_current_text_color(obj->data.l);
+  END OBJ(color6, nullptr) Colour c = color[6].get(*state);
+  obj->data.l = c.to_argb32();
+  set_current_text_color(c);
   obj->callbacks.print = &new_fg;
-  END OBJ(color7, nullptr) obj->data.l = color[7].get(*state);
-  set_current_text_color(obj->data.l);
+  END OBJ(color7, nullptr) Colour c = color[7].get(*state);
+  obj->data.l = c.to_argb32();
+  set_current_text_color(c);
   obj->callbacks.print = &new_fg;
-  END OBJ(color8, nullptr) obj->data.l = color[8].get(*state);
-  set_current_text_color(obj->data.l);
+  END OBJ(color8, nullptr) Colour c = color[8].get(*state);
+  obj->data.l = c.to_argb32();
+  set_current_text_color(c);
   obj->callbacks.print = &new_fg;
-  END OBJ(color9, nullptr) obj->data.l = color[9].get(*state);
-  set_current_text_color(obj->data.l);
+  END OBJ(color9, nullptr) Colour c = color[9].get(*state);
+  obj->data.l = c.to_argb32();
+  set_current_text_color(c);
   obj->callbacks.print = &new_fg;
   END OBJ(font, nullptr) scan_font(obj, arg);
   obj->callbacks.print = &new_font;
@@ -1068,9 +1057,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
        * nothing else than just that, using an ugly switch(). */
       if (strncmp(s, "top", 3) == EQUAL) {
     if (parse_top_args(s, arg, obj) != 0) {
-#ifdef __linux__
-      determine_longstat_file();
-#endif
       obj->cb_handle = create_cb_handle(update_top);
     } else {
       free(obj);
@@ -1250,13 +1236,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(memwithbuffersbar, &update_meminfo) scan_bar(obj, arg, 1);
   obj->callbacks.barval = &mem_with_buffers_barval;
 #ifdef BUILD_GUI
-  END OBJ(memgraph, &update_meminfo) char *buf = nullptr;
-  buf = scan_graph(obj, arg, 1);
-  free_and_zero(buf);
+  END OBJ(memgraph, &update_meminfo) scan_graph(obj, arg, 1);
   obj->callbacks.graphval = &mem_barval;
-  END OBJ(memwithbuffersgraph, &update_meminfo) char *buf = nullptr;
-  buf = scan_graph(obj, arg, 1);
-  free_and_zero(buf);
+  END OBJ(memwithbuffersgraph, &update_meminfo) scan_graph(obj, arg, 1);
   obj->callbacks.graphval = &mem_with_buffers_barval;
 #endif /* BUILD_GUI*/
 #ifdef HAVE_SOME_SOUNDCARD_H
@@ -1455,13 +1437,15 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(shadecolor, nullptr)
 #ifdef BUILD_GUI
       obj->data.l =
-      arg != nullptr ? get_x11_color(arg) : default_shade_color.get(*state);
+      (arg != nullptr ? parse_color(arg) : default_shade_color.get(*state))
+          .to_argb32();
   obj->callbacks.print = &new_bg;
 #endif /* BUILD_GUI */
   END OBJ(outlinecolor, nullptr)
 #ifdef BUILD_GUI
       obj->data.l =
-      arg != nullptr ? get_x11_color(arg) : default_outline_color.get(*state);
+      (arg != nullptr ? parse_color(arg) : default_outline_color.get(*state))
+          .to_argb32();
   obj->callbacks.print = &new_outline;
 #endif /* BUILD_GUI */
   END OBJ(stippled_hr, nullptr)
@@ -1522,8 +1506,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ_IF(if_updatenr, nullptr) obj->data.i =
       arg != nullptr ? strtol(arg, nullptr, 10) : 0;
   if (obj->data.i == 0) {
-    CRIT_ERR(obj, free_at_crash,
-             "if_updatenr needs a number above 0 as argument");
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "if_updatenr needs a number above 0 as argument");
   }
   set_updatereset(obj->data.i > get_updatereset() ? obj->data.i
                                                   : get_updatereset());
@@ -1766,7 +1750,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (obj->data.i > 0) {
     ++obj->data.i;
   } else {
-    CRIT_ERR(obj, free_at_crash, "audacious_title: invalid length argument");
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "audacious_title: invalid length argument");
   }
   obj->callbacks.print = &print_audacious_title;
   END OBJ(audacious_length, 0) obj->callbacks.print = &print_audacious_length;
@@ -1823,9 +1808,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (arg != nullptr) {
     obj->data.s = STRNDUP_ARG;
   } else {
-    CRIT_ERR(obj, free_at_crash,
-             "lua_bar needs arguments: <height>,<width> <function name> "
-             "[function parameters]");
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "lua_bar needs arguments: <height>,<width> <function name> "
+                  "[function parameters]");
   }
   obj->callbacks.barval = &lua_barval;
   obj->callbacks.free = &gen_free_opaque;
@@ -1833,14 +1818,15 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ_ARG(
       lua_graph, nullptr,
       "lua_graph needs arguments: <function name> [height],[width] [gradient "
-      "colour 1] [gradient colour 2] [scale] [-t] [-l]") char *buf = nullptr;
-  buf = scan_graph(obj, arg, 100);
+      "colour 1] [gradient colour 2] [scale] [-t] [-l]") auto [buf, skip] =
+      scan_command(arg);
+  scan_graph(obj, arg + skip, 100);
   if (buf != nullptr) {
     obj->data.s = buf;
   } else {
-    CRIT_ERR(obj, free_at_crash,
-             "lua_graph needs arguments: <function name> [height],[width] "
-             "[gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "lua_graph needs arguments: <function name> [height],[width] "
+                  "[gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
   }
   obj->callbacks.graphval = &lua_barval;
   obj->callbacks.free = &gen_free_opaque;
@@ -1850,9 +1836,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (arg != nullptr) {
     obj->data.s = STRNDUP_ARG;
   } else {
-    CRIT_ERR(obj, free_at_crash,
-             "lua_gauge needs arguments: <height>,<width> <function name> "
-             "[function parameters]");
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "lua_gauge needs arguments: <height>,<width> <function name> "
+                  "[function parameters]");
   }
   obj->callbacks.gaugeval = &lua_barval;
   obj->callbacks.free = &gen_free_opaque;
@@ -1908,40 +1894,40 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ_ARG(
       nvidia, 0,
       "nvidia needs an argument") if (set_nvidia_query(obj, arg, NONSPECIAL)) {
-    CRIT_ERR(obj, free_at_crash,
-             "nvidia: invalid argument"
-             " specified: '%s'",
-             arg);
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "nvidia: invalid argument"
+                  " specified: '%s'",
+                  arg);
   }
   obj->callbacks.print = &print_nvidia_value;
   obj->callbacks.free = &free_nvidia;
   END OBJ_ARG(
       nvidiabar, 0,
       "nvidiabar needs an argument") if (set_nvidia_query(obj, arg, BAR)) {
-    CRIT_ERR(obj, free_at_crash,
-             "nvidiabar: invalid argument"
-             " specified: '%s'",
-             arg);
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "nvidiabar: invalid argument"
+                  " specified: '%s'",
+                  arg);
   }
   obj->callbacks.barval = &get_nvidia_barval;
   obj->callbacks.free = &free_nvidia;
   END OBJ_ARG(
       nvidiagraph, 0,
       "nvidiagraph needs an argument") if (set_nvidia_query(obj, arg, GRAPH)) {
-    CRIT_ERR(obj, free_at_crash,
-             "nvidiagraph: invalid argument"
-             " specified: '%s'",
-             arg);
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "nvidiagraph: invalid argument"
+                  " specified: '%s'",
+                  arg);
   }
   obj->callbacks.graphval = &get_nvidia_barval;
   obj->callbacks.free = &free_nvidia;
   END OBJ_ARG(
       nvidiagauge, 0,
       "nvidiagauge needs an argument") if (set_nvidia_query(obj, arg, GAUGE)) {
-    CRIT_ERR(obj, free_at_crash,
-             "nvidiagauge: invalid argument"
-             " specified: '%s'",
-             arg);
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "nvidiagauge: invalid argument"
+                  " specified: '%s'",
+                  arg);
   }
   obj->callbacks.gaugeval = &get_nvidia_barval;
   obj->callbacks.free = &free_nvidia;
@@ -1951,7 +1937,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       apcupsd, &update_apcupsd,
       "apcupsd needs arguments: <host> <port>") if (apcupsd_scan_arg(arg) !=
                                                     0) {
-    CRIT_ERR(obj, free_at_crash, "apcupsd needs arguments: <host> <port>");
+    CRIT_ERR_FREE(obj, free_at_crash, "apcupsd needs arguments: <host> <port>");
   }
   obj->callbacks.print = &gen_print_nothing;
   END OBJ(apcupsd_name, &update_apcupsd) obj->callbacks.print =
@@ -1971,9 +1957,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(apcupsd_loadbar, &update_apcupsd) scan_bar(obj, arg, 100);
   obj->callbacks.barval = &apcupsd_loadbarval;
 #ifdef BUILD_GUI
-  END OBJ(apcupsd_loadgraph, &update_apcupsd) char *buf = nullptr;
-  buf = scan_graph(obj, arg, 100);
-  free_and_zero(buf);
+  END OBJ(apcupsd_loadgraph, &update_apcupsd) scan_graph(obj, arg, 100);
   obj->callbacks.graphval = &apcupsd_loadbarval;
   END OBJ(apcupsd_loadgauge, &update_apcupsd) scan_gauge(obj, arg, 100);
   obj->callbacks.gaugeval = &apcupsd_loadbarval;
