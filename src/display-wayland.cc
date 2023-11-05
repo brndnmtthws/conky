@@ -25,6 +25,7 @@
  */
 
 #include <config.h>
+#include "logging.h"
 
 #ifdef BUILD_WAYLAND
 #include <wayland-client.h>
@@ -46,6 +47,7 @@
 
 #endif /* BUILD_WAYLAND */
 
+#include <cstdint>
 #include <iostream>
 #include <sstream>
 
@@ -292,7 +294,7 @@ struct {
   struct wl_shm *shm;
   struct wl_surface *surface;
   struct wl_seat *seat;
-  /*	struct wl_pointer *pointer;*/
+  struct wl_pointer *pointer;
   struct wl_output *output;
   struct xdg_wm_base *shell;
   struct zwlr_layer_shell_v1 *layer_shell;
@@ -421,6 +423,44 @@ void window_layer_surface_set_size(struct window *window) {
                                  global_window->rectangle.height);
 }
 
+static void on_pointer_enter(void *data, wl_pointer *pointer, uint32_t serial,
+              wl_surface *surface, wl_fixed_t sx,
+              wl_fixed_t sy) {
+  DBGP("POINTER ENTERED! WOAH!");
+}
+
+static void on_pointer_leave(void *data,
+		      struct wl_pointer *wl_pointer,
+		      uint32_t serial,
+		      struct wl_surface *surface) {
+  DBGP("POINTER LEFT! WOAH!");
+}
+
+static void on_pointer_motion(void *data,
+		       struct wl_pointer *wl_pointer,
+		       uint32_t time,
+		       wl_fixed_t surface_x,
+		       wl_fixed_t surface_y) {
+  DBGP("POINTER MOTIONED! WOAH!");
+}
+
+static void seat_capability_listener (void *data, wl_seat *seat, std::uint32_t capability_int) {
+  wl_seat_capability capabilities = static_cast<wl_seat_capability>(capability_int);
+  if (wl_globals.seat == seat) {
+    if ((capabilities & WL_SEAT_CAPABILITY_POINTER) > 0) {
+      wl_globals.pointer = wl_seat_get_pointer(seat);
+
+      static wl_pointer_listener listener {
+        .enter = on_pointer_enter,
+        .leave = on_pointer_leave,
+        .motion = on_pointer_motion,
+      };
+      DBGP("ADDED A LISTENER");
+      wl_pointer_add_listener(wl_globals.pointer, &listener, NULL);
+    }
+  }
+}
+
 bool display_output_wayland::initialize() {
   epoll_fd = epoll_create1(0);
   if (epoll_fd < 0) {
@@ -452,7 +492,6 @@ bool display_output_wayland::initialize() {
 
   wl_surface_commit(global_window->surface);
   wl_display_roundtrip(global_display);
-
   wayland_create_window();
   return true;
 }
