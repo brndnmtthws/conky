@@ -54,6 +54,9 @@ void llua_rm_notifies(void);
 static int llua_block_notify = 0;
 #endif /* HAVE_SYS_INOTIFY_H */
 
+// POSIX compliant
+#include <sys/stat.h>
+
 static void llua_load(const char *script);
 
 lua_State *lua_L = nullptr;
@@ -207,8 +210,20 @@ void llua_init() {
 #endif /* BUILD_X11 */
 }
 
+inline bool file_exists (const char *path) {
+  struct stat buffer;   
+  return (stat (path, &buffer) == 0); 
+}
+
 void llua_load(const char *script) {
   int error;
+
+  if (!file_exists(script)) {
+    NORM_ERR("llua_load: specified script file '%s' doesn't exist", script);
+    // return without initializing lua_L because other parts of the code rely
+    // on it being null if the script is not loaded
+    return;
+  }
 
   llua_init();
 
@@ -501,13 +516,20 @@ bool llua_mouse_hook(const EventT &ev) {
     return false;
   }
   const std::string func = lua_mouse_hook.get(*state);
-  lua_getglobal(lua_L, lua_mouse_hook.get(*state).c_str());
+  int ty = lua_getglobal(lua_L, lua_mouse_hook.get(*state).c_str());
+  if (ty == LUA_TNIL) {
+    NORM_ERR("llua_mouse_hook: hook %s is not defined", func.c_str());
+    return false;
+  } else if (ty != LUA_TFUNCTION) {
+    NORM_ERR("llua_mouse_hook: hook %s is not a function", func.c_str());
+    return false;
+  }
 
   ev.push_lua_table(lua_L);
 
   bool result = false;
   if (lua_pcall(lua_L, 1, 1, 0) != 0) {
-    NORM_ERR("llua_mouse_hook: function %s execution failed: %s", func.c_str(),
+    NORM_ERR("llua_mouse_hook: hook %s execution failed: %s", func.c_str(),
              lua_tostring(lua_L, -1));
     lua_pop(lua_L, 1);
   } else {

@@ -61,6 +61,9 @@
 #ifdef BUILD_WAYLAND
 #include "fonts.h"
 #endif
+#ifdef BUILD_MOUSE_EVENTS
+#include "mouse-events.h"
+#endif
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
@@ -423,6 +426,7 @@ void window_layer_surface_set_size(struct window *window) {
                                  global_window->rectangle.height);
 }
 
+#ifdef BUILD_MOUSE_EVENTS
 static void on_pointer_enter(void *data, wl_pointer *pointer, uint32_t serial,
               wl_surface *surface, wl_fixed_t sx,
               wl_fixed_t sy) {
@@ -441,10 +445,32 @@ static void on_pointer_motion(void *data,
 		       uint32_t time,
 		       wl_fixed_t surface_x,
 		       wl_fixed_t surface_y) {
-  DBGP("POINTER MOTIONED! WOAH!");
+  window *w = reinterpret_cast<struct window *>(data);
+  size_t x = surface_x;
+  size_t y = surface_y;
+  size_t abs_x = w->rectangle.x + x;
+  size_t abs_y = w->rectangle.y + y;
+  mouse_move_event event {
+    mouse_event_type::MOUSE_MOVE,
+    time,
+    x,
+    y,
+    abs_x,
+    abs_y
+  };
+  llua_mouse_hook(event);
 }
 
-static void seat_capability_listener (void *data, wl_seat *seat, std::uint32_t capability_int) {
+static void on_pointer_button(void *data,
+		       struct wl_pointer *wl_pointer,
+		       uint32_t serial,
+		       uint32_t time,
+		       uint32_t button,
+		       uint32_t state) {
+  
+}
+
+static void seat_capability_listener (void *data, wl_seat *seat, uint32_t capability_int) {
   wl_seat_capability capabilities = static_cast<wl_seat_capability>(capability_int);
   if (wl_globals.seat == seat) {
     if ((capabilities & WL_SEAT_CAPABILITY_POINTER) > 0) {
@@ -454,12 +480,14 @@ static void seat_capability_listener (void *data, wl_seat *seat, std::uint32_t c
         .enter = on_pointer_enter,
         .leave = on_pointer_leave,
         .motion = on_pointer_motion,
+        .button = on_pointer_button,
       };
-      DBGP("ADDED A LISTENER");
-      wl_pointer_add_listener(wl_globals.pointer, &listener, NULL);
+      wl_pointer_add_listener(wl_globals.pointer, &listener, data);
     }
   }
 }
+static void seat_name_listener(void *data, struct wl_seat *wl_seat, const char *name) {}
+#endif /* BUILD_MOUSE_EVENTS */
 
 bool display_output_wayland::initialize() {
   epoll_fd = epoll_create1(0);
@@ -490,6 +518,15 @@ bool display_output_wayland::initialize() {
   zwlr_layer_surface_v1_add_listener(global_window->layer_surface,
                                      &layer_surface_listener, nullptr);
 
+  #ifdef BUILD_MOUSE_EVENTS
+  wl_seat_listener listener {
+    .capabilities = seat_capability_listener,
+    .name = seat_name_listener,
+  };
+  wl_seat_add_listener(wl_globals.seat, &listener, global_window);
+  #endif /* BUILD_MOUSE_EVENTS */
+
+  wl_surface_set_buffer_scale(global_window->surface, global_window->scale);
   wl_surface_commit(global_window->surface);
   wl_display_roundtrip(global_display);
   wayland_create_window();
@@ -1123,7 +1160,7 @@ struct window *window_create(struct wl_surface *surface, struct wl_shm *shm,
   window->rectangle.y = 0;
   window->rectangle.width = width;
   window->rectangle.height = height;
-  window->scale = 0;
+  window->scale = 1;
   window->pending_scale = 1;
 
   window->surface = surface;

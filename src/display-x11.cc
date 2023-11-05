@@ -44,7 +44,7 @@
 #endif /* BUILD_IMLIB2 */
 #ifdef BUILD_MOUSE_EVENTS
 #include "mouse-events.h"
-#endif
+#endif /* BUILD_MOUSE_EVENTS */
 #endif /* BUILD_X11 */
 
 #include <iostream>
