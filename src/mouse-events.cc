@@ -22,30 +22,12 @@
 
 #include <array>
 #include <string>
+#include <lua.h>
 #include <time.h>
 
 #ifdef BUILD_X11
 #include "X11/Xlib.h"
 #endif /* BUILD_X11 */
-
-std::string event_type_to_str(int type) {
-  switch (type) {
-    case MOUSE_PRESS:
-      return "button_down";
-    case MOUSE_RELEASE:
-      return "button_up";
-    case MOUSE_SCROLL:
-      return "mouse_scroll";
-    case MOUSE_MOVE:
-      return "mouse_move";
-    case AREA_ENTER:
-      return "mouse_enter";
-    case AREA_LEAVE:
-      return "mouse_leave";
-    default:
-      return "err";
-  }
-}
 
 /* Lua helper functions */
 template <typename T>
@@ -117,12 +99,82 @@ inline size_t current_time_ms() {
     return static_cast<size_t>(static_cast<uint64_t>(spec.tv_sec)*1'000 + spec.tv_nsec/1'000'000);
 }
 
+void push_table_value(lua_State *L, std::string key, mouse_event_t type) {
+  lua_pushstring(L, key.c_str());
+  switch (type) {
+    case MOUSE_PRESS:
+      lua_pushstring(L, "button_down");
+      break;
+    case MOUSE_RELEASE:
+      lua_pushstring(L, "button_up");
+      break;
+    case MOUSE_SCROLL:
+      lua_pushstring(L, "mouse_scroll");
+      break;
+    case MOUSE_MOVE:
+      lua_pushstring(L, "mouse_move");
+      break;
+    case AREA_ENTER:
+      lua_pushstring(L, "mouse_enter");
+      break;
+    case AREA_LEAVE:
+      lua_pushstring(L, "mouse_leave");
+      break;
+    default:
+      lua_pushnil(L);
+      break;
+  }
+  lua_settable(L, -3);
+}
+
+void push_table_value(lua_State *L, std::string key, scroll_direction_t direction) {
+  lua_pushstring(L, key.c_str());
+  switch (direction) {
+    case SCROLL_DOWN:
+      lua_pushstring(L, "down");
+      break;
+    case SCROLL_UP:
+      lua_pushstring(L, "up");
+      break;
+    case SCROLL_LEFT:
+      lua_pushstring(L, "left");
+      break;
+    case SCROLL_RIGHT:
+      lua_pushstring(L, "right");
+      break;
+    default:
+      lua_pushnil(L);
+      break;
+  }
+  lua_settable(L, -3);
+}
+
+
+void push_table_value(lua_State *L, std::string key, mouse_button_t button) {
+  lua_pushstring(L, key.c_str());
+  switch (button) {
+    case BUTTON_LEFT:
+      lua_pushstring(L, "left");
+      break;
+    case BUTTON_RIGHT:
+      lua_pushstring(L, "right");
+      break;
+    case BUTTON_MIDDLE:
+      lua_pushstring(L, "middle");
+      break;
+    default:
+      lua_pushnil(L);
+      break;
+  }
+  lua_settable(L, -3);
+}
+
 /* Class methods */
 mouse_event::mouse_event(mouse_event_t type): type(type), time(current_time_ms()) {};
 
 void mouse_event::push_lua_table(lua_State *L) const {
   lua_newtable(L);
-  push_table_value(L, "type", event_type_to_str(this->type));
+  push_table_value(L, "type", this->type);
   push_table_value(L, "time", this->time);
   push_lua_data(L);
 }
@@ -167,24 +219,7 @@ mouse_scroll_event::mouse_scroll_event(XButtonEvent *ev) {
 
 void mouse_scroll_event::push_lua_data(lua_State *L) const {
   mouse_positioned_event::push_lua_data(L);
-  std::string direction = "up";
-  switch (this->direction) {
-    case SCROLL_DOWN:
-      direction = "down";
-      break;
-    case SCROLL_UP:
-      break;
-    case SCROLL_LEFT:
-      direction = "left";
-      break;
-    case SCROLL_RIGHT:
-      direction = "right";
-      break;
-    default:
-      direction = "err";
-      break;
-  }
-  push_table_value(L, "direction", direction);
+  push_table_value(L, "direction", this->direction);
   push_mods(L, this->mods);
 }
 
@@ -210,23 +245,10 @@ mouse_button_event::mouse_button_event(XButtonEvent *ev) {
 }
 #endif /* BUILD_X11 */
 
-std::string button_name(mouse_button_t button) {
-  switch (button) {
-    case BUTTON_LEFT:
-      return "left";
-    case BUTTON_RIGHT:
-      return "right";
-    case BUTTON_MIDDLE:
-      return "middle";
-    default:
-      return std::to_string(button);
-  }
-}
-
 void mouse_button_event::push_lua_data(lua_State *L) const {
   mouse_positioned_event::push_lua_data(L);
   push_table_value(L, "button_code", static_cast<uint32_t>(this->button));
-  push_table_value(L, "button", button_name(this->button));
+  push_table_value(L, "button", this->button);
   push_mods(L, this->mods);
 }
 
