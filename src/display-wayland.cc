@@ -25,6 +25,8 @@
  */
 
 #include <config.h>
+#include <wayland-util.h>
+#include <utility>
 #include "logging.h"
 
 #ifdef BUILD_WAYLAND
@@ -63,6 +65,7 @@
 #endif
 #ifdef BUILD_MOUSE_EVENTS
 #include "mouse-events.h"
+#include <map>
 #endif
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -427,32 +430,66 @@ void window_layer_surface_set_size(struct window *window) {
 }
 
 #ifdef BUILD_MOUSE_EVENTS
+static std::map<wl_pointer*, std::array<size_t, 2>> last_known_positions{};
+
 static void on_pointer_enter(void *data, wl_pointer *pointer, uint32_t serial,
-              wl_surface *surface, wl_fixed_t sx,
-              wl_fixed_t sy) {
-  DBGP("POINTER ENTERED! WOAH!");
+              wl_surface *surface, wl_fixed_t surface_x,
+              wl_fixed_t surface_y) {
+  auto w = reinterpret_cast<struct window *>(data);
+
+  size_t x = static_cast<size_t>(wl_fixed_to_double(surface_x));
+  size_t y = static_cast<size_t>(wl_fixed_to_double(surface_y));
+  last_known_positions[pointer] = {x, y};
+
+  size_t abs_x = w->rectangle.x + x;
+  size_t abs_y = w->rectangle.y + y;
+
+  mouse_crossing_event event {
+    mouse_event_t::AREA_ENTER,
+    x,
+    y,
+    abs_x,
+    abs_y
+  };
 }
 
 static void on_pointer_leave(void *data,
-		      struct wl_pointer *wl_pointer,
+		      struct wl_pointer *pointer,
 		      uint32_t serial,
 		      struct wl_surface *surface) {
-  DBGP("POINTER LEFT! WOAH!");
+  auto w = reinterpret_cast<struct window *>(data);
+
+  std::array<size_t, 2> last = last_known_positions[pointer];
+  size_t x = last[0];
+  size_t y = last[1];
+  size_t abs_x = w->rectangle.x + x;
+  size_t abs_y = w->rectangle.y + y;
+
+  mouse_crossing_event event {
+    mouse_event_t::AREA_LEAVE,
+    x,
+    y,
+    abs_x,
+    abs_y
+  };
 }
 
 static void on_pointer_motion(void *data,
-		       struct wl_pointer *wl_pointer,
-		       uint32_t time,
+		       struct wl_pointer *pointer,
+		       uint32_t _time,
 		       wl_fixed_t surface_x,
 		       wl_fixed_t surface_y) {
-  window *w = reinterpret_cast<struct window *>(data);
-  size_t x = surface_x;
-  size_t y = surface_y;
+  auto w = reinterpret_cast<struct window *>(data);
+
+  size_t x = static_cast<size_t>(wl_fixed_to_double(surface_x));
+  size_t y = static_cast<size_t>(wl_fixed_to_double(surface_y));
+  last_known_positions[pointer] = {x, y};
+
   size_t abs_x = w->rectangle.x + x;
   size_t abs_y = w->rectangle.y + y;
+
   mouse_move_event event {
-    mouse_event_type::MOUSE_MOVE,
-    time,
+    mouse_event_t::MOUSE_MOVE,
     x,
     y,
     abs_x,
@@ -462,12 +499,76 @@ static void on_pointer_motion(void *data,
 }
 
 static void on_pointer_button(void *data,
-		       struct wl_pointer *wl_pointer,
+		       struct wl_pointer *pointer,
 		       uint32_t serial,
 		       uint32_t time,
 		       uint32_t button,
 		       uint32_t state) {
-  
+  auto w = reinterpret_cast<struct window *>(data);
+
+  std::array<size_t, 2> last = last_known_positions[pointer];
+  size_t x = last[0];
+  size_t y = last[1];
+  size_t abs_x = w->rectangle.x + x;
+  size_t abs_y = w->rectangle.y + y;
+
+  mouse_button_event event {
+    mouse_event_t::MOUSE_RELEASE,
+    x,
+    y,
+    abs_x,
+    abs_y,
+    static_cast<mouse_button_t>(button),
+  };
+
+  switch (static_cast<wl_pointer_button_state>(state)) {
+    case WL_POINTER_BUTTON_STATE_RELEASED:
+      // pass; default is MOUSE_RELEASE
+      break;
+    case WL_POINTER_BUTTON_STATE_PRESSED:
+      event.type = mouse_event_t::MOUSE_PRESS;
+      break;
+    default:
+      return;
+  }
+  llua_mouse_hook(event);
+}
+
+void on_pointer_axis(void *data,
+		     struct wl_pointer *pointer,
+		     uint32_t time,
+		     uint32_t axis,
+		     wl_fixed_t value) {
+  if (value == 0) return;
+
+  auto w = reinterpret_cast<struct window *>(data);
+
+  std::array<size_t, 2> last = last_known_positions[pointer];
+  size_t x = last[0];
+  size_t y = last[1];
+  size_t abs_x = w->rectangle.x + x;
+  size_t abs_y = w->rectangle.y + y;
+
+  mouse_scroll_event event {
+    mouse_event_t::MOUSE_SCROLL,
+    x,
+    y,
+    abs_x,
+    abs_y,
+    scroll_direction_t::SCROLL_UP,
+  };
+
+  switch (static_cast<wl_pointer_axis>(axis)) {
+    case WL_POINTER_AXIS_VERTICAL_SCROLL:
+      event.direction = value > 0 ? scroll_direction_t::SCROLL_DOWN : scroll_direction_t::SCROLL_UP;
+      break;
+    case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
+      event.direction = value > 0 ? scroll_direction_t::SCROLL_RIGHT : scroll_direction_t::SCROLL_LEFT;
+      break;
+    default:
+      return;
+  }
+  llua_mouse_hook(event);
 }
 
 static void seat_capability_listener (void *data, wl_seat *seat, uint32_t capability_int) {
@@ -481,6 +582,7 @@ static void seat_capability_listener (void *data, wl_seat *seat, uint32_t capabi
         .leave = on_pointer_leave,
         .motion = on_pointer_motion,
         .button = on_pointer_button,
+        .axis = on_pointer_axis,
       };
       wl_pointer_add_listener(wl_globals.pointer, &listener, data);
     }

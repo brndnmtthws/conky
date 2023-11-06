@@ -22,6 +22,7 @@
 
 #include <array>
 #include <string>
+#include <time.h>
 
 #ifdef BUILD_X11
 #include "X11/Xlib.h"
@@ -29,9 +30,9 @@
 
 std::string event_type_to_str(int type) {
   switch (type) {
-    case MOUSE_DOWN:
+    case MOUSE_PRESS:
       return "button_down";
-    case MOUSE_UP:
+    case MOUSE_RELEASE:
       return "button_up";
     case MOUSE_SCROLL:
       return "mouse_scroll";
@@ -109,11 +110,20 @@ void push_mods(lua_State *L, std::bitset<13> mods) {
   lua_settable(L, -3);
 }
 
+// Returns ms since Epoch.
+inline size_t current_time_ms() {
+    struct timespec spec;
+    clock_gettime(CLOCK_REALTIME, &spec);
+    return static_cast<size_t>(static_cast<uint64_t>(spec.tv_sec)*1'000 + spec.tv_nsec/1'000'000);
+}
+
 /* Class methods */
+mouse_event::mouse_event(mouse_event_t type): type(type), time(current_time_ms()) {};
 
 void mouse_event::push_lua_table(lua_State *L) const {
   lua_newtable(L);
   push_table_value(L, "type", event_type_to_str(this->type));
+  push_table_value(L, "time", this->time);
   push_lua_data(L);
 }
 
@@ -122,7 +132,6 @@ void mouse_positioned_event::push_lua_data(lua_State *L) const {
   push_table_value(L, "y", this->y);
   push_table_value(L, "x_abs", this->x_abs);
   push_table_value(L, "y_abs", this->y_abs);
-  push_table_value(L, "time", this->time);
 }
 
 #ifdef BUILD_X11
@@ -132,7 +141,6 @@ mouse_move_event::mouse_move_event(XMotionEvent *ev) {
   this->y = ev->y;
   this->x_abs = ev->x_root;
   this->y_abs = ev->y_root;
-  this->time = ev->time;
 }
 #endif /* BUILD_X11 */
 
@@ -148,34 +156,77 @@ mouse_scroll_event::mouse_scroll_event(XButtonEvent *ev) {
   this->y = ev->y;
   this->x_abs = ev->x_root;
   this->y_abs = ev->y_root;
-  this->time = ev->time;
   this->mods = ev->state;
-  this->up = ev->button == 4;
+  if (ev->button == 4) {
+    this->direction = scroll_direction_t::UP;
+  } else if (ev->button == 5) {
+    this->direction = scroll_direction_t::DOWN;
+  }
 }
 #endif /* BUILD_X11 */
 
 void mouse_scroll_event::push_lua_data(lua_State *L) const {
   mouse_positioned_event::push_lua_data(L);
-  push_table_value(L, "direction", std::string(this->up ? "up" : "down"));
+  std::string direction = "up";
+  switch (this->direction) {
+    case SCROLL_DOWN:
+      direction = "down";
+      break;
+    case SCROLL_UP:
+      break;
+    case SCROLL_LEFT:
+      direction = "left";
+      break;
+    case SCROLL_RIGHT:
+      direction = "right";
+      break;
+    default:
+      direction = "err";
+      break;
+  }
+  push_table_value(L, "direction", direction);
   push_mods(L, this->mods);
 }
 
 #ifdef BUILD_X11
 mouse_button_event::mouse_button_event(XButtonEvent *ev) {
-  this->type = ev->type == ButtonPress ? MOUSE_DOWN : MOUSE_UP;
+  this->type = ev->type == ButtonPress ? MOUSE_PRESS : MOUSE_RELEASE;
   this->x = ev->x;
   this->y = ev->y;
   this->x_abs = ev->x_root;
   this->y_abs = ev->y_root;
-  this->time = ev->time;
   this->mods = ev->state;
-  this->button = ev->button;
+  switch (ev->button) {
+    case Button1:
+      this->button = BUTTON_LEFT;
+      break;
+    case Button2:
+      this->button = BUTTON_RIGHT;
+      break;
+    case Button3:
+      this->button = BUTTON_MIDDLE;
+      break;
+  }
 }
 #endif /* BUILD_X11 */
 
+std::string button_name(mouse_button_t button) {
+  switch (button) {
+    case BUTTON_LEFT:
+      return "left";
+    case BUTTON_RIGHT:
+      return "right";
+    case BUTTON_MIDDLE:
+      return "middle";
+    default:
+      return std::to_string(button);
+  }
+}
+
 void mouse_button_event::push_lua_data(lua_State *L) const {
   mouse_positioned_event::push_lua_data(L);
-  push_table_value(L, "button", this->button);
+  push_table_value(L, "button_code", static_cast<uint32_t>(this->button));
+  push_table_value(L, "button", button_name(this->button));
   push_mods(L, this->mods);
 }
 
@@ -186,6 +237,5 @@ mouse_crossing_event::mouse_crossing_event(XCrossingEvent *ev) {
   this->y = ev->y;
   this->x_abs = ev->x_root;
   this->y_abs = ev->y_root;
-  this->time = ev->time;
 }
 #endif /* BUILD_X11 */
