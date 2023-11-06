@@ -515,21 +515,36 @@ bool llua_mouse_hook(const EventT &ev) {
   if ((lua_L == nullptr) || lua_mouse_hook.get(*state).empty()) {
     return false;
   }
-  const std::string func = lua_mouse_hook.get(*state);
-  int ty = lua_getglobal(lua_L, lua_mouse_hook.get(*state).c_str());
+  const std::string raw_hook_name = lua_mouse_hook.get(*state);
+  std::string hook_name = "conky_" + raw_hook_name;
+  
+  int ty = lua_getglobal(lua_L, hook_name.c_str());
   if (ty == LUA_TNIL) {
-    NORM_ERR("llua_mouse_hook: hook %s is not defined", func.c_str());
-    return false;
+    int ty_raw = lua_getglobal(lua_L, raw_hook_name.c_str());
+    if (ty_raw == LUA_TFUNCTION) {
+      // TODO: (1.22.0) Force conky_ prefix on use_mouse_hook like llua_do_call does
+      // - keep only else case, remove ty_raw and make hook_name const.
+      NORM_ERR("llua_mouse_hook: hook %s declaration is missing 'conky_' prefix", raw_hook_name.c_str());
+      hook_name = raw_hook_name;
+      ty = ty_raw;
+      lua_insert(lua_L, -2);
+      lua_pop(lua_L, 1);
+    } else {
+      NORM_ERR("llua_mouse_hook: hook %s is not defined", hook_name.c_str());
+      lua_pop(lua_L, 1);
+      return false;
+    }
   } else if (ty != LUA_TFUNCTION) {
-    NORM_ERR("llua_mouse_hook: hook %s is not a function", func.c_str());
+    NORM_ERR("llua_mouse_hook: hook %s is not a function", hook_name.c_str());
+    lua_pop(lua_L, 1);
     return false;
   }
 
   ev.push_lua_table(lua_L);
 
   bool result = false;
-  if (lua_pcall(lua_L, 1, 1, 0) != 0) {
-    NORM_ERR("llua_mouse_hook: hook %s execution failed: %s", func.c_str(),
+  if (lua_pcall(lua_L, 1, 1, 0) != LUA_OK) {
+    NORM_ERR("llua_mouse_hook: hook %s execution failed: %s", hook_name.c_str(),
              lua_tostring(lua_L, -1));
     lua_pop(lua_L, 1);
   } else {
