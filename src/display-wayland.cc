@@ -451,6 +451,7 @@ static void on_pointer_enter(void *data, wl_pointer *pointer, uint32_t serial,
     abs_x,
     abs_y
   };
+  llua_mouse_hook(event);
 }
 
 static void on_pointer_leave(void *data,
@@ -472,6 +473,7 @@ static void on_pointer_leave(void *data,
     abs_x,
     abs_y
   };
+  llua_mouse_hook(event);
 }
 
 static void on_pointer_motion(void *data,
@@ -628,7 +630,6 @@ bool display_output_wayland::initialize() {
   wl_seat_add_listener(wl_globals.seat, &listener, global_window);
   #endif /* BUILD_MOUSE_EVENTS */
 
-  wl_surface_set_buffer_scale(global_window->surface, global_window->scale);
   wl_surface_commit(global_window->surface);
   wl_display_roundtrip(global_display);
   wayland_create_window();
@@ -1262,7 +1263,7 @@ struct window *window_create(struct wl_surface *surface, struct wl_shm *shm,
   window->rectangle.y = 0;
   window->rectangle.width = width;
   window->rectangle.height = height;
-  window->scale = 1;
+  window->scale = 0;
   window->pending_scale = 1;
 
   window->surface = surface;

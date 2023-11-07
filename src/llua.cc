@@ -531,7 +531,7 @@ bool llua_mouse_hook(const EventT &ev) {
       lua_pop(lua_L, 1);
     } else {
       NORM_ERR("llua_mouse_hook: hook %s is not defined", hook_name.c_str());
-      lua_pop(lua_L, 1);
+      lua_pop(lua_L, 2);
       return false;
     }
   } else if (ty != LUA_TFUNCTION) {
