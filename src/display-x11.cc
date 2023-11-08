@@ -24,12 +24,12 @@
  *
  */
 
-#include <X11/X.h>
 #include <config.h>
-#include <cstdint>
-#include "logging.h"
 
 #ifdef BUILD_X11
+#include <x11.h>
+#include <X11/X.h>
+#include "display-x11.hh"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
 #include <X11/Xutil.h>
@@ -37,13 +37,12 @@
 #include <X11/Xlib.h>
 #endif /* BUILD_XFT */
 #pragma GCC diagnostic pop
-#include "x11.h"
 #ifdef BUILD_XDAMAGE
 #include <X11/extensions/Xdamage.h>
 #endif /* BUILD_XDAMAGE */
 #include "fonts.h"
 #ifdef BUILD_IMLIB2
-#include "imlib2.h"
+#include <imlib2.h>
 #endif /* BUILD_IMLIB2 */
 #ifdef BUILD_MOUSE_EVENTS
 #include "mouse-events.h"
@@ -53,17 +52,16 @@
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
+#include <cstdint>
 
 #include "colours.h"
 #include "conky.h"
-#include "display-x11.hh"
 #include "gui.h"
 #include "llua.h"
+#include "logging.h"
 
 /* TODO: cleanup global namespace */
 #ifdef BUILD_X11
-
-#include "x11.h"
 
 // TODO: cleanup externs (move to conky.h ?)
 #ifdef OWN_WINDOW
