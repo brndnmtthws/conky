@@ -1,12 +1,10 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import GitHub from './GitHub'
-import { LineChart } from './LineChart'
 import ThemeSwitcher from './ThemeSwitcher'
 
 type HeaderProps = {
   name: string
-  darkMode: boolean
   setDarkMode: (state: boolean) => void
   searchIndex: SearchIndex
 }
@@ -14,7 +12,7 @@ type HeaderProps = {
 import * as React from 'react'
 import Search from './Search'
 import { SearchIndex, SearchItem } from '../utils/search'
-import Fuse from 'fuse.js'
+import Fuse, { IFuseOptions } from 'fuse.js'
 
 interface NavLinkProps {
   href: string
@@ -38,13 +36,12 @@ const NavLink: React.FunctionComponent<NavLinkProps> = (props) => {
 
 export default function Header({
   name,
-  darkMode,
   setDarkMode,
   searchIndex,
 }: HeaderProps) {
   const router = useRouter()
   const fuse = React.useMemo(() => {
-    const options: Fuse.IFuseOptions<SearchItem> = {}
+    const options: IFuseOptions<SearchItem> = {}
     return new Fuse(
       searchIndex.list,
       options,
@@ -67,7 +64,7 @@ export default function Header({
             <NavLink href="/lua" name="Lua" />
           </div>
         )}
-        <LineChart width={380} height={40} darkMode={darkMode} />
+        <div className="flex-grow" />
         <Search fuse={fuse} />
         <div className="flex">
           <div className="border-r mx-1 px-1 border-slate-700">
