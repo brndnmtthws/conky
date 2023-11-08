@@ -51,7 +51,6 @@ export default function Layout({ children, searchIndex }: LayoutProps) {
         <Header
           searchIndex={searchIndex}
           name="Conky"
-          darkMode={darkMode}
           setDarkMode={setDarkMode}
         />
       </div>
