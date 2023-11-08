@@ -41,7 +41,7 @@ void push_table_value(lua_State *L, std::string key, int value) {
   lua_settable(L, -3);
 }
 
-void push_table_value(lua_State *L, std::string key, uint value) {
+void push_table_value(lua_State *L, std::string key, uint32_t value) {
   lua_pushstring(L, key.c_str());
   lua_pushinteger(L, value);
   lua_settable(L, -3);
