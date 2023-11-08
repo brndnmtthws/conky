@@ -24,50 +24,34 @@
 #include <string>
 #include <lua.h>
 #include <time.h>
+#include <type_traits>
 
 /* Lua helper functions */
-template <typename T>
-void push_table_value(lua_State *L, std::string key, T value);
-
 void push_table_value(lua_State *L, std::string key, std::string value) {
   lua_pushstring(L, key.c_str());
   lua_pushstring(L, value.c_str());
   lua_settable(L, -3);
 }
 
-void push_table_value(lua_State *L, std::string key, int value) {
-  lua_pushstring(L, key.c_str());
-  lua_pushinteger(L, value);
-  lua_settable(L, -3);
+template <typename T>
+typename std::enable_if<std::is_integral<T>::value>::type
+push_table_value(lua_State *L, std::string key, T value) {
+    lua_pushstring(L, key.c_str());
+    lua_pushinteger(L, value);
+    lua_settable(L, -3);
 }
 
-void push_table_value(lua_State *L, std::string key, uint32_t value) {
+template <typename T>
+typename std::enable_if<std::is_floating_point<T>::value>::type
+push_table_value(lua_State *L, std::string key, T value) {
   lua_pushstring(L, key.c_str());
-  lua_pushinteger(L, value);
-  lua_settable(L, -3);
-}
-
-void push_table_value(lua_State *L, std::string key, uint64_t value) {
-  lua_pushstring(L, key.c_str());
-  lua_pushinteger(L, value);
+  lua_pushnumber(L, value);
   lua_settable(L, -3);
 }
 
 void push_table_value(lua_State *L, std::string key, bool value) {
   lua_pushstring(L, key.c_str());
   lua_pushboolean(L, value);
-  lua_settable(L, -3);
-}
-
-void push_table_value(lua_State *L, std::string key, float value) {
-  lua_pushstring(L, key.c_str());
-  lua_pushnumber(L, value);
-  lua_settable(L, -3);
-}
-
-void push_table_value(lua_State *L, std::string key, double value) {
-  lua_pushstring(L, key.c_str());
-  lua_pushnumber(L, value);
   lua_settable(L, -3);
 }
 
