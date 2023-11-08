@@ -231,7 +231,7 @@ bool display_output_x11::shutdown() {
 }
 
 inline void propagate_unconsumed_event(XEvent &ev, bool is_consumed) {
-  uint32_t capture_mask = ButtonPressMask | ButtonReleaseMask | ButtonMotionMask;
+  const uint32_t capture_mask = ButtonPressMask | ButtonReleaseMask | ButtonMotionMask;
 
   // SAFETY: XEvent is a union and all event types this function gets called for
   // share same alignment and accessed fields share same offsets.

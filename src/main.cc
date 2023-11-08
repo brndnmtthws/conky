@@ -183,7 +183,7 @@ static void print_version() {
 #endif
 #endif /* BUILD_X11 */
 #ifdef BUILD_WAYLAND
-            << _(" X11:\n")
+            << _(" Wayland:\n")
 #ifdef BUILD_MOUSE_EVENTS
             << _("  * Mouse events\n")
 #endif
