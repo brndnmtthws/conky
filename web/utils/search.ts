@@ -1,4 +1,4 @@
-import Fuse from 'fuse.js'
+import Fuse, { FuseIndexRecords } from 'fuse.js'
 import { getConfigSettings, getLua, getVariables } from './doc-utils'
 export interface SearchItem {
   kind: string
@@ -8,7 +8,7 @@ export interface SearchItem {
 export interface SearchIndex {
   index: {
     keys: readonly string[]
-    records: Fuse.FuseIndexRecords
+    records: FuseIndexRecords
   }
   list: SearchItem[]
 }

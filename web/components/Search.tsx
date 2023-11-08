@@ -1,4 +1,4 @@
-import Fuse from 'fuse.js'
+import Fuse, { FuseResult } from 'fuse.js'
 import React, { Fragment, useCallback, useEffect, useState } from 'react'
 import { Search as SearchIcon } from 'react-feather'
 import { SearchItem } from '../utils/search'
@@ -10,7 +10,7 @@ export interface SearchProps {
 }
 
 interface SearchResultProps {
-  result: Fuse.FuseResult<SearchItem>
+  result: FuseResult<SearchItem>
   selected: boolean
   active: boolean
 }
@@ -60,9 +60,9 @@ const SearchResult: React.FunctionComponent<SearchResultProps> = (props) => {
 const Search: React.FunctionComponent<SearchProps> = ({ fuse }) => {
   const router = useRouter()
   const [searchText, setSearchText] = useState('')
-  const [searchResults, setSearchResults] = useState<
-    Fuse.FuseResult<SearchItem>[]
-  >([])
+  const [searchResults, setSearchResults] = useState<FuseResult<SearchItem>[]>(
+    []
+  )
 
   const [isOpen, setIsOpen] = useState(false)
   const handleKeyPress = useCallback(
@@ -94,7 +94,7 @@ const Search: React.FunctionComponent<SearchProps> = ({ fuse }) => {
     const searchResult = fuse.search(value)
     setSearchResults(searchResult)
   }
-  const onChange = (value?: Fuse.FuseResult<SearchItem>) => {
+  const onChange = (value?: FuseResult<SearchItem>) => {
     if (value) {
       if (value.item.kind === 'var') {
         router.push(`/variables#${value.item.name}`, undefined, {
