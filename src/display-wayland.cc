@@ -25,9 +25,6 @@
  */
 
 #include <config.h>
-#include <wayland-util.h>
-#include <utility>
-#include "logging.h"
 
 #ifdef BUILD_WAYLAND
 #include <wayland-client.h>
@@ -57,6 +54,7 @@
 #include "display-wayland.hh"
 #include "gui.h"
 #include "llua.h"
+#include "logging.h"
 #ifdef BUILD_X11
 #include "x11.h"
 #endif
