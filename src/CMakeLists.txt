@@ -239,16 +239,16 @@ endif(BUILD_PORT_MONITORS)
 if(BUILD_X11)
   set(x11 x11.cc x11.h)
   set(optional_sources ${optional_sources} ${x11})
-
-  if(BUILD_MOUSE_EVENTS)
-    set(mouse_events mouse-events.cc mouse-events.h)
-    set(optional_sources ${optional_sources} ${mouse_events})
-  endif(BUILD_MOUSE_EVENTS)
 endif(BUILD_X11)
 
 if(BUILD_GUI)
   set(gui fonts.cc fonts.h gui.cc gui.h)
   set(optional_sources ${optional_sources} ${gui})
+  
+  if(BUILD_MOUSE_EVENTS)
+    set(mouse_events mouse-events.cc mouse-events.h)
+    set(optional_sources ${optional_sources} ${mouse_events})
+  endif(BUILD_MOUSE_EVENTS)
 endif(BUILD_GUI)
 
 if(BUILD_WAYLAND)

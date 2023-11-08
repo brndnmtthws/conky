@@ -451,7 +451,7 @@ set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
 set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIR})
 include_directories(3rdparty/toluapp/include)
 
-if(BUILD_X11)
+if(BUILD_GUI)
   # Check for libraries used by Lua bindings
   if(BUILD_LUA_CAIRO)
     pkg_check_modules(CAIRO REQUIRED cairo>=1.14 cairo-xlib)
@@ -469,8 +469,7 @@ if(BUILD_X11)
     set(luaimlib2_libs ${IMLIB2_LIBS} ${IMLIB2_LDFLAGS} ${LUA_LIBRARIES})
     set(luaimlib2_includes
       ${IMLIB2_INCLUDE_DIRS}
-      ${LUA_INCLUDE_DIR}
-      ${X11_INCLUDE_DIR})
+      ${LUA_INCLUDE_DIR})
   endif(BUILD_LUA_IMLIB2)
 
   if(BUILD_LUA_RSVG)
@@ -478,7 +477,7 @@ if(BUILD_X11)
     set(luarsvg_libs ${RSVG_LIBRARIES} ${LUA_LIBRARIES})
     set(luarsvg_includes ${RSVG_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
   endif(BUILD_LUA_RSVG)
-endif(BUILD_X11)
+endif(BUILD_GUI)
 
 if(BUILD_AUDACIOUS)
   set(WANT_GLIB true)

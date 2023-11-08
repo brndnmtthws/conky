@@ -491,7 +491,6 @@ static void on_pointer_motion(void *data,
   size_t abs_y = w->rectangle.y + y;
 
   mouse_move_event event {
-    mouse_event_t::MOUSE_MOVE,
     x,
     y,
     abs_x,
@@ -552,7 +551,6 @@ void on_pointer_axis(void *data,
   size_t abs_y = w->rectangle.y + y;
 
   mouse_scroll_event event {
-    mouse_event_t::MOUSE_SCROLL,
     x,
     y,
     abs_x,

@@ -25,12 +25,6 @@
 #include <cstdint>
 
 extern "C" {
-#ifdef BUILD_X11
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wvariadic-macros"
-#include <X11/Xlib.h>
-#pragma GCC diagnostic pop
-#endif /* BUILD_X11 */
 #include <lua.h>
 }
 
@@ -91,10 +85,7 @@ struct mouse_positioned_event : public mouse_event {
 struct mouse_move_event : public mouse_positioned_event {
   std::bitset<13> mods;  // held buttons and modifiers (ctrl, shift, ...)
 
-  mouse_move_event(mouse_event_t type, size_t x, size_t y, size_t x_abs, size_t y_abs, std::bitset<13> mods = 0): mouse_positioned_event{type, x, y, x_abs, y_abs}, mods(mods) {};
-  #ifdef BUILD_X11
-  explicit mouse_move_event(XMotionEvent *ev);
-  #endif /* BUILD_X11 */
+  mouse_move_event(size_t x, size_t y, size_t x_abs, size_t y_abs, std::bitset<13> mods = 0): mouse_positioned_event{mouse_event_t::MOUSE_MOVE, x, y, x_abs, y_abs}, mods(mods) {};
 
   void push_lua_data(lua_State *L) const;
 };
@@ -110,10 +101,7 @@ struct mouse_scroll_event : public mouse_positioned_event {
   std::bitset<13> mods;  // held buttons and modifiers (ctrl, shift, ...)
   scroll_direction_t direction;
 
-  mouse_scroll_event(mouse_event_t type, size_t x, size_t y, size_t x_abs, size_t y_abs, scroll_direction_t direction, std::bitset<13> mods = 0): mouse_positioned_event{type, x, y, x_abs, y_abs}, direction(direction), mods(mods) {};
-  #ifdef BUILD_X11
-  explicit mouse_scroll_event(XButtonEvent *ev);
-  #endif /* BUILD_X11 */
+  mouse_scroll_event(size_t x, size_t y, size_t x_abs, size_t y_abs, scroll_direction_t direction, std::bitset<13> mods = 0): mouse_positioned_event{mouse_event_t::MOUSE_SCROLL, x, y, x_abs, y_abs}, direction(direction), mods(mods) {};
 
   void push_lua_data(lua_State *L) const;
 };
@@ -123,24 +111,12 @@ struct mouse_button_event : public mouse_positioned_event {
   mouse_button_t button;
 
   mouse_button_event(mouse_event_t type, size_t x, size_t y, size_t x_abs, size_t y_abs, mouse_button_t button, std::bitset<13> mods = 0): mouse_positioned_event{type, x, y, x_abs, y_abs}, button(button), mods(mods) {};
-  #ifdef BUILD_X11
-  explicit mouse_button_event(XButtonEvent *ev);
-  #endif /* BUILD_X11 */
 
   void push_lua_data(lua_State *L) const;
 };
 
-typedef struct mouse_button_event mouse_press_event;
-typedef struct mouse_button_event mouse_release_event;
-
 struct mouse_crossing_event : public mouse_positioned_event {
   mouse_crossing_event(mouse_event_t type, size_t x, size_t y, size_t x_abs, size_t y_abs): mouse_positioned_event{type, x, y, x_abs, y_abs} {};
-  #ifdef BUILD_X11
-  explicit mouse_crossing_event(XCrossingEvent *ev);
-  #endif /* BUILD_X11 */
 };
-
-typedef struct mouse_crossing_event mouse_enter_event;
-typedef struct mouse_crossing_event mouse_leave_event;
 
 #endif /* MOUSE_EVENTS_H */
