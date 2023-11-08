@@ -25,7 +25,7 @@
     "@fontsource-variable/inter": "^5.0.15",
     "@fontsource-variable/newsreader": "^5.0.16",
     "@headlessui/react": "^1.7.17",
-    "@mapbox/rehype-prism": "^0.8.0",
+    "@mapbox/rehype-prism": "^0.9.0",
     "@netlify/plugin-nextjs": "^4.41.1",
     "@tailwindcss/typography": "^0.5.10",
     "classnames": "^2.3.2",
@@ -42,7 +42,7 @@
   "devDependencies": {
     "@types/eslint": "^8.44.7",
     "@types/js-yaml": "^4.0.9",
-    "@types/mapbox__rehype-prism": "^0.8.1",
+    "@types/mapbox__rehype-prism": "^0.8.3",
     "@types/node": "^20.9.0",
     "@types/prismjs": "^1.26.3",
     "@types/react": "^18.2.37",
@@ -61,8 +61,8 @@
     "next-mdx-remote": "^4.4.1",
     "next-remote-watch": "2.0.0",
     "postcss": "^8.4.31",
-    "rehype-stringify": "^9.0.4",
-    "remark-gfm": "^3.0.1",
+    "rehype-stringify": "^10.0.0",
+    "remark-gfm": "^4.0.0",
     "start-server-and-test": "^2.0.2",
     "tailwindcss": "^3.3.5",
     "typescript": "^5.2.2"
