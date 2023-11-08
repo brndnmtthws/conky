@@ -338,11 +338,6 @@ if(BUILD_INTEL_BACKLIGHT)
   set(optional_sources ${optional_sources} ${intel_backlight})
 endif(BUILD_INTEL_BACKLIGHT)
 
-if(BUILD_MOUSE_EVENTS)
-  set(mouse_events mouse-events.cc mouse-events.h)
-  set(optional_sources ${optional_sources} ${mouse_events})
-endif(BUILD_MOUSE_EVENTS)
-
 if(BUILD_TESTS)
   # Create a library strictly for testing
   add_library(conky_core ${conky_sources} ${optional_sources})
