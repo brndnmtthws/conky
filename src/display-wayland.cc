@@ -485,7 +485,7 @@ static void on_pointer_motion(void *data,
 
   size_t x = static_cast<size_t>(wl_fixed_to_double(surface_x));
   size_t y = static_cast<size_t>(wl_fixed_to_double(surface_y));
-  last_known_positions[pointer] = {x, y};
+  last_known_positions[pointer] = std::array<size_t, 2> {x, y};
 
   size_t abs_x = w->rectangle.x + x;
   size_t abs_y = w->rectangle.y + y;
