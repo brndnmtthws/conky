@@ -516,7 +516,12 @@ bool llua_mouse_hook(const EventT &ev) {
     return false;
   }
   const std::string raw_hook_name = lua_mouse_hook.get(*state);
-  std::string hook_name = "conky_" + raw_hook_name;
+  std::string hook_name;
+  if (raw_hook_name.rfind("conky_", 0) == 0) {
+    hook_name = raw_hook_name;
+  } else {
+    hook_name = "conky_" + raw_hook_name;
+  }
   
   int ty = lua_getglobal(lua_L, hook_name.c_str());
   if (ty == LUA_TNIL) {

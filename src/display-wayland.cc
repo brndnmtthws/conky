@@ -66,6 +66,7 @@
 #ifdef BUILD_MOUSE_EVENTS
 #include "mouse-events.h"
 #include <map>
+#include <array>
 #endif
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
