@@ -25,10 +25,6 @@
 #include <lua.h>
 #include <time.h>
 
-#ifdef BUILD_X11
-#include "X11/Xlib.h"
-#endif /* BUILD_X11 */
-
 /* Lua helper functions */
 template <typename T>
 void push_table_value(lua_State *L, std::string key, T value);
@@ -186,36 +182,10 @@ void mouse_positioned_event::push_lua_data(lua_State *L) const {
   push_table_value(L, "y_abs", this->y_abs);
 }
 
-#ifdef BUILD_X11
-mouse_move_event::mouse_move_event(XMotionEvent *ev) {
-  this->type = MOUSE_MOVE;
-  this->x = ev->x;
-  this->y = ev->y;
-  this->x_abs = ev->x_root;
-  this->y_abs = ev->y_root;
-}
-#endif /* BUILD_X11 */
-
 void mouse_move_event::push_lua_data(lua_State *L) const {
   mouse_positioned_event::push_lua_data(L);
   push_mods(L, this->mods);
 }
-
-#ifdef BUILD_X11
-mouse_scroll_event::mouse_scroll_event(XButtonEvent *ev) {
-  this->type = MOUSE_SCROLL;
-  this->x = ev->x;
-  this->y = ev->y;
-  this->x_abs = ev->x_root;
-  this->y_abs = ev->y_root;
-  this->mods = ev->state;
-  if (ev->button == 4) {
-    this->direction = scroll_direction_t::UP;
-  } else if (ev->button == 5) {
-    this->direction = scroll_direction_t::DOWN;
-  }
-}
-#endif /* BUILD_X11 */
 
 void mouse_scroll_event::push_lua_data(lua_State *L) const {
   mouse_positioned_event::push_lua_data(L);
@@ -223,41 +193,9 @@ void mouse_scroll_event::push_lua_data(lua_State *L) const {
   push_mods(L, this->mods);
 }
 
-#ifdef BUILD_X11
-mouse_button_event::mouse_button_event(XButtonEvent *ev) {
-  this->type = ev->type == ButtonPress ? MOUSE_PRESS : MOUSE_RELEASE;
-  this->x = ev->x;
-  this->y = ev->y;
-  this->x_abs = ev->x_root;
-  this->y_abs = ev->y_root;
-  this->mods = ev->state;
-  switch (ev->button) {
-    case Button1:
-      this->button = BUTTON_LEFT;
-      break;
-    case Button2:
-      this->button = BUTTON_RIGHT;
-      break;
-    case Button3:
-      this->button = BUTTON_MIDDLE;
-      break;
-  }
-}
-#endif /* BUILD_X11 */
-
 void mouse_button_event::push_lua_data(lua_State *L) const {
   mouse_positioned_event::push_lua_data(L);
   push_table_value(L, "button_code", static_cast<uint32_t>(this->button));
   push_table_value(L, "button", this->button);
   push_mods(L, this->mods);
 }
-
-#ifdef BUILD_X11
-mouse_crossing_event::mouse_crossing_event(XCrossingEvent *ev) {
-  this->type = ev->type == EnterNotify ? AREA_ENTER : AREA_LEAVE;
-  this->x = ev->x;
-  this->y = ev->y;
-  this->x_abs = ev->x_root;
-  this->y_abs = ev->y_root;
-}
-#endif /* BUILD_X11 */

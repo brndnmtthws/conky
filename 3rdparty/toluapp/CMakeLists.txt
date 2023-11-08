@@ -5,7 +5,7 @@
 # Please note that the package source code is licensed under its own license.
 
 project ( toluapp C )
-cmake_minimum_required ( VERSION 3.4 )
+cmake_minimum_required ( VERSION 3.15 )
 # Disable dist stuff, we're not installing this as a lib
 # include ( cmake/dist.cmake )
 

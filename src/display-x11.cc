@@ -7,7 +7,7 @@
  * Copyright (C) 2018-2021 François Revol et al.
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
  * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
- *	(see AUTHORS)
+ *  (see AUTHORS)
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,10 @@
  *
  */
 
+#include <X11/X.h>
 #include <config.h>
+#include <cstdint>
+#include "logging.h"
 
 #ifdef BUILD_X11
 #pragma GCC diagnostic push
@@ -37,7 +40,7 @@
 #include "x11.h"
 #ifdef BUILD_XDAMAGE
 #include <X11/extensions/Xdamage.h>
-#endif
+#endif /* BUILD_XDAMAGE */
 #include "fonts.h"
 #ifdef BUILD_IMLIB2
 #include "imlib2.h"
@@ -225,6 +228,29 @@ bool display_output_x11::initialize() {
 bool display_output_x11::shutdown() {
   deinit_x11();
   return true;
+}
+
+inline void propagate_unconsumed_event(XEvent &ev, bool is_consumed) {
+  uint32_t capture_mask = ButtonPressMask | ButtonReleaseMask | ButtonMotionMask;
+
+  // SAFETY: XEvent is a union and all event types this function gets called for
+  // share same alignment and accessed fields share same offsets.
+  if (!is_consumed) {
+    XUngrabPointer(display, ev.xmotion.time);
+
+    /* forward the event to the desktop window */
+    ev.xmotion.window = window.desktop;
+    ev.xmotion.x = ev.xmotion.x_root;
+    ev.xmotion.y = ev.xmotion.y_root;
+    XSendEvent(display, window.desktop, False, capture_mask, &ev);
+    if (ev.type == ButtonPress) {
+      XSetInputFocus(display, window.desktop, RevertToNone, ev.xmotion.time);
+    }
+  } else {
+    XGrabPointer(display, window.window, TRUE, capture_mask,
+      GrabModeAsync, GrabModeAsync, window.window, None, ev.xbutton.time);
+    XSetInputFocus(display, window.window, RevertToParent, ev.xmotion.time);
+  }
 }
 
 bool display_output_x11::main_loop_wait(double t) {
@@ -458,10 +484,34 @@ bool display_output_x11::main_loop_wait(double t) {
 
       case ButtonPress:
 #ifdef BUILD_MOUSE_EVENTS
-        if (ev.xbutton.button == 4 || ev.xbutton.button == 5) {
-          consumed = llua_mouse_hook(mouse_scroll_event(&ev.xbutton));
+        if (ev.xbutton.button == 4) {
+          consumed = llua_mouse_hook(mouse_scroll_event(
+            ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root, ev.xbutton.y_root,
+            scroll_direction_t::SCROLL_UP, ev.xbutton.state
+          ));
+        } else if (ev.xbutton.button == 5) {
+          consumed = llua_mouse_hook(mouse_scroll_event(
+            ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root, ev.xbutton.y_root,
+            scroll_direction_t::SCROLL_DOWN, ev.xbutton.state
+          ));
         } else {
-          consumed = llua_mouse_hook(mouse_press_event(&ev.xbutton));
+          mouse_button_t button;
+          switch (ev.xbutton.button) {
+            case Button1:
+              button = mouse_button_t::BUTTON_LEFT;
+              break;
+            case Button2:
+              button = mouse_button_t::BUTTON_RIGHT;
+              break;
+            case Button3:
+              button = mouse_button_t::BUTTON_MIDDLE;
+              break;
+          }
+          consumed = llua_mouse_hook(mouse_button_event(
+            mouse_event_t::MOUSE_PRESS,
+            ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root, ev.xbutton.y_root,
+            button, ev.xbutton.state
+          ));
         }
 #endif /* BUILD_MOUSE_EVENTS */
         if (own_window.get(*state)) {
@@ -472,16 +522,7 @@ bool display_output_x11::main_loop_wait(double t) {
             /* allow conky to hold input focus. */
             break;
           }
-          XUngrabPointer(display, ev.xbutton.time);
-          if (!consumed) {
-            /* forward the click to the desktop window */
-            ev.xbutton.window = window.desktop;
-            ev.xbutton.x = ev.xbutton.x_root;
-            ev.xbutton.y = ev.xbutton.y_root;
-            XSendEvent(display, ev.xbutton.window, False, ButtonPressMask, &ev);
-            XSetInputFocus(display, ev.xbutton.window, RevertToParent,
-                           ev.xbutton.time);
-          }
+          propagate_unconsumed_event(ev, consumed);
         }
         break;
 
@@ -489,7 +530,23 @@ bool display_output_x11::main_loop_wait(double t) {
 #ifdef BUILD_MOUSE_EVENTS
         /* don't report scrollwheel release events */
         if (ev.xbutton.button != Button4 && ev.xbutton.button != Button5) {
-          llua_mouse_hook(mouse_release_event(&ev.xbutton));
+          mouse_button_t button;
+          switch (ev.xbutton.button) {
+            case Button1:
+              button = mouse_button_t::BUTTON_LEFT;
+              break;
+            case Button2:
+              button = mouse_button_t::BUTTON_RIGHT;
+              break;
+            case Button3:
+              button = mouse_button_t::BUTTON_MIDDLE;
+              break;
+          }
+          consumed = llua_mouse_hook(mouse_button_event(
+            mouse_event_t::MOUSE_RELEASE,
+            ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root, ev.xbutton.y_root,
+            button, ev.xbutton.state
+          ));
         }
 #endif /* BUILD_MOUSE_EVENTS */
         if (own_window.get(*state)) {
@@ -499,11 +556,7 @@ bool display_output_x11::main_loop_wait(double t) {
             /* allow conky to hold input focus. */
             break;
           }
-          /* forward the release to the desktop window */
-          ev.xbutton.window = window.desktop;
-          ev.xbutton.x = ev.xbutton.x_root;
-          ev.xbutton.y = ev.xbutton.y_root;
-          XSendEvent(display, ev.xbutton.window, False, ButtonReleaseMask, &ev);
+          propagate_unconsumed_event(ev, consumed);
         }
         break;
 #ifdef BUILD_MOUSE_EVENTS
@@ -512,13 +565,27 @@ bool display_output_x11::main_loop_wait(double t) {
       can't forward the event without filtering XQueryTree output.
       */
       case MotionNotify:
-        llua_mouse_hook(mouse_move_event(&ev.xmotion));
-        break;
-      case EnterNotify:
-        llua_mouse_hook(mouse_enter_event(&ev.xcrossing));
+        consumed = llua_mouse_hook(mouse_move_event(
+          ev.xmotion.x, ev.xmotion.y, ev.xmotion.x_root, ev.xmotion.y_root, ev.xmotion.state
+        ));
+        propagate_unconsumed_event(ev, consumed);
         break;
       case LeaveNotify:
-        llua_mouse_hook(mouse_leave_event(&ev.xcrossing));
+        XUngrabPointer(display, ev.xcrossing.time);
+      case EnterNotify:
+        {
+          bool not_over_conky = ev.xcrossing.x_root < window.x || ev.xcrossing.y_root < window.y ||
+            ev.xcrossing.x_root > window.x + window.width || ev.xcrossing.y_root > window.y + window.height;
+
+          if ((not_over_conky && ev.xcrossing.type == LeaveNotify) ||
+              (!not_over_conky && ev.xcrossing.type == EnterNotify)) {
+            llua_mouse_hook(mouse_crossing_event(
+              ev.xcrossing.type == EnterNotify ? mouse_event_t::AREA_ENTER: mouse_event_t::AREA_LEAVE,
+              ev.xcrossing.x, ev.xcrossing.y, ev.xcrossing.x_root, ev.xcrossing.y_root
+            ));
+            // can't propagate these events in a way that makes sense
+          }
+        }
         break;
 #endif /* BUILD_MOUSE_EVENTS */
 #endif
