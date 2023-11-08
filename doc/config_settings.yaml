@@ -221,11 +221,10 @@ values:
   - name: lua_mouse_hook
     desc: |-
       This function, if defined, will be called by Conky upon receiving mouse
-      events from X. Requires X support. A table containing event information
-      will be passed to this function as the first argument. Use this hook for
-      detecting mouse input and acting on it. Conky puts 'conky_' in front of
-      function_name to prevent accidental calls to the wrong function unless
-      you place 'conky_' in front of it yourself.
+      events from X or Wayland. A table containing event information will be
+      passed to this function as the first argument. Use this hook for detecting
+      mouse input and acting on it. Conky requires that the function declaration
+      has a 'conky_' prefix to prevent accidental calls to the wrong function.
     args:
       - function_name
   - name: lowercase
