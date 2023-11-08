@@ -27,9 +27,7 @@
 #include <config.h>
 
 #ifdef BUILD_X11
-#include <x11.h>
 #include <X11/X.h>
-#include "display-x11.hh"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
 #include <X11/Xutil.h>
@@ -42,7 +40,7 @@
 #endif /* BUILD_XDAMAGE */
 #include "fonts.h"
 #ifdef BUILD_IMLIB2
-#include <imlib2.h>
+#include "imlib2.h"
 #endif /* BUILD_IMLIB2 */
 #ifdef BUILD_MOUSE_EVENTS
 #include "mouse-events.h"
@@ -56,12 +54,15 @@
 
 #include "colours.h"
 #include "conky.h"
+#include "display-x11.hh"
 #include "gui.h"
 #include "llua.h"
-#include "logging.h"
 
 /* TODO: cleanup global namespace */
 #ifdef BUILD_X11
+
+#include "x11.h"
+#include "logging.h"
 
 // TODO: cleanup externs (move to conky.h ?)
 #ifdef OWN_WINDOW
@@ -234,19 +235,17 @@ inline void propagate_unconsumed_event(XEvent &ev, bool is_consumed) {
   // SAFETY: XEvent is a union and all event types this function gets called for
   // share same alignment and accessed fields share same offsets.
   if (!is_consumed) {
-    XUngrabPointer(display, ev.xmotion.time);
-
     /* forward the event to the desktop window */
     ev.xmotion.window = window.desktop;
     ev.xmotion.x = ev.xmotion.x_root;
     ev.xmotion.y = ev.xmotion.y_root;
     XSendEvent(display, window.desktop, False, capture_mask, &ev);
-    if (ev.type == ButtonPress) {
+    if (false && ev.type == ButtonPress) {
       XSetInputFocus(display, window.desktop, RevertToNone, ev.xmotion.time);
+    } else if (false && ev.type == MotionNotify) {
+      XSetInputFocus(display, window.window, RevertToParent, ev.xmotion.time);
     }
   } else {
-    XGrabPointer(display, window.window, TRUE, capture_mask,
-      GrabModeAsync, GrabModeAsync, window.window, None, ev.xbutton.time);
     XSetInputFocus(display, window.window, RevertToParent, ev.xmotion.time);
   }
 }
@@ -572,15 +571,17 @@ bool display_output_x11::main_loop_wait(double t) {
         XUngrabPointer(display, ev.xcrossing.time);
       case EnterNotify:
         {
-          bool not_over_conky = ev.xcrossing.x_root < window.x || ev.xcrossing.y_root < window.y ||
-            ev.xcrossing.x_root > window.x + window.width || ev.xcrossing.y_root > window.y + window.height;
+          bool not_over_conky = ev.xcrossing.x_root <= window.x || ev.xcrossing.y_root <= window.y ||
+            ev.xcrossing.x_root >= window.x + window.width || ev.xcrossing.y_root >= window.y + window.height;
+          static bool pointer_inside = false;
 
           if ((not_over_conky && ev.xcrossing.type == LeaveNotify) ||
-              (!not_over_conky && ev.xcrossing.type == EnterNotify)) {
+              (!pointer_inside && ev.xcrossing.type == EnterNotify)) {
             llua_mouse_hook(mouse_crossing_event(
               ev.xcrossing.type == EnterNotify ? mouse_event_t::AREA_ENTER: mouse_event_t::AREA_LEAVE,
               ev.xcrossing.x, ev.xcrossing.y, ev.xcrossing.x_root, ev.xcrossing.y_root
             ));
+            pointer_inside = ev.xcrossing.type == EnterNotify;
             // can't propagate these events in a way that makes sense
           }
         }
