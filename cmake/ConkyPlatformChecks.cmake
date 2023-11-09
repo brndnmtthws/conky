@@ -402,6 +402,29 @@ if(BUILD_X11)
 
       set(conky_libs ${conky_libs} ${X11_Xfixes_LIB})
     endif(BUILD_XFIXES)
+
+    # check for Xinput
+    if(BUILD_XINPUT)
+      if(NOT X11_Xinput_FOUND)
+        message(FATAL_ERROR "Unable to find Xinput library")
+      endif(NOT X11_Xinput_FOUND)
+
+      set(conky_libs ${conky_libs} ${X11_Xinput_LIB})
+    endif(BUILD_XINPUT)
+
+
+    if(X11_xcb_FOUND)
+      set(HAVE_XCB true)
+      set(conky_libs ${conky_libs} ${X11_xcb_LIB})
+      if(X11_xcb_errors_FOUND)
+        set(HAVE_XCB_ERRORS true)
+        set(conky_libs ${conky_libs} ${X11_xcb_LIB} ${X11_xcb_errors_LIB})
+      else(X11_xcb_errors_FOUND)
+        set(HAVE_XCB_ERRORS false)
+      endif(X11_xcb_errors_FOUND)
+    else(X11_xcb_FOUND)
+      set(HAVE_XCB false)
+    endif(X11_xcb_FOUND)
   else(X11_FOUND)
     message(FATAL_ERROR "Unable to find X11 library")
   endif(X11_FOUND)

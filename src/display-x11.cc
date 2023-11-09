@@ -24,6 +24,7 @@
  *
  */
 
+#include <X11/extensions/XI2.h>
 #include <config.h>
 
 #ifdef BUILD_X11
@@ -44,6 +45,9 @@
 #endif /* BUILD_IMLIB2 */
 #ifdef BUILD_MOUSE_EVENTS
 #include "mouse-events.h"
+#ifdef BUILD_XINPUT
+#include <X11/extensions/XInput2.h>
+#endif /* BUILD_XINPUT */
 #endif /* BUILD_MOUSE_EVENTS */
 #endif /* BUILD_X11 */
 
@@ -51,6 +55,7 @@
 #include <sstream>
 #include <unordered_map>
 #include <cstdint>
+#include <vector>
 
 #include "colours.h"
 #include "conky.h"
@@ -229,27 +234,6 @@ bool display_output_x11::shutdown() {
   return true;
 }
 
-inline void propagate_unconsumed_event(XEvent &ev, bool is_consumed) {
-  const uint32_t capture_mask = ButtonPressMask | ButtonReleaseMask | ButtonMotionMask;
-
-  // SAFETY: XEvent is a union and all event types this function gets called for
-  // share same alignment and accessed fields share same offsets.
-  if (!is_consumed) {
-    /* forward the event to the desktop window */
-    ev.xmotion.window = window.desktop;
-    ev.xmotion.x = ev.xmotion.x_root;
-    ev.xmotion.y = ev.xmotion.y_root;
-    XSendEvent(display, window.desktop, False, capture_mask, &ev);
-    if (false && ev.type == ButtonPress) {
-      XSetInputFocus(display, window.desktop, RevertToNone, ev.xmotion.time);
-    } else if (false && ev.type == MotionNotify) {
-      XSetInputFocus(display, window.window, RevertToParent, ev.xmotion.time);
-    }
-  } else {
-    XSetInputFocus(display, window.window, RevertToParent, ev.xmotion.time);
-  }
-}
-
 bool display_output_x11::main_loop_wait(double t) {
   /* wait for X event or timeout */
   if (!display || !window.gc) return true;
@@ -397,6 +381,50 @@ bool display_output_x11::main_loop_wait(double t) {
     bool consumed = false;
 
     XNextEvent(display, &ev);
+    
+#ifdef BUILD_XINPUT
+      if (ev.type == GenericEvent && ev.xcookie.extension == window.xi_opcode) {
+        XGetEventData(display, &ev.xcookie);
+        if (ev.xcookie.evtype == XI_Motion) {
+          auto *data = reinterpret_cast<XIDeviceEvent*>(ev.xcookie.data);
+
+          // XQueryPointer returns wrong results because conky is a weird window
+          Window query_result = query_x11_window_at_pos(display, data->root_x, data->root_y);
+
+          //printf("over: %#x w:%#x d:%#x r:%#x\n", query_result, window.window, window.desktop, window.root);
+
+          static bool cursor_inside = false;
+          if ((query_result != 0 && query_result == window.window) ||
+              ((query_result == window.desktop || query_result == window.root || query_result == 0) && data->root_x >= window.x && data->root_x < (window.x + window.width) &&
+               data->root_y >= window.y && data->root_y < (window.y + window.height))) {
+            //puts("over self");
+            if (!cursor_inside) {
+              llua_mouse_hook(mouse_crossing_event(
+                mouse_event_t::AREA_ENTER,
+                data->root_x - window.x, data->root_y - window.x,
+                data->root_x, data->root_y
+              ));
+            }
+            cursor_inside = true;
+          } else if (cursor_inside) {
+            //puts("left");
+            llua_mouse_hook(mouse_crossing_event(
+              mouse_event_t::AREA_LEAVE,
+              data->root_x - window.x, data->root_y - window.x,
+              data->root_x, data->root_y
+            ));
+            cursor_inside = false;
+          } else {
+            //printf("not over self\n");
+          }
+        }
+        XFreeEventData(display, &ev.xcookie);
+        continue;
+      }
+#endif /* BUILD_XINPUT */
+
+    // Any of the remaining events apply to conky window
+    if (ev.xany.window != window.window) continue;
     switch (ev.type) {
       case Expose: {
         XRectangle r;
@@ -406,6 +434,10 @@ bool display_output_x11::main_loop_wait(double t) {
         r.height = ev.xexpose.height;
         XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
         XSync(display, False);
+
+        // modify for propagation
+        ev.xexpose.x += window.x;
+        ev.xexpose.y += window.y;
         break;
       }
 
@@ -427,7 +459,7 @@ bool display_output_x11::main_loop_wait(double t) {
 #ifdef USE_ARGB
         }
 #endif
-        break;
+        continue;
       }
 
 #ifdef OWN_WINDOW
@@ -436,7 +468,7 @@ bool display_output_x11::main_loop_wait(double t) {
         if (own_window.get(*state)) {
           set_transparent_background(window.window);
         }
-        break;
+        continue;
 
       case ConfigureNotify:
         if (own_window.get(*state)) {
@@ -477,7 +509,7 @@ bool display_output_x11::main_loop_wait(double t) {
             fixed_pos = 1;
           } */
         }
-        break;
+        continue;
 
       case ButtonPress:
 #ifdef BUILD_MOUSE_EVENTS
@@ -519,7 +551,6 @@ bool display_output_x11::main_loop_wait(double t) {
             /* allow conky to hold input focus. */
             break;
           }
-          propagate_unconsumed_event(ev, consumed);
         }
         break;
 
@@ -553,7 +584,6 @@ bool display_output_x11::main_loop_wait(double t) {
             /* allow conky to hold input focus. */
             break;
           }
-          propagate_unconsumed_event(ev, consumed);
         }
         break;
 #ifdef BUILD_MOUSE_EVENTS
@@ -565,30 +595,25 @@ bool display_output_x11::main_loop_wait(double t) {
         consumed = llua_mouse_hook(mouse_move_event(
           ev.xmotion.x, ev.xmotion.y, ev.xmotion.x_root, ev.xmotion.y_root, ev.xmotion.state
         ));
-        propagate_unconsumed_event(ev, consumed);
         break;
       case LeaveNotify:
-        XUngrabPointer(display, ev.xcrossing.time);
       case EnterNotify:
-        {
+        if (window.xi_opcode == 0) {
           bool not_over_conky = ev.xcrossing.x_root <= window.x || ev.xcrossing.y_root <= window.y ||
             ev.xcrossing.x_root >= window.x + window.width || ev.xcrossing.y_root >= window.y + window.height;
-          static bool pointer_inside = false;
 
           if ((not_over_conky && ev.xcrossing.type == LeaveNotify) ||
-              (!pointer_inside && ev.xcrossing.type == EnterNotify)) {
+              (!not_over_conky && ev.xcrossing.type == EnterNotify)) {
             llua_mouse_hook(mouse_crossing_event(
-              ev.xcrossing.type == EnterNotify ? mouse_event_t::AREA_ENTER: mouse_event_t::AREA_LEAVE,
+              ev.xcrossing.type == EnterNotify ? mouse_event_t::AREA_ENTER : mouse_event_t::AREA_LEAVE,
               ev.xcrossing.x, ev.xcrossing.y, ev.xcrossing.x_root, ev.xcrossing.y_root
             ));
-            pointer_inside = ev.xcrossing.type == EnterNotify;
-            // can't propagate these events in a way that makes sense
           }
         }
-        break;
+        // can't propagate these events in a way that makes sense for desktop
+        continue;
 #endif /* BUILD_MOUSE_EVENTS */
-#endif
-
+#endif /* OWN_WINDOW */
       default:
 #ifdef BUILD_XDAMAGE
         if (ev.type == x11_stuff.event_base + XDamageNotify) {
@@ -597,9 +622,19 @@ bool display_output_x11::main_loop_wait(double t) {
           XFixesSetRegion(display, x11_stuff.part, &dev->area, 1);
           XFixesUnionRegion(display, x11_stuff.region2, x11_stuff.region2,
                             x11_stuff.part);
+          continue; // TODO: Propagate damage
         }
 #endif /* BUILD_XDAMAGE */
         break;
+    }
+
+    if (!consumed) {
+      propagate_x11_event(ev);
+    } else {
+      InputEvent *i_ev = xev_as_input_event(ev);
+      if (i_ev != nullptr) {
+        XSetInputFocus(display, window.window, RevertToParent, i_ev->common.time);
+      }
     }
   }
 
@@ -648,6 +683,7 @@ bool display_output_x11::main_loop_wait(double t) {
 }
 
 void display_output_x11::sigterm_cleanup() {
+  puts("sigtermed");
   XDestroyRegion(x11_stuff.region);
   x11_stuff.region = nullptr;
 #ifdef BUILD_XDAMAGE
@@ -660,6 +696,7 @@ void display_output_x11::sigterm_cleanup() {
 }
 
 void display_output_x11::cleanup() {
+  puts("normal cleanup");
   if (window_created == 1) {
     int border_total = get_border_total();
 

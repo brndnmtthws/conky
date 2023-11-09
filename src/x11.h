@@ -5,7 +5,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
- *	(see AUTHORS)
+ *  (see AUTHORS)
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -38,6 +38,7 @@
 #endif
 
 #include "setting.hh"
+#include <cstdint>
 
 #ifdef BUILD_ARGB
 /* true if use_argb_visual=true and argb visual was found*/
@@ -78,6 +79,9 @@ struct conky_x11_window {
   Colormap colourmap;
   GC gc;
 
+  // Mask containing all events captured by conky
+  int64_t event_mask;
+
 #ifdef BUILD_XDBE
   XdbeBackBuffer back_buffer;
 #else  /*BUILD_XDBE*/
@@ -86,6 +90,9 @@ struct conky_x11_window {
 #ifdef BUILD_XFT
   XftDraw *xftdraw;
 #endif /*BUILD_XFT*/
+#ifdef BUILD_XINPUT
+  int32_t xi_opcode;
+#endif /* BUILD_XINPUT */
 
   int width;
   int height;
@@ -105,6 +112,47 @@ void get_x11_desktop_info(Display *current_display, Atom atom);
 void set_struts(int);
 void x11_init_window(lua::state &l, bool own);
 void deinit_x11();
+
+// Fields common to all X11 input events
+struct InputEventCommon {
+  int type;               /* event type */
+  uint64_t serial;        /* # of last request processed by server */
+  Bool send_event;        /* true if this came from a SendEvent request */
+  Display *display;       /* Display the event was read from */
+  Window window;          /* "event" window reported relative to */
+  Window root;            /* root window that the event occurred on */
+  Window subwindow;       /* child window */
+  Time time;              /* milliseconds */
+  int32_t x, y;           /* pointer x, y coordinates in event window */
+  int32_t x_root, y_root; /* coordinates relative to root */
+  uint32_t state;         /* key or button mask */
+};
+
+union InputEvent {
+  int type; // event type 
+
+  InputEventCommon common;
+
+  // Discrete interfaces
+  XAnyEvent xany; // common event interface
+  XKeyEvent xkey; // KeyPress & KeyRelease events
+  XButtonEvent xbutton; // ButtonPress & ButtonRelease events
+  XMotionEvent xmotion; // MotionNotify event
+  XCrossingEvent xcrossing; // EnterNotify & LeaveNotify events
+
+  // Ensures InputEvent matches memory layout of XEvent.
+  // Accessing base variant is as code smell.
+  XEvent base;
+};
+
+// Returns InputEvent pointer to provided XEvent is an input event; nullptr otherwise.
+InputEvent *xev_as_input_event(XEvent &ev);
+void propagate_x11_event(XEvent &ev);
+
+#ifdef BUILD_MOUSE_EVENTS
+
+Window query_x11_window_at_pos(Display* display, int x, int y);
+#endif /* BUILD_MOUSE_EVENTS */
 
 #ifdef BUILD_XDBE
 void xdbe_swap_buffers(void);
