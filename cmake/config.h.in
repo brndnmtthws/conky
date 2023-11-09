@@ -42,6 +42,9 @@
 
 #cmakedefine HAVE_CLOCK_GETTIME 1
 
+#cmakedefine HAVE_XCB 1
+#cmakedefine HAVE_XCB_ERRORS 1
+
 #cmakedefine BUILD_WAYLAND 1
 
 #cmakedefine BUILD_X11 1
@@ -59,6 +62,8 @@
 #cmakedefine BUILD_XSHAPE 1
 
 #cmakedefine BUILD_XFIXES 1
+
+#cmakedefine BUILD_XINPUT 1
 
 #cmakedefine BUILD_ARGB 1
 
