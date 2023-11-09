@@ -38,8 +38,9 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
-#include <string>
 #include <cstdlib>
+#include <string>
+#include <array>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
@@ -250,8 +251,9 @@ x11_error_handler(Display *d, XErrorEvent *err) {
       const char *extension;
       const char *base_name = xcb_errors_get_name_for_error(xcb_errors_ctx, err->error_code, &extension);
       if (extension != nullptr) {
-        error_name = new char(strlen(base_name) + strlen(extension) + 4);
-        sprintf(error_name, "%s (%s)", base_name, extension);
+        const size_t size = strlen(base_name) + strlen(extension) + 4;
+        error_name = new char(size);
+        snprintf(error_name, size, "%s (%s)", base_name, extension);
         name_allocated = true;
       } else {
         error_name = const_cast<char*>(base_name);
@@ -260,8 +262,9 @@ x11_error_handler(Display *d, XErrorEvent *err) {
       const char *major = xcb_errors_get_name_for_major_code(xcb_errors_ctx, err->request_code);
       const char *minor = xcb_errors_get_name_for_minor_code(xcb_errors_ctx, err->request_code, err->minor_code);
       if (minor != nullptr) {
-        code_description = new char(strlen(base_name) + strlen(extension) + 4);
-        sprintf(code_description, "%s - %s", major, minor);
+        const size_t size = strlen(base_name) + strlen(extension) + 4;
+        code_description = new char(size);
+        snprintf(code_description, size, "%s - %s", major, minor);
         code_allocated = true;
       } else {
         code_description = const_cast<char*>(major);
@@ -280,16 +283,17 @@ x11_error_handler(Display *d, XErrorEvent *err) {
     } else {
       static char code_name_buffer[3];
       error_name = reinterpret_cast<char*>(&code_name_buffer);
-      sprintf(error_name, "%d", err->error_code);
+      snprintf(error_name, 3, "%d", err->error_code);
     }
   }
   if (code_description == nullptr) {
-    code_description = new char(30 + 6 + 1);
-    sprintf(code_description, "error code: [major: %i, minor: %i]", err->request_code, err->minor_code);
+    const size_t size = 37;
+    code_description = new char(size);
+    snprintf(code_description, size, "error code: [major: %i, minor: %i]", err->request_code, err->minor_code);
     code_allocated = true;
   }
 
-  NORM_ERR(
+  DBGP(
     "X %s Error:\n"
     "Display: %lx, XID: %li, Serial: %lu\n"
     "%s",

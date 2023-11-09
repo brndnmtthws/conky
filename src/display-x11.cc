@@ -391,13 +391,10 @@ bool display_output_x11::main_loop_wait(double t) {
           // XQueryPointer returns wrong results because conky is a weird window
           Window query_result = query_x11_window_at_pos(display, data->root_x, data->root_y);
 
-          //printf("over: %#x w:%#x d:%#x r:%#x\n", query_result, window.window, window.desktop, window.root);
-
           static bool cursor_inside = false;
           if ((query_result != 0 && query_result == window.window) ||
               ((query_result == window.desktop || query_result == window.root || query_result == 0) && data->root_x >= window.x && data->root_x < (window.x + window.width) &&
                data->root_y >= window.y && data->root_y < (window.y + window.height))) {
-            //puts("over self");
             if (!cursor_inside) {
               llua_mouse_hook(mouse_crossing_event(
                 mouse_event_t::AREA_ENTER,
@@ -407,15 +404,12 @@ bool display_output_x11::main_loop_wait(double t) {
             }
             cursor_inside = true;
           } else if (cursor_inside) {
-            //puts("left");
             llua_mouse_hook(mouse_crossing_event(
               mouse_event_t::AREA_LEAVE,
               data->root_x - window.x, data->root_y - window.x,
               data->root_x, data->root_y
             ));
             cursor_inside = false;
-          } else {
-            //printf("not over self\n");
           }
         }
         XFreeEventData(display, &ev.xcookie);

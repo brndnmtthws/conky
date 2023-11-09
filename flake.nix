@@ -77,6 +77,9 @@
                 xorg.libXfixes
                 xorg.libXft
                 xorg.libXinerama
+                xorg.libXi
+                xorg.libxcb
+                xorg.xcbutilerrors
               ]
               ++ lib.optional stdenv.isDarwin darwin.libobjc;
           };
