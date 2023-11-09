@@ -172,6 +172,9 @@ static void print_version() {
 #ifdef BUILD_XFT
             << _("  * Xft\n")
 #endif /* BUILD_XFT */
+#ifdef BUILD_XINPUT
+            << _("  * Xinput\n")
+#endif /* BUILD_XINPUT */
 #ifdef BUILD_ARGB
             << _("  * ARGB visual\n")
 #endif /* BUILD_ARGB */
@@ -180,13 +183,13 @@ static void print_version() {
 #endif
 #ifdef BUILD_MOUSE_EVENTS
             << _("  * Mouse events\n")
-#endif
+#endif /* BUILD_MOUSE_EVENTS */
 #endif /* BUILD_X11 */
 #ifdef BUILD_WAYLAND
             << _(" Wayland:\n")
 #ifdef BUILD_MOUSE_EVENTS
             << _("  * Mouse events\n")
-#endif
+#endif /* BUILD_MOUSE_EVENTS */
 #endif /* BUILD_WAYLAND */
 #if defined BUILD_AUDACIOUS || defined BUILD_CMUS || defined BUILD_MPD || \
     defined BUILD_MOC || defined BUILD_XMMS2

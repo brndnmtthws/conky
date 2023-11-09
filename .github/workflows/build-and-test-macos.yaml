@@ -37,6 +37,7 @@ jobs:
             libxft \
             libxinerama \
             libxfixes \
+            libxi \
             lua \
             ninja \
             pkg-config
