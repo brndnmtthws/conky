@@ -22,8 +22,8 @@ Conky can display more than 300 built-in objects, including support for:
   usage**, disk usage, **"top"** like process stats, and **network
   monitoring**, just to name a few).
 - Built-in **IMAP** and **POP3** support.
-- Built-in support for many popular music players ([MPD][],
-  [XMMS2][], [Audacious][]).
+- Built-in support for many popular music players ([MPD][https://www.musicpd.org/],
+  [XMMS2][https://github.com/XMMS2], [Audacious][https://audacious-media-player.org/]).
 - Can be extended using built-in [**Lua**](lua) support, or any of your
   own scripts and programs ([more](https://github.com/brndnmtthws/conky/wiki#tutorial)).
 - Built-in [**Imlib2**][imlib2] and [**Cairo**][cairo] bindings for arbitrary drawing
@@ -33,8 +33,8 @@ Conky can display more than 300 built-in objects, including support for:
 
 ... and much much more.
 
-Conky can display information either as text, or using simple progress
-bars and graph widgets, with different fonts and colours.
+Conky can display information either as text, or using simple progress bars and
+graph widgets, with different fonts and colours, as well as handle [mouse events](https://github.com/brndnmtthws/conky/wiki/Mouse-Events).
 
 ## Screenshots
 
