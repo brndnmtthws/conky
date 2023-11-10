@@ -25,6 +25,7 @@
 #include <lua.h>
 #include <time.h>
 #include <type_traits>
+#include "logging.h"
 
 /* Lua helper functions */
 void push_table_value(lua_State *L, std::string key, std::string value) {
@@ -62,11 +63,16 @@ void push_bitset(lua_State *L, std::bitset<N> it,
   for (size_t i = 0; i < N; i++) push_table_value(L, labels[i], it.test(i));
 }
 
-const std::array<std::string, 13> mod_names = {
-    {"shift", "lock", "control", "mod1", "num_lock", "mod3", "mod4", "mod5",
-     "mouse_left", "mouse_right", "mouse_middle", "scroll_up", "scroll_down"}};
+const std::array<std::string, 6> mod_names = {{
+  "shift",
+  "control",
+  "alt",
+  "super",
+  "caps_lock",
+  "num_lock",
+}};
 
-void push_mods(lua_State *L, std::bitset<13> mods) {
+void push_mods(lua_State *L, modifier_state_t mods) {
   lua_pushstring(L, "mods");
   push_bitset(L, mods, mod_names);
   lua_settable(L, -3);
@@ -141,6 +147,12 @@ void push_table_value(lua_State *L, std::string key, mouse_button_t button) {
       break;
     case BUTTON_MIDDLE:
       lua_pushstring(L, "middle");
+      break;
+    case BUTTON_BACK:
+      lua_pushstring(L, "back");
+      break;
+    case BUTTON_FORWARD:
+      lua_pushstring(L, "forward");
       break;
     default:
       lua_pushnil(L);

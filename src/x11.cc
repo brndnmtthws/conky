@@ -28,6 +28,7 @@
  */
 
 #include <X11/X.h>
+#include <X11/extensions/XI2.h>
 #include <sys/types.h>
 #include "common.h"
 #include "config.h"
@@ -578,7 +579,7 @@ void destroy_window() {
   memset(&window, 0, sizeof(struct conky_x11_window));
 }
 
-void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
+void x11_init_window(lua::state &l, bool own) {
   DBGP("enter x11_init_window()");
   // own is unused if OWN_WINDOW is not defined
   (void)own;
@@ -951,12 +952,11 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
   if (own_window.get(l)) {
     input_mask |= StructureNotifyMask | ButtonPressMask | ButtonReleaseMask;
   }
-#endif /* OWN_WINDOW */
 #ifdef BUILD_MOUSE_EVENTS
   /* it's not recommended to add event masks to special windows in X; causes a
    * crash */
-  if (own_window_type.get(l) != TYPE_DESKTOP) {
-    input_mask |= ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
+  if (own && own_window_type.get(l) != TYPE_DESKTOP) {
+    input_mask |= ButtonPressMask | ButtonReleaseMask;
   }
   bool xinput_ok = false;
 #ifdef BUILD_XINPUT
@@ -974,7 +974,9 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
       NORM_ERR("Error: XInput 2.0 is not supported!");
       break;
     }
-    unsigned char mask_bytes[(XI_LASTEVENT + 7) / 8] = {0};  /* must be zeroed! */
+
+    const size_t mask_size = (XI_LASTEVENT + 7) / 8;
+    unsigned char mask_bytes[mask_size] = {0};  /* must be zeroed! */
     XISetMask(mask_bytes, XI_Motion);
 
     XIEventMask ev_masks[1];
@@ -985,10 +987,11 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
     xinput_ok = true;
   } while (false);
 #endif /* BUILD_XINPUT */
-  if (!xinput_ok && own_window_type.get(l) != TYPE_DESKTOP) {
-    input_mask |= EnterWindowMask | LeaveWindowMask;
+  if (!xinput_ok && own && own_window_type.get(l) != TYPE_DESKTOP) {
+    input_mask |= PointerMotionMask | EnterWindowMask | LeaveWindowMask;
   }
 #endif /* BUILD_MOUSE_EVENTS */
+#endif /* OWN_WINDOW */
   window.event_mask = input_mask;
   XSelectInput(display, window.window, input_mask);
 
