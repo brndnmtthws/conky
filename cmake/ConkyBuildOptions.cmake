@@ -108,10 +108,16 @@ cmake_dependent_option(BUILD_HDDTEMP "Support for hddtemp" true
   "OS_LINUX" false)
 cmake_dependent_option(BUILD_IPV6 "Enable if you want IPv6 support" true
   "OS_LINUX" false)
-# nvidia may also work on FreeBSD, not sure
-dependent_option(BUILD_NVIDIA "Enable Nvidia stat support on Linux" false
-  "OS_LINUX;BUILD_X11" false
-  "Nvidia stat supports only Linux and requires X11")
+
+if(OS_LINUX)
+  # nvidia may also work on FreeBSD, not sure
+  # NvCtrl requires X11. Should be modified to use NVML directly.
+  dependent_option(BUILD_NVIDIA "Enable Nvidia NvCtrl variables" false
+    "BUILD_X11" false
+    "Nvidia NvCtrl variables require X11")
+else()
+  set(BUILD_NVIDIA false CACHE BOOL "Enable Nvidia NvCtrl variables" FORCE)
+endif(OS_LINUX)
 
 # macOS Only
 cmake_dependent_option(
