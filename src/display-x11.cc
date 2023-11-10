@@ -382,13 +382,12 @@ bool display_output_x11::main_loop_wait(double t) {
 
     XNextEvent(display, &ev);
     
-#ifdef BUILD_XINPUT
+#if defined(BUILD_MOUSE_EVENTS) && defined(BUILD_XINPUT)
       if (ev.type == GenericEvent && ev.xcookie.extension == window.xi_opcode) {
         XGetEventData(display, &ev.xcookie);
         if (ev.xcookie.evtype == XI_Motion) {
           auto *data = reinterpret_cast<XIDeviceEvent*>(ev.xcookie.data);
 
-          // XQueryPointer returns wrong results because conky is a weird window
           Window query_result = query_x11_window_at_pos(display, data->root_x, data->root_y);
 
           static bool cursor_inside = false;
@@ -415,7 +414,7 @@ bool display_output_x11::main_loop_wait(double t) {
         XFreeEventData(display, &ev.xcookie);
         continue;
       }
-#endif /* BUILD_XINPUT */
+#endif /* BUILD_MOUSE_EVENTS && BUILD_XINPUT */
 
     // Any of the remaining events apply to conky window
     if (ev.xany.window != window.window) continue;

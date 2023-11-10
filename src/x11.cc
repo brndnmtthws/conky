@@ -1381,7 +1381,9 @@ void propagate_x11_event(XEvent &ev) {
 }
 
 #ifdef BUILD_MOUSE_EVENTS
-Window last_descendant(Display* display, Window parent) {
+// Assuming parent has a simple linear stack of descendants, this function
+// returns the last leaf on the graph.
+inline Window last_descendant(Display* display, Window parent) {
   Window ignored, *children;
   uint32_t count;
 
@@ -1398,26 +1400,19 @@ Window last_descendant(Display* display, Window parent) {
 Window query_x11_window_at_pos(Display* display, int x, int y) {
   Window root = DefaultRootWindow(display);
 
-  Window root_return, parent_return, *windows;
-  unsigned int count;
-    
+  // these values are ignored but NULL can't be passed
+  Window root_return;
+  int root_x_return, root_y_return, win_x_return, win_y_return;
+  unsigned int mask_return;
+
   Window last = None;
+  XQueryPointer(display, window.root, &root_return, &last,
+    &root_x_return, &root_y_return, &win_x_return, &win_y_return, &mask_return
+  );
 
-  XWindowAttributes attrs;
-  if (XQueryTree(display, root, &root_return, &parent_return, &windows, &count) != 0) {
-    for (unsigned int i = 0; i < count; i++) {
-      if (XGetWindowAttributes(display, windows[i], &attrs)) {
-        if (attrs.map_state == IsViewable && x >= attrs.x && x < (attrs.x + attrs.width) && y >= attrs.y && y < (attrs.y + attrs.height)) {
-          last = windows[i];
-        }
-      }
-    }
-
-    if (count != 0) {
-      XFree(windows);
-    }
-  }
-  
+  // X11 correctly returns a window which covers conky area, but returned window
+  // is not window.window, but instead a parent node in some cases and the
+  // window.window we want to check for is a 1x1 child of that window.
   return last_descendant(display, last);
 }
 
