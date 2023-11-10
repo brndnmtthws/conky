@@ -369,7 +369,7 @@ values:
   - name: overwrite_file
     desc: Overwrite the file given as argument.
   - name: own_window
-    desc: Boolean, create own window to draw.
+    desc: Boolean, draw conky in own window instead of drawing on root window.
   - name: own_window_argb_value
     desc: |-
       When ARGB visuals are enabled, this use this to modify the
@@ -388,7 +388,7 @@ values:
     desc: |-
       If own_window_transparent no, set a specified background
       colour. Takes either a hex value (e.g. '#ffffff'),
-      a shorthand hex value (e.g. '#fff'), or a valid RGB nam 
+      a shorthand hex value (e.g. '#fff'), or a valid RGB name
       (see `/usr/lib/X11/rgb.txt`).
     default: black
     args:

@@ -150,7 +150,6 @@ InputEvent *xev_as_input_event(XEvent &ev);
 void propagate_x11_event(XEvent &ev);
 
 #ifdef BUILD_MOUSE_EVENTS
-
 Window query_x11_window_at_pos(Display* display, int x, int y);
 #endif /* BUILD_MOUSE_EVENTS */
 
