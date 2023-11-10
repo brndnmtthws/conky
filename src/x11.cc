@@ -216,13 +216,6 @@ conky::simple_config_setting<bool> use_xft("use_xft", false, false);
 
 conky::simple_config_setting<bool> forced_redraw("forced_redraw", false, false);
 
-#ifdef OWN_WINDOW
-#ifdef BUILD_ARGB
-conky::simple_config_setting<bool> use_argb_visual("own_window_argb_visual",
-                                                   false, false);
-#endif /* BUILD_ARGB */
-#endif /* OWN_WINDOW */
-
 #ifdef BUILD_XDBE
 priv::use_xdbe_setting use_xdbe;
 #else
