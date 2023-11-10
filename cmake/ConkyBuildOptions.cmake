@@ -109,8 +109,9 @@ cmake_dependent_option(BUILD_HDDTEMP "Support for hddtemp" true
 cmake_dependent_option(BUILD_IPV6 "Enable if you want IPv6 support" true
   "OS_LINUX" false)
 # nvidia may also work on FreeBSD, not sure
-cmake_dependent_option(BUILD_NVIDIA "Enable nvidia support" false
-  "OS_LINUX" false)
+dependent_option(BUILD_NVIDIA "Enable Nvidia stat support on Linux" false
+  "OS_LINUX;BUILD_X11" false
+  "Nvidia stat supports only Linux and requires X11")
 
 # macOS Only
 cmake_dependent_option(
@@ -165,6 +166,9 @@ else()
     "Xfixes support requires X11")
 endif(OS_DARWIN)
 
+dependent_option(BUILD_ARGB "Build ARGB (real transparency) support" true
+  "OWN_WINDOW" false
+  "ARGB support requires OWN_WINDOW enabled")
 dependent_option(BUILD_XINERAMA "Build Xinerama support" true
   "BUILD_X11" false
   "Xinerama support requires X11")
@@ -180,6 +184,9 @@ dependent_option(BUILD_IMLIB2 "Enable Imlib2 support" true
 dependent_option(BUILD_XSHAPE "Enable Xshape support" true
   "BUILD_X11" false
   "Xshape support requires X11")
+dependent_option(BUILD_XINPUT "Build Xinput 2 support" true
+  "BUILD_X11;BUILD_MOUSE_EVENTS" false
+  "Xinput 2 support requires X11 and BUILD_MOUSE_EVENTS enabled")
 
 # if we build with any GUI support
 if(BUILD_X11)
@@ -192,13 +199,6 @@ endif(BUILD_WAYLAND)
 dependent_option(BUILD_MOUSE_EVENTS "Enable mouse event support" true
   "BUILD_WAYLAND OR OWN_WINDOW" false
   "Mouse event support requires Wayland or OWN_WINDOW enabled")
-dependent_option(BUILD_XINPUT "Build Xinput 2 support" true
-  "BUILD_X11;BUILD_MOUSE_EVENTS" false
-  "Xinput 2 support requires X11 and BUILD_MOUSE_EVENTS enabled")
-
-dependent_option(BUILD_ARGB "Build ARGB (real transparency) support" true
-  "OWN_WINDOW" false
-  "ARGB support requires OWN_WINDOW enabled")
 
 # Lua library options
 option(BUILD_LUA_CAIRO "Build cairo bindings for Lua" false)
@@ -246,6 +246,8 @@ option(BUILD_PULSEAUDIO
 
 option(BUILD_INTEL_BACKLIGHT
        "Enable support for Intel backlight" false)
+
+run_dependency_checks()
 
 message(STATUS "CMAKE_C_FLAGS: " ${CMAKE_C_FLAGS})
 message(STATUS "CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS})

@@ -9,28 +9,52 @@ https://github.com/Kitware/CMake/blob/master/Modules/CMakeDependentOption.cmake
 
 Modified to so it produces warnings instead of hiding an option completely and
 sets a default value.
+Difference is that `depends` argument is ALWAYS a semicolon separated list of
+<expr> tokens.
 
 Argument meaning and order are the same, and there's an additional (warn)
 argument which is the message printed if the end-user enabled a feature which
 isn't "possible".
+
+Actual checks are deferred until RUN_DEPENDENCY_CHECKS() is called in order to
+allow out of order declaration of dependencies and dependecy graph cycles.
+As the checks can affect each other they're run in a loop until the graph settles.
+That means CMake can end up in an infinite loop, though it shouldn't happen with
+normal use... (i.e. disable A if B not present)
 #]=======================================================================]
 
+set(__DEPENDENT_OPTIONS_CHANGE_HAPPENED true)
+set(__DEPENDENT_OPTIONS_LATER_INVOKED_CODE "")
+
 macro(DEPENDENT_OPTION option doc default depends else warn)
-  set(${option}_POSSIBLE 1)
-  foreach(d ${depends})
-    cmake_language(EVAL CODE "
-        if (${d})
+  option(${option} "${doc}" "${default}")
+
+  string(APPEND __DEPENDENT_OPTIONS_LATER_INVOKED_CODE "
+    set(${option}_POSSIBLE 1)
+    string(REGEX MATCHALL \"[^;]+\" __${option}_TOKENS \"${depends}\")
+    foreach(it \${__${option}_TOKENS})
+      cmake_language(EVAL CODE \"
+        if (\${it})
         else()
           set(${option}_POSSIBLE 0)
-        endif()"
-    )
-  endforeach()
-  option(${option} "${doc}" "${default}")
-  if(NOT ${option}_POSSIBLE)
-    if(NOT ${option} MATCHES ${else})
-      message(NOTICE "${warn}; setting to '${else}'.")
+        endif()\")
+    endforeach()
+    unset(__${option}_TOKENS)
+    if(NOT ${option}_POSSIBLE)
+      if(NOT \"\${${option}}\" STREQUAL \"${else}\")
+        message(NOTICE \"${warn}; setting to '${else}'.\")
+        set(${option} ${else} CACHE BOOL \"${doc}\" FORCE)
+        set(__DEPENDENT_OPTIONS_CHANGE_HAPPENED true)
+      endif()
     endif()
-    set(${option} ${else} CACHE BOOL "${doc}" FORCE)
-  endif()
-  unset(${option}_POSSIBLE)
+    unset(${option}_POSSIBLE)")
+endmacro()
+
+macro(RUN_DEPENDENCY_CHECKS)
+  while(__DEPENDENT_OPTIONS_CHANGE_HAPPENED)
+    set(__DEPENDENT_OPTIONS_CHANGE_HAPPENED false)
+    cmake_language(EVAL CODE "${__DEPENDENT_OPTIONS_LATER_INVOKED_CODE}")
+  endwhile()
+  set(__DEPENDENT_OPTIONS_CHANGE_HAPPENED true)
+  set(__DEPENDENT_OPTIONS_LATER_INVOKED_CODE "")
 endmacro()
