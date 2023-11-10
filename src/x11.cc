@@ -1371,12 +1371,16 @@ void propagate_x11_event(XEvent &ev) {
     i_ev->common.y = i_ev->common.y_root;
   }
   XSendEvent(display, window.desktop, False, window.event_mask, &ev);
-  // FIXME (before-merge): Should we be setting input focus after forwarding
-  // events?
-  if (false && ev.type == ButtonPress) {
-    XSetInputFocus(display, window.desktop, RevertToNone, i_ev->common.time);
-  } else if (false && ev.type == MotionNotify) {
-    XSetInputFocus(display, window.window, RevertToParent, i_ev->common.time);
+
+  int _revert_to;
+  Window focused;
+  XGetInputFocus(display, &focused, &_revert_to);
+  if (focused == window.window) {
+    Time time = CurrentTime;
+    if (i_ev != nullptr) {
+      time = i_ev->common.time;
+    }
+    XSetInputFocus(display, window.desktop, RevertToPointerRoot, time);
   }
 }
 
@@ -1384,12 +1388,12 @@ void propagate_x11_event(XEvent &ev) {
 // Assuming parent has a simple linear stack of descendants, this function
 // returns the last leaf on the graph.
 inline Window last_descendant(Display* display, Window parent) {
-  Window ignored, *children;
+  Window _ignored, *children;
   uint32_t count;
 
   Window current = parent;
 
-  while (XQueryTree(display, current, &ignored, &ignored, &children, &count) && count != 0) {
+  while (XQueryTree(display, current, &_ignored, &_ignored, &children, &count) && count != 0) {
     current = children[count - 1];
     XFree(children);
   }
