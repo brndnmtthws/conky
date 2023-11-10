@@ -90,9 +90,10 @@ struct conky_x11_window {
 #ifdef BUILD_XFT
   XftDraw *xftdraw;
 #endif /*BUILD_XFT*/
-#ifdef BUILD_XINPUT
+#ifdef BUILD_MOUSE_EVENTS
+  // Don't feature gate with BUILD_XINPUT; controls fallback.
   int32_t xi_opcode;
-#endif /* BUILD_XINPUT */
+#endif /* BUILD_MOUSE_EVENTS */
 
   int width;
   int height;

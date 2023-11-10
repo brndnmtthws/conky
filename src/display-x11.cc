@@ -7,7 +7,7 @@
  * Copyright (C) 2018-2021 François Revol et al.
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
  * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
- *  (see AUTHORS)
+ *	(see AUTHORS)
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -383,17 +383,36 @@ bool display_output_x11::main_loop_wait(double t) {
     XNextEvent(display, &ev);
     
 #if defined(BUILD_MOUSE_EVENTS) && defined(BUILD_XINPUT)
+      // no need to check whether these events have been consumed because
+      // they're global and shouldn't be propagated
       if (ev.type == GenericEvent && ev.xcookie.extension == window.xi_opcode) {
-        XGetEventData(display, &ev.xcookie);
-        if (ev.xcookie.evtype == XI_Motion) {
-          auto *data = reinterpret_cast<XIDeviceEvent*>(ev.xcookie.data);
+        if (!XGetEventData(display, &ev.xcookie)) {
+          NORM_ERR("unable to get XInput event data");
+          continue;
+        }
 
+        auto *data = reinterpret_cast<XIDeviceEvent*>(ev.xcookie.data);
+        
+        // the only way to differentiate between a scroll and move event is
+        // though valuators - move has first 2 set, other axis movements have other.
+        bool is_cursor_move = data->valuators.mask_len > 2 &&
+          XIMaskIsSet(data->valuators.mask, 0) && XIMaskIsSet(data->valuators.mask, 1);
+
+        if (data->evtype == XI_Motion && is_cursor_move) {
           Window query_result = query_x11_window_at_pos(display, data->root_x, data->root_y);
 
           static bool cursor_inside = false;
           if ((query_result != 0 && query_result == window.window) ||
               ((query_result == window.desktop || query_result == window.root || query_result == 0) && data->root_x >= window.x && data->root_x < (window.x + window.width) &&
                data->root_y >= window.y && data->root_y < (window.y + window.height))) {
+            // cursor is inside conky
+
+            modifier_state_t mods = x11_modifier_state(data->mods.effective);
+            llua_mouse_hook(mouse_move_event(
+              data->root_x - window.x, data->root_y - window.x,
+              data->root_x, data->root_y, mods
+            ));
+
             if (!cursor_inside) {
               llua_mouse_hook(mouse_crossing_event(
                 mouse_event_t::AREA_ENTER,
@@ -506,34 +525,23 @@ bool display_output_x11::main_loop_wait(double t) {
 
       case ButtonPress:
 #ifdef BUILD_MOUSE_EVENTS
-        if (ev.xbutton.button == 4) {
-          consumed = llua_mouse_hook(mouse_scroll_event(
-            ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root, ev.xbutton.y_root,
-            scroll_direction_t::SCROLL_UP, ev.xbutton.state
-          ));
-        } else if (ev.xbutton.button == 5) {
-          consumed = llua_mouse_hook(mouse_scroll_event(
-            ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root, ev.xbutton.y_root,
-            scroll_direction_t::SCROLL_DOWN, ev.xbutton.state
-          ));
-        } else {
-          mouse_button_t button;
-          switch (ev.xbutton.button) {
-            case Button1:
-              button = mouse_button_t::BUTTON_LEFT;
-              break;
-            case Button2:
-              button = mouse_button_t::BUTTON_RIGHT;
-              break;
-            case Button3:
-              button = mouse_button_t::BUTTON_MIDDLE;
-              break;
+        {
+          modifier_state_t mods = x11_modifier_state(ev.xbutton.state);
+          if (4 <= ev.xbutton.button && ev.xbutton.button <= 7) {
+            scroll_direction_t direction = x11_scroll_direction(ev.xbutton.button);
+            consumed = llua_mouse_hook(mouse_scroll_event(
+              ev.xbutton.x, ev.xbutton.y,
+              ev.xbutton.x_root, ev.xbutton.y_root,
+              direction, mods
+            ));
+          } else {
+            mouse_button_t button = x11_mouse_button_code(ev.xbutton.button);
+            consumed = llua_mouse_hook(mouse_button_event(
+              mouse_event_t::MOUSE_PRESS,
+              ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root, ev.xbutton.y_root,
+              button, mods
+            ));
           }
-          consumed = llua_mouse_hook(mouse_button_event(
-            mouse_event_t::MOUSE_PRESS,
-            ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root, ev.xbutton.y_root,
-            button, ev.xbutton.state
-          ));
         }
 #endif /* BUILD_MOUSE_EVENTS */
         if (own_window.get(*state)) {
@@ -549,24 +557,14 @@ bool display_output_x11::main_loop_wait(double t) {
 
       case ButtonRelease:
 #ifdef BUILD_MOUSE_EVENTS
-        /* don't report scrollwheel release events */
-        if (ev.xbutton.button != Button4 && ev.xbutton.button != Button5) {
-          mouse_button_t button;
-          switch (ev.xbutton.button) {
-            case Button1:
-              button = mouse_button_t::BUTTON_LEFT;
-              break;
-            case Button2:
-              button = mouse_button_t::BUTTON_RIGHT;
-              break;
-            case Button3:
-              button = mouse_button_t::BUTTON_MIDDLE;
-              break;
-          }
+        /* don't report scroll release events */
+        if (4 > ev.xbutton.button || ev.xbutton.button > 7) {
+          modifier_state_t mods = x11_modifier_state(ev.xbutton.state);
+          mouse_button_t button = x11_mouse_button_code(ev.xbutton.button);
           consumed = llua_mouse_hook(mouse_button_event(
             mouse_event_t::MOUSE_RELEASE,
             ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root, ev.xbutton.y_root,
-            button, ev.xbutton.state
+            button, mods
           ));
         }
 #endif /* BUILD_MOUSE_EVENTS */
@@ -585,9 +583,12 @@ bool display_output_x11::main_loop_wait(double t) {
       can't forward the event without filtering XQueryTree output.
       */
       case MotionNotify:
-        consumed = llua_mouse_hook(mouse_move_event(
-          ev.xmotion.x, ev.xmotion.y, ev.xmotion.x_root, ev.xmotion.y_root, ev.xmotion.state
-        ));
+        if (window.xi_opcode == 0) {
+          modifier_state_t mods = x11_modifier_state(ev.xmotion.state);
+          consumed = llua_mouse_hook(mouse_move_event(
+            ev.xmotion.x, ev.xmotion.y, ev.xmotion.x_root, ev.xmotion.y_root, mods
+          ));
+        }
         break;
       case LeaveNotify:
       case EnterNotify:
