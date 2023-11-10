@@ -19,8 +19,6 @@ isn't "possible".
 Actual checks are deferred until RUN_DEPENDENCY_CHECKS() is called in order to
 allow out of order declaration of dependencies and dependecy graph cycles.
 As the checks can affect each other they're run in a loop until the graph settles.
-That means CMake can end up in an infinite loop, though it shouldn't happen with
-normal use... (i.e. disable A if B not present)
 #]=======================================================================]
 
 set(__DEPENDENT_OPTIONS_CHANGE_HAPPENED true)
@@ -51,10 +49,19 @@ macro(DEPENDENT_OPTION option doc default depends else warn)
 endmacro()
 
 macro(RUN_DEPENDENCY_CHECKS)
+  # controls max allowed dependency chain to avoid infinite loops during
+  # configure phase
+  set(__DEPENDENT_OPTIONS_LOOP_COUNTER 10)
+
   while(__DEPENDENT_OPTIONS_CHANGE_HAPPENED)
+    MATH(EXPR __DEPENDENT_OPTIONS_LOOP_COUNTER "${__DEPENDENT_OPTIONS_LOOP_COUNTER}-1")
     set(__DEPENDENT_OPTIONS_CHANGE_HAPPENED false)
     cmake_language(EVAL CODE "${__DEPENDENT_OPTIONS_LATER_INVOKED_CODE}")
+    if(__DEPENDENT_OPTIONS_LOOP_COUNTER LESS_EQUAL "0")
+      break()
+    endif()
   endwhile()
+  unset(__DEPENDENT_OPTIONS_LOOP_COUNTER)
   set(__DEPENDENT_OPTIONS_CHANGE_HAPPENED true)
   set(__DEPENDENT_OPTIONS_LATER_INVOKED_CODE "")
 endmacro()
