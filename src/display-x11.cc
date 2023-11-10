@@ -382,7 +382,7 @@ bool display_output_x11::main_loop_wait(double t) {
 
     XNextEvent(display, &ev);
     
-#if defined(BUILD_MOUSE_EVENTS) && defined(BUILD_XINPUT)
+#if defined(OWN_WINDOW) && defined(BUILD_MOUSE_EVENTS) && defined(BUILD_XINPUT)
       // no need to check whether these events have been consumed because
       // they're global and shouldn't be propagated
       if (ev.type == GenericEvent && ev.xcookie.extension == window.xi_opcode) {

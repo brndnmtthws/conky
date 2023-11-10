@@ -140,6 +140,7 @@ jobs:
             -DBUILD_MYSQL=ON                     \
             -DBUILD_NVIDIA=ON                    \
             -DBUILD_PULSEAUDIO=ON                \
+            -DBUILD_CURL=ON                      \
             -DBUILD_RSS=ON                       \
             -DBUILD_TESTS=ON                     \
             -DBUILD_WLAN=ON                      \

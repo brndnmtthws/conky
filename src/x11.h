@@ -24,20 +24,21 @@
 
 #pragma once
 
+#include "setting.hh"
+
 #include <X11/Xatom.h>
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
 #include <X11/Xlib.h>
 #pragma GCC diagnostic pop
+
 #ifdef BUILD_XFT
 #include <X11/Xft/Xft.h>
 #endif
-
 #ifdef BUILD_XDBE
 #include <X11/extensions/Xdbe.h>
 #endif
 
-#include "setting.hh"
 #include <cstdint>
 
 #ifdef BUILD_ARGB
@@ -130,28 +131,29 @@ struct InputEventCommon {
 };
 
 union InputEvent {
-  int type; // event type 
+  int type;  // event type
 
   InputEventCommon common;
 
   // Discrete interfaces
-  XAnyEvent xany; // common event interface
-  XKeyEvent xkey; // KeyPress & KeyRelease events
-  XButtonEvent xbutton; // ButtonPress & ButtonRelease events
-  XMotionEvent xmotion; // MotionNotify event
-  XCrossingEvent xcrossing; // EnterNotify & LeaveNotify events
+  XAnyEvent xany;            // common event interface
+  XKeyEvent xkey;            // KeyPress & KeyRelease events
+  XButtonEvent xbutton;      // ButtonPress & ButtonRelease events
+  XMotionEvent xmotion;      // MotionNotify event
+  XCrossingEvent xcrossing;  // EnterNotify & LeaveNotify events
 
   // Ensures InputEvent matches memory layout of XEvent.
   // Accessing base variant is as code smell.
   XEvent base;
 };
 
-// Returns InputEvent pointer to provided XEvent is an input event; nullptr otherwise.
+// Returns InputEvent pointer to provided XEvent is an input event; nullptr
+// otherwise.
 InputEvent *xev_as_input_event(XEvent &ev);
 void propagate_x11_event(XEvent &ev);
 
 #ifdef BUILD_MOUSE_EVENTS
-Window query_x11_window_at_pos(Display* display, int x, int y);
+Window query_x11_window_at_pos(Display *display, int x, int y);
 #endif /* BUILD_MOUSE_EVENTS */
 
 #ifdef BUILD_XDBE
