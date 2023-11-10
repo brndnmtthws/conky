@@ -93,7 +93,7 @@ xcb_errors_context_t *xcb_errors_ctx;
 struct conky_x11_window window;
 
 #ifdef BUILD_ARGB
-bool have_argb_visual;
+bool have_argb_visual = false;
 #endif /* BUILD_ARGB */
 
 conky::simple_config_setting<std::string> display_name("display", std::string(),
@@ -495,6 +495,7 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop) {
 }
 
 #ifdef OWN_WINDOW
+#ifdef BUILD_ARGB
 namespace {
 /* helper function for set_transparent_background() */
 void do_set_background(Window win, uint8_t alpha) {
@@ -504,6 +505,7 @@ void do_set_background(Window win, uint8_t alpha) {
   XSetWindowBackground(display, win, xcolor);
 }
 }  // namespace
+#endif /* BUILD_ARGB */
 
 /* if no argb visual is configured sets background to ParentRelative for the
    Window and all parents, else real transparency is used */
@@ -514,31 +516,32 @@ void set_transparent_background(Window win) {
     do_set_background(win, set_transparent.get(*state)
                                ? 0
                                : own_window_argb_value.get(*state));
-  } else {
-#endif /* BUILD_ARGB */
-    // pseudo transparency
-
-    if (set_transparent.get(*state)) {
-      Window parent = win;
-      unsigned int i;
-
-      for (i = 0; i < 50 && parent != RootWindow(display, screen); i++) {
-        Window r, *children;
-        unsigned int n;
-
-        XSetWindowBackgroundPixmap(display, parent, ParentRelative);
-
-        XQueryTree(display, parent, &r, &parent, &children, &n);
-        XFree(children);
-      }
-    } else {
-      do_set_background(win, 0);
-    }
-#ifdef BUILD_ARGB
+    return;
   }
 #endif /* BUILD_ARGB */
+
+  // pseudo transparency
+  if (set_transparent.get(*state)) {
+    Window parent = win;
+    unsigned int i;
+
+    for (i = 0; i < 50 && parent != RootWindow(display, screen); i++) {
+      Window r, *children;
+      unsigned int n;
+
+      XSetWindowBackgroundPixmap(display, parent, ParentRelative);
+
+      XQueryTree(display, parent, &r, &parent, &children, &n);
+      XFree(children);
+    }
+    return;
+  }
+
+#ifdef BUILD_ARGB
+  do_set_background(win, 0);
+#endif /* BUILD_ARGB */
 }
-#endif
+#endif /* OWN_WINDOW */
 
 #ifdef BUILD_ARGB
 static int get_argb_visual(Visual **visual, int *depth) {
@@ -593,20 +596,16 @@ void x11_init_window(lua::state &l, bool own) {
       return;
     }
 
+    window.visual = DefaultVisual(display, screen);
+    window.colourmap = DefaultColormap(display, screen);
+    depth = CopyFromParent;
+    visual = CopyFromParent;
 #ifdef BUILD_ARGB
     if (use_argb_visual.get(l) && (get_argb_visual(&visual, &depth) != 0)) {
       have_argb_visual = true;
       window.visual = visual;
       window.colourmap = XCreateColormap(display, DefaultRootWindow(display),
                                          window.visual, AllocNone);
-    } else {
-#endif /* BUILD_ARGB */
-      window.visual = DefaultVisual(display, screen);
-      window.colourmap = DefaultColormap(display, screen);
-      depth = CopyFromParent;
-      visual = CopyFromParent;
-#ifdef BUILD_ARGB
-      have_argb_visual = false;
     }
 #endif /* BUILD_ARGB */
 
@@ -647,14 +646,12 @@ void x11_init_window(lua::state &l, bool own) {
                                     True,
                                     0,
                                     0};
+      flags |= CWBackPixel;
 #ifdef BUILD_ARGB
       if (have_argb_visual) {
         attrs.colormap = window.colourmap;
+        flags &= ~CWBackPixel;
         flags |= CWBorderPixel | CWColormap;
-      } else {
-#endif /* BUILD_ARGB */
-        flags |= CWBackPixel;
-#ifdef BUILD_ARGB
       }
 #endif /* BUILD_ARGB */
 
@@ -693,604 +690,609 @@ void x11_init_window(lua::state &l, bool own) {
       XWMHints wmHint;
       Atom xa;
 
+      flags |= CWBackPixel;
 #ifdef BUILD_ARGB
       if (have_argb_visual) {
         attrs.colormap = window.colourmap;
+        flags &= ~CWBackPixel;
         flags |= CWBorderPixel | CWColormap;
       } else {
 #endif /* BUILD_ARGB */
-        flags |= CWBackPixel;
-#ifdef BUILD_ARGB
-      }
-#endif /* BUILD_ARGB */
 
-      if (own_window_type.get(l) == TYPE_DOCK) { window.x = window.y = 0; }
-      /* Parent is root window so WM can take control */
-      window.window =
-          XCreateWindow(display, window.root, window.x, window.y, b, b, 0,
-                        depth, InputOutput, visual, flags, &attrs);
+        if (own_window_type.get(l) == TYPE_DOCK) { window.x = window.y = 0; }
+        /* Parent is root window so WM can take control */
+        window.window =
+            XCreateWindow(display, window.root, window.x, window.y, b, b, 0,
+                          depth, InputOutput, visual, flags, &attrs);
 
-      uint16_t hints = own_window_hints.get(l);
+        uint16_t hints = own_window_hints.get(l);
 
-      wmHint.flags = InputHint | StateHint;
-      /* allow decorated windows to be given input focus by WM */
-      wmHint.input = TEST_HINT(hints, HINT_UNDECORATED) ? False : True;
+        wmHint.flags = InputHint | StateHint;
+        /* allow decorated windows to be given input focus by WM */
+        wmHint.input = TEST_HINT(hints, HINT_UNDECORATED) ? False : True;
 #ifdef BUILD_XSHAPE
 #ifdef BUILD_XFIXES
-      if (own_window_type.get(l) == TYPE_UTILITY) {
-        XRectangle rect;
-        XserverRegion region = XFixesCreateRegion(display, &rect, 1);
-        XFixesSetWindowShapeRegion(display, window.window, ShapeInput, 0, 0,
-                                   region);
-        XFixesDestroyRegion(display, region);
-      }
+        if (own_window_type.get(l) == TYPE_UTILITY) {
+          XRectangle rect;
+          XserverRegion region = XFixesCreateRegion(display, &rect, 1);
+          XFixesSetWindowShapeRegion(display, window.window, ShapeInput, 0, 0,
+                                     region);
+          XFixesDestroyRegion(display, region);
+        }
 #endif /* BUILD_XFIXES */
-      if (!wmHint.input) {
-        /* allow only decorated windows to be given mouse input */
-        int major_version;
-        int minor_version;
-        if (XShapeQueryVersion(display, &major_version, &minor_version) == 0) {
-          NORM_ERR("Input shapes are not supported");
+        if (!wmHint.input) {
+          /* allow only decorated windows to be given mouse input */
+          int major_version;
+          int minor_version;
+          if (XShapeQueryVersion(display, &major_version, &minor_version) ==
+              0) {
+            NORM_ERR("Input shapes are not supported");
+          } else {
+            if (own_window.get(*state) &&
+                (own_window_type.get(*state) != TYPE_NORMAL ||
+                 ((TEST_HINT(own_window_hints.get(*state), HINT_UNDECORATED)) !=
+                  0))) {
+              XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0,
+                                      nullptr, 0, ShapeSet, Unsorted);
+            }
+          }
+        }
+#endif /* BUILD_XSHAPE */
+        if (own_window_type.get(l) == TYPE_DOCK ||
+            own_window_type.get(l) == TYPE_PANEL) {
+          wmHint.initial_state = WithdrawnState;
         } else {
-          if (own_window.get(*state) &&
-              (own_window_type.get(*state) != TYPE_NORMAL ||
-               ((TEST_HINT(own_window_hints.get(*state), HINT_UNDECORATED)) !=
-                0))) {
-            XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0,
-                                    nullptr, 0, ShapeSet, Unsorted);
+          wmHint.initial_state = NormalState;
+        }
+
+        XmbSetWMProperties(display, window.window, nullptr, nullptr, argv_copy,
+                           argc_copy, nullptr, &wmHint, &classHint);
+        XStoreName(display, window.window, own_window_title.get(l).c_str());
+
+        /* Sets an empty WM_PROTOCOLS property */
+        XSetWMProtocols(display, window.window, nullptr, 0);
+
+        /* Set window type */
+        if ((xa = ATOM(_NET_WM_WINDOW_TYPE)) != None) {
+          Atom prop;
+
+          switch (own_window_type.get(l)) {
+            case TYPE_DESKTOP:
+              prop = ATOM(_NET_WM_WINDOW_TYPE_DESKTOP);
+              fprintf(stderr, PACKAGE_NAME ": window type - desktop\n");
+              fflush(stderr);
+              break;
+            case TYPE_DOCK:
+              prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
+              fprintf(stderr, PACKAGE_NAME ": window type - dock\n");
+              fflush(stderr);
+              break;
+            case TYPE_PANEL:
+              prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
+              fprintf(stderr, PACKAGE_NAME ": window type - panel\n");
+              fflush(stderr);
+              break;
+            case TYPE_UTILITY:
+              prop = ATOM(_NET_WM_WINDOW_TYPE_UTILITY);
+              fprintf(stderr, PACKAGE_NAME ": window type - utility\n");
+              fflush(stderr);
+              break;
+            case TYPE_NORMAL:
+            default:
+              prop = ATOM(_NET_WM_WINDOW_TYPE_NORMAL);
+              fprintf(stderr, PACKAGE_NAME ": window type - normal\n");
+              fflush(stderr);
+              break;
+          }
+          XChangeProperty(display, window.window, xa, XA_ATOM, 32,
+                          PropModeReplace,
+                          reinterpret_cast<unsigned char *>(&prop), 1);
+        }
+
+        /* Set desired hints */
+
+        /* Window decorations */
+        if (TEST_HINT(hints, HINT_UNDECORATED)) {
+          /* fprintf(stderr, PACKAGE_NAME": hint - undecorated\n");
+             fflush(stderr); */
+
+          xa = ATOM(_MOTIF_WM_HINTS);
+          if (xa != None) {
+            long prop[5] = {2, 0, 0, 0, 0};
+            XChangeProperty(display, window.window, xa, xa, 32, PropModeReplace,
+                            reinterpret_cast<unsigned char *>(prop), 5);
+          }
+        }
+
+        /* Below other windows */
+        if (TEST_HINT(hints, HINT_BELOW)) {
+          /* fprintf(stderr, PACKAGE_NAME": hint - below\n");
+             fflush(stderr); */
+
+          xa = ATOM(_WIN_LAYER);
+          if (xa != None) {
+            long prop = 0;
+
+            XChangeProperty(display, window.window, xa, XA_CARDINAL, 32,
+                            PropModeAppend,
+                            reinterpret_cast<unsigned char *>(&prop), 1);
+          }
+
+          xa = ATOM(_NET_WM_STATE);
+          if (xa != None) {
+            Atom xa_prop = ATOM(_NET_WM_STATE_BELOW);
+
+            XChangeProperty(display, window.window, xa, XA_ATOM, 32,
+                            PropModeAppend,
+                            reinterpret_cast<unsigned char *>(&xa_prop), 1);
+          }
+        }
+
+        /* Above other windows */
+        if (TEST_HINT(hints, HINT_ABOVE)) {
+          /* fprintf(stderr, PACKAGE_NAME": hint - above\n");
+             fflush(stderr); */
+
+          xa = ATOM(_WIN_LAYER);
+          if (xa != None) {
+            long prop = 6;
+
+            XChangeProperty(display, window.window, xa, XA_CARDINAL, 32,
+                            PropModeAppend,
+                            reinterpret_cast<unsigned char *>(&prop), 1);
+          }
+
+          xa = ATOM(_NET_WM_STATE);
+          if (xa != None) {
+            Atom xa_prop = ATOM(_NET_WM_STATE_ABOVE);
+
+            XChangeProperty(display, window.window, xa, XA_ATOM, 32,
+                            PropModeAppend,
+                            reinterpret_cast<unsigned char *>(&xa_prop), 1);
+          }
+        }
+
+        /* Sticky */
+        if (TEST_HINT(hints, HINT_STICKY)) {
+          /* fprintf(stderr, PACKAGE_NAME": hint - sticky\n");
+             fflush(stderr); */
+
+          xa = ATOM(_NET_WM_DESKTOP);
+          if (xa != None) {
+            CARD32 xa_prop = 0xFFFFFFFF;
+
+            XChangeProperty(display, window.window, xa, XA_CARDINAL, 32,
+                            PropModeAppend,
+                            reinterpret_cast<unsigned char *>(&xa_prop), 1);
+          }
+
+          xa = ATOM(_NET_WM_STATE);
+          if (xa != None) {
+            Atom xa_prop = ATOM(_NET_WM_STATE_STICKY);
+
+            XChangeProperty(display, window.window, xa, XA_ATOM, 32,
+                            PropModeAppend,
+                            reinterpret_cast<unsigned char *>(&xa_prop), 1);
+          }
+        }
+
+        /* Skip taskbar */
+        if (TEST_HINT(hints, HINT_SKIP_TASKBAR)) {
+          /* fprintf(stderr, PACKAGE_NAME": hint - skip_taskbar\n");
+             fflush(stderr); */
+
+          xa = ATOM(_NET_WM_STATE);
+          if (xa != None) {
+            Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_TASKBAR);
+
+            XChangeProperty(display, window.window, xa, XA_ATOM, 32,
+                            PropModeAppend,
+                            reinterpret_cast<unsigned char *>(&xa_prop), 1);
+          }
+        }
+
+        /* Skip pager */
+        if (TEST_HINT(hints, HINT_SKIP_PAGER)) {
+          /* fprintf(stderr, PACKAGE_NAME": hint - skip_pager\n");
+             fflush(stderr); */
+
+          xa = ATOM(_NET_WM_STATE);
+          if (xa != None) {
+            Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_PAGER);
+
+            XChangeProperty(display, window.window, xa, XA_ATOM, 32,
+                            PropModeAppend,
+                            reinterpret_cast<unsigned char *>(&xa_prop), 1);
           }
         }
       }
-#endif /* BUILD_XSHAPE */
-      if (own_window_type.get(l) == TYPE_DOCK ||
-          own_window_type.get(l) == TYPE_PANEL) {
-        wmHint.initial_state = WithdrawnState;
-      } else {
-        wmHint.initial_state = NormalState;
-      }
 
-      XmbSetWMProperties(display, window.window, nullptr, nullptr, argv_copy,
-                         argc_copy, nullptr, &wmHint, &classHint);
-      XStoreName(display, window.window, own_window_title.get(l).c_str());
+      fprintf(stderr, PACKAGE_NAME ": drawing to created window (0x%lx)\n",
+              window.window);
+      fflush(stderr);
 
-      /* Sets an empty WM_PROTOCOLS property */
-      XSetWMProtocols(display, window.window, nullptr, 0);
-
-      /* Set window type */
-      if ((xa = ATOM(_NET_WM_WINDOW_TYPE)) != None) {
-        Atom prop;
-
-        switch (own_window_type.get(l)) {
-          case TYPE_DESKTOP:
-            prop = ATOM(_NET_WM_WINDOW_TYPE_DESKTOP);
-            fprintf(stderr, PACKAGE_NAME ": window type - desktop\n");
-            fflush(stderr);
-            break;
-          case TYPE_DOCK:
-            prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
-            fprintf(stderr, PACKAGE_NAME ": window type - dock\n");
-            fflush(stderr);
-            break;
-          case TYPE_PANEL:
-            prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
-            fprintf(stderr, PACKAGE_NAME ": window type - panel\n");
-            fflush(stderr);
-            break;
-          case TYPE_UTILITY:
-            prop = ATOM(_NET_WM_WINDOW_TYPE_UTILITY);
-            fprintf(stderr, PACKAGE_NAME ": window type - utility\n");
-            fflush(stderr);
-            break;
-          case TYPE_NORMAL:
-          default:
-            prop = ATOM(_NET_WM_WINDOW_TYPE_NORMAL);
-            fprintf(stderr, PACKAGE_NAME ": window type - normal\n");
-            fflush(stderr);
-            break;
-        }
-        XChangeProperty(display, window.window, xa, XA_ATOM, 32,
-                        PropModeReplace,
-                        reinterpret_cast<unsigned char *>(&prop), 1);
-      }
-
-      /* Set desired hints */
-
-      /* Window decorations */
-      if (TEST_HINT(hints, HINT_UNDECORATED)) {
-        /* fprintf(stderr, PACKAGE_NAME": hint - undecorated\n");
-           fflush(stderr); */
-
-        xa = ATOM(_MOTIF_WM_HINTS);
-        if (xa != None) {
-          long prop[5] = {2, 0, 0, 0, 0};
-          XChangeProperty(display, window.window, xa, xa, 32, PropModeReplace,
-                          reinterpret_cast<unsigned char *>(prop), 5);
-        }
-      }
-
-      /* Below other windows */
-      if (TEST_HINT(hints, HINT_BELOW)) {
-        /* fprintf(stderr, PACKAGE_NAME": hint - below\n");
-           fflush(stderr); */
-
-        xa = ATOM(_WIN_LAYER);
-        if (xa != None) {
-          long prop = 0;
-
-          XChangeProperty(display, window.window, xa, XA_CARDINAL, 32,
-                          PropModeAppend,
-                          reinterpret_cast<unsigned char *>(&prop), 1);
-        }
-
-        xa = ATOM(_NET_WM_STATE);
-        if (xa != None) {
-          Atom xa_prop = ATOM(_NET_WM_STATE_BELOW);
-
-          XChangeProperty(display, window.window, xa, XA_ATOM, 32,
-                          PropModeAppend,
-                          reinterpret_cast<unsigned char *>(&xa_prop), 1);
-        }
-      }
-
-      /* Above other windows */
-      if (TEST_HINT(hints, HINT_ABOVE)) {
-        /* fprintf(stderr, PACKAGE_NAME": hint - above\n");
-           fflush(stderr); */
-
-        xa = ATOM(_WIN_LAYER);
-        if (xa != None) {
-          long prop = 6;
-
-          XChangeProperty(display, window.window, xa, XA_CARDINAL, 32,
-                          PropModeAppend,
-                          reinterpret_cast<unsigned char *>(&prop), 1);
-        }
-
-        xa = ATOM(_NET_WM_STATE);
-        if (xa != None) {
-          Atom xa_prop = ATOM(_NET_WM_STATE_ABOVE);
-
-          XChangeProperty(display, window.window, xa, XA_ATOM, 32,
-                          PropModeAppend,
-                          reinterpret_cast<unsigned char *>(&xa_prop), 1);
-        }
-      }
-
-      /* Sticky */
-      if (TEST_HINT(hints, HINT_STICKY)) {
-        /* fprintf(stderr, PACKAGE_NAME": hint - sticky\n");
-           fflush(stderr); */
-
-        xa = ATOM(_NET_WM_DESKTOP);
-        if (xa != None) {
-          CARD32 xa_prop = 0xFFFFFFFF;
-
-          XChangeProperty(display, window.window, xa, XA_CARDINAL, 32,
-                          PropModeAppend,
-                          reinterpret_cast<unsigned char *>(&xa_prop), 1);
-        }
-
-        xa = ATOM(_NET_WM_STATE);
-        if (xa != None) {
-          Atom xa_prop = ATOM(_NET_WM_STATE_STICKY);
-
-          XChangeProperty(display, window.window, xa, XA_ATOM, 32,
-                          PropModeAppend,
-                          reinterpret_cast<unsigned char *>(&xa_prop), 1);
-        }
-      }
-
-      /* Skip taskbar */
-      if (TEST_HINT(hints, HINT_SKIP_TASKBAR)) {
-        /* fprintf(stderr, PACKAGE_NAME": hint - skip_taskbar\n");
-           fflush(stderr); */
-
-        xa = ATOM(_NET_WM_STATE);
-        if (xa != None) {
-          Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_TASKBAR);
-
-          XChangeProperty(display, window.window, xa, XA_ATOM, 32,
-                          PropModeAppend,
-                          reinterpret_cast<unsigned char *>(&xa_prop), 1);
-        }
-      }
-
-      /* Skip pager */
-      if (TEST_HINT(hints, HINT_SKIP_PAGER)) {
-        /* fprintf(stderr, PACKAGE_NAME": hint - skip_pager\n");
-           fflush(stderr); */
-
-        xa = ATOM(_NET_WM_STATE);
-        if (xa != None) {
-          Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_PAGER);
-
-          XChangeProperty(display, window.window, xa, XA_ATOM, 32,
-                          PropModeAppend,
-                          reinterpret_cast<unsigned char *>(&xa_prop), 1);
-        }
-      }
+      XMapWindow(display, window.window);
     }
-
-    fprintf(stderr, PACKAGE_NAME ": drawing to created window (0x%lx)\n",
-            window.window);
-    fflush(stderr);
-
-    XMapWindow(display, window.window);
-
-  } else
+    else
 #endif /* OWN_WINDOW */
-  {
-    XWindowAttributes attrs;
-
-    if (window.window == 0u) {
-      window.window = find_desktop_window(&window.root, &window.desktop);
-    }
-    if (window.window == 0u) {
-      DBGP2("no root window found");
-      return;
-    }
-
-    window.visual = DefaultVisual(display, screen);
-    window.colourmap = DefaultColormap(display, screen);
-
-    if (XGetWindowAttributes(display, window.window, &attrs) != 0) {
-      window.width = attrs.width;
-      window.height = attrs.height;
-    }
-
-    fprintf(stderr, PACKAGE_NAME ": drawing to desktop window\n");
-  }
-
-  /* Drawable is same as window. This may be changed by double buffering. */
-  window.drawable = window.window;
-
-  XFlush(display);
-
-  int64_t input_mask = ExposureMask | PropertyChangeMask;
-#ifdef OWN_WINDOW
-  if (own_window.get(l)) {
-    input_mask |= StructureNotifyMask | ButtonPressMask | ButtonReleaseMask;
-  }
-#ifdef BUILD_MOUSE_EVENTS
-  /* it's not recommended to add event masks to special windows in X; causes a
-   * crash */
-  if (own && own_window_type.get(l) != TYPE_DESKTOP) {
-    input_mask |= ButtonPressMask | ButtonReleaseMask;
-  }
-  bool xinput_ok = false;
-#ifdef BUILD_XINPUT
-  do {             // not loop
-    int _ignored;  // segfault if NULL
-    if (!XQueryExtension(display, "XInputExtension", &window.xi_opcode,
-                         &_ignored, &_ignored)) {
-      // events will still ~work but let the user know why they're buggy
-      NORM_ERR("XInput extension is not supported by X11!");
-      break;
-    }
-
-    int32_t major = 2, minor = 0;
-    uint32_t retval = XIQueryVersion(display, &major, &minor);
-    if (retval != Success) {
-      NORM_ERR("Error: XInput 2.0 is not supported!");
-      break;
-    }
-
-    const size_t mask_size = (XI_LASTEVENT + 7) / 8;
-    unsigned char mask_bytes[mask_size] = {0}; /* must be zeroed! */
-    XISetMask(mask_bytes, XI_Motion);
-
-    XIEventMask ev_masks[1];
-    ev_masks[0].deviceid = XIAllDevices;
-    ev_masks[0].mask_len = sizeof(mask_bytes);
-    ev_masks[0].mask = mask_bytes;
-    XISelectEvents(display, window.root, ev_masks, 1);
-    xinput_ok = true;
-  } while (false);
-#endif /* BUILD_XINPUT */
-  if (!xinput_ok && own && own_window_type.get(l) != TYPE_DESKTOP) {
-    input_mask |= PointerMotionMask | EnterWindowMask | LeaveWindowMask;
-  }
-#endif /* BUILD_MOUSE_EVENTS */
-#endif /* OWN_WINDOW */
-  window.event_mask = input_mask;
-  XSelectInput(display, window.window, input_mask);
-
-  window_created = 1;
-  DBGP("leave x11_init_window()");
-}
-
-static Window find_subwindow(Window win, int w, int h) {
-  unsigned int i, j;
-  Window troot, parent, *children;
-  unsigned int n;
-
-  /* search subwindows with same size as display or work area */
-
-  for (i = 0; i < 10; i++) {
-    XQueryTree(display, win, &troot, &parent, &children, &n);
-
-    for (j = 0; j < n; j++) {
+    {
       XWindowAttributes attrs;
 
-      if (XGetWindowAttributes(display, children[j], &attrs) != 0) {
-        /* Window must be mapped and same size as display or
-         * work space */
-        if (attrs.map_state != 0 &&
-            ((attrs.width == display_width && attrs.height == display_height) ||
-             (attrs.width == w && attrs.height == h))) {
-          win = children[j];
+      if (window.window == 0u) {
+        window.window = find_desktop_window(&window.root, &window.desktop);
+      }
+      if (window.window == 0u) {
+        DBGP2("no root window found");
+        return;
+      }
+
+      window.visual = DefaultVisual(display, screen);
+      window.colourmap = DefaultColormap(display, screen);
+
+      if (XGetWindowAttributes(display, window.window, &attrs) != 0) {
+        window.width = attrs.width;
+        window.height = attrs.height;
+      }
+
+      fprintf(stderr, PACKAGE_NAME ": drawing to desktop window\n");
+    }
+
+    /* Drawable is same as window. This may be changed by double buffering. */
+    window.drawable = window.window;
+
+    XFlush(display);
+
+    int64_t input_mask = ExposureMask | PropertyChangeMask;
+#ifdef OWN_WINDOW
+    if (own_window.get(l)) {
+      input_mask |= StructureNotifyMask | ButtonPressMask | ButtonReleaseMask;
+    }
+#ifdef BUILD_MOUSE_EVENTS
+    /* it's not recommended to add event masks to special windows in X; causes a
+     * crash */
+    if (own && own_window_type.get(l) != TYPE_DESKTOP) {
+      input_mask |= ButtonPressMask | ButtonReleaseMask;
+    }
+    bool xinput_ok = false;
+#ifdef BUILD_XINPUT
+    do {             // not loop
+      int _ignored;  // segfault if NULL
+      if (!XQueryExtension(display, "XInputExtension", &window.xi_opcode,
+                           &_ignored, &_ignored)) {
+        // events will still ~work but let the user know why they're buggy
+        NORM_ERR("XInput extension is not supported by X11!");
+        break;
+      }
+
+      int32_t major = 2, minor = 0;
+      uint32_t retval = XIQueryVersion(display, &major, &minor);
+      if (retval != Success) {
+        NORM_ERR("Error: XInput 2.0 is not supported!");
+        break;
+      }
+
+      const size_t mask_size = (XI_LASTEVENT + 7) / 8;
+      unsigned char mask_bytes[mask_size] = {0}; /* must be zeroed! */
+      XISetMask(mask_bytes, XI_Motion);
+
+      XIEventMask ev_masks[1];
+      ev_masks[0].deviceid = XIAllDevices;
+      ev_masks[0].mask_len = sizeof(mask_bytes);
+      ev_masks[0].mask = mask_bytes;
+      XISelectEvents(display, window.root, ev_masks, 1);
+      xinput_ok = true;
+    } while (false);
+#endif /* BUILD_XINPUT */
+    if (!xinput_ok && own && own_window_type.get(l) != TYPE_DESKTOP) {
+      input_mask |= PointerMotionMask | EnterWindowMask | LeaveWindowMask;
+    }
+#endif /* BUILD_MOUSE_EVENTS */
+#endif /* OWN_WINDOW */
+    window.event_mask = input_mask;
+    XSelectInput(display, window.window, input_mask);
+
+    window_created = 1;
+    DBGP("leave x11_init_window()");
+  }
+
+  static Window find_subwindow(Window win, int w, int h) {
+    unsigned int i, j;
+    Window troot, parent, *children;
+    unsigned int n;
+
+    /* search subwindows with same size as display or work area */
+
+    for (i = 0; i < 10; i++) {
+      XQueryTree(display, win, &troot, &parent, &children, &n);
+
+      for (j = 0; j < n; j++) {
+        XWindowAttributes attrs;
+
+        if (XGetWindowAttributes(display, children[j], &attrs) != 0) {
+          /* Window must be mapped and same size as display or
+           * work space */
+          if (attrs.map_state != 0 &&
+              ((attrs.width == display_width &&
+                attrs.height == display_height) ||
+               (attrs.width == w && attrs.height == h))) {
+            win = children[j];
+            break;
+          }
+        }
+      }
+
+      XFree(children);
+      if (j == n) { break; }
+    }
+
+    return win;
+  }
+
+  void create_gc() {
+    XGCValues values;
+
+    values.graphics_exposures = 0;
+    values.function = GXcopy;
+    window.gc = XCreateGC(display, window.drawable,
+                          GCFunction | GCGraphicsExposures, &values);
+  }
+
+  // Get current desktop number
+  static inline void get_x11_desktop_current(Display * current_display,
+                                             Window root, Atom atom) {
+    Atom actual_type;
+    int actual_format;
+    unsigned long nitems;
+    unsigned long bytes_after;
+    unsigned char *prop = nullptr;
+    struct information *current_info = &info;
+
+    if (atom == None) { return; }
+
+    if ((XGetWindowProperty(current_display, root, atom, 0, 1L, False,
+                            XA_CARDINAL, &actual_type, &actual_format, &nitems,
+                            &bytes_after, &prop) == Success) &&
+        (actual_type == XA_CARDINAL) && (nitems == 1L) &&
+        (actual_format == 32)) {
+      current_info->x11.desktop.current = prop[0] + 1;
+    }
+    if (prop != nullptr) { XFree(prop); }
+  }
+
+  // Get total number of available desktops
+  static inline void get_x11_desktop_number(Display * current_display,
+                                            Window root, Atom atom) {
+    Atom actual_type;
+    int actual_format;
+    unsigned long nitems;
+    unsigned long bytes_after;
+    unsigned char *prop = nullptr;
+    struct information *current_info = &info;
+
+    if (atom == None) { return; }
+
+    if ((XGetWindowProperty(current_display, root, atom, 0, 1L, False,
+                            XA_CARDINAL, &actual_type, &actual_format, &nitems,
+                            &bytes_after, &prop) == Success) &&
+        (actual_type == XA_CARDINAL) && (nitems == 1L) &&
+        (actual_format == 32)) {
+      current_info->x11.desktop.number = prop[0];
+    }
+    if (prop != nullptr) { XFree(prop); }
+  }
+
+  // Get all desktop names
+  static inline void get_x11_desktop_names(Display * current_display,
+                                           Window root, Atom atom) {
+    Atom actual_type;
+    int actual_format;
+    unsigned long nitems;
+    unsigned long bytes_after;
+    unsigned char *prop = nullptr;
+    struct information *current_info = &info;
+
+    if (atom == None) { return; }
+
+    if ((XGetWindowProperty(current_display, root, atom, 0, (~0L), False,
+                            ATOM(UTF8_STRING), &actual_type, &actual_format,
+                            &nitems, &bytes_after, &prop) == Success) &&
+        (actual_type == ATOM(UTF8_STRING)) && (nitems > 0L) &&
+        (actual_format == 8)) {
+      current_info->x11.desktop.all_names.assign(
+          reinterpret_cast<const char *>(prop), nitems);
+    }
+    if (prop != nullptr) { XFree(prop); }
+  }
+
+  // Get current desktop name
+  static inline void get_x11_desktop_current_name(const std::string &names) {
+    struct information *current_info = &info;
+    unsigned int i = 0, j = 0;
+    int k = 0;
+
+    while (i < names.size()) {
+      if (names[i++] == '\0') {
+        if (++k == current_info->x11.desktop.current) {
+          current_info->x11.desktop.name.assign(names.c_str() + j);
           break;
         }
+        j = i;
       }
     }
-
-    XFree(children);
-    if (j == n) { break; }
   }
 
-  return win;
-}
+  void get_x11_desktop_info(Display * current_display, Atom atom) {
+    Window root;
+    static Atom atom_current, atom_number, atom_names;
+    struct information *current_info = &info;
+    XWindowAttributes window_attributes;
 
-void create_gc() {
-  XGCValues values;
+    root = RootWindow(current_display, current_info->x11.monitor.current);
 
-  values.graphics_exposures = 0;
-  values.function = GXcopy;
-  window.gc = XCreateGC(display, window.drawable,
-                        GCFunction | GCGraphicsExposures, &values);
-}
-
-// Get current desktop number
-static inline void get_x11_desktop_current(Display *current_display,
-                                           Window root, Atom atom) {
-  Atom actual_type;
-  int actual_format;
-  unsigned long nitems;
-  unsigned long bytes_after;
-  unsigned char *prop = nullptr;
-  struct information *current_info = &info;
-
-  if (atom == None) { return; }
-
-  if ((XGetWindowProperty(current_display, root, atom, 0, 1L, False,
-                          XA_CARDINAL, &actual_type, &actual_format, &nitems,
-                          &bytes_after, &prop) == Success) &&
-      (actual_type == XA_CARDINAL) && (nitems == 1L) && (actual_format == 32)) {
-    current_info->x11.desktop.current = prop[0] + 1;
-  }
-  if (prop != nullptr) { XFree(prop); }
-}
-
-// Get total number of available desktops
-static inline void get_x11_desktop_number(Display *current_display, Window root,
-                                          Atom atom) {
-  Atom actual_type;
-  int actual_format;
-  unsigned long nitems;
-  unsigned long bytes_after;
-  unsigned char *prop = nullptr;
-  struct information *current_info = &info;
-
-  if (atom == None) { return; }
-
-  if ((XGetWindowProperty(current_display, root, atom, 0, 1L, False,
-                          XA_CARDINAL, &actual_type, &actual_format, &nitems,
-                          &bytes_after, &prop) == Success) &&
-      (actual_type == XA_CARDINAL) && (nitems == 1L) && (actual_format == 32)) {
-    current_info->x11.desktop.number = prop[0];
-  }
-  if (prop != nullptr) { XFree(prop); }
-}
-
-// Get all desktop names
-static inline void get_x11_desktop_names(Display *current_display, Window root,
-                                         Atom atom) {
-  Atom actual_type;
-  int actual_format;
-  unsigned long nitems;
-  unsigned long bytes_after;
-  unsigned char *prop = nullptr;
-  struct information *current_info = &info;
-
-  if (atom == None) { return; }
-
-  if ((XGetWindowProperty(current_display, root, atom, 0, (~0L), False,
-                          ATOM(UTF8_STRING), &actual_type, &actual_format,
-                          &nitems, &bytes_after, &prop) == Success) &&
-      (actual_type == ATOM(UTF8_STRING)) && (nitems > 0L) &&
-      (actual_format == 8)) {
-    current_info->x11.desktop.all_names.assign(
-        reinterpret_cast<const char *>(prop), nitems);
-  }
-  if (prop != nullptr) { XFree(prop); }
-}
-
-// Get current desktop name
-static inline void get_x11_desktop_current_name(const std::string &names) {
-  struct information *current_info = &info;
-  unsigned int i = 0, j = 0;
-  int k = 0;
-
-  while (i < names.size()) {
-    if (names[i++] == '\0') {
-      if (++k == current_info->x11.desktop.current) {
-        current_info->x11.desktop.name.assign(names.c_str() + j);
-        break;
-      }
-      j = i;
-    }
-  }
-}
-
-void get_x11_desktop_info(Display *current_display, Atom atom) {
-  Window root;
-  static Atom atom_current, atom_number, atom_names;
-  struct information *current_info = &info;
-  XWindowAttributes window_attributes;
-
-  root = RootWindow(current_display, current_info->x11.monitor.current);
-
-  /* Check if we initialise else retrieve changed property */
-  if (atom == 0) {
-    atom_current = XInternAtom(current_display, "_NET_CURRENT_DESKTOP", True);
-    atom_number = XInternAtom(current_display, "_NET_NUMBER_OF_DESKTOPS", True);
-    atom_names = XInternAtom(current_display, "_NET_DESKTOP_NAMES", True);
-    get_x11_desktop_current(current_display, root, atom_current);
-    get_x11_desktop_number(current_display, root, atom_number);
-    get_x11_desktop_names(current_display, root, atom_names);
-    get_x11_desktop_current_name(current_info->x11.desktop.all_names);
-
-    /* Set the PropertyChangeMask on the root window, if not set */
-    XGetWindowAttributes(display, root, &window_attributes);
-    if ((window_attributes.your_event_mask & PropertyChangeMask) == 0) {
-      XSetWindowAttributes attributes;
-      attributes.event_mask =
-          window_attributes.your_event_mask | PropertyChangeMask;
-      XChangeWindowAttributes(display, root, CWEventMask, &attributes);
-      XGetWindowAttributes(display, root, &window_attributes);
-    }
-  } else {
-    if (atom == atom_current) {
+    /* Check if we initialise else retrieve changed property */
+    if (atom == 0) {
+      atom_current = XInternAtom(current_display, "_NET_CURRENT_DESKTOP", True);
+      atom_number =
+          XInternAtom(current_display, "_NET_NUMBER_OF_DESKTOPS", True);
+      atom_names = XInternAtom(current_display, "_NET_DESKTOP_NAMES", True);
       get_x11_desktop_current(current_display, root, atom_current);
-      get_x11_desktop_current_name(current_info->x11.desktop.all_names);
-    } else if (atom == atom_number) {
       get_x11_desktop_number(current_display, root, atom_number);
-    } else if (atom == atom_names) {
       get_x11_desktop_names(current_display, root, atom_names);
       get_x11_desktop_current_name(current_info->x11.desktop.all_names);
-    }
-  }
-}
 
-static const char NOT_IN_X[] = "Not running in X";
-
-void print_monitor(struct text_object *obj, char *p, unsigned int p_max_size) {
-  (void)obj;
-
-  if (!out_to_x.get(*state)) {
-    strncpy(p, NOT_IN_X, p_max_size);
-    return;
-  }
-  snprintf(p, p_max_size, "%d", XDefaultScreen(display));
-}
-
-void print_monitor_number(struct text_object *obj, char *p,
-                          unsigned int p_max_size) {
-  (void)obj;
-
-  if (!out_to_x.get(*state)) {
-    strncpy(p, NOT_IN_X, p_max_size);
-    return;
-  }
-  snprintf(p, p_max_size, "%d", XScreenCount(display));
-}
-
-void print_desktop(struct text_object *obj, char *p, unsigned int p_max_size) {
-  (void)obj;
-
-  if (!out_to_x.get(*state)) {
-    strncpy(p, NOT_IN_X, p_max_size);
-    return;
-  }
-  snprintf(p, p_max_size, "%d", info.x11.desktop.current);
-}
-
-void print_desktop_number(struct text_object *obj, char *p,
-                          unsigned int p_max_size) {
-  (void)obj;
-
-  if (!out_to_x.get(*state)) {
-    strncpy(p, NOT_IN_X, p_max_size);
-    return;
-  }
-  snprintf(p, p_max_size, "%d", info.x11.desktop.number);
-}
-
-void print_desktop_name(struct text_object *obj, char *p,
-                        unsigned int p_max_size) {
-  (void)obj;
-
-  if (!out_to_x.get(*state)) {
-    strncpy(p, NOT_IN_X, p_max_size);
-  } else {
-    strncpy(p, info.x11.desktop.name.c_str(), p_max_size);
-  }
-}
-
-#ifdef OWN_WINDOW
-/* reserve window manager space */
-void set_struts(int sidenum) {
-  Atom strut;
-  if ((strut = ATOM(_NET_WM_STRUT)) != None) {
-    /* reserve space at left, right, top, bottom */
-    signed long sizes[12] = {0};
-    int i;
-
-    /* define strut depth */
-    switch (sidenum) {
-      case 0:
-        /* left side */
-        sizes[0] = window.x + window.width;
-        break;
-      case 1:
-        /* right side */
-        sizes[1] = display_width - window.x;
-        break;
-      case 2:
-        /* top side */
-        sizes[2] = window.y + window.height;
-        break;
-      case 3:
-        /* bottom side */
-        sizes[3] = display_height - window.y;
-        break;
-    }
-
-    /* define partial strut length */
-    if (sidenum <= 1) {
-      sizes[4 + (sidenum * 2)] = window.y;
-      sizes[5 + (sidenum * 2)] = window.y + window.height;
-    } else if (sidenum <= 3) {
-      sizes[4 + (sidenum * 2)] = window.x;
-      sizes[5 + (sidenum * 2)] = window.x + window.width;
-    }
-
-    /* check constraints */
-    for (i = 0; i < 12; i++) {
-      if (sizes[i] < 0) {
-        sizes[i] = 0;
-      } else {
-        if (i <= 1 || i >= 8) {
-          if (sizes[i] > display_width) { sizes[i] = display_width; }
-        } else {
-          if (sizes[i] > display_height) { sizes[i] = display_height; }
-        }
+      /* Set the PropertyChangeMask on the root window, if not set */
+      XGetWindowAttributes(display, root, &window_attributes);
+      if ((window_attributes.your_event_mask & PropertyChangeMask) == 0) {
+        XSetWindowAttributes attributes;
+        attributes.event_mask =
+            window_attributes.your_event_mask | PropertyChangeMask;
+        XChangeWindowAttributes(display, root, CWEventMask, &attributes);
+        XGetWindowAttributes(display, root, &window_attributes);
+      }
+    } else {
+      if (atom == atom_current) {
+        get_x11_desktop_current(current_display, root, atom_current);
+        get_x11_desktop_current_name(current_info->x11.desktop.all_names);
+      } else if (atom == atom_number) {
+        get_x11_desktop_number(current_display, root, atom_number);
+      } else if (atom == atom_names) {
+        get_x11_desktop_names(current_display, root, atom_names);
+        get_x11_desktop_current_name(current_info->x11.desktop.all_names);
       }
     }
+  }
 
-    XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
-                    PropModeReplace, reinterpret_cast<unsigned char *>(&sizes),
-                    4);
+  static const char NOT_IN_X[] = "Not running in X";
 
-    if ((strut = ATOM(_NET_WM_STRUT_PARTIAL)) != None) {
-      XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
-                      PropModeReplace,
-                      reinterpret_cast<unsigned char *>(&sizes), 12);
+  void print_monitor(struct text_object * obj, char *p,
+                     unsigned int p_max_size) {
+    (void)obj;
+
+    if (!out_to_x.get(*state)) {
+      strncpy(p, NOT_IN_X, p_max_size);
+      return;
+    }
+    snprintf(p, p_max_size, "%d", XDefaultScreen(display));
+  }
+
+  void print_monitor_number(struct text_object * obj, char *p,
+                            unsigned int p_max_size) {
+    (void)obj;
+
+    if (!out_to_x.get(*state)) {
+      strncpy(p, NOT_IN_X, p_max_size);
+      return;
+    }
+    snprintf(p, p_max_size, "%d", XScreenCount(display));
+  }
+
+  void print_desktop(struct text_object * obj, char *p,
+                     unsigned int p_max_size) {
+    (void)obj;
+
+    if (!out_to_x.get(*state)) {
+      strncpy(p, NOT_IN_X, p_max_size);
+      return;
+    }
+    snprintf(p, p_max_size, "%d", info.x11.desktop.current);
+  }
+
+  void print_desktop_number(struct text_object * obj, char *p,
+                            unsigned int p_max_size) {
+    (void)obj;
+
+    if (!out_to_x.get(*state)) {
+      strncpy(p, NOT_IN_X, p_max_size);
+      return;
+    }
+    snprintf(p, p_max_size, "%d", info.x11.desktop.number);
+  }
+
+  void print_desktop_name(struct text_object * obj, char *p,
+                          unsigned int p_max_size) {
+    (void)obj;
+
+    if (!out_to_x.get(*state)) {
+      strncpy(p, NOT_IN_X, p_max_size);
+    } else {
+      strncpy(p, info.x11.desktop.name.c_str(), p_max_size);
     }
   }
-}
+
+#ifdef OWN_WINDOW
+  /* reserve window manager space */
+  void set_struts(int sidenum) {
+    Atom strut;
+    if ((strut = ATOM(_NET_WM_STRUT)) != None) {
+      /* reserve space at left, right, top, bottom */
+      signed long sizes[12] = {0};
+      int i;
+
+      /* define strut depth */
+      switch (sidenum) {
+        case 0:
+          /* left side */
+          sizes[0] = window.x + window.width;
+          break;
+        case 1:
+          /* right side */
+          sizes[1] = display_width - window.x;
+          break;
+        case 2:
+          /* top side */
+          sizes[2] = window.y + window.height;
+          break;
+        case 3:
+          /* bottom side */
+          sizes[3] = display_height - window.y;
+          break;
+      }
+
+      /* define partial strut length */
+      if (sidenum <= 1) {
+        sizes[4 + (sidenum * 2)] = window.y;
+        sizes[5 + (sidenum * 2)] = window.y + window.height;
+      } else if (sidenum <= 3) {
+        sizes[4 + (sidenum * 2)] = window.x;
+        sizes[5 + (sidenum * 2)] = window.x + window.width;
+      }
+
+      /* check constraints */
+      for (i = 0; i < 12; i++) {
+        if (sizes[i] < 0) {
+          sizes[i] = 0;
+        } else {
+          if (i <= 1 || i >= 8) {
+            if (sizes[i] > display_width) { sizes[i] = display_width; }
+          } else {
+            if (sizes[i] > display_height) { sizes[i] = display_height; }
+          }
+        }
+      }
+
+      XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
+                      PropModeReplace,
+                      reinterpret_cast<unsigned char *>(&sizes), 4);
+
+      if ((strut = ATOM(_NET_WM_STRUT_PARTIAL)) != None) {
+        XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
+                        PropModeReplace,
+                        reinterpret_cast<unsigned char *>(&sizes), 12);
+      }
+    }
+  }
 #endif /* OWN_WINDOW */
 
 #ifdef BUILD_XDBE
-void xdbe_swap_buffers() {
-  if (use_xdbe.get(*state)) {
-    XdbeSwapInfo swap;
+  void xdbe_swap_buffers() {
+    if (use_xdbe.get(*state)) {
+      XdbeSwapInfo swap;
 
-    swap.swap_window = window.window;
-    swap.swap_action = XdbeBackground;
-    XdbeSwapBuffers(display, &swap, 1);
+      swap.swap_window = window.window;
+      swap.swap_action = XdbeBackground;
+      XdbeSwapBuffers(display, &swap, 1);
+    }
   }
-}
 #else
 void xpmdb_swap_buffers(void) {
   if (use_xpmdb.get(*state)) {
@@ -1304,122 +1306,123 @@ void xpmdb_swap_buffers(void) {
 }
 #endif /* BUILD_XDBE */
 
-void print_kdb_led(const int keybit, char *p, unsigned int p_max_size) {
-  XKeyboardState x;
-  XGetKeyboardControl(display, &x);
-  snprintf(p, p_max_size, "%s", (x.led_mask & keybit ? "On" : "Off"));
-}
-void print_key_caps_lock(struct text_object *obj, char *p,
+  void print_kdb_led(const int keybit, char *p, unsigned int p_max_size) {
+    XKeyboardState x;
+    XGetKeyboardControl(display, &x);
+    snprintf(p, p_max_size, "%s", (x.led_mask & keybit ? "On" : "Off"));
+  }
+  void print_key_caps_lock(struct text_object * obj, char *p,
+                           unsigned int p_max_size) {
+    (void)obj;
+    print_kdb_led(1, p, p_max_size);
+  }
+
+  void print_key_num_lock(struct text_object * obj, char *p,
+                          unsigned int p_max_size) {
+    (void)obj;
+    print_kdb_led(2, p, p_max_size);
+  }
+
+  void print_key_scroll_lock(struct text_object * obj, char *p,
+                             unsigned int p_max_size) {
+    (void)obj;
+    print_kdb_led(4, p, p_max_size);
+  }
+
+  void print_keyboard_layout(struct text_object * obj, char *p,
+                             unsigned int p_max_size) {
+    (void)obj;
+
+    char *group = NULL;
+    XkbStateRec state;
+    XkbDescPtr desc;
+
+    XkbGetState(display, XkbUseCoreKbd, &state);
+    desc = XkbGetKeyboard(display, XkbAllComponentsMask, XkbUseCoreKbd);
+    group = XGetAtomName(display, desc->names->groups[state.group]);
+
+    snprintf(p, p_max_size, "%s", (group != NULL ? group : "unknown"));
+    XFree(group);
+    XkbFreeKeyboard(desc, XkbGBN_AllComponentsMask, True);
+  }
+
+  void print_mouse_speed(struct text_object * obj, char *p,
                          unsigned int p_max_size) {
-  (void)obj;
-  print_kdb_led(1, p, p_max_size);
-}
+    (void)obj;
+    int acc_num = 0;
+    int acc_denom = 0;
+    int threshold = 0;
 
-void print_key_num_lock(struct text_object *obj, char *p,
-                        unsigned int p_max_size) {
-  (void)obj;
-  print_kdb_led(2, p, p_max_size);
-}
-
-void print_key_scroll_lock(struct text_object *obj, char *p,
-                           unsigned int p_max_size) {
-  (void)obj;
-  print_kdb_led(4, p, p_max_size);
-}
-
-void print_keyboard_layout(struct text_object *obj, char *p,
-                           unsigned int p_max_size) {
-  (void)obj;
-
-  char *group = NULL;
-  XkbStateRec state;
-  XkbDescPtr desc;
-
-  XkbGetState(display, XkbUseCoreKbd, &state);
-  desc = XkbGetKeyboard(display, XkbAllComponentsMask, XkbUseCoreKbd);
-  group = XGetAtomName(display, desc->names->groups[state.group]);
-
-  snprintf(p, p_max_size, "%s", (group != NULL ? group : "unknown"));
-  XFree(group);
-  XkbFreeKeyboard(desc, XkbGBN_AllComponentsMask, True);
-}
-
-void print_mouse_speed(struct text_object *obj, char *p,
-                       unsigned int p_max_size) {
-  (void)obj;
-  int acc_num = 0;
-  int acc_denom = 0;
-  int threshold = 0;
-
-  XGetPointerControl(display, &acc_num, &acc_denom, &threshold);
-  snprintf(p, p_max_size, "%d%%", (110 - threshold));
-}
-
-InputEvent *xev_as_input_event(XEvent &ev) {
-  if (ev.type == KeyPress || ev.type == KeyRelease || ev.type == ButtonPress ||
-      ev.type == ButtonRelease || ev.type == MotionNotify ||
-      ev.type == EnterNotify || ev.type == LeaveNotify) {
-    return reinterpret_cast<InputEvent *>(&ev);
-  } else {
-    return nullptr;
+    XGetPointerControl(display, &acc_num, &acc_denom, &threshold);
+    snprintf(p, p_max_size, "%d%%", (110 - threshold));
   }
-}
 
-void propagate_x11_event(XEvent &ev) {
-  InputEvent *i_ev = xev_as_input_event(ev);
-  /* forward the event to the desktop window */
-  if (i_ev != nullptr) {
-    i_ev->common.window = window.desktop;
-    i_ev->common.x = i_ev->common.x_root;
-    i_ev->common.y = i_ev->common.y_root;
+  InputEvent *xev_as_input_event(XEvent & ev) {
+    if (ev.type == KeyPress || ev.type == KeyRelease ||
+        ev.type == ButtonPress || ev.type == ButtonRelease ||
+        ev.type == MotionNotify || ev.type == EnterNotify ||
+        ev.type == LeaveNotify) {
+      return reinterpret_cast<InputEvent *>(&ev);
+    } else {
+      return nullptr;
+    }
   }
-  XSendEvent(display, window.desktop, False, window.event_mask, &ev);
 
-  int _revert_to;
-  Window focused;
-  XGetInputFocus(display, &focused, &_revert_to);
-  if (focused == window.window) {
-    Time time = CurrentTime;
-    if (i_ev != nullptr) { time = i_ev->common.time; }
-    XSetInputFocus(display, window.desktop, RevertToPointerRoot, time);
+  void propagate_x11_event(XEvent & ev) {
+    InputEvent *i_ev = xev_as_input_event(ev);
+    /* forward the event to the desktop window */
+    if (i_ev != nullptr) {
+      i_ev->common.window = window.desktop;
+      i_ev->common.x = i_ev->common.x_root;
+      i_ev->common.y = i_ev->common.y_root;
+    }
+    XSendEvent(display, window.desktop, False, window.event_mask, &ev);
+
+    int _revert_to;
+    Window focused;
+    XGetInputFocus(display, &focused, &_revert_to);
+    if (focused == window.window) {
+      Time time = CurrentTime;
+      if (i_ev != nullptr) { time = i_ev->common.time; }
+      XSetInputFocus(display, window.desktop, RevertToPointerRoot, time);
+    }
   }
-}
 
 #ifdef BUILD_MOUSE_EVENTS
-// Assuming parent has a simple linear stack of descendants, this function
-// returns the last leaf on the graph.
-inline Window last_descendant(Display *display, Window parent) {
-  Window _ignored, *children;
-  uint32_t count;
+  // Assuming parent has a simple linear stack of descendants, this function
+  // returns the last leaf on the graph.
+  inline Window last_descendant(Display * display, Window parent) {
+    Window _ignored, *children;
+    uint32_t count;
 
-  Window current = parent;
+    Window current = parent;
 
-  while (
-      XQueryTree(display, current, &_ignored, &_ignored, &children, &count) &&
-      count != 0) {
-    current = children[count - 1];
-    XFree(children);
+    while (
+        XQueryTree(display, current, &_ignored, &_ignored, &children, &count) &&
+        count != 0) {
+      current = children[count - 1];
+      XFree(children);
+    }
+
+    return current;
   }
 
-  return current;
-}
+  Window query_x11_window_at_pos(Display * display, int x, int y) {
+    Window root = DefaultRootWindow(display);
 
-Window query_x11_window_at_pos(Display *display, int x, int y) {
-  Window root = DefaultRootWindow(display);
+    // these values are ignored but NULL can't be passed
+    Window root_return;
+    int root_x_return, root_y_return, win_x_return, win_y_return;
+    unsigned int mask_return;
 
-  // these values are ignored but NULL can't be passed
-  Window root_return;
-  int root_x_return, root_y_return, win_x_return, win_y_return;
-  unsigned int mask_return;
+    Window last = None;
+    XQueryPointer(display, window.root, &root_return, &last, &root_x_return,
+                  &root_y_return, &win_x_return, &win_y_return, &mask_return);
 
-  Window last = None;
-  XQueryPointer(display, window.root, &root_return, &last, &root_x_return,
-                &root_y_return, &win_x_return, &win_y_return, &mask_return);
-
-  // X11 correctly returns a window which covers conky area, but returned window
-  // is not window.window, but instead a parent node in some cases and the
-  // window.window we want to check for is a 1x1 child of that window.
-  return last_descendant(display, last);
-}
+    // X11 correctly returns a window which covers conky area, but returned
+    // window is not window.window, but instead a parent node in some cases and
+    // the window.window we want to check for is a 1x1 child of that window.
+    return last_descendant(display, last);
+  }
 
 #endif /* BUILD_MOUSE_EVENTS */

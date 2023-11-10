@@ -24,7 +24,7 @@
  *
  */
 
-#include <>
+#include <config.h>
 
 #ifdef BUILD_WAYLAND
 #include <wayland-client.h>
