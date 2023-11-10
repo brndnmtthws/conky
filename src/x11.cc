@@ -282,7 +282,7 @@ x11_error_handler(Display *d, XErrorEvent *err) {
       };
       error_name = const_cast<char*>(NAMES[err->error_code].c_str());
     } else {
-      static char code_name_buffer[3];
+      static char code_name_buffer[4];
       error_name = reinterpret_cast<char*>(&code_name_buffer);
       snprintf(error_name, 3, "%d", err->error_code);
     }

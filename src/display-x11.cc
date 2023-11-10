@@ -677,7 +677,6 @@ bool display_output_x11::main_loop_wait(double t) {
 }
 
 void display_output_x11::sigterm_cleanup() {
-  puts("sigtermed");
   XDestroyRegion(x11_stuff.region);
   x11_stuff.region = nullptr;
 #ifdef BUILD_XDAMAGE
@@ -690,7 +689,6 @@ void display_output_x11::sigterm_cleanup() {
 }
 
 void display_output_x11::cleanup() {
-  puts("normal cleanup");
   if (window_created == 1) {
     int border_total = get_border_total();
 
