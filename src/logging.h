@@ -30,8 +30,8 @@
 #ifndef _LOGGING_H
 #define _LOGGING_H
 
-#include <cstdio>
 #include <cinttypes>
+#include <cstdio>
 #include <stdexcept>
 #include "config.h"
 #include "i18n.h"
@@ -82,9 +82,10 @@ void NORM_ERR(const char *format, Args &&...args) {
 
 /* critical error with additional cleanup */
 template <typename... Args>
-__attribute__((noreturn))
-inline void CRIT_ERR_FREE(void *memtofree1, void *memtofree2,
-                          const char *format, Args &&...args) {
+__attribute__((noreturn)) inline void CRIT_ERR_FREE(void *memtofree1,
+                                                    void *memtofree2,
+                                                    const char *format,
+                                                    Args &&...args) {
   NORM_ERR(format, args...);
   free(memtofree1);
   free(memtofree2);
@@ -94,8 +95,8 @@ inline void CRIT_ERR_FREE(void *memtofree1, void *memtofree2,
 
 /* critical error */
 template <typename... Args>
-__attribute__((noreturn))
-inline void CRIT_ERR(const char *format, Args &&...args) {
+__attribute__((noreturn)) inline void CRIT_ERR(const char *format,
+                                               Args &&...args) {
   CRIT_ERR_FREE(nullptr, nullptr, format, args...);
 }
 

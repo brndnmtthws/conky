@@ -210,9 +210,9 @@ void llua_init() {
 #endif /* BUILD_X11 */
 }
 
-inline bool file_exists (const char *path) {
-  struct stat buffer;   
-  return (stat (path, &buffer) == 0); 
+inline bool file_exists(const char *path) {
+  struct stat buffer;
+  return (stat(path, &buffer) == 0);
 }
 
 void llua_load(const char *script) {
@@ -522,14 +522,17 @@ bool llua_mouse_hook(const EventT &ev) {
   } else {
     hook_name = "conky_" + raw_hook_name;
   }
-  
+
   int ty = lua_getglobal(lua_L, hook_name.c_str());
   if (ty == LUA_TNIL) {
     int ty_raw = lua_getglobal(lua_L, raw_hook_name.c_str());
     if (ty_raw == LUA_TFUNCTION) {
-      // TODO: (1.22.0) Force conky_ prefix on use_mouse_hook like llua_do_call does
+      // TODO: (1.22.0) Force conky_ prefix on use_mouse_hook like llua_do_call
+      // does
       // - keep only else case, remove ty_raw and make hook_name const.
-      NORM_ERR("llua_mouse_hook: hook %s declaration is missing 'conky_' prefix", raw_hook_name.c_str());
+      NORM_ERR(
+          "llua_mouse_hook: hook %s declaration is missing 'conky_' prefix",
+          raw_hook_name.c_str());
       hook_name = raw_hook_name;
       ty = ty_raw;
       lua_insert(lua_L, -2);

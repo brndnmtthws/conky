@@ -27,21 +27,22 @@
  *
  */
 
+#include "x11.h"
+
 #include <X11/X.h>
-#include <X11/extensions/XI2.h>
 #include <sys/types.h>
 #include "common.h"
 #include "config.h"
 #include "conky.h"
+#include "gui.h"
 #include "logging.h"
-#include "x11.h"
 
+#include <array>
 #include <cstddef>
 #include <cstdio>
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
 #include <string>
-#include <array>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
@@ -52,7 +53,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>
 #include <X11/Xutil.h>
-#include "gui.h"
+
 #ifdef BUILD_IMLIB2
 #include "imlib2.h"
 #endif /* BUILD_IMLIB2 */
@@ -72,8 +73,8 @@
 #include <X11/extensions/Xfixes.h>
 #endif /* BUILD_XFIXES */
 #ifdef BUILD_XINPUT
-#include <vector>
 #include <X11/extensions/XInput2.h>
+#include <vector>
 #endif /* BUILD_XINPUT */
 #ifdef HAVE_XCB_ERRORS
 #include <xcb/xcb.h>
@@ -82,7 +83,6 @@
 
 /* some basic X11 stuff */
 Display *display = nullptr;
-
 
 #ifdef HAVE_XCB_ERRORS
 xcb_connection_t *xcb_connection;
@@ -239,79 +239,78 @@ imlib_cache_size_setting imlib_cache_size;
 /******************** </SETTINGS> ************************/
 
 /* WARNING, this type not in Xlib spec */
-static int
-x11_error_handler(Display *d, XErrorEvent *err) {
+static int x11_error_handler(Display *d, XErrorEvent *err) {
   char *error_name = nullptr;
   bool name_allocated = false;
 
   char *code_description = nullptr;
   bool code_allocated = false;
 
-  #ifdef HAVE_XCB_ERRORS
-    if (xcb_errors_ctx != nullptr) {
-      const char *extension;
-      const char *base_name = xcb_errors_get_name_for_error(xcb_errors_ctx, err->error_code, &extension);
-      if (extension != nullptr) {
-        const size_t size = strlen(base_name) + strlen(extension) + 4;
-        error_name = new char(size);
-        snprintf(error_name, size, "%s (%s)", base_name, extension);
-        name_allocated = true;
-      } else {
-        error_name = const_cast<char*>(base_name);
-      }
-
-      const char *major = xcb_errors_get_name_for_major_code(xcb_errors_ctx, err->request_code);
-      const char *minor = xcb_errors_get_name_for_minor_code(xcb_errors_ctx, err->request_code, err->minor_code);
-      if (minor != nullptr) {
-        const size_t size = strlen(base_name) + strlen(extension) + 4;
-        code_description = new char(size);
-        snprintf(code_description, size, "%s - %s", major, minor);
-        code_allocated = true;
-      } else {
-        code_description = const_cast<char*>(major);
-      }
+#ifdef HAVE_XCB_ERRORS
+  if (xcb_errors_ctx != nullptr) {
+    const char *extension;
+    const char *base_name = xcb_errors_get_name_for_error(
+        xcb_errors_ctx, err->error_code, &extension);
+    if (extension != nullptr) {
+      const size_t size = strlen(base_name) + strlen(extension) + 4;
+      error_name = new char(size);
+      snprintf(error_name, size, "%s (%s)", base_name, extension);
+      name_allocated = true;
+    } else {
+      error_name = const_cast<char *>(base_name);
     }
-  #endif
+
+    const char *major =
+        xcb_errors_get_name_for_major_code(xcb_errors_ctx, err->request_code);
+    const char *minor = xcb_errors_get_name_for_minor_code(
+        xcb_errors_ctx, err->request_code, err->minor_code);
+    if (minor != nullptr) {
+      const size_t size = strlen(base_name) + strlen(extension) + 4;
+      code_description = new char(size);
+      snprintf(code_description, size, "%s - %s", major, minor);
+      code_allocated = true;
+    } else {
+      code_description = const_cast<char *>(major);
+    }
+  }
+#endif
 
   if (error_name == nullptr) {
     if (err->error_code > 0 && err->error_code < 17) {
       static std::array<std::string, 17> NAMES = {
-        "request", "value", "window", "pixmap", "atom", "cursor", "font", "match",
-        "drawable", "access", "alloc", "colormap", "G context", "ID choice",
-        "name", "length", "implementation"
-      };
-      error_name = const_cast<char*>(NAMES[err->error_code].c_str());
+          "request", "value",         "window",    "pixmap",    "atom",
+          "cursor",  "font",          "match",     "drawable",  "access",
+          "alloc",   "colormap",      "G context", "ID choice", "name",
+          "length",  "implementation"};
+      error_name = const_cast<char *>(NAMES[err->error_code].c_str());
     } else {
       static char code_name_buffer[4];
-      error_name = reinterpret_cast<char*>(&code_name_buffer);
+      error_name = reinterpret_cast<char *>(&code_name_buffer);
       snprintf(error_name, 3, "%d", err->error_code);
     }
   }
   if (code_description == nullptr) {
     const size_t size = 37;
     code_description = new char(size);
-    snprintf(code_description, size, "error code: [major: %i, minor: %i]", err->request_code, err->minor_code);
+    snprintf(code_description, size, "error code: [major: %i, minor: %i]",
+             err->request_code, err->minor_code);
     code_allocated = true;
   }
 
   DBGP(
-    "X %s Error:\n"
-    "Display: %lx, XID: %li, Serial: %lu\n"
-    "%s",
-    error_name,
-    reinterpret_cast<uint64_t>(err->display),
-    static_cast<int64_t>(err->resourceid), err->serial,
-    code_description
-  );
+      "X %s Error:\n"
+      "Display: %lx, XID: %li, Serial: %lu\n"
+      "%s",
+      error_name, reinterpret_cast<uint64_t>(err->display),
+      static_cast<int64_t>(err->resourceid), err->serial, code_description);
 
   if (name_allocated) free(error_name);
   if (code_allocated) free(code_description);
-  
+
   return 0;
 }
 
-__attribute__((noreturn))
-static int x11_ioerror_handler(Display *d) {
+__attribute__((noreturn)) static int x11_ioerror_handler(Display *d) {
   CRIT_ERR("X IO Error: Display %lx\n", reinterpret_cast<uint64_t>(d));
 }
 
@@ -351,15 +350,15 @@ static void init_x11() {
 
   update_workarea();
 
-  #ifdef HAVE_XCB_ERRORS
+#ifdef HAVE_XCB_ERRORS
   auto connection = xcb_connect(NULL, NULL);
   if (!xcb_connection_has_error(connection)) {
     if (xcb_errors_context_new(connection, &xcb_errors_ctx) != Success) {
       xcb_errors_ctx = nullptr;
     }
   }
-  #endif /* HAVE_XCB_ERRORS */
-  
+#endif /* HAVE_XCB_ERRORS */
+
   /* WARNING, this type not in Xlib spec */
   XSetErrorHandler(&x11_error_handler);
   XSetIOErrorHandler(&x11_ioerror_handler);
@@ -960,9 +959,10 @@ void x11_init_window(lua::state &l, bool own) {
   }
   bool xinput_ok = false;
 #ifdef BUILD_XINPUT
-  do { // not loop
-    int _ignored; // segfault if NULL
-    if (!XQueryExtension(display, "XInputExtension", &window.xi_opcode, &_ignored, &_ignored)) {
+  do {             // not loop
+    int _ignored;  // segfault if NULL
+    if (!XQueryExtension(display, "XInputExtension", &window.xi_opcode,
+                         &_ignored, &_ignored)) {
       // events will still ~work but let the user know why they're buggy
       NORM_ERR("XInput extension is not supported by X11!");
       break;
@@ -976,7 +976,7 @@ void x11_init_window(lua::state &l, bool own) {
     }
 
     const size_t mask_size = (XI_LASTEVENT + 7) / 8;
-    unsigned char mask_bytes[mask_size] = {0};  /* must be zeroed! */
+    unsigned char mask_bytes[mask_size] = {0}; /* must be zeroed! */
     XISetMask(mask_bytes, XI_Motion);
 
     XIEventMask ev_masks[1];
@@ -1356,10 +1356,10 @@ void print_mouse_speed(struct text_object *obj, char *p,
 }
 
 InputEvent *xev_as_input_event(XEvent &ev) {
-  if (ev.type == KeyPress || ev.type == KeyRelease ||
-      ev.type == ButtonPress || ev.type == ButtonRelease || ev.type == MotionNotify ||
+  if (ev.type == KeyPress || ev.type == KeyRelease || ev.type == ButtonPress ||
+      ev.type == ButtonRelease || ev.type == MotionNotify ||
       ev.type == EnterNotify || ev.type == LeaveNotify) {
-    return reinterpret_cast<InputEvent*>(&ev);
+    return reinterpret_cast<InputEvent *>(&ev);
   } else {
     return nullptr;
   }
@@ -1380,9 +1380,7 @@ void propagate_x11_event(XEvent &ev) {
   XGetInputFocus(display, &focused, &_revert_to);
   if (focused == window.window) {
     Time time = CurrentTime;
-    if (i_ev != nullptr) {
-      time = i_ev->common.time;
-    }
+    if (i_ev != nullptr) { time = i_ev->common.time; }
     XSetInputFocus(display, window.desktop, RevertToPointerRoot, time);
   }
 }
@@ -1390,13 +1388,15 @@ void propagate_x11_event(XEvent &ev) {
 #ifdef BUILD_MOUSE_EVENTS
 // Assuming parent has a simple linear stack of descendants, this function
 // returns the last leaf on the graph.
-inline Window last_descendant(Display* display, Window parent) {
+inline Window last_descendant(Display *display, Window parent) {
   Window _ignored, *children;
   uint32_t count;
 
   Window current = parent;
 
-  while (XQueryTree(display, current, &_ignored, &_ignored, &children, &count) && count != 0) {
+  while (
+      XQueryTree(display, current, &_ignored, &_ignored, &children, &count) &&
+      count != 0) {
     current = children[count - 1];
     XFree(children);
   }
@@ -1404,7 +1404,7 @@ inline Window last_descendant(Display* display, Window parent) {
   return current;
 }
 
-Window query_x11_window_at_pos(Display* display, int x, int y) {
+Window query_x11_window_at_pos(Display *display, int x, int y) {
   Window root = DefaultRootWindow(display);
 
   // these values are ignored but NULL can't be passed
@@ -1413,9 +1413,8 @@ Window query_x11_window_at_pos(Display* display, int x, int y) {
   unsigned int mask_return;
 
   Window last = None;
-  XQueryPointer(display, window.root, &root_return, &last,
-    &root_x_return, &root_y_return, &win_x_return, &win_y_return, &mask_return
-  );
+  XQueryPointer(display, window.root, &root_return, &last, &root_x_return,
+                &root_y_return, &win_x_return, &win_y_return, &mask_return);
 
   // X11 correctly returns a window which covers conky area, but returned window
   // is not window.window, but instead a parent node in some cases and the

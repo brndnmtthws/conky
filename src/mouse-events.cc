@@ -20,10 +20,10 @@
 
 #include "mouse-events.h"
 
-#include <array>
-#include <string>
 #include <lua.h>
 #include <time.h>
+#include <array>
+#include <string>
 #include <type_traits>
 #include "logging.h"
 
@@ -35,11 +35,11 @@ void push_table_value(lua_State *L, std::string key, std::string value) {
 }
 
 template <typename T>
-typename std::enable_if<std::is_integral<T>::value>::type
-push_table_value(lua_State *L, std::string key, T value) {
-    lua_pushstring(L, key.c_str());
-    lua_pushinteger(L, value);
-    lua_settable(L, -3);
+typename std::enable_if<std::is_integral<T>::value>::type push_table_value(
+    lua_State *L, std::string key, T value) {
+  lua_pushstring(L, key.c_str());
+  lua_pushinteger(L, value);
+  lua_settable(L, -3);
 }
 
 template <typename T>
@@ -64,12 +64,12 @@ void push_bitset(lua_State *L, std::bitset<N> it,
 }
 
 const std::array<std::string, 6> mod_names = {{
-  "shift",
-  "control",
-  "alt",
-  "super",
-  "caps_lock",
-  "num_lock",
+    "shift",
+    "control",
+    "alt",
+    "super",
+    "caps_lock",
+    "num_lock",
 }};
 
 void push_mods(lua_State *L, modifier_state_t mods) {
@@ -80,9 +80,10 @@ void push_mods(lua_State *L, modifier_state_t mods) {
 
 // Returns ms since Epoch.
 inline size_t current_time_ms() {
-    struct timespec spec;
-    clock_gettime(CLOCK_REALTIME, &spec);
-    return static_cast<size_t>(static_cast<uint64_t>(spec.tv_sec)*1'000 + spec.tv_nsec/1'000'000);
+  struct timespec spec;
+  clock_gettime(CLOCK_REALTIME, &spec);
+  return static_cast<size_t>(static_cast<uint64_t>(spec.tv_sec) * 1'000 +
+                             spec.tv_nsec / 1'000'000);
 }
 
 void push_table_value(lua_State *L, std::string key, mouse_event_t type) {
@@ -113,7 +114,8 @@ void push_table_value(lua_State *L, std::string key, mouse_event_t type) {
   lua_settable(L, -3);
 }
 
-void push_table_value(lua_State *L, std::string key, scroll_direction_t direction) {
+void push_table_value(lua_State *L, std::string key,
+                      scroll_direction_t direction) {
   lua_pushstring(L, key.c_str());
   switch (direction) {
     case SCROLL_DOWN:
@@ -134,7 +136,6 @@ void push_table_value(lua_State *L, std::string key, scroll_direction_t directio
   }
   lua_settable(L, -3);
 }
-
 
 void push_table_value(lua_State *L, std::string key, mouse_button_t button) {
   lua_pushstring(L, key.c_str());
@@ -162,7 +163,8 @@ void push_table_value(lua_State *L, std::string key, mouse_button_t button) {
 }
 
 /* Class methods */
-mouse_event::mouse_event(mouse_event_t type): type(type), time(current_time_ms()) {};
+mouse_event::mouse_event(mouse_event_t type)
+    : type(type), time(current_time_ms()){};
 
 void mouse_event::push_lua_table(lua_State *L) const {
   lua_newtable(L);

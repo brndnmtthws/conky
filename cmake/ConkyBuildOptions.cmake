@@ -18,6 +18,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+include(CMakeDependentOption)
+include(DependentOption)
+
 if(NOT CMAKE_BUILD_TYPE)
   if(MAINTAINER_MODE)
     set(
@@ -97,33 +100,26 @@ set(DEFAULT_TEXT_BUFFER_SIZE "256"
 set(MAX_NET_INTERFACES "256" CACHE STRING "Maximum number of network devices")
 
 # Platform specific options Linux only
-if(OS_LINUX)
-  option(BUILD_PORT_MONITORS "Build TCP portmon support" true)
-  option(BUILD_IBM "Support for IBM/Lenovo notebooks" true)
-  option(BUILD_HDDTEMP "Support for hddtemp" true)
-  option(BUILD_IPV6 "Enable if you want IPv6 support" true)
-  if(BUILD_X11)
-    # nvidia may also work on FreeBSD, not sure
-    option(BUILD_NVIDIA "Enable nvidia support" false)
-  endif(BUILD_X11)
-else(OS_LINUX)
-  set(BUILD_PORT_MONITORS false)
-  set(BUILD_IBM false)
-  set(BUILD_HDDTEMP false)
-  set(BUILD_NVIDIA false)
-  set(BUILD_IPV6 false)
-endif(OS_LINUX)
+cmake_dependent_option(BUILD_PORT_MONITORS "Build TCP portmon support" true
+  "OS_LINUX" false)
+cmake_dependent_option(BUILD_IBM "Support for IBM/Lenovo notebooks" true
+  "OS_LINUX" false)
+cmake_dependent_option(BUILD_HDDTEMP "Support for hddtemp" true
+  "OS_LINUX" false)
+cmake_dependent_option(BUILD_IPV6 "Enable if you want IPv6 support" true
+  "OS_LINUX" false)
+# nvidia may also work on FreeBSD, not sure
+cmake_dependent_option(BUILD_NVIDIA "Enable nvidia support" false
+  "OS_LINUX" false)
 
 # macOS Only
-if(OS_DARWIN)
-  option(
-    BUILD_IPGFREQ
-    "Enable cpu freq calculation based on Intel® Power Gadget; otherwise use constant factory value"
-    false)
-endif(OS_DARWIN)
+cmake_dependent_option(
+  BUILD_IPGFREQ
+  "Enable cpu freq calculation based on Intel® Power Gadget; otherwise use constant factory value"
+  false
+  "OS_DARWIN" false)
 
 # Optional features etc
-#
 
 option(BUILD_WLAN "Enable wireless support" false)
 
@@ -137,55 +133,53 @@ option(BUILD_OLD_CONFIG "Enable support for the old syntax of configurations"
 option(BUILD_MATH "Enable math support" true)
 
 option(BUILD_NCURSES "Enable ncurses support" true)
-if(BUILD_NCURSES)
-  option(
-    LEAKFREE_NCURSES
-    "Enable to hide false ncurses-memleaks in valgrind (works only when ncurses is compiled with --disable-leaks)"
-    false)
-else(BUILD_NCURSES)
-  set(
-    LEAKFREE_NCURSES false
-    CACHE
-      BOOL
-      "Enable to hide false ncurses-memleaks in valgrind (works only when ncurses is compiled with --disable-leaks)"
-    FORCE)
-endif(BUILD_NCURSES)
+
+dependent_option(LEAKFREE_NCURSES
+  "Enable to hide false ncurses-memleaks in valgrind (works only when ncurses is compiled with --disable-leaks)"
+  false
+  "BUILD_NCURSES" false
+  "LEAKFREE_NCURSES requires ncurses")
 
 option(BUILD_WAYLAND "Build Wayland support" false)
 
 option(BUILD_X11 "Build X11 support" true)
-if(BUILD_X11)
-  option(OWN_WINDOW "Enable own_window support" true)
 
-  # Mac Fix
-  if(OS_DARWIN)
-    option(BUILD_XDAMAGE "Build Xdamage support" false)
-		option(BUILD_XFIXES "Build Xfixes support" false)
-  else(OS_DARWIN)
-    option(BUILD_XDAMAGE "Build Xdamage support" true)
-		option(BUILD_XFIXES "Build Xfixes support" true)
-  endif(OS_DARWIN)
+dependent_option(OWN_WINDOW "Enable running conky in a dedicated window" true
+  "BUILD_X11" false
+  "Dedicated window mode only works on X11")
 
-  option(BUILD_XINERAMA "Build Xinerama support" true)
-  option(BUILD_XDBE "Build Xdbe (double-buffer) support" true)
-  option(BUILD_XFT "Build Xft (freetype fonts) support" true)
-  option(BUILD_IMLIB2 "Enable Imlib2 support" true)
-  option(BUILD_XSHAPE "Enable Xshape support" true)
+# On MacOS these cause issues so they're disabled by default
+if(OS_DARWIN)
+  dependent_option(BUILD_XDAMAGE "Build Xdamage support" false
+    "BUILD_X11" false
+    "Xdamage support requires X11")
+  dependent_option(BUILD_XFIXES "Build Xfixes support" false
+    "BUILD_X11" false
+    "Xfixes support requires X11")
+else()
+  dependent_option(BUILD_XDAMAGE "Build Xdamage support" true
+    "BUILD_X11" false
+    "Xdamage support requires X11")
+  dependent_option(BUILD_XFIXES "Build Xfixes support" true
+    "BUILD_X11" false
+    "Xfixes support requires X11")
+endif(OS_DARWIN)
 
-  option(BUILD_LUA_IMLIB2 "Build Imlib2 bindings for Lua" false)
-else(BUILD_X11)
-  set(OWN_WINDOW false CACHE BOOL "Enable own_window support" FORCE)
-  set(BUILD_XDAMAGE false CACHE BOOL "Build Xdamage support" FORCE)
-	set(BUILD_XFIXES false CACHE BOOL "Build Xfixes support" FORCE)
-  set(BUILD_XINERAMA false CACHE BOOL "Build Xinerama support" FORCE)
-  set(BUILD_XDBE false CACHE BOOL "Build Xdbe (double-buffer) support" FORCE)
-  set(BUILD_XFT false CACHE BOOL "Build Xft (freetype fonts) support" FORCE)
-  set(BUILD_IMLIB2 false CACHE BOOL "Enable Imlib2 support" FORCE)
-  set(BUILD_XSHAPE false CACHE BOOL "Enable Xshape support" FORCE)
-
-  set(BUILD_LUA_IMLIB2 false CACHE BOOL "Build Imlib2 bindings for Lua" FORCE)
-  set(BUILD_NVIDIA false)
-endif(BUILD_X11)
+dependent_option(BUILD_XINERAMA "Build Xinerama support" true
+  "BUILD_X11" false
+  "Xinerama support requires X11")
+dependent_option(BUILD_XDBE "Build Xdbe (double-buffer) support" true
+  "BUILD_X11" false
+  "Xdbe based double-buffering requires X11")
+dependent_option(BUILD_XFT "Build Xft (freetype fonts) support" true
+  "BUILD_X11" false
+  "Xft (freetype font) support requires X11")
+dependent_option(BUILD_IMLIB2 "Enable Imlib2 support" true
+  "BUILD_X11" false
+  "Imlib2 support requires X11")
+dependent_option(BUILD_XSHAPE "Enable Xshape support" true
+  "BUILD_X11" false
+  "Xshape support requires X11")
 
 # if we build with any GUI support
 if(BUILD_X11)
@@ -195,25 +189,22 @@ if(BUILD_WAYLAND)
   set(BUILD_GUI true)
 endif(BUILD_WAYLAND)
 
-if(BUILD_GUI)
-  option(BUILD_MOUSE_EVENTS "Enable mouse event support" true)
-endif(BUILD_GUI)
+dependent_option(BUILD_MOUSE_EVENTS "Enable mouse event support" true
+  "BUILD_WAYLAND OR OWN_WINDOW" false
+  "Mouse event support requires Wayland or OWN_WINDOW enabled")
+dependent_option(BUILD_XINPUT "Build Xinput 2 support" true
+  "BUILD_X11;BUILD_MOUSE_EVENTS" false
+  "Xinput 2 support requires X11 and BUILD_MOUSE_EVENTS enabled")
 
-if(BUILD_GUI AND BUILD_MOUSE_EVENTS)
-  option(BUILD_XINPUT "Build Xinput 2 support" true)
-else(BUILD_GUI AND BUILD_MOUSE_EVENTS)
-  set(BUILD_XINPUT false CACHE BOOL "Build Xinput 2 support" FORCE)
-endif(BUILD_GUI AND BUILD_MOUSE_EVENTS)
+dependent_option(BUILD_ARGB "Build ARGB (real transparency) support" true
+  "OWN_WINDOW" false
+  "ARGB support requires OWN_WINDOW enabled")
 
-if(OWN_WINDOW)
-  option(BUILD_ARGB "Build ARGB (real transparency) support" true)
-else(OWN_WINDOW)
-  set(BUILD_ARGB false
-      CACHE BOOL "Build ARGB (real transparency) support"
-      FORCE)
-endif(OWN_WINDOW)
-
+# Lua library options
 option(BUILD_LUA_CAIRO "Build cairo bindings for Lua" false)
+dependent_option(BUILD_LUA_IMLIB2 "Build Imlib2 bindings for Lua" false
+  "BUILD_X11;BUILD_IMLIB2" false
+  "Imlib2 Lua bindings require X11 and Imlib2")
 option(BUILD_LUA_RSVG "Build rsvg bindings for Lua" false)
 
 option(BUILD_AUDACIOUS "Build audacious (music player) support" false)
@@ -228,12 +219,9 @@ option(BUILD_XMMS2 "Enable if you want XMMS2 (music player) support" false)
 
 option(BUILD_CURL "Enable if you want Curl support" false)
 
-option(BUILD_RSS "Enable if you want RSS support" false)
-
-if(BUILD_RSS)
-  # if RSS is enabled, curl is required
-  set(BUILD_CURL true)
-endif(BUILD_RSS)
+dependent_option(BUILD_RSS "Enable if you want RSS support" false
+  "BUILD_CURL" false
+  "RSS depends on Curl support")
 
 option(BUILD_APCUPSD "Enable APCUPSD support" true)
 
