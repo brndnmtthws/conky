@@ -109,26 +109,30 @@ extern conky::range_config_setting<int> border_width;
 extern conky::simple_config_setting<bool> forced_redraw;
 
 #ifdef OWN_WINDOW
-extern conky::simple_config_setting<bool> set_transparent;
-extern conky::simple_config_setting<std::string> own_window_class;
+extern priv::own_window_setting own_window;
 extern conky::simple_config_setting<std::string> own_window_title;
-extern conky::simple_config_setting<window_type> own_window_type;
+#endif /* OWN_WINDOW */
 
+#if defined(OWN_WINDOW) && defined(BUILD_X11)
 struct window_hints_traits {
   static const lua::Type type = lua::TSTRING;
   typedef uint16_t Type;
   static std::pair<Type, bool> convert(lua::state &l, int index,
                                        const std::string &name);
 };
+
+extern conky::simple_config_setting<std::string> own_window_class;
+extern conky::simple_config_setting<window_type> own_window_type;
 extern conky::simple_config_setting<uint16_t, window_hints_traits>
     own_window_hints;
+#endif /* OWN_WINDOW && BUILD_X11 */
 
-#ifdef BUILD_ARGB
+#if defined(OWN_WINDOW) || defined(BUILD_WAYLAND)
 extern priv::colour_setting background_colour;
-extern conky::simple_config_setting<bool> use_argb_visual;
+extern conky::simple_config_setting<bool> set_transparent;
+#endif /* OWN_WINDOW || BUILD_WAYLAND */
 
-/* range of 0-255 for alpha */
+#if defined(BUILD_ARGB) || defined(BUILD_WAYLAND)
+extern conky::simple_config_setting<bool> use_argb_visual;
 extern conky::range_config_setting<int> own_window_argb_value;
-#endif /*BUILD_ARGB*/
-#endif /*OWN_WINDOW*/
-extern priv::own_window_setting own_window;
+#endif /* BUILD_ARGB || BUILD_WAYLAND */

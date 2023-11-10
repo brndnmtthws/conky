@@ -187,6 +187,9 @@ static void print_version() {
 #endif /* BUILD_X11 */
 #ifdef BUILD_WAYLAND
             << _(" Wayland:\n")
+#ifdef BUILD_ARGB
+            << _("  * ARGB visual\n")
+#endif /* BUILD_ARGB */
 #ifdef BUILD_MOUSE_EVENTS
             << _("  * Mouse events\n")
 #endif /* BUILD_MOUSE_EVENTS */

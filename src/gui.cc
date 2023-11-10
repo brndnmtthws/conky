@@ -59,8 +59,6 @@ void x11_init_window(lua::state &l, bool own);
 
 /********************* <SETTINGS> ************************/
 
-priv::colour_setting background_colour("own_window_colour", 0);
-
 bool out_to_gui(lua::state &l) {
   bool to_gui = false;
 #ifdef BUILD_X11
@@ -203,24 +201,31 @@ conky::range_config_setting<int> border_width("border_width", 0,
                                               1, true);
 
 #ifdef OWN_WINDOW
-conky::simple_config_setting<bool> set_transparent("own_window_transparent",
-                                                   false, false);
-conky::simple_config_setting<std::string> own_window_class("own_window_class",
-                                                           PACKAGE_NAME, false);
-
 conky::simple_config_setting<std::string> own_window_title(
     "own_window_title", PACKAGE_NAME " (" + gethostnamecxx() + ")", false);
+#endif /* OWN_WINDOW */
 
+#if defined(OWN_WINDOW) && defined(BUILD_X11)
+conky::simple_config_setting<std::string> own_window_class("own_window_class",
+                                                           PACKAGE_NAME, false);
 conky::simple_config_setting<window_type> own_window_type("own_window_type",
                                                           TYPE_NORMAL, false);
 conky::simple_config_setting<uint16_t, window_hints_traits> own_window_hints(
     "own_window_hints", 0, false);
+#endif /* OWN_WINDOW && BUILD_X11 */
 
-#ifdef BUILD_ARGB
+#if defined(OWN_WINDOW) || defined(BUILD_WAYLAND)
+priv::colour_setting background_colour("own_window_colour", 0);
+conky::simple_config_setting<bool> set_transparent("own_window_transparent",
+                                                   false, false);
+#endif /* OWN_WINDOW || BUILD_WAYLAND */
+
+#if defined(BUILD_ARGB) || defined(BUILD_WAYLAND)
+conky::simple_config_setting<bool> use_argb_visual("own_window_argb_visual",
+                                                   false, false);
 conky::range_config_setting<int> own_window_argb_value("own_window_argb_value",
                                                        0, 255, 255, false);
-#endif /* BUILD_ARGB */
-#endif /* OWN_WINDOW */
+#endif /* BUILD_ARGB || BUILD_WAYLAND */
 priv::own_window_setting own_window;
 
 /******************** </SETTINGS> ************************/

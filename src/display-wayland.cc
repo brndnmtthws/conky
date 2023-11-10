@@ -946,19 +946,15 @@ void display_output_wayland::end_draw_stuff() {
 void display_output_wayland::clear_text(int exposures) {
   struct window *window = global_window;
   cairo_save(window->cr);
+
   Colour color;
-#ifdef OWN_WINDOW
-  color = background_colour.get(*state);
   if (set_transparent.get(*state)) {
     color.alpha = 0;
   } else {
-#ifdef BUILD_ARGB
+    color = background_colour.get(*state);
     color.alpha = own_window_argb_value.get(*state);
-#else
-    color.alpha = 0xff;
-#endif
   }
-#endif
+
   cairo_set_source_rgba(window->cr, color.red / 255.0, color.green / 255.0,
                         color.blue / 255.0, color.alpha / 255.0);
   cairo_set_operator(window->cr, CAIRO_OPERATOR_SOURCE);
