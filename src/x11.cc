@@ -942,7 +942,7 @@ void x11_init_window(lua::state &l, bool own) {
   /* it's not recommended to add event masks to special windows in X; causes a
    * crash */
   if (own && own_window_type.get(l) != TYPE_DESKTOP) {
-    input_mask |= ButtonPressMask | ButtonReleaseMask;
+    input_mask |= PointerMotionMask | ButtonPressMask | ButtonReleaseMask;
   }
   bool xinput_ok = false;
 #ifdef BUILD_XINPUT
@@ -975,7 +975,7 @@ void x11_init_window(lua::state &l, bool own) {
   } while (false);
 #endif /* BUILD_XINPUT */
   if (!xinput_ok && own && own_window_type.get(l) != TYPE_DESKTOP) {
-    input_mask |= PointerMotionMask | EnterWindowMask | LeaveWindowMask;
+    input_mask |= EnterWindowMask | LeaveWindowMask;
   }
 #endif /* BUILD_MOUSE_EVENTS */
 #endif /* OWN_WINDOW */
