@@ -245,7 +245,7 @@ static int x11_error_handler(Display *d, XErrorEvent *err) {
     const char *base_name = xcb_errors_get_name_for_error(
         xcb_errors_ctx, err->error_code, &extension);
     if (extension != nullptr) {
-      const size_t size = strlen(base_name) + strlen(extension) + 4;
+      const std::size_t size = strlen(base_name) + strlen(extension) + 4;
       error_name = new char(size);
       snprintf(error_name, size, "%s (%s)", base_name, extension);
       name_allocated = true;
@@ -258,7 +258,7 @@ static int x11_error_handler(Display *d, XErrorEvent *err) {
     const char *minor = xcb_errors_get_name_for_minor_code(
         xcb_errors_ctx, err->request_code, err->minor_code);
     if (minor != nullptr) {
-      const size_t size = strlen(base_name) + strlen(extension) + 4;
+      const std::size_t size = strlen(base_name) + strlen(extension) + 4;
       code_description = new char(size);
       snprintf(code_description, size, "%s - %s", major, minor);
       code_allocated = true;
@@ -283,7 +283,7 @@ static int x11_error_handler(Display *d, XErrorEvent *err) {
     }
   }
   if (code_description == nullptr) {
-    const size_t size = 37;
+    const std::size_t size = 37;
     code_description = new char(size);
     snprintf(code_description, size, "error code: [major: %i, minor: %i]",
              err->request_code, err->minor_code);
@@ -962,7 +962,7 @@ void x11_init_window(lua::state &l, bool own) {
       break;
     }
 
-    const size_t mask_size = (XI_LASTEVENT + 7) / 8;
+    const std::size_t mask_size = (XI_LASTEVENT + 7) / 8;
     unsigned char mask_bytes[mask_size] = {0}; /* must be zeroed! */
     XISetMask(mask_bytes, XI_Motion);
 
@@ -1377,7 +1377,7 @@ void propagate_x11_event(XEvent &ev) {
 // returns the last leaf on the graph.
 inline Window last_descendant(Display *display, Window parent) {
   Window _ignored, *children;
-  uint32_t count;
+  std::uint32_t count;
 
   Window current = parent;
 

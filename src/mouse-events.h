@@ -28,23 +28,12 @@
 #include "config.h"
 #include "logging.h"
 
+extern "C" {
 #ifdef BUILD_X11
 #include <X11/X.h>
 #endif /* BUILD_X11 */
 
-extern "C" {
 #include <lua.h>
-}
-
-enum mouse_event_t {
-  MOUSE_PRESS = 0,
-  MOUSE_RELEASE = 1,
-  MOUSE_SCROLL = 2,
-  MOUSE_MOVE = 3,
-  AREA_ENTER = 4,
-  AREA_LEAVE = 5,
-  MOUSE_EVENT_COUNT = 6,
-};
 
 #ifdef __linux
 #include <linux/input-event-codes.h>
@@ -68,8 +57,21 @@ enum mouse_event_t {
 // Forward mouse button event code
 #define BTN_FORWARD 0x115
 #endif
+}
 
-enum mouse_button_t : uint32_t {
+namespace conky {
+
+enum mouse_event_t {
+  MOUSE_PRESS = 0,
+  MOUSE_RELEASE = 1,
+  MOUSE_SCROLL = 2,
+  MOUSE_MOVE = 3,
+  AREA_ENTER = 4,
+  AREA_LEAVE = 5,
+  MOUSE_EVENT_COUNT = 6,
+};
+
+enum mouse_button_t : std::uint32_t {
   BUTTON_LEFT = BTN_LEFT,
   BUTTON_RIGHT = BTN_RIGHT,
   BUTTON_MIDDLE = BTN_MIDDLE,
@@ -106,7 +108,7 @@ inline mouse_button_t x11_mouse_button_code(unsigned int x11_mouse_button) {
 
 struct mouse_event {
   mouse_event_t type;  // type of event
-  size_t time;         // ms since epoch when the event happened
+  std::size_t time;    // ms since epoch when the event happened
 
   explicit mouse_event(mouse_event_t type);
 
@@ -116,18 +118,18 @@ struct mouse_event {
 };
 
 struct mouse_positioned_event : public mouse_event {
-  size_t x = 0, y = 0;          // position relative to window
-  size_t x_abs = 0, y_abs = 0;  // position relative to root
+  std::size_t x = 0, y = 0;          // position relative to window
+  std::size_t x_abs = 0, y_abs = 0;  // position relative to root
 
-  mouse_positioned_event(mouse_event_t type, size_t x, size_t y, size_t x_abs,
-                         size_t y_abs)
+  mouse_positioned_event(mouse_event_t type, std::size_t x, std::size_t y,
+                         std::size_t x_abs, std::size_t y_abs)
       : mouse_event(type), x(x), y(y), x_abs(x_abs), y_abs(){};
 
   void push_lua_data(lua_State *L) const;
 };
 
 typedef std::bitset<6> modifier_state_t;
-enum modifier_key : uint32_t {
+enum modifier_key : std::uint32_t {
   MOD_SHIFT = 0,
   MOD_CONTROL = 1,
   MOD_ALT = 2,
@@ -154,15 +156,15 @@ inline modifier_state_t x11_modifier_state(unsigned int mods) {
 struct mouse_move_event : public mouse_positioned_event {
   modifier_state_t mods;  // held buttons and modifiers (ctrl, shift, ...)
 
-  mouse_move_event(size_t x, size_t y, size_t x_abs, size_t y_abs,
-                   modifier_state_t mods = 0)
+  mouse_move_event(std::size_t x, std::size_t y, std::size_t x_abs,
+                   std::size_t y_abs, modifier_state_t mods = 0)
       : mouse_positioned_event{mouse_event_t::MOUSE_MOVE, x, y, x_abs, y_abs},
         mods(mods){};
 
   void push_lua_data(lua_State *L) const;
 };
 
-enum scroll_direction_t : uint8_t {
+enum scroll_direction_t : std::uint8_t {
   SCROLL_UNKNOWN = 0,
   SCROLL_UP,
   SCROLL_DOWN,
@@ -195,8 +197,9 @@ struct mouse_scroll_event : public mouse_positioned_event {
   modifier_state_t mods;  // held buttons and modifiers (ctrl, shift, ...)
   scroll_direction_t direction;
 
-  mouse_scroll_event(size_t x, size_t y, size_t x_abs, size_t y_abs,
-                     scroll_direction_t direction, modifier_state_t mods = 0)
+  mouse_scroll_event(std::size_t x, std::size_t y, std::size_t x_abs,
+                     std::size_t y_abs, scroll_direction_t direction,
+                     modifier_state_t mods = 0)
       : mouse_positioned_event{mouse_event_t::MOUSE_SCROLL, x, y, x_abs, y_abs},
         direction(direction),
         mods(mods){};
@@ -208,9 +211,9 @@ struct mouse_button_event : public mouse_positioned_event {
   modifier_state_t mods;  // held buttons and modifiers (ctrl, shift, ...)
   mouse_button_t button;
 
-  mouse_button_event(mouse_event_t type, size_t x, size_t y, size_t x_abs,
-                     size_t y_abs, mouse_button_t button,
-                     modifier_state_t mods = 0)
+  mouse_button_event(mouse_event_t type, std::size_t x, std::size_t y,
+                     std::size_t x_abs, std::size_t y_abs,
+                     mouse_button_t button, modifier_state_t mods = 0)
       : mouse_positioned_event{type, x, y, x_abs, y_abs},
         button(button),
         mods(mods){};
@@ -219,9 +222,11 @@ struct mouse_button_event : public mouse_positioned_event {
 };
 
 struct mouse_crossing_event : public mouse_positioned_event {
-  mouse_crossing_event(mouse_event_t type, size_t x, size_t y, size_t x_abs,
-                       size_t y_abs)
+  mouse_crossing_event(mouse_event_t type, std::size_t x, std::size_t y,
+                       std::size_t x_abs, std::size_t y_abs)
       : mouse_positioned_event{type, x, y, x_abs, y_abs} {};
 };
+
+}  // namespace conky
 
 #endif /* MOUSE_EVENTS_H */

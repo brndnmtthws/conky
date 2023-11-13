@@ -563,11 +563,14 @@ bool llua_mouse_hook(const EventT &ev) {
   return result;
 }
 
-template bool llua_mouse_hook<mouse_scroll_event>(const mouse_scroll_event &ev);
-template bool llua_mouse_hook<mouse_button_event>(const mouse_button_event &ev);
-template bool llua_mouse_hook<mouse_move_event>(const mouse_move_event &ev);
-template bool llua_mouse_hook<mouse_crossing_event>(
-    const mouse_crossing_event &ev);
+template bool llua_mouse_hook<conky::mouse_scroll_event>(
+    const conky::mouse_scroll_event &ev);
+template bool llua_mouse_hook<conky::mouse_button_event>(
+    const conky::mouse_button_event &ev);
+template bool llua_mouse_hook<conky::mouse_move_event>(
+    const conky::mouse_move_event &ev);
+template bool llua_mouse_hook<conky::mouse_crossing_event>(
+    const conky::mouse_crossing_event &ev);
 #endif /* BUILD_MOUSE_EVENTS */
 
 void llua_set_userdata(const char *key, const char *type, void *value) {

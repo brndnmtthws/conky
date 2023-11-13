@@ -93,7 +93,7 @@ struct conky_x11_window {
 #endif /*BUILD_XFT*/
 #ifdef BUILD_MOUSE_EVENTS
   // Don't feature gate with BUILD_XINPUT; controls fallback.
-  int32_t xi_opcode;
+  std::int32_t xi_opcode;
 #endif /* BUILD_MOUSE_EVENTS */
 
   int width;
