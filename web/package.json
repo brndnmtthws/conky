@@ -50,7 +50,7 @@
     "@typescript-eslint/eslint-plugin": "^6.10.0",
     "@typescript-eslint/parser": "^6.10.0",
     "autoprefixer": "^10.4.16",
-    "cypress": "^13.4.0",
+    "cypress": "^13.5.0",
     "eslint": "^8.53.0",
     "eslint-config-next": "^14.0.1",
     "eslint-config-prettier": "^9.0.0",
