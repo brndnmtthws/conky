@@ -396,11 +396,11 @@ bool display_output_x11::main_loop_wait(double t) {
       // the only way to differentiate between a scroll and move event is
       // though valuators - move has first 2 set, other axis movements have
       // other.
-      bool is_cursor_move = data->valuators.mask_len * 8 > 2 &&
-                            XIMaskIsSet(data->valuators.mask, 0) &&
-                            XIMaskIsSet(data->valuators.mask, 1);
-      for (size_t i = 2; i < data->valuators.mask_len * 8; i++) {
-        if (XIMaskIsSet(data->valuators.mask, i)) {
+      bool is_cursor_move =
+          data->valuators.mask_len >= 1 &&
+          (data->valuators.mask[0] & 3) == data->valuators.mask[0];
+      for (std::size_t i = 1; i < data->valuators.mask_len; i++) {
+        if (data->valuators.mask[i] != 0) {
           is_cursor_move = false;
           break;
         }
@@ -720,7 +720,7 @@ void display_output_x11::set_foreground_color(Colour c) {
 }
 
 int display_output_x11::calc_text_width(const char *s) {
-  size_t slen = strlen(s);
+  std::size_t slen = strlen(s);
 #ifdef BUILD_XFT
   if (use_xft.get(*state)) {
     XGlyphInfo gi;

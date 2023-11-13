@@ -20,12 +20,18 @@
 
 #include "mouse-events.h"
 
-#include <lua.h>
-#include <time.h>
 #include <array>
+#include <ctime>
 #include <string>
 #include <type_traits>
+
 #include "logging.h"
+
+extern "C" {
+#include <lua.h>
+}
+
+namespace conky {
 
 /* Lua helper functions */
 void push_table_value(lua_State *L, std::string key, std::string value) {
@@ -56,11 +62,12 @@ void push_table_value(lua_State *L, std::string key, bool value) {
   lua_settable(L, -3);
 }
 
-template <size_t N>
+template <std::size_t N>
 void push_bitset(lua_State *L, std::bitset<N> it,
                  std::array<std::string, N> labels) {
   lua_newtable(L);
-  for (size_t i = 0; i < N; i++) push_table_value(L, labels[i], it.test(i));
+  for (std::size_t i = 0; i < N; i++)
+    push_table_value(L, labels[i], it.test(i));
 }
 
 const std::array<std::string, 6> mod_names = {{
@@ -79,11 +86,12 @@ void push_mods(lua_State *L, modifier_state_t mods) {
 }
 
 // Returns ms since Epoch.
-inline size_t current_time_ms() {
+inline std::size_t current_time_ms() {
   struct timespec spec;
   clock_gettime(CLOCK_REALTIME, &spec);
-  return static_cast<size_t>(static_cast<uint64_t>(spec.tv_sec) * 1'000 +
-                             spec.tv_nsec / 1'000'000);
+  return static_cast<std::size_t>(static_cast<std::uint64_t>(spec.tv_sec) *
+                                      1'000 +
+                                  spec.tv_nsec / 1'000'000);
 }
 
 void push_table_value(lua_State *L, std::string key, mouse_event_t type) {
@@ -193,7 +201,9 @@ void mouse_scroll_event::push_lua_data(lua_State *L) const {
 
 void mouse_button_event::push_lua_data(lua_State *L) const {
   mouse_positioned_event::push_lua_data(L);
-  push_table_value(L, "button_code", static_cast<uint32_t>(this->button));
+  push_table_value(L, "button_code", static_cast<std::uint32_t>(this->button));
   push_table_value(L, "button", this->button);
   push_mods(L, this->mods);
 }
+
+}  // namespace conky

@@ -431,9 +431,9 @@ void window_layer_surface_set_size(struct window *window) {
 #ifdef BUILD_MOUSE_EVENTS
 static std::map<wl_pointer *, std::array<size_t, 2>> last_known_positions{};
 
-static void on_pointer_enter(void *data, wl_pointer *pointer, uint32_t serial,
-                             wl_surface *surface, wl_fixed_t surface_x,
-                             wl_fixed_t surface_y) {
+static void on_pointer_enter(void *data, wl_pointer *pointer,
+                             std::uint32_t serial, wl_surface *surface,
+                             wl_fixed_t surface_x, wl_fixed_t surface_y) {
   auto w = reinterpret_cast<struct window *>(data);
 
   size_t x = static_cast<size_t>(wl_fixed_to_double(surface_x));
@@ -448,7 +448,7 @@ static void on_pointer_enter(void *data, wl_pointer *pointer, uint32_t serial,
 }
 
 static void on_pointer_leave(void *data, struct wl_pointer *pointer,
-                             uint32_t serial, struct wl_surface *surface) {
+                             std::uint32_t serial, struct wl_surface *surface) {
   auto w = reinterpret_cast<struct window *>(data);
 
   std::array<size_t, 2> last = last_known_positions[pointer];
@@ -462,7 +462,7 @@ static void on_pointer_leave(void *data, struct wl_pointer *pointer,
 }
 
 static void on_pointer_motion(void *data, struct wl_pointer *pointer,
-                              uint32_t _time, wl_fixed_t surface_x,
+                              std::uint32_t _time, wl_fixed_t surface_x,
                               wl_fixed_t surface_y) {
   auto w = reinterpret_cast<struct window *>(data);
 
@@ -478,8 +478,8 @@ static void on_pointer_motion(void *data, struct wl_pointer *pointer,
 }
 
 static void on_pointer_button(void *data, struct wl_pointer *pointer,
-                              uint32_t serial, uint32_t time, uint32_t button,
-                              uint32_t state) {
+                              std::uint32_t serial, std::uint32_t time,
+                              std::uint32_t button, std::uint32_t state) {
   auto w = reinterpret_cast<struct window *>(data);
 
   std::array<size_t, 2> last = last_known_positions[pointer];
@@ -506,8 +506,8 @@ static void on_pointer_button(void *data, struct wl_pointer *pointer,
   llua_mouse_hook(event);
 }
 
-void on_pointer_axis(void *data, struct wl_pointer *pointer, uint32_t time,
-                     uint32_t axis, wl_fixed_t value) {
+void on_pointer_axis(void *data, struct wl_pointer *pointer, std::uint32_t time,
+                     std::uint32_t axis, wl_fixed_t value) {
   if (value == 0) return;
 
   auto w = reinterpret_cast<struct window *>(data);

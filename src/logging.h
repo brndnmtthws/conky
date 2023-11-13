@@ -30,7 +30,7 @@
 #ifndef _LOGGING_H
 #define _LOGGING_H
 
-#include <cinttypes>
+#include <cinttypes>  // correct formatting for int types
 #include <cstdio>
 #include <stdexcept>
 #include "config.h"
