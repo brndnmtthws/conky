@@ -51,10 +51,10 @@
 #endif /* BUILD_MOUSE_EVENTS */
 #endif /* BUILD_X11 */
 
+#include <cstdint>
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
-#include <cstdint>
 #include <vector>
 
 #include "colours.h"
@@ -66,8 +66,8 @@
 /* TODO: cleanup global namespace */
 #ifdef BUILD_X11
 
-#include "x11.h"
 #include "logging.h"
+#include "x11.h"
 
 // TODO: cleanup externs (move to conky.h ?)
 #ifdef OWN_WINDOW
@@ -381,58 +381,61 @@ bool display_output_x11::main_loop_wait(double t) {
     bool consumed = false;
 
     XNextEvent(display, &ev);
-    
+
 #if defined(OWN_WINDOW) && defined(BUILD_MOUSE_EVENTS) && defined(BUILD_XINPUT)
-      // no need to check whether these events have been consumed because
-      // they're global and shouldn't be propagated
-      if (ev.type == GenericEvent && ev.xcookie.extension == window.xi_opcode) {
-        if (!XGetEventData(display, &ev.xcookie)) {
-          NORM_ERR("unable to get XInput event data");
-          continue;
-        }
-
-        auto *data = reinterpret_cast<XIDeviceEvent*>(ev.xcookie.data);
-        
-        // the only way to differentiate between a scroll and move event is
-        // though valuators - move has first 2 set, other axis movements have other.
-        bool is_cursor_move = data->valuators.mask_len > 2 &&
-          XIMaskIsSet(data->valuators.mask, 0) && XIMaskIsSet(data->valuators.mask, 1);
-
-        if (data->evtype == XI_Motion && is_cursor_move) {
-          Window query_result = query_x11_window_at_pos(display, data->root_x, data->root_y);
-
-          static bool cursor_inside = false;
-          if ((query_result != 0 && query_result == window.window) ||
-              ((query_result == window.desktop || query_result == window.root || query_result == 0) && data->root_x >= window.x && data->root_x < (window.x + window.width) &&
-               data->root_y >= window.y && data->root_y < (window.y + window.height))) {
-            // cursor is inside conky
-
-            modifier_state_t mods = x11_modifier_state(data->mods.effective);
-            llua_mouse_hook(mouse_move_event(
-              data->root_x - window.x, data->root_y - window.x,
-              data->root_x, data->root_y, mods
-            ));
-
-            if (!cursor_inside) {
-              llua_mouse_hook(mouse_crossing_event(
-                mouse_event_t::AREA_ENTER,
-                data->root_x - window.x, data->root_y - window.x,
-                data->root_x, data->root_y
-              ));
-            }
-            cursor_inside = true;
-          } else if (cursor_inside) {
-            llua_mouse_hook(mouse_crossing_event(
-              mouse_event_t::AREA_LEAVE,
-              data->root_x - window.x, data->root_y - window.x,
-              data->root_x, data->root_y
-            ));
-            cursor_inside = false;
-          }
-        }
-        XFreeEventData(display, &ev.xcookie);
+    // no need to check whether these events have been consumed because
+    // they're global and shouldn't be propagated
+    if (ev.type == GenericEvent && ev.xcookie.extension == window.xi_opcode) {
+      if (!XGetEventData(display, &ev.xcookie)) {
+        NORM_ERR("unable to get XInput event data");
         continue;
       }
+
+      auto *data = reinterpret_cast<XIDeviceEvent *>(ev.xcookie.data);
+
+      // the only way to differentiate between a scroll and move event is
+      // though valuators - move has first 2 set, other axis movements have
+      // other.
+      bool is_cursor_move = data->valuators.mask_len * 8 > 2 &&
+                            XIMaskIsSet(data->valuators.mask, 0) &&
+                            XIMaskIsSet(data->valuators.mask, 1);
+      for (size_t i = 2; i < data->valuators.mask_len * 8; i++) {
+        if (XIMaskIsSet(data->valuators.mask, i)) {
+          is_cursor_move = false;
+          break;
+        }
+      }
+
+      if (data->evtype == XI_Motion && is_cursor_move) {
+        Window query_result =
+            query_x11_window_at_pos(display, data->root_x, data->root_y);
+
+        static bool cursor_inside = false;
+        if ((query_result != 0 && query_result == window.window) ||
+            ((query_result == window.desktop || query_result == window.root ||
+              query_result == 0) &&
+             data->root_x >= window.x &&
+             data->root_x < (window.x + window.width) &&
+             data->root_y >= window.y &&
+             data->root_y < (window.y + window.height))) {
+          // cursor is inside conky
+
+          if (!cursor_inside) {
+            llua_mouse_hook(mouse_crossing_event(
+                mouse_event_t::AREA_ENTER, data->root_x - window.x,
+                data->root_y - window.x, data->root_x, data->root_y));
+          }
+          cursor_inside = true;
+        } else if (cursor_inside) {
+          llua_mouse_hook(mouse_crossing_event(
+              mouse_event_t::AREA_LEAVE, data->root_x - window.x,
+              data->root_y - window.x, data->root_x, data->root_y));
+          cursor_inside = false;
+        }
+      }
+      XFreeEventData(display, &ev.xcookie);
+      continue;
+    }
 #endif /* BUILD_MOUSE_EVENTS && BUILD_XINPUT */
 
     // Any of the remaining events apply to conky window
@@ -525,24 +528,21 @@ bool display_output_x11::main_loop_wait(double t) {
 
       case ButtonPress:
 #ifdef BUILD_MOUSE_EVENTS
-        {
-          modifier_state_t mods = x11_modifier_state(ev.xbutton.state);
-          if (4 <= ev.xbutton.button && ev.xbutton.button <= 7) {
-            scroll_direction_t direction = x11_scroll_direction(ev.xbutton.button);
-            consumed = llua_mouse_hook(mouse_scroll_event(
-              ev.xbutton.x, ev.xbutton.y,
-              ev.xbutton.x_root, ev.xbutton.y_root,
-              direction, mods
-            ));
-          } else {
-            mouse_button_t button = x11_mouse_button_code(ev.xbutton.button);
-            consumed = llua_mouse_hook(mouse_button_event(
-              mouse_event_t::MOUSE_PRESS,
-              ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root, ev.xbutton.y_root,
-              button, mods
-            ));
-          }
+      {
+        modifier_state_t mods = x11_modifier_state(ev.xbutton.state);
+        if (4 <= ev.xbutton.button && ev.xbutton.button <= 7) {
+          scroll_direction_t direction =
+              x11_scroll_direction(ev.xbutton.button);
+          consumed = llua_mouse_hook(
+              mouse_scroll_event(ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root,
+                                 ev.xbutton.y_root, direction, mods));
+        } else {
+          mouse_button_t button = x11_mouse_button_code(ev.xbutton.button);
+          consumed = llua_mouse_hook(mouse_button_event(
+              mouse_event_t::MOUSE_PRESS, ev.xbutton.x, ev.xbutton.y,
+              ev.xbutton.x_root, ev.xbutton.y_root, button, mods));
         }
+      }
 #endif /* BUILD_MOUSE_EVENTS */
         if (own_window.get(*state)) {
           /* if an ordinary window with decorations */
@@ -562,10 +562,8 @@ bool display_output_x11::main_loop_wait(double t) {
           modifier_state_t mods = x11_modifier_state(ev.xbutton.state);
           mouse_button_t button = x11_mouse_button_code(ev.xbutton.button);
           consumed = llua_mouse_hook(mouse_button_event(
-            mouse_event_t::MOUSE_RELEASE,
-            ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root, ev.xbutton.y_root,
-            button, mods
-          ));
+              mouse_event_t::MOUSE_RELEASE, ev.xbutton.x, ev.xbutton.y,
+              ev.xbutton.x_root, ev.xbutton.y_root, button, mods));
         }
 #endif /* BUILD_MOUSE_EVENTS */
         if (own_window.get(*state)) {
@@ -582,26 +580,28 @@ bool display_output_x11::main_loop_wait(double t) {
       windows below are notified for the following events as well;
       can't forward the event without filtering XQueryTree output.
       */
-      case MotionNotify:
-        if (window.xi_opcode == 0) {
-          modifier_state_t mods = x11_modifier_state(ev.xmotion.state);
-          consumed = llua_mouse_hook(mouse_move_event(
-            ev.xmotion.x, ev.xmotion.y, ev.xmotion.x_root, ev.xmotion.y_root, mods
-          ));
-        }
-        break;
+      case MotionNotify: {
+        modifier_state_t mods = x11_modifier_state(ev.xmotion.state);
+        consumed = llua_mouse_hook(mouse_move_event(ev.xmotion.x, ev.xmotion.y,
+                                                    ev.xmotion.x_root,
+                                                    ev.xmotion.y_root, mods));
+      } break;
       case LeaveNotify:
       case EnterNotify:
         if (window.xi_opcode == 0) {
-          bool not_over_conky = ev.xcrossing.x_root <= window.x || ev.xcrossing.y_root <= window.y ||
-            ev.xcrossing.x_root >= window.x + window.width || ev.xcrossing.y_root >= window.y + window.height;
+          bool not_over_conky =
+              ev.xcrossing.x_root <= window.x ||
+              ev.xcrossing.y_root <= window.y ||
+              ev.xcrossing.x_root >= window.x + window.width ||
+              ev.xcrossing.y_root >= window.y + window.height;
 
           if ((not_over_conky && ev.xcrossing.type == LeaveNotify) ||
               (!not_over_conky && ev.xcrossing.type == EnterNotify)) {
             llua_mouse_hook(mouse_crossing_event(
-              ev.xcrossing.type == EnterNotify ? mouse_event_t::AREA_ENTER : mouse_event_t::AREA_LEAVE,
-              ev.xcrossing.x, ev.xcrossing.y, ev.xcrossing.x_root, ev.xcrossing.y_root
-            ));
+                ev.xcrossing.type == EnterNotify ? mouse_event_t::AREA_ENTER
+                                                 : mouse_event_t::AREA_LEAVE,
+                ev.xcrossing.x, ev.xcrossing.y, ev.xcrossing.x_root,
+                ev.xcrossing.y_root));
           }
         }
         // can't propagate these events in a way that makes sense for desktop
@@ -616,7 +616,7 @@ bool display_output_x11::main_loop_wait(double t) {
           XFixesSetRegion(display, x11_stuff.part, &dev->area, 1);
           XFixesUnionRegion(display, x11_stuff.region2, x11_stuff.region2,
                             x11_stuff.part);
-          continue; // TODO: Propagate damage
+          continue;  // TODO: Propagate damage
         }
 #endif /* BUILD_XDAMAGE */
         break;
@@ -627,7 +627,8 @@ bool display_output_x11::main_loop_wait(double t) {
     } else {
       InputEvent *i_ev = xev_as_input_event(ev);
       if (i_ev != nullptr) {
-        XSetInputFocus(display, window.window, RevertToParent, i_ev->common.time);
+        XSetInputFocus(display, window.window, RevertToParent,
+                       i_ev->common.time);
       }
     }
   }
