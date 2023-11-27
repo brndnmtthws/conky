@@ -46,7 +46,7 @@
     "@types/node": "^20.9.0",
     "@types/prismjs": "^1.26.3",
     "@types/react": "^18.2.37",
-    "@types/react-dom": "^18.2.15",
+    "@types/react-dom": "^18.2.17",
     "@typescript-eslint/eslint-plugin": "^6.10.0",
     "@typescript-eslint/parser": "^6.10.0",
     "autoprefixer": "^10.4.16",
