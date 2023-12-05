@@ -450,10 +450,7 @@ bool display_output_x11::main_loop_wait(double t) {
         XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
         XSync(display, False);
 
-        // modify for propagation
-        ev.xexpose.x += window.x;
-        ev.xexpose.y += window.y;
-        break;
+        continue;
       }
 
       case PropertyNotify: {
