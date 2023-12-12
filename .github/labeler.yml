@@ -1,31 +1,47 @@
 documentation:
-  - doc/*
-  - doc/**/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - doc/*
+          - doc/**/*
 
 extras:
-  - extras/*
-  - extras/**/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - extras/*
+          - extras/**/*
 
 sources:
-  - src/*
-  - src/**/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/*
+          - src/**/*
 
 tests:
-  - tests/**/*
-  - tests/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - tests/**/*
+          - tests/*
 
 web:
-  - web/*
-  - web/**/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - web/*
+          - web/**/*
 
 appimage:
-  - appimage/*
-  - appimage/**/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - appimage/*
+          - appimage/**/*
 
 3rdparty:
-  - 3rdparty/*
-  - 3rdparty/**/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - 3rdparty/*
+          - 3rdparty/**/*
 
 gh-actions:
-  - .github/workflows/*
-  - .github/workflows/**/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/workflows/*
+          - .github/workflows/**/*
