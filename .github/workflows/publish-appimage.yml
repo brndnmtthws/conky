@@ -68,17 +68,17 @@ jobs:
       - name: Build AppImage
         run: CC=clang-14 CXX=clang++-14 ./appimage/build.sh
       - name: Upload AppImage artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: conky-x86_64.AppImage
           path: conky-x86_64.AppImage
       - name: Upload AppImage checksum artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: conky-x86_64.AppImage.sha256
           path: conky-x86_64.AppImage.sha256
       - name: Upload man page artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: conky.1.gz
           path: conky.1.gz
