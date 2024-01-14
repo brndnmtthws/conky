@@ -1212,6 +1212,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(free_bufcache, &update_meminfo) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_free_bufcache;
   obj->callbacks.free = &gen_free_opaque;
+  END OBJ(free_cached, &update_meminfo) obj->data.s = STRNDUP_ARG;
+  obj->callbacks.print = &print_free_cached;
+  obj->callbacks.free = &gen_free_opaque;
 #endif /* __linux__ */
 #ifdef __FreeBSD__
   END OBJ(memactive, &update_meminfo) obj->data.s = STRNDUP_ARG;

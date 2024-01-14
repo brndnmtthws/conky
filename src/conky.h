@@ -170,7 +170,7 @@ struct information {
       memmax, memdirty, shmem, legacymem, memactive, meminactive, memwired,
       memlaundry;
   unsigned long long swap, swapfree, swapmax;
-  unsigned long long bufmem, buffers, cached, free_bufcache;
+  unsigned long long bufmem, buffers, cached, free_bufcache, free_cached;
 
   unsigned short procs;
   unsigned short run_procs;
