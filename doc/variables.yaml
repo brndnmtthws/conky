@@ -665,6 +665,8 @@ values:
       - (interval)
   - name: free_bufcache
     desc: Amount of memory cached or buffered, as reported by free. Linux only.
+  - name: free_cached
+    desc: Amount of memory cached, as reported by free. Linux only.
   - name: freq
     desc: |-
       Returns CPU #n's frequency in MHz. CPUs are counted from 1.
