@@ -459,7 +459,7 @@ values:
       Changes the color space used for interpolation. Arguments are hcl, hsv,
       and rgb (default).
     args:
-      - (rbg|hcl|hsv)
+      - (rgb|hcl|hsv)
     default: rgb
   - name: stippled_borders
     desc: Border stippling (dashing) in pixels.
