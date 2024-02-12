@@ -12,11 +12,24 @@ typedef struct _FontData {
   FT_Face ft_face;
 }FontData;
 
+typedef enum _cairo_text_alignment {
+  CAIRO_TEXT_ALIGN_LEFT = 0,
+  CAIRO_TEXT_ALIGN_RIGHT,
+  CAIRO_TEXT_ALIGN_CENTER
+} cairo_text_alignment_t;
+
 FontData * cairo_text_hp_load_font(const char *font, int font_size);
 
 void cairo_text_hp_destroy_font(FontData *font);
 
 void cairo_text_hp_simple_show(cairo_t *cr, int x, int y, const char *text, FontData *font);
+void cairo_text_hp_simple_show_center(cairo_t *cr, int x, int y, const char *text, FontData *font);
+void cairo_text_hp_simple_show_right(cairo_t *cr, int x, int y, const char *text, FontData *font);
 
-void cairo_text_hp_intl_show(cairo_t *cr, int x, int y, const char *text, FontData *font,
+void cairo_text_hp_intl_show(cairo_t *cr, int x, int y, cairo_text_alignment_t alignment, const char *text, FontData *font,
                              const char *direction, const char *script, const char *language);
+
+/* This function allows you to layout two sets of text next to each other */
+void cairo_text_hp_text_size(const char *text, FontData *font, 
+                             const char *direction, const char *script, const char *language, int *width, int *height);
+void cairo_text_hp_simple_text_size(const char *text, FontData *font, int *width, int *height);
