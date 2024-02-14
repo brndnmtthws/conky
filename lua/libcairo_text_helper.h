@@ -284,7 +284,7 @@ int cairo_text_hp_text_size( const char *text, FontData *font,
   //alternatively you can use hb_buffer_set_unicode_funcs(buf, hb_glib_get_unicode_funcs());
   hb_buffer_set_unicode_funcs(buf, hb_glib_get_unicode_funcs());
   hb_buffer_set_direction(buf, text_direction); /* or LTR */
-  hb_buffer_set_script(buf, text_script); /* see hb-unicode.h */
+  hb_buffer_set_script(buf, text_script); /* see hb-common.h */
   hb_buffer_set_language(buf, text_language);
 
   /* Layout the text */
