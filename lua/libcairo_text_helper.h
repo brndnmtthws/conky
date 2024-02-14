@@ -133,8 +133,10 @@ void cairo_text_hp_destroy_font(FontData *font)
  *  https://harfbuzz.github.io/harfbuzz-hb-common.html#hb-script-from-string
  * Language is a BCP 47 language tag. eg "en" or "en-US"
  */
-void cairo_text_hp_intl_show(cairo_t *cr, int x, int y, cairo_text_alignment_t alignment, const char *text, FontData *font,
-                             const char *direction, const char *script, const char *language)
+//void cairo_text_hp_intl_show(cairo_t *cr, int x, int y, cairo_text_alignment_t alignment, const char *text, FontData *font,
+//                             const char *direction, const char *script, const char *language)
+void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, FontData *font, 
+                   cairo_text_alignment_t alignment, const char *language, const char *script, const char *direction)
 {
   /* It seems that lua may just pass NULL for an empty string */
   if (text == NULL) {
@@ -153,19 +155,33 @@ void cairo_text_hp_intl_show(cairo_t *cr, int x, int y, cairo_text_alignment_t a
   int width = x2-x1;
   int height = y2-y1;
 
-  /* FIXME: Support others */
-  hb_direction_t text_direction = hb_direction_from_string(direction, -1);
-  if (text_direction == HB_DIRECTION_INVALID) {
-    text_direction = HB_DIRECTION_LTR;
-    printf("Error: CairoTextHelper: Text Direction Invalid\n");
+  hb_language_t text_language;
+  hb_direction_t text_direction;
+  if (language != NULL) {
+    text_language = hb_language_from_string (language, -1);
   }
+  else {
+    /* Use en as the default as if you are sharing configs with other */
+    /* people, you don't want them to break if they use a different lang */
+    hb_language_from_string("en", -1);
+  }
+
   hb_script_t text_script = hb_script_from_string(script, -1);
   if (text_script == HB_SCRIPT_UNKNOWN) {
     text_script = HB_SCRIPT_COMMON;
-    printf("Error: CairoTextHelper: Text Script Invalid\n");
   }
-    
-  hb_language_t text_language = hb_language_from_string (language, -1);
+
+  if (direction != NULL) {
+    text_direction = hb_direction_from_string(direction, -1);
+  }
+  else {
+    text_direction = hb_script_get_horizontal_direction(text_script);
+  }
+  /* Note Direction can be invalid if user passes something invalid */
+  /* or if the script can be Vertical or Horizontal */
+  if (text_direction == HB_DIRECTION_INVALID) {
+    text_direction = HB_DIRECTION_LTR;
+  }
   
   /* Draw text */
   /* Create a buffer for harfbuzz to use */
@@ -173,9 +189,14 @@ void cairo_text_hp_intl_show(cairo_t *cr, int x, int y, cairo_text_alignment_t a
 
   //alternatively you can use hb_buffer_set_unicode_funcs(buf, hb_glib_get_unicode_funcs());
   hb_buffer_set_unicode_funcs(buf, hb_glib_get_unicode_funcs());
-  hb_buffer_set_direction(buf, text_direction); /* or LTR */
-  hb_buffer_set_script(buf, text_script); /* see hb-unicode.h */
   hb_buffer_set_language(buf, text_language);
+  if (script != NULL) {
+    hb_buffer_set_script(buf, text_script); /* see hb-unicode.h */
+  }
+  else {
+    hb_buffer_guess_segment_properties(buf);
+  }
+  hb_buffer_set_direction(buf, text_direction); /* or LTR */
 
   /* Layout the text */
   hb_buffer_add_utf8(buf, text, strlen(text), 0, strlen(text));
@@ -247,35 +268,36 @@ void cairo_text_hp_intl_show(cairo_t *cr, int x, int y, cairo_text_alignment_t a
   hb_buffer_destroy(buf);
 }
 
-void cairo_text_hp_simple_show(cairo_t *cr, int x, int y, const char *text, FontData *font)
-{
-  cairo_text_hp_intl_show(cr, x, y, CAIRO_TEXT_ALIGN_LEFT, text, font, "LTR", "Zyyy", "en");
-}
-
-void cairo_text_hp_simple_show_center(cairo_t *cr, int x, int y, const char *text, FontData *font)
-{
-  cairo_text_hp_intl_show(cr, x, y, CAIRO_TEXT_ALIGN_CENTER, text, font, "LTR", "Zyyy", "en");
-}
-
-void cairo_text_hp_simple_show_right(cairo_t *cr, int x, int y, const char *text, FontData *font)
-{
-  cairo_text_hp_intl_show(cr, x, y, CAIRO_TEXT_ALIGN_RIGHT, text, font, "LTR", "Zyyy", "en");
-}
-
 int cairo_text_hp_text_size( const char *text, FontData *font, 
-                             const char *direction, const char *script, const char *language, int *width, int *height)
+                             const char *language, const char *script, const char *direction, int *width, int *height)
 {
-  /* FIXME: Support others */
-  hb_direction_t text_direction = hb_direction_from_string(direction, -1);
-  if (text_direction == HB_DIRECTION_INVALID) {
-    text_direction = HB_DIRECTION_LTR;
+  hb_language_t text_language;
+  hb_direction_t text_direction;
+  if (language != NULL) {
+    text_language = hb_language_from_string (language, -1);
   }
+  else {
+    /* Use en as the default as if you are sharing configs with other */
+    /* people, you don't want them to break if they use a different lang */
+    hb_language_from_string("en", -1);
+  }
+
   hb_script_t text_script = hb_script_from_string(script, -1);
   if (text_script == HB_SCRIPT_UNKNOWN) {
     text_script = HB_SCRIPT_COMMON;
   }
-    
-  hb_language_t text_language = hb_language_from_string (language, -1);
+
+  if (direction != NULL) {
+    text_direction = hb_direction_from_string(direction, -1);
+  }
+  else {
+    text_direction = hb_script_get_horizontal_direction(text_script);
+  }
+  /* Note Direction can be invalid if user passes something invalid */
+  /* or if the script can be Vertical or Horizontal */
+  if (text_direction == HB_DIRECTION_INVALID) {
+    text_direction = HB_DIRECTION_LTR;
+  }
   
   /* Draw text */
   /* Create a buffer for harfbuzz to use */
@@ -284,8 +306,12 @@ int cairo_text_hp_text_size( const char *text, FontData *font,
   //alternatively you can use hb_buffer_set_unicode_funcs(buf, hb_glib_get_unicode_funcs());
   hb_buffer_set_unicode_funcs(buf, hb_glib_get_unicode_funcs());
   hb_buffer_set_direction(buf, text_direction); /* or LTR */
-  hb_buffer_set_script(buf, text_script); /* see hb-common.h */
-  hb_buffer_set_language(buf, text_language);
+  if (script != NULL) {
+    hb_buffer_set_script(buf, text_script); /* see hb-unicode.h */
+  }
+  else {
+    hb_buffer_guess_segment_properties(buf);
+  }  hb_buffer_set_language(buf, text_language);
 
   /* Layout the text */
   hb_buffer_add_utf8(buf, text, strlen(text), 0, strlen(text));
