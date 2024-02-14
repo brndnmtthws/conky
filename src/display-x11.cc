@@ -453,6 +453,8 @@ bool display_output_x11::main_loop_wait(double t) {
         // modify for propagation
         ev.xexpose.x += window.x;
         ev.xexpose.y += window.y;
+        // Fix for #1698 Remove from this branch before accepting Pull Request
+        ev.xexpose.window = window.desktop;
         break;
       }
 
