@@ -32,6 +32,7 @@ jobs:
             libcairo2-dev \
             libcurl4-gnutls-dev \
             libdbus-glib-1-dev \
+            libfreetype-dev \
             libfuse2 \
             libglib2.0-dev \
             libical-dev \
