@@ -133,8 +133,6 @@ void cairo_text_hp_destroy_font(FontData *font)
  *  https://harfbuzz.github.io/harfbuzz-hb-common.html#hb-script-from-string
  * Language is a BCP 47 language tag. eg "en" or "en-US"
  */
-//void cairo_text_hp_intl_show(cairo_t *cr, int x, int y, cairo_text_alignment_t alignment, const char *text, FontData *font,
-//                             const char *direction, const char *script, const char *language)
 void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, FontData *font, 
                    cairo_text_alignment_t alignment, const char *language, const char *script, const char *direction)
 {
@@ -369,9 +367,5 @@ int cairo_text_hp_text_size( const char *text, FontData *font,
 
   *width = string_width_in_pixels;
   *height = string_height_in_pixels;
-}
-
-void cairo_text_hp_simple_text_size(const char *text, FontData *font, int *width, int *height) {
-  cairo_text_hp_text_size(text, font, "LTR", "Zyyy", "en",  width, height);
 }
 #endif

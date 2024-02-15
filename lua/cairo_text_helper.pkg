@@ -25,4 +25,4 @@ void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, FontData *f
 
 /* This function allows you to layout two sets of text next to each other */
 void cairo_text_hp_text_size(const char *text, FontData *font, 
-                             const char *language = "en", const char *script = NULL, const char *direction = NULL, int *width, int *height);
+                             const char *language = "en", const char *script = NULL, const char *direction, int *width, int *height);
