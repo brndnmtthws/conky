@@ -48,6 +48,7 @@ jobs:
             libpango1.0-dev \
             libcurl4-gnutls-dev \
             libdbus-glib-1-dev \
+            libfreetype-dev \
             libglib2.0-dev \
             libical-dev \
             libimlib2-dev \
