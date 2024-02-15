@@ -108,7 +108,7 @@ jobs:
             libc++-${{ matrix.compiler_version }}-dev \
             libc++abi-${{ matrix.compiler_version }}-dev
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Configure with CMake
         run: |
           set -x # show the commands we're running
@@ -141,6 +141,7 @@ jobs:
             -DBUILD_MYSQL=ON                     \
             -DBUILD_NVIDIA=ON                    \
             -DBUILD_PULSEAUDIO=ON                \
+            -DBUILD_CURL=ON                      \
             -DBUILD_RSS=ON                       \
             -DBUILD_TESTS=ON                     \
             -DBUILD_WLAN=ON                      \

@@ -46,6 +46,7 @@
 
 #endif /* BUILD_WAYLAND */
 
+#include <cstdint>
 #include <iostream>
 #include <sstream>
 
@@ -53,11 +54,17 @@
 #include "display-wayland.hh"
 #include "gui.h"
 #include "llua.h"
+#include "logging.h"
 #ifdef BUILD_X11
 #include "x11.h"
 #endif
 #ifdef BUILD_WAYLAND
 #include "fonts.h"
+#endif
+#ifdef BUILD_MOUSE_EVENTS
+#include <array>
+#include <map>
+#include "mouse-events.h"
 #endif
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -292,7 +299,7 @@ struct {
   struct wl_shm *shm;
   struct wl_surface *surface;
   struct wl_seat *seat;
-  /*	struct wl_pointer *pointer;*/
+  struct wl_pointer *pointer;
   struct wl_output *output;
   struct xdg_wm_base *shell;
   struct zwlr_layer_shell_v1 *layer_shell;
@@ -421,6 +428,138 @@ void window_layer_surface_set_size(struct window *window) {
                                  global_window->rectangle.height);
 }
 
+#ifdef BUILD_MOUSE_EVENTS
+static std::map<wl_pointer *, std::array<size_t, 2>> last_known_positions{};
+
+static void on_pointer_enter(void *data, wl_pointer *pointer,
+                             std::uint32_t serial, wl_surface *surface,
+                             wl_fixed_t surface_x, wl_fixed_t surface_y) {
+  auto w = reinterpret_cast<struct window *>(data);
+
+  size_t x = static_cast<size_t>(wl_fixed_to_double(surface_x));
+  size_t y = static_cast<size_t>(wl_fixed_to_double(surface_y));
+  last_known_positions[pointer] = std::array<size_t, 2>{x, y};
+
+  size_t abs_x = w->rectangle.x + x;
+  size_t abs_y = w->rectangle.y + y;
+
+  mouse_crossing_event event{mouse_event_t::AREA_ENTER, x, y, abs_x, abs_y};
+  llua_mouse_hook(event);
+}
+
+static void on_pointer_leave(void *data, struct wl_pointer *pointer,
+                             std::uint32_t serial, struct wl_surface *surface) {
+  auto w = reinterpret_cast<struct window *>(data);
+
+  std::array<size_t, 2> last = last_known_positions[pointer];
+  size_t x = last[0];
+  size_t y = last[1];
+  size_t abs_x = w->rectangle.x + x;
+  size_t abs_y = w->rectangle.y + y;
+
+  mouse_crossing_event event{mouse_event_t::AREA_LEAVE, x, y, abs_x, abs_y};
+  llua_mouse_hook(event);
+}
+
+static void on_pointer_motion(void *data, struct wl_pointer *pointer,
+                              std::uint32_t _time, wl_fixed_t surface_x,
+                              wl_fixed_t surface_y) {
+  auto w = reinterpret_cast<struct window *>(data);
+
+  size_t x = static_cast<size_t>(wl_fixed_to_double(surface_x));
+  size_t y = static_cast<size_t>(wl_fixed_to_double(surface_y));
+  last_known_positions[pointer] = std::array<size_t, 2>{x, y};
+
+  size_t abs_x = w->rectangle.x + x;
+  size_t abs_y = w->rectangle.y + y;
+
+  mouse_move_event event{x, y, abs_x, abs_y};
+  llua_mouse_hook(event);
+}
+
+static void on_pointer_button(void *data, struct wl_pointer *pointer,
+                              std::uint32_t serial, std::uint32_t time,
+                              std::uint32_t button, std::uint32_t state) {
+  auto w = reinterpret_cast<struct window *>(data);
+
+  std::array<size_t, 2> last = last_known_positions[pointer];
+  size_t x = last[0];
+  size_t y = last[1];
+  size_t abs_x = w->rectangle.x + x;
+  size_t abs_y = w->rectangle.y + y;
+
+  mouse_button_event event{
+      mouse_event_t::MOUSE_RELEASE,        x, y, abs_x, abs_y,
+      static_cast<mouse_button_t>(button),
+  };
+
+  switch (static_cast<wl_pointer_button_state>(state)) {
+    case WL_POINTER_BUTTON_STATE_RELEASED:
+      // pass; default is MOUSE_RELEASE
+      break;
+    case WL_POINTER_BUTTON_STATE_PRESSED:
+      event.type = mouse_event_t::MOUSE_PRESS;
+      break;
+    default:
+      return;
+  }
+  llua_mouse_hook(event);
+}
+
+void on_pointer_axis(void *data, struct wl_pointer *pointer, std::uint32_t time,
+                     std::uint32_t axis, wl_fixed_t value) {
+  if (value == 0) return;
+
+  auto w = reinterpret_cast<struct window *>(data);
+
+  std::array<size_t, 2> last = last_known_positions[pointer];
+  size_t x = last[0];
+  size_t y = last[1];
+  size_t abs_x = w->rectangle.x + x;
+  size_t abs_y = w->rectangle.y + y;
+
+  mouse_scroll_event event{
+      x, y, abs_x, abs_y, scroll_direction_t::SCROLL_UP,
+  };
+
+  switch (static_cast<wl_pointer_axis>(axis)) {
+    case WL_POINTER_AXIS_VERTICAL_SCROLL:
+      event.direction = value > 0 ? scroll_direction_t::SCROLL_DOWN
+                                  : scroll_direction_t::SCROLL_UP;
+      break;
+    case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
+      event.direction = value > 0 ? scroll_direction_t::SCROLL_RIGHT
+                                  : scroll_direction_t::SCROLL_LEFT;
+      break;
+    default:
+      return;
+  }
+  llua_mouse_hook(event);
+}
+
+static void seat_capability_listener(void *data, wl_seat *seat,
+                                     uint32_t capability_int) {
+  wl_seat_capability capabilities =
+      static_cast<wl_seat_capability>(capability_int);
+  if (wl_globals.seat == seat) {
+    if ((capabilities & WL_SEAT_CAPABILITY_POINTER) > 0) {
+      wl_globals.pointer = wl_seat_get_pointer(seat);
+
+      static wl_pointer_listener listener{
+          .enter = on_pointer_enter,
+          .leave = on_pointer_leave,
+          .motion = on_pointer_motion,
+          .button = on_pointer_button,
+          .axis = on_pointer_axis,
+      };
+      wl_pointer_add_listener(wl_globals.pointer, &listener, data);
+    }
+  }
+}
+static void seat_name_listener(void *data, struct wl_seat *wl_seat,
+                               const char *name) {}
+#endif /* BUILD_MOUSE_EVENTS */
+
 bool display_output_wayland::initialize() {
   epoll_fd = epoll_create1(0);
   if (epoll_fd < 0) {
@@ -449,6 +588,14 @@ bool display_output_wayland::initialize() {
   window_layer_surface_set_size(global_window);
   zwlr_layer_surface_v1_add_listener(global_window->layer_surface,
                                      &layer_surface_listener, nullptr);
+
+#ifdef BUILD_MOUSE_EVENTS
+  wl_seat_listener listener{
+      .capabilities = seat_capability_listener,
+      .name = seat_name_listener,
+  };
+  wl_seat_add_listener(wl_globals.seat, &listener, global_window);
+#endif /* BUILD_MOUSE_EVENTS */
 
   wl_surface_commit(global_window->surface);
   wl_display_roundtrip(global_display);
@@ -799,19 +946,15 @@ void display_output_wayland::end_draw_stuff() {
 void display_output_wayland::clear_text(int exposures) {
   struct window *window = global_window;
   cairo_save(window->cr);
+
   Colour color;
-#ifdef OWN_WINDOW
-  color = background_colour.get(*state);
   if (set_transparent.get(*state)) {
     color.alpha = 0;
   } else {
-#ifdef BUILD_ARGB
+    color = background_colour.get(*state);
     color.alpha = own_window_argb_value.get(*state);
-#else
-    color.alpha = 0xff;
-#endif
   }
-#endif
+
   cairo_set_source_rgba(window->cr, color.red / 255.0, color.green / 255.0,
                         color.blue / 255.0, color.alpha / 255.0);
   cairo_set_operator(window->cr, CAIRO_OPERATOR_SOURCE);
@@ -869,8 +1012,8 @@ void display_output_wayland::load_fonts(bool utf8) {
     // pango_fc_font_description_from_pattern requires a FAMILY to be set,
     // so set an empty one if none is present.
     FcValue dummy;
-    if (FcPatternGet (fc_pattern, FC_FAMILY, 0, &dummy) != FcResultMatch) {
-        FcPatternAddString (fc_pattern, FC_FAMILY, (FcChar8 *) "");
+    if (FcPatternGet(fc_pattern, FC_FAMILY, 0, &dummy) != FcResultMatch) {
+      FcPatternAddString(fc_pattern, FC_FAMILY, (FcChar8 *)"");
     }
     pango_font_entry.desc =
         pango_fc_font_description_from_pattern(fc_pattern, true);

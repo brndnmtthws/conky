@@ -439,7 +439,7 @@ void scan_cmdline_to_pid_arg(struct text_object *obj, const char *arg,
     }
     if (obj->data.s[i - 1] == ' ') { obj->data.s[i - 1] = 0; }
   } else {
-    CRIT_ERR(obj, free_at_crash, "${cmdline_to_pid commandline}");
+    CRIT_ERR_FREE(obj, free_at_crash, "${cmdline_to_pid commandline}");
   }
 }
 

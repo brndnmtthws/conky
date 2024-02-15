@@ -72,9 +72,7 @@ int append_object(struct text_object *root, struct text_object *obj) {
 
   /* update pointers of the list to append to */
   if (end != nullptr) {
-    if (end->next != nullptr) {
-      CRIT_ERR(nullptr, nullptr, "huston, we have a lift-off");
-    }
+    if (end->next != nullptr) { CRIT_ERR("Houston, we have lift-off"); }
     end->next = obj;
   } else {
     root->next = obj;
@@ -124,7 +122,7 @@ static int push_ifblock(struct ifblock_stack_obj **ifblock_stack_top,
   switch (type) {
     case IFBLOCK_ENDIF:
       if ((*ifblock_stack_top) == nullptr) {
-        CRIT_ERR(nullptr, nullptr, "got an endif without matching if");
+        CRIT_ERR("got an endif without matching if");
       }
       (*ifblock_stack_top)->obj->ifblock_next = obj;
       /* if there's some else in between, remove and free it */
@@ -140,7 +138,7 @@ static int push_ifblock(struct ifblock_stack_obj **ifblock_stack_top,
       break;
     case IFBLOCK_ELSE:
       if ((*ifblock_stack_top) == nullptr) {
-        CRIT_ERR(nullptr, nullptr, "got an else without matching if");
+        CRIT_ERR("got an else without matching if");
       }
       (*ifblock_stack_top)->obj->ifblock_next = obj;
       /* falls through */
@@ -153,7 +151,7 @@ static int push_ifblock(struct ifblock_stack_obj **ifblock_stack_top,
       *ifblock_stack_top = stackobj;
       break;
     default:
-      CRIT_ERR(nullptr, nullptr, "push_ifblock() misuse detected!");
+      CRIT_ERR("push_ifblock() misuse detected!");
   }
   return 0;
 }

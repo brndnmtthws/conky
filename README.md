@@ -33,8 +33,8 @@ Conky can display more than 300 built-in objects, including support for:
 
 ... and much much more.
 
-Conky can display information either as text, or using simple progress
-bars and graph widgets, with different fonts and colours.
+Conky can display information either as text, or using simple progress bars and
+graph widgets, with different fonts and colours, as well as handle [mouse events](https://github.com/brndnmtthws/conky/wiki/Mouse-Events).
 
 ## Screenshots
 

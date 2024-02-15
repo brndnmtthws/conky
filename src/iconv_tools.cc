@@ -44,9 +44,9 @@ static iconv_t **iconv_cd = 0;
 
 int register_iconv(iconv_t *new_iconv) {
   iconv_cd = (void ***)realloc(iconv_cd, sizeof(iconv_t *) * (iconv_count + 1));
-  if (!iconv_cd) { CRIT_ERR(nullptr, NULL, "Out of memory"); }
+  if (!iconv_cd) { CRIT_ERR("Out of memory"); }
   iconv_cd[iconv_count] = (void **)malloc(sizeof(iconv_t));
-  if (!iconv_cd[iconv_count]) { CRIT_ERR(nullptr, NULL, "Out of memory"); }
+  if (!iconv_cd[iconv_count]) { CRIT_ERR("Out of memory"); }
   memcpy(iconv_cd[iconv_count], new_iconv, sizeof(iconv_t));
   iconv_count++;
   return iconv_count;
@@ -110,12 +110,12 @@ void init_iconv_start(struct text_object *obj, void *free_at_crash,
   char iconv_to[ICONV_CODEPAGE_LENGTH];
 
   if (iconv_converting) {
-    CRIT_ERR(obj, free_at_crash,
-             "You must stop your last iconv conversion before "
-             "starting another");
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "You must stop your last iconv conversion before "
+                  "starting another");
   }
   if (sscanf(arg, "%s %s", iconv_from, iconv_to) != 2) {
-    CRIT_ERR(obj, free_at_crash, "Invalid arguments for iconv_start");
+    CRIT_ERR_FREE(obj, free_at_crash, "Invalid arguments for iconv_start");
   } else {
     iconv_t new_iconv;
 

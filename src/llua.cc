@@ -33,6 +33,10 @@
 
 #ifdef BUILD_GUI
 #include "gui.h"
+
+#ifdef BUILD_MOUSE_EVENTS
+#include "mouse-events.h"
+#endif /* BUILD_MOUSE_EVENTS */
 #endif /* BUILD_GUI */
 
 extern "C" {
@@ -49,6 +53,9 @@ void llua_append_notify(const char *name);
 void llua_rm_notifies(void);
 static int llua_block_notify = 0;
 #endif /* HAVE_SYS_INOTIFY_H */
+
+// POSIX compliant
+#include <sys/stat.h>
 
 static void llua_load(const char *script);
 
@@ -203,8 +210,20 @@ void llua_init() {
 #endif /* BUILD_X11 */
 }
 
+inline bool file_exists(const char *path) {
+  struct stat buffer;
+  return (stat(path, &buffer) == 0);
+}
+
 void llua_load(const char *script) {
   int error;
+
+  if (!file_exists(script)) {
+    NORM_ERR("llua_load: specified script file '%s' doesn't exist", script);
+    // return without initializing lua_L because other parts of the code rely
+    // on it being null if the script is not loaded
+    return;
+  }
 
   llua_init();
 
@@ -496,14 +515,44 @@ bool llua_mouse_hook(const EventT &ev) {
   if ((lua_L == nullptr) || lua_mouse_hook.get(*state).empty()) {
     return false;
   }
-  const std::string func = lua_mouse_hook.get(*state);
-  lua_getglobal(lua_L, lua_mouse_hook.get(*state).c_str());
+  const std::string raw_hook_name = lua_mouse_hook.get(*state);
+  std::string hook_name;
+  if (raw_hook_name.rfind("conky_", 0) == 0) {
+    hook_name = raw_hook_name;
+  } else {
+    hook_name = "conky_" + raw_hook_name;
+  }
+
+  int ty = lua_getglobal(lua_L, hook_name.c_str());
+  if (ty == LUA_TNIL) {
+    int ty_raw = lua_getglobal(lua_L, raw_hook_name.c_str());
+    if (ty_raw == LUA_TFUNCTION) {
+      // TODO: (1.22.0) Force conky_ prefix on use_mouse_hook like llua_do_call
+      // does
+      // - keep only else case, remove ty_raw and make hook_name const.
+      NORM_ERR(
+          "llua_mouse_hook: hook %s declaration is missing 'conky_' prefix",
+          raw_hook_name.c_str());
+      hook_name = raw_hook_name;
+      ty = ty_raw;
+      lua_insert(lua_L, -2);
+      lua_pop(lua_L, 1);
+    } else {
+      NORM_ERR("llua_mouse_hook: hook %s is not defined", hook_name.c_str());
+      lua_pop(lua_L, 2);
+      return false;
+    }
+  } else if (ty != LUA_TFUNCTION) {
+    NORM_ERR("llua_mouse_hook: hook %s is not a function", hook_name.c_str());
+    lua_pop(lua_L, 1);
+    return false;
+  }
 
   ev.push_lua_table(lua_L);
 
   bool result = false;
-  if (lua_pcall(lua_L, 1, 1, 0) != 0) {
-    NORM_ERR("llua_mouse_hook: function %s execution failed: %s", func.c_str(),
+  if (lua_pcall(lua_L, 1, 1, 0) != LUA_OK) {
+    NORM_ERR("llua_mouse_hook: hook %s execution failed: %s", hook_name.c_str(),
              lua_tostring(lua_L, -1));
     lua_pop(lua_L, 1);
   } else {
@@ -514,11 +563,14 @@ bool llua_mouse_hook(const EventT &ev) {
   return result;
 }
 
-template bool llua_mouse_hook<mouse_scroll_event>(const mouse_scroll_event &ev);
-template bool llua_mouse_hook<mouse_button_event>(const mouse_button_event &ev);
-template bool llua_mouse_hook<mouse_move_event>(const mouse_move_event &ev);
-template bool llua_mouse_hook<mouse_crossing_event>(
-    const mouse_crossing_event &ev);
+template bool llua_mouse_hook<conky::mouse_scroll_event>(
+    const conky::mouse_scroll_event &ev);
+template bool llua_mouse_hook<conky::mouse_button_event>(
+    const conky::mouse_button_event &ev);
+template bool llua_mouse_hook<conky::mouse_move_event>(
+    const conky::mouse_move_event &ev);
+template bool llua_mouse_hook<conky::mouse_crossing_event>(
+    const conky::mouse_crossing_event &ev);
 #endif /* BUILD_MOUSE_EVENTS */
 
 void llua_set_userdata(const char *key, const char *type, void *value) {

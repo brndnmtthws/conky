@@ -56,18 +56,14 @@ static char *i8k_procbuf = nullptr;
 int update_i8k(void) {
   FILE *fp;
 
-  if (!i8k_procbuf) { i8k_procbuf = (char *)malloc(128 * sizeof(char)); }
   if ((fp = fopen(PROC_I8K, "r")) == nullptr) {
-    free_and_zero(i8k_procbuf);
-    /*THREAD_CRIT_ERR(nullptr, NULL, "/proc/i8k doesn't exist! use insmod to
-      make sure the kernel " "driver is loaded...");*/
     NORM_ERR(
         "/proc/i8k doesn't exist! use insmod to make sure the kernel driver is "
         "loaded...");
-    clean_up_without_threads(nullptr, NULL);
     return 1;
   }
 
+  if (!i8k_procbuf) { i8k_procbuf = (char *)malloc(128 * sizeof(char)); }
   memset(&i8k_procbuf[0], 0, 128);
   if (fread(&i8k_procbuf[0], sizeof(char), 128, fp) == 0) {
     NORM_ERR("something wrong with /proc/i8k...");
@@ -139,7 +135,8 @@ void print_i8k_ac_status(struct text_object *obj, char *p,
   void print_i8k_##name(struct text_object *obj, char *p, \
                         unsigned int p_max_size) {        \
     (void)obj;                                            \
-    snprintf(p, p_max_size, "%s", i8k.name);              \
+    const char *str = i8k.name ? i8k.name : "error";      \
+    snprintf(p, p_max_size, "%s", str);                   \
   }
 
 I8K_PRINT_GENERATOR(version)

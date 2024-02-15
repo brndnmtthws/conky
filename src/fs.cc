@@ -192,14 +192,14 @@ void get_fs_type(const char *path, char *result) {
     fseek(mtab, 0, SEEK_SET);
     slash = strrchr(search_path, '/');
     if (slash == nullptr) {
-      CRIT_ERR(NULL, NULL, "invalid path '%s'", path);
+      CRIT_ERR("invalid path '%s'", path);
     } else {
       if (strlen(slash) == 1) /* trailing slash */
         *(slash) = '\0';
       else if (strlen(slash) > 1)
         *(slash + 1) = '\0';
       else
-        CRIT_ERR(nullptr, NULL, "found a crack in the matrix!");
+        CRIT_ERR("found a crack in the matrix!");
     }
   } while (strlen(search_path) > 0);
   free(search_path);

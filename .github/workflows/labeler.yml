@@ -1,4 +1,4 @@
-name: "Pull Request Labeler"
+name: 'Pull Request Labeler'
 on:
   - pull_request_target
 
@@ -9,7 +9,10 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/labeler@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run labeler
+        uses: actions/labeler@v5
         with:
           sync-labels: true
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          repo-token: '${{ secrets.GITHUB_TOKEN }}'

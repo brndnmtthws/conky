@@ -388,6 +388,11 @@ static void process_find_top(struct process **cpu, struct process **mem,
 }
 
 int update_top() {
+  // if nothing else has ever set up info, we need to update it here, because
+  // info.memmax is used to print percentages in `print_top_mem`
+  if (info.memmax == 0) {
+    update_meminfo();
+  }
   process_find_top(info.cpu, info.memu, info.time
 #ifdef BUILD_IOSTATS
                    ,

@@ -122,10 +122,19 @@ if(OS_SOLARIS)
   set(conky_libs ${conky_libs} -L/usr/local/lib)
 endif(OS_SOLARIS)
 
+if(OS_HAIKU)
+  # For asprintf
+  add_definitions(-D_GNU_SOURCE) # Standard definitions
+  set(
+    CMAKE_REQUIRED_DEFINITIONS
+    "${CMAKE_REQUIRED_DEFINITIONS} -D_GNU_SOURCE"
+    )
+endif(OS_HAIKU)
+
 # Do version stuff
 set(VERSION_MAJOR "1")
 set(VERSION_MINOR "19")
-set(VERSION_PATCH "2")
+set(VERSION_PATCH "7")
 
 find_program(APP_AWK awk)
 if(NOT APP_AWK)

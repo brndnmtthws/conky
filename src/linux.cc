@@ -192,7 +192,7 @@ int update_meminfo(void) {
   info.memmax = info.memdirty = info.swap = info.swapfree = info.swapmax =
       info.memwithbuffers = info.buffers = info.cached = info.memfree =
           info.memeasyfree = info.legacymem = info.shmem = info.memavail =
-              info.free_bufcache = 0;
+              info.free_bufcache = info.free_cached = 0;
 
   if (!(meminfo_fp = open_file("/proc/meminfo", &reported))) { return 0; }
 
@@ -261,7 +261,8 @@ int update_meminfo(void) {
   info.memeasyfree = cureasyfree;
   info.legacymem =
       info.memmax - (info.memfree + info.buffers + info.cached + sreclaimable);
-  info.free_bufcache = info.cached + info.buffers + sreclaimable;
+  info.free_cached = info.cached + sreclaimable;
+  info.free_bufcache = info.free_cached + info.buffers;
 
   fclose(meminfo_fp);
   return 0;
@@ -903,6 +904,10 @@ void determine_longstat_file(void) {
   FILE *stat_fp;
   static int reported = 0;
   char buf[MAX_PROCSTAT_LINELEN + 1];
+  static int stat_initialized = 0;
+
+  /* only execute once */
+  if (stat_initialized) return;
 
   if (!(stat_fp = open_file("/proc/stat", &reported))) return;
   while (!feof(stat_fp) &&
@@ -913,6 +918,7 @@ void determine_longstat_file(void) {
     }
   }
   fclose(stat_fp);
+  stat_initialized = 1;
 }
 
 void get_cpu_count(void) {
@@ -1000,6 +1006,7 @@ int update_stat(void) {
   }
 
   if (!stat_template) {
+    determine_longstat_file();
     stat_template =
         KFLAG_ISSET(KFLAG_IS_LONGSTAT) ? TMPL_LONGSTAT : TMPL_SHORTSTAT;
   }
@@ -1213,7 +1220,11 @@ static void get_dev_path(const char *dir, const char *dev, char *out_buf) {
 
     snprintf(path, 512, "%s%s/name", dir, namelist[i]->d_name);
     name_fd = open(path, O_RDONLY);
-    if (name_fd < 0) continue;
+    if (name_fd < 0) {
+      snprintf(path, 512, "%s%s/device/name", dir, namelist[i]->d_name);
+      name_fd = open(path, O_RDONLY);
+      if (name_fd < 0) continue;
+    }
     size = read(name_fd, name, strlen(dev));
     if (size < strlen(dev)) {
       close(name_fd);

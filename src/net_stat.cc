@@ -530,7 +530,7 @@ int interface_up(struct text_object *obj) {
 #else
   if ((fd = socket(PF_INET, SOCK_DGRAM | SOCK_CLOEXEC, 0)) < 0) {
 #endif
-    CRIT_ERR(nullptr, nullptr, "could not create sockfd");
+    CRIT_ERR("could not create sockfd");
     return 0;
   }
   strncpy(ifr.ifr_name, dev, IFNAMSIZ);

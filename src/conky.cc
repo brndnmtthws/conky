@@ -1724,7 +1724,7 @@ void main_loop() {
 #ifdef SIGNAL_BLOCKING
     /* block signals.  we will inspect for pending signals later */
     if (sigprocmask(SIG_BLOCK, &newmask, &oldmask) < 0) {
-      CRIT_ERR(nullptr, NULL, "unable to sigprocmask()");
+      CRIT_ERR("unable to sigprocmask()");
     }
 #endif
 
@@ -1751,7 +1751,7 @@ void main_loop() {
 #ifdef SIGNAL_BLOCKING
     /* unblock signals of interest and let handler fly */
     if (sigprocmask(SIG_SETMASK, &oldmask, nullptr) < 0) {
-      CRIT_ERR(nullptr, NULL, "unable to sigprocmask()");
+      CRIT_ERR("unable to sigprocmask()");
     }
 #endif
 
@@ -1828,7 +1828,7 @@ void main_loop() {
 
     llua_update_info(&info, active_update_interval());
   }
-  clean_up(nullptr, nullptr);
+  clean_up();
 
 #ifdef HAVE_SYS_INOTIFY_H
   if (inotify_fd != -1) {
@@ -1850,7 +1850,7 @@ static void reload_config() {
              current_config.c_str(), getpid());
     return;
   }
-  clean_up(nullptr, nullptr);
+  clean_up();
   state = std::make_unique<lua::state>();
   conky::export_symbols(*state);
   sleep(1); /* slight pause */
@@ -1868,18 +1868,18 @@ void free_specials(special_t *&current) {
   clear_stored_graphs();
 }
 
-void clean_up_without_threads(void *memtofree1, void *memtofree2) {
-  free_and_zero(memtofree1);
-  free_and_zero(memtofree2);
-
+void clean_up(void) {
+  /* free_update_callbacks(); XXX: some new equivalent of this? */
   free_and_zero(info.cpu_usage);
   for (auto output : display_outputs()) output->cleanup();
   conky::shutdown_display_outputs();
 #ifdef BUILD_GUI
-  if (!display_output() || !display_output()->graphical())
+  if (!display_output() || !display_output()->graphical()) {
     fonts.clear();  // in set_default_configurations a font is set but not
                     // loaded
-#endif              /* BUILD_GUI */
+    selected_font = 0;
+  }
+#endif /* BUILD_GUI */
 
   if (info.first_process != nullptr) {
     free_all_processes();
@@ -1909,11 +1909,6 @@ void clean_up_without_threads(void *memtofree1, void *memtofree2) {
 
   conky::cleanup_config_settings(*state);
   state.reset();
-}
-
-void clean_up(void *memtofree1, void *memtofree2) {
-  /* free_update_callbacks(); XXX: some new equivalent of this? */
-  clean_up_without_threads(memtofree1, memtofree2);
 }
 
 static void set_default_configurations() {
@@ -2112,7 +2107,7 @@ void initialisation(int argc, char **argv) {
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null", O_RDONLY,
                      "kvm_open")) == nullptr) {
-    CRIT_ERR(nullptr, NULL, "cannot read kvm");
+    CRIT_ERR("cannot read kvm");
   }
 #endif
 
@@ -2140,8 +2135,7 @@ void initialisation(int argc, char **argv) {
       case 'm':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR(nullptr, nullptr, "'%s' is a wrong xinerama-head index",
-                   optarg);
+          CRIT_ERR("'%s' is a wrong xinerama-head index", optarg);
         }
         head_index.lua_set(*state);
         break;
@@ -2177,7 +2171,7 @@ void initialisation(int argc, char **argv) {
       case 'u':
         state->pushinteger(dpi_scale(strtol(optarg, &conv_end, 10)));
         if (*conv_end != 0) {
-          CRIT_ERR(nullptr, nullptr, "'%s' is a wrong update-interval", optarg);
+          CRIT_ERR("'%s' is a wrong update-interval", optarg);
         }
         update_interval.lua_set(*state);
         break;
@@ -2185,8 +2179,7 @@ void initialisation(int argc, char **argv) {
       case 'i':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR(nullptr, nullptr, "'%s' is a wrong number of update-times",
-                   optarg);
+          CRIT_ERR("'%s' is a wrong number of update-times", optarg);
         }
         total_run_times.lua_set(*state);
         break;
@@ -2194,8 +2187,7 @@ void initialisation(int argc, char **argv) {
       case 'x':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR(nullptr, nullptr, "'%s' is a wrong value for the X-position",
-                   optarg);
+          CRIT_ERR("'%s' is a wrong value for the X-position", optarg);
         }
         gap_x.lua_set(*state);
         break;
@@ -2203,8 +2195,7 @@ void initialisation(int argc, char **argv) {
       case 'y':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR(nullptr, nullptr, "'%s' is a wrong value for the Y-position",
-                   optarg);
+          CRIT_ERR("'%s' is a wrong value for the Y-position", optarg);
         }
         gap_y.lua_set(*state);
         break;
@@ -2266,7 +2257,7 @@ void initialisation(int argc, char **argv) {
   memset(tmpstring2, 0, text_buffer_size.get(*state));
 
   if (!conky::initialize_display_outputs()) {
-    CRIT_ERR(nullptr, nullptr, "initialize_display_outputs() failed.");
+    CRIT_ERR("initialize_display_outputs() failed.");
   }
 #ifdef BUILD_GUI
   /* setup lua window globals */

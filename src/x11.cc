@@ -27,11 +27,22 @@
  *
  */
 
+#include "x11.h"
+
 #include <X11/X.h>
+#include <sys/types.h>
 #include "common.h"
 #include "config.h"
 #include "conky.h"
+#include "gui.h"
 #include "logging.h"
+
+#include <array>
+#include <cstddef>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
@@ -42,7 +53,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>
 #include <X11/Xutil.h>
-#include "gui.h"
+
 #ifdef BUILD_IMLIB2
 #include "imlib2.h"
 #endif /* BUILD_IMLIB2 */
@@ -61,9 +72,22 @@
 #ifdef BUILD_XFIXES
 #include <X11/extensions/Xfixes.h>
 #endif /* BUILD_XFIXES */
+#ifdef BUILD_XINPUT
+#include <X11/extensions/XInput2.h>
+#include <vector>
+#endif /* BUILD_XINPUT */
+#ifdef HAVE_XCB_ERRORS
+#include <xcb/xcb.h>
+#include <xcb/xcb_errors.h>
+#endif
 
 /* some basic X11 stuff */
 Display *display = nullptr;
+
+#ifdef HAVE_XCB_ERRORS
+xcb_connection_t *xcb_connection;
+xcb_errors_context_t *xcb_errors_ctx;
+#endif
 
 /* Window stuff */
 struct conky_x11_window window;
@@ -80,7 +104,6 @@ static void update_workarea();
 static Window find_desktop_window(Window *p_root, Window *p_desktop);
 static Window find_subwindow(Window win, int w, int h);
 static void init_x11();
-static void deinit_x11();
 
 /********************* <SETTINGS> ************************/
 namespace priv {
@@ -193,13 +216,6 @@ conky::simple_config_setting<bool> use_xft("use_xft", false, false);
 
 conky::simple_config_setting<bool> forced_redraw("forced_redraw", false, false);
 
-#ifdef OWN_WINDOW
-#ifdef BUILD_ARGB
-conky::simple_config_setting<bool> use_argb_visual("own_window_argb_visual",
-                                                   false, false);
-#endif /* BUILD_ARGB */
-#endif /* OWN_WINDOW */
-
 #ifdef BUILD_XDBE
 priv::use_xdbe_setting use_xdbe;
 #else
@@ -216,20 +232,79 @@ imlib_cache_size_setting imlib_cache_size;
 /******************** </SETTINGS> ************************/
 
 /* WARNING, this type not in Xlib spec */
-static int __attribute__((noreturn))
-x11_error_handler(Display *d, XErrorEvent *err) {
-  NORM_ERR(
-      "X Error: type %i Display %lx XID %li serial %lu error_code %i "
-      "request_code %i minor_code %i other Display: %lx\n",
-      err->type, (long unsigned)err->display,
-      static_cast<long>(err->resourceid), err->serial, err->error_code,
-      err->request_code, err->minor_code, (long unsigned)d);
-  abort();
+static int x11_error_handler(Display *d, XErrorEvent *err) {
+  char *error_name = nullptr;
+  bool name_allocated = false;
+
+  char *code_description = nullptr;
+  bool code_allocated = false;
+
+#ifdef HAVE_XCB_ERRORS
+  if (xcb_errors_ctx != nullptr) {
+    const char *extension;
+    const char *base_name = xcb_errors_get_name_for_error(
+        xcb_errors_ctx, err->error_code, &extension);
+    if (extension != nullptr) {
+      const std::size_t size = strlen(base_name) + strlen(extension) + 4;
+      error_name = new char(size);
+      snprintf(error_name, size, "%s (%s)", base_name, extension);
+      name_allocated = true;
+    } else {
+      error_name = const_cast<char *>(base_name);
+    }
+
+    const char *major =
+        xcb_errors_get_name_for_major_code(xcb_errors_ctx, err->request_code);
+    const char *minor = xcb_errors_get_name_for_minor_code(
+        xcb_errors_ctx, err->request_code, err->minor_code);
+    if (minor != nullptr) {
+      const std::size_t size = strlen(base_name) + strlen(extension) + 4;
+      code_description = new char(size);
+      snprintf(code_description, size, "%s - %s", major, minor);
+      code_allocated = true;
+    } else {
+      code_description = const_cast<char *>(major);
+    }
+  }
+#endif
+
+  if (error_name == nullptr) {
+    if (err->error_code > 0 && err->error_code < 17) {
+      static std::array<std::string, 17> NAMES = {
+          "request", "value",         "window",    "pixmap",    "atom",
+          "cursor",  "font",          "match",     "drawable",  "access",
+          "alloc",   "colormap",      "G context", "ID choice", "name",
+          "length",  "implementation"};
+      error_name = const_cast<char *>(NAMES[err->error_code].c_str());
+    } else {
+      static char code_name_buffer[5];
+      error_name = reinterpret_cast<char *>(&code_name_buffer);
+      snprintf(error_name, 4, "%d", err->error_code);
+    }
+  }
+  if (code_description == nullptr) {
+    const std::size_t size = 37;
+    code_description = new char(size);
+    snprintf(code_description, size, "error code: [major: %i, minor: %i]",
+             err->request_code, err->minor_code);
+    code_allocated = true;
+  }
+
+  DBGP(
+      "X %s Error:\n"
+      "Display: %lx, XID: %li, Serial: %lu\n"
+      "%s",
+      error_name, reinterpret_cast<uint64_t>(err->display),
+      static_cast<int64_t>(err->resourceid), err->serial, code_description);
+
+  if (name_allocated) free(error_name);
+  if (code_allocated) free(code_description);
+
+  return 0;
 }
 
-static int __attribute__((noreturn)) x11_ioerror_handler(Display *d) {
-  NORM_ERR("X Error: Display %lx\n", (long unsigned)d);
-  exit(1);
+__attribute__((noreturn)) static int x11_ioerror_handler(Display *d) {
+  CRIT_ERR("X IO Error: Display %lx\n", reinterpret_cast<uint64_t>(d));
 }
 
 /* X11 initializer */
@@ -268,6 +343,15 @@ static void init_x11() {
 
   update_workarea();
 
+#ifdef HAVE_XCB_ERRORS
+  auto connection = xcb_connect(NULL, NULL);
+  if (!xcb_connection_has_error(connection)) {
+    if (xcb_errors_context_new(connection, &xcb_errors_ctx) != Success) {
+      xcb_errors_ctx = nullptr;
+    }
+  }
+#endif /* HAVE_XCB_ERRORS */
+
   /* WARNING, this type not in Xlib spec */
   XSetErrorHandler(&x11_error_handler);
   XSetIOErrorHandler(&x11_ioerror_handler);
@@ -275,7 +359,7 @@ static void init_x11() {
   DBGP("leave init_x11()");
 }
 
-static void deinit_x11() {
+void deinit_x11() {
   if (display) {
     DBGP("deinit_x11()");
     XCloseDisplay(display);
@@ -404,6 +488,7 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop) {
 }
 
 #ifdef OWN_WINDOW
+#ifdef BUILD_ARGB
 namespace {
 /* helper function for set_transparent_background() */
 void do_set_background(Window win, uint8_t alpha) {
@@ -413,6 +498,7 @@ void do_set_background(Window win, uint8_t alpha) {
   XSetWindowBackground(display, win, xcolor);
 }
 }  // namespace
+#endif /* BUILD_ARGB */
 
 /* if no argb visual is configured sets background to ParentRelative for the
    Window and all parents, else real transparency is used */
@@ -423,31 +509,32 @@ void set_transparent_background(Window win) {
     do_set_background(win, set_transparent.get(*state)
                                ? 0
                                : own_window_argb_value.get(*state));
-  } else {
-#endif /* BUILD_ARGB */
-    // pseudo transparency
-
-    if (set_transparent.get(*state)) {
-      Window parent = win;
-      unsigned int i;
-
-      for (i = 0; i < 50 && parent != RootWindow(display, screen); i++) {
-        Window r, *children;
-        unsigned int n;
-
-        XSetWindowBackgroundPixmap(display, parent, ParentRelative);
-
-        XQueryTree(display, parent, &r, &parent, &children, &n);
-        XFree(children);
-      }
-    } else {
-      do_set_background(win, 0);
-    }
-#ifdef BUILD_ARGB
+    return;
   }
 #endif /* BUILD_ARGB */
+
+  // pseudo transparency
+  if (set_transparent.get(*state)) {
+    Window parent = win;
+    unsigned int i;
+
+    for (i = 0; i < 50 && parent != RootWindow(display, screen); i++) {
+      Window r, *children;
+      unsigned int n;
+
+      XSetWindowBackgroundPixmap(display, parent, ParentRelative);
+
+      XQueryTree(display, parent, &r, &parent, &children, &n);
+      XFree(children);
+    }
+    return;
+  }
+
+#ifdef BUILD_ARGB
+  do_set_background(win, 0);
+#endif /* BUILD_ARGB */
 }
-#endif
+#endif /* OWN_WINDOW */
 
 #ifdef BUILD_ARGB
 static int get_argb_visual(Visual **visual, int *depth) {
@@ -487,7 +574,7 @@ void destroy_window() {
   memset(&window, 0, sizeof(struct conky_x11_window));
 }
 
-void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
+void x11_init_window(lua::state &l, bool own) {
   DBGP("enter x11_init_window()");
   // own is unused if OWN_WINDOW is not defined
   (void)own;
@@ -502,20 +589,16 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
       return;
     }
 
+    window.visual = DefaultVisual(display, screen);
+    window.colourmap = DefaultColormap(display, screen);
+    depth = CopyFromParent;
+    visual = CopyFromParent;
 #ifdef BUILD_ARGB
     if (use_argb_visual.get(l) && (get_argb_visual(&visual, &depth) != 0)) {
       have_argb_visual = true;
       window.visual = visual;
       window.colourmap = XCreateColormap(display, DefaultRootWindow(display),
                                          window.visual, AllocNone);
-    } else {
-#endif /* BUILD_ARGB */
-      window.visual = DefaultVisual(display, screen);
-      window.colourmap = DefaultColormap(display, screen);
-      depth = CopyFromParent;
-      visual = CopyFromParent;
-#ifdef BUILD_ARGB
-      have_argb_visual = false;
     }
 #endif /* BUILD_ARGB */
 
@@ -556,14 +639,12 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
                                     True,
                                     0,
                                     0};
+      flags |= CWBackPixel;
 #ifdef BUILD_ARGB
       if (have_argb_visual) {
         attrs.colormap = window.colourmap;
+        flags &= ~CWBackPixel;
         flags |= CWBorderPixel | CWColormap;
-      } else {
-#endif /* BUILD_ARGB */
-        flags |= CWBackPixel;
-#ifdef BUILD_ARGB
       }
 #endif /* BUILD_ARGB */
 
@@ -602,14 +683,12 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
       XWMHints wmHint;
       Atom xa;
 
+      flags |= CWBackPixel;
 #ifdef BUILD_ARGB
       if (have_argb_visual) {
         attrs.colormap = window.colourmap;
+        flags &= ~CWBackPixel;
         flags |= CWBorderPixel | CWColormap;
-      } else {
-#endif /* BUILD_ARGB */
-        flags |= CWBackPixel;
-#ifdef BUILD_ARGB
       }
 #endif /* BUILD_ARGB */
 
@@ -825,7 +904,6 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
     fflush(stderr);
 
     XMapWindow(display, window.window);
-
   } else
 #endif /* OWN_WINDOW */
   {
@@ -855,20 +933,53 @@ void x11_init_window(lua::state &l __attribute__((unused)), bool own) {
 
   XFlush(display);
 
-  long input_mask = ExposureMask | PropertyChangeMask;
+  int64_t input_mask = ExposureMask | PropertyChangeMask;
 #ifdef OWN_WINDOW
   if (own_window.get(l)) {
     input_mask |= StructureNotifyMask | ButtonPressMask | ButtonReleaseMask;
   }
-#endif /* OWN_WINDOW */
 #ifdef BUILD_MOUSE_EVENTS
   /* it's not recommended to add event masks to special windows in X; causes a
    * crash */
-  if (own_window_type.get(l) != TYPE_DESKTOP) {
-    input_mask |= ButtonPressMask | ButtonReleaseMask | PointerMotionMask |
-                  EnterWindowMask | LeaveWindowMask;
+  if (own && own_window_type.get(l) != TYPE_DESKTOP) {
+    input_mask |= PointerMotionMask | ButtonPressMask | ButtonReleaseMask;
+  }
+  bool xinput_ok = false;
+#ifdef BUILD_XINPUT
+  do {             // not loop
+    int _ignored;  // segfault if NULL
+    if (!XQueryExtension(display, "XInputExtension", &window.xi_opcode,
+                         &_ignored, &_ignored)) {
+      // events will still ~work but let the user know why they're buggy
+      NORM_ERR("XInput extension is not supported by X11!");
+      break;
+    }
+
+    int32_t major = 2, minor = 0;
+    uint32_t retval = XIQueryVersion(display, &major, &minor);
+    if (retval != Success) {
+      NORM_ERR("Error: XInput 2.0 is not supported!");
+      break;
+    }
+
+    const std::size_t mask_size = (XI_LASTEVENT + 7) / 8;
+    unsigned char mask_bytes[mask_size] = {0}; /* must be zeroed! */
+    XISetMask(mask_bytes, XI_Motion);
+
+    XIEventMask ev_masks[1];
+    ev_masks[0].deviceid = XIAllDevices;
+    ev_masks[0].mask_len = sizeof(mask_bytes);
+    ev_masks[0].mask = mask_bytes;
+    XISelectEvents(display, window.root, ev_masks, 1);
+    xinput_ok = true;
+  } while (false);
+#endif /* BUILD_XINPUT */
+  if (!xinput_ok && own && own_window_type.get(l) != TYPE_DESKTOP) {
+    input_mask |= EnterWindowMask | LeaveWindowMask;
   }
 #endif /* BUILD_MOUSE_EVENTS */
+#endif /* OWN_WINDOW */
+  window.event_mask = input_mask;
   XSelectInput(display, window.window, input_mask);
 
   window_created = 1;
@@ -1230,3 +1341,72 @@ void print_mouse_speed(struct text_object *obj, char *p,
   XGetPointerControl(display, &acc_num, &acc_denom, &threshold);
   snprintf(p, p_max_size, "%d%%", (110 - threshold));
 }
+
+InputEvent *xev_as_input_event(XEvent &ev) {
+  if (ev.type == KeyPress || ev.type == KeyRelease || ev.type == ButtonPress ||
+      ev.type == ButtonRelease || ev.type == MotionNotify ||
+      ev.type == EnterNotify || ev.type == LeaveNotify) {
+    return reinterpret_cast<InputEvent *>(&ev);
+  } else {
+    return nullptr;
+  }
+}
+
+void propagate_x11_event(XEvent &ev) {
+  InputEvent *i_ev = xev_as_input_event(ev);
+  /* forward the event to the desktop window */
+  if (i_ev != nullptr) {
+    i_ev->common.window = window.desktop;
+    i_ev->common.x = i_ev->common.x_root;
+    i_ev->common.y = i_ev->common.y_root;
+  }
+  XSendEvent(display, window.desktop, False, window.event_mask, &ev);
+
+  int _revert_to;
+  Window focused;
+  XGetInputFocus(display, &focused, &_revert_to);
+  if (focused == window.window) {
+    Time time = CurrentTime;
+    if (i_ev != nullptr) { time = i_ev->common.time; }
+    XSetInputFocus(display, window.desktop, RevertToPointerRoot, time);
+  }
+}
+
+#ifdef BUILD_MOUSE_EVENTS
+// Assuming parent has a simple linear stack of descendants, this function
+// returns the last leaf on the graph.
+inline Window last_descendant(Display *display, Window parent) {
+  Window _ignored, *children;
+  std::uint32_t count;
+
+  Window current = parent;
+
+  while (
+      XQueryTree(display, current, &_ignored, &_ignored, &children, &count) &&
+      count != 0) {
+    current = children[count - 1];
+    XFree(children);
+  }
+
+  return current;
+}
+
+Window query_x11_window_at_pos(Display *display, int x, int y) {
+  Window root = DefaultRootWindow(display);
+
+  // these values are ignored but NULL can't be passed
+  Window root_return;
+  int root_x_return, root_y_return, win_x_return, win_y_return;
+  unsigned int mask_return;
+
+  Window last = None;
+  XQueryPointer(display, window.root, &root_return, &last, &root_x_return,
+                &root_y_return, &win_x_return, &win_y_return, &mask_return);
+
+  // X11 correctly returns a window which covers conky area, but returned
+  // window is not window.window, but instead a parent node in some cases and
+  // the window.window we want to check for is a 1x1 child of that window.
+  return last_descendant(display, last);
+}
+
+#endif /* BUILD_MOUSE_EVENTS */

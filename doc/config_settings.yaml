@@ -221,11 +221,10 @@ values:
   - name: lua_mouse_hook
     desc: |-
       This function, if defined, will be called by Conky upon receiving mouse
-      events from X. Requires X support. A table containing event information
-      will be passed to this function as the first argument. Use this hook for
-      detecting mouse input and acting on it. Conky puts 'conky_' in front of
-      function_name to prevent accidental calls to the wrong function unless
-      you place 'conky_' in front of it yourself.
+      events from X or Wayland. A table containing event information will be
+      passed to this function as the first argument. Use this hook for detecting
+      mouse input and acting on it. Conky requires that the function declaration
+      has a 'conky_' prefix to prevent accidental calls to the wrong function.
     args:
       - function_name
   - name: lowercase
@@ -288,26 +287,26 @@ values:
       isn't reached, the next char will start on a new line. If you want to
       make sure that lines don't get broken, set 'width' to 0.
     args:
-      - seconds
+      - integer_number
   - name: max_user_text
     desc: |-
       Maximum size of user text buffer in bytes, i.e. text inside
       conky.text section in config file.
     default: 16384
     args:
-      - seconds
+      - integer_number
   - name: maximum_width
     desc: Maximum width of window.
     args:
-      - seconds
+      - integer_number
   - name: minimum_height
     desc: Minimum height of the window.
     args:
-      - seconds
+      - integer_number
   - name: minimum_width
     desc: Minimum width of window.
     args:
-      - seconds
+      - integer_number
   - name: mpd_host
     desc: Host of MPD server.
   - name: mpd_password
@@ -370,18 +369,21 @@ values:
   - name: overwrite_file
     desc: Overwrite the file given as argument.
   - name: own_window
-    desc: Boolean, create own window to draw.
+    desc: Boolean, draw conky in own window instead of drawing on root window.
   - name: own_window_argb_value
     desc: |-
       When ARGB visuals are enabled, this use this to modify the
       alpha value used. Valid range is 0-255, where 0 is 0% opacity, and 255
       is 100% opacity.
+    default: 255
+    args:
+      - integer_number
   - name: own_window_argb_visual
     desc: |-
-      Boolean, use ARGB visual? ARGB can be used for real
-      transparency, note that a composite manager is required for real
-      transparency. This option will not work as desired (in most cases) in
-      conjunction with 'own_window_type override'.
+      Boolean, use ARGB visual? ARGB can be used for real transparency, note
+      that a composite manager is required on X11.
+      This option will not work as desired (in most cases) in conjunction with
+      'own_window_type override'.
   - name: own_window_class
     desc: Manually set the WM_CLASS name.
     default: Conky
@@ -389,20 +391,20 @@ values:
     desc: |-
       If own_window_transparent no, set a specified background
       colour. Takes either a hex value (e.g. '#ffffff'),
-      a shorthand hex value (e.g. '#fff'), or a valid RGB nam 
+      a shorthand hex value (e.g. '#fff'), or a valid RGB name
       (see `/usr/lib/X11/rgb.txt`).
     default: black
     args:
-      - seconds
+      - color
   - name: own_window_hints
     desc: |-
-      If own_window is yes, you may use these window manager hints
+      If own_window is yes, you may specify comma separated window manager hints
       to affect the way Conky displays. Notes: Use own_window_type desktop
       as another way to implement many of these hints implicitly. If you use
       own_window_type override, window manager hints have no meaning and are
       ignored.
     args:
-      - seconds
+      - hint(,hint)*
   - name: own_window_title
     desc: |-
       Manually set the window name.
@@ -457,7 +459,7 @@ values:
       Changes the color space used for interpolation. Arguments are hcl, hsv,
       and rgb (default).
     args:
-      - (rbg|hcl|hsv)
+      - (rgb|hcl|hsv)
     default: rgb
   - name: stippled_borders
     desc: Border stippling (dashing) in pixels.
