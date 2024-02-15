@@ -215,9 +215,20 @@ void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, FontData *f
   hb_glyph_position_t *glyph_pos    = hb_buffer_get_glyph_positions(buf, &glyph_count);
   cairo_glyph_t       *cairo_glyphs = malloc(sizeof(cairo_glyph_t) * glyph_count);
 
+  /* RTL positioning seems to be slightly off and characters don't link as they should */
+  /* This hack gets it significantly closer to correct but is not 100% for all fonts and sizes */
+  int rtl_fix = font->font_size/10;
+
   unsigned int string_width_in_pixels = 0;
   for (int i=0; i < glyph_count; ++i) {
       string_width_in_pixels += glyph_pos[i].x_advance/64;
+      if (text_direction == HB_DIRECTION_RTL) {
+        string_width_in_pixels -= rtl_fix;
+      }
+  }
+  /* More RTL Hacks */
+  if (text_direction == HB_DIRECTION_RTL) {
+    string_width_in_pixels += 2;
   }
   int draw_x = x;
   int draw_y = y;
@@ -257,6 +268,9 @@ void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, FontData *f
       cairo_glyphs[i].x = x + draw_x + (glyph_pos[i].x_offset/64.0);
       cairo_glyphs[i].y = y + draw_y - (glyph_pos[i].y_offset/64.0);
       x += glyph_pos[i].x_advance/64.0;
+      if (text_direction == HB_DIRECTION_RTL) {
+        x -= rtl_fix;
+      }
       y -= glyph_pos[i].y_advance/64.0;
   }
 
