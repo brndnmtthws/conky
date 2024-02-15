@@ -234,7 +234,6 @@ void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, FontData *f
   int draw_y = y;
 
   if (HB_DIRECTION_IS_VERTICAL(text_direction)) { 
-    /* FIXME */
     draw_x = width/2 - string_width_in_pixels/2 + x;
   }
   else {
@@ -263,7 +262,6 @@ void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, FontData *f
   y = 0;
 
   for (int i=0; i < glyph_count; ++i) {
-      /* FIXME: Handle Top to Bottom here */
       cairo_glyphs[i].index = glyph_info[i].codepoint;
       cairo_glyphs[i].x = x + draw_x + (glyph_pos[i].x_offset/64.0);
       cairo_glyphs[i].y = y + draw_y - (glyph_pos[i].y_offset/64.0);
