@@ -41,7 +41,11 @@
 #include <harfbuzz/hb-ft.h>
 #include <harfbuzz/hb-glib.h>
 
+#define max_fonts 4096
+#define max_font_name_len 4096
+
 typedef struct _FontData {
+  char name[max_font_name_len];
   cairo_font_face_t *cairo_ft_face;
   hb_font_t *hb_ft_font;
   hb_face_t *hb_ft_face;
@@ -52,17 +56,20 @@ typedef struct _FontData {
   FT_Face ft_face;
 }FontData;
 
+FontData* font_cache[max_fonts] = {NULL};
+
 typedef enum _cairo_text_alignment {
   CAIRO_TEXT_ALIGN_LEFT = 0,
   CAIRO_TEXT_ALIGN_RIGHT,
   CAIRO_TEXT_ALIGN_CENTER
 } cairo_text_alignment_t;
 
-FontData *cairo_text_hp_load_font(const char *font, int font_size)
+/* Imports a font from a file */
+FontData *cairo_text_hp_import_font(const char *font, int font_size)
 {
   /* Fontconfig will take a font name and return the file with */
   /* the best match as Freetype only works directly with font files */
-    
+  
   FcInit();
   FcConfig* config = FcInitLoadConfigAndFonts();
 
@@ -89,6 +96,8 @@ FontData *cairo_text_hp_load_font(const char *font, int font_size)
   }
   
   FontData *font_data = malloc(sizeof(struct _FontData));
+
+  strncpy(font_data->name, font, max_font_name_len);
   
   /* Load the font */
   FT_Init_FreeType(&font_data->ft_library);
@@ -112,6 +121,27 @@ FontData *cairo_text_hp_load_font(const char *font, int font_size)
   return font_data;
 }
 
+/* Either loads font from cache or imports from a file */
+FontData *cairo_text_hp_load_font(const char *font, int font_size)
+{
+  FontData *font_data = NULL;
+  
+  /* Search for font in cache */
+  for (int i = 0; i < max_fonts; i++) {
+      if (font_cache[i] == NULL) {
+        /* Haven't used this font yet so load and cache it */
+        font_data = cairo_text_hp_import_font(font, font_size);
+        font_cache[i] = font_data;
+        return font_data;
+      }
+      if ((strncmp(font_cache[i]->name, font, max_font_name_len) == 0) &&
+         (font_size == font_cache[i]->font_size)) {
+        font_data = font_cache[i];
+        return font_data;
+      }
+  }
+}
+
 void cairo_text_hp_destroy_font(FontData *font)
 {
   cairo_font_face_destroy(font->cairo_ft_face);
@@ -125,6 +155,13 @@ void cairo_text_hp_destroy_font(FontData *font)
   free(font);
 }
 
+void cairo_text_hp_delete_fonts()
+{
+  for (int i = 0; (i < max_fonts) && (font_cache[i] != NULL); i++) {
+    cairo_text_hp_destroy_font(font_cache[i]);
+  }
+}
+
 /* 
  * Direction calls hb_direction_from_string example values are LTR and RTL
  *   https://harfbuzz.github.io/harfbuzz-hb-common.html#hb-direction-from-string
@@ -133,16 +170,28 @@ void cairo_text_hp_destroy_font(FontData *font)
  *  https://harfbuzz.github.io/harfbuzz-hb-common.html#hb-script-from-string
  * Language is a BCP 47 language tag. eg "en" or "en-US"
  */
-void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, FontData *font, 
+void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, const char *font, int font_size, 
                    cairo_text_alignment_t alignment, const char *language, const char *script, const char *direction)
 {
   /* It seems that lua may just pass NULL for an empty string */
   if (text == NULL) {
-    printf("Error: CairoTextHelper: Null string\n");
+    printf("Error: CairoTextHelper: TextShow: Null string\n");
     return;
   }
   if (font == NULL) {
-    printf("Error: CairoTextHelper: Null FontData");
+    printf("Error: CairoTextHelper: TextShow: Null Font\n");
+    return;
+  }
+  if (font_size <= 1) {
+    printf("Error: CairoTextHelper: TextShow: Font Size less then 1\n");
+    return;
+  }
+
+  FontData *font_data = cairo_text_hp_load_font(font, font_size);
+
+  /* If we reach here without font data then we have cached too many fonts */
+  if (font_data == NULL) {
+    printf("Error: CairoTextHelper: TextShow: Used too many fonts\n");
     return;
   }
 
@@ -198,11 +247,11 @@ void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, FontData *f
 
   /* Layout the text */
   hb_buffer_add_utf8(buf, text, strlen(text), 0, strlen(text));
-  hb_shape(font->hb_ft_font, buf, NULL, 0);
+  hb_shape(font_data->hb_ft_font, buf, NULL, 0);
 
   /* Need to calculate the Baseline for drawing on the y axis */
   hb_font_extents_t font_extents;
-  hb_font_get_extents_for_direction(font->hb_ft_font, text_direction, &font_extents);
+  hb_font_get_extents_for_direction(font_data->hb_ft_font, text_direction, &font_extents);
 
   /* Note Line Gap was always 0 in my testing */
   int baseline_offset = font_extents.ascender/64 + 0.5 * font_extents.line_gap/64 + 1;
@@ -215,7 +264,7 @@ void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, FontData *f
 
   /* RTL positioning seems to be slightly off and characters don't link as they should */
   /* This hack gets it significantly closer to correct but is not 100% for all fonts and sizes */
-  int rtl_fix = font->font_size/10;
+  int rtl_fix = font_data->font_size/10;
 
   unsigned int string_width_in_pixels = 0;
   for (int i=0; i < glyph_count; ++i) {
@@ -270,17 +319,40 @@ void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, FontData *f
       y -= glyph_pos[i].y_advance/64.0;
   }
 
-  cairo_set_font_face(cr, font->cairo_ft_face);
-  cairo_set_font_size(cr, font->font_size);
+  cairo_set_font_face(cr, font_data->cairo_ft_face);
+  cairo_set_font_size(cr, font_data->font_size);
   cairo_show_glyphs(cr, cairo_glyphs, glyph_count);
 
   free(cairo_glyphs);
   hb_buffer_destroy(buf);
 }
 
-int cairo_text_hp_text_size( const char *text, FontData *font, 
-                             const char *language, const char *script, const char *direction, int *width, int *height)
+int cairo_text_hp_text_size( const char *text, const char *font, int font_size, 
+                             const char *language, const char *script, const char *direction, 
+                             int *width, int *height)
 {
+  /* It seems that lua may just pass NULL for an empty string */
+  if (text == NULL) {
+    printf("Error: CairoTextHelper: TextSize: Null string\n");
+    return -1;
+  }
+  if (font == NULL) {
+    printf("Error: CairoTextHelper: TextSize: Null Font\n");
+    return -1;
+  }
+  if (font_size <= 1) {
+    printf("Error: CairoTextHelper: TextSize: Font Size less then 1\n");
+    return -1;
+  }
+
+  FontData *font_data = cairo_text_hp_load_font(font, font_size);
+
+  /* If we reach here without font data then we have cached too many fonts */
+  if (font_data == NULL) {
+    printf("Error: CairoTextHelper: TextSize: Used too many fonts\n");
+    return -1;
+  }
+
   hb_language_t text_language;
   hb_direction_t text_direction;
   if (language != NULL) {
@@ -325,10 +397,10 @@ int cairo_text_hp_text_size( const char *text, FontData *font,
 
   /* Layout the text */
   hb_buffer_add_utf8(buf, text, strlen(text), 0, strlen(text));
-  hb_shape(font->hb_ft_font, buf, NULL, 0);
+  hb_shape(font_data->hb_ft_font, buf, NULL, 0);
 
   hb_font_extents_t font_extents;
-  hb_font_get_extents_for_direction(font->hb_ft_font, text_direction, &font_extents);
+  hb_font_get_extents_for_direction(font_data->hb_ft_font, text_direction, &font_extents);
 
   /* Hand the layout to cairo to render */
   unsigned int         glyph_count;
@@ -347,7 +419,7 @@ int cairo_text_hp_text_size( const char *text, FontData *font,
     /* Width */
     for (int i=0; i < glyph_count; ++i) {
         string_width_in_pixels += glyph_pos[i].x_advance/64+glyph_pos[i].x_offset/64;
-        hb_font_get_glyph_extents (font->hb_ft_font, glyph_info[i].codepoint,
+        hb_font_get_glyph_extents (font_data->hb_ft_font, glyph_info[i].codepoint,
                                    &glyph_extents);
         int h = ((glyph_extents.height/64)*-1)+(glyph_extents.y_bearing/64);
         if (h > string_height_in_pixels) {

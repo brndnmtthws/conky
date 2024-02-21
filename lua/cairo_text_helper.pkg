@@ -1,28 +1,19 @@
 $#include <cairo.h>
 $#include <libcairo_text_helper.h>
 
-typedef struct _FontData {
-  cairo_font_face_t *cairo_ft_face;
-  hb_font_t *hb_ft_font;
-  hb_face_t *hb_ft_face;
-  int font_size;
-  /* Internally the following two are pointers */
-  /* Stored here so they can be freed later */
-  FT_Library ft_library;
-  FT_Face ft_face;
-}FontData;
-
 typedef enum _cairo_text_alignment {
   CAIRO_TEXT_ALIGN_LEFT = 0,
   CAIRO_TEXT_ALIGN_RIGHT,
   CAIRO_TEXT_ALIGN_CENTER
 } cairo_text_alignment_t;
 
-FontData * cairo_text_hp_load_font(const char *font, int font_size);
-void cairo_text_hp_destroy_font(FontData *font);
+void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, const char *font, int font_size, 
+                        cairo_text_alignment_t alignment = CAIRO_TEXT_ALIGN_LEFT, const char *language = "en",
+                        const char *script = NULL, const char *direction = NULL);
 
-void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, FontData *font, cairo_text_alignment_t alignment = CAIRO_TEXT_ALIGN_LEFT, const char *language = "en", const char *script = NULL, const char *direction = NULL);
-
-/* This function allows you to layout two sets of text next to each other */
-void cairo_text_hp_text_size(const char *text, FontData *font, 
+/* This function allows you to get sizing so you can layout multiple sets of text next to each other */
+void cairo_text_hp_text_size(const char *text, const char *font, int font_size, 
                              const char *language = "en", const char *script = NULL, const char *direction, int *width, int *height);
+
+/* This will clear all currently loaded / cached fonts */
+void cairo_text_hp_delete_fonts();
