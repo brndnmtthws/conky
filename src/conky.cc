@@ -2169,9 +2169,9 @@ void initialisation(int argc, char **argv) {
         break;
 
       case 'u':
-        state->pushinteger(dpi_scale(strtol(optarg, &conv_end, 10)));
+        state->pushnumber(strtod(optarg, &conv_end));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is a wrong update-interval", optarg);
+          CRIT_ERR("'%s' is an invalid update interval", optarg);
         }
         update_interval.lua_set(*state);
         break;
@@ -2179,7 +2179,7 @@ void initialisation(int argc, char **argv) {
       case 'i':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is a wrong number of update-times", optarg);
+          CRIT_ERR("'%s' is an invalid number of update times", optarg);
         }
         total_run_times.lua_set(*state);
         break;
@@ -2187,7 +2187,7 @@ void initialisation(int argc, char **argv) {
       case 'x':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is a wrong value for the X-position", optarg);
+          CRIT_ERR("'%s' is an invalid value for the X-position", optarg);
         }
         gap_x.lua_set(*state);
         break;
