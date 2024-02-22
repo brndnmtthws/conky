@@ -184,3 +184,44 @@ values:
   - name: RsvgDimensionData:get()
     desc: |-
       Gets the values of an existing RsvgDimensionData.
+  - name: cairo_text_hp_show(cr, x, y, text, font, font_size, alignment, language, script, direction)
+    desc: |-
+      Renders text to a cairo_t using harfbuzz and freetype, this provides significantly
+      better text rendering then using cairo's inbuilt functions.
+
+      | Argument            | Description                                                                          |
+      |---------------------|--------------------------------------------------------------------------------------|
+      | cr                  | The `cairo_t` to render to.                                                          |
+      | x,y                 | Position to render the text.                                                         |
+      | text                | The text to render.                                                                  |
+      | font                | The name of the font to be used, `Fontconfig` is used to search for the font.        |
+      | font_size           | The font size.                                                                       |
+      | alignment           | One of `CAIRO_TEXT_ALIGN_LEFT`, `CAIRO_TEXT_ALIGN_RIGHT`, `CAIRO_TEXT_ALIGN_CENTER`. |
+      |                     | Default value: `CAIRO_TEXT_ALIGN_LEFT`                                               |
+      | language            | A string containing a BCP 47 language tag.                                           |
+      |                     | Default value: `en`                                                                  |
+      | script              | A string containing a ISO 15924 script tag.                                          |
+      |                     | Default value: auto-detect from text                                                 |
+      | direction           | A string representing text direction eg `LTR`, `RTL` or `TTB`                        |
+      |                     | Default value: auto-detect from text otherwise `LTR`                                 |                                                               |
+  - name: width,height:cairo_text_hp_text_size(text, font, font_size, language, script, direction)
+    desc: |-
+      Used to calculate how many pixels will be required to render a string with
+      `cairo_text_hp_show` returns a pair of int's with `width` and `height`.
+
+      | Argument            | Description                                                                          |
+      |---------------------|--------------------------------------------------------------------------------------|
+      | cr                  | The `cairo_t` to render to.                                                          |
+      | text                | The text to render.                                                                  |
+      | font                | The name of the font to be used, `Fontconfig` is used to search for the font.        |
+      | font_size           | The font size.                                                                       |
+      | language            | A string containing a BCP 47 language tag.                                           |
+      |                     | Default value: `en`                                                                  |
+      | script              | A string containing a ISO 15924 script tag.                                          |
+      |                     | Default value: auto-detect from text                                                 |
+      | direction           | A string representing text direction eg `LTR`, `RTL` or `TTB`                        |
+      |                     | Default value: auto-detect from text otherwise `LTR`                                 |
+  - name: cairo_text_hp_delete_fonts()
+    desc: |-
+      `cairo_text_hp_show` and `cairo_text_hp_text_size` both cache internal font details,
+      this function clears those caches.
