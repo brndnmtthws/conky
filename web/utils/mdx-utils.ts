@@ -1,9 +1,11 @@
 import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
-import { serialize } from 'next-mdx-remote/serialize'
-import rehypePrism from '@mapbox/rehype-prism'
+import { unified } from 'unified'
 import remarkGfm from 'remark-gfm'
+import remarkParse from 'remark-parse'
+import remarkRehype from 'remark-rehype'
+import rehypeStringify from 'rehype-stringify'
 
 // DOCUMENTS_PATH is useful when you want to get the path to a specific file
 export const DOCUMENTS_PATH = path.join(process.cwd(), 'documents')
@@ -16,7 +18,7 @@ export const documentFilePaths = fs
 
 export interface Document {
   content: string
-  data: any
+  data: object
   filePath: string
 }
 
@@ -51,16 +53,15 @@ export const getDocumentBySlug = async (slug: string) => {
 
   const { content, data } = matter(source)
 
-  const mdxSource = await serialize(content, {
-    // Optionally pass remark/rehype plugins
-    mdxOptions: {
-      remarkPlugins: [remarkGfm],
-      rehypePlugins: [rehypePrism],
-    },
-    scope: data,
-  })
+  const result = await unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkRehype)
+    // .use(rehypePrism)
+    .use(rehypeStringify)
+    .process(content)
 
-  return { mdxSource, data, documentFilePath }
+  return { source: result.value, data, documentFilePath }
 }
 
 export const getNextDocumentBySlug = (slug: string) => {
