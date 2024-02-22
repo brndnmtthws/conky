@@ -293,8 +293,6 @@ values:
       - var2
   - name: conky_build_arch
     desc: CPU architecture Conky was built for.
-  - name: conky_build_date
-    desc: Date Conky was built.
   - name: conky_version
     desc: Conky version.
   - name: cpu
@@ -1058,7 +1056,7 @@ values:
       'max_msg_lines' entries if specified.
     args:
       - server(:port)
-      - "#channel"
+      - '#channel'
       - (max_msg_lines)
   - name: journal
     desc: |-

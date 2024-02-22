@@ -179,15 +179,11 @@ void llua_init() {
   lua_setfield(lua_L, -3, "cpath");
   lua_pop(lua_L, 2);
 
-  lua_pushstring(lua_L, PACKAGE_NAME " " VERSION " compiled " BUILD_DATE
-                                     " for " BUILD_ARCH);
+  lua_pushstring(lua_L, PACKAGE_NAME " " VERSION " compiled for " BUILD_ARCH);
   lua_setglobal(lua_L, "conky_build_info");
 
   lua_pushstring(lua_L, VERSION);
   lua_setglobal(lua_L, "conky_version");
-
-  lua_pushstring(lua_L, BUILD_DATE);
-  lua_setglobal(lua_L, "conky_build_date");
 
   lua_pushstring(lua_L, BUILD_ARCH);
   lua_setglobal(lua_L, "conky_build_arch");

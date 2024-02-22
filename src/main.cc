@@ -57,8 +57,7 @@
 #endif /* BUILD_BUILTIN_CONFIG */
 
 static void print_version() {
-  std::cout << _(PACKAGE_NAME " " VERSION " compiled " BUILD_DATE
-                              " for " BUILD_ARCH
+  std::cout << _(PACKAGE_NAME " " VERSION " compiled for " BUILD_ARCH
                               "\n"
                               "\nCompiled in features:\n\n"
                               "System config file: " SYSTEM_CONFIG_FILE
