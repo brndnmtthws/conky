@@ -31,7 +31,7 @@
 void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
                       double scale_x, double scale_y, double *return_scale_w,
                       double *return_scale_h) {
-  int w, h;
+  int w, h, stride;
   double scaled_w, scaled_h;
   Imlib_Image premul;
   cairo_surface_t *result;
@@ -83,10 +83,12 @@ void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
   /* and use the alpha channel of the source image */
   imlib_image_copy_alpha_to_image(image, 0, 0);
 
+  stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32, scaled_w);
+
   /* now pass the result to cairo */
   result = cairo_image_surface_create_for_data(
-      (unsigned char *)imlib_image_get_data_for_reading_only(),
-      CAIRO_FORMAT_ARGB32, scaled_w, scaled_h, sizeof(DATA32) * scaled_w);
+      (void *)imlib_image_get_data_for_reading_only(), CAIRO_FORMAT_ARGB32,
+      scaled_w, scaled_h, stride);
 
   cr = cairo_create(cs);
   cairo_set_source_surface(cr, result, x, y);
