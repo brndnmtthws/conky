@@ -23,6 +23,8 @@ jobs:
         os:
           - macos-11
           - macos-12
+          - macos-13
+          - macos-13-xlarge
     runs-on: ${{ matrix.os }}
     steps:
       - name: Install dependencies
