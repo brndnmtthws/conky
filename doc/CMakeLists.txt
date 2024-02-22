@@ -3,7 +3,7 @@
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2021 Brenden Matthews, et. al. (see AUTHORS) All rights
+# Copyright (c) 2005-2024 Brenden Matthews, et. al. (see AUTHORS) All rights
 # reserved.
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -31,7 +31,7 @@ if(BUILD_DOCS)
         SOURCES config_settings.yaml variables.yaml lua.yaml man.md.j2
     )
     add_dependencies(conky.1 man.md)
- 
+
     set(MAN_PATH "share/man/man1")
     set(MAN_FILES ${CMAKE_CURRENT_BINARY_DIR}/conky.1)
 
@@ -40,5 +40,4 @@ if(BUILD_DOCS)
     if(BUILD_DOCS)
         install(FILES ${MAN_FILES} DESTINATION ${MAN_PATH})
     endif(BUILD_DOCS)
-
 endif(BUILD_DOCS)

@@ -10,7 +10,7 @@
  *
  * Copyright (c) 2005 Adi Zaimi, Dan Piponi <dan@tanelorn.demon.co.uk>,
  *					  Dave Clark <clarkd@skynet.ca>
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -99,7 +99,9 @@ static void unhash_all_processes() {
   }
 }
 
-struct process *get_first_process() { return first_process; }
+struct process *get_first_process() {
+  return first_process;
+}
 
 void free_all_processes() {
   struct process *next = nullptr, *pr = first_process;
@@ -390,9 +392,7 @@ static void process_find_top(struct process **cpu, struct process **mem,
 int update_top() {
   // if nothing else has ever set up info, we need to update it here, because
   // info.memmax is used to print percentages in `print_top_mem`
-  if (info.memmax == 0) {
-    update_meminfo();
-  }
+  if (info.memmax == 0) { update_meminfo(); }
   process_find_top(info.cpu, info.memu, info.time
 #ifdef BUILD_IOSTATS
                    ,

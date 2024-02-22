@@ -3,7 +3,7 @@
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2021 Brenden Matthews, et. al. (see AUTHORS) All rights
+# Copyright (c) 2005-2024 Brenden Matthews, et. al. (see AUTHORS) All rights
 # reserved.
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -26,15 +26,15 @@ if(NOT CMAKE_BUILD_TYPE)
     set(
       CMAKE_BUILD_TYPE Debug
       CACHE
-        STRING
-        "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+      STRING
+      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
       FORCE)
   else(MAINTAINER_MODE)
     set(
       CMAKE_BUILD_TYPE RelWithDebInfo
       CACHE
-        STRING
-        "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+      STRING
+      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
       FORCE)
   endif(MAINTAINER_MODE)
 endif(NOT CMAKE_BUILD_TYPE)
@@ -66,22 +66,25 @@ option(BUILD_DOCS "Build documentation" false)
 option(BUILD_EXTRAS "Build extras (includes syntax files for editors)" false)
 
 option(BUILD_I18N "Enable if you want internationalization support" true)
+
 if(BUILD_I18N)
   set(LOCALE_DIR "${CMAKE_INSTALL_PREFIX}/share/locale"
-      CACHE STRING "Directory containing the locales")
+    CACHE STRING "Directory containing the locales")
 endif(BUILD_I18N)
 
 # Some standard options
 set(SYSTEM_CONFIG_FILE "/etc/conky/conky.conf"
-    CACHE STRING "Default system-wide Conky configuration file")
+  CACHE STRING "Default system-wide Conky configuration file")
+
 # use FORCE below to make sure this changes when CMAKE_INSTALL_PREFIX is
 # modified
 if(NOT LIB_INSTALL_DIR)
   set(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
 endif(NOT LIB_INSTALL_DIR)
+
 set(PACKAGE_LIBRARY_DIR "${LIB_INSTALL_DIR}/conky"
-    CACHE STRING "Package library path (where Lua bindings are installed"
-    FORCE)
+  CACHE STRING "Package library path (where Lua bindings are installed"
+  FORCE)
 set(DEFAULTNETDEV "eno1" CACHE STRING "Default networkdevice")
 
 # Mac only override
@@ -90,13 +93,13 @@ if(OS_DARWIN)
 endif(OS_DARWIN)
 
 set(XDG_CONFIG_FILE "$HOME/.config/conky/conky.conf"
-    CACHE STRING "Configfile of the user (XDG)")
+  CACHE STRING "Configfile of the user (XDG)")
 set(CONFIG_FILE "$HOME/.conkyrc" CACHE STRING "Configfile of the user")
 set(MAX_USER_TEXT_DEFAULT "16384"
-    CACHE STRING
-          "Default maximum size of config TEXT buffer, i.e. below TEXT line.")
+  CACHE STRING
+  "Default maximum size of config TEXT buffer, i.e. below TEXT line.")
 set(DEFAULT_TEXT_BUFFER_SIZE "256"
-    CACHE STRING "Default size used for temporary, static text buffers")
+  CACHE STRING "Default size used for temporary, static text buffers")
 set(MAX_NET_INTERFACES "256" CACHE STRING "Maximum number of network devices")
 
 # Platform specific options Linux only
@@ -127,7 +130,6 @@ cmake_dependent_option(
   "OS_DARWIN" false)
 
 # Optional features etc
-
 option(BUILD_WLAN "Enable wireless support" false)
 
 option(BUILD_BUILTIN_CONFIG "Enable builtin default configuration" true)
@@ -135,7 +137,7 @@ option(BUILD_BUILTIN_CONFIG "Enable builtin default configuration" true)
 option(BUILD_IOSTATS "Enable disk I/O stats" true)
 
 option(BUILD_OLD_CONFIG "Enable support for the old syntax of configurations"
-       true)
+  true)
 
 option(BUILD_MATH "Enable math support" true)
 
@@ -198,6 +200,7 @@ dependent_option(BUILD_XINPUT "Build Xinput 2 support" true
 if(BUILD_X11)
   set(BUILD_GUI true)
 endif(BUILD_X11)
+
 if(BUILD_WAYLAND)
   set(BUILD_GUI true)
 endif(BUILD_WAYLAND)
@@ -236,6 +239,7 @@ option(BUILD_ICAL "Enable if you want iCalendar (RFC 5545) support" false)
 option(BUILD_IRC "Enable if you want IRC support" false)
 
 option(BUILD_HTTP "Enable if you want HTTP support" false)
+
 if(BUILD_HTTP)
   set(HTTPPORT "10080" CACHE STRING "Port to use for out_to_http")
 endif(BUILD_HTTP)
@@ -245,13 +249,13 @@ option(BUILD_ICONV "Enable iconv support" false)
 option(BUILD_CMUS "Enable support for cmus music player" true)
 
 option(BUILD_JOURNAL "Enable support for reading from the systemd journal"
-       false)
+  false)
 
 option(BUILD_PULSEAUDIO
-       "Enable support for Pulseaudio's default sink and source" false)
+  "Enable support for Pulseaudio's default sink and source" false)
 
 option(BUILD_INTEL_BACKLIGHT
-       "Enable support for Intel backlight" false)
+  "Enable support for Intel backlight" false)
 
 run_dependency_checks()
 
@@ -269,6 +273,6 @@ message(STATUS "CMAKE_CXX_FLAGS_RELEASE: " ${CMAKE_CXX_FLAGS_RELEASE})
 
 message(STATUS "CMAKE_C_FLAGS_RELWITHDEBINFO: " ${CMAKE_C_FLAGS_RELWITHDEBINFO})
 message(STATUS "CMAKE_CXX_FLAGS_RELWITHDEBINFO: "
-               ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
+  ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
 
 message(STATUS "CMAKE_BUILD_TYPE: " ${CMAKE_BUILD_TYPE})

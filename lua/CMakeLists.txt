@@ -3,7 +3,7 @@
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2021 Brenden Matthews, et. al. (see AUTHORS) All rights
+# Copyright (c) 2005-2024 Brenden Matthews, et. al. (see AUTHORS) All rights
 # reserved.
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -23,7 +23,6 @@ include(ToLua)
 add_definitions(-DTOLUA_RELEASE)
 
 if(BUILD_X11)
-
   if(BUILD_LUA_CAIRO)
     include_directories(${luacairo_includes} ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -77,21 +76,21 @@ if(BUILD_X11)
 
   if(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
     include_directories(${luacairo_includes} ${luaimlib2_includes}
-                        ${CMAKE_CURRENT_SOURCE_DIR})
+      ${CMAKE_CURRENT_SOURCE_DIR})
     wrap_tolua(luacairo_imlib2_helper_src cairo_imlib2_helper.pkg)
 
     add_library(conky-cairo_imlib2_helper SHARED ${luacairo_imlib2_helper_src})
     set_target_properties(conky-cairo_imlib2_helper
-                          PROPERTIES OUTPUT_NAME "cairo_imlib2_helper")
+      PROPERTIES OUTPUT_NAME "cairo_imlib2_helper")
 
     target_link_libraries(conky-cairo_imlib2_helper
-                          ${luacairo_libs}
-                          ${luaimlib2_libs}
-                          toluapp_lib_static)
+      ${luacairo_libs}
+      ${luaimlib2_libs}
+      toluapp_lib_static)
     set(lua_libs ${lua_libs} conky-cairo_imlib2_helper)
   endif(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
 endif(BUILD_X11)
 
 install(TARGETS ${lua_libs}
-        LIBRARY DESTINATION ${LIB_INSTALL_DIR}/conky
-        ARCHIVE DESTINATION ${LIB_INSTALL_DIR}/conky)
+  LIBRARY DESTINATION ${LIB_INSTALL_DIR}/conky
+  ARCHIVE DESTINATION ${LIB_INSTALL_DIR}/conky)

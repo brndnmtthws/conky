@@ -3,7 +3,7 @@
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2021 Brenden Matthews, et. al. (see AUTHORS) All rights
+# Copyright (c) 2005-2024 Brenden Matthews, et. al. (see AUTHORS) All rights
 # reserved.
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -47,6 +47,7 @@ set(conky_sources ${CMAKE_BINARY_DIR}/config.h ${CMAKE_BINARY_DIR}/build.h)
 add_subdirectory(lua)
 add_subdirectory(data)
 add_subdirectory(doc)
+
 if(BUILD_EXTRAS)
   add_subdirectory(extras)
 endif(BUILD_EXTRAS)
@@ -61,6 +62,7 @@ if(BUILD_TESTS)
     include(CodeCoverage)
     append_coverage_compiler_flags()
   endif()
+
   include(Catch)
 endif()
 
@@ -74,6 +76,7 @@ endif()
 if(NOT DEFINED DOC_PATH)
   set(DOC_PATH "share/doc/${CPACK_PACKAGE_NAME}-${VERSION}")
 endif(NOT DEFINED DOC_PATH)
+
 set(DOC_FILES extras/convert.lua data/conky_no_x11.conf data/conky.conf)
 
 install(FILES ${DOC_FILES} DESTINATION ${DOC_PATH})
@@ -86,7 +89,7 @@ endif(CHECK_CODE_QUALITY)
 # uninstall target
 if(NOT TARGET uninstall)
   configure_file(
-      "${CMAKE_MODULE_PATH}/UninstallConky.cmake.in"
+    "${CMAKE_MODULE_PATH}/UninstallConky.cmake.in"
     "${CMAKE_BINARY_DIR}/cmake_uninstall.cmake"
     IMMEDIATE @ONLY)
 

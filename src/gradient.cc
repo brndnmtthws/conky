@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -200,7 +200,8 @@ namespace {
 // Using Rec.2020 color space
 // Y' = 0.2627 x R + 0.6780 x G + 0.0593 x B
 long get_luma(long *const rgb) {
-  return 360L * (uint64_t)(2627L * rgb[0] + 6780L * rgb[1] + 593L * rgb[2]) / 10000L;
+  return 360L * (uint64_t)(2627L * rgb[0] + 6780L * rgb[1] + 593L * rgb[2]) /
+         10000L;
 }
 
 // Using Rec.2020 color space

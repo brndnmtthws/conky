@@ -3,7 +3,7 @@
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2021 Brenden Matthews, et. al. (see AUTHORS) All rights
+# Copyright (c) 2005-2024 Brenden Matthews, et. al. (see AUTHORS) All rights
 # reserved.
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -244,7 +244,7 @@ endif(BUILD_X11)
 if(BUILD_GUI)
   set(gui fonts.cc fonts.h gui.cc gui.h)
   set(optional_sources ${optional_sources} ${gui})
-  
+
   if(BUILD_MOUSE_EVENTS)
     set(mouse_events mouse-events.cc mouse-events.h)
     set(optional_sources ${optional_sources} ${mouse_events})

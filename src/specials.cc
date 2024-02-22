@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -668,10 +668,10 @@ void new_stippled_hr(struct text_object *obj, char *p,
 void new_fg(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (false
 #ifdef BUILD_GUI
-  || (display_output() && display_output()->graphical())
+      || (display_output() && display_output()->graphical())
 #endif /* BUILD_GUI */
 #ifdef BUILD_NCURSES
-  || out_to_ncurses.get(*state)
+      || out_to_ncurses.get(*state)
 #endif /* BUILD_NCURSES */
   ) {
     new_special(p, FG)->arg = obj->data.l;

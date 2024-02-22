@@ -3,7 +3,7 @@
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2021 Brenden Matthews, et. al. (see AUTHORS) All rights
+# Copyright (c) 2005-2024 Brenden Matthews, et. al. (see AUTHORS) All rights
 # reserved.
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -25,20 +25,21 @@ if(BUILD_BUILTIN_CONFIG)
   else(BUILD_X11)
     set(builtin_config conky_no_x11.conf)
   endif(BUILD_X11)
+
   add_custom_command(OUTPUT defconfig.h
-                     COMMAND ${CMAKE_SOURCE_DIR}/bin/text2c.sh
-                             ${CMAKE_CURRENT_SOURCE_DIR}/${builtin_config}
-                             defconfig.h defconfig
-                     DEPENDS ${builtin_config})
+    COMMAND ${CMAKE_SOURCE_DIR}/bin/text2c.sh
+    ${CMAKE_CURRENT_SOURCE_DIR}/${builtin_config}
+    defconfig.h defconfig
+    DEPENDS ${builtin_config})
   set(generated_hdr_files ${generated_hdr_files} defconfig.h)
 endif(BUILD_BUILTIN_CONFIG)
 
 if(BUILD_OLD_CONFIG)
   add_custom_command(OUTPUT convertconf.h
-                     COMMAND ${CMAKE_SOURCE_DIR}/bin/text2c.sh
-                             ${CMAKE_SOURCE_DIR}/extras/convert.lua
-                             convertconf.h convertconf
-                     DEPENDS ${CMAKE_SOURCE_DIR}/extras/convert.lua)
+    COMMAND ${CMAKE_SOURCE_DIR}/bin/text2c.sh
+    ${CMAKE_SOURCE_DIR}/extras/convert.lua
+    convertconf.h convertconf
+    DEPENDS ${CMAKE_SOURCE_DIR}/extras/convert.lua)
   set(generated_hdr_files ${generated_hdr_files} convertconf.h)
 endif(BUILD_OLD_CONFIG)
 
@@ -47,6 +48,5 @@ add_custom_target(generated_hdr_files DEPENDS ${generated_hdr_files})
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   install(FILES conky.desktop DESTINATION share/applications)
   install(FILES logo/conky-logomark-violet.svg
-          DESTINATION share/icons/hicolor/scalable/apps)
+    DESTINATION share/icons/hicolor/scalable/apps)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-
