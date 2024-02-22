@@ -12,8 +12,7 @@
 ---
 desc: |-
   Conky features a Lua Programming API, and also ships with Lua bindings
-  for some useful libraries. Note that the bindings require tolua++, which
-  currently only compiles against Lua 5.1.
+  for some useful libraries. Note that the bindings require tolua++.
 
   To use Lua Conky, you first need to make sure you have a version of
   Conky with Lua support enabled (`conky -v` will report this).
