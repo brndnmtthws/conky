@@ -70,7 +70,7 @@ export default function Index({ documents, searchIndex }: IndexProps) {
               key={document.filePath}
               as={`/documents/${document.filePath.replace(/\.mdx?$/, '')}`}
               href={`/documents/[slug]`}
-              title={document.data.title}
+              title={document.data.title ?? 'Untitled'}
               desc={document.data.description}
             />
           ))}
