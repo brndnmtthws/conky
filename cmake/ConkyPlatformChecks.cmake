@@ -3,7 +3,7 @@
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2021 Brenden Matthews, et. al. (see AUTHORS) All rights
+# Copyright (c) 2005-2024 Brenden Matthews, et. al. (see AUTHORS) All rights
 # reserved.
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -428,10 +428,10 @@ if(BUILD_X11)
       set(conky_libs ${conky_libs} ${X11_Xinput_LIB})
     endif(BUILD_XINPUT)
 
-
     if(X11_xcb_FOUND)
       set(HAVE_XCB true)
       set(conky_libs ${conky_libs} ${X11_xcb_LIB})
+
       if(X11_xcb_errors_FOUND)
         set(HAVE_XCB_ERRORS true)
         set(conky_libs ${conky_libs} ${X11_xcb_LIB} ${X11_xcb_errors_LIB})

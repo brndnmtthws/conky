@@ -6,7 +6,7 @@
  *
  * Copyright (C) 2018 François Revol et al.
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -128,8 +128,8 @@ bool display_output_ncurses::shutdown() { return false; }
 
 void display_output_ncurses::set_foreground_color(Colour c) {
   int nccolor = to_ncurses(c);
-  init_pair(nccolor+1, nccolor, COLOR_BLACK);
-  attron(COLOR_PAIR(nccolor+1));
+  init_pair(nccolor + 1, nccolor, COLOR_BLACK);
+  attron(COLOR_PAIR(nccolor + 1));
 }
 
 void display_output_ncurses::begin_draw_text() {

@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -533,7 +533,7 @@ void print_free_bufcache(struct text_object *obj, char *p,
 }
 
 void print_free_cached(struct text_object *obj, char *p,
-                         unsigned int p_max_size) {
+                       unsigned int p_max_size) {
   human_readable(apply_base_multiplier(obj->data.s, info.free_cached), p,
                  p_max_size);
 }

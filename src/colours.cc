@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -75,7 +75,7 @@ Colour parse_color(const char *name) {
   unsigned char argb[4] = {0xff, 0, 0, 0};
   if (len == 3 || len == 4) {
     bool skip_alpha = (len == 3);
-    for (size_t i = 0; i < len; i ++) {
+    for (size_t i = 0; i < len; i++) {
       int nib = hex_nibble_value(name[i]);
       if (nib < 0) { goto err; }
       // Duplicate the nibble, so "#abc" -> 0xaa, 0xbb, 0xcc
