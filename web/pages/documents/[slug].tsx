@@ -5,26 +5,19 @@ import {
   documentFilePaths,
 } from '../../utils/mdx-utils'
 
-import { MDXRemote, MDXRemoteProps } from 'next-mdx-remote'
-import Head from 'next/head'
 import Layout from '../../components/Layout'
 import SEO from '../../components/SEO'
 import { GetStaticProps } from 'next'
 import { getSearchIndex, SearchIndex } from '../../utils/search'
 import Link from 'next/link'
-import { MDXComponents } from 'mdx/types'
+import { unified } from 'unified'
+import rehypeReact from 'rehype-react'
+import * as prod from 'react/jsx-runtime'
+import rehypeParse from 'rehype-parse'
+import { createElement, Fragment, useEffect, useState } from 'react'
 
-// Custom components/renderers to pass to MDX.
-// Since the MDX files aren't loaded by webpack, they have no knowledge of how
-// to handle import statements. Instead, you must include components in scope
-// here.
-const components = {
-  a: Link,
-  // It also works with dynamically-imported components, which is especially
-  // useful for conditionally loading components for certain routes.
-  // See the notes in README.md for more details.
-  Head,
-}
+// @ts-expect-error: the react types are missing.
+const production = { Fragment: prod.Fragment, jsx: prod.jsx, jsxs: prod.jsxs }
 
 interface FrontMatter {
   title: string
@@ -32,7 +25,7 @@ interface FrontMatter {
 }
 
 interface DocumentPageProps {
-  source: MDXRemoteProps
+  source: string
   frontMatter: FrontMatter
   searchIndex: SearchIndex
 }
@@ -42,6 +35,23 @@ export default function DocumentPage({
   frontMatter,
   searchIndex,
 }: DocumentPageProps) {
+  const [children, setChildren] = useState(createElement(Fragment))
+
+  useEffect(
+    function () {
+      ;(async function () {
+        const file = await unified()
+          .use(rehypeParse, { fragment: true })
+          // @ts-expect-error: the react types are missing.
+          .use(rehypeReact, { ...production, components: { a: Link } })
+          .process(source)
+
+        setChildren(file.result)
+      })()
+    },
+    [source]
+  )
+
   return (
     <Layout searchIndex={searchIndex}>
       <SEO
@@ -58,9 +68,7 @@ export default function DocumentPage({
           )}
         </header>
         <main>
-          <article className="prose dark:prose-invert">
-            <MDXRemote {...source} components={components as MDXComponents} />
-          </article>
+          <article className="prose dark:prose-invert">{children}</article>
         </main>
       </article>
     </Layout>
@@ -69,7 +77,7 @@ export default function DocumentPage({
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   if (params) {
-    const { mdxSource, data } = await getDocumentBySlug(params.slug as string)
+    const { source, data } = await getDocumentBySlug(params.slug as string)
     const prevDocument = getPreviousDocumentBySlug(params.slug as string)
     const nextDocument = getNextDocumentBySlug(params.slug as string)
     const searchIndex = getSearchIndex()
@@ -77,7 +85,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     return {
       props: {
         searchIndex,
-        source: mdxSource,
+        source,
         frontMatter: data,
         prevDocument,
         nextDocument,
