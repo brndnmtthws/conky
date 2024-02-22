@@ -85,10 +85,6 @@ values:
     desc: |-
       A string containing the build architecture for this
       particular instance of Conky.
-  - name: conky_build_date
-    desc: |-
-      A string containing the build date for this particular
-      instance of Conky.
   - name: conky_build_info
     desc: |-
       A string containing the build info for this particular

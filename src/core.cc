@@ -660,8 +660,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
                                                                      EQUAL) {
     obj->data.i = PB_BATT_STATUS;
   }
-  else if (strcmp(arg, "percent") == EQUAL) { obj->data.i = PB_BATT_PERCENT; }
-  else if (strcmp(arg, "time") == EQUAL) { obj->data.i = PB_BATT_TIME; }
+  else if (strcmp(arg, "percent") == EQUAL) {
+    obj->data.i = PB_BATT_PERCENT;
+  }
+  else if (strcmp(arg, "time") == EQUAL) {
+    obj->data.i = PB_BATT_TIME;
+  }
   else {
     NORM_ERR("pb_battery: illegal argument '%s', defaulting to status", arg);
     obj->data.i = PB_BATT_STATUS;
@@ -836,7 +840,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &gen_free_opaque;
 #endif /* BUILD_GUI */
   END OBJ(conky_version, nullptr) obj_be_plain_text(obj, VERSION);
-  END OBJ(conky_build_date, nullptr) obj_be_plain_text(obj, BUILD_DATE);
   END OBJ(conky_build_arch, nullptr) obj_be_plain_text(obj, BUILD_ARCH);
   END OBJ(downspeed, &update_net_stats)
       parse_net_stat_arg(obj, arg, free_at_crash);
