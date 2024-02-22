@@ -16,9 +16,15 @@ export const documentFilePaths = fs
   // Only include md(x) files
   .filter((path) => /\.mdx?$/.test(path))
 
+export interface DocumentData {
+  title?: string
+  description?: string
+  indexWeight?: number
+}
+
 export interface Document {
   content: string
-  data: object
+  data: DocumentData
   filePath: string
 }
 
