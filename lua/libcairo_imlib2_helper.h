@@ -28,6 +28,8 @@
 #include <Imlib2.h>
 #include <cairo.h>
 
+#include "logging.h"
+
 void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
                       double scale_x, double scale_y, double *return_scale_w,
                       double *return_scale_h) {
@@ -36,14 +38,25 @@ void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
   Imlib_Image alpha, premul;
   cairo_surface_t *result;
   cairo_t *cr;
+
+  if (!file) {
+    NORM_ERR("cairoimagehelper: File is NULL\n");
+    return;
+  }
+
+  if (!cs) {
+    NORM_ERR("cairoimagehelper: Surface is NULL\n");
+    return;
+  }
+
   Imlib_Image *image = imlib_load_image(file);
   if (!image) {
-    printf("Error: CairoImageHelper: Couldn't load %s\n", file);
+    NORM_ERR("cairoimagehelper: Couldn't load %s\n", file);
     return;
   }
 
   if ((scale_x <= 0.0) && (scale_y <= 0.0)) {
-    printf("Error: CairoImageHelper: Image Scale is 0, %s\n", file);
+    NORM_ERR("cairoimagehelper: Image Scale is 0, %s\n", file);
     return;
   }
 
@@ -52,7 +65,7 @@ void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
   h = imlib_image_get_height();
 
   if ((w <= 0) && (h <= 0)) {
-    printf("Error: CairoImageHelper: %s has 0 size\n", file);
+    NORM_ERR("cairoimagehelper: %s has 0 size\n", file);
     return;
   }
 
@@ -60,7 +73,7 @@ void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
   scaled_h = *return_scale_h = scale_y * (double)h;
 
   if ((scaled_w <= 0.0) && (scaled_h <= 0.0)) {
-    printf("Error: CairoImageHelper: %s scaled image has 0 size\n", file);
+    NORM_ERR("cairoimagehelper: %s scaled image has 0 size\n", file);
     return;
   }
 
@@ -70,7 +83,7 @@ void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
   /* create temporary image */
   premul = imlib_create_image(scaled_w, scaled_h);
   if (!premul) {
-    printf("Error: CairoImageHelper: Couldn't create premul image for %s\n", file);
+    NORM_ERR("cairoimagehelper: Couldn't create premul image for %s\n", file);
     return;
   }
 
