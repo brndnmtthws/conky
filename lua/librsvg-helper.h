@@ -93,7 +93,7 @@ int rsvg_destroy_handle(RsvgHandle *handle) {
 }
 
 RsvgRectangle *rsvg_rectangle_create(void) {
-  return calloc(1, sizeof(RsvgRectangle));
+  return (RsvgRectangle *)calloc(1, sizeof(RsvgRectangle));
 }
 
 void rsvg_rectangle_destroy(RsvgRectangle *rect) { free(rect); }

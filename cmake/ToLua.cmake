@@ -24,20 +24,20 @@ function(wrap_tolua VAR FIL)
 
   get_filename_component(ABS_FIL ${FIL} ABSOLUTE)
   get_filename_component(FIL_WE ${FIL} NAME_WE)
-  list(APPEND ${VAR} "${CMAKE_CURRENT_BINARY_DIR}/lib${FIL_WE}.c")
+  list(APPEND ${VAR} "${CMAKE_CURRENT_BINARY_DIR}/lib${FIL_WE}.cc")
 
   if(DEFINED ARGV2)
     get_filename_component(PATCH ${ARGV2} ABSOLUTE)
-    set(TOLUA_OUT ${CMAKE_CURRENT_BINARY_DIR}/lib${FIL_WE}-orig.c)
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lib${FIL_WE}.c
+    set(TOLUA_OUT ${CMAKE_CURRENT_BINARY_DIR}/lib${FIL_WE}-orig.cc)
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lib${FIL_WE}.cc
       COMMAND ${APP_PATCH} -s ${TOLUA_OUT} ${PATCH} -o
-      ${CMAKE_CURRENT_BINARY_DIR}/lib${FIL_WE}.c
+      ${CMAKE_CURRENT_BINARY_DIR}/lib${FIL_WE}.cc
       DEPENDS ${TOLUA_OUT} ${PATCH}
-      COMMENT "Patching lib${FIL_WE}-orig.c"
+      COMMENT "Patching lib${FIL_WE}-orig.cc"
       VERBATIM)
     set_source_files_properties(${TOLUA_OUT} PROPERTIES GENERATED TRUE)
   else()
-    set(TOLUA_OUT ${CMAKE_CURRENT_BINARY_DIR}/lib${FIL_WE}.c)
+    set(TOLUA_OUT ${CMAKE_CURRENT_BINARY_DIR}/lib${FIL_WE}.cc)
   endif(DEFINED ARGV2)
 
   # Call toluapp from 3rdparty/ path directly. The last argument to toluapp is
@@ -54,7 +54,7 @@ function(wrap_tolua VAR FIL)
     ${${VAR}}
     PROPERTIES
     COMPILE_FLAGS
-    "-Wno-bad-function-cast -Wno-unused-parameter -Wno-cast-qual -Wno-error=pedantic"
+    "-Wno-unused-parameter -Wno-cast-qual -Wno-error=pedantic"
   )
 
   set(${VAR} ${${VAR}} PARENT_SCOPE)
