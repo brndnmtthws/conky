@@ -36,7 +36,7 @@ void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
   Imlib_Image premul;
   cairo_surface_t *result;
   cairo_t *cr;
-  Imlib_Image *image = imlib_load_image(file);
+  auto image = imlib_load_image(file);
   if (!image) { return; }
 
   imlib_context_set_image(image);
@@ -64,8 +64,8 @@ void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
 
   /* now pass the result to cairo */
   result = cairo_image_surface_create_for_data(
-      (void *)imlib_image_get_data_for_reading_only(), CAIRO_FORMAT_ARGB32,
-      scaled_w, scaled_h, sizeof(DATA32) * scaled_w);
+      (unsigned char *)imlib_image_get_data_for_reading_only(),
+      CAIRO_FORMAT_ARGB32, scaled_w, scaled_h, sizeof(DATA32) * scaled_w);
 
   cr = cairo_create(cs);
   cairo_set_source_surface(cr, result, x, y);
