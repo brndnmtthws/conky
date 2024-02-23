@@ -52,6 +52,11 @@
           stdenv.mkDerivation rec {
             name = "conky";
             src = ./.;
+            cmakeFlags = [
+              "-BUILD_LUA_CAIRO=ON"
+              "-BUILD_LUA_IMLIB2=ON"
+              "-BUILD_LUA_RSVG=ON"
+            ];
             nativeBuildInputs = [
               clang_16
               cmake
@@ -62,9 +67,11 @@
             ];
             buildInputs =
               [
+                cairo
                 freetype
                 gettext
                 imlib2
+                librsvg
                 llvmPackages_16.libcxx
                 llvmPackages_16.libcxxabi
                 lua5_4
@@ -72,13 +79,13 @@
                 xorg.libICE
                 xorg.libSM
                 xorg.libX11
+                xorg.libxcb
                 xorg.libXdamage
                 xorg.libXext
                 xorg.libXfixes
                 xorg.libXft
-                xorg.libXinerama
                 xorg.libXi
-                xorg.libxcb
+                xorg.libXinerama
                 xorg.xcbutilerrors
               ]
               ++ lib.optional stdenv.isDarwin darwin.libobjc;
