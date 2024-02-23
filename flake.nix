@@ -53,9 +53,9 @@
             name = "conky";
             src = ./.;
             cmakeFlags = [
-              "-BUILD_LUA_CAIRO=ON"
-              "-BUILD_LUA_IMLIB2=ON"
-              "-BUILD_LUA_RSVG=ON"
+              "-DBUILD_LUA_CAIRO=ON"
+              "-DBUILD_LUA_IMLIB2=ON"
+              "-DBUILD_LUA_RSVG=ON"
             ];
             nativeBuildInputs = [
               clang_16
