@@ -1384,8 +1384,13 @@ inline Window last_descendant(Display *display, Window parent) {
   while (
       XQueryTree(display, current, &_ignored, &_ignored, &children, &count) &&
       count != 0) {
-    current = children[count - 1];
+    auto next = children[count - 1];
     XFree(children);
+    if (next != 0) {
+      current = next;
+    } else {
+      break;
+    }
   }
 
   return current;
