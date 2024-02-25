@@ -258,7 +258,7 @@ static int x11_error_handler(Display *d, XErrorEvent *err) {
     const char *minor = xcb_errors_get_name_for_minor_code(
         xcb_errors_ctx, err->request_code, err->minor_code);
     if (minor != nullptr) {
-      const std::size_t size = strlen(base_name) + strlen(extension) + 4;
+      const std::size_t size = strlen(major) + strlen(minor) + 4;
       code_description = new char[size];
       snprintf(code_description, size, "%s - %s", major, minor);
       code_allocated = true;
@@ -1402,6 +1402,9 @@ Window query_x11_window_at_pos(Display *display, int x, int y) {
   Window last = None;
   XQueryPointer(display, window.root, &root_return, &last, &root_x_return,
                 &root_y_return, &win_x_return, &win_y_return, &mask_return);
+
+  // If root, last descendant will be wrong
+  if (last == 0) return 0;
 
   // X11 correctly returns a window which covers conky area, but returned
   // window is not window.window, but instead a parent node in some cases and
