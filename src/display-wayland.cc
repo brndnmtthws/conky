@@ -576,6 +576,9 @@ bool display_output_wayland::initialize() {
   wl_registry_add_listener(wl_globals.registry, &registry_listener, NULL);
 
   wl_display_roundtrip(global_display);
+  if (wl_globals.layer_shell == nullptr) {
+    CRIT_ERR("Compositor doesn't support wlr-layer-shell-unstable-v1. Can't run conky.");
+  }
 
   struct wl_surface *surface =
       wl_compositor_create_surface(wl_globals.compositor);
