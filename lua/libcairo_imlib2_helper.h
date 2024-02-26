@@ -46,7 +46,7 @@ void cairo_place_image(const char *file, cairo_t *cr, int x, int y,
     return;
   }
 
-  image = imlib_load_image(file);
+  image = (Imlib_Image *)imlib_load_image(file);
   if (!image) {
     NORM_ERR("cairoimagehelper: Couldn't load %s\n", file);
     return;
@@ -62,7 +62,7 @@ void cairo_place_image(const char *file, cairo_t *cr, int x, int y,
   }
 
   /* create scaled version of image to later extract the alpha channel */
-  alpha_image = imlib_create_cropped_scaled_image   (0, 0, w, h, width, height);
+  alpha_image = imlib_create_cropped_scaled_image(0, 0, w, h, width, height);
 
   /* create temporary image */
   premul = imlib_create_image(width, height);
@@ -87,7 +87,7 @@ void cairo_place_image(const char *file, cairo_t *cr, int x, int y,
 
   /* now pass the result to cairo */
   result = cairo_image_surface_create_for_data(
-      (void *)imlib_image_get_data_for_reading_only(), CAIRO_FORMAT_ARGB32,
+      (unsigned char  *)imlib_image_get_data_for_reading_only(), CAIRO_FORMAT_ARGB32,
       width, height, stride);
 
   cairo_set_source_surface(cr, result, x, y);
@@ -124,7 +124,7 @@ void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
     return;
   }
 
-  Imlib_Image *image = imlib_load_image(file);
+  Imlib_Image *image = (Imlib_Image *)imlib_load_image(file);
   if (!image) {
     NORM_ERR("cairoimagehelper: Couldn't load %s\n", file);
     return;
