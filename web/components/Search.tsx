@@ -1,13 +1,11 @@
 import Fuse, { FuseResult } from 'fuse.js'
 import React, { Fragment, useCallback, useEffect, useState } from 'react'
 import { Search as SearchIcon } from 'react-feather'
-import { SearchItem } from '../utils/search'
+import { SearchIndex, SearchItem } from '../utils/search'
 import { Dialog, Transition, Combobox } from '@headlessui/react'
 import { useRouter } from 'next/router'
 
-export interface SearchProps {
-  fuse: Fuse<SearchItem>
-}
+export interface SearchProps {}
 
 interface SearchResultProps {
   result: FuseResult<SearchItem>
@@ -57,12 +55,25 @@ const SearchResult: React.FunctionComponent<SearchResultProps> = (props) => {
   )
 }
 
-const Search: React.FunctionComponent<SearchProps> = ({ fuse }) => {
+const Search: React.FunctionComponent<SearchProps> = () => {
   const router = useRouter()
   const [searchText, setSearchText] = useState('')
   const [searchResults, setSearchResults] = useState<FuseResult<SearchItem>[]>(
     []
   )
+  const [fuse, setFuse] = React.useState<Fuse<SearchItem> | undefined>(
+    undefined
+  )
+  const fusePromise = async () => {
+    const data = await fetch('/static/fuse-index.json')
+    console.log(data)
+    const searchIndex: SearchIndex = await data.json()
+    console.log(searchIndex)
+    return new Fuse(searchIndex.list, {}, Fuse.parseIndex(searchIndex.index))
+  }
+  React.useEffect(() => {
+    fusePromise().then((fuse) => setFuse(fuse))
+  }, [])
 
   const [isOpen, setIsOpen] = useState(false)
   const handleKeyPress = useCallback(
@@ -88,6 +99,14 @@ const Search: React.FunctionComponent<SearchProps> = ({ fuse }) => {
       document.removeEventListener('keydown', handleKeyPress)
     }
   }, [handleKeyPress])
+
+  if (!fuse) {
+    return (
+      <div className="flex items-center ml-2">
+        <SearchIcon size={32} />
+      </div>
+    )
+  }
 
   const setSearch = (value: string) => {
     setSearchText(value)

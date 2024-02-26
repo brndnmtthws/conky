@@ -1,17 +1,10 @@
-import { Document } from '../utils/mdx-utils'
 import Layout from '../components/Layout'
 import SEO from '../components/SEO'
-import { getSearchIndex, SearchIndex } from '../utils/search'
 import Doggy from '../components/Doggy'
 
-interface IndexProps {
-  documents: Document[]
-  searchIndex: SearchIndex
-}
-
-export default function FourOhFour({ searchIndex }: IndexProps) {
+export default function FourOhFour() {
   return (
-    <Layout searchIndex={searchIndex}>
+    <Layout>
       <SEO title="Conky" description="Conky documentation" />
       <main className="w-full">
         <div className="flex flex-col items-center">
@@ -25,7 +18,5 @@ export default function FourOhFour({ searchIndex }: IndexProps) {
 }
 
 export function getStaticProps() {
-  const searchIndex = getSearchIndex()
-
-  return { props: { searchIndex } }
+  return { props: {} }
 }

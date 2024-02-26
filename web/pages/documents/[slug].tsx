@@ -8,7 +8,6 @@ import {
 import Layout from '../../components/Layout'
 import SEO from '../../components/SEO'
 import { GetStaticProps } from 'next'
-import { getSearchIndex, SearchIndex } from '../../utils/search'
 import Link from 'next/link'
 import { unified } from 'unified'
 import rehypeReact from 'rehype-react'
@@ -27,13 +26,11 @@ interface FrontMatter {
 interface DocumentPageProps {
   source: string
   frontMatter: FrontMatter
-  searchIndex: SearchIndex
 }
 
 export default function DocumentPage({
   source,
   frontMatter,
-  searchIndex,
 }: DocumentPageProps) {
   const [children, setChildren] = useState(createElement(Fragment))
 
@@ -53,7 +50,7 @@ export default function DocumentPage({
   )
 
   return (
-    <Layout searchIndex={searchIndex}>
+    <Layout>
       <SEO
         title={`${frontMatter.title}`}
         description={frontMatter.description}
@@ -80,11 +77,9 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     const { source, data } = await getDocumentBySlug(params.slug as string)
     const prevDocument = getPreviousDocumentBySlug(params.slug as string)
     const nextDocument = getNextDocumentBySlug(params.slug as string)
-    const searchIndex = getSearchIndex()
 
     return {
       props: {
-        searchIndex,
         source,
         frontMatter: data,
         prevDocument,
