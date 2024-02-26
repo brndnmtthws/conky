@@ -701,9 +701,6 @@ void display_output_x11::cleanup() {
     XDestroyRegion(x11_stuff.region);
     x11_stuff.region = nullptr;
   }
-#ifdef BUILD_XFT
-  FcFini();
-#endif /* BUILD_XFT */
 }
 
 void display_output_x11::set_foreground_color(Colour c) {
