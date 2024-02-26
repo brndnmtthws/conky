@@ -431,6 +431,7 @@ if(BUILD_X11)
     if(X11_xcb_FOUND)
       set(HAVE_XCB true)
       set(conky_libs ${conky_libs} ${X11_xcb_LIB})
+      set(conky_includes ${conky_includes} ${X11_xcb_INCLUDE_PATH})
 
       if(X11_xcb_errors_FOUND)
         set(HAVE_XCB_ERRORS true)
