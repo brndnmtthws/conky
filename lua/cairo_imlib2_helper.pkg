@@ -1,5 +1,11 @@
 $#include <cairo.h>
 $#include <libcairo_imlib2_helper.h>
 
-void cairo_draw_image(const char *, cairo_surface_t *, int, int, double, double,
+/* Paints the image onto the cairo_surface_t */
+void cairo_draw_image(const char *, cairo_surface_t *, int, int,
+                      double scale_x=1.0, double scale_y=1.0,
                       double * return_scale_w, double * return_scale_h);
+
+/* Places an image onto a cairo_t but doesn't call cairo_paint */
+void cairo_place_image(const char *file, cairo_t *cr, int x, int y,
+                       int width, int height, double alpha=1.0);

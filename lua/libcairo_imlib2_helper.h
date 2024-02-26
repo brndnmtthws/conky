@@ -30,14 +30,84 @@
 
 #include "logging.h"
 
+void cairo_place_image(const char *file, cairo_t *cr, int x, int y,
+                       int width, int height, double alpha) {
+  int w, h, stride;
+  Imlib_Image alpha_image, image, premul;
+  cairo_surface_t *result;
+
+  if (!file) {
+    NORM_ERR("cairoimagehelper: File is NULL\n");
+    return;
+  }
+
+  if (!cr) {
+    NORM_ERR("cairoimagehelper: cairo_t is NULL\n");
+    return;
+  }
+
+  image = imlib_load_image(file);
+  if (!image) {
+    NORM_ERR("cairoimagehelper: Couldn't load %s\n", file);
+    return;
+  }
+
+  imlib_context_set_image(image);
+  w = imlib_image_get_width();
+  h = imlib_image_get_height();
+
+  if ((w <= 0) && (h <= 0)) {
+    NORM_ERR("cairoimagehelper: %s has 0 size\n", file);
+    return;
+  }
+
+  /* create scaled version of image to later extract the alpha channel */
+  alpha_image = imlib_create_cropped_scaled_image   (0, 0, w, h, width, height);
+
+  /* create temporary image */
+  premul = imlib_create_image(width, height);
+  if (!premul) {
+    NORM_ERR("cairoimagehelper: Couldn't create premul image for %s\n", file);
+    return;
+  }
+
+  /* fill with opaque black */
+  imlib_context_set_image(premul);
+  imlib_context_set_color(0, 0, 0, 255);
+  imlib_image_fill_rectangle(0, 0, width, height);
+
+  /* blend source image on top -
+   * in effect this multiplies the rgb values by alpha */
+  imlib_blend_image_onto_image(image, 0, 0, 0, w, h, 0, 0, width, height);
+
+  /* and use the alpha channel of the source image */
+  imlib_image_copy_alpha_to_image(alpha_image, 0, 0);
+
+  stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32, width);
+
+  /* now pass the result to cairo */
+  result = cairo_image_surface_create_for_data(
+      (void *)imlib_image_get_data_for_reading_only(), CAIRO_FORMAT_ARGB32,
+      width, height, stride);
+
+  cairo_set_source_surface(cr, result, x, y);
+  cairo_paint_with_alpha(cr, alpha);
+
+  imlib_context_set_image(image);
+  imlib_free_image();
+  imlib_context_set_image(premul);
+  imlib_free_image();
+
+  cairo_surface_destroy(result);
+
+}
+
 void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
                       double scale_x, double scale_y, double *return_scale_w,
                       double *return_scale_h) {
-  int w, h, stride;
-  double scaled_w, scaled_h;
-  Imlib_Image alpha, premul;
-  cairo_surface_t *result;
   cairo_t *cr;
+  int w, h;
+  double scaled_w, scaled_h;
 
   if (!file) {
     NORM_ERR("cairoimagehelper: File is NULL\n");
@@ -49,14 +119,14 @@ void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
     return;
   }
 
-  Imlib_Image *image = imlib_load_image(file);
-  if (!image) {
-    NORM_ERR("cairoimagehelper: Couldn't load %s\n", file);
+  if ((scale_x <= 0.0) && (scale_y <= 0.0)) {
+    NORM_ERR("cairoimagehelper: Image Scale is 0, %s\n", file);
     return;
   }
 
-  if ((scale_x <= 0.0) && (scale_y <= 0.0)) {
-    NORM_ERR("cairoimagehelper: Image Scale is 0, %s\n", file);
+  Imlib_Image *image = imlib_load_image(file);
+  if (!image) {
+    NORM_ERR("cairoimagehelper: Couldn't load %s\n", file);
     return;
   }
 
@@ -77,46 +147,10 @@ void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
     return;
   }
 
-  /* create scaled version of image to later extract the alpha channel */
-  alpha = imlib_create_cropped_scaled_image   (0, 0, w, h, scaled_w, scaled_h);  
-
-  /* create temporary image */
-  premul = imlib_create_image(scaled_w, scaled_h);
-  if (!premul) {
-    NORM_ERR("cairoimagehelper: Couldn't create premul image for %s\n", file);
-    return;
-  }
-
-  /* fill with opaque black */
-  imlib_context_set_image(premul);
-  imlib_context_set_color(0, 0, 0, 255);
-  imlib_image_fill_rectangle(0, 0, scaled_w, scaled_h);
-
-  /* blend source image on top -
-   * in effect this multiplies the rgb values by alpha */
-  imlib_blend_image_onto_image(image, 0, 0, 0, w, h, 0, 0, scaled_w, scaled_h);
-
-  /* and use the alpha channel of the source image */
-  imlib_image_copy_alpha_to_image(alpha, 0, 0);
-
-  stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32, scaled_w);
-
-  /* now pass the result to cairo */
-  result = cairo_image_surface_create_for_data(
-      (void *)imlib_image_get_data_for_reading_only(), CAIRO_FORMAT_ARGB32,
-      scaled_w, scaled_h, stride);
-
   cr = cairo_create(cs);
-  cairo_set_source_surface(cr, result, x, y);
-  cairo_paint(cr);
-
-  imlib_context_set_image(image);
-  imlib_free_image();
-  imlib_context_set_image(premul);
-  imlib_free_image();
+  cairo_place_image(file, cr, x, y, scaled_w, scaled_h, 1.0);
 
   cairo_destroy(cr);
-  cairo_surface_destroy(result);
 }
 
 #endif /* _LIBCAIRO_IMAGE_HELPER_H_ */
