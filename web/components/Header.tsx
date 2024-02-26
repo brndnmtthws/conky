@@ -3,16 +3,13 @@ import { useRouter } from 'next/router'
 import GitHub from './GitHub'
 import ThemeSwitcher from './ThemeSwitcher'
 
+import * as React from 'react'
+import Search from './Search'
+
 type HeaderProps = {
   name: string
   setDarkMode: (state: boolean) => void
-  searchIndex: SearchIndex
 }
-
-import * as React from 'react'
-import Search from './Search'
-import { SearchIndex, SearchItem } from '../utils/search'
-import Fuse, { IFuseOptions } from 'fuse.js'
 
 interface NavLinkProps {
   href: string
@@ -34,20 +31,8 @@ const NavLink: React.FunctionComponent<NavLinkProps> = (props) => {
   )
 }
 
-export default function Header({
-  name,
-  setDarkMode,
-  searchIndex,
-}: HeaderProps) {
+export default function Header({ name, setDarkMode }: HeaderProps) {
   const router = useRouter()
-  const fuse = React.useMemo(() => {
-    const options: IFuseOptions<SearchItem> = {}
-    return new Fuse(
-      searchIndex.list,
-      options,
-      Fuse.parseIndex(searchIndex.index)
-    )
-  }, [searchIndex])
 
   return (
     <div className="border-b-1 backdrop-blur-lg bg-white dark:bg-black bg-opacity-20 dark:bg-opacity-20 transition">
@@ -65,7 +50,7 @@ export default function Header({
           </div>
         )}
         <div className="flex-grow" />
-        <Search fuse={fuse} />
+        <Search />
         <div className="flex">
           <div className="border-r mx-1 px-1 border-slate-700">
             <a href="https://github.com/brndnmtthws/conky">
