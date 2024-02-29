@@ -98,8 +98,8 @@ jobs:
         if: matrix.os == 'ubuntu-20.04'
         run: |
           sudo apt-get install -yqq --no-install-recommends \
-            libc++-14-dev \
-            libc++abi-14-dev
+            libc++-12-dev \
+            libc++abi-12-dev
           echo "CC=clang-12" >> $GITHUB_ENV
           echo "CXX=clang++-12" >> $GITHUB_ENV
       - name: Build AppImage
