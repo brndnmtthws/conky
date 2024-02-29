@@ -44,6 +44,7 @@ cmake -G Ninja                         \
   -DBUILD_LUA_CAIRO=ON                 \
   -DBUILD_LUA_IMLIB2=ON                \
   -DBUILD_LUA_RSVG=ON                  \
+  -DBUILD_LUA_TEXT=ON                  \
   -DBUILD_MYSQL=ON                     \
   -DBUILD_NVIDIA=ON                    \
   -DBUILD_PULSEAUDIO=ON                \
