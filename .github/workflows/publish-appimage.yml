@@ -78,6 +78,8 @@ jobs:
         id: git-version
         run: echo "GIT_VERSION=$(git describe --tags)" >> $GITHUB_ENV
       - name: Import GPG Deploy Key
+        # only run on main branch
+        if: github.ref == 'refs/heads/main')
         run: |
           echo "${{ secrets.GPG_DEPLOY_KEY }}" > appimage/secret.gpg
           gpg --import appimage/secret.gpg
