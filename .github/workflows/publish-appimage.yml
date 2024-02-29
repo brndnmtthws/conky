@@ -99,22 +99,22 @@ jobs:
       - name: Install libc++, set CC and CXX env vars
         run: |
           sudo apt-get install -yqq --no-install-recommends \
-            libc++-${CLANG-VERSION}-dev \
-            libc++abi-${CLANG-VERSION}-dev
-          echo "CC=clang-${CLANG-VERSION}" >> $GITHUB_ENV
-          echo "CXX=clang++-${CLANG-VERSION}" >> $GITHUB_ENV
+            libc++-${CLANG_VERSION}-dev \
+            libc++abi-${CLANG_VERSION}-dev
+          echo "CC=clang-${CLANG_VERSION}" >> $GITHUB_ENV
+          echo "CXX=clang++-${CLANG_VERSION}" >> $GITHUB_ENV
       - name: Build AppImage
         run: ./appimage/build.sh
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v4
         with:
-          name: 'conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage'
+          name: "conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage"
           path: conky-x86_64.AppImage
           if-no-files-found: error
       - name: Upload AppImage checksum artifact
         uses: actions/upload-artifact@v4
         with:
-          name: 'conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage.sha256'
+          name: "conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage.sha256"
           path: conky-x86_64.AppImage.sha256
           if-no-files-found: error
       - name: Upload man page artifact
