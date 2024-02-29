@@ -77,8 +77,8 @@ jobs:
             pip3 install --upgrade pyyaml
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Get tags
-        run: git fetch --tags origin
+        with:
+          fetch-depth: 0
       - name: Get git version
         id: git-version
         run: echo "GIT_VERSION=$(git describe --tags --always --debug)" | tee -a $GITHUB_ENV
