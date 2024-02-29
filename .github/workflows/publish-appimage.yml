@@ -86,14 +86,20 @@ jobs:
         run: |
           echo "${{ secrets.GPG_DEPLOY_KEY }}" > appimage/secret.gpg
           gpg --import appimage/secret.gpg
-      - name: Set CC and CXX env vars for ubuntu-22.04
+      - name: Install libc++, set CC and CXX env vars for ubuntu-22.04
         if: matrix.os == 'ubuntu-22.04'
         run: |
+          sudo apt-get install -yqq --no-install-recommends \
+            libc++-14-dev \
+            libc++abi-14-dev
           echo "CC=clang-14" >> $GITHUB_ENV
           echo "CXX=clang++-14" >> $GITHUB_ENV
-      - name: Set CC and CXX env vars for ubuntu-20.04
+      - name: Install libc++, set CC and CXX env vars for ubuntu-20.04
         if: matrix.os == 'ubuntu-20.04'
         run: |
+          sudo apt-get install -yqq --no-install-recommends \
+            libc++-14-dev \
+            libc++abi-14-dev
           echo "CC=clang-12" >> $GITHUB_ENV
           echo "CXX=clang++-12" >> $GITHUB_ENV
       - name: Build AppImage
