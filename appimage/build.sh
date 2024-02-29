@@ -25,6 +25,13 @@ trap cleanup EXIT
 REPO_ROOT=$(readlink -f $(dirname $(dirname $0)))
 OLD_CWD=$(readlink -f .)
 
+# check if we have a recent enough version of librsvg
+if pkg-config --atleast-version 2.60 librsvg-2.0; then
+  ENABLE_RSVG=ON
+else
+  ENABLE_RSVG=OFF
+fi
+
 # switch to build dir
 pushd "$BUILD_DIR"
 
@@ -43,7 +50,7 @@ cmake -G Ninja                         \
   -DBUILD_JOURNAL=ON                   \
   -DBUILD_LUA_CAIRO=ON                 \
   -DBUILD_LUA_IMLIB2=ON                \
-  -DBUILD_LUA_RSVG=ON                  \
+  -DBUILD_LUA_RSVG=${ENABLE_RSVG}      \
   -DBUILD_MYSQL=ON                     \
   -DBUILD_NVIDIA=ON                    \
   -DBUILD_PULSEAUDIO=ON                \
