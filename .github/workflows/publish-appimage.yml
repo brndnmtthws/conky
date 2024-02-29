@@ -132,7 +132,7 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: ${{ github.workspace }}/artifacts
+          path: ${{ github.workspace }}
 
       - name: Create Conky Release
         id: create_release
