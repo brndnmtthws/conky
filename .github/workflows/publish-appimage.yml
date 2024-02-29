@@ -81,7 +81,7 @@ jobs:
         run: git fetch --tags origin
       - name: Get git version
         id: git-version
-        run: echo "GIT_VERSION=$(git describe --tags --always)" >> $GITHUB_ENV
+        run: echo "GIT_VERSION=$(git describe --tags --always)" | tee -a $GITHUB_ENV
       - name: Import GPG Deploy Key
         # only run on main branch
         if: github.ref == 'refs/heads/main'
@@ -91,18 +91,18 @@ jobs:
       - name: Set clang version to 12 for ubuntu-20.04
         if: matrix.os == 'ubuntu-20.04'
         run: |
-          echo "CLANG_VERSION=12" >> $GITHUB_ENV
+          echo "CLANG_VERSION=12" | tee -a $GITHUB_ENV
       - name: Set clang version to 14 for ubuntu-22.04
         if: matrix.os == 'ubuntu-22.04'
         run: |
-          echo "CLANG_VERSION=14" >> $GITHUB_ENV
+          echo "CLANG_VERSION=14" | tee -a $GITHUB_ENV
       - name: Install libc++, set CC and CXX env vars
         run: |
           sudo apt-get install -yqq --no-install-recommends \
             libc++-${CLANG_VERSION}-dev \
             libc++abi-${CLANG_VERSION}-dev
-          echo "CC=clang-${CLANG_VERSION}" >> $GITHUB_ENV
-          echo "CXX=clang++-${CLANG_VERSION}" >> $GITHUB_ENV
+          echo "CC=clang-${CLANG_VERSION}" | tee -a $GITHUB_ENV
+          echo "CXX=clang++-${CLANG_VERSION}" | tee -a $GITHUB_ENV
       - name: Build AppImage
         run: ./appimage/build.sh
       - name: Upload AppImage artifact
