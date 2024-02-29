@@ -48,7 +48,7 @@ cmake -G Ninja                         \
   -DBUILD_NVIDIA=ON                    \
   -DBUILD_PULSEAUDIO=ON                \
   -DBUILD_RSS=ON                       \
-  -DBUILD_WAYLAND=OFF                  \
+  -DBUILD_WAYLAND=ON                   \
   -DBUILD_WLAN=ON                      \
   -DBUILD_X11=ON                       \
   -DBUILD_XMMS2=ON                     \
