@@ -44,6 +44,7 @@ jobs:
             libpulse-dev \
             librsvg2-dev \
             libsystemd-dev \
+            libwayland-bin \
             libwayland-dev \
             libx11-dev \
             libxdamage-dev \
@@ -57,6 +58,7 @@ jobs:
             ninja-build \
             pandoc \
             python3 \
+            wayland-protocols \
             &&
             pip3 install --upgrade pyyaml
       - name: Checkout
