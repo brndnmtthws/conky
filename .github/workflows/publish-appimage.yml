@@ -122,6 +122,8 @@ jobs:
         with:
           name: conky.1.gz
           path: conky.1.gz
+          # conky.1.gz is created by all jobs!
+          overwrite: true
 
   release:
     runs-on: ubuntu-latest
@@ -130,8 +132,6 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          # conky.1.gz is created by all jobs!
-          merge-multiple: true
           path: ${{ github.workspace }}/artifacts
 
       - name: Create Conky Release
