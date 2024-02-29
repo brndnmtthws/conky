@@ -27,6 +27,8 @@ jobs:
         os:
           - ubuntu-20.04
           - ubuntu-22.04
+        arch:
+          - x86_64
     permissions:
       contents: write
       discussions: write
@@ -98,13 +100,13 @@ jobs:
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "conky-${{ matrix.os }}-${{ env.GIT_VERSION }}.AppImage"
+          name: "conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage"
           path: conky-x86_64.AppImage
           if-no-files-found: error
       - name: Upload AppImage checksum artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "conky-${{ matrix.os }}-${{ env.GIT_VERSION }}.AppImage"
+          name: "conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage"
           path: conky-x86_64.AppImage.sha256
           if-no-files-found: error
       - name: Upload man page artifact
