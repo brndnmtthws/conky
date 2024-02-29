@@ -81,7 +81,7 @@ wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appima
 
 chmod +x appimagetool-x86_64.AppImage
 
-GPG_KEY=E3034072
+GPG_KEY=C793F1BA
 if gpg --list-keys ${GPG_KEY}; then
   ./appimagetool-x86_64.AppImage AppDir --sign --sign-key ${GPG_KEY}
 else
