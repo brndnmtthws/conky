@@ -83,8 +83,18 @@ jobs:
         run: |
           echo "${{ secrets.GPG_DEPLOY_KEY }}" > appimage/secret.gpg
           gpg --import appimage/secret.gpg
+      - name: Set CC and CXX env vars for ubuntu-22.04
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          echo "CC=clang-14" >> $GITHUB_ENV
+          echo "CXX=clang++-14" >> $GITHUB_ENV
+      - name: Set CC and CXX env vars for ubuntu-20.04
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          echo "CC=clang-12" >> $GITHUB_ENV
+          echo "CXX=clang++-12" >> $GITHUB_ENV
       - name: Build AppImage
-        run: CC=clang-14 CXX=clang++-14 ./appimage/build.sh
+        run: ./appimage/build.sh
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v4
         with:
