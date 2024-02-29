@@ -74,7 +74,12 @@ wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appima
 
 chmod +x appimagetool-x86_64.AppImage
 
-./appimagetool-x86_64.AppImage AppDir --sign --sign-key E3034071
+GPG_KEY=E3034072
+if gpg --list-keys ${GPG_KEY}; then
+  ./appimagetool-x86_64.AppImage AppDir --sign --sign-key ${GPG_KEY}
+else
+  ./appimagetool-x86_64.AppImage AppDir
+fi
 
 for f in conky*.AppImage
 do
