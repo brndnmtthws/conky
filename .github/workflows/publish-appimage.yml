@@ -81,7 +81,7 @@ jobs:
         run: git fetch --tags origin
       - name: Get git version
         id: git-version
-        run: echo "GIT_VERSION=$(git describe --tags --always)" | tee -a $GITHUB_ENV
+        run: echo "GIT_VERSION=$(git describe --tags --always --debug)" | tee -a $GITHUB_ENV
       - name: Import GPG Deploy Key
         # only run on main branch
         if: github.ref == 'refs/heads/main'
