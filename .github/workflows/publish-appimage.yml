@@ -107,7 +107,7 @@ jobs:
       - name: Upload AppImage checksum artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage"
+          name: "conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage.sha256"
           path: conky-x86_64.AppImage.sha256
           if-no-files-found: error
       - name: Upload man page artifact
