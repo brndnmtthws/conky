@@ -92,10 +92,10 @@ jobs:
         if: matrix.os == 'ubuntu-20.04'
         run: |
           echo "CLANG_VERSION=12" | tee -a $GITHUB_ENV
-      - name: Set clang version to 14 for ubuntu-22.04
+      - name: Set clang version to 15 for ubuntu-22.04
         if: matrix.os == 'ubuntu-22.04'
         run: |
-          echo "CLANG_VERSION=14" | tee -a $GITHUB_ENV
+          echo "CLANG_VERSION=15" | tee -a $GITHUB_ENV
       - name: Install libc++, set CC and CXX env vars
         run: |
           sudo apt-get install -yqq --no-install-recommends \
@@ -108,13 +108,13 @@ jobs:
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage"
+          name: 'conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage'
           path: conky-x86_64.AppImage
           if-no-files-found: error
       - name: Upload AppImage checksum artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage.sha256"
+          name: 'conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage.sha256'
           path: conky-x86_64.AppImage.sha256
           if-no-files-found: error
       - name: Upload man page artifact
