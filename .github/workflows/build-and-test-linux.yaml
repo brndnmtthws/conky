@@ -34,7 +34,13 @@ jobs:
           - 12
           - 13
           - 14
+          - 15
         exclude:
+          # 9 only exists for gcc
+          - compiler: clang
+            compiler_version: 9
+
+          # ubuntu-20.04
           - os: ubuntu-20.04
             compiler: gcc
             compiler_version: 12
@@ -45,8 +51,17 @@ jobs:
           - os: ubuntu-20.04
             compiler: gcc
             compiler_version: 11
-          - compiler: clang
-            compiler_version: 9
+          - os: ubuntu-20.04
+            compiler: clang
+            compiler_version: 13
+          - os: ubuntu-20.04
+            compiler: clang
+            compiler_version: 14
+          - os: ubuntu-20.04
+            compiler: clang
+            compiler_version: 15
+
+          # ubuntu-22.04
           - os: ubuntu-22.04
             compiler: clang
             compiler_version: 10
@@ -56,12 +71,6 @@ jobs:
           - os: ubuntu-22.04
             compiler: clang
             compiler_version: 12
-          - os: ubuntu-20.04
-            compiler: clang
-            compiler_version: 13
-          - os: ubuntu-20.04
-            compiler: clang
-            compiler_version: 14
     runs-on: ${{ matrix.os }}
     steps:
       - run: sudo apt-get -qq update
