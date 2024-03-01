@@ -40,14 +40,18 @@ jobs:
           - compiler: clang
             compiler_version: 9
 
-          # ubuntu-20.04
-          - os: ubuntu-20.04
-            compiler: gcc
-            compiler_version: 12
+          # 13, 14, 15 only exist for clang
           - compiler: gcc
             compiler_version: 13
           - compiler: gcc
             compiler_version: 14
+          - compiler: gcc
+            compiler_version: 15
+
+          # ubuntu-20.04
+          - os: ubuntu-20.04
+            compiler: gcc
+            compiler_version: 12
           - os: ubuntu-20.04
             compiler: gcc
             compiler_version: 11
