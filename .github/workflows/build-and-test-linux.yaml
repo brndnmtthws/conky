@@ -51,10 +51,10 @@ jobs:
           # ubuntu-20.04
           - os: ubuntu-20.04
             compiler: gcc
-            compiler_version: 12
+            compiler_version: 11
           - os: ubuntu-20.04
             compiler: gcc
-            compiler_version: 11
+            compiler_version: 12
           - os: ubuntu-20.04
             compiler: clang
             compiler_version: 13
