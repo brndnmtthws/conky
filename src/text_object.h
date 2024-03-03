@@ -109,7 +109,7 @@ struct text_object {
     void *opaque; /* new style generic per object data */
     char *s;      /* some string */
     int i;        /* some integer */
-    long l;       /* some long integer */
+    long long l;  /* some long integer */
   } data;
 
   void *special_data;
