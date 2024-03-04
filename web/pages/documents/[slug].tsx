@@ -15,7 +15,6 @@ import * as prod from 'react/jsx-runtime'
 import rehypeParse from 'rehype-parse'
 import { createElement, Fragment, useEffect, useState } from 'react'
 
-// @ts-expect-error: the react types are missing.
 const production = { Fragment: prod.Fragment, jsx: prod.jsx, jsxs: prod.jsxs }
 
 interface FrontMatter {
