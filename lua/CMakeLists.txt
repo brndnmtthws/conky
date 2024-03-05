@@ -44,7 +44,7 @@ if(BUILD_X11)
   endif(BUILD_LUA_CAIRO)
 
   if(BUILD_LUA_IMLIB2)
-    include_directories(${luaimlib2_includes} ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ../src)
+    include_directories(${luaimlib2_includes} ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/src)
 
     if(IMLIB2_VERSION VERSION_GREATER_EQUAL "1.10.0")
       wrap_tolua(luaimlib2_src imlib2.pkg)
