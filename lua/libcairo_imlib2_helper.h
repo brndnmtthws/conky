@@ -93,6 +93,8 @@ void cairo_place_image(const char *file, cairo_t *cr, int x, int y,
   cairo_set_source_surface(cr, result, x, y);
   cairo_paint_with_alpha(cr, alpha);
 
+  imlib_context_set_image(alpha_image);
+  imlib_free_image();
   imlib_context_set_image(image);
   imlib_free_image();
   imlib_context_set_image(premul);
