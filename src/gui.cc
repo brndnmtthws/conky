@@ -35,7 +35,7 @@
 #include "wl.h"
 
 #ifdef BUILD_IMLIB2
-#include "imlib2.h"
+#include "conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
 #ifndef OWN_WINDOW
 #include <iostream>

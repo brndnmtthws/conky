@@ -42,7 +42,7 @@
 #include "misc.h"
 #include "text_object.h"
 #ifdef BUILD_IMLIB2
-#include "imlib2.h"
+#include "conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
 #include "proc.h"
 #ifdef BUILD_MYSQL

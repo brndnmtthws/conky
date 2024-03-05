@@ -299,7 +299,7 @@ if(BUILD_NVIDIA)
 endif(BUILD_NVIDIA)
 
 if(BUILD_IMLIB2)
-  set(imlib2 imlib2.cc imlib2.h)
+  set(imlib2 conky-imlib2.cc conky-imlib2.h)
   set(optional_sources ${optional_sources} ${imlib2})
 endif(BUILD_IMLIB2)
 

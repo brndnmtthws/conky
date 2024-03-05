@@ -41,7 +41,7 @@
 #endif /* BUILD_XDAMAGE */
 #include "fonts.h"
 #ifdef BUILD_IMLIB2
-#include "imlib2.h"
+#include "conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
 #ifdef BUILD_MOUSE_EVENTS
 #include "mouse-events.h"
