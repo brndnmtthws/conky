@@ -59,13 +59,15 @@ typedef enum _imlib_load_error ImlibLoadError;
 typedef enum _imlib_text_direction Imlib_Text_Direction;
 typedef enum _imlib_TTF_encoding Imlib_TTF_Encoding;
 
-typedef struct {
+struct _imlib_border {
   int left, right, top, bottom;
-} Imlib_Border;
+};
+typedef struct _imlib_border Imlib_Border;
 
-typedef struct {
+struct _imlib_color {
   int alpha, red, green, blue;
-} Imlib_Color;
+};
+typedef struct _imlib_color Imlib_Color;
 
 Imlib_Context imlib_context_new(void);
 void imlib_context_free(Imlib_Context context);
