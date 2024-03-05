@@ -21,7 +21,7 @@
  *
  */
 
-#include "imlib2.h"
+#include "conky-imlib2.h"
 #include "config.h"
 #include "conky.h"
 #include "logging.h"
