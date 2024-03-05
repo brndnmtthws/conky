@@ -10,7 +10,6 @@ typedef void *Imlib_Updates;
 typedef void *Imlib_Font;
 typedef void *Imlib_Color_Range;
 typedef void *Imlib_Filter;
-typedef struct _imlib_color Imlib_Color;
 typedef void *ImlibPolygon;
 
 enum _imlib_operation {
