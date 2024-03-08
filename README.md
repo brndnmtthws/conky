@@ -24,7 +24,7 @@ Conky can display more than 300 built-in objects, including support for:
 - Built-in **IMAP** and **POP3** support.
 - Built-in support for many popular music players ([MPD][],
   [XMMS2][], [Audacious][]).
-- Can be extended using built-in [**Lua**](lua) support, or any of your
+- Can be extended using built-in [**Lua**][luawiki] support, or any of your
   own scripts and programs ([more](https://github.com/brndnmtthws/conky/wiki#tutorial)).
 - Built-in [**Imlib2**][imlib2] and [**Cairo**][cairo] bindings for arbitrary drawing
   with Lua ([more](https://github.com/brndnmtthws/conky/wiki/Lua)).
@@ -44,31 +44,44 @@ graph widgets, with different fonts and colours, as well as handle [mouse events
 
 See the User Configs below for more screenshots and associated config files.
 
-## Quickstart
+## Installing Conky
 
-Conky comes bundled with many package managers. However, if you'd like to try the latest release of Conky, you can try the AppImage build. If you have `jq` and `curl` installed, run the following command to fetch the latest AppImage:
+Many package managers already include Conky. However, if you'd like to try the
+latest version of Conky, you can use the AppImage or the Nix flake.
 
-```ShellSession
-$ curl -sL -o conky-x86_64.AppImage \
-    $(curl -sL https://api.github.com/repos/brndnmtthws/conky/releases/latest | \
-    jq --raw-output '.assets[0] | .browser_download_url')
-$ ls
-conky-x86_64.AppImage
-```
+### AppImage
 
-If you don't have `jq` and `curl` installed, go to
-https://github.com/brndnmtthws/conky/releases/latest and fetch the latest
-AppImage. Then:
+To try the AppImage, head to
+<https://github.com/brndnmtthws/conky/releases/latest> and fetch the latest
+AppImage.
 
 ```ShellSession
-$ chmod +x ./conky-x86_64.AppImage
-$ ./conky-x86_64.AppImage -C > ~/.conkyrc
-$ ./conky-x86_64.AppImage
+chmod +x ./conky-*.AppImage
+./conky-*.AppImage -C > ~/.conkyrc
+./conky-*.AppImage
 ```
 
 And that's it! [Check out the Wiki](https://github.com/brndnmtthws/conky/wiki) for more details on configuring Conky.
 
-_Note_: To use the AppImage, you may need to install additional runtime libraries.
+_NOTE_: To use the AppImage, you may need to install additional runtime libraries.
+
+### Nix flake
+
+As of Conky v1.17.0, there's a Nix flake available in addition to the upstream
+Nix package. You can include it as an input as follows:
+
+```nix
+{
+  inputs = {
+    conky.url = "github:brndnmtthws/conky";
+  };
+}
+```
+
+And use `inputs.conky.packages.${system}.default` (or
+`inputs.conky.packages.${system}.conky` for versions <=v1.19.8) to include the
+package. To use a specific version, add the git tag to the URL, such as
+`github:brndnmtthws/conky?ref=refs/tags/v1.19.8`.
 
 ## Documentation
 
