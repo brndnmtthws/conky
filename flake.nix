@@ -20,18 +20,18 @@
       system: let
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [self.overlay];
+          overlays = [self.overlays.default];
         };
       in
         with pkgs; rec
         {
           packages = flake-utils.lib.flattenTree {
             conky = conky;
+            default = conky;
           };
 
-          defaultPackage = packages.conky;
           apps.conky = flake-utils.lib.mkApp {drv = packages.conky;};
-          defaultApp = apps.conky;
+          apps.default = apps.conky;
           devShells.default = mkShell {
             buildInputs =
               packages.conky.buildInputs
@@ -47,7 +47,7 @@
         }
     )
     // {
-      overlay = final: prev: {
+      overlays.default = final: prev: {
         conky = with final;
           stdenv.mkDerivation rec {
             name = "conky";
