@@ -214,8 +214,11 @@ inline bool file_exists(const char *path) {
 void llua_load(const char *script) {
   int error;
 
-  if (!file_exists(script)) {
-    NORM_ERR("llua_load: specified script file '%s' doesn't exist", script);
+  std::string path = to_real_path(script);
+
+  if (!file_exists(path.c_str())) {
+    NORM_ERR("llua_load: specified script file '%s' doesn't exist",
+             path.c_str());
     // return without initializing lua_L because other parts of the code rely
     // on it being null if the script is not loaded
     return;
@@ -223,7 +226,6 @@ void llua_load(const char *script) {
 
   llua_init();
 
-  std::string path = to_real_path(script);
   error = luaL_dofile(lua_L, path.c_str());
   if (error != 0) {
     NORM_ERR("llua_load: %s", lua_tostring(lua_L, -1));
