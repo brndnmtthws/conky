@@ -18,6 +18,8 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build:
+    env:
+      HOMEBREW_NO_INSTALL_UPGRADE: 1
     strategy:
       matrix:
         os:
@@ -29,7 +31,7 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          brew install \
+          brew install --force \
             cmake \
             freetype \
             gettext \
