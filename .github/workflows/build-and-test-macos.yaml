@@ -45,7 +45,8 @@ jobs:
             libxi \
             lua \
             ninja \
-            pkg-config
+            pkg-config \
+            || true # Ignore errors
       - name: Checkout
         uses: actions/checkout@v4
       - run: mkdir build
