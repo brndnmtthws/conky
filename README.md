@@ -53,12 +53,13 @@ latest version of Conky, you can use the AppImage or the Nix flake.
 
 To try the AppImage, head to
 <https://github.com/brndnmtthws/conky/releases/latest> and fetch the latest
-AppImage.
+AppImage. You'll need to set the executable bit, then you can create a conkyrc,
+and run it as follows:
 
 ```ShellSession
-chmod +x ./conky-*.AppImage
-./conky-*.AppImage -C > ~/.conkyrc
-./conky-*.AppImage
+chmod +x ./conky-*.AppImage        # make it executable
+./conky-*.AppImage -C > ~/.conkyrc # create a default config
+./conky-*.AppImage                 # run
 ```
 
 And that's it! [Check out the Wiki](https://github.com/brndnmtthws/conky/wiki) for more details on configuring Conky.
