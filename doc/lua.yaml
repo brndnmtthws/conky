@@ -194,4 +194,18 @@ values:
       |                     | 0.5 for half size etc.                                                               |
       |                     | Default value: No Scaling (1.0,1.0)                                                  |
 
-      require('cairo_imlib2_helper') in your lua file.  
+      require('cairo_imlib2_helper') in your lua file.
+  - name: cairo_place_image(file, cr, x, y, width, height, alpha)
+    desc: |-
+      Renders an image onto a cairo_t, using imlib2. In some cases using a cairo_t and exact coordinates is more
+      useful.
+
+      | Argument            | Description                                                                          |
+      |---------------------|--------------------------------------------------------------------------------------|
+      | file                | Path to the image to render.                                                         |
+      | cr                  | The `cairo_t` to render to.                                                          |
+      | x,y                 | Position to render the image.                                                        |
+      | width, height       | The width and height to draw the image                                               |
+      | alpha               | The transparency of the image 1.0 is solid 0.0 is fully translucent.                 |
+
+      require('cairo_imlib2_helper') in your lua file.
