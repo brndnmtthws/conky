@@ -30,6 +30,50 @@ desc: |-
   API, Conky will export a few additional functions for the creation of
   certain structures. These are documented below.
 values:
+  - name: RsvgDimensionData:create()
+    desc: |-
+      Call this method to return a new RsvgDimensionData
+      structure. A creation function for this structure is not provided
+      by the Rsvg API.
+
+      After calling this, you should use `tolua.takeownership(rect)` on the return
+      value to ensure ownership is passed properly.
+  - name: RsvgDimensionData:destroy()
+    desc: |-
+      Call this method to free memory allocated by
+      `RsvgDimensionData:create`.
+
+      You should call `tolua.releaseownership(dd)` before calling this function to
+      avoid double-frees, but only if you previously called
+      `tolua.takeownership(dd)`
+  - name: RsvgDimensionData:get()
+    desc: |-
+      Gets the values of an existing RsvgDimensionData.
+  - name: RsvgDimensionData:set(x, y, width, height)
+    desc: |-
+      Sets the values of an existing RsvgDimensionData.
+  - name: RsvgRectangle:create()
+    desc: |-
+      Call this method to return a new RsvgRectangle
+      structure. A creation function for this structure is not provided
+      by the Rsvg API.
+
+      After calling this, you should use `tolua.takeownership(rect)` on the return
+      value to ensure ownership is passed properly.
+  - name: RsvgRectangle:destroy()
+    desc: |-
+      Call this method to free memory allocated by
+      `RsvgRectangle:create`.
+
+      You should call `tolua.releaseownership(rect)` before calling this function to
+      avoid double-frees, but only if you previously called
+      `tolua.takeownership(rect)`
+  - name: RsvgRectangle:get()
+    desc: |-
+      Gets the values of an existing RsvgRectangle.
+  - name: RsvgRectangle:set(x, y, width, height)
+    desc: |-
+      Sets the values of an existing RsvgRectangle.
   - name: cairo_font_extents_t:create()
     desc: |-
       Call this function to return a new cairo_font_extents_t
@@ -64,6 +108,20 @@ values:
       You should call `tolua.releaseownership(cm)` before calling this function to
       avoid double-frees, but only if you previously called
       `tolua.takeownership(cm)`
+  - name: cairo_place_image(file, cr, x, y, width, height, alpha)
+    desc: |-
+      Renders an image onto a cairo_t, using imlib2. In some cases using a cairo_t and exact coordinates is more
+      useful.
+
+      | Argument            | Description                                                                          |
+      |---------------------|--------------------------------------------------------------------------------------|
+      | file                | Path to the image to render.                                                         |
+      | cr                  | The `cairo_t` to render to.                                                          |
+      | x,y                 | Position to render the image.                                                        |
+      | width, height       | The width and height to draw the image                                               |
+      | alpha               | The transparency of the image 1.0 is solid 0.0 is fully translucent.                 |
+
+      require('cairo_imlib2_helper') in your lua file.
   - name: cairo_text_extents_t:create()
     desc: |-
       Call this function to return a new cairo_text_extents_t
@@ -137,50 +195,6 @@ values:
 
       NOTE: This table is only defined when X support is
       enabled.
-  - name: RsvgRectangle:create()
-    desc: |-
-      Call this method to return a new RsvgRectangle
-      structure. A creation function for this structure is not provided
-      by the Rsvg API.
-
-      After calling this, you should use `tolua.takeownership(rect)` on the return
-      value to ensure ownership is passed properly.
-  - name: RsvgRectangle:destroy()
-    desc: |-
-      Call this method to free memory allocated by
-      `RsvgRectangle:create`.
-
-      You should call `tolua.releaseownership(rect)` before calling this function to
-      avoid double-frees, but only if you previously called
-      `tolua.takeownership(rect)`
-  - name: RsvgRectangle:set(x, y, width, height)
-    desc: |-
-      Sets the values of an existing RsvgRectangle.
-  - name: RsvgRectangle:get()
-    desc: |-
-      Gets the values of an existing RsvgRectangle.
-  - name: RsvgDimensionData:create()
-    desc: |-
-      Call this method to return a new RsvgDimensionData
-      structure. A creation function for this structure is not provided
-      by the Rsvg API.
-
-      After calling this, you should use `tolua.takeownership(rect)` on the return
-      value to ensure ownership is passed properly.
-  - name: RsvgDimensionData:destroy()
-    desc: |-
-      Call this method to free memory allocated by
-      `RsvgDimensionData:create`.
-
-      You should call `tolua.releaseownership(dd)` before calling this function to
-      avoid double-frees, but only if you previously called
-      `tolua.takeownership(dd)`
-  - name: RsvgDimensionData:set(x, y, width, height)
-    desc: |-
-      Sets the values of an existing RsvgDimensionData.
-  - name: RsvgDimensionData:get()
-    desc: |-
-      Gets the values of an existing RsvgDimensionData.
   - name: ret_scale_x,ret_scale_y:cairo_draw_image(file, cs, x, y, scale_x, scale_y)
     desc: |-
       Renders an image onto a cairo_surface_t, using imlib2. Returns the amount the image was scaled by
@@ -193,19 +207,5 @@ values:
       | scale_x, scale_y    | The amount to scale the image, 1.0 provides no scaling, 2.0 for twice the size and   |
       |                     | 0.5 for half size etc.                                                               |
       |                     | Default value: No Scaling (1.0,1.0)                                                  |
-
-      require('cairo_imlib2_helper') in your lua file.
-  - name: cairo_place_image(file, cr, x, y, width, height, alpha)
-    desc: |-
-      Renders an image onto a cairo_t, using imlib2. In some cases using a cairo_t and exact coordinates is more
-      useful.
-
-      | Argument            | Description                                                                          |
-      |---------------------|--------------------------------------------------------------------------------------|
-      | file                | Path to the image to render.                                                         |
-      | cr                  | The `cairo_t` to render to.                                                          |
-      | x,y                 | Position to render the image.                                                        |
-      | width, height       | The width and height to draw the image                                               |
-      | alpha               | The transparency of the image 1.0 is solid 0.0 is fully translucent.                 |
 
       require('cairo_imlib2_helper') in your lua file.
