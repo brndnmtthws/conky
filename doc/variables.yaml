@@ -181,7 +181,6 @@ values:
     default: BAT0
     args:
       - (num)
-
   - name: battery_short
     desc: |-
       Battery status and remaining percentage capacity of ACPI or APM battery.
@@ -865,9 +864,9 @@ values:
     args:
       - N
   - name: ibm_thinklight
-    desc:
-      "If running the IBM ACPI, displays the status of your\nThinkLight\u2122. Value\
-      \ is either 'on', 'off' or 'unknown'."
+    desc: |-
+      If running the IBM ACPI, displays the status of your
+      ThinkLight™. Value is either 'on', 'off' or 'unknown'.
   - name: ibm_volume
     desc: |-
       If running the IBM ACPI, displays the "master" volume,
@@ -951,24 +950,28 @@ values:
     desc: |-
       If Pulseaudio's default sink is muted, display everything
       between $if_pa_sink_muted and the corresponding $else or $endif.
+  - name: if_pa_source_muted
+    desc: |-
+      If Pulseaudio's default source (e.g. your microphone) is muted, display
+      everything between $if_pa_source_muted and the corresponding $else or $endif.
   - name: if_pa_source_running
     desc: |-
       If Pulseaudio's default source is running (e.g. a program is accessing
       your microphone), display everything between $if_pa_source_running and
       the corresponding $else or $endif.
-  - name: if_pa_source_muted
-    desc: |-
-      If Pulseaudio's default source (e.g. your microphone) is muted, display
-      everything between $if_pa_source_muted and the corresponding $else or $endif.
   - name: if_running
-    desc:
-      "If PROCESS is running, display everything between\n$if_running and the corresponding\
-      \ $else or $endif. Note that PROCESS\nmay be either a full command line with arguments\
-      \ (without the\ndirectory prefix), or simply the name of an executable. For example,\n\
-      either of the following will be true if there is a running process\nwith the command\
-      \ line `/usr/bin/conky -u 5`:\n\n* `${if_running conky -u 5}` or\n* `${if_running\
-      \ conky}`\n    \nIt is important not to include trailing spaces. For example,\
-      \ `${if_running\nconky }` will be false."
+    desc: |-
+      If PROCESS is running, display everything between `$if_running` and the
+      corresponding `$else` or `$endif`. Note that PROCESS may be either a full
+      command line with arguments (without the directory prefix), or simply the
+      name of an executable. For example, either of the following will be true
+      if there is a running process with the command line `/usr/bin/conky -u
+      5`:
+      * `${if_running conky -u 5}` or
+      * `${if_running conky}`
+
+      It is important not to include trailing spaces. For example,
+      `${if_running conky }` will be false.
     args:
       - (process)
   - name: if_smapi_bat_installed

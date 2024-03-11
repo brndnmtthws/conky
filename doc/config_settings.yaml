@@ -172,6 +172,13 @@ values:
 
       Create an API token at
       https://github.com/settings/tokens/new?scopes=notifications&description=conky.
+  - name: graph_gradient_mode
+    desc: |-
+      Changes the color space used for interpolation. Arguments are hcl, hsv,
+      and rgb (default).
+    args:
+      - (rgb|hcl|hsv)
+    default: rgb
   - name: hddtemp_host
     desc: |-
       Hostname to connect to for hddtemp objects.
@@ -218,15 +225,6 @@ values:
       Imlib2 image cache size, in bytes.  Increase this value if you use $image
       lots. Set to 0 to disable the image cache.
     default: 4194304
-  - name: lua_mouse_hook
-    desc: |-
-      This function, if defined, will be called by Conky upon receiving mouse
-      events from X or Wayland. A table containing event information will be
-      passed to this function as the first argument. Use this hook for detecting
-      mouse input and acting on it. Conky requires that the function declaration
-      has a 'conky_' prefix to prevent accidental calls to the wrong function.
-    args:
-      - function_name
   - name: lowercase
     desc: Boolean value, if true, text is rendered in lower case.
   - name: lua_draw_hook_post
@@ -253,6 +251,15 @@ values:
       - [function arguments]
   - name: lua_load
     desc: Loads the Lua scripts separated by spaces.
+  - name: lua_mouse_hook
+    desc: |-
+      This function, if defined, will be called by Conky upon receiving mouse
+      events from X or Wayland. A table containing event information will be
+      passed to this function as the first argument. Use this hook for detecting
+      mouse input and acting on it. Conky requires that the function declaration
+      has a 'conky_' prefix to prevent accidental calls to the wrong function.
+    args:
+      - function_name
   - name: lua_shutdown_hook
     desc: |-
       This function, if defined, will be called by Conky at
@@ -415,18 +422,17 @@ values:
       background opacity to 0%.
   - name: own_window_type
     desc: |-
-      if own_window is yes, you may specify type normal, desktop,
-      dock, panel, utility or override. Desktop windows are special
-      windows that have no window decorations; are always visible on your
-      desktop; do not appear in your pager or taskbar; and are sticky across
-      all workspaces. Utility windows are like desktop windows, 
-      except they appear above everything else rather than below.
-      Panel windows reserve space along a desktop edge, just
-      like panels and taskbars, preventing maximized windows from
-      overlapping them. The edge is chosen based on the alignment option.
-      Override windows are not under the control of the window manager.
-      Hints are ignored. This type of window can be useful for certain
-      situations.
+      If own_window is yes, you may specify type normal, desktop, dock, panel,
+      utility or override. Desktop windows are special windows that have no
+      window decorations; are always visible on your desktop; do not appear in
+      your pager or taskbar; and are sticky across all workspaces. Utility
+      windows are like desktop windows, except they appear above everything
+      else rather than below. Panel windows reserve space along a desktop edge,
+      just like panels and taskbars, preventing maximized windows
+      from overlapping them. The edge is chosen based on the alignment
+      option. Override windows are not under the control of the window
+      manager. Hints are ignored. This type of window can be useful for
+      certain situations.
     default: normal
   - name: pad_percents
     desc: Pad percentages to this many decimals (0 = no padding).
@@ -454,13 +460,6 @@ values:
     desc: Shows the time range covered by a graph.
   - name: show_graph_scale
     desc: Shows the maximum value in scaled graphs.
-  - name: graph_gradient_mode
-    desc: |-
-      Changes the color space used for interpolation. Arguments are hcl, hsv,
-      and rgb (default).
-    args:
-      - (rgb|hcl|hsv)
-    default: rgb
   - name: stippled_borders
     desc: Border stippling (dashing) in pixels.
   - name: store_graph_data_explicitly
