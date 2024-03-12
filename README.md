@@ -84,6 +84,10 @@ And use `inputs.conky.packages.${system}.default` (or
 package. To use a specific version, add the git tag to the URL, such as
 `github:brndnmtthws/conky?ref=refs/tags/v1.19.8`.
 
+Note that a Nix package [exists in
+nixpkgs](https://github.com/NixOS/nixpkgs/blob/nixos-unstable/pkgs/os-specific/linux/conky/default.nix), and
+although it's not always up-to-date with the bleeding edge, it does offer more configuration options.
+
 ## Documentation
 
 &rarr; [**Reference documentation**](https://conky.cc/) &larr;
