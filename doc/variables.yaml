@@ -2371,6 +2371,11 @@ values:
       - (interface)
   - name: version
     desc: Git version number. DragonFly only.
+  - name: vgoto
+    desc: The next element will be printed at vertical position 'y'. See
+      also $goto.
+    args:
+      - y
   - name: voffset
     desc: |-
       Change vertical offset by N pixels. Negative values will
