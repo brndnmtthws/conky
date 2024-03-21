@@ -1844,7 +1844,7 @@ static double last_acpi_temp_time;
 
 // the maximum length of the string inside a ACPI_THERMAL_FORMAT file including
 // the ending 0
-#define MAXTHERMZONELEN 6
+#define MAXTHERMZONELEN 7
 
 double get_acpi_temperature(int fd) {
   if (fd <= 0) { return 0; }
