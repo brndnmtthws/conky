@@ -7,7 +7,7 @@
 <p align="center"><img width="300" src="data/logo/conky-logotype-horizontal-violet.png"></p>
 
 **Conky** is a free, light-weight system monitor for X, that displays
-any kind of information on your desktop. It can also run on Wayland (poorly), macOS, output
+any kind of information on your desktop. It can also run on Wayland (with caveats), macOS, output
 to your console, a file, or even HTTP (oh my!).
 
 👉 Grab the [latest release from GitHub](https://github.com/brndnmtthws/conky/releases/latest).
