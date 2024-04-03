@@ -374,6 +374,7 @@ bool display_output_x11::main_loop_wait(double t) {
     }
   }
 
+  DBGP2("Processing %d X11 events...", XPending(display));
   /* handle X events */
   while (XPending(display) != 0) {
     XEvent ev;
@@ -630,6 +631,7 @@ bool display_output_x11::main_loop_wait(double t) {
       }
     }
   }
+  DBGP2("Done with events!");
 
 #ifdef BUILD_XDAMAGE
   if (x11_stuff.damage) {

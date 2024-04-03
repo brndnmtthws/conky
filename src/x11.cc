@@ -1359,7 +1359,12 @@ void propagate_x11_event(XEvent &ev) {
     i_ev->common.window = window.desktop;
     i_ev->common.x = i_ev->common.x_root;
     i_ev->common.y = i_ev->common.y_root;
+  } else {
+    // Not a known input event; blindly propagating them causes loops and all
+    // sorts of other evil.
+    return;
   }
+  DBGP2("Propagating event: { type: %d; serial: %d }", i_ev->type, i_ev->common.serial);
   XSendEvent(display, window.desktop, False, window.event_mask, &ev);
 
   int _revert_to;
