@@ -440,7 +440,7 @@ bool display_output_x11::main_loop_wait(double t) {
 #endif /* BUILD_MOUSE_EVENTS && BUILD_XINPUT */
 
     // Any of the remaining events apply to conky window
-    if (ev.xany.window != window.window) continue;
+    if (ev.xany.window != window.window && ev.type != PropertyNotify) continue;
     switch (ev.type) {
       case Expose: {
         XRectangle r;
