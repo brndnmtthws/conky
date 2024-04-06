@@ -159,6 +159,21 @@ union InputEvent {
 InputEvent *xev_as_input_event(XEvent &ev);
 void propagate_x11_event(XEvent &ev);
 
+/// @brief Tries getting a list of windows ordered from bottom to top.
+///
+/// Whether the list is correctly ordered depends on WM/DE providing the
+/// `_NET_CLIENT_LIST_STACKING` atom. If only `_NET_CLIENT_LIST` is defined,
+/// this function assumes the WM/DE is a tiling one without stacking order.
+///
+/// If neither of the atoms are provided, this function tries traversing the
+/// window graph in order to collect windows. In this case, map state of windows
+/// is ignored. This also produces a lot of noise for some WM/DEs due to
+/// inserted window decorations.
+///
+/// @param display which display to query for windows @return a (likely) ordered
+/// list of windows
+std::vector<Window> query_x11_windows(Display *display);
+
 /// @brief Finds the last descendant of a window (leaf) on the graph.
 ///
 /// This function assumes the window stack below `parent` is linear. If it

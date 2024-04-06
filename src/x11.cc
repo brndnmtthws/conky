@@ -1389,8 +1389,9 @@ void propagate_x11_event(XEvent &ev) {
     std::vector<Window> below = query_x11_windows_at_pos(
         display, i_ev->common.x_root, i_ev->common.y_root,
         [](XWindowAttributes &a) { return a.map_state == IsViewable; });
-    std::remove_if(below.begin(), below.end(),
-                   [](Window w) { return w == window.window; });
+    auto it = std::remove_if(below.begin(), below.end(),
+                             [](Window w) { return w == window.window; });
+    below.erase(it, below.end());
     if (!below.empty()) { i_ev->common.window = below.back(); }
     // drop below vector
   }
@@ -1425,14 +1426,88 @@ Window query_x11_last_descendant(Display *display, Window parent) {
 
   Window current = parent;
 
-  while (
-      XQueryTree(display, current, &_ignored, &_ignored, &children, &count) &&
-      count != 0) {
+  while (XQueryTree(display, current, &_ignored, &_ignored, &children,
+                    &count) == Success &&
+         count != 0) {
     current = children[count - 1];
     XFree(children);
   }
 
   return current;
+}
+
+std::vector<Window> query_x11_windows(Display *display) {
+  // _NET_CLIENT_LIST_STACKING
+  Window root = DefaultRootWindow(display);
+
+  Atom clients_atom = XInternAtom(display, "_NET_CLIENT_LIST_STACKING", 0);
+
+  Atom actual_type;
+  int actual_format;
+  unsigned long nitems;
+  unsigned long bytes_after;
+  unsigned char *data = nullptr;
+
+  // try retrieving ordered windows first:
+  if (XGetWindowProperty(display, root, clients_atom, 0, 0, False, XA_WINDOW,
+                         &actual_type, &actual_format, &nitems, &bytes_after,
+                         &data) == Success) {
+    free(data);
+    size_t count = bytes_after / 4;
+
+    if (XGetWindowProperty(display, root, clients_atom, 0, bytes_after / 4,
+                           False, XA_WINDOW, &actual_type, &actual_format,
+                           &nitems, &bytes_after, &data) == Success) {
+      Window *wdata = reinterpret_cast<Window *>(data);
+      std::vector<Window> result(wdata, wdata + nitems);
+      free(data);
+      return result;
+    }
+  }
+
+  clients_atom = XInternAtom(display, "_NET_CLIENT_LIST", 0);
+  if (XGetWindowProperty(display, root, clients_atom, 0, 0, False, XA_WINDOW,
+                         &actual_type, &actual_format, &nitems, &bytes_after,
+                         &data) == Success) {
+    free(data);
+    size_t count = bytes_after / 4;
+
+    if (XGetWindowProperty(display, root, clients_atom, 0, count, False,
+                           XA_WINDOW, &actual_type, &actual_format, &nitems,
+                           &bytes_after, &data) == Success) {
+      Window *wdata = reinterpret_cast<Window *>(data);
+      std::vector<Window> result(wdata, wdata + nitems);
+      free(data);
+      return result;
+    }
+  }
+
+  // slowest method that also returns inaccurate results:
+
+  // TODO: How do we remove window decorations and other unwanted WM/DE junk
+  // from this?
+
+  std::vector<Window> result;
+  std::vector<Window> queue = {root};
+
+  Window _ignored, *children;
+  std::uint32_t count;
+
+  while (!queue.empty()) {
+    Window current = queue.back();
+    queue.pop_back();
+    if (XQueryTree(display, current, &_ignored, &_ignored, &children, &count) ==
+            Success &&
+        count != 0) {
+      for (size_t i = 0; i < count; i++) {
+        queue.push_back(children[i]);
+        result.push_back(current);
+      }
+      XFree(children);
+    }
+  }
+
+  return result;
 }
 
 Window query_x11_window_at_pos(Display *display, int x, int y) {
@@ -1447,7 +1522,6 @@ Window query_x11_window_at_pos(Display *display, int x, int y) {
   XQueryPointer(display, window.root, &root_return, &last, &root_x_return,
                 &root_y_return, &win_x_return, &win_y_return, &mask_return);
 
-  // If root, last descendant will be wrong
   if (last == 0) return root;
   return last;
 }
@@ -1455,28 +1529,22 @@ Window query_x11_window_at_pos(Display *display, int x, int y) {
 std::vector<Window> query_x11_windows_at_pos(
     Display *display, int x, int y,
     std::function<bool(XWindowAttributes &)> predicate) {
-  Window _ignored, *children;
-  std::uint32_t count;
-
   std::vector<Window> result;
-  std::vector<Window> queue = {DefaultRootWindow(display)};
 
-  while (!queue.empty()) {
-    Window current = queue.back();
-    queue.pop_back();
-    if (XQueryTree(display, current, &_ignored, &_ignored, &children, &count) &&
-        count != 0) {
-      for (size_t i = 0; i < count; i++) {
-        queue.push_back(children[i]);
+  Window root = DefaultRootWindow(display);
+  XWindowAttributes attr;
 
-        XWindowAttributes attr;
-        XGetWindowAttributes(display, current, &attr);
-        if (attr.x <= x && attr.y <= y && attr.x + attr.width >= x &&
-            attr.y + attr.height >= y && predicate(attr)) {
-          result.push_back(current);
-        }
-      }
-      XFree(children);
+  for (Window current : query_x11_windows(display)) {
+    int pos_x, pos_y;
+    Window _ignore;
+    // Doesn't account for decorations. There's no sane way to do that.
+    XTranslateCoordinates(display, current, root, 0, 0, &pos_x, &pos_y,
+                          &_ignore);
+    XGetWindowAttributes(display, current, &attr);
+
+    if (pos_x <= x && pos_y <= y && pos_x + attr.width >= x &&
+        pos_y + attr.height >= y && predicate(attr)) {
+      result.push_back(current);
     }
   }
 
