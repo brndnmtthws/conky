@@ -1389,8 +1389,9 @@ void propagate_x11_event(XEvent &ev) {
     std::vector<Window> below = query_x11_windows_at_pos(
         display, i_ev->common.x_root, i_ev->common.y_root,
         [](XWindowAttributes &a) { return a.map_state == IsViewable; });
-    std::remove_if(below.begin(), below.end(),
-                   [](Window w) { return w == window.window; });
+    auto it = std::remove_if(below.begin(), below.end(),
+                             [](Window w) { return w == window.window; });
+    below.erase(it, below.end());
     if (!below.empty()) { i_ev->common.window = below.back(); }
     // drop below vector
   }
@@ -1521,7 +1522,6 @@ Window query_x11_window_at_pos(Display *display, int x, int y) {
   XQueryPointer(display, window.root, &root_return, &last, &root_x_return,
                 &root_y_return, &win_x_return, &win_y_return, &mask_return);
 
-  // If root, last descendant will be wrong
   if (last == 0) return root;
   return last;
 }
@@ -1529,28 +1529,22 @@ Window query_x11_window_at_pos(Display *display, int x, int y) {
 std::vector<Window> query_x11_windows_at_pos(
     Display *display, int x, int y,
     std::function<bool(XWindowAttributes &)> predicate) {
-  Window _ignored, *children;
-  std::uint32_t count;
-
   std::vector<Window> result;
-  std::vector<Window> queue = {DefaultRootWindow(display)};
 
-  while (!queue.empty()) {
-    Window current = queue.back();
-    queue.pop_back();
-    if (XQueryTree(display, current, &_ignored, &_ignored, &children, &count) &&
-        count != 0) {
-      for (size_t i = 0; i < count; i++) {
-        queue.push_back(children[i]);
+  Window root = DefaultRootWindow(display);
+  XWindowAttributes attr;
 
-        XWindowAttributes attr;
-        XGetWindowAttributes(display, current, &attr);
-        if (attr.x <= x && attr.y <= y && attr.x + attr.width >= x &&
-            attr.y + attr.height >= y && predicate(attr)) {
-          result.push_back(current);
-        }
-      }
-      XFree(children);
+  for (Window current : query_x11_windows(display)) {
+    int pos_x, pos_y;
+    Window _ignore;
+    // Doesn't account for decorations. There's no sane way to do that.
+    XTranslateCoordinates(display, current, root, 0, 0, &pos_x, &pos_y,
+                          &_ignore);
+    XGetWindowAttributes(display, current, &attr);
+
+    if (pos_x <= x && pos_y <= y && pos_x + attr.width >= x &&
+        pos_y + attr.height >= y && predicate(attr)) {
+      result.push_back(current);
     }
   }
 
