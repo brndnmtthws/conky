@@ -1385,32 +1385,32 @@ void propagate_x11_event(XEvent &ev) {
   }
 
   i_ev->common.window = window.desktop;
-  i_ev->common.x = i_ev->common.x_root;
-  i_ev->common.y = i_ev->common.y_root;
-  i_ev->common.time = CurrentTime;
-
-  /* forward the event to the window below conky (e.g. caja) or desktop */
   {
     std::vector<Window> below = query_x11_windows_at_pos(
         display, i_ev->common.x_root, i_ev->common.y_root,
         [](XWindowAttributes &a) { return a.map_state == IsViewable; });
-    auto it = std::remove_if(below.begin(), below.end(),
-                             [](Window w) { return w == window.window; });
-    below.erase(it, below.end());
-    if (!below.empty()) {
-      i_ev->common.window = below.back();
-
-      Window _ignore;
-      // Update event x and y coordinates to be target window relative
-      XTranslateCoordinates(display, window.root, i_ev->common.window,
-                            i_ev->common.x_root, i_ev->common.y_root,
-                            &i_ev->common.x, &i_ev->common.y, &_ignore);
-    }
+    std::remove_if(below.begin(), below.end(),
+                   [](Window w) { return w == window.window; });
+    if (!below.empty()) { i_ev->common.window = below.back(); }
     // drop below vector
   }
 
-  XUngrabPointer(display, CurrentTime);
-  XSendEvent(display, i_ev->common.window, True, ev_to_mask(i_ev->type), &ev);
+  /* forward the event to the window below conky (e.g. caja) or desktop */
+  i_ev->common.x = i_ev->common.x_root;
+  i_ev->common.y = i_ev->common.y_root;
+
+  XUngrabPointer(display, i_ev->common.time);
+
+  // int _revert_to;
+  // Window focused;
+  // XGetInputFocus(display, &focused, &_revert_to);
+  // if (focused == window.window) {
+  //   Time time = CurrentTime;
+  //   if (i_ev != nullptr) { time = i_ev->common.time; }
+  //   XSetInputFocus(display, i_ev->common.window, RevertToPointerRoot, time);
+  // }
+
+  XSendEvent(display, i_ev->common.window, False, ev_to_mask(i_ev->type), &ev);
 }
 
 /// @brief This function returns the last descendant of a window (leaf) on the
@@ -1521,6 +1521,7 @@ Window query_x11_window_at_pos(Display *display, int x, int y) {
   XQueryPointer(display, window.root, &root_return, &last, &root_x_return,
                 &root_y_return, &win_x_return, &win_y_return, &mask_return);
 
+  // If root, last descendant will be wrong
   if (last == 0) return root;
   return last;
 }
@@ -1528,22 +1529,28 @@ Window query_x11_window_at_pos(Display *display, int x, int y) {
 std::vector<Window> query_x11_windows_at_pos(
     Display *display, int x, int y,
     std::function<bool(XWindowAttributes &)> predicate) {
+  Window _ignored, *children;
+  std::uint32_t count;
+
   std::vector<Window> result;
+  std::vector<Window> queue = {DefaultRootWindow(display)};
 
-  Window root = DefaultRootWindow(display);
-  XWindowAttributes attr;
+  while (!queue.empty()) {
+    Window current = queue.back();
+    queue.pop_back();
+    if (XQueryTree(display, current, &_ignored, &_ignored, &children, &count) &&
+        count != 0) {
+      for (size_t i = 0; i < count; i++) {
+        queue.push_back(children[i]);
 
-  for (Window current : query_x11_windows(display)) {
-    int pos_x, pos_y;
-    Window _ignore;
-    // Doesn't account for decorations. There's no sane way to do that.
-    XTranslateCoordinates(display, current, root, 0, 0, &pos_x, &pos_y,
-                          &_ignore);
-    XGetWindowAttributes(display, current, &attr);
-
-    if (pos_x <= x && pos_y <= y && pos_x + attr.width >= x &&
-        pos_y + attr.height >= y && predicate(attr)) {
-      result.push_back(current);
+        XWindowAttributes attr;
+        XGetWindowAttributes(display, current, &attr);
+        if (attr.x <= x && attr.y <= y && attr.x + attr.width >= x &&
+            attr.y + attr.height >= y && predicate(attr)) {
+          result.push_back(current);
+        }
+      }
+      XFree(children);
     }
   }
 
