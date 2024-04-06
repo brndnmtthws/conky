@@ -1352,35 +1352,74 @@ InputEvent *xev_as_input_event(XEvent &ev) {
   }
 }
 
+/// @brief Returns a mask for the event_type
+/// @param event_type Xlib event type
+/// @return Xlib event mask
+int ev_to_mask(int event_type) {
+  switch (event_type) {
+    case KeyPress:
+      return KeyPressMask;
+    case KeyRelease:
+      return KeyReleaseMask;
+    case ButtonPress:
+      return ButtonPressMask;
+    case ButtonRelease:
+      return ButtonReleaseMask;
+    case EnterNotify:
+      return EnterWindowMask;
+    case LeaveNotify:
+      return LeaveWindowMask;
+    case MotionNotify:
+      return PointerMotionMask;
+    default:
+      return NoEventMask;
+  }
+}
+
 void propagate_x11_event(XEvent &ev) {
   InputEvent *i_ev = xev_as_input_event(ev);
-  /* forward the event to the desktop window */
-  if (i_ev != nullptr) {
-    i_ev->common.window = window.desktop;
-    i_ev->common.x = i_ev->common.x_root;
-    i_ev->common.y = i_ev->common.y_root;
-  } else {
+  if (i_ev == nullptr) {
     // Not a known input event; blindly propagating them causes loops and all
     // sorts of other evil.
     return;
   }
-  DBGP2("Propagating event: { type: %d; serial: %d }", i_ev->type, i_ev->common.serial);
-  XSendEvent(display, window.desktop, False, window.event_mask, &ev);
 
-  int _revert_to;
-  Window focused;
-  XGetInputFocus(display, &focused, &_revert_to);
-  if (focused == window.window) {
-    Time time = CurrentTime;
-    if (i_ev != nullptr) { time = i_ev->common.time; }
-    XSetInputFocus(display, window.desktop, RevertToPointerRoot, time);
+  i_ev->common.window = window.desktop;
+  {
+    std::vector<Window> below = query_x11_windows_at_pos(
+        display, i_ev->common.x_root, i_ev->common.y_root,
+        [](XWindowAttributes &a) { return a.map_state == IsViewable; });
+    std::remove_if(below.begin(), below.end(),
+                   [](Window w) { return w == window.window; });
+    if (!below.empty()) { i_ev->common.window = below.back(); }
+    // drop below vector
   }
+
+  /* forward the event to the window below conky (e.g. caja) or desktop */
+  i_ev->common.x = i_ev->common.x_root;
+  i_ev->common.y = i_ev->common.y_root;
+
+  XUngrabPointer(display, i_ev->common.time);
+
+  // int _revert_to;
+  // Window focused;
+  // XGetInputFocus(display, &focused, &_revert_to);
+  // if (focused == window.window) {
+  //   Time time = CurrentTime;
+  //   if (i_ev != nullptr) { time = i_ev->common.time; }
+  //   XSetInputFocus(display, i_ev->common.window, RevertToPointerRoot, time);
+  // }
+
+  XSendEvent(display, i_ev->common.window, False, ev_to_mask(i_ev->type), &ev);
 }
 
-#ifdef BUILD_MOUSE_EVENTS
-// Assuming parent has a simple linear stack of descendants, this function
-// returns the last leaf on the graph.
-inline Window last_descendant(Display *display, Window parent) {
+/// @brief This function returns the last descendant of a window (leaf) on the
+/// graph.
+///
+/// This function assumes the window stack below `parent` is linear. If it
+/// isn't, it's only guaranteed that _some_ descendant of `parent` will be
+/// returned. If provided `parent` has no descendants, the `parent` is returned.
+Window query_x11_last_descendant(Display *display, Window parent) {
   Window _ignored, *children;
   std::uint32_t count;
 
@@ -1399,7 +1438,7 @@ inline Window last_descendant(Display *display, Window parent) {
 Window query_x11_window_at_pos(Display *display, int x, int y) {
   Window root = DefaultRootWindow(display);
 
-  // these values are ignored but NULL can't be passed
+  // these values are ignored but NULL can't be passed to XQueryPointer.
   Window root_return;
   int root_x_return, root_y_return, win_x_return, win_y_return;
   unsigned int mask_return;
@@ -1409,12 +1448,37 @@ Window query_x11_window_at_pos(Display *display, int x, int y) {
                 &root_y_return, &win_x_return, &win_y_return, &mask_return);
 
   // If root, last descendant will be wrong
-  if (last == 0) return 0;
-
-  // X11 correctly returns a window which covers conky area, but returned
-  // window is not window.window, but instead a parent node in some cases and
-  // the window.window we want to check for is a 1x1 child of that window.
-  return last_descendant(display, last);
+  if (last == 0) return root;
+  return last;
 }
 
-#endif /* BUILD_MOUSE_EVENTS */
+std::vector<Window> query_x11_windows_at_pos(
+    Display *display, int x, int y,
+    std::function<bool(XWindowAttributes &)> predicate) {
+  Window _ignored, *children;
+  std::uint32_t count;
+
+  std::vector<Window> result;
+  std::vector<Window> queue = {DefaultRootWindow(display)};
+
+  while (!queue.empty()) {
+    Window current = queue.back();
+    queue.pop_back();
+    if (XQueryTree(display, current, &_ignored, &_ignored, &children, &count) &&
+        count != 0) {
+      for (size_t i = 0; i < count; i++) {
+        queue.push_back(children[i]);
+
+        XWindowAttributes attr;
+        XGetWindowAttributes(display, current, &attr);
+        if (attr.x <= x && attr.y <= y && attr.x + attr.width >= x &&
+            attr.y + attr.height >= y && predicate(attr)) {
+          result.push_back(current);
+        }
+      }
+      XFree(children);
+    }
+  }
+
+  return result;
+}

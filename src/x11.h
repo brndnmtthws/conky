@@ -40,6 +40,8 @@
 #endif
 
 #include <cstdint>
+#include <functional>
+#include <vector>
 
 #ifdef BUILD_ARGB
 /* true if use_argb_visual=true and argb visual was found*/
@@ -74,7 +76,12 @@ enum window_hints {
 extern Display *display;
 
 struct conky_x11_window {
-  Window root, window, desktop;
+  /// XID of x11 root window
+  Window root;
+  /// XID of Conky window
+  Window window;
+  /// XID of DE desktop window (or root if none)
+  Window desktop;
   Drawable drawable;
   Visual *visual;
   Colormap colourmap;
@@ -152,9 +159,39 @@ union InputEvent {
 InputEvent *xev_as_input_event(XEvent &ev);
 void propagate_x11_event(XEvent &ev);
 
-#ifdef BUILD_MOUSE_EVENTS
+/// @brief Finds the last descendant of a window (leaf) on the graph.
+///
+/// This function assumes the window stack below `parent` is linear. If it
+/// isn't, it's only guaranteed that _some_ descendant of `parent` will be
+/// returned. If provided `parent` has no descendants, the `parent` is returned.
+///
+/// @param display display of parent
+/// @return a descendant window
+Window query_x11_last_descendant(Display *display, Window parent);
+
+/// @brief Returns the top-most window overlapping provided screen coordinates.
+///
+/// @param display display of parent
+/// @param x screen X position contained by window
+/// @param y screen Y position contained by window
+/// @return a top-most window at provided screen coordinates, or root
 Window query_x11_window_at_pos(Display *display, int x, int y);
-#endif /* BUILD_MOUSE_EVENTS */
+
+/// @brief Returns a list of windows overlapping provided screen coordinates.
+///
+/// Vector returned by this function will never contain root because it's
+/// assumed to always cover the entire display.
+///
+/// @param display display of parent
+/// @param x screen X position contained by window
+/// @param y screen Y position contained by window
+/// @param predicate any additional predicates to apply for XWindowAttributes
+/// (besides bounds testing).
+/// @return a vector of windows at provided screen coordinates
+std::vector<Window> query_x11_windows_at_pos(
+    Display *display, int x, int y,
+    std::function<bool(XWindowAttributes &)> predicate =
+        [](XWindowAttributes &a) { return true; });
 
 #ifdef BUILD_XDBE
 void xdbe_swap_buffers(void);

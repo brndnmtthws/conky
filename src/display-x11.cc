@@ -410,6 +410,8 @@ bool display_output_x11::main_loop_wait(double t) {
       if (data->evtype == XI_Motion && is_cursor_move) {
         Window query_result =
             query_x11_window_at_pos(display, data->root_x, data->root_y);
+        // query_result is not window.window in some cases.
+        query_result = query_x11_last_descendant(display, query_result);
 
         static bool cursor_inside = false;
 
