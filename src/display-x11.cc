@@ -53,6 +53,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <unordered_map>
 #include <vector>
@@ -233,6 +234,9 @@ bool display_output_x11::shutdown() {
   deinit_x11();
   return true;
 }
+
+void process_surface_events(conky::display_output_x11 *surface,
+                            Display *display);
 
 bool display_output_x11::main_loop_wait(double t) {
   /* wait for X event or timeout */
@@ -428,7 +432,62 @@ bool display_output_x11::main_loop_wait(double t) {
 #ifdef OWN_WINDOW
 #ifdef BUILD_MOUSE_EVENTS
 #ifdef BUILD_XINPUT
+typedef std::map<int, XIDeviceInfo *> XIDeviceInfoMap;
+static XIDeviceInfoMap xi_device_info_cache{};
+XIDeviceInfo *xi_device_info(int device_id) {
+  if (xi_device_info_cache.count(device_id)) {
+    return xi_device_info_cache[device_id];
+  }
+
+  int num_devices;
+  XIDeviceInfo *info = XIQueryDevice(display, device_id, &num_devices);
+  if (num_devices == 0) { return nullptr; }
+
+  xi_device_info_cache[device_id] = info;
+  return xi_device_info_cache[device_id];
+}
+
+int xi_valuator_index(int device_id, const char *valuator) {
+  const char *name = valuator;
+  if (name == nullptr || strlen(name) == 0) { name = "None"; }
+
+  XIDeviceInfo *device = xi_device_info(device_id);
+
+  for (int i = 0; i < device->num_classes; i++) {
+    if (device->classes[i]->type != XIValuatorClass) continue;
+
+    XIValuatorClassInfo *class_info = (XIValuatorClassInfo *)device->classes[i];
+
+    auto label = x11_atom_string(display, window.root, class_info->label);
+    if (strcmp(label.c_str(), name)) return i;
+  }
+
+  return -1;
+}
+
+bool xi_test_valuator(const XIValuatorState &state, int index) {
+  if (index < 0 || state.mask_len > index / 8) return false;
+  return XIMaskIsSet(state.mask, index);
+}
+double *xi_valuator_value(const XIValuatorState &state, int index) {
+  if (!xi_test_valuator(state, index)) return nullptr;
+  return &state.values[index];
+}
+
 EV_HANDLER(mouse_input) {
+  if (ev.type == ButtonPress || ev.type == ButtonRelease ||
+      ev.type == MotionNotify) {
+    // We'll pass basic X11 events through, and instead deal with XInput events.
+
+    // FIXME: This is wrong. lua hooks dictate whether events should be
+    // consumed. So each XInput event has a corresponding X11 event we need to
+    // also block based on the return value.
+    //*consumed = false;
+    // We could also fabricate a basic event from XInput one as XInput contains
+    // all the needed data...
+    return true;
+  }
+
   if (ev.type != GenericEvent || ev.xcookie.extension != window.xi_opcode)
     return false;
 
@@ -439,52 +498,119 @@ EV_HANDLER(mouse_input) {
 
   auto *data = reinterpret_cast<XIDeviceEvent *>(ev.xcookie.data);
 
-  // the only way to differentiate between a scroll and move event is
-  // though valuators - move has first 2 set, other axis movements have
-  // other.
-  bool is_cursor_move =
-      data->valuators.mask_len >= 1 &&
-      (data->valuators.mask[0] & 3) == data->valuators.mask[0];
-  for (std::size_t i = 1; i < data->valuators.mask_len; i++) {
-    if (data->valuators.mask[i] != 0) {
-      is_cursor_move = false;
-      break;
+  if (data->evtype == XI_DeviceChanged) {
+    int device_id = data->sourceid;
+
+    // update cached device info
+    if (xi_device_info_cache.count(device_id)) {
+      XIFreeDeviceInfo(xi_device_info_cache[device_id]);
+      int num_devices;
+      xi_device_info_cache[device_id] =
+          XIQueryDevice(display, device_id, &num_devices);
+      if (num_devices == 0) { xi_device_info_cache.erase(device_id); }
     }
+    return true;
   }
 
-  if (data->evtype == XI_Motion && is_cursor_move) {
-    Window query_result =
-        query_x11_window_at_pos(display, data->root_x, data->root_y);
+  Window event_window;
+  modifier_state_t mods;
+  if (data->evtype == XI_Motion || data->evtype == XI_ButtonPress ||
+      data->evtype == XI_ButtonRelease) {
+    event_window = query_x11_window_at_pos(display, data->root_x, data->root_y);
     // query_result is not window.window in some cases.
-    query_result = query_x11_last_descendant(display, query_result);
-
-    static bool cursor_inside = false;
-
-    // - over conky window
-    // - conky has now window, over desktop and within conky region
-    bool cursor_over_conky =
-        query_result == window.window &&
-        (window.window != 0u || (data->root_x >= window.x &&
-                                 data->root_x < (window.x + window.width) &&
-                                 data->root_y >= window.y &&
-                                 data->root_y < (window.y + window.height)));
-    if (cursor_over_conky) {
-      if (!cursor_inside) {
-        *consumed = llua_mouse_hook(mouse_crossing_event(
-            mouse_event_t::AREA_ENTER, data->root_x - window.x,
-            data->root_y - window.x, data->root_x, data->root_y));
-      }
-      cursor_inside = true;
-    } else if (cursor_inside) {
-      *consumed = llua_mouse_hook(mouse_crossing_event(
-          mouse_event_t::AREA_LEAVE, data->root_x - window.x,
-          data->root_y - window.x, data->root_x, data->root_y));
-      cursor_inside = false;
-    }
+    event_window = query_x11_last_descendant(display, event_window);
+    mods = x11_modifier_state(data->mods.effective);
   }
-  // TODO: Handle other events
 
-  XFreeEventData(display, &ev.xcookie);
+  bool cursor_over_conky =
+      event_window == window.window &&
+      (window.window != 0L ||
+       (data->root_x >= window.x && data->root_x < (window.x + window.width) &&
+        data->root_y >= window.y && data->root_y < (window.y + window.height)));
+
+  if (data->evtype == XI_Motion) {
+    // TODO: Make valuator_index names configurable?
+    int hor_move_v =
+        xi_valuator_index(data->deviceid, "Rel X");  // Almost always 0
+    int vert_move_v =
+        xi_valuator_index(data->deviceid, "Rel Y");  // Almost always 1
+    int hor_scroll_v = xi_valuator_index(data->deviceid,
+                                         "Rel Vert Scroll");  // Almost always 2
+    int vert_scroll_v = xi_valuator_index(
+        data->deviceid, "Rel Horiz Scroll");  // Almost always 3
+
+    if ((hor_move_v == -1 && vert_move_v == -1) &&
+        (hor_scroll_v == -1 && vert_scroll_v == -1)) {
+      // device has no movement/scroll valuators? ignore motion
+      return true;
+    }
+
+    bool is_move = xi_test_valuator(data->valuators, hor_move_v) ||
+                   xi_test_valuator(data->valuators, vert_move_v);
+    bool is_scroll = xi_test_valuator(data->valuators, hor_scroll_v) ||
+                     xi_test_valuator(data->valuators, vert_scroll_v);
+
+    if (is_move) {
+      static bool cursor_inside = false;
+
+      if (cursor_over_conky) {
+        if (!cursor_inside) {
+          *consumed = llua_mouse_hook(mouse_crossing_event(
+              mouse_event_t::AREA_ENTER, data->root_x - window.x,
+              data->root_y - window.x, data->root_x, data->root_y));
+        }
+        cursor_inside = true;
+      } else if (cursor_inside) {
+        *consumed = llua_mouse_hook(mouse_crossing_event(
+            mouse_event_t::AREA_LEAVE, data->root_x - window.x,
+            data->root_y - window.x, data->root_x, data->root_y));
+        cursor_inside = false;
+      }
+    } else if (is_scroll) {
+      double *horizontal = xi_valuator_value(data->valuators, hor_scroll_v);
+      if (*horizontal != 0.0) {
+        scroll_direction_t direction = *horizontal > 0.0
+                                           ? scroll_direction_t::SCROLL_LEFT
+                                           : scroll_direction_t::SCROLL_RIGHT;
+        *consumed = llua_mouse_hook(
+            mouse_scroll_event(data->event_x, data->event_y, data->root_x,
+                               data->root_y, direction, mods));
+      }
+      double *vertical = xi_valuator_value(data->valuators, vert_scroll_v);
+      if (*vertical != 0.0) {
+        scroll_direction_t direction = *vertical > 0.0
+                                           ? scroll_direction_t::SCROLL_DOWN
+                                           : scroll_direction_t::SCROLL_UP;
+        *consumed = llua_mouse_hook(
+            mouse_scroll_event(data->event_x, data->event_y, data->root_x,
+                               data->root_y, direction, mods));
+      }
+    }
+  } else if (cursor_over_conky && (data->evtype == XI_ButtonPress ||
+                                   data->evtype == XI_ButtonRelease)) {
+    if (data->detail >= 4 && data->detail <= 7) {
+      if (data->evtype == XI_ButtonRelease) return true;
+
+      scroll_direction_t direction = x11_scroll_direction(data->detail);
+      *consumed = llua_mouse_hook(
+          mouse_scroll_event(data->event_x, data->event_y, data->root_x,
+                             data->root_y, direction, mods));
+      return true;
+    }
+
+    mouse_event_t type = mouse_event_t::MOUSE_PRESS;
+    if (data->evtype == XI_ButtonRelease) {
+      type = mouse_event_t::MOUSE_RELEASE;
+    }
+
+    mouse_button_t button = x11_mouse_button_code(data->detail);
+    *consumed = llua_mouse_hook(mouse_button_event(type, data->event_x,
+                                                   data->event_y, data->root_x,
+                                                   data->root_y, button, mods));
+
+    if (data->evtype == XI_ButtonPress) { *focus = *consumed; }
+  }
+
   return true;
 }
 #else  /* BUILD_XINPUT */
@@ -699,7 +825,7 @@ bool process_event(conky::display_output_x11 *surface, Display *display,
   HANDLE_EV(property_notify);
 
   // only accept remaining events if they're sent to Conky.
-  if (ev.xany.window != window.window) return;
+  if (ev.xany.window != window.window) return false;
 
   HANDLE_EV(expose);
   HANDLE_EV(reparent);
@@ -733,12 +859,17 @@ void process_surface_events(conky::display_output_x11 *surface,
     */
     bool consumed = true;
     bool focus = false;
-    process_event(surface, display, ev, &consumed, &focus);
+    bool handled = process_event(surface, display, ev, &consumed, &focus);
 
     if (!consumed) {
       propagate_x11_event(ev);
     } else if (focus) {
       XSetInputFocus(display, window.window, RevertToParent, CurrentTime);
+    }
+
+    if (ev.type == GenericEvent && handled) {
+      // cookie had to be allocated to handle a generic event
+      XFreeEventData(display, &ev.xcookie);
     }
   }
 

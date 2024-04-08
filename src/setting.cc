@@ -214,6 +214,7 @@ int config_setting_base::config__newindex(lua::state *l) {
 
   l->pushvalue(-2);
   l->rawget(-4);
+
   process_setting(*l, false);
 
   return 0;
@@ -247,7 +248,32 @@ void config_setting_base::make_conky_config(lua::state &l) {
 
   ++s;
 }
+
 }  // namespace priv
+
+static void dumpstack(lua::state &l) {
+  int top = l.gettop();
+  for (int i = 1; i <= top; i++) {
+    printf("%d\t%s\t", i, l.type_name(l.type(i)));
+    switch (l.type(i)) {
+      case LUA_TNUMBER:
+        printf("%g\n", l.tonumber(i));
+        break;
+      case LUA_TSTRING:
+        printf("%s\n", l.tostring(i));
+        break;
+      case LUA_TBOOLEAN:
+        printf("%s\n", (l.toboolean(i) ? "true" : "false"));
+        break;
+      case LUA_TNIL:
+        printf("%s\n", "nil");
+        break;
+      default:
+        printf("%p\n", l.touserdata(i));
+        break;
+    }
+  }
+}
 
 void set_config_settings(lua::state &l) {
   lua::stack_sentry s(l);

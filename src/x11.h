@@ -159,6 +159,10 @@ union InputEvent {
 InputEvent *xev_as_input_event(XEvent &ev);
 void propagate_x11_event(XEvent &ev);
 
+std::string x11_atom_string(Display *display, Window window, Atom atom);
+std::vector<Window> x11_atom_window_list(Display *display, Window window,
+                                         Atom atom);
+
 /// @brief Tries getting a list of windows ordered from bottom to top.
 ///
 /// Whether the list is correctly ordered depends on WM/DE providing the

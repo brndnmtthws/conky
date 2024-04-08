@@ -1413,12 +1413,6 @@ void propagate_x11_event(XEvent &ev) {
   XSendEvent(display, i_ev->common.window, False, ev_to_mask(i_ev->type), &ev);
 }
 
-/// @brief This function returns the last descendant of a window (leaf) on the
-/// graph.
-///
-/// This function assumes the window stack below `parent` is linear. If it
-/// isn't, it's only guaranteed that _some_ descendant of `parent` will be
-/// returned. If provided `parent` has no descendants, the `parent` is returned.
 Window query_x11_last_descendant(Display *display, Window parent) {
   Window _ignored, *children;
   std::uint32_t count;
@@ -1435,58 +1429,70 @@ Window query_x11_last_descendant(Display *display, Window parent) {
   return current;
 }
 
-std::vector<Window> query_x11_windows(Display *display) {
-  // _NET_CLIENT_LIST_STACKING
-  Window root = DefaultRootWindow(display);
-
-  Atom clients_atom = XInternAtom(display, "_NET_CLIENT_LIST_STACKING", 0);
-
+std::string x11_atom_string(Display *display, Window window, Atom atom) {
   Atom actual_type;
   int actual_format;
   unsigned long nitems;
   unsigned long bytes_after;
   unsigned char *data = nullptr;
 
-  // try retrieving ordered windows first:
-  if (XGetWindowProperty(display, root, clients_atom, 0, 0, False, XA_WINDOW,
+  if (XGetWindowProperty(display, window, atom, 0, 1024, False, AnyPropertyType,
                          &actual_type, &actual_format, &nitems, &bytes_after,
                          &data) == Success) {
-    free(data);
-    size_t count = bytes_after / 4;
-
-    if (XGetWindowProperty(display, root, clients_atom, 0, bytes_after / 4,
-                           False, XA_WINDOW, &actual_type, &actual_format,
-                           &nitems, &bytes_after, &data) == Success) {
-      Window *wdata = reinterpret_cast<Window *>(data);
-      std::vector<Window> result(wdata, wdata + nitems);
-      free(data);
+    auto result = std::string(reinterpret_cast<char *>(data));
+    XFree(data);
+    if (actual_type == XA_STRING && actual_format == 8) {
       return result;
+    } else {
+      return std::string();
     }
   }
+}
 
-  clients_atom = XInternAtom(display, "_NET_CLIENT_LIST", 0);
-  if (XGetWindowProperty(display, root, clients_atom, 0, 0, False, XA_WINDOW,
+std::vector<Window> x11_atom_window_list(Display *display, Window window,
+                                         Atom atom) {
+  Atom actual_type;
+  int actual_format;
+  unsigned long nitems;
+  unsigned long bytes_after;
+  unsigned char *data = nullptr;
+
+  if (XGetWindowProperty(display, window, atom, 0, 0, False, XA_WINDOW,
                          &actual_type, &actual_format, &nitems, &bytes_after,
                          &data) == Success) {
-    free(data);
+    XFree(data);
     size_t count = bytes_after / 4;
 
-    if (XGetWindowProperty(display, root, clients_atom, 0, count, False,
+    if (XGetWindowProperty(display, window, atom, 0, bytes_after / 4, False,
                            XA_WINDOW, &actual_type, &actual_format, &nitems,
                            &bytes_after, &data) == Success) {
       Window *wdata = reinterpret_cast<Window *>(data);
       std::vector<Window> result(wdata, wdata + nitems);
-      free(data);
+      XFree(data);
       return result;
     }
   }
+
+  return std::vector<Window>{};
+}
+
+std::vector<Window> query_x11_windows(Display *display) {
+  Window root = DefaultRootWindow(display);
+
+  Atom clients_atom = XInternAtom(display, "_NET_CLIENT_LIST_STACKING", 0);
+  std::vector<Window> result =
+      x11_atom_window_list(display, root, clients_atom);
+  if (result.empty()) { return result; }
+
+  clients_atom = XInternAtom(display, "_NET_CLIENT_LIST", 0);
+  result = x11_atom_window_list(display, root, clients_atom);
+  if (result.empty()) { return result; }
 
   // slowest method that also returns inaccurate results:
 
   // TODO: How do we remove window decorations and other unwanted WM/DE junk
   // from this?
 
-  std::vector<Window> result;
   std::vector<Window> queue = {root};
 
   Window _ignored, *children;
