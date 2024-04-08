@@ -374,7 +374,60 @@ bool display_output_x11::main_loop_wait(double t) {
     }
   }
 
-  DBGP2("Processing %d X11 events...", XPending(display));
+  process_surface_events(display);
+
+#ifdef BUILD_XDAMAGE
+  if (x11_stuff.damage) {
+    XDamageSubtract(display, x11_stuff.damage, x11_stuff.region2, None);
+    XFixesSetRegion(display, x11_stuff.region2, nullptr, 0);
+  }
+#endif /* BUILD_XDAMAGE */
+
+  /* XDBE doesn't seem to provide a way to clear the back buffer
+   * without interfering with the front buffer, other than passing
+   * XdbeBackground to XdbeSwapBuffers. That means that if we're
+   * using XDBE, we need to redraw the text even if it wasn't part of
+   * the exposed area. OTOH, if we're not going to call draw_stuff at
+   * all, then no swap happens and we can safely do nothing. */
+
+  if (XEmptyRegion(x11_stuff.region) == 0) {
+#if defined(BUILD_XDBE)
+    if (use_xdbe.get(*state)) {
+#else
+    if (use_xpmdb.get(*state)) {
+#endif
+      XRectangle r;
+      int border_total = get_border_total();
+
+      r.x = text_start_x - border_total;
+      r.y = text_start_y - border_total;
+      r.width = text_width + 2 * border_total;
+      r.height = text_height + 2 * border_total;
+      XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
+    }
+    XSetRegion(display, window.gc, x11_stuff.region);
+#ifdef BUILD_XFT
+    if (use_xft.get(*state)) {
+      XftDrawSetClip(window.xftdraw, x11_stuff.region);
+    }
+#endif
+    draw_stuff();
+    XDestroyRegion(x11_stuff.region);
+    x11_stuff.region = XCreateRegion();
+  }
+
+  // handled
+  return true;
+}
+
+void display_output_x11::process_surface_events(Display *display) {
+  int pending = XPending(display);
+  if (pending == 0) {
+    return;
+  }
+
+  DBGP2("Processing %d X11 events...", pending);
+
   /* handle X events */
   while (XPending(display) != 0) {
     XEvent ev;
@@ -634,49 +687,6 @@ bool display_output_x11::main_loop_wait(double t) {
     }
   }
   DBGP2("Done with events!");
-
-#ifdef BUILD_XDAMAGE
-  if (x11_stuff.damage) {
-    XDamageSubtract(display, x11_stuff.damage, x11_stuff.region2, None);
-    XFixesSetRegion(display, x11_stuff.region2, nullptr, 0);
-  }
-#endif /* BUILD_XDAMAGE */
-
-  /* XDBE doesn't seem to provide a way to clear the back buffer
-   * without interfering with the front buffer, other than passing
-   * XdbeBackground to XdbeSwapBuffers. That means that if we're
-   * using XDBE, we need to redraw the text even if it wasn't part of
-   * the exposed area. OTOH, if we're not going to call draw_stuff at
-   * all, then no swap happens and we can safely do nothing. */
-
-  if (XEmptyRegion(x11_stuff.region) == 0) {
-#if defined(BUILD_XDBE)
-    if (use_xdbe.get(*state)) {
-#else
-    if (use_xpmdb.get(*state)) {
-#endif
-      XRectangle r;
-      int border_total = get_border_total();
-
-      r.x = text_start_x - border_total;
-      r.y = text_start_y - border_total;
-      r.width = text_width + 2 * border_total;
-      r.height = text_height + 2 * border_total;
-      XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
-    }
-    XSetRegion(display, window.gc, x11_stuff.region);
-#ifdef BUILD_XFT
-    if (use_xft.get(*state)) {
-      XftDrawSetClip(window.xftdraw, x11_stuff.region);
-    }
-#endif
-    draw_stuff();
-    XDestroyRegion(x11_stuff.region);
-    x11_stuff.region = XCreateRegion();
-  }
-
-  // handled
-  return true;
 }
 
 void display_output_x11::sigterm_cleanup() {

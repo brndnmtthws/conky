@@ -36,6 +36,7 @@ namespace conky {
  * A base class for X11 display output.
  */
 class display_output_x11 : public display_output_base {
+  void process_surface_events(Display *);
  public:
   explicit display_output_x11();
 
