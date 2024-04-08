@@ -1401,16 +1401,7 @@ void propagate_x11_event(XEvent &ev) {
   i_ev->common.y = i_ev->common.y_root;
   i_ev->common.time = CurrentTime;
 
-  XUngrabPointer(display, i_ev->common.time);
-
-  // int _revert_to;
-  // Window focused;
-  // XGetInputFocus(display, &focused, &_revert_to);
-  // if (focused == window.window) {
-  //   XSetInputFocus(display, i_ev->common.window, RevertToPointerRoot,
-  //                  i_ev->common.time);
-  // }
-
+  XUngrabPointer(display, CurrentTime);
   XSendEvent(display, i_ev->common.window, False, ev_to_mask(i_ev->type), &ev);
 }
 
