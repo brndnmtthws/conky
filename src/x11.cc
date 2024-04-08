@@ -1399,6 +1399,7 @@ void propagate_x11_event(XEvent &ev) {
   /* forward the event to the window below conky (e.g. caja) or desktop */
   i_ev->common.x = i_ev->common.x_root;
   i_ev->common.y = i_ev->common.y_root;
+  i_ev->common.time = CurrentTime;
 
   XUngrabPointer(display, i_ev->common.time);
 
@@ -1406,9 +1407,8 @@ void propagate_x11_event(XEvent &ev) {
   // Window focused;
   // XGetInputFocus(display, &focused, &_revert_to);
   // if (focused == window.window) {
-  //   Time time = CurrentTime;
-  //   if (i_ev != nullptr) { time = i_ev->common.time; }
-  //   XSetInputFocus(display, i_ev->common.window, RevertToPointerRoot, time);
+  //   XSetInputFocus(display, i_ev->common.window, RevertToPointerRoot,
+  //                  i_ev->common.time);
   // }
 
   XSendEvent(display, i_ev->common.window, False, ev_to_mask(i_ev->type), &ev);
