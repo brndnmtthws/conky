@@ -1592,15 +1592,16 @@ static void draw_text() {
 }
 
 void draw_stuff() {
-#ifdef BUILD_GUI
-  text_offset_x = text_offset_y = 0;
-#ifdef BUILD_IMLIB2
-  cimlib_render(text_start_x, text_start_y, window.width, window.height);
-#endif /* BUILD_IMLIB2 */
-#endif /* BUILD_GUI */
   for (auto output : display_outputs()) output->begin_draw_stuff();
+
 #ifdef BUILD_GUI
   llua_draw_pre_hook();
+
+#ifdef BUILD_IMLIB2
+  text_offset_x = text_offset_y = 0;
+  cimlib_render(text_start_x, text_start_y, window.width, window.height);
+#endif /* BUILD_IMLIB2 */
+
   for (auto output : display_outputs()) {
     if (!output->graphical()) continue;
     // XXX: we assume a single graphical display
@@ -1633,12 +1634,16 @@ void draw_stuff() {
     set_foreground_color(default_color.get(*state));
     unset_display_output();
   }
+
 #endif /* BUILD_GUI */
+  // always draw text
   draw_mode = FG;
   draw_text();
-#if defined(BUILD_GUI)
+#ifdef BUILD_GUI
+
   llua_draw_post_hook();
 #endif /* BUILD_GUI */
+
   for (auto output : display_outputs()) output->end_draw_stuff();
 }
 
