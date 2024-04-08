@@ -1385,6 +1385,11 @@ void propagate_x11_event(XEvent &ev) {
   }
 
   i_ev->common.window = window.desktop;
+  i_ev->common.x = i_ev->common.x_root;
+  i_ev->common.y = i_ev->common.y_root;
+  i_ev->common.time = CurrentTime;
+
+  /* forward the event to the window below conky (e.g. caja) or desktop */
   {
     std::vector<Window> below = query_x11_windows_at_pos(
         display, i_ev->common.x_root, i_ev->common.y_root,
@@ -1392,14 +1397,17 @@ void propagate_x11_event(XEvent &ev) {
     auto it = std::remove_if(below.begin(), below.end(),
                              [](Window w) { return w == window.window; });
     below.erase(it, below.end());
-    if (!below.empty()) { i_ev->common.window = below.back(); }
+    if (!below.empty()) {
+      i_ev->common.window = below.back();
+
+      Window _ignore;
+      // Update event x and y coordinates to be target window relative
+      XTranslateCoordinates(display, window.root, i_ev->common.window,
+                            i_ev->common.x_root, i_ev->common.y_root,
+                            &i_ev->common.x, &i_ev->common.y, &_ignore);
+    }
     // drop below vector
   }
-
-  /* forward the event to the window below conky (e.g. caja) or desktop */
-  i_ev->common.x = i_ev->common.x_root;
-  i_ev->common.y = i_ev->common.y_root;
-  i_ev->common.time = CurrentTime;
 
   XUngrabPointer(display, CurrentTime);
   XSendEvent(display, i_ev->common.window, False, ev_to_mask(i_ev->type), &ev);
