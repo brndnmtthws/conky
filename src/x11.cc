@@ -1410,7 +1410,7 @@ void propagate_x11_event(XEvent &ev) {
   }
 
   XUngrabPointer(display, CurrentTime);
-  XSendEvent(display, i_ev->common.window, False, ev_to_mask(i_ev->type), &ev);
+  XSendEvent(display, i_ev->common.window, True, ev_to_mask(i_ev->type), &ev);
 }
 
 /// @brief This function returns the last descendant of a window (leaf) on the
