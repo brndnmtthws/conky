@@ -45,3 +45,9 @@ gh-actions:
       - any-glob-to-any-file:
           - .github/workflows/*
           - .github/workflows/**/*
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - web/package-lock.json
+          - cmake/ConkyPlatformChecks.cmake
