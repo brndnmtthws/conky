@@ -946,7 +946,8 @@ void x11_init_window(lua::state &l, bool own) {
   }
   bool xinput_ok = false;
 #ifdef BUILD_XINPUT
-  do {             // not loop
+  // not a loop; substitutes goto with break - if checks fail
+  do {
     int _ignored;  // segfault if NULL
     if (!XQueryExtension(display, "XInputExtension", &window.xi_opcode,
                          &_ignored, &_ignored)) {
@@ -965,15 +966,33 @@ void x11_init_window(lua::state &l, bool own) {
     const std::size_t mask_size = (XI_LASTEVENT + 7) / 8;
     unsigned char mask_bytes[mask_size] = {0}; /* must be zeroed! */
     XISetMask(mask_bytes, XI_Motion);
+    // Capture click events for "override" window type
+    if (!own) {
+      XISetMask(mask_bytes, XI_ButtonPress);
+      XISetMask(mask_bytes, XI_ButtonRelease);
+    }
 
     XIEventMask ev_masks[1];
     ev_masks[0].deviceid = XIAllDevices;
     ev_masks[0].mask_len = sizeof(mask_bytes);
     ev_masks[0].mask = mask_bytes;
     XISelectEvents(display, window.root, ev_masks, 1);
+
+    if (own) {
+      XIClearMask(mask_bytes, XI_Motion);
+      XISetMask(mask_bytes, XI_ButtonPress);
+      XISetMask(mask_bytes, XI_ButtonRelease);
+
+      ev_masks[0].deviceid = XIAllDevices;
+      ev_masks[0].mask_len = sizeof(mask_bytes);
+      ev_masks[0].mask = mask_bytes;
+      XISelectEvents(display, window.window, ev_masks, 1);
+    }
+
     xinput_ok = true;
   } while (false);
 #endif /* BUILD_XINPUT */
+  // fallback to basic X11 enter/leave events if xinput fails to init
   if (!xinput_ok && own && own_window_type.get(l) != TYPE_DESKTOP) {
     input_mask |= EnterWindowMask | LeaveWindowMask;
   }
@@ -1427,26 +1446,6 @@ Window query_x11_last_descendant(Display *display, Window parent) {
   }
 
   return current;
-}
-
-std::string x11_atom_string(Display *display, Window window, Atom atom) {
-  Atom actual_type;
-  int actual_format;
-  unsigned long nitems;
-  unsigned long bytes_after;
-  unsigned char *data = nullptr;
-
-  if (XGetWindowProperty(display, window, atom, 0, 1024, False, AnyPropertyType,
-                         &actual_type, &actual_format, &nitems, &bytes_after,
-                         &data) == Success) {
-    auto result = std::string(reinterpret_cast<char *>(data));
-    XFree(data);
-    if (actual_type == XA_STRING && actual_format == 8) {
-      return result;
-    } else {
-      return std::string();
-    }
-  }
 }
 
 std::vector<Window> x11_atom_window_list(Display *display, Window window,

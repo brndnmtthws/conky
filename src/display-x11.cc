@@ -55,6 +55,7 @@
 #include <iostream>
 #include <map>
 #include <sstream>
+#include <tuple>
 #include <unordered_map>
 #include <vector>
 
@@ -452,39 +453,47 @@ int xi_valuator_index(int device_id, const char *valuator) {
   if (name == nullptr || strlen(name) == 0) { name = "None"; }
 
   XIDeviceInfo *device = xi_device_info(device_id);
-
   for (int i = 0; i < device->num_classes; i++) {
     if (device->classes[i]->type != XIValuatorClass) continue;
 
     XIValuatorClassInfo *class_info = (XIValuatorClassInfo *)device->classes[i];
+    char *label = XGetAtomName(display, class_info->label);
+    if (label == nullptr) {
+      XFree(label);
+      continue;
+    }
 
-    auto label = x11_atom_string(display, window.root, class_info->label);
-    if (strcmp(label.c_str(), name)) return i;
+    if (!strcmp(label, name)) {
+      XFree(label);
+      return class_info->number;  // should be same as i
+    }
   }
 
   return -1;
 }
 
 bool xi_test_valuator(const XIValuatorState &state, int index) {
-  if (index < 0 || state.mask_len > index / 8) return false;
+  if (index < 0 || state.mask_len < index / 8) return false;
   return XIMaskIsSet(state.mask, index);
 }
-double *xi_valuator_value(const XIValuatorState &state, int index) {
-  if (!xi_test_valuator(state, index)) return nullptr;
-  return &state.values[index];
+std::optional<double> xi_valuator_value(const XIValuatorState &state,
+                                        int index) {
+  if (!xi_test_valuator(state, index)) return std::nullopt;
+  int skip = index;
+  for (int i = index - 1; i >= 0; i--) {
+    if (!XIMaskIsSet(state.mask, i)) { skip--; }
+  }
+  return std::optional(state.values[skip]);
 }
 
 EV_HANDLER(mouse_input) {
   if (ev.type == ButtonPress || ev.type == ButtonRelease ||
       ev.type == MotionNotify) {
-    // We'll pass basic X11 events through, and instead deal with XInput events.
-
-    // FIXME: This is wrong. lua hooks dictate whether events should be
-    // consumed. So each XInput event has a corresponding X11 event we need to
-    // also block based on the return value.
-    //*consumed = false;
-    // We could also fabricate a basic event from XInput one as XInput contains
-    // all the needed data...
+    // destroy basic X11 events; and manufacture them later when trying to
+    // propagate XInput ones - this is required because there's no (simple) way
+    // of making sure the lua hook controls both when it only handles XInput
+    // ones.
+    *consumed = true;
     return true;
   }
 
@@ -523,10 +532,34 @@ EV_HANDLER(mouse_input) {
   }
 
   bool cursor_over_conky =
-      event_window == window.window &&
-      (window.window != 0L ||
-       (data->root_x >= window.x && data->root_x < (window.x + window.width) &&
-        data->root_y >= window.y && data->root_y < (window.y + window.height)));
+      (event_window == window.window ||
+       window.window == 0L &&
+           (event_window == window.root || event_window == window.desktop)) &&
+      (data->root_x >= window.x && data->root_x < (window.x + window.width) &&
+       data->root_y >= window.y && data->root_y < (window.y + window.height));
+
+  // XInput reports events twice on some hardware (even by 'xinput --test-xi2')
+  auto hash = std::tuple(data->serial, data->evtype, data->event);
+  typedef std::map<decltype(hash), Time> MouseEventDebounceMap;
+  static MouseEventDebounceMap debounce{};
+
+  Time now = data->time;
+  bool already_handled = debounce.count(hash) > 0;
+  debounce[hash] = now;
+
+  // clear stale entries
+  for (auto iter = debounce.begin(); iter != debounce.end();) {
+    if (data->time - iter->second > 1000) {
+      iter = debounce.erase(iter);
+    } else {
+      ++iter;
+    }
+  }
+
+  if (already_handled) {
+    *consumed = true;
+    return true;
+  }
 
   if (data->evtype == XI_Motion) {
     // TODO: Make valuator_index names configurable?
@@ -534,16 +567,11 @@ EV_HANDLER(mouse_input) {
         xi_valuator_index(data->deviceid, "Rel X");  // Almost always 0
     int vert_move_v =
         xi_valuator_index(data->deviceid, "Rel Y");  // Almost always 1
-    int hor_scroll_v = xi_valuator_index(data->deviceid,
-                                         "Rel Vert Scroll");  // Almost always 2
+    int hor_scroll_v =
+        xi_valuator_index(data->deviceid,
+                          "Rel Horiz Scroll");  // Almost always 2
     int vert_scroll_v = xi_valuator_index(
-        data->deviceid, "Rel Horiz Scroll");  // Almost always 3
-
-    if ((hor_move_v == -1 && vert_move_v == -1) &&
-        (hor_scroll_v == -1 && vert_scroll_v == -1)) {
-      // device has no movement/scroll valuators? ignore motion
-      return true;
-    }
+        data->deviceid, "Rel Vert Scroll");  // Almost always 3
 
     bool is_move = xi_test_valuator(data->valuators, hor_move_v) ||
                    xi_test_valuator(data->valuators, vert_move_v);
@@ -553,6 +581,7 @@ EV_HANDLER(mouse_input) {
     if (is_move) {
       static bool cursor_inside = false;
 
+      // generate crossing events
       if (cursor_over_conky) {
         if (!cursor_inside) {
           *consumed = llua_mouse_hook(mouse_crossing_event(
@@ -566,19 +595,26 @@ EV_HANDLER(mouse_input) {
             data->root_y - window.x, data->root_x, data->root_y));
         cursor_inside = false;
       }
-    } else if (is_scroll) {
-      double *horizontal = xi_valuator_value(data->valuators, hor_scroll_v);
-      if (*horizontal != 0.0) {
-        scroll_direction_t direction = *horizontal > 0.0
+
+      // generate movement events
+      if (cursor_over_conky) {
+        *consumed = llua_mouse_hook(mouse_move_event(
+            data->event_x, data->event_y, data->root_x, data->root_y, mods));
+      }
+    }
+    if (is_scroll && cursor_over_conky) {
+      auto horizontal = xi_valuator_value(data->valuators, hor_scroll_v);
+      if (horizontal.value_or(0.0) != 0.0) {
+        scroll_direction_t direction = horizontal.value() > 0.0
                                            ? scroll_direction_t::SCROLL_LEFT
                                            : scroll_direction_t::SCROLL_RIGHT;
         *consumed = llua_mouse_hook(
             mouse_scroll_event(data->event_x, data->event_y, data->root_x,
                                data->root_y, direction, mods));
       }
-      double *vertical = xi_valuator_value(data->valuators, vert_scroll_v);
-      if (*vertical != 0.0) {
-        scroll_direction_t direction = *vertical > 0.0
+      auto vertical = xi_valuator_value(data->valuators, vert_scroll_v);
+      if (vertical.value_or(0.0) != 0.0) {
+        scroll_direction_t direction = vertical.value() > 0.0
                                            ? scroll_direction_t::SCROLL_DOWN
                                            : scroll_direction_t::SCROLL_UP;
         *consumed = llua_mouse_hook(
@@ -589,12 +625,8 @@ EV_HANDLER(mouse_input) {
   } else if (cursor_over_conky && (data->evtype == XI_ButtonPress ||
                                    data->evtype == XI_ButtonRelease)) {
     if (data->detail >= 4 && data->detail <= 7) {
-      if (data->evtype == XI_ButtonRelease) return true;
-
-      scroll_direction_t direction = x11_scroll_direction(data->detail);
-      *consumed = llua_mouse_hook(
-          mouse_scroll_event(data->event_x, data->event_y, data->root_x,
-                             data->root_y, direction, mods));
+      // Handled via motion event valuators, ignoring "backward compatibility"
+      // ones.
       return true;
     }
 
@@ -833,10 +865,6 @@ bool process_event(conky::display_output_x11 *surface, Display *display,
   HANDLE_EV(damage);
 
   // event not handled
-
-  // *consumed = false; // old behavior
-  // we don't want to forward majoriy of events though
-
   return false;
 }
 

@@ -123,7 +123,7 @@ struct mouse_positioned_event : public mouse_event {
 
   mouse_positioned_event(mouse_event_t type, std::size_t x, std::size_t y,
                          std::size_t x_abs, std::size_t y_abs)
-      : mouse_event(type), x(x), y(y), x_abs(x_abs), y_abs(){};
+      : mouse_event(type), x(x), y(y), x_abs(x_abs), y_abs(y_abs){};
 
   void push_lua_data(lua_State *L) const;
 };
