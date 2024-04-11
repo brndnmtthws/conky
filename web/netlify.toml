@@ -5,14 +5,24 @@ publish = ".next"
 # Include the doc dir in the build ignore command
 ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF . ../doc/"
 
+  [build.environment]
+  # cache Cypress binary in local "node_modules" folder
+  # so Netlify caches it
+  CYPRESS_CACHE_FOLDER = "./node_modules/CypressBinary"
+  # set TERM variable for terminal output
+  TERM = "xterm"
+
 [[plugins]]
 package = "@netlify/plugin-nextjs"
 
 [[plugins]]
 package = "netlify-plugin-cypress"
 
-[plugins.inputs.postBuild]
-enable = true
-
-[plugins.inputs]
-enable = false
+  # do not test the deployed URL
+  [plugins.inputs]
+  enable = false
+    # test the local site
+    [plugins.inputs.preBuild]
+    enable  = true
+    start   = 'npx netlify dev'
+    wait-on = 'http://localhost:8888'
