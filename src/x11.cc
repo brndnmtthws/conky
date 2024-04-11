@@ -1429,7 +1429,7 @@ void propagate_x11_event(XEvent &ev) {
   }
 
   XUngrabPointer(display, CurrentTime);
-  XSendEvent(display, i_ev->common.window, False, ev_to_mask(i_ev->type), &ev);
+  XSendEvent(display, i_ev->common.window, True, ev_to_mask(i_ev->type), &ev);
 }
 
 Window query_x11_last_descendant(Display *display, Window parent) {
