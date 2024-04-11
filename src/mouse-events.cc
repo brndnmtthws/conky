@@ -29,6 +29,14 @@
 
 extern "C" {
 #include <lua.h>
+
+#ifdef BUILD_XINPUT
+#include <X11/extensions/XInput2.h>
+#include <string.h>
+#endif
+
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 }
 
 namespace conky {
@@ -205,5 +213,107 @@ void mouse_button_event::push_lua_data(lua_State *L) const {
   push_table_value(L, "button", this->button);
   push_mods(L, this->mods);
 }
+
+#ifdef BUILD_XINPUT
+XIDeviceInfoMap *xi_device_info_cache() {
+  static XIDeviceInfoMap cache{};
+  return &cache;
+}
+
+XIDeviceInfo *xi_device_info(Display *display, int device_id) {
+  if (xi_device_info_cache()->count(device_id)) {
+    return (*xi_device_info_cache())[device_id];
+  }
+
+  int num_devices;
+  XIDeviceInfo *info = XIQueryDevice(display, device_id, &num_devices);
+  if (num_devices == 0) { return nullptr; }
+
+  (*xi_device_info_cache())[device_id] = info;
+  return (*xi_device_info_cache())[device_id];
+}
+
+int xi_valuator_index(Display *display, int device_id, const char *valuator) {
+  const char *name = valuator;
+  if (name == nullptr || strlen(name) == 0) { name = "None"; }
+
+  XIDeviceInfo *device = xi_device_info(display, device_id);
+  for (int i = 0; i < device->num_classes; i++) {
+    if (device->classes[i]->type != XIValuatorClass) continue;
+
+    XIValuatorClassInfo *class_info = (XIValuatorClassInfo *)device->classes[i];
+    char *label = XGetAtomName(display, class_info->label);
+    if (label == nullptr) {
+      XFree(label);
+      continue;
+    }
+
+    if (!strcmp(label, name)) {
+      XFree(label);
+      return class_info->number;  // should be same as i
+    }
+  }
+
+  return -1;
+}
+
+bool xi_event_data::test_valuator(size_t index) {
+  return this->valuators.count(index) > 0;
+}
+
+std::optional<double> xi_event_data::valuator_value(size_t index) {
+  if (this->valuators.count(index) == 0) return std::nullopt;
+  return std::optional(this->valuators[index]);
+}
+
+xi_event_data *xi_event_data::read_cookie(Display *display,
+                                          XGenericEventCookie *cookie) {
+  if (!XGetEventData(display, cookie)) {
+    // already consumed
+    return nullptr;
+  }
+  auto *source = reinterpret_cast<XIDeviceEvent *>(cookie->data);
+
+  uint32_t buttons = 0;
+  for (size_t bi = 1; bi <= source->buttons.mask_len; bi++) {
+    buttons |= source->buttons.mask[bi] << (source->buttons.mask_len - bi) * 8;
+  }
+
+  std::map<size_t, double> valuators{};
+  size_t valuator_index = 0;
+  for (size_t vi = 0; vi < source->valuators.mask_len * 8; vi++) {
+    if (XIMaskIsSet(source->valuators.mask, vi)) {
+      valuators[vi] = source->valuators.values[valuator_index++];
+    }
+  }
+
+  auto result = new xi_event_data{
+      .evtype = source->evtype,
+      .serial = source->serial,
+      .send_event = source->send_event,
+      .display = source->display,
+      .extension = source->extension,
+      .time = source->time,
+      .deviceid = source->deviceid,
+      .sourceid = source->sourceid,
+      .detail = source->detail,
+      .root = source->root,
+      .event = source->event,
+      .child = source->child,
+      .root_x = source->root_x,
+      .root_y = source->root_y,
+      .event_x = source->event_x,
+      .event_y = source->event_y,
+      .flags = source->flags,
+      .buttons = std::bitset<32>(buttons),
+      .valuators = valuators,
+      .mods = source->mods,
+      .group = source->group,
+  };
+  XFreeEventData(display, cookie);
+
+  return result;
+}
+#endif /* BUILD_XINPUT */
 
 }  // namespace conky

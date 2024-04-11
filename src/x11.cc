@@ -37,6 +37,10 @@
 #include "gui.h"
 #include "logging.h"
 
+#ifdef BUILD_XINPUT
+#include "mouse-events.h"
+#endif
+
 #include <array>
 #include <cstddef>
 #include <cstdio>
@@ -1395,7 +1399,121 @@ int ev_to_mask(int event_type) {
   }
 }
 
-void propagate_x11_event(XEvent &ev) {
+#ifdef BUILD_XINPUT
+void propagate_xinput_event(const conky::xi_event_data *ev) {
+  if (ev->evtype != XI_Motion && ev->evtype != XI_ButtonPress &&
+      ev->evtype != XI_ButtonRelease) {
+    return;
+  }
+
+  Window target = window.root;
+  Window child = None;
+  int target_x = ev->event_x;
+  int target_y = ev->event_y;
+  {
+    std::vector<Window> below = query_x11_windows_at_pos(
+        display, ev->root_x, ev->root_y,
+        [](XWindowAttributes &a) { return a.map_state == IsViewable; });
+    auto it = std::remove_if(below.begin(), below.end(),
+                             [](Window w) { return w == window.window; });
+    below.erase(it, below.end());
+    if (!below.empty()) {
+      target = below.back();
+
+      // Update event x and y coordinates to be target window relative
+      XTranslateCoordinates(display, window.root, ev->event, ev->root_x,
+                            ev->root_y, &target_x, &target_y, &child);
+    }
+  }
+
+  XEvent produced;
+  long event_mask = NoEventMask;
+
+  if (ev->evtype == XI_Motion) {
+    // FIXME: Not neccessarily XMotionEvent, could be a scroll
+
+    event_mask = PointerMotionMask;
+    XMotionEvent *motion_event = &produced.xmotion;
+
+    motion_event->type = MotionNotify;
+    motion_event->display = ev->display;
+    motion_event->root = ev->root;
+    motion_event->window = target;
+    motion_event->subwindow = child;
+    motion_event->time = CurrentTime;
+    motion_event->x = target_x;
+    motion_event->y = target_y;
+    motion_event->x_root = static_cast<int>(ev->root_x);
+    motion_event->y_root = static_cast<int>(ev->root_y);
+    motion_event->state = ev->mods.effective;
+    motion_event->is_hint = NotifyNormal;
+    motion_event->same_screen = True;
+  } else {
+    XButtonEvent *button_event = &produced.xbutton;
+    switch (ev->evtype) {
+      case XI_ButtonPress:
+        event_mask = ButtonPressMask;
+        button_event->type = ButtonPress;
+        break;
+      case XI_ButtonRelease:
+        event_mask = ButtonReleaseMask;
+        switch (ev->detail) {
+          case 1:
+            event_mask |= Button1MotionMask;
+            break;
+          case 2:
+            event_mask |= Button2MotionMask;
+            break;
+          case 3:
+            event_mask |= Button3MotionMask;
+            break;
+          case 4:
+            event_mask |= Button4MotionMask;
+            break;
+          case 5:
+            event_mask |= Button5MotionMask;
+            break;
+        }
+        button_event->type = ButtonRelease;
+        break;
+    }
+    button_event->display = display;
+    button_event->root = ev->root;
+    button_event->window = target;
+    button_event->subwindow = child;
+    button_event->time = CurrentTime;
+    button_event->x = target_x;
+    button_event->y = target_y;
+    button_event->x_root = static_cast<int>(ev->root_x);
+    button_event->y_root = static_cast<int>(ev->root_y);
+    button_event->state = ev->mods.effective;
+    button_event->button = ev->detail;
+    button_event->same_screen = True;
+  }
+
+  DBGP2("EVENT: target: 0x%lx; subwindow: 0x%lx; event_mask: 0x%lx", target,
+        child, event_mask);
+
+  XUngrabPointer(display, CurrentTime);
+  XSendEvent(display, target, True, event_mask, &produced);
+
+  // TODO: Propagate original XInput event as well somehow.
+
+  XFlush(display);
+}
+#endif
+
+void propagate_x11_event(XEvent &ev, const void *cookie) {
+  // cookie must be allocated before propagation, and freed after
+
+#ifdef BUILD_XINPUT
+  if (ev.type == GenericEvent && ev.xgeneric.extension == window.xi_opcode) {
+    if (cookie == nullptr) { return; }
+    return propagate_xinput_event(
+        reinterpret_cast<const conky::xi_event_data *>(cookie));
+  }
+#endif
+
   InputEvent *i_ev = xev_as_input_event(ev);
   if (i_ev == nullptr) {
     // Not a known input event; blindly propagating them causes loops and all
@@ -1421,7 +1539,7 @@ void propagate_x11_event(XEvent &ev) {
 
       Window _ignore;
       // Update event x and y coordinates to be target window relative
-      XTranslateCoordinates(display, window.root, i_ev->common.window,
+      XTranslateCoordinates(display, window.desktop, i_ev->common.window,
                             i_ev->common.x_root, i_ev->common.y_root,
                             &i_ev->common.x, &i_ev->common.y, &_ignore);
     }

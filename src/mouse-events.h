@@ -28,9 +28,18 @@
 #include "config.h"
 #include "logging.h"
 
+#ifdef BUILD_XINPUT
+#include <map>
+#include <optional>
+#endif /* BUILD_XINPUT */
+
 extern "C" {
 #ifdef BUILD_X11
 #include <X11/X.h>
+
+#ifdef BUILD_XINPUT
+#include <X11/extensions/XInput2.h>
+#endif /* BUILD_XINPUT */
 #endif /* BUILD_X11 */
 
 #include <lua.h>
@@ -227,6 +236,46 @@ struct mouse_crossing_event : public mouse_positioned_event {
       : mouse_positioned_event{type, x, y, x_abs, y_abs} {};
 };
 
+#ifdef BUILD_XINPUT
+typedef std::map<int, XIDeviceInfo *> XIDeviceInfoMap;
+XIDeviceInfoMap *xi_device_info_cache();
+XIDeviceInfo *xi_device_info(Display *display, int device_id);
+
+int xi_valuator_index(Display *display, int device_id, const char *valuator);
+
+/// Almost an exact copy of `XIDeviceEvent`, except it owns all data.
+struct xi_event_data {
+  int evtype;
+  unsigned long serial; /* # of last request processed by server */
+  Bool send_event;      /* true if this came from a SendEvent request */
+  Display *display;     /* Display the event was read from */
+  int extension;        /* XI extension offset */
+  Time time;
+  int deviceid;
+  int sourceid;
+  int detail;
+  Window root;
+  Window event;
+  Window child;
+  double root_x;
+  double root_y;
+  double event_x;
+  double event_y;
+  int flags;
+  /// pressed button mask
+  std::bitset<32> buttons;
+  std::map<size_t, double> valuators;
+  XIModifierState mods;
+  XIGroupState group;
+
+  static xi_event_data *read_cookie(Display *display,
+                                    XGenericEventCookie *cookie);
+
+  bool test_valuator(size_t index);
+  std::optional<double> valuator_value(size_t index);
+};
+
+#endif /* BUILD_XINPUT */
 }  // namespace conky
 
 #endif /* MOUSE_EVENTS_H */

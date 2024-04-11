@@ -428,64 +428,11 @@ bool display_output_x11::main_loop_wait(double t) {
 #define EV_HANDLER(name)                                                     \
   bool _conky_ev_handle_##name(conky::display_output_x11 *surface,           \
                                Display *display, XEvent &ev, bool *consumed, \
-                               bool *focus)
+                               bool *focus, void **cookie)
 
 #ifdef OWN_WINDOW
 #ifdef BUILD_MOUSE_EVENTS
 #ifdef BUILD_XINPUT
-typedef std::map<int, XIDeviceInfo *> XIDeviceInfoMap;
-static XIDeviceInfoMap xi_device_info_cache{};
-XIDeviceInfo *xi_device_info(int device_id) {
-  if (xi_device_info_cache.count(device_id)) {
-    return xi_device_info_cache[device_id];
-  }
-
-  int num_devices;
-  XIDeviceInfo *info = XIQueryDevice(display, device_id, &num_devices);
-  if (num_devices == 0) { return nullptr; }
-
-  xi_device_info_cache[device_id] = info;
-  return xi_device_info_cache[device_id];
-}
-
-int xi_valuator_index(int device_id, const char *valuator) {
-  const char *name = valuator;
-  if (name == nullptr || strlen(name) == 0) { name = "None"; }
-
-  XIDeviceInfo *device = xi_device_info(device_id);
-  for (int i = 0; i < device->num_classes; i++) {
-    if (device->classes[i]->type != XIValuatorClass) continue;
-
-    XIValuatorClassInfo *class_info = (XIValuatorClassInfo *)device->classes[i];
-    char *label = XGetAtomName(display, class_info->label);
-    if (label == nullptr) {
-      XFree(label);
-      continue;
-    }
-
-    if (!strcmp(label, name)) {
-      XFree(label);
-      return class_info->number;  // should be same as i
-    }
-  }
-
-  return -1;
-}
-
-bool xi_test_valuator(const XIValuatorState &state, int index) {
-  if (index < 0 || state.mask_len < index / 8) return false;
-  return XIMaskIsSet(state.mask, index);
-}
-std::optional<double> xi_valuator_value(const XIValuatorState &state,
-                                        int index) {
-  if (!xi_test_valuator(state, index)) return std::nullopt;
-  int skip = index;
-  for (int i = index - 1; i >= 0; i--) {
-    if (!XIMaskIsSet(state.mask, i)) { skip--; }
-  }
-  return std::optional(state.values[skip]);
-}
-
 EV_HANDLER(mouse_input) {
   if (ev.type == ButtonPress || ev.type == ButtonRelease ||
       ev.type == MotionNotify) {
@@ -497,26 +444,27 @@ EV_HANDLER(mouse_input) {
     return true;
   }
 
-  if (ev.type != GenericEvent || ev.xcookie.extension != window.xi_opcode)
+  if (ev.type != GenericEvent || ev.xgeneric.extension != window.xi_opcode)
     return false;
 
-  if (!XGetEventData(display, &ev.xcookie)) {
+  auto *data = xi_event_data::read_cookie(display, &ev.xcookie);
+  if (data == nullptr) {
     NORM_ERR("unable to get XInput event data");
     return false;
   }
-
-  auto *data = reinterpret_cast<XIDeviceEvent *>(ev.xcookie.data);
+  *cookie = data;
 
   if (data->evtype == XI_DeviceChanged) {
     int device_id = data->sourceid;
 
+    auto cache = xi_device_info_cache();
+
     // update cached device info
-    if (xi_device_info_cache.count(device_id)) {
-      XIFreeDeviceInfo(xi_device_info_cache[device_id]);
+    if (cache->count(device_id)) {
+      XIFreeDeviceInfo((*cache)[device_id]);
       int num_devices;
-      xi_device_info_cache[device_id] =
-          XIQueryDevice(display, device_id, &num_devices);
-      if (num_devices == 0) { xi_device_info_cache.erase(device_id); }
+      (*cache)[device_id] = XIQueryDevice(display, device_id, &num_devices);
+      if (num_devices == 0) { cache->erase(device_id); }
     }
     return true;
   }
@@ -564,19 +512,19 @@ EV_HANDLER(mouse_input) {
   if (data->evtype == XI_Motion) {
     // TODO: Make valuator_index names configurable?
     int hor_move_v =
-        xi_valuator_index(data->deviceid, "Rel X");  // Almost always 0
+        xi_valuator_index(display, data->deviceid, "Rel X");  // Almost always 0
     int vert_move_v =
-        xi_valuator_index(data->deviceid, "Rel Y");  // Almost always 1
+        xi_valuator_index(display, data->deviceid, "Rel Y");  // Almost always 1
     int hor_scroll_v =
-        xi_valuator_index(data->deviceid,
+        xi_valuator_index(display, data->deviceid,
                           "Rel Horiz Scroll");  // Almost always 2
     int vert_scroll_v = xi_valuator_index(
-        data->deviceid, "Rel Vert Scroll");  // Almost always 3
+        display, data->deviceid, "Rel Vert Scroll");  // Almost always 3
 
-    bool is_move = xi_test_valuator(data->valuators, hor_move_v) ||
-                   xi_test_valuator(data->valuators, vert_move_v);
-    bool is_scroll = xi_test_valuator(data->valuators, hor_scroll_v) ||
-                     xi_test_valuator(data->valuators, vert_scroll_v);
+    bool is_move =
+        data->test_valuator(hor_move_v) || data->test_valuator(vert_move_v);
+    bool is_scroll =
+        data->test_valuator(hor_scroll_v) || data->test_valuator(vert_scroll_v);
 
     if (is_move) {
       static bool cursor_inside = false;
@@ -603,7 +551,7 @@ EV_HANDLER(mouse_input) {
       }
     }
     if (is_scroll && cursor_over_conky) {
-      auto horizontal = xi_valuator_value(data->valuators, hor_scroll_v);
+      auto horizontal = data->valuator_value(hor_scroll_v);
       if (horizontal.value_or(0.0) != 0.0) {
         scroll_direction_t direction = horizontal.value() > 0.0
                                            ? scroll_direction_t::SCROLL_LEFT
@@ -612,7 +560,7 @@ EV_HANDLER(mouse_input) {
             mouse_scroll_event(data->event_x, data->event_y, data->root_x,
                                data->root_y, direction, mods));
       }
-      auto vertical = xi_valuator_value(data->valuators, vert_scroll_v);
+      auto vertical = data->valuator_value(vert_scroll_v);
       if (vertical.value_or(0.0) != 0.0) {
         scroll_direction_t direction = vertical.value() > 0.0
                                            ? scroll_direction_t::SCROLL_DOWN
@@ -848,9 +796,9 @@ EV_HANDLER(damage) { return false; }
 ///
 /// @return true if event should move input focus to conky
 bool process_event(conky::display_output_x11 *surface, Display *display,
-                   XEvent ev, bool *consumed, bool *focus) {
-#define HANDLE_EV(handler)                                               \
-  if (_conky_ev_handle_##handler(surface, display, ev, consumed, focus)) \
+                   XEvent ev, bool *consumed, bool *focus, void **data) {
+#define HANDLE_EV(handler)                                                     \
+  if (_conky_ev_handle_##handler(surface, display, ev, consumed, focus, data)) \
   return true
 
   HANDLE_EV(mouse_input);
@@ -887,18 +835,17 @@ void process_surface_events(conky::display_output_x11 *surface,
     */
     bool consumed = true;
     bool focus = false;
-    bool handled = process_event(surface, display, ev, &consumed, &focus);
+    void *cookie = nullptr;
+    bool handled =
+        process_event(surface, display, ev, &consumed, &focus, &cookie);
 
     if (!consumed) {
-      propagate_x11_event(ev);
+      propagate_x11_event(ev, cookie);
     } else if (focus) {
       XSetInputFocus(display, window.window, RevertToParent, CurrentTime);
     }
 
-    if (ev.type == GenericEvent && handled) {
-      // cookie had to be allocated to handle a generic event
-      XFreeEventData(display, &ev.xcookie);
-    }
+    if (cookie != nullptr) { free(cookie); }
   }
 
   DBGP2("Done processing %d events.", pending);
