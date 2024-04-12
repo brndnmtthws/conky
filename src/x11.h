@@ -157,7 +157,7 @@ union InputEvent {
 // Returns InputEvent pointer to provided XEvent is an input event; nullptr
 // otherwise.
 InputEvent *xev_as_input_event(XEvent &ev);
-void propagate_x11_event(XEvent &ev);
+void propagate_x11_event(XEvent &ev, const void *cookie);
 
 /// @brief Tries getting a list of windows ordered from bottom to top.
 ///
