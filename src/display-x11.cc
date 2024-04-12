@@ -457,14 +457,10 @@ EV_HANDLER(mouse_input) {
   if (data->evtype == XI_DeviceChanged) {
     int device_id = data->sourceid;
 
-    auto cache = xi_device_info_cache();
-
     // update cached device info
-    if (cache->count(device_id)) {
-      XIFreeDeviceInfo((*cache)[device_id]);
-      int num_devices;
-      (*cache)[device_id] = XIQueryDevice(display, device_id, &num_devices);
-      if (num_devices == 0) { cache->erase(device_id); }
+    if (xi_device_info_cache.count(device_id)) {
+      xi_device_info_cache.erase(device_id);
+      conky_device_info::from_xi_id(display, device_id);
     }
     return true;
   }
@@ -487,7 +483,7 @@ EV_HANDLER(mouse_input) {
        data->root_y >= window.y && data->root_y < (window.y + window.height));
 
   // XInput reports events twice on some hardware (even by 'xinput --test-xi2')
-  auto hash = std::tuple(data->serial, data->evtype, data->event);
+  auto hash = std::make_tuple(data->serial, data->evtype, data->event);
   typedef std::map<decltype(hash), Time> MouseEventDebounceMap;
   static MouseEventDebounceMap debounce{};
 
@@ -510,16 +506,16 @@ EV_HANDLER(mouse_input) {
   }
 
   if (data->evtype == XI_Motion) {
+    auto device_info = conky_device_info::from_xi_id(display, data->deviceid);
     // TODO: Make valuator_index names configurable?
-    int hor_move_v =
-        xi_valuator_index(display, data->deviceid, "Rel X");  // Almost always 0
-    int vert_move_v =
-        xi_valuator_index(display, data->deviceid, "Rel Y");  // Almost always 1
+
+    // Note that these are absolute (not relative) values in some cases
+    int hor_move_v = device_info->valuators["Rel X"].index;   // Almost always 0
+    int vert_move_v = device_info->valuators["Rel Y"].index;  // Almost always 1
     int hor_scroll_v =
-        xi_valuator_index(display, data->deviceid,
-                          "Rel Horiz Scroll");  // Almost always 2
-    int vert_scroll_v = xi_valuator_index(
-        display, data->deviceid, "Rel Vert Scroll");  // Almost always 3
+        device_info->valuators["Rel Horiz Scroll"].index;  // Almost always 2
+    int vert_scroll_v =
+        device_info->valuators["Rel Vert Scroll"].index;  // Almost always 3
 
     bool is_move =
         data->test_valuator(hor_move_v) || data->test_valuator(vert_move_v);
@@ -551,6 +547,7 @@ EV_HANDLER(mouse_input) {
       }
     }
     if (is_scroll && cursor_over_conky) {
+      // FIXME: Turn into relative values so direction works
       auto horizontal = data->valuator_value(hor_scroll_v);
       if (horizontal.value_or(0.0) != 0.0) {
         scroll_direction_t direction = horizontal.value() > 0.0

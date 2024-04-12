@@ -27,12 +27,15 @@
 
 #include "logging.h"
 
+#ifdef BUILD_XINPUT
+#include <cstring>
+#endif
+
 extern "C" {
 #include <lua.h>
 
 #ifdef BUILD_XINPUT
 #include <X11/extensions/XInput2.h>
-#include <string.h>
 #endif
 
 #include <X11/Xlib.h>
@@ -215,29 +218,19 @@ void mouse_button_event::push_lua_data(lua_State *L) const {
 }
 
 #ifdef BUILD_XINPUT
-XIDeviceInfoMap *xi_device_info_cache() {
-  static XIDeviceInfoMap cache{};
-  return &cache;
-}
+XIDeviceInfoMap xi_device_info_cache{};
 
-XIDeviceInfo *xi_device_info(Display *display, int device_id) {
-  if (xi_device_info_cache()->count(device_id)) {
-    return (*xi_device_info_cache())[device_id];
+conky_device_info *conky_device_info::from_xi_id(Display *display,
+                                                 int device_id) {
+  if (xi_device_info_cache.count(device_id)) {
+    return &xi_device_info_cache[device_id];
   }
 
   int num_devices;
-  XIDeviceInfo *info = XIQueryDevice(display, device_id, &num_devices);
+  XIDeviceInfo *device = XIQueryDevice(display, device_id, &num_devices);
   if (num_devices == 0) { return nullptr; }
 
-  (*xi_device_info_cache())[device_id] = info;
-  return (*xi_device_info_cache())[device_id];
-}
-
-int xi_valuator_index(Display *display, int device_id, const char *valuator) {
-  const char *name = valuator;
-  if (name == nullptr || strlen(name) == 0) { name = "None"; }
-
-  XIDeviceInfo *device = xi_device_info(display, device_id);
+  std::map<std::string, xi_valuator_info> valuators;
   for (int i = 0; i < device->num_classes; i++) {
     if (device->classes[i]->type != XIValuatorClass) continue;
 
@@ -248,22 +241,31 @@ int xi_valuator_index(Display *display, int device_id, const char *valuator) {
       continue;
     }
 
-    if (!strcmp(label, name)) {
-      XFree(label);
-      return class_info->number;  // should be same as i
-    }
+    valuators[std::string(label)] =
+        xi_valuator_info{.index = static_cast<size_t>(class_info->number),
+                         .min = class_info->min,
+                         .max = class_info->max};
+    DBGP2("%s - %f %f %f", label, class_info->value, class_info->min,
+          class_info->max);
+    XFree(label);
   }
 
-  return -1;
+  xi_device_info_cache[device_id] =
+      conky_device_info{.device_id = device_id,
+                        .name = std::string(device->name),
+                        .valuators = valuators};
+  XIFreeDeviceInfo(device);
+
+  return &xi_device_info_cache[device_id];
 }
 
-bool xi_event_data::test_valuator(size_t index) {
+bool xi_event_data::test_valuator(size_t index) const {
   return this->valuators.count(index) > 0;
 }
 
-std::optional<double> xi_event_data::valuator_value(size_t index) {
+std::optional<double> xi_event_data::valuator_value(size_t index) const {
   if (this->valuators.count(index) == 0) return std::nullopt;
-  return std::optional(this->valuators[index]);
+  return std::optional(this->valuators.at(index));
 }
 
 xi_event_data *xi_event_data::read_cookie(Display *display,
@@ -288,7 +290,7 @@ xi_event_data *xi_event_data::read_cookie(Display *display,
   }
 
   auto result = new xi_event_data{
-      .evtype = source->evtype,
+      .evtype = static_cast<xi_event_type>(source->evtype),
       .serial = source->serial,
       .send_event = source->send_event,
       .display = source->display,
@@ -311,6 +313,138 @@ xi_event_data *xi_event_data::read_cookie(Display *display,
       .group = source->group,
   };
   XFreeEventData(display, cookie);
+
+  return result;
+}
+
+std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(
+    Window target, Window child, double target_x, double target_y) const {
+  std::vector<std::tuple<int, XEvent *>> result{};
+
+  if (this->evtype == XI_Motion) {
+    auto device_info = conky_device_info::from_xi_id(display, this->deviceid);
+
+    // Note that these are absolute (not relative) values in some cases
+    int hor_move_v = device_info->valuators["Rel X"].index;   // Almost always 0
+    int vert_move_v = device_info->valuators["Rel Y"].index;  // Almost always 1
+    int hor_scroll_v =
+        device_info->valuators["Rel Horiz Scroll"].index;  // Almost always 2
+    int vert_scroll_v =
+        device_info->valuators["Rel Vert Scroll"].index;  // Almost always 3
+
+    bool is_move =
+        this->test_valuator(hor_move_v) || this->test_valuator(vert_move_v);
+    bool is_scroll =
+        this->test_valuator(hor_scroll_v) || this->test_valuator(vert_scroll_v);
+
+    if (is_move) {
+      XEvent *produced = new XEvent;
+      std::memset(produced, 0, sizeof(XEvent));
+
+      XMotionEvent *e = &produced->xmotion;
+      e->type = MotionNotify;
+      e->display = this->display;
+      e->root = this->root;
+      e->window = target;
+      e->subwindow = child;
+      e->time = CurrentTime;
+      e->x = static_cast<int>(target_x);
+      e->y = static_cast<int>(target_y);
+      e->x_root = static_cast<int>(this->root_x);
+      e->y_root = static_cast<int>(this->root_y);
+      e->state = this->mods.effective;
+      e->is_hint = NotifyNormal;
+      e->same_screen = True;
+      result.emplace_back(std::make_tuple(PointerMotionMask, produced));
+    }
+    if (is_scroll) {
+      XEvent *produced = new XEvent;
+      std::memset(produced, 0, sizeof(XEvent));
+
+      uint scroll_direction = 4;
+      auto vertical = this->valuator_value(vert_scroll_v);
+
+      // FIXME: Turn into relative values so direction works
+      if (vertical.value_or(0.0) != 0.0) {
+        scroll_direction = vertical.value() < 0.0 ? Button4 : Button5;
+      } else {
+        auto horizontal = this->valuator_value(hor_scroll_v);
+        if (horizontal.value_or(0.0) != 0.0) {
+          scroll_direction = horizontal.value() < 0.0 ? 6 : 7;
+        }
+      }
+
+      XButtonEvent *e = &produced->xbutton;
+      e->display = display;
+      e->root = this->root;
+      e->window = target;
+      e->subwindow = child;
+      e->time = CurrentTime;
+      e->x = static_cast<int>(target_x);
+      e->y = static_cast<int>(target_y);
+      e->x_root = static_cast<int>(this->root_x);
+      e->y_root = static_cast<int>(this->root_y);
+      e->state = this->mods.effective;
+      e->button = scroll_direction;
+      e->same_screen = True;
+
+      XEvent *press = new XEvent;
+      e->type = ButtonPress;
+      std::memcpy(press, produced, sizeof(XEvent));
+      result.emplace_back(std::make_tuple(ButtonPressMask, press));
+
+      e->type = ButtonRelease;
+      result.emplace_back(std::make_tuple(ButtonReleaseMask, produced));
+    }
+  } else {
+    XEvent *produced = new XEvent;
+    std::memset(produced, 0, sizeof(XEvent));
+
+    XButtonEvent *e = &produced->xbutton;
+    e->display = display;
+    e->root = this->root;
+    e->window = target;
+    e->subwindow = child;
+    e->time = CurrentTime;
+    e->x = static_cast<int>(target_x);
+    e->y = static_cast<int>(target_y);
+    e->x_root = static_cast<int>(this->root_x);
+    e->y_root = static_cast<int>(this->root_y);
+    e->state = this->mods.effective;
+    e->button = this->detail;
+    e->same_screen = True;
+
+    long event_mask = NoEventMask;
+    switch (this->evtype) {
+      case XI_ButtonPress:
+        e->type = ButtonPress;
+        event_mask = ButtonPressMask;
+        break;
+      case XI_ButtonRelease:
+        e->type = ButtonRelease;
+        event_mask = ButtonReleaseMask;
+        switch (this->detail) {
+          case 1:
+            event_mask |= Button1MotionMask;
+            break;
+          case 2:
+            event_mask |= Button2MotionMask;
+            break;
+          case 3:
+            event_mask |= Button3MotionMask;
+            break;
+          case 4:
+            event_mask |= Button4MotionMask;
+            break;
+          case 5:
+            event_mask |= Button5MotionMask;
+            break;
+        }
+        break;
+    }
+
+    result.emplace_back(std::make_tuple(event_mask, produced));
+  }
 
   return result;
 }

@@ -31,6 +31,8 @@
 #ifdef BUILD_XINPUT
 #include <map>
 #include <optional>
+#include <tuple>
+#include <vector>
 #endif /* BUILD_XINPUT */
 
 extern "C" {
@@ -237,22 +239,45 @@ struct mouse_crossing_event : public mouse_positioned_event {
 };
 
 #ifdef BUILD_XINPUT
-typedef std::map<int, XIDeviceInfo *> XIDeviceInfoMap;
-XIDeviceInfoMap *xi_device_info_cache();
-XIDeviceInfo *xi_device_info(Display *display, int device_id);
 
-int xi_valuator_index(Display *display, int device_id, const char *valuator);
+typedef int xi_device_id;
+typedef int xi_event_type;
+
+struct xi_valuator_info {
+  size_t index;
+  double min;
+  double max;
+};
+
+struct conky_device_info {
+  xi_device_id device_id;
+  std::string name;
+  std::map<std::string, xi_valuator_info> valuators;
+
+  static conky_device_info *from_xi_id(Display *display, xi_device_id id);
+};
+
+typedef std::map<xi_device_id, conky_device_info> XIDeviceInfoMap;
+extern XIDeviceInfoMap xi_device_info_cache;
+
+int xi_valuator_index(Display *display, xi_device_id device_id,
+                      const char *valuator);
 
 /// Almost an exact copy of `XIDeviceEvent`, except it owns all data.
 struct xi_event_data {
-  int evtype;
-  unsigned long serial; /* # of last request processed by server */
-  Bool send_event;      /* true if this came from a SendEvent request */
-  Display *display;     /* Display the event was read from */
-  int extension;        /* XI extension offset */
+  xi_event_type evtype;
+  unsigned long serial;
+  Bool send_event;
+  Display *display;
+  /// XI extension offset
+  // TODO: Check whether this is consistent between different clients by
+  // printing.
+  int extension;
   Time time;
-  int deviceid;
+  xi_device_id deviceid;
   int sourceid;
+  /// Primary event detail. Meaning depends on `evtype` value:
+  /// XI_ButtonPress - Mouse button
   int detail;
   Window root;
   Window event;
@@ -271,8 +296,13 @@ struct xi_event_data {
   static xi_event_data *read_cookie(Display *display,
                                     XGenericEventCookie *cookie);
 
-  bool test_valuator(size_t index);
-  std::optional<double> valuator_value(size_t index);
+  bool test_valuator(size_t index) const;
+  std::optional<double> valuator_value(size_t index) const;
+
+  std::vector<std::tuple<int, XEvent *>> generate_events(Window target,
+                                                         Window child,
+                                                         double target_x,
+                                                         double target_y) const;
 };
 
 #endif /* BUILD_XINPUT */

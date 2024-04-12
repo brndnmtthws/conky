@@ -960,8 +960,8 @@ void x11_init_window(lua::state &l, bool own) {
       break;
     }
 
-    int32_t major = 2, minor = 0;
-    uint32_t retval = XIQueryVersion(display, &major, &minor);
+    int major = 2, minor = 0;
+    int retval = XIQueryVersion(display, &major, &minor);
     if (retval != Success) {
       NORM_ERR("Error: XInput 2.0 is not supported!");
       break;
@@ -1378,7 +1378,7 @@ InputEvent *xev_as_input_event(XEvent &ev) {
 /// @brief Returns a mask for the event_type
 /// @param event_type Xlib event type
 /// @return Xlib event mask
-int ev_to_mask(int event_type) {
+int ev_to_mask(int event_type, int button) {
   switch (event_type) {
     case KeyPress:
       return KeyPressMask;
@@ -1387,7 +1387,20 @@ int ev_to_mask(int event_type) {
     case ButtonPress:
       return ButtonPressMask;
     case ButtonRelease:
-      return ButtonReleaseMask;
+      switch (button) {
+        case 1:
+          return ButtonReleaseMask | Button1MotionMask;
+        case 2:
+          return ButtonReleaseMask | Button2MotionMask;
+        case 3:
+          return ButtonReleaseMask | Button3MotionMask;
+        case 4:
+          return ButtonReleaseMask | Button4MotionMask;
+        case 5:
+          return ButtonReleaseMask | Button5MotionMask;
+        default:
+          return ButtonReleaseMask;
+      }
     case EnterNotify:
       return EnterWindowMask;
     case LeaveNotify:
@@ -1426,78 +1439,14 @@ void propagate_xinput_event(const conky::xi_event_data *ev) {
     }
   }
 
-  XEvent produced;
-  long event_mask = NoEventMask;
-
-  if (ev->evtype == XI_Motion) {
-    // FIXME: Not neccessarily XMotionEvent, could be a scroll
-
-    event_mask = PointerMotionMask;
-    XMotionEvent *motion_event = &produced.xmotion;
-
-    motion_event->type = MotionNotify;
-    motion_event->display = ev->display;
-    motion_event->root = ev->root;
-    motion_event->window = target;
-    motion_event->subwindow = child;
-    motion_event->time = CurrentTime;
-    motion_event->x = target_x;
-    motion_event->y = target_y;
-    motion_event->x_root = static_cast<int>(ev->root_x);
-    motion_event->y_root = static_cast<int>(ev->root_y);
-    motion_event->state = ev->mods.effective;
-    motion_event->is_hint = NotifyNormal;
-    motion_event->same_screen = True;
-  } else {
-    XButtonEvent *button_event = &produced.xbutton;
-    switch (ev->evtype) {
-      case XI_ButtonPress:
-        event_mask = ButtonPressMask;
-        button_event->type = ButtonPress;
-        break;
-      case XI_ButtonRelease:
-        event_mask = ButtonReleaseMask;
-        switch (ev->detail) {
-          case 1:
-            event_mask |= Button1MotionMask;
-            break;
-          case 2:
-            event_mask |= Button2MotionMask;
-            break;
-          case 3:
-            event_mask |= Button3MotionMask;
-            break;
-          case 4:
-            event_mask |= Button4MotionMask;
-            break;
-          case 5:
-            event_mask |= Button5MotionMask;
-            break;
-        }
-        button_event->type = ButtonRelease;
-        break;
-    }
-    button_event->display = display;
-    button_event->root = ev->root;
-    button_event->window = target;
-    button_event->subwindow = child;
-    button_event->time = CurrentTime;
-    button_event->x = target_x;
-    button_event->y = target_y;
-    button_event->x_root = static_cast<int>(ev->root_x);
-    button_event->y_root = static_cast<int>(ev->root_y);
-    button_event->state = ev->mods.effective;
-    button_event->button = ev->detail;
-    button_event->same_screen = True;
-  }
-
-  DBGP2("EVENT: target: 0x%lx; subwindow: 0x%lx; event_mask: 0x%lx", target,
-        child, event_mask);
+  auto events = ev->generate_events(target, child, target_x, target_y);
 
   XUngrabPointer(display, CurrentTime);
-  XSendEvent(display, target, True, event_mask, &produced);
-
-  // TODO: Propagate original XInput event as well somehow.
+  for (auto it : events) {
+    auto ev = std::get<1>(it);
+    XSendEvent(display, target, True, std::get<0>(it), ev);
+    free(ev);
+  }
 
   XFlush(display);
 }
@@ -1547,7 +1496,10 @@ void propagate_x11_event(XEvent &ev, const void *cookie) {
   }
 
   XUngrabPointer(display, CurrentTime);
-  XSendEvent(display, i_ev->common.window, True, ev_to_mask(i_ev->type), &ev);
+  XSendEvent(display, i_ev->common.window, True,
+             ev_to_mask(i_ev->type,
+                        ev.type == ButtonRelease ? i_ev->xbutton.button : 0),
+             &ev);
 }
 
 Window query_x11_last_descendant(Display *display, Window parent) {
