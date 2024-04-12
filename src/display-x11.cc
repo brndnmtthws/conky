@@ -428,12 +428,13 @@ bool display_output_x11::main_loop_wait(double t) {
 #define EV_HANDLER(name)                                                     \
   bool _conky_ev_handle_##name(conky::display_output_x11 *surface,           \
                                Display *display, XEvent &ev, bool *consumed, \
-                               bool *focus, void **cookie)
+                               void **cookie)
+#define NOOP_EV_HANDLER(name) \
+  EV_HANDLER(name) { return false; }
 
 #ifdef OWN_WINDOW
-#ifdef BUILD_MOUSE_EVENTS
-#ifdef BUILD_XINPUT
 EV_HANDLER(mouse_input) {
+#ifdef BUILD_XINPUT
   if (ev.type == ButtonPress || ev.type == ButtonRelease ||
       ev.type == MotionNotify) {
     // destroy basic X11 events; and manufacture them later when trying to
@@ -584,19 +585,14 @@ EV_HANDLER(mouse_input) {
     *consumed = llua_mouse_hook(mouse_button_event(type, data->event_x,
                                                    data->event_y, data->root_x,
                                                    data->root_y, button, mods));
-
-    if (data->evtype == XI_ButtonPress) { *focus = *consumed; }
   }
-
-  return true;
-}
-#else  /* BUILD_XINPUT */
-EV_HANDLER(mouse_input) {
+#else /* BUILD_XINPUT */
   if (ev.type != ButtonPress && ev.type != ButtonRelease &&
       ev.type != MotionNotify)
     return false;
   if (ev.xany.window != window.window) return true;  // Skip other windows
 
+#ifdef BUILD_MOUSE_EVENTS
   switch (ev.type) {
     case ButtonPress: {
       modifier_state_t mods = x11_modifier_state(ev.xbutton.state);
@@ -612,7 +608,6 @@ EV_HANDLER(mouse_input) {
             mouse_event_t::MOUSE_PRESS, ev.xbutton.x, ev.xbutton.y,
             ev.xbutton.x_root, ev.xbutton.y_root, button, mods));
       }
-      return true;
     }
     case ButtonRelease: {
       /* don't report scroll release events */
@@ -623,50 +618,48 @@ EV_HANDLER(mouse_input) {
       *consumed = llua_mouse_hook(mouse_button_event(
           mouse_event_t::MOUSE_RELEASE, ev.xbutton.x, ev.xbutton.y,
           ev.xbutton.x_root, ev.xbutton.y_root, button, mods));
-      return true;
     }
     case MotionNotify: {
       modifier_state_t mods = x11_modifier_state(ev.xmotion.state);
       *consumed = llua_mouse_hook(mouse_move_event(ev.xmotion.x, ev.xmotion.y,
                                                    ev.xmotion.x_root,
                                                    ev.xmotion.y_root, mods));
-      return true;
     }
-    default:
-      return false;  // unreachable
   }
-}
-#endif /* BUILD_XINPUT */
 #else  /* BUILD_MOUSE_EVENTS */
-EV_HANDLER(mouse_input) {
-  if (ev.type != ButtonPress && ev.type != ButtonRelease &&
-      ev.type != MotionNotify)
-    return false;
-  if (ev.xany.window != window.window) return true;  // Skip other windows
   // always propagate mouse input if not handling mouse events
   *consumed = false;
-
-  // don't focus if not a click
-  if (ev.type != ButtonPress) return true;
-
-  // skip if not own_window
+#endif /* BUILD_MOUSE_EVENTS */
+#endif /* BUILD_XINPUT */
   if (!own_window.get(*state)) return true;
-
-  // don't focus if normal but undecorated
-  if (own_window_type.get(*state) == TYPE_NORMAL &&
-      TEST_HINT(own_window_hints.get(*state), HINT_UNDECORATED))
-    return true;
-
-  // don't force focus if desktop window
-  if (own_window_type.get(*state) == TYPE_DESKTOP) return true;
-
-  // finally, else focus
-  *focus = true;
+  switch (own_window_type.get(*state)) {
+    case window_type::TYPE_NORMAL:
+    case window_type::TYPE_UTILITY:
+      // decorated normal windows always consume events
+      if (!TEST_HINT(own_window_hints.get(*state), HINT_UNDECORATED)) {
+        *consumed = true;
+      }
+      break;
+    case window_type::TYPE_DESKTOP:
+      // assume conky is always on bottom; nothing to propagate events to
+      *consumed = true;
+    default:
+      break;
+  }
 
   return true;
 }
-#endif /* BUILD_MOUSE_EVENTS */
+
+EV_HANDLER(reparent) {
+  if (ev.type != ReparentNotify) return false;
+
+  if (own_window.get(*state)) { set_transparent_background(window.window); }
+  return true;
+}
+#else  /* OWN_WINDOW */
+NOOP_EV_HANDLER(reparent)
 #endif /* OWN_WINDOW */
+
 EV_HANDLER(property_notify) {
   if (ev.type != PropertyNotify) return false;
 
@@ -699,13 +692,6 @@ EV_HANDLER(expose) {
   r.height = ev.xexpose.height;
   XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
   XSync(display, False);
-  return true;
-}
-
-EV_HANDLER(reparent) {
-  if (ev.type != ReparentNotify) return false;
-
-  if (own_window.get(*state)) { set_transparent_background(window.window); }
   return true;
 }
 
@@ -786,16 +772,16 @@ EV_HANDLER(damage) {
   return true;
 }
 #else
-EV_HANDLER(damage) { return false; }
+NOOP_EV_HANDLER(damage)
 #endif /* BUILD_XDAMAGE */
 
 /// Handles all events conky can receive.
 ///
 /// @return true if event should move input focus to conky
 bool process_event(conky::display_output_x11 *surface, Display *display,
-                   XEvent ev, bool *consumed, bool *focus, void **data) {
-#define HANDLE_EV(handler)                                                     \
-  if (_conky_ev_handle_##handler(surface, display, ev, consumed, focus, data)) \
+                   XEvent ev, bool *consumed, void **cookie) {
+#define HANDLE_EV(handler)                                                \
+  if (_conky_ev_handle_##handler(surface, display, ev, consumed, cookie)) \
   return true
 
   HANDLE_EV(mouse_input);
@@ -831,16 +817,10 @@ void process_surface_events(conky::display_output_x11 *surface,
     consumed.
     */
     bool consumed = true;
-    bool focus = false;
     void *cookie = nullptr;
-    bool handled =
-        process_event(surface, display, ev, &consumed, &focus, &cookie);
+    bool handled = process_event(surface, display, ev, &consumed, &cookie);
 
-    if (!consumed) {
-      propagate_x11_event(ev, cookie);
-    } else if (focus) {
-      XSetInputFocus(display, window.window, RevertToParent, CurrentTime);
-    }
+    if (!consumed) { propagate_x11_event(ev, cookie); }
 
     if (cookie != nullptr) { free(cookie); }
   }

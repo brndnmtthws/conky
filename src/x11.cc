@@ -1453,6 +1453,8 @@ void propagate_xinput_event(const conky::xi_event_data *ev) {
 #endif
 
 void propagate_x11_event(XEvent &ev, const void *cookie) {
+  bool focus = ev.type == ButtonPress;
+
   // cookie must be allocated before propagation, and freed after
 
 #ifdef BUILD_XINPUT
@@ -1500,6 +1502,9 @@ void propagate_x11_event(XEvent &ev, const void *cookie) {
              ev_to_mask(i_ev->type,
                         ev.type == ButtonRelease ? i_ev->xbutton.button : 0),
              &ev);
+  if (focus) {
+    XSetInputFocus(display, i_ev->common.window, RevertToParent, CurrentTime);
+  }
 }
 
 Window query_x11_last_descendant(Display *display, Window parent) {
