@@ -41,6 +41,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <optional>
 #include <vector>
 
 #ifdef BUILD_ARGB
@@ -158,6 +159,14 @@ union InputEvent {
 // otherwise.
 InputEvent *xev_as_input_event(XEvent &ev);
 void propagate_x11_event(XEvent &ev, const void *cookie);
+
+/// @brief Returns a list of window values for the given atom.
+/// @param display display with which the atom is associated
+/// @param window window to query for the atom value
+/// @param atom atom to query for
+/// @return a list of window values for the given atom
+std::vector<Window> x11_atom_window_list(Display *display, Window window,
+                                         Atom atom);
 
 /// @brief Tries getting a list of windows ordered from bottom to top.
 ///

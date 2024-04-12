@@ -28,9 +28,20 @@
 #include "config.h"
 #include "logging.h"
 
+#ifdef BUILD_XINPUT
+#include <map>
+#include <optional>
+#include <tuple>
+#include <vector>
+#endif /* BUILD_XINPUT */
+
 extern "C" {
 #ifdef BUILD_X11
 #include <X11/X.h>
+
+#ifdef BUILD_XINPUT
+#include <X11/extensions/XInput2.h>
+#endif /* BUILD_XINPUT */
 #endif /* BUILD_X11 */
 
 #include <lua.h>
@@ -227,6 +238,74 @@ struct mouse_crossing_event : public mouse_positioned_event {
       : mouse_positioned_event{type, x, y, x_abs, y_abs} {};
 };
 
+#ifdef BUILD_XINPUT
+
+typedef int xi_device_id;
+typedef int xi_event_type;
+
+struct xi_valuator_info {
+  size_t index;
+  double min;
+  double max;
+};
+
+struct conky_device_info {
+  xi_device_id device_id;
+  std::string name;
+  std::map<std::string, xi_valuator_info> valuators;
+
+  static conky_device_info *from_xi_id(Display *display, xi_device_id id);
+};
+
+typedef std::map<xi_device_id, conky_device_info> XIDeviceInfoMap;
+extern XIDeviceInfoMap xi_device_info_cache;
+
+int xi_valuator_index(Display *display, xi_device_id device_id,
+                      const char *valuator);
+
+/// Almost an exact copy of `XIDeviceEvent`, except it owns all data.
+struct xi_event_data {
+  xi_event_type evtype;
+  unsigned long serial;
+  Bool send_event;
+  Display *display;
+  /// XI extension offset
+  // TODO: Check whether this is consistent between different clients by
+  // printing.
+  int extension;
+  Time time;
+  xi_device_id deviceid;
+  int sourceid;
+  /// Primary event detail. Meaning depends on `evtype` value:
+  /// XI_ButtonPress - Mouse button
+  int detail;
+  Window root;
+  Window event;
+  Window child;
+  double root_x;
+  double root_y;
+  double event_x;
+  double event_y;
+  int flags;
+  /// pressed button mask
+  std::bitset<32> buttons;
+  std::map<size_t, double> valuators;
+  XIModifierState mods;
+  XIGroupState group;
+
+  static xi_event_data *read_cookie(Display *display,
+                                    XGenericEventCookie *cookie);
+
+  bool test_valuator(size_t index) const;
+  std::optional<double> valuator_value(size_t index) const;
+
+  std::vector<std::tuple<int, XEvent *>> generate_events(Window target,
+                                                         Window child,
+                                                         double target_x,
+                                                         double target_y) const;
+};
+
+#endif /* BUILD_XINPUT */
 }  // namespace conky
 
 #endif /* MOUSE_EVENTS_H */
