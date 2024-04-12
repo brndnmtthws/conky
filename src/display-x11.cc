@@ -784,6 +784,10 @@ bool process_event(conky::display_output_x11 *surface, Display *display,
   if (_conky_ev_handle_##handler(surface, display, ev, consumed, cookie)) \
   return true
 
+#ifdef BUILD_XINPUT
+  // handles enter & leave events better
+  HANDLE_EV(xinput_motion);
+#endif /* BUILD_XINPUT */
   HANDLE_EV(mouse_input);
   HANDLE_EV(property_notify);
 

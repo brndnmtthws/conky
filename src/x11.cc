@@ -1456,7 +1456,6 @@ void propagate_x11_event(XEvent &ev, const void *cookie) {
   bool focus = ev.type == ButtonPress;
 
   // cookie must be allocated before propagation, and freed after
-
 #ifdef BUILD_XINPUT
   if (ev.type == GenericEvent && ev.xgeneric.extension == window.xi_opcode) {
     if (cookie == nullptr) { return; }
