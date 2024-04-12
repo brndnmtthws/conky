@@ -730,6 +730,7 @@ bool process_event(conky::display_output_x11 *surface, Display *display,
 
   HANDLE_EV(EXPOSE)
   HANDLE_EV(REPARENT)
+  HANDLE_EV(CONFIGURE)
   HANDLE_EV(BORDER_CROSSING)
   HANDLE_EV(DAMAGE)
 
