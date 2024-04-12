@@ -1376,7 +1376,9 @@ int ev_to_mask(int event_type) {
   }
 }
 
-void propagate_x11_event(XEvent &ev) {
+void propagate_x11_event(XEvent &ev, const void *cookie) {
+  bool focus = ev.type == ButtonPress;
+
   InputEvent *i_ev = xev_as_input_event(ev);
   if (i_ev == nullptr) {
     // Not a known input event; blindly propagating them causes loops and all
@@ -1411,6 +1413,9 @@ void propagate_x11_event(XEvent &ev) {
 
   XUngrabPointer(display, CurrentTime);
   XSendEvent(display, i_ev->common.window, True, ev_to_mask(i_ev->type), &ev);
+  if (focus) {
+    XSetInputFocus(display, i_ev->common.window, RevertToParent, CurrentTime);
+  }
 }
 
 /// @brief This function returns the last descendant of a window (leaf) on the

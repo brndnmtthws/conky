@@ -234,6 +234,9 @@ bool display_output_x11::shutdown() {
   return true;
 }
 
+void process_surface_events(conky::display_output_x11 *surface,
+                            Display *display);
+
 bool display_output_x11::main_loop_wait(double t) {
   /* wait for X event or timeout */
   if (!display || !window.gc) return true;
@@ -374,266 +377,7 @@ bool display_output_x11::main_loop_wait(double t) {
     }
   }
 
-  DBGP2("Processing %d X11 events...", XPending(display));
-  /* handle X events */
-  while (XPending(display) != 0) {
-    XEvent ev;
-    /* indicates whether processed event was consumed */
-    bool consumed = false;
-
-    XNextEvent(display, &ev);
-
-#if defined(OWN_WINDOW) && defined(BUILD_MOUSE_EVENTS) && defined(BUILD_XINPUT)
-    // no need to check whether these events have been consumed because
-    // they're global and shouldn't be propagated
-    if (ev.type == GenericEvent && ev.xcookie.extension == window.xi_opcode) {
-      if (!XGetEventData(display, &ev.xcookie)) {
-        NORM_ERR("unable to get XInput event data");
-        continue;
-      }
-
-      auto *data = reinterpret_cast<XIDeviceEvent *>(ev.xcookie.data);
-
-      // the only way to differentiate between a scroll and move event is
-      // though valuators - move has first 2 set, other axis movements have
-      // other.
-      bool is_cursor_move =
-          data->valuators.mask_len >= 1 &&
-          (data->valuators.mask[0] & 3) == data->valuators.mask[0];
-      for (std::size_t i = 1; i < data->valuators.mask_len; i++) {
-        if (data->valuators.mask[i] != 0) {
-          is_cursor_move = false;
-          break;
-        }
-      }
-
-      if (data->evtype == XI_Motion && is_cursor_move) {
-        Window query_result =
-            query_x11_window_at_pos(display, data->root_x, data->root_y);
-        // query_result is not window.window in some cases.
-        query_result = query_x11_last_descendant(display, query_result);
-
-        static bool cursor_inside = false;
-
-        // - over conky window
-        // - conky has now window, over desktop and within conky region
-        bool cursor_over_conky = query_result == window.window &&
-                                 (window.window != 0u ||
-                                  (data->root_x >= window.x &&
-                                   data->root_x < (window.x + window.width) &&
-                                   data->root_y >= window.y &&
-                                   data->root_y < (window.y + window.height)));
-        if (cursor_over_conky) {
-          if (!cursor_inside) {
-            llua_mouse_hook(mouse_crossing_event(
-                mouse_event_t::AREA_ENTER, data->root_x - window.x,
-                data->root_y - window.x, data->root_x, data->root_y));
-          }
-          cursor_inside = true;
-        } else if (cursor_inside) {
-          llua_mouse_hook(mouse_crossing_event(
-              mouse_event_t::AREA_LEAVE, data->root_x - window.x,
-              data->root_y - window.x, data->root_x, data->root_y));
-          cursor_inside = false;
-        }
-      }
-      XFreeEventData(display, &ev.xcookie);
-      continue;
-    }
-#endif /* BUILD_MOUSE_EVENTS && BUILD_XINPUT */
-
-    // Any of the remaining events apply to conky window
-    if (ev.xany.window != window.window && ev.type != PropertyNotify) continue;
-    switch (ev.type) {
-      case Expose: {
-        XRectangle r;
-        r.x = ev.xexpose.x;
-        r.y = ev.xexpose.y;
-        r.width = ev.xexpose.width;
-        r.height = ev.xexpose.height;
-        XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
-        XSync(display, False);
-
-        continue;
-      }
-
-      case PropertyNotify: {
-        if (ev.xproperty.state == PropertyNewValue) {
-          get_x11_desktop_info(ev.xproperty.display, ev.xproperty.atom);
-        }
-#ifdef USE_ARGB
-        if (!have_argb_visual) {
-#endif
-          if (ev.xproperty.atom == ATOM(_XROOTPMAP_ID) ||
-              ev.xproperty.atom == ATOM(_XROOTMAP_ID)) {
-            if (forced_redraw.get(*state)) {
-              draw_stuff();
-              next_update_time = get_time();
-              need_to_update = 1;
-            }
-          }
-#ifdef USE_ARGB
-        }
-#endif
-        continue;
-      }
-
-#ifdef OWN_WINDOW
-      case ReparentNotify:
-        /* make background transparent */
-        if (own_window.get(*state)) {
-          set_transparent_background(window.window);
-        }
-        continue;
-
-      case ConfigureNotify:
-        if (own_window.get(*state)) {
-          /* if window size isn't what expected, set fixed size */
-          if (ev.xconfigure.width != window.width ||
-              ev.xconfigure.height != window.height) {
-            if (window.width != 0 && window.height != 0) { fixed_size = 1; }
-
-            /* clear old stuff before screwing up
-             * size and pos */
-            clear_text(1);
-
-            {
-              XWindowAttributes attrs;
-              if (XGetWindowAttributes(display, window.window, &attrs) != 0) {
-                window.width = attrs.width;
-                window.height = attrs.height;
-              }
-            }
-
-            int border_total = get_border_total();
-
-            text_width = window.width - 2 * border_total;
-            text_height = window.height - 2 * border_total;
-            int mw = this->dpi_scale(maximum_width.get(*state));
-            if (text_width > mw && mw > 0) { text_width = mw; }
-          }
-
-          /* if position isn't what expected, set fixed pos
-           * total_updates avoids setting fixed_pos when window
-           * is set to weird locations when started */
-          /* // this is broken
-          if (total_updates >= 2 && !fixed_pos
-              && (window.x != ev.xconfigure.x
-              || window.y != ev.xconfigure.y)
-              && (ev.xconfigure.x != 0
-              || ev.xconfigure.y != 0)) {
-            fixed_pos = 1;
-          } */
-        }
-        continue;
-
-      case ButtonPress:
-#ifdef BUILD_MOUSE_EVENTS
-      {
-        modifier_state_t mods = x11_modifier_state(ev.xbutton.state);
-        if (4 <= ev.xbutton.button && ev.xbutton.button <= 7) {
-          scroll_direction_t direction =
-              x11_scroll_direction(ev.xbutton.button);
-          consumed = llua_mouse_hook(
-              mouse_scroll_event(ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root,
-                                 ev.xbutton.y_root, direction, mods));
-        } else {
-          mouse_button_t button = x11_mouse_button_code(ev.xbutton.button);
-          consumed = llua_mouse_hook(mouse_button_event(
-              mouse_event_t::MOUSE_PRESS, ev.xbutton.x, ev.xbutton.y,
-              ev.xbutton.x_root, ev.xbutton.y_root, button, mods));
-        }
-      }
-#endif /* BUILD_MOUSE_EVENTS */
-        if (own_window.get(*state)) {
-          /* if an ordinary window with decorations */
-          if ((own_window_type.get(*state) == TYPE_NORMAL &&
-               !TEST_HINT(own_window_hints.get(*state), HINT_UNDECORATED)) ||
-              own_window_type.get(*state) == TYPE_DESKTOP) {
-            /* allow conky to hold input focus. */
-            break;
-          }
-        }
-        break;
-
-      case ButtonRelease:
-#ifdef BUILD_MOUSE_EVENTS
-        /* don't report scroll release events */
-        if (4 > ev.xbutton.button || ev.xbutton.button > 7) {
-          modifier_state_t mods = x11_modifier_state(ev.xbutton.state);
-          mouse_button_t button = x11_mouse_button_code(ev.xbutton.button);
-          consumed = llua_mouse_hook(mouse_button_event(
-              mouse_event_t::MOUSE_RELEASE, ev.xbutton.x, ev.xbutton.y,
-              ev.xbutton.x_root, ev.xbutton.y_root, button, mods));
-        }
-#endif /* BUILD_MOUSE_EVENTS */
-        if (own_window.get(*state)) {
-          /* if an ordinary window with decorations */
-          if ((own_window_type.get(*state) == TYPE_NORMAL) &&
-              !TEST_HINT(own_window_hints.get(*state), HINT_UNDECORATED)) {
-            /* allow conky to hold input focus. */
-            break;
-          }
-        }
-        break;
-#ifdef BUILD_MOUSE_EVENTS
-      /*
-      windows below are notified for the following events as well;
-      can't forward the event without filtering XQueryTree output.
-      */
-      case MotionNotify: {
-        modifier_state_t mods = x11_modifier_state(ev.xmotion.state);
-        consumed = llua_mouse_hook(mouse_move_event(ev.xmotion.x, ev.xmotion.y,
-                                                    ev.xmotion.x_root,
-                                                    ev.xmotion.y_root, mods));
-      } break;
-      case LeaveNotify:
-      case EnterNotify:
-        if (window.xi_opcode == 0) {
-          bool not_over_conky =
-              ev.xcrossing.x_root <= window.x ||
-              ev.xcrossing.y_root <= window.y ||
-              ev.xcrossing.x_root >= window.x + window.width ||
-              ev.xcrossing.y_root >= window.y + window.height;
-
-          if ((not_over_conky && ev.xcrossing.type == LeaveNotify) ||
-              (!not_over_conky && ev.xcrossing.type == EnterNotify)) {
-            llua_mouse_hook(mouse_crossing_event(
-                ev.xcrossing.type == EnterNotify ? mouse_event_t::AREA_ENTER
-                                                 : mouse_event_t::AREA_LEAVE,
-                ev.xcrossing.x, ev.xcrossing.y, ev.xcrossing.x_root,
-                ev.xcrossing.y_root));
-          }
-        }
-        // can't propagate these events in a way that makes sense for desktop
-        continue;
-#endif /* BUILD_MOUSE_EVENTS */
-#endif /* OWN_WINDOW */
-      default:
-#ifdef BUILD_XDAMAGE
-        if (ev.type == x11_stuff.event_base + XDamageNotify) {
-          auto *dev = reinterpret_cast<XDamageNotifyEvent *>(&ev);
-
-          XFixesSetRegion(display, x11_stuff.part, &dev->area, 1);
-          XFixesUnionRegion(display, x11_stuff.region2, x11_stuff.region2,
-                            x11_stuff.part);
-          continue;  // TODO: Propagate damage
-        }
-#endif /* BUILD_XDAMAGE */
-        break;
-    }
-
-    if (!consumed) {
-      propagate_x11_event(ev);
-    } else {
-      InputEvent *i_ev = xev_as_input_event(ev);
-      if (i_ev != nullptr) {
-        XSetInputFocus(display, window.window, RevertToParent,
-                       i_ev->common.time);
-      }
-    }
-  }
-  DBGP2("Done with events!");
+  process_surface_events(this, display);
 
 #ifdef BUILD_XDAMAGE
   if (x11_stuff.damage) {
@@ -677,6 +421,350 @@ bool display_output_x11::main_loop_wait(double t) {
 
   // handled
   return true;
+}
+
+enum x_event_handler {
+  XINPUT_MOTION,
+  MOUSE_INPUT,
+  PROPERTY_NOTIFY,
+
+  EXPOSE,
+  REPARENT,
+  CONFIGURE,
+  BORDER_CROSSING,
+  DAMAGE,
+};
+
+template <x_event_handler handler>
+bool handle_event(conky::display_output_x11 *surface, Display *display,
+                  XEvent &ev, bool *consumed, void **cookie) {
+  return false;
+}
+
+#ifdef OWN_WINDOW
+#ifdef BUILD_XINPUT
+template <>
+bool handle_event<x_event_handler::XINPUT_MOTION>(
+    conky::display_output_x11 *surface, Display *display, XEvent &ev,
+    bool *consumed, void **cookie) {
+  if (ev.type != GenericEvent || ev.xcookie.extension != window.xi_opcode)
+    return false;
+
+  if (!XGetEventData(display, &ev.xcookie)) {
+    NORM_ERR("unable to get XInput event data");
+    return false;
+  }
+
+  auto *data = reinterpret_cast<XIDeviceEvent *>(ev.xcookie.data);
+
+  // the only way to differentiate between a scroll and move event is
+  // though valuators - move has first 2 set, other axis movements have
+  // other.
+  bool is_cursor_move =
+      data->valuators.mask_len >= 1 &&
+      (data->valuators.mask[0] & 3) == data->valuators.mask[0];
+  for (std::size_t i = 1; i < data->valuators.mask_len; i++) {
+    if (data->valuators.mask[i] != 0) {
+      is_cursor_move = false;
+      break;
+    }
+  }
+
+  if (data->evtype == XI_Motion && is_cursor_move) {
+    Window query_result =
+        query_x11_window_at_pos(display, data->root_x, data->root_y);
+    // query_result is not window.window in some cases.
+    query_result = query_x11_last_descendant(display, query_result);
+
+    static bool cursor_inside = false;
+
+    // - over conky window
+    // - conky has now window, over desktop and within conky region
+    bool cursor_over_conky =
+        query_result == window.window &&
+        (window.window != 0u || (data->root_x >= window.x &&
+                                 data->root_x < (window.x + window.width) &&
+                                 data->root_y >= window.y &&
+                                 data->root_y < (window.y + window.height)));
+    if (cursor_over_conky) {
+      if (!cursor_inside) {
+        llua_mouse_hook(mouse_crossing_event(
+            mouse_event_t::AREA_ENTER, data->root_x - window.x,
+            data->root_y - window.x, data->root_x, data->root_y));
+      }
+      cursor_inside = true;
+    } else if (cursor_inside) {
+      llua_mouse_hook(mouse_crossing_event(
+          mouse_event_t::AREA_LEAVE, data->root_x - window.x,
+          data->root_y - window.x, data->root_x, data->root_y));
+      cursor_inside = false;
+    }
+  }
+  XFreeEventData(display, &ev.xcookie);
+  return true;
+}
+#endif /* BUILD_XINPUT */
+template <>
+bool handle_event<x_event_handler::MOUSE_INPUT>(
+    conky::display_output_x11 *surface, Display *display, XEvent &ev,
+    bool *consumed, void **cookie) {
+  if (ev.type != ButtonPress && ev.type != ButtonRelease &&
+      ev.type != MotionNotify)
+    return false;
+  if (ev.xany.window != window.window) return true;  // Skip other windows
+
+#ifdef BUILD_MOUSE_EVENTS
+  switch (ev.type) {
+    case ButtonPress: {
+      modifier_state_t mods = x11_modifier_state(ev.xbutton.state);
+      if (ev.xbutton.button >= 4 &&
+          ev.xbutton.button <= 7) {  // scroll "buttons"
+        scroll_direction_t direction = x11_scroll_direction(ev.xbutton.button);
+        *consumed = llua_mouse_hook(
+            mouse_scroll_event(ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root,
+                               ev.xbutton.y_root, direction, mods));
+      } else {
+        mouse_button_t button = x11_mouse_button_code(ev.xbutton.button);
+        *consumed = llua_mouse_hook(mouse_button_event(
+            mouse_event_t::MOUSE_PRESS, ev.xbutton.x, ev.xbutton.y,
+            ev.xbutton.x_root, ev.xbutton.y_root, button, mods));
+      }
+    }
+    case ButtonRelease: {
+      /* don't report scroll release events */
+      if (ev.xbutton.button >= 4 && ev.xbutton.button <= 7) return true;
+
+      modifier_state_t mods = x11_modifier_state(ev.xbutton.state);
+      mouse_button_t button = x11_mouse_button_code(ev.xbutton.button);
+      *consumed = llua_mouse_hook(mouse_button_event(
+          mouse_event_t::MOUSE_RELEASE, ev.xbutton.x, ev.xbutton.y,
+          ev.xbutton.x_root, ev.xbutton.y_root, button, mods));
+    }
+    case MotionNotify: {
+      modifier_state_t mods = x11_modifier_state(ev.xmotion.state);
+      *consumed = llua_mouse_hook(mouse_move_event(ev.xmotion.x, ev.xmotion.y,
+                                                   ev.xmotion.x_root,
+                                                   ev.xmotion.y_root, mods));
+    }
+  }
+#else  /* BUILD_MOUSE_EVENTS */
+  // always propagate mouse input if not handling mouse events
+  *consumed = false;
+#endif /* BUILD_MOUSE_EVENTS */
+
+  if (!own_window.get(*state)) return true;
+  switch (own_window_type.get(*state)) {
+    case window_type::TYPE_NORMAL:
+    case window_type::TYPE_UTILITY:
+      // decorated normal windows always consume events
+      if (!TEST_HINT(own_window_hints.get(*state), HINT_UNDECORATED)) {
+        *consumed = true;
+      }
+      break;
+    case window_type::TYPE_DESKTOP:
+      // assume conky is always on bottom; nothing to propagate events to
+      *consumed = true;
+    default:
+      break;
+  }
+
+  return true;
+}
+
+template <>
+bool handle_event<x_event_handler::REPARENT>(conky::display_output_x11 *surface,
+                                             Display *display, XEvent &ev,
+                                             bool *consumed, void **cookie) {
+  if (ev.type != ReparentNotify) return false;
+
+  if (own_window.get(*state)) { set_transparent_background(window.window); }
+  return true;
+}
+
+template <>
+bool handle_event<x_event_handler::CONFIGURE>(
+    conky::display_output_x11 *surface, Display *display, XEvent &ev,
+    bool *consumed, void **cookie) {
+  if (ev.type != ConfigureNotify) return false;
+
+  if (own_window.get(*state)) {
+    /* if window size isn't what expected, set fixed size */
+    if (ev.xconfigure.width != window.width ||
+        ev.xconfigure.height != window.height) {
+      if (window.width != 0 && window.height != 0) { fixed_size = 1; }
+
+      /* clear old stuff before screwing up
+       * size and pos */
+      surface->clear_text(1);
+
+      {
+        XWindowAttributes attrs;
+        if (XGetWindowAttributes(display, window.window, &attrs) != 0) {
+          window.width = attrs.width;
+          window.height = attrs.height;
+        }
+      }
+
+      int border_total = get_border_total();
+
+      text_width = window.width - 2 * border_total;
+      text_height = window.height - 2 * border_total;
+      int mw = surface->dpi_scale(maximum_width.get(*state));
+      if (text_width > mw && mw > 0) { text_width = mw; }
+    }
+
+    /* if position isn't what expected, set fixed pos
+     * total_updates avoids setting fixed_pos when window
+     * is set to weird locations when started */
+    /* // this is broken
+    if (total_updates >= 2 && !fixed_pos
+        && (window.x != ev.xconfigure.x
+        || window.y != ev.xconfigure.y)
+        && (ev.xconfigure.x != 0
+        || ev.xconfigure.y != 0)) {
+      fixed_pos = 1;
+    } */
+  }
+
+  return true;
+}
+#endif /* OWN_WINDOW */
+
+template <>
+bool handle_event<x_event_handler::PROPERTY_NOTIFY>(
+    conky::display_output_x11 *surface, Display *display, XEvent &ev,
+    bool *consumed, void **cookie) {
+  if (ev.type != PropertyNotify) return false;
+
+  if (ev.xproperty.state == PropertyNewValue) {
+    get_x11_desktop_info(ev.xproperty.display, ev.xproperty.atom);
+  }
+
+#ifdef USE_ARGB
+  if (have_argb_visual) return true;
+#endif
+
+  if (ev.xproperty.atom == ATOM(_XROOTPMAP_ID) ||
+      ev.xproperty.atom == ATOM(_XROOTMAP_ID)) {
+    if (forced_redraw.get(*state)) {
+      draw_stuff();
+      next_update_time = get_time();
+      need_to_update = 1;
+    }
+  }
+  return true;
+}
+
+template <>
+bool handle_event<x_event_handler::EXPOSE>(conky::display_output_x11 *surface,
+                                           Display *display, XEvent &ev,
+                                           bool *consumed, void **cookie) {
+  if (ev.type != Expose) return false;
+
+  XRectangle r;
+  r.x = ev.xexpose.x;
+  r.y = ev.xexpose.y;
+  r.width = ev.xexpose.width;
+  r.height = ev.xexpose.height;
+  XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
+  XSync(display, False);
+  return true;
+}
+
+template <>
+bool handle_event<x_event_handler::BORDER_CROSSING>(
+    conky::display_output_x11 *surface, Display *display, XEvent &ev,
+    bool *consumed, void **cookie) {
+  if (ev.type != EnterNotify && ev.type != LeaveNotify) return false;
+  if (window.xi_opcode != 0) return true;  // handled by mouse_input already
+
+  bool not_over_conky = ev.xcrossing.x_root <= window.x ||
+                        ev.xcrossing.y_root <= window.y ||
+                        ev.xcrossing.x_root >= window.x + window.width ||
+                        ev.xcrossing.y_root >= window.y + window.height;
+
+  if ((not_over_conky && ev.xcrossing.type == LeaveNotify) ||
+      (!not_over_conky && ev.xcrossing.type == EnterNotify)) {
+    llua_mouse_hook(mouse_crossing_event(
+        ev.xcrossing.type == EnterNotify ? mouse_event_t::AREA_ENTER
+                                         : mouse_event_t::AREA_LEAVE,
+        ev.xcrossing.x, ev.xcrossing.y, ev.xcrossing.x_root,
+        ev.xcrossing.y_root));
+  }
+  return true;
+}
+
+#ifdef BUILD_XDAMAGE
+template <>
+bool handle_event<x_event_handler::DAMAGE>(conky::display_output_x11 *surface,
+                                           Display *display, XEvent &ev,
+                                           bool *consumed, void **cookie) {
+  if (ev.type != x11_stuff.event_base + XDamageNotify) return false;
+
+  auto *dev = reinterpret_cast<XDamageNotifyEvent *>(&ev);
+
+  XFixesSetRegion(display, x11_stuff.part, &dev->area, 1);
+  XFixesUnionRegion(display, x11_stuff.region2, x11_stuff.region2,
+                    x11_stuff.part);
+  return true;
+}
+#endif /* BUILD_XDAMAGE */
+
+/// Handles all events conky can receive.
+///
+/// @return true if event should move input focus to conky
+bool process_event(conky::display_output_x11 *surface, Display *display,
+                   XEvent ev, bool *consumed, void **cookie) {
+#define HANDLE_EV(event)                                                   \
+  if (handle_event<x_event_handler::event>(surface, display, ev, consumed, \
+                                           cookie)) {                      \
+    return true;                                                           \
+  }
+
+  HANDLE_EV(XINPUT_MOTION)
+  HANDLE_EV(MOUSE_INPUT)
+  HANDLE_EV(PROPERTY_NOTIFY)
+
+  // only accept remaining events if they're sent to Conky.
+  if (ev.xany.window != window.window) return false;
+
+  HANDLE_EV(EXPOSE)
+  HANDLE_EV(REPARENT)
+  HANDLE_EV(CONFIGURE)
+  HANDLE_EV(BORDER_CROSSING)
+  HANDLE_EV(DAMAGE)
+
+  // event not handled
+  return false;
+}
+
+void process_surface_events(conky::display_output_x11 *surface,
+                            Display *display) {
+  int pending = XPending(display);
+  if (pending == 0) return;
+
+  DBGP2("Processing %d X11 events...", pending);
+
+  /* handle X events */
+  while (XPending(display) != 0) {
+    XEvent ev;
+    XNextEvent(display, &ev);
+
+    /*
+    indicates whether processed event was consumed; true by default so we don't
+    propagate handled events unless they explicitly state they haven't been
+    consumed.
+    */
+    bool consumed = true;
+    void *cookie = nullptr;
+    bool handled = process_event(surface, display, ev, &consumed, &cookie);
+
+    if (!consumed) { propagate_x11_event(ev, cookie); }
+
+    if (cookie != nullptr) { free(cookie); }
+  }
+
+  DBGP2("Done processing %d events.", pending);
 }
 
 void display_output_x11::sigterm_cleanup() {
