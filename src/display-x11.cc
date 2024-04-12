@@ -425,15 +425,29 @@ bool display_output_x11::main_loop_wait(double t) {
   return true;
 }
 
-#define EV_HANDLER(name)                                                     \
-  bool _conky_ev_handle_##name(conky::display_output_x11 *surface,           \
-                               Display *display, XEvent &ev, bool *consumed, \
-                               void **cookie)
-#define NOOP_EV_HANDLER(name) \
-  EV_HANDLER(name) { return false; }
+enum x_event_handler {
+  XINPUT_MOTION,
+  MOUSE_INPUT,
+  PROPERTY_NOTIFY,
+
+  EXPOSE,
+  REPARENT,
+  CONFIGURE,
+  BORDER_CROSSING,
+  DAMAGE,
+};
+
+template <x_event_handler handler>
+bool handle_event(conky::display_output_x11 *surface, Display *display,
+                  XEvent &ev, bool *consumed, void **cookie) {
+  return false;
+}
 
 #ifdef OWN_WINDOW
-EV_HANDLER(mouse_input) {
+template <>
+bool handle_event<x_event_handler::MOUSE_INPUT>(
+    conky::display_output_x11 *surface, Display *display, XEvent &ev,
+    bool *consumed, void **cookie) {
 #ifdef BUILD_XINPUT
   if (ev.type == ButtonPress || ev.type == ButtonRelease ||
       ev.type == MotionNotify) {
@@ -650,52 +664,20 @@ EV_HANDLER(mouse_input) {
   return true;
 }
 
-EV_HANDLER(reparent) {
+template <>
+bool handle_event<x_event_handler::REPARENT>(conky::display_output_x11 *surface,
+                                             Display *display, XEvent &ev,
+                                             bool *consumed, void **cookie) {
   if (ev.type != ReparentNotify) return false;
 
   if (own_window.get(*state)) { set_transparent_background(window.window); }
   return true;
 }
-#else  /* OWN_WINDOW */
-NOOP_EV_HANDLER(reparent)
-#endif /* OWN_WINDOW */
 
-EV_HANDLER(property_notify) {
-  if (ev.type != PropertyNotify) return false;
-
-  if (ev.xproperty.state == PropertyNewValue) {
-    get_x11_desktop_info(ev.xproperty.display, ev.xproperty.atom);
-  }
-
-#ifdef USE_ARGB
-  if (have_argb_visual) return true;
-#endif
-
-  if (ev.xproperty.atom == ATOM(_XROOTPMAP_ID) ||
-      ev.xproperty.atom == ATOM(_XROOTMAP_ID)) {
-    if (forced_redraw.get(*state)) {
-      draw_stuff();
-      next_update_time = get_time();
-      need_to_update = 1;
-    }
-  }
-  return true;
-}
-
-EV_HANDLER(expose) {
-  if (ev.type != Expose) return false;
-
-  XRectangle r;
-  r.x = ev.xexpose.x;
-  r.y = ev.xexpose.y;
-  r.width = ev.xexpose.width;
-  r.height = ev.xexpose.height;
-  XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
-  XSync(display, False);
-  return true;
-}
-
-EV_HANDLER(configure) {
+template <>
+bool handle_event<x_event_handler::CONFIGURE>(
+    conky::display_output_x11 *surface, Display *display, XEvent &ev,
+    bool *consumed, void **cookie) {
   if (ev.type != ConfigureNotify) return false;
 
   if (own_window.get(*state)) {
@@ -739,8 +721,53 @@ EV_HANDLER(configure) {
 
   return true;
 }
+#endif /* OWN_WINDOW */
 
-EV_HANDLER(border_crossing) {
+template <>
+bool handle_event<x_event_handler::PROPERTY_NOTIFY>(
+    conky::display_output_x11 *surface, Display *display, XEvent &ev,
+    bool *consumed, void **cookie) {
+  if (ev.type != PropertyNotify) return false;
+
+  if (ev.xproperty.state == PropertyNewValue) {
+    get_x11_desktop_info(ev.xproperty.display, ev.xproperty.atom);
+  }
+
+#ifdef USE_ARGB
+  if (have_argb_visual) return true;
+#endif
+
+  if (ev.xproperty.atom == ATOM(_XROOTPMAP_ID) ||
+      ev.xproperty.atom == ATOM(_XROOTMAP_ID)) {
+    if (forced_redraw.get(*state)) {
+      draw_stuff();
+      next_update_time = get_time();
+      need_to_update = 1;
+    }
+  }
+  return true;
+}
+
+template <>
+bool handle_event<x_event_handler::EXPOSE>(conky::display_output_x11 *surface,
+                                           Display *display, XEvent &ev,
+                                           bool *consumed, void **cookie) {
+  if (ev.type != Expose) return false;
+
+  XRectangle r;
+  r.x = ev.xexpose.x;
+  r.y = ev.xexpose.y;
+  r.width = ev.xexpose.width;
+  r.height = ev.xexpose.height;
+  XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
+  XSync(display, False);
+  return true;
+}
+
+template <>
+bool handle_event<x_event_handler::BORDER_CROSSING>(
+    conky::display_output_x11 *surface, Display *display, XEvent &ev,
+    bool *consumed, void **cookie) {
   if (ev.type != EnterNotify && ev.type != LeaveNotify) return false;
   if (window.xi_opcode != 0) return true;  // handled by mouse_input already
 
@@ -761,7 +788,10 @@ EV_HANDLER(border_crossing) {
 }
 
 #ifdef BUILD_XDAMAGE
-EV_HANDLER(damage) {
+template <>
+bool handle_event<x_event_handler::DAMAGE>(conky::display_output_x11 *surface,
+                                           Display *display, XEvent &ev,
+                                           bool *consumed, void **cookie) {
   if (ev.type != x11_stuff.event_base + XDamageNotify) return false;
 
   auto *dev = reinterpret_cast<XDamageNotifyEvent *>(&ev);
@@ -771,8 +801,6 @@ EV_HANDLER(damage) {
                     x11_stuff.part);
   return true;
 }
-#else
-NOOP_EV_HANDLER(damage)
 #endif /* BUILD_XDAMAGE */
 
 /// Handles all events conky can receive.
@@ -780,24 +808,24 @@ NOOP_EV_HANDLER(damage)
 /// @return true if event should move input focus to conky
 bool process_event(conky::display_output_x11 *surface, Display *display,
                    XEvent ev, bool *consumed, void **cookie) {
-#define HANDLE_EV(handler)                                                \
-  if (_conky_ev_handle_##handler(surface, display, ev, consumed, cookie)) \
-  return true
+#define HANDLE_EV(event)                                                   \
+  if (handle_event<x_event_handler::event>(surface, display, ev, consumed, \
+                                           cookie)) {                      \
+    return true;                                                           \
+  }
 
-#ifdef BUILD_XINPUT
-  // handles enter & leave events better
-  HANDLE_EV(xinput_motion);
-#endif /* BUILD_XINPUT */
-  HANDLE_EV(mouse_input);
-  HANDLE_EV(property_notify);
+  HANDLE_EV(XINPUT_MOTION)
+  HANDLE_EV(MOUSE_INPUT)
+  HANDLE_EV(PROPERTY_NOTIFY)
 
   // only accept remaining events if they're sent to Conky.
   if (ev.xany.window != window.window) return false;
 
-  HANDLE_EV(expose);
-  HANDLE_EV(reparent);
-  HANDLE_EV(border_crossing);
-  HANDLE_EV(damage);
+  HANDLE_EV(EXPOSE)
+  HANDLE_EV(REPARENT)
+  HANDLE_EV(CONFIGURE)
+  HANDLE_EV(BORDER_CROSSING)
+  HANDLE_EV(DAMAGE)
 
   // event not handled
   return false;
@@ -816,9 +844,9 @@ void process_surface_events(conky::display_output_x11 *surface,
     XNextEvent(display, &ev);
 
     /*
-    indicates whether processed event was consumed; true by default so we don't
-    propagate handled events unless they explicitly state they haven't been
-    consumed.
+    indicates whether processed event was consumed; true by default so we
+    don't propagate handled events unless they explicitly state they haven't
+    been consumed.
     */
     bool consumed = true;
     void *cookie = nullptr;
