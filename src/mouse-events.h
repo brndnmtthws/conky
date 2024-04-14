@@ -32,6 +32,7 @@
 #include <map>
 #include <optional>
 #include <tuple>
+#include <variant>
 #include <vector>
 #endif /* BUILD_XINPUT */
 
@@ -243,25 +244,34 @@ struct mouse_crossing_event : public mouse_positioned_event {
 typedef int xi_device_id;
 typedef int xi_event_type;
 
-struct xi_valuator_info {
+/// Either a numeric valuator id or name.
+using conky_valuator_id = std::variant<size_t, std::string>;
+
+struct conky_valuator_info {
   size_t index;
+  std::string name;
   double min;
   double max;
+  double value;
+  bool relative;
 };
 
 struct conky_device_info {
   xi_device_id device_id;
   std::string name;
-  std::map<std::string, xi_valuator_info> valuators;
+  std::map<std::string, conky_valuator_info> valuators;
+  std::map<size_t, std::string> valuator_names;
+  std::map<std::string, size_t> valuator_indices;
 
-  static conky_device_info *from_xi_id(Display *display, xi_device_id id);
+  static conky_device_info *from_xi_id(xi_device_id id,
+                                       Display *display = nullptr);
+  void update(Display *display, XIDeviceInfo *device = nullptr);
+
+  const std::string *valuator_name(const conky_valuator_id &id) const;
+  std::optional<size_t> valuator_index(const conky_valuator_id &id) const;
+
+  conky_valuator_info *valuator(const conky_valuator_id &id);
 };
-
-typedef std::map<xi_device_id, conky_device_info> XIDeviceInfoMap;
-extern XIDeviceInfoMap xi_device_info_cache;
-
-int xi_valuator_index(Display *display, xi_device_id device_id,
-                      const char *valuator);
 
 /// Almost an exact copy of `XIDeviceEvent`, except it owns all data.
 struct xi_event_data {
@@ -296,8 +306,13 @@ struct xi_event_data {
   static xi_event_data *read_cookie(Display *display,
                                     XGenericEventCookie *cookie);
 
-  bool test_valuator(size_t index) const;
-  std::optional<double> valuator_value(size_t index) const;
+  bool test_valuator(const conky_valuator_id &id) const;
+  const std::string *valuator_name(const conky_valuator_id &id) const;
+  std::optional<size_t> valuator_index(const conky_valuator_id &id) const;
+  conky_valuator_info *valuator_info(const conky_valuator_id &id);
+  std::optional<double> valuator_value(const conky_valuator_id &id) const;
+  std::optional<double> valuator_relative_value(
+      const conky_valuator_id &id) const;
 
   std::vector<std::tuple<int, XEvent *>> generate_events(Window target,
                                                          Window child,

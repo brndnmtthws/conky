@@ -218,19 +218,41 @@ void mouse_button_event::push_lua_data(lua_State *L) const {
 }
 
 #ifdef BUILD_XINPUT
-XIDeviceInfoMap xi_device_info_cache{};
+conky_device_info *conky_device_info::from_xi_id(int device_id,
+                                                 Display *display) {
+  using XIDeviceInfoMap = std::map<xi_device_id, conky_device_info>;
+  static XIDeviceInfoMap xi_device_info_cache{};
 
-conky_device_info *conky_device_info::from_xi_id(Display *display,
-                                                 int device_id) {
   if (xi_device_info_cache.count(device_id)) {
     return &xi_device_info_cache[device_id];
   }
+  if (display == nullptr) return nullptr;
 
   int num_devices;
   XIDeviceInfo *device = XIQueryDevice(display, device_id, &num_devices);
-  if (num_devices == 0) { return nullptr; }
+  if (num_devices == 0) return nullptr;
 
-  std::map<std::string, xi_valuator_info> valuators;
+  conky_device_info info = conky_device_info{
+      .device_id = device_id,
+      .name = std::string(device->name),
+      .valuators = std::map<std::string, conky_valuator_info>(),
+      .valuator_names = std::map<size_t, std::string>()};
+  info.update(display, device);
+  xi_device_info_cache[device_id] = info;
+  return &xi_device_info_cache[device_id];
+}
+
+void conky_device_info::update(Display *display, XIDeviceInfo *device) {
+  this->valuators.clear();
+  this->valuator_names.clear();
+  this->valuator_indices.clear();
+
+  if (device == nullptr) {
+    int num_devices;
+    device = XIQueryDevice(display, device_id, &num_devices);
+    if (num_devices == 0) return;
+  }
+
   for (int i = 0; i < device->num_classes; i++) {
     if (device->classes[i]->type != XIValuatorClass) continue;
 
@@ -240,32 +262,116 @@ conky_device_info *conky_device_info::from_xi_id(Display *display,
       XFree(label);
       continue;
     }
-
-    valuators[std::string(label)] =
-        xi_valuator_info{.index = static_cast<size_t>(class_info->number),
-                         .min = class_info->min,
-                         .max = class_info->max};
-    DBGP2("%s - %f %f %f", label, class_info->value, class_info->min,
-          class_info->max);
+    auto name = std::string(label);
     XFree(label);
+
+    auto info = conky_valuator_info{
+        .index = static_cast<size_t>(class_info->number),
+        .name = name,
+        .min = class_info->min,
+        .max = class_info->max,
+        .value = class_info->value,
+        .relative = class_info->mode == XIModeRelative,
+    };
+
+    // mode can be wrong, depending on device, drivers and system setup
+    if (info.value < info.min || info.value > info.max) {
+      info.relative = false;
+    }
+    // also (probably) not relative
+    // a single value state doesn't make sense for a valuator, unless the min &
+    // max don't exist, and they should(?) exist for relative valuator
+    if (info.min == info.max) { info.relative = false; }
+
+    this->valuator_names[static_cast<size_t>(class_info->number)] = name;
+    this->valuator_indices[name] = static_cast<size_t>(class_info->number);
+    this->valuators[name] = info;
+    DBGP2("SToRING: %s %d", name.c_str(), info.index);
   }
-
-  xi_device_info_cache[device_id] =
-      conky_device_info{.device_id = device_id,
-                        .name = std::string(device->name),
-                        .valuators = valuators};
   XIFreeDeviceInfo(device);
-
-  return &xi_device_info_cache[device_id];
 }
 
-bool xi_event_data::test_valuator(size_t index) const {
-  return this->valuators.count(index) > 0;
+const std::string *conky_device_info::valuator_name(
+    const conky_valuator_id &id) const {
+  if (std::holds_alternative<std::string>(id)) {
+    return &std::get<std::string>(id);
+  } else {
+    size_t index = std::get<size_t>(id);
+    if (this->valuator_names.count(index) == 0) return nullptr;
+    return &this->valuator_names.at(index);
+  }
+}
+std::optional<size_t> conky_device_info::valuator_index(
+    const conky_valuator_id &id) const {
+  if (std::holds_alternative<size_t>(id)) {
+    return std::get<size_t>(id);
+  } else {
+    std::string name = std::get<std::string>(id);
+    if (this->valuator_indices.count(name) == 0) return std::nullopt;
+    return this->valuator_indices.at(name);
+  }
+}
+conky_valuator_info *conky_device_info::valuator(const conky_valuator_id &id) {
+  auto name = this->valuator_name(id);
+  if (name == nullptr) return nullptr;
+  if (this->valuators.count(*name) == 0) return nullptr;
+  return &this->valuators.at(*name);
 }
 
-std::optional<double> xi_event_data::valuator_value(size_t index) const {
-  if (this->valuators.count(index) == 0) return std::nullopt;
-  return std::optional(this->valuators.at(index));
+bool xi_event_data::test_valuator(const conky_valuator_id &id) const {
+  auto index = this->valuator_index(id);
+  return index.has_value() && this->valuators.count(index.value()) > 0;
+}
+
+const std::string *xi_event_data::valuator_name(
+    const conky_valuator_id &id) const {
+  auto dev = conky_device_info::from_xi_id(this->deviceid, this->display);
+  if (dev == nullptr) return nullptr;
+  return dev->valuator_name(id);
+}
+std::optional<size_t> xi_event_data::valuator_index(
+    const conky_valuator_id &id) const {
+  auto dev = conky_device_info::from_xi_id(this->deviceid, this->display);
+  if (dev == nullptr) return std::nullopt;
+  return dev->valuator_index(id);
+}
+
+conky_valuator_info *xi_event_data::valuator_info(const conky_valuator_id &id) {
+  auto dev = conky_device_info::from_xi_id(this->deviceid, this->display);
+  if (dev == nullptr) return nullptr;
+  auto valuator = dev->valuator(id);
+  if (valuator == nullptr) return nullptr;
+  return valuator;
+}
+
+std::optional<double> xi_event_data::valuator_value(
+    const conky_valuator_id &id) const {
+  auto index = this->valuator_index(id);
+  if (!index.has_value() || this->valuators.count(index.value()) == 0)
+    return std::nullopt;
+  return this->valuators.at(index.value());
+}
+
+std::optional<double> xi_event_data::valuator_relative_value(
+    const conky_valuator_id &id) const {
+  auto current = this->valuator_value(id);
+  if (!current.has_value()) return std::nullopt;
+  auto current_v = current.value();
+
+  auto dev = conky_device_info::from_xi_id(this->deviceid);
+  if (dev == nullptr) return std::nullopt;
+  auto valuator_info = dev->valuator(id);
+  if (valuator_info == nullptr) return std::nullopt;
+
+  if (!valuator_info->relative) {
+    return current_v - valuator_info->value;
+  } else {
+    if (current_v < valuator_info->min || current_v > valuator_info->max) {
+      valuator_info->relative = false;
+      return current_v - valuator_info->value;
+    }
+    return current_v;
+  }
 }
 
 xi_event_data *xi_event_data::read_cookie(Display *display,
@@ -322,20 +428,25 @@ std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(
   std::vector<std::tuple<int, XEvent *>> result{};
 
   if (this->evtype == XI_Motion) {
-    auto device_info = conky_device_info::from_xi_id(display, this->deviceid);
+    auto device_info =
+        conky_device_info::from_xi_id(this->deviceid, this->display);
 
     // Note that these are absolute (not relative) values in some cases
-    int hor_move_v = device_info->valuators["Rel X"].index;   // Almost always 0
-    int vert_move_v = device_info->valuators["Rel Y"].index;  // Almost always 1
-    int hor_scroll_v =
-        device_info->valuators["Rel Horiz Scroll"].index;  // Almost always 2
-    int vert_scroll_v =
-        device_info->valuators["Rel Vert Scroll"].index;  // Almost always 3
+    size_t hor_move_v =
+        device_info->valuator_index("Rel X").value();  // Almost always 0
+    size_t vert_move_v =
+        device_info->valuator_index("Rel Y").value();  // Almost always 1
+    size_t hor_scroll_v = device_info->valuator_index("Rel Horiz Scroll")
+                              .value();  // Almost always 2
+    size_t vert_scroll_v = device_info->valuator_index("Rel Vert Scroll")
+                               .value();  // Almost always 3
 
     bool is_move =
         this->test_valuator(hor_move_v) || this->test_valuator(vert_move_v);
     bool is_scroll =
         this->test_valuator(hor_scroll_v) || this->test_valuator(vert_scroll_v);
+    DBGP2("IS SCROLL %d %d %s", hor_move_v, vert_move_v,
+          is_scroll ? "true" : "false");
 
     if (is_move) {
       XEvent *produced = new XEvent;
@@ -362,15 +473,17 @@ std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(
       std::memset(produced, 0, sizeof(XEvent));
 
       uint scroll_direction = 4;
-      auto vertical = this->valuator_value(vert_scroll_v);
+      auto vertical = this->valuator_relative_value(vert_scroll_v);
+      double vertical_value = vertical.value_or(0.0);
+      DBGP2("Vert Scroll: %d", vertical_value);
 
-      // FIXME: Turn into relative values so direction works
-      if (vertical.value_or(0.0) != 0.0) {
-        scroll_direction = vertical.value() < 0.0 ? Button4 : Button5;
+      if (vertical_value != 0.0) {
+        scroll_direction = vertical_value < 0.0 ? Button4 : Button5;
       } else {
-        auto horizontal = this->valuator_value(hor_scroll_v);
-        if (horizontal.value_or(0.0) != 0.0) {
-          scroll_direction = horizontal.value() < 0.0 ? 6 : 7;
+        auto horizontal = this->valuator_relative_value(hor_scroll_v);
+        double horizontal_value = horizontal.value_or(0.0);
+        if (horizontal_value != 0.0) {
+          scroll_direction = horizontal_value < 0.0 ? 6 : 7;
         }
       }
 

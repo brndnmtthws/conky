@@ -469,16 +469,12 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   }
   *cookie = data;
 
+  auto device_info = conky_device_info::from_xi_id(data->deviceid);
   if (data->evtype == XI_DeviceChanged) {
-    int device_id = data->sourceid;
-
-    // update cached device info
-    if (xi_device_info_cache.count(device_id)) {
-      xi_device_info_cache.erase(device_id);
-      conky_device_info::from_xi_id(display, device_id);
-    }
+    if (device_info != nullptr) { device_info->update(data->display); }
     return true;
   }
+  device_info = conky_device_info::from_xi_id(data->deviceid, data->display);
 
   Window event_window;
   modifier_state_t mods;
@@ -521,16 +517,19 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   }
 
   if (data->evtype == XI_Motion) {
-    auto device_info = conky_device_info::from_xi_id(display, data->deviceid);
     // TODO: Make valuator_index names configurable?
 
     // Note that these are absolute (not relative) values in some cases
-    int hor_move_v = device_info->valuators["Rel X"].index;   // Almost always 0
-    int vert_move_v = device_info->valuators["Rel Y"].index;  // Almost always 1
-    int hor_scroll_v =
-        device_info->valuators["Rel Horiz Scroll"].index;  // Almost always 2
-    int vert_scroll_v =
-        device_info->valuators["Rel Vert Scroll"].index;  // Almost always 3
+    conky_valuator_id hor_move_v =
+        device_info->valuator_index("Rel X").value();  // Almost always 0
+    conky_valuator_id vert_move_v =
+        device_info->valuator_index("Rel Y").value();  // Almost always 1
+    conky_valuator_id hor_scroll_v =
+        device_info->valuator_index("Rel Horiz Scroll")
+            .value();  // Almost always 2
+    conky_valuator_id vert_scroll_v =
+        device_info->valuator_index("Rel Vert Scroll")
+            .value();  // Almost always 3
 
     bool is_move =
         data->test_valuator(hor_move_v) || data->test_valuator(vert_move_v);
@@ -562,24 +561,28 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
       }
     }
     if (is_scroll && cursor_over_conky) {
-      // FIXME: Turn into relative values so direction works
-      auto horizontal = data->valuator_value(hor_scroll_v);
-      if (horizontal.value_or(0.0) != 0.0) {
-        scroll_direction_t direction = horizontal.value() > 0.0
-                                           ? scroll_direction_t::SCROLL_LEFT
-                                           : scroll_direction_t::SCROLL_RIGHT;
-        *consumed = llua_mouse_hook(
-            mouse_scroll_event(data->event_x, data->event_y, data->root_x,
-                               data->root_y, direction, mods));
+      scroll_direction_t scroll_direction;
+      auto vertical = data->valuator_relative_value(vert_scroll_v);
+      double vertical_value = vertical.value_or(0.0);
+
+      if (vertical_value != 0.0) {
+        scroll_direction = vertical_value < 0.0
+                               ? scroll_direction_t::SCROLL_UP
+                               : scroll_direction_t::SCROLL_DOWN;
+      } else {
+        auto horizontal = data->valuator_relative_value(hor_scroll_v);
+        double horizontal_value = horizontal.value_or(0.0);
+        if (horizontal_value != 0.0) {
+          scroll_direction = horizontal_value < 0.0
+                                 ? scroll_direction_t::SCROLL_LEFT
+                                 : scroll_direction_t::SCROLL_RIGHT;
+        }
       }
-      auto vertical = data->valuator_value(vert_scroll_v);
-      if (vertical.value_or(0.0) != 0.0) {
-        scroll_direction_t direction = vertical.value() > 0.0
-                                           ? scroll_direction_t::SCROLL_DOWN
-                                           : scroll_direction_t::SCROLL_UP;
+
+      if (scroll_direction != scroll_direction_t::SCROLL_UNKNOWN) {
         *consumed = llua_mouse_hook(
             mouse_scroll_event(data->event_x, data->event_y, data->root_x,
-                               data->root_y, direction, mods));
+                               data->root_y, scroll_direction, mods));
       }
     }
   } else if (cursor_over_conky && (data->evtype == XI_ButtonPress ||

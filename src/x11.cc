@@ -1434,7 +1434,7 @@ void propagate_xinput_event(const conky::xi_event_data *ev) {
       target = below.back();
 
       // Update event x and y coordinates to be target window relative
-      XTranslateCoordinates(display, window.root, ev->event, ev->root_x,
+      XTranslateCoordinates(display, window.desktop, ev->event, ev->root_x,
                             ev->root_y, &target_x, &target_y, &child);
     }
   }
