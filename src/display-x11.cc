@@ -469,12 +469,13 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   }
   *cookie = data;
 
-  auto device_info = conky_device_info::from_xi_id(data->deviceid);
-  if (data->evtype == XI_DeviceChanged) {
-    if (device_info != nullptr) { device_info->update(data->display); }
+  auto device_info = device_info::from_xi_id(data->deviceid);
+  if (data->evtype == XI_HierarchyChanged) {
+    auto device_change = reinterpret_cast<XIHierarchyEvent *>(data);
+    handle_xi_device_change(device_change);
     return true;
   }
-  device_info = conky_device_info::from_xi_id(data->deviceid, data->display);
+  device_info = device_info::from_xi_id(data->deviceid, data->display);
 
   Window event_window;
   modifier_state_t mods;
@@ -519,22 +520,10 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   if (data->evtype == XI_Motion) {
     // TODO: Make valuator_index names configurable?
 
-    // Note that these are absolute (not relative) values in some cases
-    conky_valuator_id hor_move_v =
-        device_info->valuator_index("Rel X").value();  // Almost always 0
-    conky_valuator_id vert_move_v =
-        device_info->valuator_index("Rel Y").value();  // Almost always 1
-    conky_valuator_id hor_scroll_v =
-        device_info->valuator_index("Rel Horiz Scroll")
-            .value();  // Almost always 2
-    conky_valuator_id vert_scroll_v =
-        device_info->valuator_index("Rel Vert Scroll")
-            .value();  // Almost always 3
-
-    bool is_move =
-        data->test_valuator(hor_move_v) || data->test_valuator(vert_move_v);
-    bool is_scroll =
-        data->test_valuator(hor_scroll_v) || data->test_valuator(vert_scroll_v);
+    bool is_move = data->test_valuator(valuator_t::MOVE_X) ||
+                   data->test_valuator(valuator_t::MOVE_Y);
+    bool is_scroll = data->test_valuator(valuator_t::SCROLL_X) ||
+                     data->test_valuator(valuator_t::SCROLL_Y);
 
     if (is_move) {
       static bool cursor_inside = false;
@@ -562,7 +551,7 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
     }
     if (is_scroll && cursor_over_conky) {
       scroll_direction_t scroll_direction;
-      auto vertical = data->valuator_relative_value(vert_scroll_v);
+      auto vertical = data->valuator_relative_value(valuator_t::SCROLL_Y);
       double vertical_value = vertical.value_or(0.0);
 
       if (vertical_value != 0.0) {
@@ -570,7 +559,7 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
                                ? scroll_direction_t::SCROLL_UP
                                : scroll_direction_t::SCROLL_DOWN;
       } else {
-        auto horizontal = data->valuator_relative_value(hor_scroll_v);
+        auto horizontal = data->valuator_relative_value(valuator_t::SCROLL_X);
         double horizontal_value = horizontal.value_or(0.0);
         if (horizontal_value != 0.0) {
           scroll_direction = horizontal_value < 0.0

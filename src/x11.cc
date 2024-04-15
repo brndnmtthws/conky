@@ -969,6 +969,7 @@ void x11_init_window(lua::state &l, bool own) {
 
     const std::size_t mask_size = (XI_LASTEVENT + 7) / 8;
     unsigned char mask_bytes[mask_size] = {0}; /* must be zeroed! */
+    XISetMask(mask_bytes, XI_HierarchyChanged);
     XISetMask(mask_bytes, XI_Motion);
     // Capture click events for "override" window type
     if (!own) {

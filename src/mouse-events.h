@@ -29,6 +29,7 @@
 #include "logging.h"
 
 #ifdef BUILD_XINPUT
+#include <array>
 #include <map>
 #include <optional>
 #include <tuple>
@@ -244,34 +245,29 @@ struct mouse_crossing_event : public mouse_positioned_event {
 typedef int xi_device_id;
 typedef int xi_event_type;
 
-/// Either a numeric valuator id or name.
-using conky_valuator_id = std::variant<size_t, std::string>;
+enum valuator_t : size_t { MOVE_X, MOVE_Y, SCROLL_X, SCROLL_Y, VALUATOR_COUNT };
 
 struct conky_valuator_info {
   size_t index;
-  std::string name;
   double min;
   double max;
   double value;
   bool relative;
 };
 
-struct conky_device_info {
-  xi_device_id device_id;
+struct device_info {
+  /// @brief Device name.
   std::string name;
-  std::map<std::string, conky_valuator_info> valuators;
-  std::map<size_t, std::string> valuator_names;
-  std::map<std::string, size_t> valuator_indices;
+  std::array<conky_valuator_info, valuator_t::VALUATOR_COUNT> valuators{};
 
-  static conky_device_info *from_xi_id(xi_device_id id,
-                                       Display *display = nullptr);
-  void update(Display *display, XIDeviceInfo *device = nullptr);
+  static device_info *from_xi_id(xi_device_id id, Display *display = nullptr);
+  void init_xi_device(Display *display,
+                      std::variant<xi_device_id, XIDeviceInfo *> device);
 
-  const std::string *valuator_name(const conky_valuator_id &id) const;
-  std::optional<size_t> valuator_index(const conky_valuator_id &id) const;
-
-  conky_valuator_info *valuator(const conky_valuator_id &id);
+  conky_valuator_info &valuator(valuator_t valuator);
 };
+
+void handle_xi_device_change(const XIHierarchyEvent *event);
 
 /// Almost an exact copy of `XIDeviceEvent`, except it owns all data.
 struct xi_event_data {
@@ -306,13 +302,10 @@ struct xi_event_data {
   static xi_event_data *read_cookie(Display *display,
                                     XGenericEventCookie *cookie);
 
-  bool test_valuator(const conky_valuator_id &id) const;
-  const std::string *valuator_name(const conky_valuator_id &id) const;
-  std::optional<size_t> valuator_index(const conky_valuator_id &id) const;
-  conky_valuator_info *valuator_info(const conky_valuator_id &id);
-  std::optional<double> valuator_value(const conky_valuator_id &id) const;
-  std::optional<double> valuator_relative_value(
-      const conky_valuator_id &id) const;
+  bool test_valuator(valuator_t id) const;
+  conky_valuator_info *valuator_info(valuator_t id) const;
+  std::optional<double> valuator_value(valuator_t id) const;
+  std::optional<double> valuator_relative_value(valuator_t valuator) const;
 
   std::vector<std::tuple<int, XEvent *>> generate_events(Window target,
                                                          Window child,
