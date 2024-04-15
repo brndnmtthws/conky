@@ -1,7 +1,7 @@
 name: 🐞 Bug Report
-description: "File a bug report: crashes, unexpected behaviour, and other errors go here."
-title: "[Bug]: "
-labels: ["bug", "triage"]
+description: 'File a bug report: crashes, unexpected behaviour, and other errors go here.'
+title: '[Bug]: '
+labels: ['bug', 'triage']
 body:
   - type: markdown
     attributes:
@@ -68,6 +68,14 @@ body:
 
         # ... stack trace output here ...
         ```
+
+        Here are some additional resources on obtaining stack traces:
+        - [Arch Linux Wiki](https://wiki.archlinux.org/index.php/Debug_-_Getting_Traces)
+        - [Ubuntu Wiki](https://wiki.ubuntu.com/DebuggingProgramCrash)
+        - [AskUbuntu - Where do I find core dump files, and how do I view and analyze the backtrace (stack trace) in one?](https://askubuntu.com/a/1349048)
+        - [Julia Evans - How to get a core dump for a segfault on Linux](https://jvns.ca/blog/2018/04/28/debugging-a-segfault-on-linux/)
+        - [GDB Documentation](https://sourceware.org/gdb/current/onlinedocs/gdb/)
+        - [lldb Documentation](https://lldb.llvm.org/use/tutorial.html)
   - type: textarea
     id: stacktrace
     attributes:
