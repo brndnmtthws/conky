@@ -477,22 +477,22 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   }
   device_info = device_info::from_xi_id(data->deviceid, data->display);
 
-  Window event_window;
-  modifier_state_t mods;
-  if (data->evtype == XI_Motion || data->evtype == XI_ButtonPress ||
-      data->evtype == XI_ButtonRelease) {
-    event_window = query_x11_window_at_pos(display, data->root_x, data->root_y);
-    // query_result is not window.window in some cases.
-    event_window = query_x11_last_descendant(display, event_window);
-    mods = x11_modifier_state(data->mods.effective);
+  if (!(data->evtype == XI_Motion || data->evtype == XI_ButtonPress ||
+        data->evtype == XI_ButtonRelease)) {
+    return true;
   }
 
-  bool cursor_over_conky =
-      (event_window == window.window ||
-       window.window == 0L &&
-           (event_window == window.root || event_window == window.desktop)) &&
-      (data->root_x >= window.x && data->root_x < (window.x + window.width) &&
-       data->root_y >= window.y && data->root_y < (window.y + window.height));
+  Window event_window =
+      query_x11_window_at_pos(display, data->root_x, data->root_y);
+  // query_result is not window.window in some cases.
+  modifier_state_t mods = x11_modifier_state(data->mods.effective);
+
+  bool same_window = query_x11_top_level(display, event_window) ==
+                     query_x11_top_level(display, window.window);
+  bool cursor_over_conky = same_window && data->root_x >= window.x &&
+                           data->root_x < (window.x + window.width) &&
+                           data->root_y >= window.y &&
+                           data->root_y < (window.y + window.height);
 
   // XInput reports events twice on some hardware (even by 'xinput --test-xi2')
   auto hash = std::make_tuple(data->serial, data->evtype, data->event);

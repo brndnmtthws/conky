@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include "config.h"
 #include "setting.hh"
 
 #include <X11/Xatom.h>
@@ -41,7 +42,6 @@
 
 #include <cstdint>
 #include <functional>
-#include <optional>
 #include <vector>
 
 #ifdef BUILD_ARGB
@@ -123,42 +123,14 @@ void set_struts(int);
 void x11_init_window(lua::state &l, bool own);
 void deinit_x11();
 
-// Fields common to all X11 input events
-struct InputEventCommon {
-  int type;               /* event type */
-  uint64_t serial;        /* # of last request processed by server */
-  Bool send_event;        /* true if this came from a SendEvent request */
-  Display *display;       /* Display the event was read from */
-  Window window;          /* "event" window reported relative to */
-  Window root;            /* root window that the event occurred on */
-  Window subwindow;       /* child window */
-  Time time;              /* milliseconds */
-  int32_t x, y;           /* pointer x, y coordinates in event window */
-  int32_t x_root, y_root; /* coordinates relative to root */
-  uint32_t state;         /* key or button mask */
-};
-
-union InputEvent {
-  int type;  // event type
-
-  InputEventCommon common;
-
-  // Discrete interfaces
-  XAnyEvent xany;            // common event interface
-  XKeyEvent xkey;            // KeyPress & KeyRelease events
-  XButtonEvent xbutton;      // ButtonPress & ButtonRelease events
-  XMotionEvent xmotion;      // MotionNotify event
-  XCrossingEvent xcrossing;  // EnterNotify & LeaveNotify events
-
-  // Ensures InputEvent matches memory layout of XEvent.
-  // Accessing base variant is as code smell.
-  XEvent base;
-};
-
-// Returns InputEvent pointer to provided XEvent is an input event; nullptr
-// otherwise.
-InputEvent *xev_as_input_event(XEvent &ev);
-void propagate_x11_event(XEvent &ev, const void *cookie);
+/// @brief Forwards argument event to the top-most window at event positon that
+/// isn't conky.
+///
+/// Calling this function is time sensitive as it will query window at event
+/// position **at invocation time**.
+/// @param event event to forward
+/// @param cookie optional cookie data
+void propagate_x11_event(XEvent &event, const void *cookie = nullptr);
 
 /// @brief Returns a list of window values for the given atom.
 /// @param display display with which the atom is associated
@@ -183,15 +155,15 @@ std::vector<Window> x11_atom_window_list(Display *display, Window window,
 /// list of windows
 std::vector<Window> query_x11_windows(Display *display);
 
-/// @brief Finds the last descendant of a window (leaf) on the graph.
+/// @brief Finds the last ascendant of a window (trunk) before root.
 ///
-/// This function assumes the window stack below `parent` is linear. If it
-/// isn't, it's only guaranteed that _some_ descendant of `parent` will be
-/// returned. If provided `parent` has no descendants, the `parent` is returned.
+/// If provided `child` is root or has no windows between root and itself, the
+/// `child` is returned.
 ///
 /// @param display display of parent
-/// @return a descendant window
-Window query_x11_last_descendant(Display *display, Window parent);
+/// @param child window whose parents to query
+/// @return the top level ascendant window
+Window query_x11_top_level(Display *display, Window child);
 
 /// @brief Returns the top-most window overlapping provided screen coordinates.
 ///

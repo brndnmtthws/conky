@@ -248,10 +248,10 @@ device_info *device_info::from_xi_id(xi_device_id device_id, Display *display) {
 }
 
 void handle_xi_device_change(const XIHierarchyEvent *event) {
-  if (event->flags & XISlaveRemoved != 0) {
+  if ((event->flags & XISlaveRemoved) != 0) {
     for (int i = 0; i < event->num_info; i++) {
       auto info = event->info[i];
-      if (info.flags & XISlaveRemoved != 0 &&
+      if ((info.flags & XISlaveRemoved) != 0 &&
           xi_id_mapping.count(info.deviceid) > 0) {
         size_t id = xi_id_mapping[info.deviceid];
         xi_id_mapping.erase(info.deviceid);
@@ -275,22 +275,25 @@ size_t fixed_valuator_index(Display *display, XIDeviceInfo *device,
   int format_return;
   unsigned long num_items;
   unsigned long bytes_after;
-  if (XIGetProperty(display, device->deviceid, override_atom, 0, 1, False,
-                    XA_INTEGER, &type_return, &format_return, &num_items,
-                    &bytes_after,
-                    reinterpret_cast<unsigned char **>(&value)) == Success) {
-    if (type_return != XA_INTEGER || num_items > 1) {
-      NORM_ERR(
-          "invalid '%s' option value, expected a single integer; value will be "
-          "ignored",
-          atom_names[valuator]);
+  do {
+    if (XIGetProperty(display, device->deviceid, override_atom, 0, 1, False,
+                      XA_INTEGER, &type_return, &format_return, &num_items,
+                      &bytes_after,
+                      reinterpret_cast<unsigned char **>(&value)) == Success) {
+      if (num_items == 0) break;
+      if (type_return != XA_INTEGER) {
+        NORM_ERR(
+            "invalid '%s' option value, expected a single integer; value will "
+            "be ignored",
+            atom_names[valuator]);
+        XFree(value);
+        break;
+      }
+      uint32_t result = *reinterpret_cast<uint32_t *>(value);
       XFree(value);
-      return valuator;
+      return static_cast<size_t>(result);
     }
-    uint32_t result = *reinterpret_cast<uint32_t *>(value);
-    XFree(value);
-    return static_cast<size_t>(result);
-  }
+  } while (true);
   return valuator;
 }
 
@@ -300,46 +303,55 @@ bool fixed_valuator_relative(Display *display, XIDeviceInfo *device,
                              valuator_t valuator,
                              XIValuatorClassInfo *class_info) {
   const std::array<const char *, 2> atom_names = {
-      "ConkyValuatorMoveType",
-      "ConkyValuatorScrollType",
+      "ConkyValuatorMoveMode",
+      "ConkyValuatorScrollMode",
   };
-  Atom override_atom = XInternAtom(display, atom_names[valuator >> 1], False);
-  unsigned char *value;
+
+  Atom override_atom = XInternAtom(display, atom_names[valuator >> 1], True);
+  unsigned char *value_return;
   Atom type_return;
   int format_return;
   unsigned long num_items;
   unsigned long bytes_after;
-  if (XIGetProperty(display, device->deviceid, override_atom, 0, 9, False,
-                    XA_STRING, &type_return, &format_return, &num_items,
-                    &bytes_after,
-                    reinterpret_cast<unsigned char **>(&value)) == Success) {
-    if (type_return != XA_STRING) {
-      NORM_ERR(
-          "invalid '%s' option value, expected a string; value will be "
-          "ignored",
-          atom_names[valuator >> 1]);
-      XFree(value);
-      return class_info->type == XIModeRelative;
-    }
 
-    // lowercase value
-    for (auto c = value; *c; ++c) *c = tolower(*c);
+  do {
+    if (XIGetProperty(
+            display, device->deviceid, override_atom, 0, 9, False, XA_ATOM,
+            &type_return, &format_return, &num_items, &bytes_after,
+            reinterpret_cast<unsigned char **>(&value_return)) == Success) {
+      if (num_items == 0) break;
+      if (type_return != XA_ATOM) {
+        NORM_ERR(
+            "invalid '%s' option value, expected an atom (string); value will "
+            "be ignored",
+            atom_names[valuator >> 1]);
+        XFree(value_return);
+        break;
+      }
+      Atom return_atom = *reinterpret_cast<Atom *>(value_return);
+      XFree(value_return);
+      char *value = XGetAtomName(display, return_atom);
 
-    bool relative = false;
-    if (strcmp(reinterpret_cast<char *>(value), "relative") == 0) {
-      relative = true;
-    } else if (strcmp(reinterpret_cast<char *>(value), "absolute") != 0) {
-      NORM_ERR(
-          "unknown '%s' option value: '%s', expected 'absolute' or 'relative'; "
-          "value will be ignored",
-          atom_names[static_cast<size_t>(valuator) >> 1]);
+      // lowercase value
+      for (auto c = value; *c; ++c) *c = tolower(*c);
+
+      bool relative = false;
+      if (strcmp(reinterpret_cast<char *>(value), "relative") == 0) {
+        relative = true;
+      } else if (strcmp(reinterpret_cast<char *>(value), "absolute") != 0) {
+        NORM_ERR(
+            "unknown '%s' option value: '%s', expected 'absolute' or "
+            "'relative'; "
+            "value will be ignored",
+            atom_names[valuator >> 1]);
+        XFree(value);
+        break;
+      }
       XFree(value);
-      return class_info->type == XIModeRelative;
+      return relative;
     }
-    XFree(value);
-    return relative;
-  }
-  return class_info->type == XIModeRelative;
+  } while (true);
+  return class_info->mode == XIModeRelative;
 }
 
 void device_info::init_xi_device(
@@ -386,7 +398,6 @@ void device_info::init_xi_device(
     };
 
     this->valuators[valuator] = info;
-    DBGP2("SToRING: %s %d", name.c_str(), info.index);
   }
 
   if (std::holds_alternative<xi_device_id>(source)) {
@@ -440,8 +451,30 @@ xi_event_data *xi_event_data::read_cookie(Display *display,
       .valuators = valuators,
       .mods = source->mods,
       .group = source->group,
+      .valuators_relative = {0.0, 0.0, 0.0, 0.0},
   };
   XFreeEventData(display, cookie);
+
+  // Precompute relative values if they're absolute
+  auto device = device_info::from_xi_id(result->deviceid, result->display);
+  if (device == nullptr) return result;  // shouldn't happen
+  for (size_t v = 0; v < valuator_t::VALUATOR_COUNT; v++) {
+    valuator_t valuator = static_cast<valuator_t>(v);
+    auto valuator_info = device->valuator(valuator);
+
+    if (result->valuators.count(valuator_info.index) == 0) { continue; }
+    auto current = result->valuators[valuator_info.index];
+
+    if (valuator_info.relative) {
+      result->valuators_relative[v] = current;
+    } else {
+      // XXX these doubles come from int values and might wrap around though
+      // it's hard to tell what int type is the source as it depends on the
+      // device/driver.
+      result->valuators_relative[v] = current - valuator_info.value;
+    }
+    valuator_info.value = current;
+  }
 
   return result;
 }
@@ -466,20 +499,7 @@ std::optional<double> xi_event_data::valuator_value(valuator_t valuator) const {
 
 std::optional<double> xi_event_data::valuator_relative_value(
     valuator_t valuator) const {
-  auto current = this->valuator_value(valuator);
-  if (!current.has_value()) return std::nullopt;
-
-  auto valuator_info = this->valuator_info(valuator);
-  if (valuator_info == nullptr) return std::nullopt;
-
-  if (valuator_info->relative) {
-    return current.value();
-  } else {
-    // XXX these doubles come from int values and might wrap around though it's
-    // hard to tell what int type is the source as it depends on the
-    // device/driver.
-    return current.value() - valuator_info->value;
-  }
+  return this->valuators_relative.at(valuator);
 }
 
 std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(

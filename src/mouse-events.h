@@ -241,7 +241,6 @@ struct mouse_crossing_event : public mouse_positioned_event {
 };
 
 #ifdef BUILD_XINPUT
-
 typedef int xi_device_id;
 typedef int xi_event_type;
 
@@ -282,8 +281,6 @@ struct xi_event_data {
   Time time;
   xi_device_id deviceid;
   int sourceid;
-  /// Primary event detail. Meaning depends on `evtype` value:
-  /// XI_ButtonPress - Mouse button
   int detail;
   Window root;
   Window event;
@@ -298,6 +295,11 @@ struct xi_event_data {
   std::map<size_t, double> valuators;
   XIModifierState mods;
   XIGroupState group;
+
+  // Extra data
+
+  /// Precomputed relative values
+  std::array<double, valuator_t::VALUATOR_COUNT> valuators_relative;
 
   static xi_event_data *read_cookie(Display *display,
                                     XGenericEventCookie *cookie);
