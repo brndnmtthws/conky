@@ -1694,6 +1694,16 @@ bool is_on_battery() {  // checks if at least one battery specified in
 
 volatile sig_atomic_t g_sigterm_pending, g_sighup_pending, g_sigusr2_pending;
 
+void log_system_details() {
+  char *session_ty = getenv("XDG_SESSION_TYPE");
+  char *session = getenv("GDMSESSION");
+  char *desktop = getenv("XDG_CURRENT_DESKTOP");
+  if (desktop != nullptr || session != nullptr) {
+    NORM_ERR("'%s' %s session running '%s' destop", session, session_ty,
+             desktop);
+  }
+}
+
 void main_loop() {
   int terminate = 0;
 #ifdef SIGNAL_BLOCKING
@@ -1715,6 +1725,8 @@ void main_loop() {
   sigaddset(&newmask, SIGTERM);
   sigaddset(&newmask, SIGUSR1);
 #endif
+
+  log_system_details();
 
   last_update_time = 0.0;
   next_update_time = get_time() - fmod(get_time(), active_update_interval());

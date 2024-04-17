@@ -34,10 +34,6 @@
 extern "C" {
 #include <lua.h>
 
-#ifdef BUILD_XINPUT
-#include <X11/extensions/XInput2.h>
-#endif
-
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -316,7 +312,7 @@ bool fixed_valuator_relative(Display *display, XIDeviceInfo *device,
       "ConkyValuatorScrollMode",
   };
 
-  Atom override_atom = XInternAtom(display, atom_names[valuator >> 1], True);
+  Atom override_atom = XInternAtom(display, atom_names[valuator >> 1], False);
   unsigned char *value_return;
   Atom type_return;
   int format_return;

@@ -169,8 +169,8 @@ void use_xdbe_setting::lua_setter(lua::state &l, bool init) {
       l.pushboolean(false);
     }
 
-    fprintf(stderr, PACKAGE_NAME ": drawing to %s buffer\n",
-            do_convert(l, -1).first ? "double" : "single");
+    NORM_ERR("drawing to %s buffer",
+             do_convert(l, -1).first ? "double" : "single");
   }
 
   ++s;
@@ -206,8 +206,8 @@ void use_xpmdb_setting::lua_setter(lua::state &l, bool init) {
       l.pushboolean(false);
     }
 
-    fprintf(stderr, PACKAGE_NAME ": drawing to %s buffer\n",
-            do_convert(l, -1).first ? "double" : "single");
+    NORM_ERR("drawing to %s buffer",
+             do_convert(l, -1).first ? "double" : "single");
   }
 
   ++s;
@@ -374,7 +374,7 @@ static void init_x11() {
       std::string err =
           std::string("can't open display: ") + XDisplayName(disp);
 #ifdef BUILD_WAYLAND
-      fprintf(stderr, "%s\n", err.c_str());
+      NORM_ERR(err.c_str());
       return;
 #else  /* BUILD_WAYLAND */
       throw std::runtime_error(err);
@@ -479,10 +479,10 @@ static Window find_desktop_window(Window root) {
   desktop = find_subwindow(desktop, workarea[2], workarea[3]);
 
   if (desktop != root) {
-    DBGP2("desktop window (0x%lx) is subwindow of root window (0x%lx)", desktop,
-          root);
+    NORM_ERR("desktop window (0x%lx) is subwindow of root window (0x%lx)",
+             desktop, root);
   } else {
-    DBGP2("desktop window (0x%lx) is root window", desktop);
+    NORM_ERR("desktop window (0x%lx) is root window", desktop);
   }
   return desktop;
 }
@@ -659,8 +659,7 @@ void x11_init_window(lua::state &l, bool own) {
       XLowerWindow(display, window.window);
       XSetClassHint(display, window.window, &classHint);
 
-      fprintf(stderr, PACKAGE_NAME ": window type - override\n");
-      fflush(stderr);
+      NORM_ERR("window type - override");
     } else { /* own_window_type.get(l) != TYPE_OVERRIDE */
 
       /* A window managed by the window manager.
@@ -754,29 +753,24 @@ void x11_init_window(lua::state &l, bool own) {
         switch (own_window_type.get(l)) {
           case TYPE_DESKTOP:
             prop = ATOM(_NET_WM_WINDOW_TYPE_DESKTOP);
-            fprintf(stderr, PACKAGE_NAME ": window type - desktop\n");
-            fflush(stderr);
+            NORM_ERR("window type - desktop");
             break;
           case TYPE_DOCK:
             prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
-            fprintf(stderr, PACKAGE_NAME ": window type - dock\n");
-            fflush(stderr);
+            NORM_ERR("window type - dock");
             break;
           case TYPE_PANEL:
             prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
-            fprintf(stderr, PACKAGE_NAME ": window type - panel\n");
-            fflush(stderr);
+            NORM_ERR("window type - panel");
             break;
           case TYPE_UTILITY:
             prop = ATOM(_NET_WM_WINDOW_TYPE_UTILITY);
-            fprintf(stderr, PACKAGE_NAME ": window type - utility\n");
-            fflush(stderr);
+            NORM_ERR("window type - utility");
             break;
           case TYPE_NORMAL:
           default:
             prop = ATOM(_NET_WM_WINDOW_TYPE_NORMAL);
-            fprintf(stderr, PACKAGE_NAME ": window type - normal\n");
-            fflush(stderr);
+            NORM_ERR("window type - normal");
             break;
         }
         XChangeProperty(display, window.window, xa, XA_ATOM, 32,
@@ -788,9 +782,7 @@ void x11_init_window(lua::state &l, bool own) {
 
       /* Window decorations */
       if (TEST_HINT(hints, HINT_UNDECORATED)) {
-        /* fprintf(stderr, PACKAGE_NAME": hint - undecorated\n");
-           fflush(stderr); */
-
+        DBGP("hint - undecorated");
         xa = ATOM(_MOTIF_WM_HINTS);
         if (xa != None) {
           long prop[5] = {2, 0, 0, 0, 0};
@@ -801,9 +793,7 @@ void x11_init_window(lua::state &l, bool own) {
 
       /* Below other windows */
       if (TEST_HINT(hints, HINT_BELOW)) {
-        /* fprintf(stderr, PACKAGE_NAME": hint - below\n");
-           fflush(stderr); */
-
+        DBGP("hint - below");
         xa = ATOM(_WIN_LAYER);
         if (xa != None) {
           long prop = 0;
@@ -825,9 +815,7 @@ void x11_init_window(lua::state &l, bool own) {
 
       /* Above other windows */
       if (TEST_HINT(hints, HINT_ABOVE)) {
-        /* fprintf(stderr, PACKAGE_NAME": hint - above\n");
-           fflush(stderr); */
-
+        DBGP("hint - above");
         xa = ATOM(_WIN_LAYER);
         if (xa != None) {
           long prop = 6;
@@ -849,9 +837,7 @@ void x11_init_window(lua::state &l, bool own) {
 
       /* Sticky */
       if (TEST_HINT(hints, HINT_STICKY)) {
-        /* fprintf(stderr, PACKAGE_NAME": hint - sticky\n");
-           fflush(stderr); */
-
+        DBGP("hint - sticky");
         xa = ATOM(_NET_WM_DESKTOP);
         if (xa != None) {
           CARD32 xa_prop = 0xFFFFFFFF;
@@ -873,9 +859,7 @@ void x11_init_window(lua::state &l, bool own) {
 
       /* Skip taskbar */
       if (TEST_HINT(hints, HINT_SKIP_TASKBAR)) {
-        /* fprintf(stderr, PACKAGE_NAME": hint - skip_taskbar\n");
-           fflush(stderr); */
-
+        DBGP("hint - skip taskbar");
         xa = ATOM(_NET_WM_STATE);
         if (xa != None) {
           Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_TASKBAR);
@@ -888,9 +872,7 @@ void x11_init_window(lua::state &l, bool own) {
 
       /* Skip pager */
       if (TEST_HINT(hints, HINT_SKIP_PAGER)) {
-        /* fprintf(stderr, PACKAGE_NAME": hint - skip_pager\n");
-           fflush(stderr); */
-
+        DBGP("hint - skip pager");
         xa = ATOM(_NET_WM_STATE);
         if (xa != None) {
           Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_PAGER);
@@ -902,10 +884,7 @@ void x11_init_window(lua::state &l, bool own) {
       }
     }
 
-    fprintf(stderr, PACKAGE_NAME ": drawing to created window (0x%lx)\n",
-            window.window);
-    fflush(stderr);
-
+    NORM_ERR("drawing to created window (0x%lx)", window.window);
     XMapWindow(display, window.window);
   } else
 #endif /* OWN_WINDOW */
@@ -919,7 +898,7 @@ void x11_init_window(lua::state &l, bool own) {
       window.height = attrs.height;
     }
 
-    fprintf(stderr, PACKAGE_NAME ": drawing to desktop window\n");
+    NORM_ERR("drawing to desktop window");
   }
 
   /* Drawable is same as window. This may be changed by double buffering. */

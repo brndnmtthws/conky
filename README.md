@@ -108,7 +108,7 @@ Conky is licensed under the terms of the [GPLv3](LICENSE) license.
 
 Contributions are welcome from anyone.
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on contributing to Conky.
+Please read [Contributing](https://github.com/brndnmtthws/conky/wiki/Contributing) page on wiki for guidelines on contributing to Conky.
 
 [mpd]: https://musicpd.org/
 [xmms2]: https://github.com/xmms2/wiki/wiki
