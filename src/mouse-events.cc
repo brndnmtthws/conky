@@ -422,11 +422,9 @@ xi_event_data *xi_event_data::read_cookie(Display *display,
   }
 
   std::map<size_t, double> valuators{};
-  size_t valuator_index = 0;
+  double *values = source->valuators.values;
   for (size_t vi = 0; vi < source->valuators.mask_len * 8; vi++) {
-    if (XIMaskIsSet(source->valuators.mask, vi)) {
-      valuators[vi] = source->valuators.values[valuator_index++];
-    }
+    if (XIMaskIsSet(source->valuators.mask, vi)) { valuators[vi] = *values++; }
   }
 
   auto result = new xi_event_data{
@@ -460,7 +458,7 @@ xi_event_data *xi_event_data::read_cookie(Display *display,
   if (device == nullptr) return result;  // shouldn't happen
   for (size_t v = 0; v < valuator_t::VALUATOR_COUNT; v++) {
     valuator_t valuator = static_cast<valuator_t>(v);
-    auto valuator_info = device->valuator(valuator);
+    auto &valuator_info = device->valuator(valuator);
 
     if (result->valuators.count(valuator_info.index) == 0) { continue; }
     auto current = result->valuators[valuator_info.index];
