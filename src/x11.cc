@@ -39,6 +39,8 @@
 
 #ifdef BUILD_XINPUT
 #include "mouse-events.h"
+
+#include <vector>
 #endif
 
 #include <array>
@@ -48,6 +50,7 @@
 #include <cstring>
 #include <string>
 
+extern "C" {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
 #pragma GCC diagnostic ignored "-Wregister"
@@ -77,13 +80,14 @@
 #include <X11/extensions/Xfixes.h>
 #endif /* BUILD_XFIXES */
 #ifdef BUILD_XINPUT
+#include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
-#include <vector>
 #endif /* BUILD_XINPUT */
 #ifdef HAVE_XCB_ERRORS
 #include <xcb/xcb.h>
 #include <xcb/xcb_errors.h>
 #endif
+}
 
 /* some basic X11 stuff */
 Display *display = nullptr;
@@ -974,6 +978,16 @@ void x11_init_window(lua::state &l, bool own) {
       ev_masks[0].mask = mask_bytes;
       XISelectEvents(display, window.window, ev_masks, 1);
     }
+
+    // setup cache
+    int num_devices;
+    XDeviceInfo *info = XListInputDevices(display, &num_devices);
+    for (int i = 0; i < num_devices; i++) {
+      if (info[i].use == IsXPointer || info[i].use == IsXExtensionPointer) {
+        conky::device_info::from_xi_id(info[i].id, display);
+      }
+    }
+    XFreeDeviceList(info);
 
     xinput_ok = true;
   } while (false);

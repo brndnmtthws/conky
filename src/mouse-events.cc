@@ -251,13 +251,21 @@ void handle_xi_device_change(const XIHierarchyEvent *event) {
   if ((event->flags & XISlaveRemoved) != 0) {
     for (int i = 0; i < event->num_info; i++) {
       auto info = event->info[i];
-      if ((info.flags & XISlaveRemoved) != 0 &&
-          xi_id_mapping.count(info.deviceid) > 0) {
-        size_t id = xi_id_mapping[info.deviceid];
-        xi_id_mapping.erase(info.deviceid);
-        device_info_cache.erase(id);
-        return;
-      }
+      if ((info.flags & XISlaveRemoved) == 0) continue;
+      if (xi_id_mapping.count(info.deviceid) == 0) continue;
+
+      size_t id = xi_id_mapping[info.deviceid];
+      xi_id_mapping.erase(info.deviceid);
+      device_info_cache.erase(id);
+    }
+  }
+
+  if ((event->flags & XISlaveAdded) != 0) {
+    for (int i = 0; i < event->num_info; i++) {
+      auto info = event->info[i];
+      if ((info.flags & XISlaveAdded) == 0) continue;
+      if (info.use == IsXPointer || info.use == IsXExtensionPointer)
+        conky::device_info::from_xi_id(info.deviceid, event->display);
     }
   }
 }
