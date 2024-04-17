@@ -259,6 +259,7 @@ struct conky_valuator_info {
 
 struct device_info {
   /// @brief Device name.
+  xi_device_id id;
   std::string name;
   std::array<conky_valuator_info, valuator_t::VALUATOR_COUNT> valuators{};
 
@@ -284,7 +285,7 @@ struct xi_event_data {
   // printing.
   int extension;
   Time time;
-  xi_device_id deviceid;
+  device_info *device;
   int sourceid;
   int detail;
   Window root;
@@ -306,8 +307,7 @@ struct xi_event_data {
   /// Precomputed relative values
   std::array<double, valuator_t::VALUATOR_COUNT> valuators_relative;
 
-  static xi_event_data *read_cookie(Display *display,
-                                    XGenericEventCookie *cookie);
+  static xi_event_data *read_cookie(Display *display, const void *data);
 
   bool test_valuator(valuator_t id) const;
   conky_valuator_info *valuator_info(valuator_t id) const;

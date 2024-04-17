@@ -1499,8 +1499,9 @@ void propagate_x11_event(XEvent &ev, const void *cookie) {
 }
 
 Window query_x11_top_level(Display *display, Window child) {
-  if (child == None) return child;
   Window root = DefaultVRootWindow(display);
+
+  if (child == None || child == root) return child;
 
   Window ret_root, parent, *children;
   std::uint32_t child_count;

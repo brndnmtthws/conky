@@ -235,7 +235,8 @@ device_info *device_info::from_xi_id(xi_device_id device_id, Display *display) {
   XIDeviceInfo *device = XIQueryDevice(display, device_id, &num_devices);
   if (num_devices == 0) return nullptr;
 
-  device_info info = device_info{.name = std::string(device->name)};
+  device_info info =
+      device_info{.id = device_id, .name = std::string(device->name)};
 
   size_t id = last_device_id++;
   info.init_xi_device(display, device);
@@ -416,24 +417,27 @@ conky_valuator_info &device_info::valuator(valuator_t valuator) {
   return this->valuators[valuator];
 }
 
-xi_event_data *xi_event_data::read_cookie(Display *display,
-                                          XGenericEventCookie *cookie) {
-  if (!XGetEventData(display, cookie)) {
-    // already consumed
+xi_event_data *xi_event_data::read_cookie(Display *display, const void *data) {
+  const XIDeviceEvent *source = reinterpret_cast<const XIDeviceEvent *>(data);
+  xi_event_type event_type = source->evtype;
+  if (!(event_type == XI_Motion || event_type == XI_ButtonPress ||
+        event_type == XI_ButtonRelease)) {
     return nullptr;
   }
-  auto *source = reinterpret_cast<XIDeviceEvent *>(cookie->data);
 
-  uint32_t buttons = 0;
-  for (size_t bi = 1; bi <= source->buttons.mask_len; bi++) {
-    buttons |= source->buttons.mask[bi] << (source->buttons.mask_len - bi) * 8;
+  std::bitset<32> buttons;
+  for (size_t bi = 1; bi < source->buttons.mask_len * 8; bi++) {
+    if (XIMaskIsSet(source->buttons.mask, bi)) buttons[bi] = true;
   }
 
   std::map<size_t, double> valuators{};
   double *values = source->valuators.values;
   for (size_t vi = 0; vi < source->valuators.mask_len * 8; vi++) {
-    if (XIMaskIsSet(source->valuators.mask, vi)) { valuators[vi] = *values++; }
+    if (XIMaskIsSet(source->valuators.mask, vi)) valuators[vi] = *values++;
   }
+
+  auto device = device_info::from_xi_id(source->deviceid, source->display);
+  if (device == nullptr) return nullptr;  // shouldn't happen
 
   auto result = new xi_event_data{
       .evtype = static_cast<xi_event_type>(source->evtype),
@@ -442,7 +446,7 @@ xi_event_data *xi_event_data::read_cookie(Display *display,
       .display = source->display,
       .extension = source->extension,
       .time = source->time,
-      .deviceid = source->deviceid,
+      .device = device,
       .sourceid = source->sourceid,
       .detail = source->detail,
       .root = source->root,
@@ -453,17 +457,13 @@ xi_event_data *xi_event_data::read_cookie(Display *display,
       .event_x = source->event_x,
       .event_y = source->event_y,
       .flags = source->flags,
-      .buttons = std::bitset<32>(buttons),
+      .buttons = buttons,
       .valuators = valuators,
       .mods = source->mods,
       .group = source->group,
       .valuators_relative = {0.0, 0.0, 0.0, 0.0},
   };
-  XFreeEventData(display, cookie);
 
-  // Precompute relative values if they're absolute
-  auto device = device_info::from_xi_id(result->deviceid, result->display);
-  if (device == nullptr) return result;  // shouldn't happen
   for (size_t v = 0; v < valuator_t::VALUATOR_COUNT; v++) {
     valuator_t valuator = static_cast<valuator_t>(v);
     auto &valuator_info = device->valuator(valuator);
@@ -486,14 +486,10 @@ xi_event_data *xi_event_data::read_cookie(Display *display,
 }
 
 bool xi_event_data::test_valuator(valuator_t valuator) const {
-  auto device = device_info::from_xi_id(this->deviceid, this->display);
-  if (device == nullptr) return false;
-  return this->valuators.count(device->valuator(valuator).index) > 0;
+  return this->valuators.count(this->device->valuator(valuator).index) > 0;
 }
 conky_valuator_info *xi_event_data::valuator_info(valuator_t valuator) const {
-  auto device = device_info::from_xi_id(this->deviceid, this->display);
-  if (device == nullptr) return nullptr;
-  return &device->valuator(valuator);
+  return &this->device->valuator(valuator);
 }
 std::optional<double> xi_event_data::valuator_value(valuator_t valuator) const {
   auto info = this->valuator_info(valuator);
@@ -513,7 +509,7 @@ std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(
   std::vector<std::tuple<int, XEvent *>> result{};
 
   if (this->evtype == XI_Motion) {
-    auto device_info = device_info::from_xi_id(this->deviceid, this->display);
+    auto device_info = this->device;
 
     bool is_move = this->test_valuator(valuator_t::MOVE_X) ||
                    this->test_valuator(valuator_t::MOVE_Y);

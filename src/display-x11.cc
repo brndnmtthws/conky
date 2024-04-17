@@ -462,25 +462,26 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   if (ev.type != GenericEvent || ev.xgeneric.extension != window.xi_opcode)
     return false;
 
-  auto *data = xi_event_data::read_cookie(display, &ev.xcookie);
+  if (!XGetEventData(display, &ev.xcookie)) {
+    // already consumed
+    return true;
+  }
+  xi_event_type event_type = ev.xcookie.evtype;
+
+  if (event_type == XI_HierarchyChanged) {
+    auto device_change = reinterpret_cast<XIHierarchyEvent *>(ev.xcookie.data);
+    handle_xi_device_change(device_change);
+    XFreeEventData(display, &ev.xcookie);
+    return true;
+  }
+
+  auto *data = xi_event_data::read_cookie(display, ev.xcookie.data);
+  XFreeEventData(display, &ev.xcookie);
   if (data == nullptr) {
-    NORM_ERR("unable to get XInput event data");
-    return false;
+    // we ate the cookie, Xi event not handled
+    return true;
   }
   *cookie = data;
-
-  auto device_info = device_info::from_xi_id(data->deviceid);
-  if (data->evtype == XI_HierarchyChanged) {
-    auto device_change = reinterpret_cast<XIHierarchyEvent *>(data);
-    handle_xi_device_change(device_change);
-    return true;
-  }
-  device_info = device_info::from_xi_id(data->deviceid, data->display);
-
-  if (!(data->evtype == XI_Motion || data->evtype == XI_ButtonPress ||
-        data->evtype == XI_ButtonRelease)) {
-    return true;
-  }
 
   Window event_window =
       query_x11_window_at_pos(display, data->root_x, data->root_y);
