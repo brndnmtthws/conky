@@ -27,8 +27,20 @@
 
 #include "logging.h"
 
+#ifdef BUILD_XINPUT
+#include <cstring>
+#endif
+
 extern "C" {
 #include <lua.h>
+
+#ifdef BUILD_XINPUT
+#include <X11/extensions/XInput2.h>
+#endif
+
+#include <X11/Xatom.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 }
 
 namespace conky {
@@ -205,5 +217,417 @@ void mouse_button_event::push_lua_data(lua_State *L) const {
   push_table_value(L, "button", this->button);
   push_mods(L, this->mods);
 }
+
+#ifdef BUILD_XINPUT
+/// Last global device id.
+size_t last_device_id = 0;
+
+static std::map<size_t, device_info> device_info_cache{};
+static std::map<xi_device_id, size_t> xi_id_mapping{};
+
+device_info *device_info::from_xi_id(xi_device_id device_id, Display *display) {
+  if (xi_id_mapping.count(device_id) > 0) {
+    return &device_info_cache[xi_id_mapping[device_id]];
+  }
+  if (display == nullptr) return nullptr;
+
+  int num_devices;
+  XIDeviceInfo *device = XIQueryDevice(display, device_id, &num_devices);
+  if (num_devices == 0) return nullptr;
+
+  device_info info =
+      device_info{.id = device_id, .name = std::string(device->name)};
+
+  size_t id = last_device_id++;
+  info.init_xi_device(display, device);
+  XIFreeDeviceInfo(device);
+
+  device_info_cache[id] = info;
+  xi_id_mapping[device_id] = id;
+
+  return &device_info_cache[id];
+}
+
+void handle_xi_device_change(const XIHierarchyEvent *event) {
+  if ((event->flags & XISlaveRemoved) != 0) {
+    for (int i = 0; i < event->num_info; i++) {
+      auto info = event->info[i];
+      if ((info.flags & XISlaveRemoved) == 0) continue;
+      if (xi_id_mapping.count(info.deviceid) == 0) continue;
+
+      size_t id = xi_id_mapping[info.deviceid];
+      xi_id_mapping.erase(info.deviceid);
+      device_info_cache.erase(id);
+    }
+  }
+
+  if ((event->flags & XISlaveAdded) != 0) {
+    for (int i = 0; i < event->num_info; i++) {
+      auto info = event->info[i];
+      if ((info.flags & XISlaveAdded) == 0) continue;
+      if (info.use == IsXPointer || info.use == IsXExtensionPointer)
+        conky::device_info::from_xi_id(info.deviceid, event->display);
+    }
+  }
+}
+
+/// Allows override of valuator indices in `xorg.conf` in case they're wrong for
+/// some device (unlikely).
+size_t fixed_valuator_index(Display *display, XIDeviceInfo *device,
+                            valuator_t valuator) {
+  const std::array<const char *, valuator_t::VALUATOR_COUNT> atom_names = {
+      "ConkyValuatorMoveX", "ConkyValuatorMoveY", "ConkyValuatorScrollX",
+      "ConkyValuatorScrollY"};
+  Atom override_atom = XInternAtom(display, atom_names[valuator], False);
+  unsigned char *value;
+  Atom type_return;
+  int format_return;
+  unsigned long num_items;
+  unsigned long bytes_after;
+  do {
+    if (XIGetProperty(display, device->deviceid, override_atom, 0, 1, False,
+                      XA_INTEGER, &type_return, &format_return, &num_items,
+                      &bytes_after,
+                      reinterpret_cast<unsigned char **>(&value)) == Success) {
+      if (num_items == 0) break;
+      if (type_return != XA_INTEGER) {
+        NORM_ERR(
+            "invalid '%s' option value, expected a single integer; value will "
+            "be ignored",
+            atom_names[valuator]);
+        XFree(value);
+        break;
+      }
+      uint32_t result = *reinterpret_cast<uint32_t *>(value);
+      XFree(value);
+      return static_cast<size_t>(result);
+    }
+  } while (true);
+  return valuator;
+}
+
+/// Allows override of valuator value type in `xorg.conf` in case they're wrong
+/// for some device (happens with VMs and some devices/setups).
+bool fixed_valuator_relative(Display *display, XIDeviceInfo *device,
+                             valuator_t valuator,
+                             XIValuatorClassInfo *class_info) {
+  const std::array<const char *, 2> atom_names = {
+      "ConkyValuatorMoveMode",
+      "ConkyValuatorScrollMode",
+  };
+
+  Atom override_atom = XInternAtom(display, atom_names[valuator >> 1], True);
+  unsigned char *value_return;
+  Atom type_return;
+  int format_return;
+  unsigned long num_items;
+  unsigned long bytes_after;
+
+  do {
+    if (XIGetProperty(
+            display, device->deviceid, override_atom, 0, 9, False, XA_ATOM,
+            &type_return, &format_return, &num_items, &bytes_after,
+            reinterpret_cast<unsigned char **>(&value_return)) == Success) {
+      if (num_items == 0) break;
+      if (type_return != XA_ATOM) {
+        NORM_ERR(
+            "invalid '%s' option value, expected an atom (string); value will "
+            "be ignored",
+            atom_names[valuator >> 1]);
+        XFree(value_return);
+        break;
+      }
+      Atom return_atom = *reinterpret_cast<Atom *>(value_return);
+      XFree(value_return);
+      char *value = XGetAtomName(display, return_atom);
+
+      // lowercase value
+      for (auto c = value; *c; ++c) *c = tolower(*c);
+
+      bool relative = false;
+      if (strcmp(reinterpret_cast<char *>(value), "relative") == 0) {
+        relative = true;
+      } else if (strcmp(reinterpret_cast<char *>(value), "absolute") != 0) {
+        NORM_ERR(
+            "unknown '%s' option value: '%s', expected 'absolute' or "
+            "'relative'; "
+            "value will be ignored",
+            atom_names[valuator >> 1]);
+        XFree(value);
+        break;
+      }
+      XFree(value);
+      return relative;
+    }
+  } while (true);
+  return class_info->mode == XIModeRelative;
+}
+
+void device_info::init_xi_device(
+    Display *display, std::variant<xi_device_id, XIDeviceInfo *> source) {
+  XIDeviceInfo *device = nullptr;
+  if (std::holds_alternative<XIDeviceInfo *>(source)) {
+    device = std::get<XIDeviceInfo *>(source);
+  } else if (std::holds_alternative<xi_device_id>(source)) {
+    int num_devices;
+    device =
+        XIQueryDevice(display, std::get<xi_device_id>(source), &num_devices);
+    if (num_devices == 0) return;
+  }
+  if (device == nullptr) return;
+
+  std::array<size_t, valuator_t::VALUATOR_COUNT> valuator_indices;
+  for (size_t i = 0; i < valuator_t::VALUATOR_COUNT; i++) {
+    valuator_indices[i] =
+        fixed_valuator_index(display, device, static_cast<valuator_t>(i));
+  }
+
+  // class order is undefined!
+  for (int i = 0; i < device->num_classes; i++) {
+    if (device->classes[i]->type != XIValuatorClass) continue;
+    XIValuatorClassInfo *class_info = (XIValuatorClassInfo *)device->classes[i];
+
+    // check if one of used (mapped) valuators
+    valuator_t valuator = valuator_t::VALUATOR_COUNT;
+    for (size_t i = 0; i < valuator_t::VALUATOR_COUNT; i++) {
+      if (valuator_indices[i] == class_info->number) {
+        valuator = static_cast<valuator_t>(i);
+        break;
+      }
+    }
+    if (valuator == valuator_t::VALUATOR_COUNT) { continue; }
+
+    auto info = conky_valuator_info{
+        .index = static_cast<size_t>(class_info->number),
+        .min = class_info->min,
+        .max = class_info->max,
+        .value = class_info->value,
+        .relative =
+            fixed_valuator_relative(display, device, valuator, class_info),
+    };
+
+    this->valuators[valuator] = info;
+  }
+
+  if (std::holds_alternative<xi_device_id>(source)) {
+    XIFreeDeviceInfo(device);
+  }
+}
+conky_valuator_info &device_info::valuator(valuator_t valuator) {
+  return this->valuators[valuator];
+}
+
+xi_event_data *xi_event_data::read_cookie(Display *display, const void *data) {
+  const XIDeviceEvent *source = reinterpret_cast<const XIDeviceEvent *>(data);
+  xi_event_type event_type = source->evtype;
+  if (!(event_type == XI_Motion || event_type == XI_ButtonPress ||
+        event_type == XI_ButtonRelease)) {
+    return nullptr;
+  }
+
+  std::bitset<32> buttons;
+  for (size_t bi = 1; bi < source->buttons.mask_len * 8; bi++) {
+    if (XIMaskIsSet(source->buttons.mask, bi)) buttons[bi] = true;
+  }
+
+  std::map<size_t, double> valuators{};
+  double *values = source->valuators.values;
+  for (size_t vi = 0; vi < source->valuators.mask_len * 8; vi++) {
+    if (XIMaskIsSet(source->valuators.mask, vi)) valuators[vi] = *values++;
+  }
+
+  auto device = device_info::from_xi_id(source->deviceid, source->display);
+  if (device == nullptr) return nullptr;  // shouldn't happen
+
+  auto result = new xi_event_data{
+      .evtype = static_cast<xi_event_type>(source->evtype),
+      .serial = source->serial,
+      .send_event = source->send_event,
+      .display = source->display,
+      .extension = source->extension,
+      .time = source->time,
+      .device = device,
+      .sourceid = source->sourceid,
+      .detail = source->detail,
+      .root = source->root,
+      .event = source->event,
+      .child = source->child,
+      .root_x = source->root_x,
+      .root_y = source->root_y,
+      .event_x = source->event_x,
+      .event_y = source->event_y,
+      .flags = source->flags,
+      .buttons = buttons,
+      .valuators = valuators,
+      .mods = source->mods,
+      .group = source->group,
+      .valuators_relative = {0.0, 0.0, 0.0, 0.0},
+  };
+
+  for (size_t v = 0; v < valuator_t::VALUATOR_COUNT; v++) {
+    valuator_t valuator = static_cast<valuator_t>(v);
+    auto &valuator_info = device->valuator(valuator);
+
+    if (result->valuators.count(valuator_info.index) == 0) { continue; }
+    auto current = result->valuators[valuator_info.index];
+
+    if (valuator_info.relative) {
+      result->valuators_relative[v] = current;
+    } else {
+      // XXX these doubles come from int values and might wrap around though
+      // it's hard to tell what int type is the source as it depends on the
+      // device/driver.
+      result->valuators_relative[v] = current - valuator_info.value;
+    }
+    valuator_info.value = current;
+  }
+
+  return result;
+}
+
+bool xi_event_data::test_valuator(valuator_t valuator) const {
+  return this->valuators.count(this->device->valuator(valuator).index) > 0;
+}
+conky_valuator_info *xi_event_data::valuator_info(valuator_t valuator) const {
+  return &this->device->valuator(valuator);
+}
+std::optional<double> xi_event_data::valuator_value(valuator_t valuator) const {
+  auto info = this->valuator_info(valuator);
+  if (info == nullptr) return std::nullopt;
+  size_t index = info->index;
+  if (this->valuators.count(index) == 0) return std::nullopt;
+  return this->valuators.at(index);
+}
+
+std::optional<double> xi_event_data::valuator_relative_value(
+    valuator_t valuator) const {
+  return this->valuators_relative.at(valuator);
+}
+
+std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(
+    Window target, Window child, double target_x, double target_y) const {
+  std::vector<std::tuple<int, XEvent *>> result{};
+
+  if (this->evtype == XI_Motion) {
+    auto device_info = this->device;
+
+    bool is_move = this->test_valuator(valuator_t::MOVE_X) ||
+                   this->test_valuator(valuator_t::MOVE_Y);
+    bool is_scroll = this->test_valuator(valuator_t::SCROLL_X) ||
+                     this->test_valuator(valuator_t::SCROLL_Y);
+
+    if (is_move) {
+      XEvent *produced = new XEvent;
+      std::memset(produced, 0, sizeof(XEvent));
+
+      XMotionEvent *e = &produced->xmotion;
+      e->type = MotionNotify;
+      e->display = this->display;
+      e->root = this->root;
+      e->window = target;
+      e->subwindow = child;
+      e->time = CurrentTime;
+      e->x = static_cast<int>(target_x);
+      e->y = static_cast<int>(target_y);
+      e->x_root = static_cast<int>(this->root_x);
+      e->y_root = static_cast<int>(this->root_y);
+      e->state = this->mods.effective;
+      e->is_hint = NotifyNormal;
+      e->same_screen = True;
+      result.emplace_back(std::make_tuple(PointerMotionMask, produced));
+    }
+    if (is_scroll) {
+      XEvent *produced = new XEvent;
+      std::memset(produced, 0, sizeof(XEvent));
+
+      uint scroll_direction = 4;
+      auto vertical = this->valuator_relative_value(valuator_t::SCROLL_Y);
+      double vertical_value = vertical.value_or(0.0);
+
+      if (vertical_value != 0.0) {
+        scroll_direction = vertical_value < 0.0 ? Button4 : Button5;
+      } else {
+        auto horizontal = this->valuator_relative_value(valuator_t::SCROLL_X);
+        double horizontal_value = horizontal.value_or(0.0);
+        if (horizontal_value != 0.0) {
+          scroll_direction = horizontal_value < 0.0 ? 6 : 7;
+        }
+      }
+
+      XButtonEvent *e = &produced->xbutton;
+      e->display = display;
+      e->root = this->root;
+      e->window = target;
+      e->subwindow = child;
+      e->time = CurrentTime;
+      e->x = static_cast<int>(target_x);
+      e->y = static_cast<int>(target_y);
+      e->x_root = static_cast<int>(this->root_x);
+      e->y_root = static_cast<int>(this->root_y);
+      e->state = this->mods.effective;
+      e->button = scroll_direction;
+      e->same_screen = True;
+
+      XEvent *press = new XEvent;
+      e->type = ButtonPress;
+      std::memcpy(press, produced, sizeof(XEvent));
+      result.emplace_back(std::make_tuple(ButtonPressMask, press));
+
+      e->type = ButtonRelease;
+      result.emplace_back(std::make_tuple(ButtonReleaseMask, produced));
+    }
+  } else {
+    XEvent *produced = new XEvent;
+    std::memset(produced, 0, sizeof(XEvent));
+
+    XButtonEvent *e = &produced->xbutton;
+    e->display = display;
+    e->root = this->root;
+    e->window = target;
+    e->subwindow = child;
+    e->time = CurrentTime;
+    e->x = static_cast<int>(target_x);
+    e->y = static_cast<int>(target_y);
+    e->x_root = static_cast<int>(this->root_x);
+    e->y_root = static_cast<int>(this->root_y);
+    e->state = this->mods.effective;
+    e->button = this->detail;
+    e->same_screen = True;
+
+    long event_mask = NoEventMask;
+    switch (this->evtype) {
+      case XI_ButtonPress:
+        e->type = ButtonPress;
+        event_mask = ButtonPressMask;
+        break;
+      case XI_ButtonRelease:
+        e->type = ButtonRelease;
+        event_mask = ButtonReleaseMask;
+        switch (this->detail) {
+          case 1:
+            event_mask |= Button1MotionMask;
+            break;
+          case 2:
+            event_mask |= Button2MotionMask;
+            break;
+          case 3:
+            event_mask |= Button3MotionMask;
+            break;
+          case 4:
+            event_mask |= Button4MotionMask;
+            break;
+          case 5:
+            event_mask |= Button5MotionMask;
+            break;
+        }
+        break;
+    }
+
+    result.emplace_back(std::make_tuple(event_mask, produced));
+  }
+
+  return result;
+}
+#endif /* BUILD_XINPUT */
 
 }  // namespace conky

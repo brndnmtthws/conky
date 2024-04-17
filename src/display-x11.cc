@@ -53,7 +53,9 @@
 
 #include <cstdint>
 #include <iostream>
+#include <map>
 #include <sstream>
+#include <tuple>
 #include <unordered_map>
 #include <vector>
 
@@ -442,72 +444,156 @@ bool handle_event(conky::display_output_x11 *surface, Display *display,
 }
 
 #ifdef OWN_WINDOW
-#ifdef BUILD_XINPUT
-template <>
-bool handle_event<x_event_handler::XINPUT_MOTION>(
-    conky::display_output_x11 *surface, Display *display, XEvent &ev,
-    bool *consumed, void **cookie) {
-  if (ev.type != GenericEvent || ev.xcookie.extension != window.xi_opcode)
-    return false;
-
-  if (!XGetEventData(display, &ev.xcookie)) {
-    NORM_ERR("unable to get XInput event data");
-    return false;
-  }
-
-  auto *data = reinterpret_cast<XIDeviceEvent *>(ev.xcookie.data);
-
-  // the only way to differentiate between a scroll and move event is
-  // though valuators - move has first 2 set, other axis movements have
-  // other.
-  bool is_cursor_move =
-      data->valuators.mask_len >= 1 &&
-      (data->valuators.mask[0] & 3) == data->valuators.mask[0];
-  for (std::size_t i = 1; i < data->valuators.mask_len; i++) {
-    if (data->valuators.mask[i] != 0) {
-      is_cursor_move = false;
-      break;
-    }
-  }
-
-  if (data->evtype == XI_Motion && is_cursor_move) {
-    Window query_result =
-        query_x11_window_at_pos(display, data->root_x, data->root_y);
-    // query_result is not window.window in some cases.
-    query_result = query_x11_last_descendant(display, query_result);
-
-    static bool cursor_inside = false;
-
-    // - over conky window
-    // - conky has now window, over desktop and within conky region
-    bool cursor_over_conky =
-        query_result == window.window &&
-        (window.window != 0u || (data->root_x >= window.x &&
-                                 data->root_x < (window.x + window.width) &&
-                                 data->root_y >= window.y &&
-                                 data->root_y < (window.y + window.height)));
-    if (cursor_over_conky) {
-      if (!cursor_inside) {
-        llua_mouse_hook(mouse_crossing_event(
-            mouse_event_t::AREA_ENTER, data->root_x - window.x,
-            data->root_y - window.x, data->root_x, data->root_y));
-      }
-      cursor_inside = true;
-    } else if (cursor_inside) {
-      llua_mouse_hook(mouse_crossing_event(
-          mouse_event_t::AREA_LEAVE, data->root_x - window.x,
-          data->root_y - window.x, data->root_x, data->root_y));
-      cursor_inside = false;
-    }
-  }
-  XFreeEventData(display, &ev.xcookie);
-  return true;
-}
-#endif /* BUILD_XINPUT */
 template <>
 bool handle_event<x_event_handler::MOUSE_INPUT>(
     conky::display_output_x11 *surface, Display *display, XEvent &ev,
     bool *consumed, void **cookie) {
+#ifdef BUILD_XINPUT
+  if (ev.type == ButtonPress || ev.type == ButtonRelease ||
+      ev.type == MotionNotify) {
+    // destroy basic X11 events; and manufacture them later when trying to
+    // propagate XInput ones - this is required because there's no (simple) way
+    // of making sure the lua hook controls both when it only handles XInput
+    // ones.
+    *consumed = true;
+    return true;
+  }
+
+  if (ev.type != GenericEvent || ev.xgeneric.extension != window.xi_opcode)
+    return false;
+
+  if (!XGetEventData(display, &ev.xcookie)) {
+    // already consumed
+    return true;
+  }
+  xi_event_type event_type = ev.xcookie.evtype;
+
+  if (event_type == XI_HierarchyChanged) {
+    auto device_change = reinterpret_cast<XIHierarchyEvent *>(ev.xcookie.data);
+    handle_xi_device_change(device_change);
+    XFreeEventData(display, &ev.xcookie);
+    return true;
+  }
+
+  auto *data = xi_event_data::read_cookie(display, ev.xcookie.data);
+  XFreeEventData(display, &ev.xcookie);
+  if (data == nullptr) {
+    // we ate the cookie, Xi event not handled
+    return true;
+  }
+  *cookie = data;
+
+  Window event_window =
+      query_x11_window_at_pos(display, data->root_x, data->root_y);
+  // query_result is not window.window in some cases.
+  modifier_state_t mods = x11_modifier_state(data->mods.effective);
+
+  bool same_window = query_x11_top_parent(display, event_window) ==
+                     query_x11_top_parent(display, window.window);
+  bool cursor_over_conky = same_window && data->root_x >= window.x &&
+                           data->root_x < (window.x + window.width) &&
+                           data->root_y >= window.y &&
+                           data->root_y < (window.y + window.height);
+
+  // XInput reports events twice on some hardware (even by 'xinput --test-xi2')
+  auto hash = std::make_tuple(data->serial, data->evtype, data->event);
+  typedef std::map<decltype(hash), Time> MouseEventDebounceMap;
+  static MouseEventDebounceMap debounce{};
+
+  Time now = data->time;
+  bool already_handled = debounce.count(hash) > 0;
+  debounce[hash] = now;
+
+  // clear stale entries
+  for (auto iter = debounce.begin(); iter != debounce.end();) {
+    if (data->time - iter->second > 1000) {
+      iter = debounce.erase(iter);
+    } else {
+      ++iter;
+    }
+  }
+
+  if (already_handled) {
+    *consumed = true;
+    return true;
+  }
+
+  if (data->evtype == XI_Motion) {
+    // TODO: Make valuator_index names configurable?
+
+    bool is_move = data->test_valuator(valuator_t::MOVE_X) ||
+                   data->test_valuator(valuator_t::MOVE_Y);
+    bool is_scroll = data->test_valuator(valuator_t::SCROLL_X) ||
+                     data->test_valuator(valuator_t::SCROLL_Y);
+
+    if (is_move) {
+      static bool cursor_inside = false;
+
+      // generate crossing events
+      if (cursor_over_conky) {
+        if (!cursor_inside) {
+          *consumed = llua_mouse_hook(mouse_crossing_event(
+              mouse_event_t::AREA_ENTER, data->root_x - window.x,
+              data->root_y - window.x, data->root_x, data->root_y));
+        }
+        cursor_inside = true;
+      } else if (cursor_inside) {
+        *consumed = llua_mouse_hook(mouse_crossing_event(
+            mouse_event_t::AREA_LEAVE, data->root_x - window.x,
+            data->root_y - window.x, data->root_x, data->root_y));
+        cursor_inside = false;
+      }
+
+      // generate movement events
+      if (cursor_over_conky) {
+        *consumed = llua_mouse_hook(mouse_move_event(
+            data->event_x, data->event_y, data->root_x, data->root_y, mods));
+      }
+    }
+    if (is_scroll && cursor_over_conky) {
+      scroll_direction_t scroll_direction;
+      auto vertical = data->valuator_relative_value(valuator_t::SCROLL_Y);
+      double vertical_value = vertical.value_or(0.0);
+
+      if (vertical_value != 0.0) {
+        scroll_direction = vertical_value < 0.0
+                               ? scroll_direction_t::SCROLL_UP
+                               : scroll_direction_t::SCROLL_DOWN;
+      } else {
+        auto horizontal = data->valuator_relative_value(valuator_t::SCROLL_X);
+        double horizontal_value = horizontal.value_or(0.0);
+        if (horizontal_value != 0.0) {
+          scroll_direction = horizontal_value < 0.0
+                                 ? scroll_direction_t::SCROLL_LEFT
+                                 : scroll_direction_t::SCROLL_RIGHT;
+        }
+      }
+
+      if (scroll_direction != scroll_direction_t::SCROLL_UNKNOWN) {
+        *consumed = llua_mouse_hook(
+            mouse_scroll_event(data->event_x, data->event_y, data->root_x,
+                               data->root_y, scroll_direction, mods));
+      }
+    }
+  } else if (cursor_over_conky && (data->evtype == XI_ButtonPress ||
+                                   data->evtype == XI_ButtonRelease)) {
+    if (data->detail >= 4 && data->detail <= 7) {
+      // Handled via motion event valuators, ignoring "backward compatibility"
+      // ones.
+      return true;
+    }
+
+    mouse_event_t type = mouse_event_t::MOUSE_PRESS;
+    if (data->evtype == XI_ButtonRelease) {
+      type = mouse_event_t::MOUSE_RELEASE;
+    }
+
+    mouse_button_t button = x11_mouse_button_code(data->detail);
+    *consumed = llua_mouse_hook(mouse_button_event(type, data->event_x,
+                                                   data->event_y, data->root_x,
+                                                   data->root_y, button, mods));
+  }
+#else /* BUILD_XINPUT */
   if (ev.type != ButtonPress && ev.type != ButtonRelease &&
       ev.type != MotionNotify)
     return false;
@@ -551,7 +637,7 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   // always propagate mouse input if not handling mouse events
   *consumed = false;
 #endif /* BUILD_MOUSE_EVENTS */
-
+#endif /* BUILD_XINPUT */
   if (!own_window.get(*state)) return true;
   switch (own_window_type.get(*state)) {
     case window_type::TYPE_NORMAL:
@@ -751,9 +837,9 @@ void process_surface_events(conky::display_output_x11 *surface,
     XNextEvent(display, &ev);
 
     /*
-    indicates whether processed event was consumed; true by default so we don't
-    propagate handled events unless they explicitly state they haven't been
-    consumed.
+    indicates whether processed event was consumed; true by default so we
+    don't propagate handled events unless they explicitly state they haven't
+    been consumed.
     */
     bool consumed = true;
     void *cookie = nullptr;

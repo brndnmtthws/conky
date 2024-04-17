@@ -37,6 +37,12 @@
 #include "gui.h"
 #include "logging.h"
 
+#ifdef BUILD_XINPUT
+#include "mouse-events.h"
+
+#include <vector>
+#endif
+
 #include <array>
 #include <cstddef>
 #include <cstdio>
@@ -44,6 +50,7 @@
 #include <cstring>
 #include <string>
 
+extern "C" {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
 #pragma GCC diagnostic ignored "-Wregister"
@@ -73,13 +80,14 @@
 #include <X11/extensions/Xfixes.h>
 #endif /* BUILD_XFIXES */
 #ifdef BUILD_XINPUT
+#include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
-#include <vector>
 #endif /* BUILD_XINPUT */
 #ifdef HAVE_XCB_ERRORS
 #include <xcb/xcb.h>
 #include <xcb/xcb_errors.h>
 #endif
+}
 
 /* some basic X11 stuff */
 Display *display = nullptr;
@@ -307,6 +315,52 @@ __attribute__((noreturn)) static int x11_ioerror_handler(Display *d) {
   CRIT_ERR("X IO Error: Display %lx\n", reinterpret_cast<uint64_t>(d));
 }
 
+/// @brief Function to get virtual root windows of screen.
+///
+/// Some WMs (swm, tvtwm, amiwm, enlightenment, etc.) use virtual roots to
+/// manage workspaces. These are direct descendants of root and WMs reparent all
+/// children to them.
+///
+/// @param screen screen to get the (current) virtual root of @return the
+/// virtual root window of the screen
+static Window VRootWindowOfScreen(Screen *screen) {
+  Window root = screen->root;
+  Display *dpy = screen->display;
+
+  Window rootReturn, parentReturn, *children;
+  unsigned int numChildren;
+  Atom actual_type;
+  int actual_format;
+  unsigned long nitems, bytesafter;
+
+  /* go look for a virtual root */
+  Atom __SWM_VROOT = ATOM(__SWM_VROOT);
+  if (XQueryTree(dpy, root, &rootReturn, &parentReturn, &children,
+                 &numChildren)) {
+    for (int i = 0; i < numChildren; i++) {
+      Window *newRoot = None;
+
+      if (XGetWindowProperty(
+              dpy, children[i], __SWM_VROOT, 0, 1, False, XA_WINDOW,
+              &actual_type, &actual_format, &nitems, &bytesafter,
+              reinterpret_cast<unsigned char **>(&newRoot)) == Success &&
+          newRoot != None) {
+        root = *newRoot;
+        break;
+      }
+    }
+    if (children) XFree((char *)children);
+  }
+
+  return root;
+}
+inline Window VRootWindow(Display *display, int screen) {
+  return VRootWindowOfScreen(ScreenOfDisplay(display, screen));
+}
+inline Window DefaultVRootWindow(Display *display) {
+  return VRootWindowOfScreen(DefaultScreenOfDisplay(display));
+}
+
 /* X11 initializer */
 static void init_x11() {
   DBGP("enter init_x11()");
@@ -416,75 +470,21 @@ static void update_workarea() {
  * Return desktop window on success,
  * and set root and desktop byref return values.
  * Return 0 on failure. */
-static Window find_desktop_window(Window *p_root, Window *p_desktop) {
-  Atom type;
-  int format, i;
-  unsigned long nitems, bytes;
-  unsigned int n;
-  if (!display) return 0;
-  Window root = RootWindow(display, screen);
-  Window win;
-  Window troot, parent, *children;
-  unsigned char *buf = nullptr;
-
-  if ((p_root == nullptr) || (p_desktop == nullptr)) { return 0; }
-
-  /* some window managers set __SWM_VROOT to some child of root window */
-
-  XQueryTree(display, root, &troot, &parent, &children, &n);
-  for (i = 0; i < static_cast<int>(n); i++) {
-    if (XGetWindowProperty(display, children[i], ATOM(__SWM_VROOT), 0, 1, False,
-                           XA_WINDOW, &type, &format, &nitems, &bytes,
-                           &buf) == Success &&
-        type == XA_WINDOW) {
-      win = *reinterpret_cast<Window *>(buf);
-      XFree(buf);
-      XFree(children);
-      fprintf(stderr,
-              PACKAGE_NAME
-              ": desktop window (%lx) found from __SWM_VROOT property\n",
-              win);
-      fflush(stderr);
-      *p_root = win;
-      *p_desktop = win;
-      return win;
-    }
-
-    if (buf != nullptr) {
-      XFree(buf);
-      buf = nullptr;
-    }
-  }
-  XFree(children);
+static Window find_desktop_window(Window root) {
+  Window desktop = root;
 
   /* get subwindows from root */
-  win = find_subwindow(root, -1, -1);
-
+  desktop = find_subwindow(root, -1, -1);
   update_workarea();
+  desktop = find_subwindow(desktop, workarea[2], workarea[3]);
 
-  win = find_subwindow(win, workarea[2], workarea[3]);
-
-  if (buf != nullptr) {
-    XFree(buf);
-    buf = nullptr;
-  }
-
-  if (win != root) {
-    fprintf(stderr,
-            PACKAGE_NAME
-            ": desktop window (%lx) is subwindow of root window (%lx)\n",
-            win, root);
+  if (desktop != root) {
+    DBGP2("desktop window (0x%lx) is subwindow of root window (0x%lx)", desktop,
+          root);
   } else {
-    fprintf(stderr, PACKAGE_NAME ": desktop window (%lx) is root window\n",
-            win);
+    DBGP2("desktop window (0x%lx) is root window", desktop);
   }
-
-  fflush(stderr);
-
-  *p_root = root;
-  *p_desktop = win;
-
-  return win;
+  return desktop;
 }
 
 #ifdef OWN_WINDOW
@@ -579,18 +579,21 @@ void x11_init_window(lua::state &l, bool own) {
   // own is unused if OWN_WINDOW is not defined
   (void)own;
 
+  window.root = VRootWindow(display, screen);
+  if (window.root == None) {
+    DBGP2("no desktop window found");
+    return;
+  }
+  window.desktop = find_desktop_window(window.root);
+
+  window.visual = DefaultVisual(display, screen);
+  window.colourmap = DefaultColormap(display, screen);
+
 #ifdef OWN_WINDOW
   if (own) {
     int depth = 0, flags = CWOverrideRedirect | CWBackingStore;
     Visual *visual = nullptr;
 
-    if (find_desktop_window(&window.root, &window.desktop) == 0U) {
-      DBGP2("no desktop window found");
-      return;
-    }
-
-    window.visual = DefaultVisual(display, screen);
-    window.colourmap = DefaultColormap(display, screen);
     depth = CopyFromParent;
     visual = CopyFromParent;
 #ifdef BUILD_ARGB
@@ -909,16 +912,7 @@ void x11_init_window(lua::state &l, bool own) {
   {
     XWindowAttributes attrs;
 
-    if (window.window == 0u) {
-      window.window = find_desktop_window(&window.root, &window.desktop);
-    }
-    if (window.window == 0u) {
-      DBGP2("no root window found");
-      return;
-    }
-
-    window.visual = DefaultVisual(display, screen);
-    window.colourmap = DefaultColormap(display, screen);
+    if (window.window == None) { window.window = window.desktop; }
 
     if (XGetWindowAttributes(display, window.window, &attrs) != 0) {
       window.width = attrs.width;
@@ -939,14 +933,10 @@ void x11_init_window(lua::state &l, bool own) {
     input_mask |= StructureNotifyMask | ButtonPressMask | ButtonReleaseMask;
   }
 #ifdef BUILD_MOUSE_EVENTS
-  /* it's not recommended to add event masks to special windows in X; causes a
-   * crash */
-  if (own && own_window_type.get(l) != TYPE_DESKTOP) {
-    input_mask |= PointerMotionMask | ButtonPressMask | ButtonReleaseMask;
-  }
   bool xinput_ok = false;
 #ifdef BUILD_XINPUT
-  do {             // not loop
+  // not a loop; substitutes goto with break - if checks fail
+  do {
     int _ignored;  // segfault if NULL
     if (!XQueryExtension(display, "XInputExtension", &window.xi_opcode,
                          &_ignored, &_ignored)) {
@@ -955,8 +945,8 @@ void x11_init_window(lua::state &l, bool own) {
       break;
     }
 
-    int32_t major = 2, minor = 0;
-    uint32_t retval = XIQueryVersion(display, &major, &minor);
+    int major = 2, minor = 0;
+    int retval = XIQueryVersion(display, &major, &minor);
     if (retval != Success) {
       NORM_ERR("Error: XInput 2.0 is not supported!");
       break;
@@ -964,18 +954,49 @@ void x11_init_window(lua::state &l, bool own) {
 
     const std::size_t mask_size = (XI_LASTEVENT + 7) / 8;
     unsigned char mask_bytes[mask_size] = {0}; /* must be zeroed! */
+    XISetMask(mask_bytes, XI_HierarchyChanged);
     XISetMask(mask_bytes, XI_Motion);
+    // Capture click events for "override" window type
+    if (!own) {
+      XISetMask(mask_bytes, XI_ButtonPress);
+      XISetMask(mask_bytes, XI_ButtonRelease);
+    }
 
     XIEventMask ev_masks[1];
     ev_masks[0].deviceid = XIAllDevices;
     ev_masks[0].mask_len = sizeof(mask_bytes);
     ev_masks[0].mask = mask_bytes;
     XISelectEvents(display, window.root, ev_masks, 1);
+
+    if (own) {
+      XIClearMask(mask_bytes, XI_Motion);
+      XISetMask(mask_bytes, XI_ButtonPress);
+      XISetMask(mask_bytes, XI_ButtonRelease);
+
+      ev_masks[0].deviceid = XIAllDevices;
+      ev_masks[0].mask_len = sizeof(mask_bytes);
+      ev_masks[0].mask = mask_bytes;
+      XISelectEvents(display, window.window, ev_masks, 1);
+    }
+
+    // setup cache
+    int num_devices;
+    XDeviceInfo *info = XListInputDevices(display, &num_devices);
+    for (int i = 0; i < num_devices; i++) {
+      if (info[i].use == IsXPointer || info[i].use == IsXExtensionPointer) {
+        conky::device_info::from_xi_id(info[i].id, display);
+      }
+    }
+    XFreeDeviceList(info);
+
     xinput_ok = true;
   } while (false);
 #endif /* BUILD_XINPUT */
+  // Fallback to basic X11 enter/leave events if xinput fails to init.
+  // It's not recommended to add event masks to special windows in X; causes a
+  // crash (thus own_window_type != TYPE_DESKTOP)
   if (!xinput_ok && own && own_window_type.get(l) != TYPE_DESKTOP) {
-    input_mask |= EnterWindowMask | LeaveWindowMask;
+    input_mask |= PointerMotionMask | EnterWindowMask | LeaveWindowMask;
   }
 #endif /* BUILD_MOUSE_EVENTS */
 #endif /* OWN_WINDOW */
@@ -1342,20 +1363,10 @@ void print_mouse_speed(struct text_object *obj, char *p,
   snprintf(p, p_max_size, "%d%%", (110 - threshold));
 }
 
-InputEvent *xev_as_input_event(XEvent &ev) {
-  if (ev.type == KeyPress || ev.type == KeyRelease || ev.type == ButtonPress ||
-      ev.type == ButtonRelease || ev.type == MotionNotify ||
-      ev.type == EnterNotify || ev.type == LeaveNotify) {
-    return reinterpret_cast<InputEvent *>(&ev);
-  } else {
-    return nullptr;
-  }
-}
-
 /// @brief Returns a mask for the event_type
 /// @param event_type Xlib event type
 /// @return Xlib event mask
-int ev_to_mask(int event_type) {
+int ev_to_mask(int event_type, int button) {
   switch (event_type) {
     case KeyPress:
       return KeyPressMask;
@@ -1364,7 +1375,20 @@ int ev_to_mask(int event_type) {
     case ButtonPress:
       return ButtonPressMask;
     case ButtonRelease:
-      return ButtonReleaseMask;
+      switch (button) {
+        case 1:
+          return ButtonReleaseMask | Button1MotionMask;
+        case 2:
+          return ButtonReleaseMask | Button2MotionMask;
+        case 3:
+          return ButtonReleaseMask | Button3MotionMask;
+        case 4:
+          return ButtonReleaseMask | Button4MotionMask;
+        case 5:
+          return ButtonReleaseMask | Button5MotionMask;
+        default:
+          return ButtonReleaseMask;
+      }
     case EnterNotify:
       return EnterWindowMask;
     case LeaveNotify:
@@ -1376,138 +1400,182 @@ int ev_to_mask(int event_type) {
   }
 }
 
-void propagate_x11_event(XEvent &ev, const void *cookie) {
-  bool focus = ev.type == ButtonPress;
-
-  InputEvent *i_ev = xev_as_input_event(ev);
-  if (i_ev == nullptr) {
-    // Not a known input event; blindly propagating them causes loops and all
-    // sorts of other evil.
+#ifdef BUILD_XINPUT
+void propagate_xinput_event(const conky::xi_event_data *ev) {
+  if (ev->evtype != XI_Motion && ev->evtype != XI_ButtonPress &&
+      ev->evtype != XI_ButtonRelease) {
     return;
   }
 
-  i_ev->common.window = window.desktop;
-  i_ev->common.x = i_ev->common.x_root;
-  i_ev->common.y = i_ev->common.y_root;
-  i_ev->common.time = CurrentTime;
-
-  /* forward the event to the window below conky (e.g. caja) or desktop */
+  Window target = window.root;
+  Window child = None;
+  int target_x = ev->event_x;
+  int target_y = ev->event_y;
   {
     std::vector<Window> below = query_x11_windows_at_pos(
-        display, i_ev->common.x_root, i_ev->common.y_root,
+        display, ev->root_x, ev->root_y,
         [](XWindowAttributes &a) { return a.map_state == IsViewable; });
     auto it = std::remove_if(below.begin(), below.end(),
                              [](Window w) { return w == window.window; });
     below.erase(it, below.end());
     if (!below.empty()) {
-      i_ev->common.window = below.back();
+      target = below.back();
+
+      // Update event x and y coordinates to be target window relative
+      XTranslateCoordinates(display, window.desktop, ev->event, ev->root_x,
+                            ev->root_y, &target_x, &target_y, &child);
+    }
+  }
+
+  auto events = ev->generate_events(target, child, target_x, target_y);
+
+  XUngrabPointer(display, CurrentTime);
+  for (auto it : events) {
+    auto ev = std::get<1>(it);
+    XSendEvent(display, target, True, std::get<0>(it), ev);
+    free(ev);
+  }
+
+  XFlush(display);
+}
+#endif
+
+void propagate_x11_event(XEvent &ev, const void *cookie) {
+  bool focus = ev.type == ButtonPress;
+
+  // cookie must be allocated before propagation, and freed after
+#ifdef BUILD_XINPUT
+  if (ev.type == GenericEvent && ev.xgeneric.extension == window.xi_opcode) {
+    if (cookie == nullptr) { return; }
+    return propagate_xinput_event(
+        reinterpret_cast<const conky::xi_event_data *>(cookie));
+  }
+#endif
+
+  if (!(ev.type == KeyPress || ev.type == KeyRelease ||
+        ev.type == ButtonPress || ev.type == ButtonRelease ||
+        ev.type == MotionNotify || ev.type == EnterNotify ||
+        ev.type == LeaveNotify)) {
+    // Not a known input event; blindly propagating them causes loops and all
+    // sorts of other evil.
+    return;
+  }
+  // Note that using ev.xbutton is the same as using any of the above events.
+  // It's only important we don't access fields that are not common to all of
+  // them.
+
+  ev.xbutton.window = window.desktop;
+  ev.xbutton.x = ev.xbutton.x_root;
+  ev.xbutton.y = ev.xbutton.y_root;
+  ev.xbutton.time = CurrentTime;
+
+  /* forward the event to the window below conky (e.g. caja) or desktop */
+  {
+    std::vector<Window> below = query_x11_windows_at_pos(
+        display, ev.xbutton.x_root, ev.xbutton.y_root,
+        [](XWindowAttributes &a) { return a.map_state == IsViewable; });
+    auto it = std::remove_if(below.begin(), below.end(),
+                             [](Window w) { return w == window.window; });
+    below.erase(it, below.end());
+    if (!below.empty()) {
+      ev.xbutton.window = below.back();
 
       Window _ignore;
       // Update event x and y coordinates to be target window relative
-      XTranslateCoordinates(display, window.root, i_ev->common.window,
-                            i_ev->common.x_root, i_ev->common.y_root,
-                            &i_ev->common.x, &i_ev->common.y, &_ignore);
+      XTranslateCoordinates(display, window.root, ev.xbutton.window,
+                            ev.xbutton.x_root, ev.xbutton.y_root, &ev.xbutton.x,
+                            &ev.xbutton.y, &_ignore);
     }
     // drop below vector
   }
 
+  int mask =
+      ev_to_mask(ev.type, ev.type == ButtonRelease ? ev.xbutton.button : 0);
   XUngrabPointer(display, CurrentTime);
-  XSendEvent(display, i_ev->common.window, True, ev_to_mask(i_ev->type), &ev);
+  XSendEvent(display, ev.xbutton.window, True, mask, &ev);
   if (focus) {
-    XSetInputFocus(display, i_ev->common.window, RevertToParent, CurrentTime);
+    XSetInputFocus(display, ev.xbutton.window, RevertToParent, CurrentTime);
   }
 }
 
-/// @brief This function returns the last descendant of a window (leaf) on the
-/// graph.
-///
-/// This function assumes the window stack below `parent` is linear. If it
-/// isn't, it's only guaranteed that _some_ descendant of `parent` will be
-/// returned. If provided `parent` has no descendants, the `parent` is returned.
-Window query_x11_last_descendant(Display *display, Window parent) {
-  Window _ignored, *children;
-  std::uint32_t count;
+Window query_x11_top_parent(Display *display, Window child) {
+  Window root = DefaultVRootWindow(display);
 
-  Window current = parent;
+  if (child == None || child == root) return child;
 
-  while (XQueryTree(display, current, &_ignored, &_ignored, &children,
-                    &count) == Success &&
-         count != 0) {
-    current = children[count - 1];
-    XFree(children);
-  }
+  Window ret_root, parent, *children;
+  std::uint32_t child_count;
+
+  Window current = child;
+  int i;
+  do {
+    if (XQueryTree(display, current, &ret_root, &parent, &children,
+                   &child_count) == 0) {
+      break;
+    }
+    if (child_count != 0) XFree(children);
+    if (parent == root) break;
+    current = parent;
+  } while (true);
 
   return current;
 }
 
-std::vector<Window> query_x11_windows(Display *display) {
-  // _NET_CLIENT_LIST_STACKING
-  Window root = DefaultRootWindow(display);
-
-  Atom clients_atom = XInternAtom(display, "_NET_CLIENT_LIST_STACKING", 0);
-
+std::vector<Window> x11_atom_window_list(Display *display, Window window,
+                                         Atom atom) {
   Atom actual_type;
   int actual_format;
   unsigned long nitems;
   unsigned long bytes_after;
   unsigned char *data = nullptr;
 
-  // try retrieving ordered windows first:
-  if (XGetWindowProperty(display, root, clients_atom, 0, 0, False, XA_WINDOW,
+  if (XGetWindowProperty(display, window, atom, 0, (~0L), False, XA_WINDOW,
                          &actual_type, &actual_format, &nitems, &bytes_after,
                          &data) == Success) {
-    free(data);
-    size_t count = bytes_after / 4;
-
-    if (XGetWindowProperty(display, root, clients_atom, 0, bytes_after / 4,
-                           False, XA_WINDOW, &actual_type, &actual_format,
-                           &nitems, &bytes_after, &data) == Success) {
+    if (actual_format == XA_WINDOW && nitems > 0) {
       Window *wdata = reinterpret_cast<Window *>(data);
       std::vector<Window> result(wdata, wdata + nitems);
-      free(data);
+      XFree(data);
       return result;
     }
   }
 
-  clients_atom = XInternAtom(display, "_NET_CLIENT_LIST", 0);
-  if (XGetWindowProperty(display, root, clients_atom, 0, 0, False, XA_WINDOW,
-                         &actual_type, &actual_format, &nitems, &bytes_after,
-                         &data) == Success) {
-    free(data);
-    size_t count = bytes_after / 4;
+  return std::vector<Window>{};
+}
 
-    if (XGetWindowProperty(display, root, clients_atom, 0, count, False,
-                           XA_WINDOW, &actual_type, &actual_format, &nitems,
-                           &bytes_after, &data) == Success) {
-      Window *wdata = reinterpret_cast<Window *>(data);
-      std::vector<Window> result(wdata, wdata + nitems);
-      free(data);
-      return result;
-    }
-  }
+std::vector<Window> query_x11_windows(Display *display) {
+  Window root = DefaultRootWindow(display);
 
-  // slowest method that also returns inaccurate results:
+  Atom clients_atom = ATOM(_NET_CLIENT_LIST_STACKING);
+  std::vector<Window> result =
+      x11_atom_window_list(display, root, clients_atom);
+  if (result.empty()) { return result; }
 
-  // TODO: How do we remove window decorations and other unwanted WM/DE junk
-  // from this?
+  clients_atom = ATOM(_NET_CLIENT_LIST);
+  result = x11_atom_window_list(display, root, clients_atom);
+  if (result.empty()) { return result; }
 
-  std::vector<Window> result;
-  std::vector<Window> queue = {root};
+  // slowest method
+
+  std::vector<Window> queue = {DefaultVRootWindow(display)};
 
   Window _ignored, *children;
   std::uint32_t count;
 
+  const auto has_wm_hints = [&](Window window) {
+    auto hints = XGetWMHints(display, window);
+    bool result = hints != NULL;
+    if (result) XFree(hints);
+    return result;
+  };
+
   while (!queue.empty()) {
     Window current = queue.back();
     queue.pop_back();
-    if (XQueryTree(display, current, &_ignored, &_ignored, &children, &count) ==
-            Success &&
-        count != 0) {
-      for (size_t i = 0; i < count; i++) {
-        queue.push_back(children[i]);
-        result.push_back(current);
-      }
-      XFree(children);
+    if (XQueryTree(display, current, &_ignored, &_ignored, &children, &count)) {
+      for (size_t i = 0; i < count; i++) queue.push_back(children[i]);
+      if (has_wm_hints(current)) result.push_back(current);
+      if (count > 0) XFree(children);
     }
   }
 
@@ -1515,7 +1583,7 @@ std::vector<Window> query_x11_windows(Display *display) {
 }
 
 Window query_x11_window_at_pos(Display *display, int x, int y) {
-  Window root = DefaultRootWindow(display);
+  Window root = DefaultVRootWindow(display);
 
   // these values are ignored but NULL can't be passed to XQueryPointer.
   Window root_return;
@@ -1535,7 +1603,7 @@ std::vector<Window> query_x11_windows_at_pos(
     std::function<bool(XWindowAttributes &)> predicate) {
   std::vector<Window> result;
 
-  Window root = DefaultRootWindow(display);
+  Window root = DefaultVRootWindow(display);
   XWindowAttributes attr;
 
   for (Window current : query_x11_windows(display)) {

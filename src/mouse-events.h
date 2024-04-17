@@ -28,9 +28,25 @@
 #include "config.h"
 #include "logging.h"
 
+#ifdef BUILD_XINPUT
+#include <array>
+#include <map>
+#include <optional>
+#include <tuple>
+#include <variant>
+#include <vector>
+#endif /* BUILD_XINPUT */
+
 extern "C" {
 #ifdef BUILD_X11
 #include <X11/X.h>
+
+#ifdef BUILD_XINPUT
+#include <X11/extensions/XInput.h>
+#include <X11/extensions/XInput2.h>
+#undef COUNT  // define from X11/extendsions/Xi.h
+
+#endif /* BUILD_XINPUT */
 #endif /* BUILD_X11 */
 
 #include <lua.h>
@@ -41,7 +57,7 @@ extern "C" {
 #include <dev/evdev/input-event-codes.h>
 #elif __DragonFly__
 #include <dev/misc/evdev/input-event-codes.h>
-#else
+#else /* platform */
 // Probably incorrect for some platforms, feel free to add your platform to the
 // above list if it has other event codes or a standard file containing them.
 
@@ -56,7 +72,7 @@ extern "C" {
 #define BTN_BACK 0x116
 // Forward mouse button event code
 #define BTN_FORWARD 0x115
-#endif
+#endif /* platform */
 }
 
 namespace conky {
@@ -227,6 +243,84 @@ struct mouse_crossing_event : public mouse_positioned_event {
       : mouse_positioned_event{type, x, y, x_abs, y_abs} {};
 };
 
+#ifdef BUILD_XINPUT
+typedef int xi_device_id;
+typedef int xi_event_type;
+
+enum valuator_t : size_t { MOVE_X, MOVE_Y, SCROLL_X, SCROLL_Y, VALUATOR_COUNT };
+
+struct conky_valuator_info {
+  size_t index;
+  double min;
+  double max;
+  double value;
+  bool relative;
+};
+
+struct device_info {
+  /// @brief Device name.
+  xi_device_id id;
+  std::string name;
+  std::array<conky_valuator_info, valuator_t::VALUATOR_COUNT> valuators{};
+
+  static device_info *from_xi_id(xi_device_id id, Display *display = nullptr);
+
+  conky_valuator_info &valuator(valuator_t valuator);
+
+ private:
+  void init_xi_device(Display *display,
+                      std::variant<xi_device_id, XIDeviceInfo *> device);
+};
+
+void handle_xi_device_change(const XIHierarchyEvent *event);
+
+/// Almost an exact copy of `XIDeviceEvent`, except it owns all data.
+struct xi_event_data {
+  xi_event_type evtype;
+  unsigned long serial;
+  Bool send_event;
+  Display *display;
+  /// XI extension offset
+  // TODO: Check whether this is consistent between different clients by
+  // printing.
+  int extension;
+  Time time;
+  device_info *device;
+  int sourceid;
+  int detail;
+  Window root;
+  Window event;
+  Window child;
+  double root_x;
+  double root_y;
+  double event_x;
+  double event_y;
+  int flags;
+  /// pressed button mask
+  std::bitset<32> buttons;
+  std::map<size_t, double> valuators;
+  XIModifierState mods;
+  XIGroupState group;
+
+  // Extra data
+
+  /// Precomputed relative values
+  std::array<double, valuator_t::VALUATOR_COUNT> valuators_relative;
+
+  static xi_event_data *read_cookie(Display *display, const void *data);
+
+  bool test_valuator(valuator_t id) const;
+  conky_valuator_info *valuator_info(valuator_t id) const;
+  std::optional<double> valuator_value(valuator_t id) const;
+  std::optional<double> valuator_relative_value(valuator_t valuator) const;
+
+  std::vector<std::tuple<int, XEvent *>> generate_events(Window target,
+                                                         Window child,
+                                                         double target_x,
+                                                         double target_y) const;
+};
+
+#endif /* BUILD_XINPUT */
 }  // namespace conky
 
 #endif /* MOUSE_EVENTS_H */
