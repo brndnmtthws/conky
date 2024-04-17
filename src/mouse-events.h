@@ -44,7 +44,7 @@ extern "C" {
 #ifdef BUILD_XINPUT
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
-#undef COUNT  // define from X11/extendsions/Xi.h
+#undef COUNT  // define from X11/extensions/Xi.h
 
 #endif /* BUILD_XINPUT */
 #endif /* BUILD_X11 */
