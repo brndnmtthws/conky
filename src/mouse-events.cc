@@ -543,7 +543,6 @@ std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(
       uint scroll_direction = 4;
       auto vertical = this->valuator_relative_value(valuator_t::SCROLL_Y);
       double vertical_value = vertical.value_or(0.0);
-      DBGP2("Vert Scroll: %d", vertical_value);
 
       if (vertical_value != 0.0) {
         scroll_direction = vertical_value < 0.0 ? Button4 : Button5;

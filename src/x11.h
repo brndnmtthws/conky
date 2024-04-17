@@ -163,7 +163,7 @@ std::vector<Window> query_x11_windows(Display *display);
 /// @param display display of parent
 /// @param child window whose parents to query
 /// @return the top level ascendant window
-Window query_x11_top_level(Display *display, Window child);
+Window query_x11_top_parent(Display *display, Window child);
 
 /// @brief Returns the top-most window overlapping provided screen coordinates.
 ///

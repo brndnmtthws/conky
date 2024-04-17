@@ -1498,7 +1498,7 @@ void propagate_x11_event(XEvent &ev, const void *cookie) {
   }
 }
 
-Window query_x11_top_level(Display *display, Window child) {
+Window query_x11_top_parent(Display *display, Window child) {
   Window root = DefaultVRootWindow(display);
 
   if (child == None || child == root) return child;

@@ -488,8 +488,8 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   // query_result is not window.window in some cases.
   modifier_state_t mods = x11_modifier_state(data->mods.effective);
 
-  bool same_window = query_x11_top_level(display, event_window) ==
-                     query_x11_top_level(display, window.window);
+  bool same_window = query_x11_top_parent(display, event_window) ==
+                     query_x11_top_parent(display, window.window);
   bool cursor_over_conky = same_window && data->root_x >= window.x &&
                            data->root_x < (window.x + window.width) &&
                            data->root_y >= window.y &&
