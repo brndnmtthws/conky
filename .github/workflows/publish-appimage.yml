@@ -111,11 +111,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: 'conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage'
+          name: 'conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage'
           if-no-files-found: error
       - name: Upload AppImage checksum artifact
         uses: actions/upload-artifact@v4
         with:
           path: 'conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage.sha256'
+          name: 'conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage.sha256'
           if-no-files-found: error
       - name: Upload man page artifact
         uses: actions/upload-artifact@v4
