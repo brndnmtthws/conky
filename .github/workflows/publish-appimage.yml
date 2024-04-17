@@ -105,17 +105,17 @@ jobs:
           echo "CXX=clang++-${CLANG_VERSION}" | tee -a $GITHUB_ENV
       - name: Build AppImage
         run: ./appimage/build.sh
+      - run: mv conky-x86_64.AppImage conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage
+      - run: mv conky-x86_64.AppImage.sha256 conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage.sha256
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v4
         with:
-          name: 'conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage'
-          path: conky-x86_64.AppImage
+          path: 'conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage'
           if-no-files-found: error
       - name: Upload AppImage checksum artifact
         uses: actions/upload-artifact@v4
         with:
-          name: 'conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage.sha256'
-          path: conky-x86_64.AppImage.sha256
+          path: 'conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage.sha256'
           if-no-files-found: error
       - name: Upload man page artifact
         uses: actions/upload-artifact@v4
