@@ -41,6 +41,7 @@ extern "C" {
 
 namespace conky {
 
+#ifdef BUILD_MOUSE_EVENTS
 /* Lua helper functions */
 void push_table_value(lua_State *L, std::string key, std::string value) {
   lua_pushstring(L, key.c_str());
@@ -105,22 +106,22 @@ inline std::size_t current_time_ms() {
 void push_table_value(lua_State *L, std::string key, mouse_event_t type) {
   lua_pushstring(L, key.c_str());
   switch (type) {
-    case MOUSE_PRESS:
+    case mouse_event_t::PRESS:
       lua_pushstring(L, "button_down");
       break;
-    case MOUSE_RELEASE:
+    case mouse_event_t::RELEASE:
       lua_pushstring(L, "button_up");
       break;
-    case MOUSE_SCROLL:
+    case mouse_event_t::SCROLL:
       lua_pushstring(L, "mouse_scroll");
       break;
-    case MOUSE_MOVE:
+    case mouse_event_t::MOVE:
       lua_pushstring(L, "mouse_move");
       break;
-    case AREA_ENTER:
+    case mouse_event_t::AREA_ENTER:
       lua_pushstring(L, "mouse_enter");
       break;
-    case AREA_LEAVE:
+    case mouse_event_t::AREA_LEAVE:
       lua_pushstring(L, "mouse_leave");
       break;
     default:
@@ -134,16 +135,16 @@ void push_table_value(lua_State *L, std::string key,
                       scroll_direction_t direction) {
   lua_pushstring(L, key.c_str());
   switch (direction) {
-    case SCROLL_DOWN:
+    case scroll_direction_t::DOWN:
       lua_pushstring(L, "down");
       break;
-    case SCROLL_UP:
+    case scroll_direction_t::UP:
       lua_pushstring(L, "up");
       break;
-    case SCROLL_LEFT:
+    case scroll_direction_t::LEFT:
       lua_pushstring(L, "left");
       break;
-    case SCROLL_RIGHT:
+    case scroll_direction_t::RIGHT:
       lua_pushstring(L, "right");
       break;
     default:
@@ -156,19 +157,19 @@ void push_table_value(lua_State *L, std::string key,
 void push_table_value(lua_State *L, std::string key, mouse_button_t button) {
   lua_pushstring(L, key.c_str());
   switch (button) {
-    case BUTTON_LEFT:
+    case mouse_button_t::LEFT:
       lua_pushstring(L, "left");
       break;
-    case BUTTON_RIGHT:
+    case mouse_button_t::RIGHT:
       lua_pushstring(L, "right");
       break;
-    case BUTTON_MIDDLE:
+    case mouse_button_t::MIDDLE:
       lua_pushstring(L, "middle");
       break;
-    case BUTTON_BACK:
+    case mouse_button_t::BACK:
       lua_pushstring(L, "back");
       break;
-    case BUTTON_FORWARD:
+    case mouse_button_t::FORWARD:
       lua_pushstring(L, "forward");
       break;
     default:
@@ -213,6 +214,7 @@ void mouse_button_event::push_lua_data(lua_State *L) const {
   push_table_value(L, "button", this->button);
   push_mods(L, this->mods);
 }
+#endif /* BUILD_MOUSE_EVENTS */
 
 #ifdef BUILD_XINPUT
 /// Last global device id.
@@ -271,10 +273,10 @@ void handle_xi_device_change(const XIHierarchyEvent *event) {
 /// some device (unlikely).
 size_t fixed_valuator_index(Display *display, XIDeviceInfo *device,
                             valuator_t valuator) {
-  const std::array<const char *, valuator_t::VALUATOR_COUNT> atom_names = {
+  const std::array<const char *, VALUATOR_COUNT> atom_names = {
       "ConkyValuatorMoveX", "ConkyValuatorMoveY", "ConkyValuatorScrollX",
       "ConkyValuatorScrollY"};
-  Atom override_atom = XInternAtom(display, atom_names[valuator], False);
+  Atom override_atom = XInternAtom(display, atom_names[*valuator], False);
   unsigned char *value;
   Atom type_return;
   int format_return;
@@ -290,7 +292,7 @@ size_t fixed_valuator_index(Display *display, XIDeviceInfo *device,
         NORM_ERR(
             "invalid '%s' option value, expected a single integer; value will "
             "be ignored",
-            atom_names[valuator]);
+            atom_names[*valuator]);
         XFree(value);
         break;
       }
@@ -299,7 +301,7 @@ size_t fixed_valuator_index(Display *display, XIDeviceInfo *device,
       return static_cast<size_t>(result);
     }
   } while (true);
-  return valuator;
+  return *valuator;
 }
 
 /// Allows override of valuator value type in `xorg.conf` in case they're wrong
@@ -312,7 +314,7 @@ bool fixed_valuator_relative(Display *display, XIDeviceInfo *device,
       "ConkyValuatorScrollMode",
   };
 
-  Atom override_atom = XInternAtom(display, atom_names[valuator >> 1], False);
+  Atom override_atom = XInternAtom(display, atom_names[*valuator >> 1], False);
   unsigned char *value_return;
   Atom type_return;
   int format_return;
@@ -329,7 +331,7 @@ bool fixed_valuator_relative(Display *display, XIDeviceInfo *device,
         NORM_ERR(
             "invalid '%s' option value, expected an atom (string); value will "
             "be ignored",
-            atom_names[valuator >> 1]);
+            atom_names[*valuator >> 1]);
         XFree(value_return);
         break;
       }
@@ -348,7 +350,7 @@ bool fixed_valuator_relative(Display *display, XIDeviceInfo *device,
             "unknown '%s' option value: '%s', expected 'absolute' or "
             "'relative'; "
             "value will be ignored",
-            atom_names[valuator >> 1]);
+            atom_names[*valuator >> 1]);
         XFree(value);
         break;
       }
@@ -372,8 +374,8 @@ void device_info::init_xi_device(
   }
   if (device == nullptr) return;
 
-  std::array<size_t, valuator_t::VALUATOR_COUNT> valuator_indices;
-  for (size_t i = 0; i < valuator_t::VALUATOR_COUNT; i++) {
+  std::array<size_t, VALUATOR_COUNT> valuator_indices;
+  for (size_t i = 0; i < VALUATOR_COUNT; i++) {
     valuator_indices[i] =
         fixed_valuator_index(display, device, static_cast<valuator_t>(i));
   }
@@ -384,14 +386,14 @@ void device_info::init_xi_device(
     XIValuatorClassInfo *class_info = (XIValuatorClassInfo *)device->classes[i];
 
     // check if one of used (mapped) valuators
-    valuator_t valuator = valuator_t::VALUATOR_COUNT;
-    for (size_t i = 0; i < valuator_t::VALUATOR_COUNT; i++) {
+    valuator_t valuator = valuator_t::UNKNOWN;
+    for (size_t i = 0; i < VALUATOR_COUNT; i++) {
       if (valuator_indices[i] == class_info->number) {
         valuator = static_cast<valuator_t>(i);
         break;
       }
     }
-    if (valuator == valuator_t::VALUATOR_COUNT) { continue; }
+    if (valuator == valuator_t::UNKNOWN) { continue; }
 
     auto info = conky_valuator_info{
         .index = static_cast<size_t>(class_info->number),
@@ -402,7 +404,7 @@ void device_info::init_xi_device(
             fixed_valuator_relative(display, device, valuator, class_info),
     };
 
-    this->valuators[valuator] = info;
+    this->valuators[*valuator] = info;
   }
 
   if (std::holds_alternative<xi_device_id>(source)) {
@@ -410,7 +412,7 @@ void device_info::init_xi_device(
   }
 }
 conky_valuator_info &device_info::valuator(valuator_t valuator) {
-  return this->valuators[valuator];
+  return this->valuators[*valuator];
 }
 
 xi_event_data *xi_event_data::read_cookie(Display *display, const void *data) {
@@ -460,7 +462,7 @@ xi_event_data *xi_event_data::read_cookie(Display *display, const void *data) {
       .valuators_relative = {0.0, 0.0, 0.0, 0.0},
   };
 
-  for (size_t v = 0; v < valuator_t::VALUATOR_COUNT; v++) {
+  for (size_t v = 0; v < VALUATOR_COUNT; v++) {
     valuator_t valuator = static_cast<valuator_t>(v);
     auto &valuator_info = device->valuator(valuator);
 
@@ -497,7 +499,7 @@ std::optional<double> xi_event_data::valuator_value(valuator_t valuator) const {
 
 std::optional<double> xi_event_data::valuator_relative_value(
     valuator_t valuator) const {
-  return this->valuators_relative.at(valuator);
+  return this->valuators_relative.at(*valuator);
 }
 
 std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(

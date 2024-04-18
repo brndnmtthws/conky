@@ -34,6 +34,12 @@
 #include "exec.h"
 #include "specials.h" /* enum special_types */
 
+enum class draw_mode_t : uint32_t {
+  BG = static_cast<uint32_t>(text_node_t::BG),
+  FG = static_cast<uint32_t>(text_node_t::FG),
+  OUTLINE = static_cast<uint32_t>(text_node_t::OUTLINE),
+};
+
 /* text object callbacks */
 struct obj_cb {
   /* text object: print obj's output to p */

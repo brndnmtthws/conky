@@ -422,7 +422,7 @@ nvidia_display_setting nvidia_display;
 
 // Evaluate module parameters and prepare query
 int set_nvidia_query(struct text_object *obj, const char *arg,
-                     unsigned int special_type) {
+                     text_node_t special_type) {
   nvidia_s *nvs;
   int aid;
   int ilen;
@@ -451,15 +451,15 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
 
   // Extract arguments for nvidiabar, etc, and run set_nvidia_query
   switch (special_type) {
-    case BAR:
+    case text_node_t::BAR:
       arg = scan_bar(obj, arg, 100);
       break;
-    case GRAPH: {
+    case text_node_t::GRAPH: {
       auto [buf, skip] = scan_command(arg);
       scan_graph(obj, arg + skip, 100);
       arg = buf;
     } break;
-    case GAUGE:
+    case text_node_t::GAUGE:
       arg = scan_gauge(obj, arg, 100);
       break;
     default:
@@ -483,7 +483,7 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
 
   // Save pointers to the arg and command strings for debugging and printing
   nvs->arg = translate_module_argument[aid];
-  nvs->command = translate_nvidia_special_type[special_type];
+  nvs->command = translate_nvidia_special_type[*special_type];
 
   // Evaluate parameter
   switch (aid) {

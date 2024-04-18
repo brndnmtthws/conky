@@ -23,6 +23,12 @@
 #ifndef DISPLAY_X11_HH
 #define DISPLAY_X11_HH
 
+#include "config.h"
+
+#ifndef BUILD_X11
+#error display-x11.hh included when BUILD_X11 is disabled
+#endif
+
 #include <limits>
 #include <string>
 #include <type_traits>

@@ -11,6 +11,11 @@ doc/*.html
 Makefile
 CMakeCache.txt
 CMakeFiles
+cmake_install.cmake
+cmake_uninstall.cmake
+CPackConfig.cmake
+CPackSourceConfig.cmake
+
 data/convertconf.h
 data/defconfig.h
 lua/libcairo-orig.c
@@ -19,6 +24,7 @@ lua/libimlib2.c
 *.so
 *.a
 /config.h
+/build.h
 
 # Compiler cache
 .cache

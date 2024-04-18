@@ -25,13 +25,104 @@
 
 #include "config.h"
 
-#ifdef BUILD_X11
-#include "x11.h"
-#endif /* BUILD_X11 */
-
-#include "colour-settings.h"
 #include "colours.h"
 #include "setting.hh"
+
+#include "colour-settings.h"
+
+#ifdef BUILD_X11
+#include <X11/Xlib.h>
+#include "x11-settings.h"
+#endif /* BUILD_X11 */
+
+/// @brief Represents alignment on a single axis.
+enum class axis_align : uint8_t {
+  /// No alignment
+  NONE = 0,
+  /// Top or left alignment
+  START = 0b01,
+  /// Middle alignment
+  MIDDLE = 0b10,
+  /// Bottom or right alignment
+  END = 0b11,
+};
+constexpr uint8_t operator*(axis_align index) {
+  return static_cast<uint8_t>(index);
+}
+
+/// @brief Represents alignment on a 2D plane.
+///
+/// Values are composed of 2 `axis_align` values.
+enum class alignment : uint8_t {
+  NONE = 0,
+  NONE_LEFT = 0b0001,
+  NONE_MIDDLE = 0b0010,
+  NONE_RIGHT = 0b0011,
+  TOP_LEFT = 0b0101,
+  TOP_MIDDLE = 0b0110,
+  TOP_RIGHT = 0b0111,
+  MIDDLE_LEFT = 0b1001,
+  MIDDLE_MIDDLE = 0b1010,
+  MIDDLE_RIGHT = 0b1011,
+  BOTTOM_LEFT = 0b1101,
+  BOTTOM_MIDDLE = 0b1110,
+  BOTTOM_RIGHT = 0b1111,
+};
+constexpr uint8_t operator*(alignment index) {
+  return static_cast<uint8_t>(index);
+}
+
+/// @brief Returns the horizontal axis alignment component of `alignment`.
+/// @param of 2D alignment to extract axis alignment from
+/// @return horizontal `axis_align`
+[[nodiscard]] inline axis_align horizontal_alignment(alignment of) {
+  return static_cast<axis_align>(static_cast<uint8_t>(of) & 0b11);
+}
+/// @brief Returns the vertical axis alignment component of `alignment`.
+/// @param of 2D alignment to extract axis alignment from
+/// @return vertical `axis_align`
+[[nodiscard]] inline axis_align vertical_alignment(alignment of) {
+  return static_cast<axis_align>((static_cast<uint8_t>(of) >> 2) & 0b11);
+}
+
+#if defined(BUILD_X11) && defined(OWN_WINDOW)
+enum class window_type : uint8_t {
+  NORMAL = 0,
+  DOCK,
+  PANEL,
+  DESKTOP,
+  OVERRIDE,
+  UTILITY
+};
+constexpr uint8_t operator*(window_type index) {
+  return static_cast<uint8_t>(index);
+}
+
+enum class window_hints : uint16_t {
+  UNDECORATED = 0,
+  BELOW,
+  ABOVE,
+  STICKY,
+  SKIP_TASKBAR,
+  SKIP_PAGER
+};
+constexpr uint8_t operator*(window_hints index) {
+  return static_cast<uint8_t>(index);
+}
+
+inline void SET_HINT(window_hints &mask, window_hints hint) {
+  mask = static_cast<window_hints>(*mask | (1 << (*hint)));
+}
+inline void SET_HINT(uint16_t &mask, window_hints hint) {
+  mask = mask | (1 << (*hint));
+}
+inline bool TEST_HINT(window_hints mask, window_hints hint) {
+  return (*mask & (1 << (*hint))) != 0;
+}
+inline bool TEST_HINT(uint16_t mask, window_hints hint) {
+  return (mask & (1 << (*hint))) != 0;
+}
+#endif
 
 #ifdef BUILD_X11
 extern Display *display;
@@ -45,7 +136,7 @@ extern char window_created;
 
 void destroy_window(void);
 void create_gc(void);
-void set_struts(int);
+void set_struts(alignment);
 
 bool out_to_gui(lua::state &l);
 
@@ -69,20 +160,6 @@ void xdbe_swap_buffers(void);
 #else
 void xpmdb_swap_buffers(void);
 #endif /* BUILD_XDBE */
-
-/* alignments */
-enum alignment {
-  TOP_LEFT,
-  TOP_RIGHT,
-  TOP_MIDDLE,
-  BOTTOM_LEFT,
-  BOTTOM_RIGHT,
-  BOTTOM_MIDDLE,
-  MIDDLE_LEFT,
-  MIDDLE_MIDDLE,
-  MIDDLE_RIGHT,
-  NONE
-};
 
 extern conky::simple_config_setting<alignment> text_alignment;
 

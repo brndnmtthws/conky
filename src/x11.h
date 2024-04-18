@@ -22,10 +22,14 @@
  *
  */
 
-#pragma once
+#ifndef CONKY_X11_H
+#define CONKY_X11_H
 
 #include "config.h"
-#include "setting.hh"
+
+#ifndef BUILD_X11
+#error x11.h included when BUILD_X11 is disabled
+#endif
 
 #include <X11/Xatom.h>
 #pragma GCC diagnostic push
@@ -44,35 +48,12 @@
 #include <functional>
 #include <vector>
 
-#ifdef BUILD_ARGB
+#include "gui.h"
+
 /* true if use_argb_visual=true and argb visual was found*/
 extern bool have_argb_visual;
-#endif /* BUILD_ARGB */
 
 #define ATOM(a) XInternAtom(display, #a, False)
-
-#ifdef OWN_WINDOW
-enum window_type {
-  TYPE_NORMAL = 0,
-  TYPE_DOCK,
-  TYPE_PANEL,
-  TYPE_DESKTOP,
-  TYPE_OVERRIDE,
-  TYPE_UTILITY
-};
-
-enum window_hints {
-  HINT_UNDECORATED = 0,
-  HINT_BELOW,
-  HINT_ABOVE,
-  HINT_STICKY,
-  HINT_SKIP_TASKBAR,
-  HINT_SKIP_PAGER
-};
-
-#define SET_HINT(mask, hint) (mask |= (1 << (hint)))
-#define TEST_HINT(mask, hint) (mask & (1 << (hint)))
-#endif
 
 extern Display *display;
 
@@ -99,10 +80,10 @@ struct conky_x11_window {
 #ifdef BUILD_XFT
   XftDraw *xftdraw;
 #endif /*BUILD_XFT*/
-#ifdef BUILD_MOUSE_EVENTS
+#if defined(BUILD_MOUSE_EVENTS) || defined(BUILD_XINPUT)
   // Don't feature gate with BUILD_XINPUT; controls fallback.
   std::int32_t xi_opcode;
-#endif /* BUILD_MOUSE_EVENTS */
+#endif /* BUILD_MOUSE_EVENTS || BUILD_XINPUT */
 
   int width;
   int height;
@@ -113,13 +94,13 @@ struct conky_x11_window {
 };
 
 extern struct conky_x11_window window;
-extern conky::simple_config_setting<std::string> display_name;
 
+void init_x11();
 void destroy_window(void);
 void create_gc(void);
 void set_transparent_background(Window win);
 void get_x11_desktop_info(Display *current_display, Atom atom);
-void set_struts(int);
+void set_struts(alignment alignment);
 void x11_init_window(lua::state &l, bool own);
 void deinit_x11();
 
@@ -195,54 +176,4 @@ void xdbe_swap_buffers(void);
 void xpmdb_swap_buffers(void);
 #endif /* BUILD_XDBE */
 
-namespace priv {
-class out_to_x_setting : public conky::simple_config_setting<bool> {
-  typedef conky::simple_config_setting<bool> Base;
-
- protected:
-  virtual void lua_setter(lua::state &l, bool init);
-  virtual void cleanup(lua::state &l);
-
- public:
-  out_to_x_setting() : Base("out_to_x", true, false) {}
-};
-
-#ifdef BUILD_XDBE
-class use_xdbe_setting : public conky::simple_config_setting<bool> {
-  typedef conky::simple_config_setting<bool> Base;
-
-  bool set_up(lua::state &l);
-
- protected:
-  virtual void lua_setter(lua::state &l, bool init);
-
- public:
-  use_xdbe_setting() : Base("double_buffer", false, false) {}
-};
-
-#else
-class use_xpmdb_setting : public conky::simple_config_setting<bool> {
-  typedef conky::simple_config_setting<bool> Base;
-
-  bool set_up(lua::state &l);
-
- protected:
-  virtual void lua_setter(lua::state &l, bool init);
-
- public:
-  use_xpmdb_setting() : Base("double_buffer", false, false) {}
-};
-#endif
-} /* namespace priv */
-
-extern priv::out_to_x_setting out_to_x;
-
-#ifdef BUILD_XFT
-extern conky::simple_config_setting<bool> use_xft;
-#endif
-
-#ifdef BUILD_XDBE
-extern priv::use_xdbe_setting use_xdbe;
-#else
-extern priv::use_xpmdb_setting use_xpmdb;
-#endif
+#endif /* CONKY_X11_H */

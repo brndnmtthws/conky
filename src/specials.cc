@@ -46,7 +46,7 @@
 #include "conky.h"
 #include "display-output.hh"
 
-struct special_t *specials = nullptr;
+struct special_node *specials = nullptr;
 
 int special_count;
 int graph_count = 0;
@@ -354,8 +354,8 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale) {
  * Printing various special text objects
  */
 
-struct special_t *new_special_t_node() {
-  auto *newnode = new special_t;
+struct special_node *new_special_t_node() {
+  auto *newnode = new special_node;
 
   memset(newnode, 0, sizeof *newnode);
   return newnode;
@@ -369,8 +369,8 @@ struct special_t *new_special_t_node() {
  * @param[in]  t   special type enum, e.g. alignc, alignr, fg, bg, ...
  * @return pointer to the newly inserted special of type t
  **/
-struct special_t *new_special(char *buf, enum special_types t) {
-  special_t *current;
+struct special_node *new_special(char *buf, text_node_t t) {
+  special_node *current;
 
   buf[0] = SPECIAL_CHAR;
   buf[1] = '\0';
@@ -397,14 +397,14 @@ void new_gauge_in_shell(struct text_object *obj, char *p,
 
 #ifdef BUILD_GUI
 void new_gauge_in_gui(struct text_object *obj, char *buf, double usage) {
-  struct special_t *s = nullptr;
+  struct special_node *s = nullptr;
   auto *g = static_cast<struct gauge *>(obj->special_data);
 
   if (display_output() == nullptr || !display_output()->graphical()) { return; }
 
   if (g == nullptr) { return; }
 
-  s = new_special(buf, GAUGE);
+  s = new_special(buf, text_node_t::GAUGE);
 
   s->arg = usage;
   s->width = dpi_scale(g->width);
@@ -439,14 +439,14 @@ void new_gauge(struct text_object *obj, char *p, unsigned int p_max_size,
 
 #ifdef BUILD_GUI
 void new_font(struct text_object *obj, char *p, unsigned int p_max_size) {
-  struct special_t *s;
+  struct special_node *s;
   unsigned int tmp = selected_font;
 
   if (display_output() == nullptr || !display_output()->graphical()) { return; }
 
   if (p_max_size == 0) { return; }
 
-  s = new_special(p, FONT);
+  s = new_special(p, text_node_t::FONT);
 
   if (obj->data.s != nullptr) {
     if (s->font_added >= static_cast<int>(fonts.size()) ||
@@ -463,7 +463,7 @@ void new_font(struct text_object *obj, char *p, unsigned int p_max_size) {
 /**
  * Adds value f to graph possibly truncating and scaling the graph
  **/
-static void graph_append(struct special_t *graph, double f, char showaslog) {
+static void graph_append(struct special_node *graph, double f, char showaslog) {
   int i;
 
   /* do nothing if we don't even have a graph yet */
@@ -494,7 +494,7 @@ static void graph_append(struct special_t *graph, double f, char showaslog) {
   }
 }
 
-void new_graph_in_shell(struct special_t *s, char *buf, int buf_max_size) {
+void new_graph_in_shell(struct special_node *s, char *buf, int buf_max_size) {
   // Split config string on comma to avoid the hassle of dealing with the
   // idiosyncrasies of multi-byte unicode on different platforms.
   // TODO(brenden): Parse config string once and cache result.
@@ -537,7 +537,7 @@ double *retrieve_graph(int graph_id, int graph_width) {
   }
 }
 
-void store_graph(int graph_id, struct special_t *s) {
+void store_graph(int graph_id, struct special_node *s) {
   if (s->graph == nullptr) {
     graphs[graph_id] = nullptr;
   } else {
@@ -556,12 +556,12 @@ void store_graph(int graph_id, struct special_t *s) {
  **/
 void new_graph(struct text_object *obj, char *buf, int buf_max_size,
                double val) {
-  struct special_t *s = nullptr;
+  struct special_node *s = nullptr;
   auto *g = static_cast<struct graph *>(obj->special_data);
 
   if ((g == nullptr) || (buf_max_size == 0)) { return; }
 
-  s = new_special(buf, GRAPH);
+  s = new_special(buf, text_node_t::GRAPH);
 
   /* set graph (special) width to width in obj */
   s->width = dpi_scale(g->width);
@@ -628,7 +628,7 @@ void new_hr(struct text_object *obj, char *p, unsigned int p_max_size) {
 
   if (p_max_size == 0) { return; }
 
-  new_special(p, HORIZONTAL_LINE)->height = dpi_scale(obj->data.l);
+  new_special(p, text_node_t::HORIZONTAL_LINE)->height = dpi_scale(obj->data.l);
 }
 
 void scan_stippled_hr(struct text_object *obj, const char *arg) {
@@ -651,14 +651,14 @@ void scan_stippled_hr(struct text_object *obj, const char *arg) {
 
 void new_stippled_hr(struct text_object *obj, char *p,
                      unsigned int p_max_size) {
-  struct special_t *s = nullptr;
+  struct special_node *s = nullptr;
   auto *sh = static_cast<struct stippled_hr *>(obj->special_data);
 
   if (display_output() == nullptr || !display_output()->graphical()) { return; }
 
   if ((sh == nullptr) || (p_max_size == 0)) { return; }
 
-  s = new_special(p, STIPPLED_HR);
+  s = new_special(p, text_node_t::STIPPLED_HR);
 
   s->height = dpi_scale(sh->height);
   s->arg = dpi_scale(sh->arg);
@@ -674,7 +674,7 @@ void new_fg(struct text_object *obj, char *p, unsigned int p_max_size) {
       || out_to_ncurses.get(*state)
 #endif /* BUILD_NCURSES */
   ) {
-    new_special(p, FG)->arg = obj->data.l;
+    new_special(p, text_node_t::FG)->arg = obj->data.l;
   }
   UNUSED(obj);
   UNUSED(p);
@@ -687,7 +687,7 @@ void new_bg(struct text_object *obj, char *p, unsigned int p_max_size) {
 
   if (p_max_size == 0) { return; }
 
-  new_special(p, BG)->arg = obj->data.l;
+  new_special(p, text_node_t::BG)->arg = obj->data.l;
 }
 #endif /* BUILD_GUI */
 
@@ -716,14 +716,14 @@ static void new_bar_in_shell(struct text_object *obj, char *buffer,
 
 #ifdef BUILD_GUI
 static void new_bar_in_gui(struct text_object *obj, char *buf, double usage) {
-  struct special_t *s = nullptr;
+  struct special_node *s = nullptr;
   auto *b = static_cast<struct bar *>(obj->special_data);
 
   if (display_output() == nullptr || !display_output()->graphical()) { return; }
 
   if (b == nullptr) { return; }
 
-  s = new_special(buf, BAR);
+  s = new_special(buf, text_node_t::BAR);
 
   s->arg = usage;
   s->width = dpi_scale(b->width);
@@ -759,39 +759,39 @@ void new_bar(struct text_object *obj, char *p, unsigned int p_max_size,
 
 void new_outline(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, OUTLINE)->arg = obj->data.l;
+  new_special(p, text_node_t::OUTLINE)->arg = obj->data.l;
 }
 
 void new_offset(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, OFFSET)->arg = dpi_scale(obj->data.l);
+  new_special(p, text_node_t::OFFSET)->arg = dpi_scale(obj->data.l);
 }
 
 void new_voffset(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, VOFFSET)->arg = dpi_scale(obj->data.l);
+  new_special(p, text_node_t::VOFFSET)->arg = dpi_scale(obj->data.l);
 }
 
 void new_save_coordinates(struct text_object *obj, char *p,
                           unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, SAVE_COORDINATES)->arg = obj->data.l;
+  new_special(p, text_node_t::SAVE_COORDINATES)->arg = obj->data.l;
 }
 
 void new_alignr(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, ALIGNR)->arg = dpi_scale(obj->data.l);
+  new_special(p, text_node_t::ALIGNR)->arg = dpi_scale(obj->data.l);
 }
 
 // A positive offset pushes the text further left
 void new_alignc(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, ALIGNC)->arg = dpi_scale(obj->data.l);
+  new_special(p, text_node_t::ALIGNC)->arg = dpi_scale(obj->data.l);
 }
 
 void new_goto(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, GOTO)->arg = dpi_scale(obj->data.l);
+  new_special(p, text_node_t::GOTO)->arg = dpi_scale(obj->data.l);
 }
 
 void scan_tab(struct text_object *obj, const char *arg) {
@@ -813,12 +813,12 @@ void scan_tab(struct text_object *obj, const char *arg) {
 }
 
 void new_tab(struct text_object *obj, char *p, unsigned int p_max_size) {
-  struct special_t *s = nullptr;
+  struct special_node *s = nullptr;
   auto *t = static_cast<struct tab *>(obj->special_data);
 
   if ((t == nullptr) || (p_max_size == 0)) { return; }
 
-  s = new_special(p, TAB);
+  s = new_special(p, text_node_t::TAB);
   s->width = dpi_scale(t->width);
   s->arg = dpi_scale(t->arg);
 }

@@ -24,10 +24,8 @@
  *
  */
 
-#include <X11/extensions/XI2.h>
-#include <config.h>
+#include "config.h"
 
-#ifdef BUILD_X11
 #include <X11/X.h>
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
@@ -43,13 +41,14 @@
 #ifdef BUILD_IMLIB2
 #include "conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
-#ifdef BUILD_MOUSE_EVENTS
+#if defined(BUILD_MOUSE_EVENTS) || defined(BUILD_XINPUT)
 #include "mouse-events.h"
+#endif /* BUILD_MOUSE_EVENTS || BUILD_XINPUT */
 #ifdef BUILD_XINPUT
+#include <X11/extensions/XI2.h>
 #include <X11/extensions/XInput2.h>
+#undef COUNT
 #endif /* BUILD_XINPUT */
-#endif /* BUILD_MOUSE_EVENTS */
-#endif /* BUILD_X11 */
 
 #include <cstdint>
 #include <iostream>
@@ -198,16 +197,16 @@ static void X11_create_window() {
 #endif /* BUILD_X11 */
 
 namespace conky {
-namespace {
-
 #ifdef BUILD_X11
+namespace {
 conky::display_output_x11 x11_output;
-#else
-conky::disabled_display_output x11_output_disabled("x11", "BUILD_X11");
-#endif
-
 }  // namespace
-extern void init_x11_output() {}
+
+template <>
+void register_output<output_t::X11>(display_outputs_t &outputs) {
+  outputs.push_back(&x11_output);
+}
+#endif /* BUILD_X11 */
 
 namespace priv {}  // namespace priv
 
@@ -324,39 +323,11 @@ bool display_output_x11::main_loop_wait(double t) {
       }
 
       /* update struts */
-      if ((changed != 0) && own_window_type.get(*state) == TYPE_PANEL) {
+      if ((changed != 0) && own_window_type.get(*state) == window_type::PANEL) {
         int sidenum = -1;
 
-        DBGP("%s", _(PACKAGE_NAME ": defining struts\n"));
-        fflush(stderr);
-
-        switch (text_alignment.get(*state)) {
-          case TOP_LEFT:
-          case TOP_RIGHT:
-          case TOP_MIDDLE: {
-            sidenum = 2;
-            break;
-          }
-          case BOTTOM_LEFT:
-          case BOTTOM_RIGHT:
-          case BOTTOM_MIDDLE: {
-            sidenum = 3;
-            break;
-          }
-          case MIDDLE_LEFT: {
-            sidenum = 0;
-            break;
-          }
-          case MIDDLE_RIGHT: {
-            sidenum = 1;
-            break;
-          }
-
-          case NONE:
-          case MIDDLE_MIDDLE: /* XXX What about these? */;
-        }
-
-        set_struts(sidenum);
+        NORM_ERR("defining struts");
+        set_struts(text_alignment.get(*state));
       }
     }
 #endif
@@ -425,11 +396,10 @@ bool display_output_x11::main_loop_wait(double t) {
   return true;
 }
 
-enum x_event_handler {
+enum class x_event_handler {
   XINPUT_MOTION,
   MOUSE_INPUT,
   PROPERTY_NOTIFY,
-
   EXPOSE,
   REPARENT,
   CONFIGURE,
@@ -485,8 +455,6 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
 
   Window event_window =
       query_x11_window_at_pos(display, data->root_x, data->root_y);
-  // query_result is not window.window in some cases.
-  modifier_state_t mods = x11_modifier_state(data->mods.effective);
 
   bool same_window = query_x11_top_parent(display, event_window) ==
                      query_x11_top_parent(display, window.window);
@@ -517,6 +485,10 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
     *consumed = true;
     return true;
   }
+
+#ifdef BUILD_MOUSE_EVENTS
+  // query_result is not window.window in some cases.
+  modifier_state_t mods = x11_modifier_state(data->mods.effective);
 
   if (data->evtype == XI_Motion) {
     // TODO: Make valuator_index names configurable?
@@ -556,20 +528,18 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
       double vertical_value = vertical.value_or(0.0);
 
       if (vertical_value != 0.0) {
-        scroll_direction = vertical_value < 0.0
-                               ? scroll_direction_t::SCROLL_UP
-                               : scroll_direction_t::SCROLL_DOWN;
+        scroll_direction = vertical_value < 0.0 ? scroll_direction_t::UP
+                                                : scroll_direction_t::DOWN;
       } else {
         auto horizontal = data->valuator_relative_value(valuator_t::SCROLL_X);
         double horizontal_value = horizontal.value_or(0.0);
         if (horizontal_value != 0.0) {
-          scroll_direction = horizontal_value < 0.0
-                                 ? scroll_direction_t::SCROLL_LEFT
-                                 : scroll_direction_t::SCROLL_RIGHT;
+          scroll_direction = horizontal_value < 0.0 ? scroll_direction_t::LEFT
+                                                    : scroll_direction_t::RIGHT;
         }
       }
 
-      if (scroll_direction != scroll_direction_t::SCROLL_UNKNOWN) {
+      if (scroll_direction != scroll_direction_t::UNKNOWN) {
         *consumed = llua_mouse_hook(
             mouse_scroll_event(data->event_x, data->event_y, data->root_x,
                                data->root_y, scroll_direction, mods));
@@ -583,16 +553,16 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
       return true;
     }
 
-    mouse_event_t type = mouse_event_t::MOUSE_PRESS;
-    if (data->evtype == XI_ButtonRelease) {
-      type = mouse_event_t::MOUSE_RELEASE;
-    }
+    mouse_event_t type = mouse_event_t::PRESS;
+    if (data->evtype == XI_ButtonRelease) { type = mouse_event_t::RELEASE; }
 
     mouse_button_t button = x11_mouse_button_code(data->detail);
     *consumed = llua_mouse_hook(mouse_button_event(type, data->event_x,
                                                    data->event_y, data->root_x,
                                                    data->root_y, button, mods));
   }
+#endif /* BUILD_MOUSE_EVENTS */
+
 #else /* BUILD_XINPUT */
   if (ev.type != ButtonPress && ev.type != ButtonRelease &&
       ev.type != MotionNotify)
@@ -612,9 +582,10 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
       } else {
         mouse_button_t button = x11_mouse_button_code(ev.xbutton.button);
         *consumed = llua_mouse_hook(mouse_button_event(
-            mouse_event_t::MOUSE_PRESS, ev.xbutton.x, ev.xbutton.y,
-            ev.xbutton.x_root, ev.xbutton.y_root, button, mods));
+            mouse_event_t::PRESS, ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root,
+            ev.xbutton.y_root, button, mods));
       }
+      break;
     }
     case ButtonRelease: {
       /* don't report scroll release events */
@@ -623,31 +594,35 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
       modifier_state_t mods = x11_modifier_state(ev.xbutton.state);
       mouse_button_t button = x11_mouse_button_code(ev.xbutton.button);
       *consumed = llua_mouse_hook(mouse_button_event(
-          mouse_event_t::MOUSE_RELEASE, ev.xbutton.x, ev.xbutton.y,
-          ev.xbutton.x_root, ev.xbutton.y_root, button, mods));
+          mouse_event_t::RELEASE, ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root,
+          ev.xbutton.y_root, button, mods));
+      break;
     }
     case MotionNotify: {
       modifier_state_t mods = x11_modifier_state(ev.xmotion.state);
       *consumed = llua_mouse_hook(mouse_move_event(ev.xmotion.x, ev.xmotion.y,
                                                    ev.xmotion.x_root,
                                                    ev.xmotion.y_root, mods));
+      break;
     }
   }
-#else  /* BUILD_MOUSE_EVENTS */
+#endif /* BUILD_MOUSE_EVENTS */
+#endif /* BUILD_XINPUT */
+#ifndef BUILD_MOUSE_EVENTS
   // always propagate mouse input if not handling mouse events
   *consumed = false;
 #endif /* BUILD_MOUSE_EVENTS */
-#endif /* BUILD_XINPUT */
+
   if (!own_window.get(*state)) return true;
   switch (own_window_type.get(*state)) {
-    case window_type::TYPE_NORMAL:
-    case window_type::TYPE_UTILITY:
+    case window_type::NORMAL:
+    case window_type::UTILITY:
       // decorated normal windows always consume events
-      if (!TEST_HINT(own_window_hints.get(*state), HINT_UNDECORATED)) {
+      if (!TEST_HINT(own_window_hints.get(*state), window_hints::UNDECORATED)) {
         *consumed = true;
       }
       break;
-    case window_type::TYPE_DESKTOP:
+    case window_type::DESKTOP:
       // assume conky is always on bottom; nothing to propagate events to
       *consumed = true;
     default:
@@ -714,6 +689,31 @@ bool handle_event<x_event_handler::CONFIGURE>(
 
   return true;
 }
+
+#ifdef BUILD_MOUSE_EVENTS
+template <>
+bool handle_event<x_event_handler::BORDER_CROSSING>(
+    conky::display_output_x11 *surface, Display *display, XEvent &ev,
+    bool *consumed, void **cookie) {
+  if (ev.type != EnterNotify && ev.type != LeaveNotify) return false;
+  if (window.xi_opcode != 0) return true;  // handled by mouse_input already
+
+  bool not_over_conky = ev.xcrossing.x_root <= window.x ||
+                        ev.xcrossing.y_root <= window.y ||
+                        ev.xcrossing.x_root >= window.x + window.width ||
+                        ev.xcrossing.y_root >= window.y + window.height;
+
+  if ((not_over_conky && ev.xcrossing.type == LeaveNotify) ||
+      (!not_over_conky && ev.xcrossing.type == EnterNotify)) {
+    llua_mouse_hook(mouse_crossing_event(
+        ev.xcrossing.type == EnterNotify ? mouse_event_t::AREA_ENTER
+                                         : mouse_event_t::AREA_LEAVE,
+        ev.xcrossing.x, ev.xcrossing.y, ev.xcrossing.x_root,
+        ev.xcrossing.y_root));
+  }
+  return true;
+}
+#endif /* BUILD_MOUSE_EVENTS */
 #endif /* OWN_WINDOW */
 
 template <>
@@ -757,29 +757,6 @@ bool handle_event<x_event_handler::EXPOSE>(conky::display_output_x11 *surface,
   return true;
 }
 
-template <>
-bool handle_event<x_event_handler::BORDER_CROSSING>(
-    conky::display_output_x11 *surface, Display *display, XEvent &ev,
-    bool *consumed, void **cookie) {
-  if (ev.type != EnterNotify && ev.type != LeaveNotify) return false;
-  if (window.xi_opcode != 0) return true;  // handled by mouse_input already
-
-  bool not_over_conky = ev.xcrossing.x_root <= window.x ||
-                        ev.xcrossing.y_root <= window.y ||
-                        ev.xcrossing.x_root >= window.x + window.width ||
-                        ev.xcrossing.y_root >= window.y + window.height;
-
-  if ((not_over_conky && ev.xcrossing.type == LeaveNotify) ||
-      (!not_over_conky && ev.xcrossing.type == EnterNotify)) {
-    llua_mouse_hook(mouse_crossing_event(
-        ev.xcrossing.type == EnterNotify ? mouse_event_t::AREA_ENTER
-                                         : mouse_event_t::AREA_LEAVE,
-        ev.xcrossing.x, ev.xcrossing.y, ev.xcrossing.x_root,
-        ev.xcrossing.y_root));
-  }
-  return true;
-}
-
 #ifdef BUILD_XDAMAGE
 template <>
 bool handle_event<x_event_handler::DAMAGE>(conky::display_output_x11 *surface,
@@ -819,6 +796,8 @@ bool process_event(conky::display_output_x11 *surface, Display *display,
   HANDLE_EV(CONFIGURE)
   HANDLE_EV(BORDER_CROSSING)
   HANDLE_EV(DAMAGE)
+
+#undef HANDLE_EV
 
   // event not handled
   return false;
@@ -889,7 +868,7 @@ void display_output_x11::set_foreground_color(Colour c) {
   }
 #endif /* BUILD_ARGB */
   XSetForeground(display, window.gc,
-                 current_color.to_x11_color(display, screen));
+                 current_color.to_x11_color(display, screen, have_argb_visual));
 }
 
 int display_output_x11::calc_text_width(const char *s) {
@@ -918,7 +897,7 @@ void display_output_x11::draw_string_at(int x, int y, const char *s, int w) {
     XColor c{};
     XftColor c2{};
 
-    c.pixel = current_color.to_x11_color(display, screen);
+    c.pixel = current_color.to_x11_color(display, screen, have_argb_visual);
     // query color on custom colormap
     XQueryColor(display, window.colourmap, &c);
 
@@ -972,9 +951,11 @@ void display_output_x11::draw_arc(int x, int y, int w, int h, int a1, int a2) {
 }
 
 void display_output_x11::move_win(int x, int y) {
+#ifdef OWN_WINDOW
   window.x = x;
   window.y = y;
   XMoveWindow(display, window.window, x, y);
+#endif /* OWN_WINDOW */
 }
 
 int display_output_x11::dpi_scale(int value) {

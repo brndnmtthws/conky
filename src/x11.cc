@@ -43,12 +43,18 @@
 #include <vector>
 #endif
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <numeric>
 #include <string>
+
+// #ifndef OWN_WINDOW
+// #include <iostream>
+// #endif
 
 extern "C" {
 #pragma GCC diagnostic push
@@ -64,9 +70,6 @@ extern "C" {
 #ifdef BUILD_IMLIB2
 #include "conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
-#ifndef OWN_WINDOW
-#include <iostream>
-#endif
 #ifdef BUILD_XFT
 #include <X11/Xft/Xft.h>
 #endif
@@ -100,144 +103,12 @@ xcb_errors_context_t *xcb_errors_ctx;
 /* Window stuff */
 struct conky_x11_window window;
 
-#ifdef BUILD_ARGB
-bool have_argb_visual;
-#endif /* BUILD_ARGB */
-
-conky::simple_config_setting<std::string> display_name("display", std::string(),
-                                                       false);
+bool have_argb_visual = false;
 
 /* local prototypes */
 static void update_workarea();
 static Window find_desktop_window(Window *p_root, Window *p_desktop);
 static Window find_subwindow(Window win, int w, int h);
-static void init_x11();
-
-/********************* <SETTINGS> ************************/
-namespace priv {
-void out_to_x_setting::lua_setter(lua::state &l, bool init) {
-  lua::stack_sentry s(l, -2);
-
-  Base::lua_setter(l, init);
-
-  if (init && do_convert(l, -1).first) { init_x11(); }
-
-  ++s;
-}
-
-void out_to_x_setting::cleanup(lua::state &l) {
-  lua::stack_sentry s(l, -1);
-
-  if (do_convert(l, -1).first) { deinit_x11(); }
-
-  l.pop();
-}
-
-#ifdef BUILD_XDBE
-bool use_xdbe_setting::set_up(lua::state &l) {
-  // double_buffer makes no sense when not drawing to X
-  if (!out_to_x.get(l) || !display || !window.window) { return false; }
-
-  int major, minor;
-
-  if (XdbeQueryExtension(display, &major, &minor) == 0) {
-    NORM_ERR("No compatible double buffer extension found");
-    return false;
-  }
-
-  window.back_buffer =
-      XdbeAllocateBackBufferName(display, window.window, XdbeBackground);
-  if (window.back_buffer != None) {
-    window.drawable = window.back_buffer;
-  } else {
-    NORM_ERR("Failed to allocate back buffer");
-    return false;
-  }
-
-  XFlush(display);
-  return true;
-}
-
-void use_xdbe_setting::lua_setter(lua::state &l, bool init) {
-  lua::stack_sentry s(l, -2);
-
-  Base::lua_setter(l, init);
-
-  if (init && do_convert(l, -1).first) {
-    if (!set_up(l)) {
-      l.pop();
-      l.pushboolean(false);
-    }
-
-    NORM_ERR("drawing to %s buffer",
-             do_convert(l, -1).first ? "double" : "single");
-  }
-
-  ++s;
-}
-
-#else
-bool use_xpmdb_setting::set_up(lua::state &l) {
-  // double_buffer makes no sense when not drawing to X
-  if (!out_to_x.get(l)) return false;
-
-  window.back_buffer =
-      XCreatePixmap(display, window.window, window.width + 1, window.height + 1,
-                    DefaultDepth(display, screen));
-  if (window.back_buffer != None) {
-    window.drawable = window.back_buffer;
-  } else {
-    NORM_ERR("Failed to allocate back buffer");
-    return false;
-  }
-
-  XFlush(display);
-  return true;
-}
-
-void use_xpmdb_setting::lua_setter(lua::state &l, bool init) {
-  lua::stack_sentry s(l, -2);
-
-  Base::lua_setter(l, init);
-
-  if (init && do_convert(l, -1).first) {
-    if (!set_up(l)) {
-      l.pop();
-      l.pushboolean(false);
-    }
-
-    NORM_ERR("drawing to %s buffer",
-             do_convert(l, -1).first ? "double" : "single");
-  }
-
-  ++s;
-}
-#endif
-}  // namespace priv
-
-conky::simple_config_setting<int> head_index("xinerama_head", 0, true);
-priv::out_to_x_setting out_to_x;
-
-#ifdef BUILD_XFT
-conky::simple_config_setting<bool> use_xft("use_xft", false, false);
-#endif
-
-conky::simple_config_setting<bool> forced_redraw("forced_redraw", false, false);
-
-#ifdef BUILD_XDBE
-priv::use_xdbe_setting use_xdbe;
-#else
-priv::use_xpmdb_setting use_xpmdb;
-#endif
-
-#ifdef BUILD_IMLIB2
-/*
- * the only reason this is not in imlib2.cc is so that we can be sure it's
- * setter executes after use_xdbe
- */
-imlib_cache_size_setting imlib_cache_size;
-#endif
-/******************** </SETTINGS> ************************/
 
 /* WARNING, this type not in Xlib spec */
 static int x11_error_handler(Display *d, XErrorEvent *err) {
@@ -362,7 +233,7 @@ inline Window DefaultVRootWindow(Display *display) {
 }
 
 /* X11 initializer */
-static void init_x11() {
+void init_x11() {
   DBGP("enter init_x11()");
   if (display == nullptr) {
     const std::string &dispstr = display_name.get(*state);
@@ -494,7 +365,8 @@ namespace {
 void do_set_background(Window win, uint8_t alpha) {
   Colour colour = background_colour.get(*state);
   colour.alpha = alpha;
-  unsigned long xcolor = colour.to_x11_color(display, screen, true);
+  unsigned long xcolor =
+      colour.to_x11_color(display, screen, have_argb_visual, true);
   XSetWindowBackground(display, win, xcolor);
 }
 }  // namespace
@@ -624,7 +496,7 @@ void x11_init_window(lua::state &l, bool own) {
     classHint.res_name = const_cast<char *>(class_name.c_str());
     classHint.res_class = classHint.res_name;
 
-    if (own_window_type.get(l) == TYPE_OVERRIDE) {
+    if (own_window_type.get(l) == window_type::OVERRIDE) {
       /* An override_redirect True window.
        * No WM hints or button processing needed. */
       XSetWindowAttributes attrs = {ParentRelative,
@@ -678,7 +550,7 @@ void x11_init_window(lua::state &l, bool own) {
           StructureNotifyMask | ExposureMask | ButtonPressMask |
               ButtonReleaseMask,
           0L,
-          own_window_type.get(l) == TYPE_UTILITY ? True : False,
+          own_window_type.get(l) == window_type::UTILITY ? True : False,
           0,
           0};
 
@@ -694,7 +566,9 @@ void x11_init_window(lua::state &l, bool own) {
       }
 #endif /* BUILD_ARGB */
 
-      if (own_window_type.get(l) == TYPE_DOCK) { window.x = window.y = 0; }
+      if (own_window_type.get(l) == window_type::DOCK) {
+        window.x = window.y = 0;
+      }
       /* Parent is root window so WM can take control */
       window.window =
           XCreateWindow(display, window.root, window.x, window.y, b, b, 0,
@@ -704,10 +578,10 @@ void x11_init_window(lua::state &l, bool own) {
 
       wmHint.flags = InputHint | StateHint;
       /* allow decorated windows to be given input focus by WM */
-      wmHint.input = TEST_HINT(hints, HINT_UNDECORATED) ? False : True;
+      wmHint.input = TEST_HINT(hints, window_hints::UNDECORATED) ? False : True;
 #ifdef BUILD_XSHAPE
 #ifdef BUILD_XFIXES
-      if (own_window_type.get(l) == TYPE_UTILITY) {
+      if (own_window_type.get(l) == window_type::UTILITY) {
         XRectangle rect;
         XserverRegion region = XFixesCreateRegion(display, &rect, 1);
         XFixesSetWindowShapeRegion(display, window.window, ShapeInput, 0, 0,
@@ -723,17 +597,17 @@ void x11_init_window(lua::state &l, bool own) {
           NORM_ERR("Input shapes are not supported");
         } else {
           if (own_window.get(*state) &&
-              (own_window_type.get(*state) != TYPE_NORMAL ||
-               ((TEST_HINT(own_window_hints.get(*state), HINT_UNDECORATED)) !=
-                0))) {
+              (own_window_type.get(*state) != window_type::NORMAL ||
+               ((TEST_HINT(own_window_hints.get(*state),
+                           window_hints::UNDECORATED)) != 0))) {
             XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0,
                                     nullptr, 0, ShapeSet, Unsorted);
           }
         }
       }
 #endif /* BUILD_XSHAPE */
-      if (own_window_type.get(l) == TYPE_DOCK ||
-          own_window_type.get(l) == TYPE_PANEL) {
+      if (own_window_type.get(l) == window_type::DOCK ||
+          own_window_type.get(l) == window_type::PANEL) {
         wmHint.initial_state = WithdrawnState;
       } else {
         wmHint.initial_state = NormalState;
@@ -751,23 +625,23 @@ void x11_init_window(lua::state &l, bool own) {
         Atom prop;
 
         switch (own_window_type.get(l)) {
-          case TYPE_DESKTOP:
+          case window_type::DESKTOP:
             prop = ATOM(_NET_WM_WINDOW_TYPE_DESKTOP);
             NORM_ERR("window type - desktop");
             break;
-          case TYPE_DOCK:
+          case window_type::DOCK:
             prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
             NORM_ERR("window type - dock");
             break;
-          case TYPE_PANEL:
+          case window_type::PANEL:
             prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
             NORM_ERR("window type - panel");
             break;
-          case TYPE_UTILITY:
+          case window_type::UTILITY:
             prop = ATOM(_NET_WM_WINDOW_TYPE_UTILITY);
             NORM_ERR("window type - utility");
             break;
-          case TYPE_NORMAL:
+          case window_type::NORMAL:
           default:
             prop = ATOM(_NET_WM_WINDOW_TYPE_NORMAL);
             NORM_ERR("window type - normal");
@@ -781,7 +655,7 @@ void x11_init_window(lua::state &l, bool own) {
       /* Set desired hints */
 
       /* Window decorations */
-      if (TEST_HINT(hints, HINT_UNDECORATED)) {
+      if (TEST_HINT(hints, window_hints::UNDECORATED)) {
         DBGP("hint - undecorated");
         xa = ATOM(_MOTIF_WM_HINTS);
         if (xa != None) {
@@ -792,7 +666,7 @@ void x11_init_window(lua::state &l, bool own) {
       }
 
       /* Below other windows */
-      if (TEST_HINT(hints, HINT_BELOW)) {
+      if (TEST_HINT(hints, window_hints::BELOW)) {
         DBGP("hint - below");
         xa = ATOM(_WIN_LAYER);
         if (xa != None) {
@@ -814,7 +688,7 @@ void x11_init_window(lua::state &l, bool own) {
       }
 
       /* Above other windows */
-      if (TEST_HINT(hints, HINT_ABOVE)) {
+      if (TEST_HINT(hints, window_hints::ABOVE)) {
         DBGP("hint - above");
         xa = ATOM(_WIN_LAYER);
         if (xa != None) {
@@ -836,7 +710,7 @@ void x11_init_window(lua::state &l, bool own) {
       }
 
       /* Sticky */
-      if (TEST_HINT(hints, HINT_STICKY)) {
+      if (TEST_HINT(hints, window_hints::STICKY)) {
         DBGP("hint - sticky");
         xa = ATOM(_NET_WM_DESKTOP);
         if (xa != None) {
@@ -858,7 +732,7 @@ void x11_init_window(lua::state &l, bool own) {
       }
 
       /* Skip taskbar */
-      if (TEST_HINT(hints, HINT_SKIP_TASKBAR)) {
+      if (TEST_HINT(hints, window_hints::SKIP_TASKBAR)) {
         DBGP("hint - skip taskbar");
         xa = ATOM(_NET_WM_STATE);
         if (xa != None) {
@@ -871,7 +745,7 @@ void x11_init_window(lua::state &l, bool own) {
       }
 
       /* Skip pager */
-      if (TEST_HINT(hints, HINT_SKIP_PAGER)) {
+      if (TEST_HINT(hints, window_hints::SKIP_PAGER)) {
         DBGP("hint - skip pager");
         xa = ATOM(_NET_WM_STATE);
         if (xa != None) {
@@ -909,9 +783,12 @@ void x11_init_window(lua::state &l, bool own) {
   int64_t input_mask = ExposureMask | PropertyChangeMask;
 #ifdef OWN_WINDOW
   if (own_window.get(l)) {
-    input_mask |= StructureNotifyMask | ButtonPressMask | ButtonReleaseMask;
+    input_mask |= StructureNotifyMask;
+#if !defined(BUILD_XINPUT)
+    input_mask |= ButtonPressMask | ButtonReleaseMask;
+#endif
   }
-#ifdef BUILD_MOUSE_EVENTS
+#if defined(BUILD_MOUSE_EVENTS) || defined(BUILD_XINPUT)
   bool xinput_ok = false;
 #ifdef BUILD_XINPUT
   // not a loop; substitutes goto with break - if checks fail
@@ -974,10 +851,12 @@ void x11_init_window(lua::state &l, bool own) {
   // Fallback to basic X11 enter/leave events if xinput fails to init.
   // It's not recommended to add event masks to special windows in X; causes a
   // crash (thus own_window_type != TYPE_DESKTOP)
-  if (!xinput_ok && own && own_window_type.get(l) != TYPE_DESKTOP) {
+#ifdef BUILD_MOUSE_EVENTS
+  if (!xinput_ok && own && own_window_type.get(l) != window_type::DESKTOP) {
     input_mask |= PointerMotionMask | EnterWindowMask | LeaveWindowMask;
   }
 #endif /* BUILD_MOUSE_EVENTS */
+#endif /* BUILD_MOUSE_EVENTS || BUILD_XINPUT */
 #endif /* OWN_WINDOW */
   window.event_mask = input_mask;
   XSelectInput(display, window.window, input_mask);
@@ -1205,61 +1084,83 @@ void print_desktop_name(struct text_object *obj, char *p,
 }
 
 #ifdef OWN_WINDOW
+enum class x11_strut : size_t {
+  LEFT,
+  RIGHT,
+  TOP,
+  BOTTOM,
+  LEFT_START_Y,
+  LEFT_END_Y,
+  RIGHT_START_Y,
+  RIGHT_END_Y,
+  TOP_START_X,
+  TOP_END_X,
+  BOTTOM_START_X,
+  BOTTOM_END_X,
+  COUNT
+};
+constexpr size_t operator*(x11_strut index) {
+  return static_cast<size_t>(index);
+}
+
 /* reserve window manager space */
-void set_struts(int sidenum) {
-  Atom strut;
-  if ((strut = ATOM(_NET_WM_STRUT)) != None) {
+void set_struts(alignment align) {
+  // Middle and none align don't have least significant bit set.
+  // Ensures either vertical or horizontal axis are start/end
+  if ((*align & 0b0101) == 0) return;
+
+  Atom strut = ATOM(_NET_WM_STRUT);
+  if (strut != None) {
     /* reserve space at left, right, top, bottom */
-    signed long sizes[12] = {0};
+    uint32_t sizes[*x11_strut::COUNT] = {0};
     int i;
 
-    /* define strut depth */
-    switch (sidenum) {
-      case 0:
-        /* left side */
-        sizes[0] = window.x + window.width;
-        break;
-      case 1:
-        /* right side */
-        sizes[1] = display_width - window.x;
-        break;
-      case 2:
-        /* top side */
-        sizes[2] = window.y + window.height;
-        break;
-      case 3:
-        /* bottom side */
-        sizes[3] = display_height - window.y;
+    switch (vertical_alignment(align)) {
+      case axis_align::START:
+        sizes[*x11_strut::TOP] =
+            std::min(window.y + window.height, display_height);
+        sizes[*x11_strut::TOP_START_X] = window.x;
+        sizes[*x11_strut::TOP_END_X] =
+            std::min(window.x + window.width, display_width);
+      case axis_align::END:
+        sizes[*x11_strut::BOTTOM] =
+            window.y < display_height ? display_height - window.y : 0;
+        sizes[*x11_strut::BOTTOM_START_X] = window.x;
+        sizes[*x11_strut::BOTTOM_END_X] =
+            std::min(window.x + window.width, display_width);
+      case axis_align::MIDDLE:
+        // can't reserve space in middle of the screen
+      default:
         break;
     }
-
-    /* define partial strut length */
-    if (sidenum <= 1) {
-      sizes[4 + (sidenum * 2)] = window.y;
-      sizes[5 + (sidenum * 2)] = window.y + window.height;
-    } else if (sidenum <= 3) {
-      sizes[4 + (sidenum * 2)] = window.x;
-      sizes[5 + (sidenum * 2)] = window.x + window.width;
-    }
-
-    /* check constraints */
-    for (i = 0; i < 12; i++) {
-      if (sizes[i] < 0) {
-        sizes[i] = 0;
-      } else {
-        if (i <= 1 || i >= 8) {
-          if (sizes[i] > display_width) { sizes[i] = display_width; }
-        } else {
-          if (sizes[i] > display_height) { sizes[i] = display_height; }
-        }
-      }
+    // adding `vertical_alignment(align) & 0x1` makes the switch hit MIDDLE if
+    // vertical alignment is set to left or right
+    switch (static_cast<axis_align>(
+        *horizontal_alignment(align) + *vertical_alignment(align) & 0x1)) {
+      case axis_align::START:
+        sizes[*x11_strut::LEFT] =
+            std::min(window.x + window.width, display_width);
+        sizes[*x11_strut::LEFT_START_Y] = window.y;
+        sizes[*x11_strut::LEFT_END_Y] =
+            std::min(window.y + window.height, display_height);
+      case axis_align::END:
+        sizes[*x11_strut::RIGHT] =
+            window.x < display_width ? display_width - window.x : 0;
+        sizes[*x11_strut::RIGHT_START_Y] = window.y;
+        sizes[*x11_strut::RIGHT_END_Y] =
+            std::min(window.y + window.height, display_height);
+      case axis_align::MIDDLE:
+        // can't reserve space in middle of the screen
+      default:
+        break;
     }
 
     XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
                     PropModeReplace, reinterpret_cast<unsigned char *>(&sizes),
                     4);
 
-    if ((strut = ATOM(_NET_WM_STRUT_PARTIAL)) != None) {
+    strut = ATOM(_NET_WM_STRUT_PARTIAL);
+    if (strut != None) {
       XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
                       PropModeReplace,
                       reinterpret_cast<unsigned char *>(&sizes), 12);

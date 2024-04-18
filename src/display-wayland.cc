@@ -51,7 +51,7 @@
 #include <sstream>
 
 #include "conky.h"
-#include "display-wayland.hh"
+#include "display-output.hh"
 #include "gui.h"
 #include "llua.h"
 #include "logging.h"
@@ -59,6 +59,7 @@
 #include "x11.h"
 #endif
 #ifdef BUILD_WAYLAND
+#include "display-wayland.hh"
 #include "fonts.h"
 #endif
 #ifdef BUILD_MOUSE_EVENTS
@@ -241,17 +242,16 @@ static void wayland_create_window() {
 #endif /* BUILD_WAYLAND */
 
 namespace conky {
-namespace {
-
 #ifdef BUILD_WAYLAND
+namespace {
 conky::display_output_wayland wayland_output;
-#else
-conky::disabled_display_output wayland_output_disabled("wayland",
-                                                       "BUILD_WAYLAND");
-#endif
-
 }  // namespace
-extern void init_wayland_output() {}
+
+template <>
+void register_output<output_t::WAYLAND>(display_outputs_t &outputs) {
+  outputs.push_back(&wayland_output);
+}
+#endif /* BUILD_WAYLAND */
 
 namespace priv {}  // namespace priv
 
@@ -489,7 +489,11 @@ static void on_pointer_button(void *data, struct wl_pointer *pointer,
   size_t abs_y = w->rectangle.y + y;
 
   mouse_button_event event{
-      mouse_event_t::MOUSE_RELEASE,        x, y, abs_x, abs_y,
+      mouse_event_t::RELEASE,
+      x,
+      y,
+      abs_x,
+      abs_y,
       static_cast<mouse_button_t>(button),
   };
 
@@ -498,7 +502,7 @@ static void on_pointer_button(void *data, struct wl_pointer *pointer,
       // pass; default is MOUSE_RELEASE
       break;
     case WL_POINTER_BUTTON_STATE_PRESSED:
-      event.type = mouse_event_t::MOUSE_PRESS;
+      event.type = mouse_event_t::PRESS;
       break;
     default:
       return;
@@ -519,17 +523,17 @@ void on_pointer_axis(void *data, struct wl_pointer *pointer, std::uint32_t time,
   size_t abs_y = w->rectangle.y + y;
 
   mouse_scroll_event event{
-      x, y, abs_x, abs_y, scroll_direction_t::SCROLL_UP,
+      x, y, abs_x, abs_y, scroll_direction_t::UP,
   };
 
   switch (static_cast<wl_pointer_axis>(axis)) {
     case WL_POINTER_AXIS_VERTICAL_SCROLL:
-      event.direction = value > 0 ? scroll_direction_t::SCROLL_DOWN
-                                  : scroll_direction_t::SCROLL_UP;
+      event.direction =
+          value > 0 ? scroll_direction_t::DOWN : scroll_direction_t::UP;
       break;
     case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
-      event.direction = value > 0 ? scroll_direction_t::SCROLL_RIGHT
-                                  : scroll_direction_t::SCROLL_LEFT;
+      event.direction =
+          value > 0 ? scroll_direction_t::RIGHT : scroll_direction_t::LEFT;
       break;
     default:
       return;
@@ -577,7 +581,9 @@ bool display_output_wayland::initialize() {
 
   wl_display_roundtrip(global_display);
   if (wl_globals.layer_shell == nullptr) {
-    CRIT_ERR("Compositor doesn't support wlr-layer-shell-unstable-v1. Can't run conky.");
+    CRIT_ERR(
+        "Compositor doesn't support wlr-layer-shell-unstable-v1. Can't run "
+        "conky.");
   }
 
   struct wl_surface *surface =
@@ -705,48 +711,34 @@ bool display_output_wayland::main_loop_wait(double t) {
 
     /* update struts */
     if (changed != 0) {
-      int anchor = -1;
+      int anchor = 0;
 
       DBGP("%s", _(PACKAGE_NAME ": defining struts\n"));
       fflush(stderr);
 
-      switch (text_alignment.get(*state)) {
-        case TOP_LEFT:
-          anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP |
-                   ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT;
+      alignment text_align = text_alignment.get(*state);
+      switch (vertical_alignment(text_align)) {
+        case axis_align::START:
+          anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP;
           break;
-        case TOP_RIGHT:
-          anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP |
-                   ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
+        case axis_align::END:
+          anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
           break;
-        case TOP_MIDDLE: {
-          anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP;
+        default:
           break;
-        }
-        case BOTTOM_LEFT:
-          anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM |
-                   ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT;
-          break;
-        case BOTTOM_RIGHT:
-          anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM |
-                   ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
-          break;
-        case BOTTOM_MIDDLE: {
-          anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
-          break;
-        }
-        case MIDDLE_LEFT: {
-          anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT;
-          break;
-        }
-        case MIDDLE_RIGHT: {
-          anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
-          break;
-        }
-
-        case NONE:
-        case MIDDLE_MIDDLE: /* XXX What about these? */;
       }
+      switch (horizontal_alignment(text_align)) {
+        case axis_align::START:
+          anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT;
+          break;
+        case axis_align::END:
+          anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
+          break;
+        default:
+          break;
+      }
+      // middle anchor alignment is the default and requires no special
+      // handling.
 
       if (anchor != -1) {
         zwlr_layer_surface_v1_set_anchor(global_window->layer_surface, anchor);

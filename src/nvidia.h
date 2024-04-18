@@ -30,7 +30,9 @@
 #ifndef NVIDIA_CONKY_H
 #define NVIDIA_CONKY_H
 
-int set_nvidia_query(struct text_object *, const char *, unsigned int);
+#include "specials.h"
+
+int set_nvidia_query(struct text_object *, const char *, text_node_t);
 void print_nvidia_value(struct text_object *, char *, unsigned int);
 double get_nvidia_barval(struct text_object *);
 void free_nvidia(struct text_object *);

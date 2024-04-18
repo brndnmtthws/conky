@@ -42,12 +42,15 @@ namespace {
 
 #ifdef BUILD_HTTP
 conky::display_output_http http_output;
-#else
-conky::disabled_display_output http_output_disabled("http", "BUILD_HTTP");
-#endif
+#endif /* BUILD_HTTP */
 
 }  // namespace
-extern void init_http_output() {}
+#ifdef BUILD_HTTP
+template <>
+void register_output<output_t::HTTP>(display_outputs_t &outputs) {
+  outputs.push_back(&http_output);
+}
+#endif /* BUILD_HTTP */
 
 // TODO: cleanup namespace
 // namespace priv {

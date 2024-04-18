@@ -48,13 +48,15 @@ namespace {
 
 #ifdef BUILD_NCURSES
 conky::display_output_ncurses ncurses_output;
-#else
-conky::disabled_display_output ncurses_output_disabled("ncurses",
-                                                       "BUILD_NCURSES");
-#endif
+#endif /* BUILD_NCURSES */
 
 }  // namespace
-extern void init_ncurses_output() {}
+#ifdef BUILD_NCURSES
+template <>
+void register_output<output_t::NCURSES>(display_outputs_t& outputs) {
+  outputs.push_back(&ncurses_output);
+}
+#endif /* BUILD_NCURSES */
 
 // namespace priv {
 
@@ -96,7 +98,7 @@ Colour from_ncurses(int nccolor) {
   if (nccolor >= 0 && nccolor < COLORS_BUILTIN + COLORS_CUSTOM) {
     return ncurses_colors[nccolor];
   }
-  return error_colour;
+  return ERROR_COLOUR;
 }
 
 display_output_ncurses::display_output_ncurses()

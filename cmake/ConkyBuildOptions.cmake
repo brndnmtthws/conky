@@ -193,8 +193,8 @@ dependent_option(BUILD_XSHAPE "Enable Xshape support" true
   "BUILD_X11" false
   "Xshape support requires X11")
 dependent_option(BUILD_XINPUT "Build Xinput 2 support" true
-  "BUILD_X11;BUILD_MOUSE_EVENTS" false
-  "Xinput 2 support requires X11 and BUILD_MOUSE_EVENTS enabled")
+  "BUILD_X11" false
+  "Xinput 2 support requires X11")
 
 # if we build with any GUI support
 if(BUILD_X11)
@@ -206,8 +206,8 @@ if(BUILD_WAYLAND)
 endif(BUILD_WAYLAND)
 
 dependent_option(BUILD_MOUSE_EVENTS "Enable mouse event support" true
-  "BUILD_WAYLAND OR OWN_WINDOW" false
-  "Mouse event support requires Wayland or OWN_WINDOW enabled")
+  "BUILD_WAYLAND OR BUILD_X11" false
+  "Mouse event support requires Wayland or X11 enabled")
 
 # Lua library options
 option(BUILD_LUA_CAIRO "Build cairo bindings for Lua" false)

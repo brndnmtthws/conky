@@ -23,6 +23,12 @@
 #ifndef DISPLAY_WAYLAND_HH
 #define DISPLAY_WAYLAND_HH
 
+#include "config.h"
+
+#ifndef BUILD_WAYLAND
+#error display-wayland.hh included when BUILD_WAYLAND is disabled
+#endif
+
 #include <limits>
 #include <string>
 #include <type_traits>

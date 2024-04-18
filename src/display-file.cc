@@ -49,7 +49,10 @@ namespace {
 conky::display_output_file file_output("file");
 
 }  // namespace
-extern void init_file_output() {}
+template <>
+void register_output<output_t::FILE>(display_outputs_t &outputs) {
+  outputs.push_back(&file_output);
+}
 
 namespace priv {}  // namespace priv
 
