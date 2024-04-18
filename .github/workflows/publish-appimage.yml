@@ -11,9 +11,6 @@ on:
   pull_request:
     branches:
       - main
-    paths-ignore:
-      - web/**
-      - doc/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
