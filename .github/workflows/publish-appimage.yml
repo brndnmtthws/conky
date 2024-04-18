@@ -145,5 +145,6 @@ jobs:
           prerelease: false
           discussion_category_name: General
           generate_release_notes: true
+          fail_on_unmatched_files: true
           files: |
-            ${{ github.workspace }}/artifacts/*
+            ${{ github.workspace }}/artifacts/**/*
