@@ -49,7 +49,6 @@ struct Colour {
   Colour() = default;
   Colour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = UINT8_MAX)
       : red(r), green(g), blue(b), alpha(a) {}
-  Colour(const std::string &name);
   Colour(const Colour &) = default;
   Colour(Colour &&) = default;
 
