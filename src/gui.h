@@ -52,7 +52,8 @@ constexpr uint8_t operator*(axis_align index) {
 
 /// @brief Represents alignment on a 2D plane.
 ///
-/// Values are composed of 2 `axis_align` values.
+/// Values are composed of 2 `axis_align` values: 2 bits (at 0x0C) for vertical
+/// aligment and 2 least significant bits for horizontal.
 enum class alignment : uint8_t {
   NONE = 0,
   NONE_LEFT = 0b0001,

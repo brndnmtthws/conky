@@ -324,8 +324,6 @@ bool display_output_x11::main_loop_wait(double t) {
 
       /* update struts */
       if ((changed != 0) && own_window_type.get(*state) == window_type::PANEL) {
-        int sidenum = -1;
-
         NORM_ERR("defining struts");
         set_struts(text_alignment.get(*state));
       }

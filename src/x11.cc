@@ -608,7 +608,7 @@ void x11_init_window(lua::state &l, bool own) {
 #endif /* BUILD_XSHAPE */
       if (own_window_type.get(l) == window_type::DOCK ||
           own_window_type.get(l) == window_type::PANEL) {
-        wmHint.initial_state = WithdrawnState;
+        // wmHint.initial_state = WithdrawnState;
       } else {
         wmHint.initial_state = NormalState;
       }
@@ -1101,62 +1101,77 @@ enum class x11_strut : size_t {
   TOP_END_X,
   BOTTOM_START_X,
   BOTTOM_END_X,
-  COUNT
 };
+const size_t STRUT_COUNT = static_cast<size_t>(x11_strut::BOTTOM_END_X) + 1;
 constexpr size_t operator*(x11_strut index) {
   return static_cast<size_t>(index);
 }
 
 /* reserve window manager space */
 void set_struts(alignment align) {
+  NORM_ERR("A: %x", (uint8_t)align);
+
   // Middle and none align don't have least significant bit set.
   // Ensures either vertical or horizontal axis are start/end
   if ((*align & 0b0101) == 0) return;
+  NORM_ERR("B");
 
   Atom strut = ATOM(_NET_WM_STRUT);
   if (strut != None) {
     /* reserve space at left, right, top, bottom */
-    uint32_t sizes[*x11_strut::COUNT] = {0};
+    uint32_t sizes[STRUT_COUNT] = {0};
     int i;
 
     switch (vertical_alignment(align)) {
       case axis_align::START:
+        NORM_ERR("TOP");
         sizes[*x11_strut::TOP] =
             std::min(window.y + window.height, display_height);
         sizes[*x11_strut::TOP_START_X] = window.x;
         sizes[*x11_strut::TOP_END_X] =
             std::min(window.x + window.width, display_width);
+        break;
       case axis_align::END:
+        NORM_ERR("BOTTOM");
         sizes[*x11_strut::BOTTOM] =
             window.y < display_height ? display_height - window.y : 0;
         sizes[*x11_strut::BOTTOM_START_X] = window.x;
         sizes[*x11_strut::BOTTOM_END_X] =
             std::min(window.x + window.width, display_width);
+        break;
       case axis_align::MIDDLE:
         // can't reserve space in middle of the screen
       default:
         break;
     }
-    // adding `vertical_alignment(align) & 0x1` makes the switch hit MIDDLE if
-    // vertical alignment is set to left or right
-    switch (static_cast<axis_align>(
-        *horizontal_alignment(align) + *vertical_alignment(align) & 0x1)) {
+    // adding `(vertical_alignment(align) & 0x1) << 1` makes the switch hit
+    // MIDDLE if vertical alignment is set to left or right
+    uint8_t bump = ((*vertical_alignment(align) & 0b1) << 1);
+    switch (static_cast<axis_align>(*horizontal_alignment(align) + bump)) {
       case axis_align::START:
+        NORM_ERR("LEFT");
         sizes[*x11_strut::LEFT] =
             std::min(window.x + window.width, display_width);
         sizes[*x11_strut::LEFT_START_Y] = window.y;
         sizes[*x11_strut::LEFT_END_Y] =
             std::min(window.y + window.height, display_height);
+        break;
       case axis_align::END:
+        NORM_ERR("right");
         sizes[*x11_strut::RIGHT] =
             window.x < display_width ? display_width - window.x : 0;
         sizes[*x11_strut::RIGHT_START_Y] = window.y;
         sizes[*x11_strut::RIGHT_END_Y] =
             std::min(window.y + window.height, display_height);
+        break;
       case axis_align::MIDDLE:
         // can't reserve space in middle of the screen
       default:
         break;
+    }
+
+    for (size_t i = 0; i < STRUT_COUNT; i++) {
+      NORM_ERR("STRUT %d: %d", i, sizes[i]);
     }
 
     XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
