@@ -48,9 +48,9 @@ std::optional<Colour> parse_color_name(const std::string &name) {
   const rgb *value = color_name_hash::in_word_set(name.c_str(), name.length());
 
   if (value == nullptr) {
-    return Colour{value->red, value->green, value->blue};
-  } else {
     return std::nullopt;
+  } else {
+    return Colour{value->red, value->green, value->blue};
   }
 }
 
@@ -113,8 +113,14 @@ Colour parse_color(const std::string &color) {
   std::optional<Colour> value_##name = name(color); \
   if (value_##name.has_value()) { return value_##name.value(); }
 
-  TRY_PARSER(parse_color_name)
-  TRY_PARSER(parse_hex_color)
+  std::optional<Colour> value_parse_color_name = parse_color_name(color);
+  if (value_parse_color_name.has_value()) {
+    return value_parse_color_name.value();
+  }
+  std::optional<Colour> value_parse_hex_color = parse_hex_color(color);
+  if (value_parse_hex_color.has_value()) {
+    return value_parse_hex_color.value();
+  }
 
 #undef TRY_PARSER
 
