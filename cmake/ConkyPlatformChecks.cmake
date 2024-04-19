@@ -472,6 +472,14 @@ if(BUILD_WAYLAND)
     set(conky_includes ${conky_includes} ${EPOLL_INCLUDE_DIRS})
   endif(OS_DARWIN OR OS_DRAGONFLY OR OS_FREEBSD OR OS_NETBSD OR OS_OPENBSD)
 
+  pkg_check_modules(CAIRO REQUIRED cairo)
+  set(conky_libs ${conky_libs} ${CAIRO_LIBRARIES})
+  set(conky_includes ${conky_includes} ${CAIRO_INCLUDE_DIR})
+
+  pkg_check_modules(PANGO REQUIRED pango)
+  set(conky_libs ${conky_libs} ${PANGO_LIBRARIES})
+  set(conky_includes ${conky_includes} ${PANGO_INCLUDE_DIRS})
+
   pkg_check_modules(PANGOCAIRO pangocairo)
   set(conky_libs ${conky_libs} ${PANGOCAIRO_LIBRARIES})
   set(conky_includes ${conky_includes} ${PANGOCAIRO_INCLUDE_DIRS})
@@ -491,34 +499,39 @@ set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
 set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIR})
 include_directories(3rdparty/toluapp/include)
 
-if(BUILD_GUI)
-  # Check for libraries used by Lua bindings
-  if(BUILD_LUA_CAIRO)
-    pkg_check_modules(CAIRO REQUIRED cairo>=1.14 cairo-xlib)
-    set(luacairo_libs ${CAIRO_LIBRARIES} ${LUA_LIBRARIES})
-    set(luacairo_includes ${CAIRO_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
-    find_program(APP_PATCH patch)
+# Check for libraries used by Lua bindings
+if(BUILD_LUA_CAIRO)
+  pkg_check_modules(CAIRO REQUIRED cairo>=1.14)
+  set(luacairo_libs ${CAIRO_LIBRARIES} ${LUA_LIBRARIES})
+  set(luacairo_includes ${CAIRO_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
 
-    if(NOT APP_PATCH)
-      message(FATAL_ERROR "Unable to find program 'patch'")
-    endif(NOT APP_PATCH)
-  endif(BUILD_LUA_CAIRO)
+  if(BUILD_LUA_CAIRO_XLIB)
+    pkg_check_modules(CAIROXLIB REQUIRED cairo-xlib)
+    set(luacairo_libs ${CAIROXLIB_LIBRARIES} ${luacairo_libs})
+    set(luacairo_includes ${CAIROXLIB_INCLUDE_DIRS} ${luacairo_includes})
+  endif(BUILD_LUA_CAIRO_XLIB)
+  
+  find_program(APP_PATCH patch)
 
-  if(BUILD_X11 AND BUILD_LUA_IMLIB2)
-    pkg_search_module(IMLIB2 REQUIRED imlib2 Imlib2)
-    set(luaimlib2_libs ${IMLIB2_LIBS} ${IMLIB2_LDFLAGS} ${LUA_LIBRARIES})
-    set(luaimlib2_includes
-      ${IMLIB2_INCLUDE_DIRS}
-      ${LUA_INCLUDE_DIR}
-      ${X11_INCLUDE_DIR})
-  endif(BUILD_X11 AND BUILD_LUA_IMLIB2)
+  if(NOT APP_PATCH)
+    message(FATAL_ERROR "Unable to find program 'patch'")
+  endif(NOT APP_PATCH)
+endif(BUILD_LUA_CAIRO)
 
-  if(BUILD_LUA_RSVG)
-    pkg_check_modules(RSVG REQUIRED librsvg-2.0>=2.52)
-    set(luarsvg_libs ${RSVG_LIBRARIES} ${LUA_LIBRARIES})
-    set(luarsvg_includes ${RSVG_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
-  endif(BUILD_LUA_RSVG)
-endif(BUILD_GUI)
+if(BUILD_LUA_IMLIB2)
+  pkg_search_module(IMLIB2 REQUIRED imlib2 Imlib2)
+  set(luaimlib2_libs ${IMLIB2_LIBS} ${IMLIB2_LDFLAGS} ${LUA_LIBRARIES})
+  set(luaimlib2_includes
+    ${IMLIB2_INCLUDE_DIRS}
+    ${LUA_INCLUDE_DIR}
+    ${X11_INCLUDE_DIR})
+endif(BUILD_LUA_IMLIB2)
+
+if(BUILD_LUA_RSVG)
+  pkg_check_modules(RSVG REQUIRED librsvg-2.0>=2.52)
+  set(luarsvg_libs ${RSVG_LIBRARIES} ${LUA_LIBRARIES})
+  set(luarsvg_includes ${RSVG_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
+endif(BUILD_LUA_RSVG)
 
 if(BUILD_AUDACIOUS)
   set(WANT_GLIB true)
