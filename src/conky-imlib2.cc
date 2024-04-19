@@ -27,6 +27,7 @@
 #include "logging.h"
 #include "text_object.h"
 
+#include <Imlib2.h>
 #include <climits>
 #include <cstdio>
 #include <cstdlib>
@@ -100,8 +101,6 @@ void imlib_cache_size_setting::cleanup(lua::state &l) {
     imlib_context_free(context);
   }
 }
-
-imlib_cache_size_setting imlib_cache_size;
 
 void cimlib_cleanup() {
   struct image_list_s *cur = image_list_start, *last = nullptr;

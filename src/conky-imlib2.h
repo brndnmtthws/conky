@@ -26,14 +26,14 @@
 
 #include "conky.h"
 
-#include <Imlib2.h>
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
 #include <X11/Xlib.h>
 #pragma GCC diagnostic pop
 
 void cimlib_add_image(const char *args);
+void cimlib_set_cache_size(long size);
+void cimlib_set_cache_flush_interval(long interval);
 void cimlib_render(int x, int y, int width, int height);
 void cimlib_cleanup(void);
 

@@ -124,3 +124,11 @@ priv::use_xdbe_setting use_xdbe;
 #else
 priv::use_xpmdb_setting use_xpmdb;
 #endif
+
+#ifdef BUILD_IMLIB2
+/*
+ * the only reason this is not in imlib2.cc is so that we can be sure it's
+ * setter executes after use_xdbe
+ */
+imlib_cache_size_setting imlib_cache_size;
+#endif
