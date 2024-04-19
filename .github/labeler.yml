@@ -3,6 +3,7 @@ documentation:
       - any-glob-to-any-file:
           - doc/*
           - doc/**/*
+          - data/conky*.conf
 
 extras:
   - changed-files:
@@ -45,6 +46,8 @@ gh-actions:
       - any-glob-to-any-file:
           - .github/workflows/*
           - .github/workflows/**/*
+          - .github/labeler.yml
+          - .github/pull_request_template.md
 
 dependencies:
   - changed-files:
