@@ -87,7 +87,7 @@ jobs:
             lcov \
             libaudclient-dev \
             libcairo2-dev \
-            libcurl4-gnutls-dev \
+            libpango1.0-dev \
             libcurl4-gnutls-dev \
             libdbus-glib-1-dev \
             libglib2.0-dev \
@@ -148,6 +148,7 @@ jobs:
             -DBUILD_IRC=ON                       \
             -DBUILD_JOURNAL=ON                   \
             -DBUILD_LUA_CAIRO=ON                 \
+            -DBUILD_LUA_CAIRO_XLIB=ON            \
             -DBUILD_LUA_IMLIB2=ON                \
             -DBUILD_LUA_RSVG=${RSVG_ENABLED}     \
             -DBUILD_MYSQL=ON                     \

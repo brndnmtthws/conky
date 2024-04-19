@@ -476,15 +476,19 @@ if(BUILD_WAYLAND)
   set(conky_libs ${conky_libs} ${CAIRO_LIBRARIES})
   set(conky_includes ${conky_includes} ${CAIRO_INCLUDE_DIR})
 
-  pkg_check_modules(PANGOCAIRO REQUIRED pangocairo)
+  pkg_check_modules(PANGO REQUIRED pango)
+  set(conky_libs ${conky_libs} ${PANGO_LIBRARIES})
+  set(conky_includes ${conky_includes} ${PANGO_INCLUDE_DIRS})
+
+  pkg_check_modules(PANGOCAIRO pangocairo)
   set(conky_libs ${conky_libs} ${PANGOCAIRO_LIBRARIES})
   set(conky_includes ${conky_includes} ${PANGOCAIRO_INCLUDE_DIRS})
 
-  pkg_check_modules(PANGOFC REQUIRED pangofc)
+  pkg_check_modules(PANGOFC pangofc)
   set(conky_libs ${conky_libs} ${PANGOFC_LIBRARIES})
   set(conky_includes ${conky_includes} ${PANGOFC_INCLUDE_DIRS})
 
-  pkg_check_modules(PANGOFT2 REQUIRED pangoft2)
+  pkg_check_modules(PANGOFT2 pangoft2)
   set(conky_libs ${conky_libs} ${PANGOFT2_LIBRARIES})
   set(conky_includes ${conky_includes} ${PANGOFT2_INCLUDE_DIRS})
 endif(BUILD_WAYLAND)
