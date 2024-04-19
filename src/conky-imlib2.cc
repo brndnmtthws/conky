@@ -70,7 +70,10 @@ void imlib_cache_size_setting::lua_setter(lua::state &l, bool init) {
 
   Base::lua_setter(l, init);
 
-  if (display == nullptr || window.visual == nullptr) return;
+  if (display == nullptr || window.visual == nullptr) {
+    ++s;
+    return;
+  }
 
   if (init && out_to_x.get(l)) {
     image_list_start = image_list_end = nullptr;
