@@ -3,6 +3,7 @@ documentation:
       - any-glob-to-any-file:
           - doc/*
           - doc/**/*
+          - data/conky*.conf
 
 extras:
   - changed-files:
@@ -45,9 +46,171 @@ gh-actions:
       - any-glob-to-any-file:
           - .github/workflows/*
           - .github/workflows/**/*
+          - .github/labeler.yml
+          - .github/pull_request_template.md
 
 dependencies:
   - changed-files:
       - any-glob-to-any-file:
           - web/package-lock.json
           - cmake/ConkyPlatformChecks.cmake
+
+audio:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/audacious.cc
+          - src/audacious.h
+          - src/cmus.cc
+          - src/cmus.h
+          - src/libmpdclient.cc
+          - src/libmpdclient.h
+          - src/mpd.cc
+          - src/mpd.h
+          - src/moc.cc
+          - src/moc.h
+          - src/mixer.cc
+          - src/mixer.h
+          - src/xmms2.cc
+          - src/xmms2.h
+          - src/pulseaudio.cc
+          - src/pulseaudio.h
+
+power:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/apcupsd.cc
+          - src/apcupsd.h
+          - src/bsdapm.cc
+          - src/bsdapm.h
+          - src/smapi.cc
+          - src/smapi.h
+
+'display: console':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/display-console.cc
+          - src/display-console.hh
+'display: file':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/display-file.cc
+          - src/display-file.hh
+'display: http':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/display-http.cc
+          - src/display-http.hh
+'display: ncurses':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/nc.cc
+          - src/nc.h
+          - src/display-ncurses.cc
+          - src/display-ncurses.hh
+'display: wayland':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/wl.cc
+          - src/wl.h
+          - src/wlr-layer-shell-unstable-v1.xml
+          - src/display-wayland.cc
+          - src/display-wayland.hh
+'display: x11':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/x11-color.cc
+          - src/x11-color.h
+          - src/x11.cc
+          - src/x11.h
+          - src/display-x11.cc
+          - src/display-x11.hh
+
+'build system':
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/CMakeLists.txt'
+          - '*.cmake'
+
+cairo:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lua/*cairo*'
+
+'disk io':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/diskio.cc
+          - src/diskio.h
+
+cpu:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/cpu.cc
+          - src/cpu.h
+          - src/proc.cc
+          - src/proc.h
+          - src/top.cc
+          - src/top.h
+
+lua:
+  - changed-files:
+      - any-glob-to-any-file:
+          - lua/*
+          - lua/**/*
+          - src/llua.cc
+          - src/llua.h
+          - src/luamm.cc
+          - src/luamm.h
+          - src/lua-config.cc
+          - src/lua-config.hh
+
+macos:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/darwin_sip.h
+          - src/darwin.h
+          - src/darwin.mm
+
+'mouse events':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/scroll.cc
+          - src/scroll.h
+          - src/mouse-events.cc
+          - src/mouse-events.h
+
+networking:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/net_stat.cc
+          - src/net_stat.h
+          - src/tcp-portmon.cc
+          - src/tcp-portmon.h
+          - src/read_tcpip.cc
+          - src/read_tcpip.h
+
+nvidia:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/nvidia.cc
+          - src/nvidia.h
+
+rendering:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/text_object.cc
+          - src/text_object.h
+          - src/specials.cc
+          - src/specials.h
+
+text:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/text_object.cc
+          - src/text_object.h
+          - src/template.cc
+          - src/template.h
+          - src/tailhead.cc
+          - src/tailhead.h
+          - src/specials.cc
+          - src/specials.h
