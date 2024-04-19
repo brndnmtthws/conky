@@ -472,15 +472,19 @@ if(BUILD_WAYLAND)
     set(conky_includes ${conky_includes} ${EPOLL_INCLUDE_DIRS})
   endif(OS_DARWIN OR OS_DRAGONFLY OR OS_FREEBSD OR OS_NETBSD OR OS_OPENBSD)
 
-  pkg_check_modules(PANGOCAIRO pangocairo)
+  pkg_check_modules(CAIRO REQUIRED cairo)
+  set(conky_libs ${conky_libs} ${CAIRO_LIBRARIES})
+  set(conky_includes ${conky_includes} ${CAIRO_INCLUDE_DIR})
+
+  pkg_check_modules(PANGOCAIRO REQUIRED pangocairo)
   set(conky_libs ${conky_libs} ${PANGOCAIRO_LIBRARIES})
   set(conky_includes ${conky_includes} ${PANGOCAIRO_INCLUDE_DIRS})
 
-  pkg_check_modules(PANGOFC pangofc)
+  pkg_check_modules(PANGOFC REQUIRED pangofc)
   set(conky_libs ${conky_libs} ${PANGOFC_LIBRARIES})
   set(conky_includes ${conky_includes} ${PANGOFC_INCLUDE_DIRS})
 
-  pkg_check_modules(PANGOFT2 pangoft2)
+  pkg_check_modules(PANGOFT2 REQUIRED pangoft2)
   set(conky_libs ${conky_libs} ${PANGOFT2_LIBRARIES})
   set(conky_includes ${conky_includes} ${PANGOFT2_INCLUDE_DIRS})
 endif(BUILD_WAYLAND)
@@ -494,9 +498,16 @@ include_directories(3rdparty/toluapp/include)
 if(BUILD_GUI)
   # Check for libraries used by Lua bindings
   if(BUILD_LUA_CAIRO)
-    pkg_check_modules(CAIRO REQUIRED cairo>=1.14 cairo-xlib)
+    pkg_check_modules(CAIRO REQUIRED cairo>=1.14)
     set(luacairo_libs ${CAIRO_LIBRARIES} ${LUA_LIBRARIES})
     set(luacairo_includes ${CAIRO_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
+
+    if(BUILD_LUA_CAIRO_XLIB)
+      pkg_check_modules(CAIROXLIB REQUIRED cairo-xlib)
+      set(luacairo_libs ${CAIROXLIB_LIBRARIES} ${luacairo_libs})
+      set(luacairo_includes ${CAIROXLIB_INCLUDE_DIRS} ${luacairo_includes})
+    endif(BUILD_LUA_CAIRO_XLIB)
+    
     find_program(APP_PATCH patch)
 
     if(NOT APP_PATCH)
