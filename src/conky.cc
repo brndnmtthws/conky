@@ -67,6 +67,7 @@
 #endif
 #ifdef BUILD_IMLIB2
 #include "conky-imlib2.h"
+#include "x11-settings.h"
 #endif /* BUILD_IMLIB2 */
 #endif /* BUILD_X11 */
 #ifdef BUILD_NCURSES
