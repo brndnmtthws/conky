@@ -50,7 +50,7 @@ if(BUILD_LUA_CAIRO_XLIB)
   wrap_tolua(luacairoxlib_src cairo_xlib.pkg)
 
   add_library(conky-cairo_xlib SHARED ${luacairoxlib_src})
-  set_target_properties(conky-cairo_xlib PROPERTIES OUTPUT_NAME "cairo")
+  set_target_properties(conky-cairo_xlib PROPERTIES OUTPUT_NAME "cairo_xlib")
 
   target_link_libraries(conky-cairo_xlib
     ${luacairoxlib_libs}
