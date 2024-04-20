@@ -33,29 +33,20 @@
 #include <sstream>
 #include <unordered_map>
 
-#ifdef BUILD_HTTP
 #include <microhttpd.h>
-#endif /* BUILD_HTTP */
 
 namespace conky {
 namespace {
-
-#ifdef BUILD_HTTP
 conky::display_output_http http_output;
-#endif /* BUILD_HTTP */
-
 }  // namespace
-#ifdef BUILD_HTTP
 template <>
 void register_output<output_t::HTTP>(display_outputs_t &outputs) {
   outputs.push_back(&http_output);
 }
-#endif /* BUILD_HTTP */
 
 // TODO: cleanup namespace
 // namespace priv {
 
-#ifdef BUILD_HTTP
 #ifdef MHD_YES
 /* older API */
 #define MHD_Result int
@@ -133,11 +124,7 @@ std::string string_replace_all(std::string original, const std::string &oldpart,
   return original;
 }
 
-#endif /* BUILD_HTTP */
-
 //}  // namespace priv
-
-#ifdef BUILD_HTTP
 
 display_output_http::display_output_http() : display_output_base("http") {
   priority = 0;
@@ -194,7 +181,5 @@ void display_output_http::draw_string(const char *s, int) {
   webpage = string_replace_all(webpage, "&nbsp; ", "&nbsp;&nbsp;", origlen);
   webpage.append("<br />");
 }
-
-#endif /* BUILD_HTTP */
 
 }  // namespace conky

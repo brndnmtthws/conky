@@ -24,9 +24,8 @@
  *
  */
 
-#include <config.h>
+#include "display-wayland.hh"
 
-#ifdef BUILD_WAYLAND
 #include <wayland-client.h>
 // #include "wayland.h"
 #include <cairo.h>
@@ -44,8 +43,6 @@
 #include <wlr-layer-shell-client-protocol.h>
 #include <xdg-shell-client-protocol.h>
 
-#endif /* BUILD_WAYLAND */
-
 #include <cstdint>
 #include <iostream>
 #include <sstream>
@@ -55,13 +52,13 @@
 #include "gui.h"
 #include "llua.h"
 #include "logging.h"
+
 #ifdef BUILD_X11
 #include "x11.h"
 #endif
-#ifdef BUILD_WAYLAND
-#include "display-wayland.hh"
+
 #include "fonts.h"
-#endif
+
 #ifdef BUILD_MOUSE_EVENTS
 #include <array>
 #include <map>
@@ -69,9 +66,6 @@
 #endif
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-
-/* TODO: cleanup global namespace */
-#ifdef BUILD_WAYLAND
 
 static int set_cloexec_or_close(int fd) {
   long flags;
@@ -239,10 +233,7 @@ static void wayland_create_window() {
   update_text_area(); /* to get initial size of the window */
 }
 
-#endif /* BUILD_WAYLAND */
-
 namespace conky {
-#ifdef BUILD_WAYLAND
 namespace {
 conky::display_output_wayland wayland_output;
 }  // namespace
@@ -251,11 +242,6 @@ template <>
 void register_output<output_t::WAYLAND>(display_outputs_t &outputs) {
   outputs.push_back(&wayland_output);
 }
-#endif /* BUILD_WAYLAND */
-
-namespace priv {}  // namespace priv
-
-#ifdef BUILD_WAYLAND
 
 display_output_wayland::display_output_wayland()
     : display_output_base("wayland") {
@@ -1283,7 +1269,5 @@ void window_get_width_height(struct window *window, int *w, int *h) {
   *w = window->rectangle.width;
   *h = window->rectangle.height;
 }
-
-#endif /* BUILD_WAYLAND */
 
 }  // namespace conky

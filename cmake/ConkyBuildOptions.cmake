@@ -240,9 +240,11 @@ option(BUILD_IRC "Enable if you want IRC support" false)
 
 option(BUILD_HTTP "Enable if you want HTTP support" false)
 
-if(BUILD_HTTP)
+if(NOT BUILD_HTTP)
   set(HTTPPORT "10080" CACHE STRING "Port to use for out_to_http")
-endif(BUILD_HTTP)
+else(NOT BUILD_HTTP)
+  set(HTTPPORT "10080")
+endif(NOT BUILD_HTTP)
 
 option(BUILD_ICONV "Enable iconv support" false)
 

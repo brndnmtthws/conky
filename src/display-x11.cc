@@ -64,9 +64,6 @@
 #include "gui.h"
 #include "llua.h"
 
-/* TODO: cleanup global namespace */
-#ifdef BUILD_X11
-
 #include "logging.h"
 #include "x11.h"
 
@@ -194,10 +191,7 @@ static void X11_create_window() {
   update_text_area(); /* to get initial size of the window */
 }
 
-#endif /* BUILD_X11 */
-
 namespace conky {
-#ifdef BUILD_X11
 namespace {
 conky::display_output_x11 x11_output;
 }  // namespace
@@ -206,11 +200,6 @@ template <>
 void register_output<output_t::X11>(display_outputs_t &outputs) {
   outputs.push_back(&x11_output);
 }
-#endif /* BUILD_X11 */
-
-namespace priv {}  // namespace priv
-
-#ifdef BUILD_X11
 
 display_output_x11::display_output_x11() : display_output_base("x11") {
   is_graphical = true;
@@ -1178,7 +1167,5 @@ void display_output_x11::load_fonts(bool utf8) {
     }
   }
 }
-
-#endif /* BUILD_X11 */
 
 }  // namespace conky

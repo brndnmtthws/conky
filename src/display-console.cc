@@ -49,8 +49,6 @@ void register_output<output_t::CONSOLE>(display_outputs_t &outputs) {
   outputs.push_back(&console_output);
 }
 
-namespace priv {}  // namespace priv
-
 display_output_console::display_output_console(const std::string &name_)
     : display_output_base(name_) {
   // lowest priority, it's a fallback

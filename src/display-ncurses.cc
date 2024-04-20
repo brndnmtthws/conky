@@ -35,34 +35,23 @@
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
-#ifdef BUILD_NCURSES
-#include <ncurses.h>
-#endif
 
-#ifdef BUILD_NCURSES
+#include <ncurses.h>
+
 extern WINDOW* ncurses_window;
-#endif
 
 namespace conky {
 namespace {
-
-#ifdef BUILD_NCURSES
 conky::display_output_ncurses ncurses_output;
-#endif /* BUILD_NCURSES */
-
 }  // namespace
-#ifdef BUILD_NCURSES
 template <>
 void register_output<output_t::NCURSES>(display_outputs_t& outputs) {
   outputs.push_back(&ncurses_output);
 }
-#endif /* BUILD_NCURSES */
 
 // namespace priv {
 
 //}  // namespace priv
-
-#ifdef BUILD_NCURSES
 
 #define COLORS_BUILTIN 8
 
@@ -181,7 +170,4 @@ void display_output_ncurses::flush() {
   refresh();
   clear();
 }
-
-#endif /* BUILD_NCURSES */
-
 }  // namespace conky

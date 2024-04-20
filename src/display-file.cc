@@ -54,8 +54,6 @@ void register_output<output_t::FILE>(display_outputs_t &outputs) {
   outputs.push_back(&file_output);
 }
 
-namespace priv {}  // namespace priv
-
 display_output_file::display_output_file(const std::string &name_)
     : display_output_base(name_) {
   // lowest priority, it's a fallback
