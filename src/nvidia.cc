@@ -99,6 +99,8 @@
 #include "conky.h"
 #include "logging.h"
 #include "temphelper.h"
+
+// Current implementation uses X11 specific system utils
 #include "x11.h"
 
 #include <memory>

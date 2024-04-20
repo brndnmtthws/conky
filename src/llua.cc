@@ -30,6 +30,10 @@
 #ifdef BUILD_GUI
 #include "gui.h"
 
+#ifdef BUILD_X11
+#include "x11.h"
+#endif /* BUILD_X11 */
+
 #ifdef BUILD_MOUSE_EVENTS
 #include "mouse-events.h"
 #endif /* BUILD_MOUSE_EVENTS */

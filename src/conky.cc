@@ -28,6 +28,7 @@
  */
 
 #include "conky.h"
+
 #include <algorithm>
 #include <cerrno>
 #include <climits>
@@ -40,24 +41,38 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include "common.h"
-#include "config.h"
-#include "text_object.h"
-#ifdef HAVE_DIRENT_H
-#include <dirent.h>
-#endif /* HAVE_DIRENT_H */
+
+#include <fcntl.h>
+#include <getopt.h>
+#include <netdb.h>
+#include <netinet/in.h>
 #include <sys/param.h>
+#include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/types.h>
+
 #ifdef HAVE_SYS_INOTIFY_H
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wc99-extensions"
 #include <sys/inotify.h>
 #pragma clang diagnostic pop
 #endif /* HAVE_SYS_INOTIFY_H */
+
+#ifdef HAVE_DIRENT_H
+#include <dirent.h>
+#endif /* HAVE_DIRENT_H */
+
+#include "common.h"
+#include "config.h"
+#include "text_object.h"
+
 #ifdef BUILD_WAYLAND
 #include "wl.h"
 #endif /* BUILD_WAYLAND */
+
 #ifdef BUILD_X11
+#include "x11.h"
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
 #include <X11/Xutil.h>
@@ -69,21 +84,18 @@
 #include "conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
 #endif /* BUILD_X11 */
+
 #ifdef BUILD_NCURSES
 #include <ncurses.h>
-#endif
-#include <fcntl.h>
-#include <getopt.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#if defined BUILD_RSS
-#include <libxml/parser.h>
-#endif
+#endif /* BUILD_NCURSES */
+
 #ifdef BUILD_CURL
 #include <curl/curl.h>
-#endif
+#endif /* BUILD_CURL */
+
+#ifdef BUILD_RSS
+#include <libxml/parser.h>
+#endif /* BUILD_RSS */
 
 /* local headers */
 #include "colours.h"
@@ -97,7 +109,7 @@
 #include "fs.h"
 #ifdef BUILD_ICONV
 #include "iconv_tools.h"
-#endif
+#endif /* BUILD_ICONV */
 #include "llua.h"
 #include "logging.h"
 #include "mail.h"
@@ -108,12 +120,13 @@
 #include "template.h"
 #include "timeinfo.h"
 #include "top.h"
+
 #ifdef BUILD_MYSQL
 #include "mysql.h"
 #endif /* BUILD_MYSQL */
 #ifdef BUILD_NVIDIA
 #include "nvidia.h"
-#endif
+#endif /* BUILD_NVIDIA */
 #ifdef BUILD_CURL
 #include "ccurl_thread.h"
 #endif /* BUILD_CURL */

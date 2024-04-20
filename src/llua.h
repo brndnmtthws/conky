@@ -32,12 +32,9 @@ extern "C" {
 
 #include <config.h>
 
-#ifdef BUILD_X11
-#include "x11.h"
 #ifdef BUILD_MOUSE_EVENTS
 #include "mouse-events.h"
 #endif /* BUILD_MOUSE_EVENTS */
-#endif /* BUILD_X11 */
 
 #define LUAPREFIX "conky_"
 

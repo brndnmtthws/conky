@@ -38,8 +38,8 @@
 #include <strings.h>
 
 #include <X11/Xlib.h>
-#include "x11-color.h"
 #endif /* BUILD_X11 */
+#include "x11-color.h"
 
 Colour Colour::from_argb32(uint32_t argb) {
   Colour out;
@@ -98,7 +98,7 @@ std::optional<Colour> parse_color_name(const std::string &name) {
   unsigned short r, g, b;
   size_t len = name.length();
   // Parse X11 color names.
-  if (OsLookupColor(-1, name.c_str(), len, &r, &g, &b)) {
+  if (OsLookupColor(name.c_str(), len, &r, &g, &b)) {
     return Colour{(uint8_t)r, (uint8_t)g, (uint8_t)b, 0xff};
   } else {
     return std::nullopt;

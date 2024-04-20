@@ -53,10 +53,6 @@
 #include "llua.h"
 #include "logging.h"
 
-#ifdef BUILD_X11
-#include "x11.h"
-#endif
-
 #include "fonts.h"
 
 #ifdef BUILD_MOUSE_EVENTS

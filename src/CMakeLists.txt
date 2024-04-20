@@ -129,6 +129,8 @@ set(conky_sources
   update-cb.hh
   logging.h
   semaphore.hh
+  x11-color.cc
+  x11-color.h
 )
 
 # Platform specific sources
@@ -238,7 +240,6 @@ if(BUILD_X11)
   set(x11
     display-x11.cc 
     display-x11.hh
-    x11-color.cc
     x11-settings.cc
     x11-settings.h
     x11.cc
