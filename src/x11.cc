@@ -1108,78 +1108,60 @@ constexpr size_t operator*(x11_strut index) {
 }
 
 /* reserve window manager space */
-void set_struts(alignment align) {
-  NORM_ERR("A: %x", (uint8_t)align);
-
-  // Middle and none align don't have least significant bit set.
-  // Ensures either vertical or horizontal axis are start/end
-  if ((*align & 0b0101) == 0) return;
-  NORM_ERR("B");
-
-  Atom strut = ATOM(_NET_WM_STRUT);
-  if (strut != None) {
+void set_struts(int sidenum) {
+  Atom strut;
+  if ((strut = ATOM(_NET_WM_STRUT)) != None) {
     /* reserve space at left, right, top, bottom */
-    uint32_t sizes[STRUT_COUNT] = {0};
+    signed long sizes[12] = {0};
     int i;
 
-    switch (vertical_alignment(align)) {
-      case axis_align::START:
-        NORM_ERR("TOP");
-        sizes[*x11_strut::TOP] =
-            std::min(window.y + window.height, display_height);
-        sizes[*x11_strut::TOP_START_X] = window.x;
-        sizes[*x11_strut::TOP_END_X] =
-            std::min(window.x + window.width, display_width);
+    /* define strut depth */
+    switch (sidenum) {
+      case 0:
+        /* left side */
+        sizes[0] = window.x + window.width;
         break;
-      case axis_align::END:
-        NORM_ERR("BOTTOM");
-        sizes[*x11_strut::BOTTOM] =
-            window.y < display_height ? display_height - window.y : 0;
-        sizes[*x11_strut::BOTTOM_START_X] = window.x;
-        sizes[*x11_strut::BOTTOM_END_X] =
-            std::min(window.x + window.width, display_width);
+      case 1:
+        /* right side */
+        sizes[1] = display_width - window.x;
         break;
-      case axis_align::MIDDLE:
-        // can't reserve space in middle of the screen
-      default:
+      case 2:
+        /* top side */
+        sizes[2] = window.y + window.height;
         break;
-    }
-    // adding `(vertical_alignment(align) & 0x1) << 1` makes the switch hit
-    // MIDDLE if vertical alignment is set to left or right
-    uint8_t bump = ((*vertical_alignment(align) & 0b1) << 1);
-    switch (static_cast<axis_align>(*horizontal_alignment(align) + bump)) {
-      case axis_align::START:
-        NORM_ERR("LEFT");
-        sizes[*x11_strut::LEFT] =
-            std::min(window.x + window.width, display_width);
-        sizes[*x11_strut::LEFT_START_Y] = window.y;
-        sizes[*x11_strut::LEFT_END_Y] =
-            std::min(window.y + window.height, display_height);
-        break;
-      case axis_align::END:
-        NORM_ERR("right");
-        sizes[*x11_strut::RIGHT] =
-            window.x < display_width ? display_width - window.x : 0;
-        sizes[*x11_strut::RIGHT_START_Y] = window.y;
-        sizes[*x11_strut::RIGHT_END_Y] =
-            std::min(window.y + window.height, display_height);
-        break;
-      case axis_align::MIDDLE:
-        // can't reserve space in middle of the screen
-      default:
+      case 3:
+        /* bottom side */
+        sizes[3] = display_height - window.y;
         break;
     }
 
-    for (size_t i = 0; i < STRUT_COUNT; i++) {
-      NORM_ERR("STRUT %d: %d", i, sizes[i]);
+    /* define partial strut length */
+    if (sidenum <= 1) {
+      sizes[4 + (sidenum * 2)] = window.y;
+      sizes[5 + (sidenum * 2)] = window.y + window.height;
+    } else if (sidenum <= 3) {
+      sizes[4 + (sidenum * 2)] = window.x;
+      sizes[5 + (sidenum * 2)] = window.x + window.width;
+    }
+
+    /* check constraints */
+    for (i = 0; i < 12; i++) {
+      if (sizes[i] < 0) {
+        sizes[i] = 0;
+      } else {
+        if (i <= 1 || i >= 8) {
+          if (sizes[i] > display_width) { sizes[i] = display_width; }
+        } else {
+          if (sizes[i] > display_height) { sizes[i] = display_height; }
+        }
+      }
     }
 
     XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
                     PropModeReplace, reinterpret_cast<unsigned char *>(&sizes),
                     4);
 
-    strut = ATOM(_NET_WM_STRUT_PARTIAL);
-    if (strut != None) {
+    if ((strut = ATOM(_NET_WM_STRUT_PARTIAL)) != None) {
       XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
                       PropModeReplace,
                       reinterpret_cast<unsigned char *>(&sizes), 12);

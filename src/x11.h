@@ -48,6 +48,9 @@
 #include <functional>
 #include <vector>
 
+// TODO: remove lua requirement from x11_init_window
+#include "llua.h"
+
 #include "gui.h"
 
 /* true if use_argb_visual=true and argb visual was found*/
@@ -100,7 +103,7 @@ void destroy_window(void);
 void create_gc(void);
 void set_transparent_background(Window win);
 void get_x11_desktop_info(Display *current_display, Atom atom);
-void set_struts(alignment alignment);
+void set_struts(int);
 void x11_init_window(lua::state &l, bool own);
 void deinit_x11();
 

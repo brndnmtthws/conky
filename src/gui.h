@@ -137,7 +137,7 @@ extern char window_created;
 
 void destroy_window(void);
 void create_gc(void);
-void set_struts(alignment);
+void set_struts(int);
 
 bool out_to_gui(lua::state &l);
 

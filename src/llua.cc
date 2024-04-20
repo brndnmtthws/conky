@@ -27,10 +27,6 @@
 #include "conky.h"
 #include "logging.h"
 
-#ifdef BUILD_X11
-#include "x11.h"
-#endif /* BUILD_X11 */
-
 #ifdef BUILD_GUI
 #include "gui.h"
 
