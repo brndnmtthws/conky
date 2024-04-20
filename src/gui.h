@@ -86,19 +86,59 @@ constexpr uint8_t operator*(alignment index) {
   return static_cast<axis_align>((static_cast<uint8_t>(of) >> 2) & 0b11);
 }
 
-#if defined(BUILD_X11) && defined(OWN_WINDOW)
+/// @brief Describes how and where a window should be mounted, as well as its
+/// behavior.
+///
+/// We assume the following order of layers:
+/// - Background - behind conky and any other windows, contains icons and
+///   desktop menus
+/// - Background widgets and docks
+/// - Windows
+/// - Panels - contains content that covers windows
+/// - Override windows - input-override windows on X11, custom overlays, lock
+///   screens, etc.
+///
+/// See also:
+/// - [X11 wm-spec `_NET_WM_WINDOW_TYPE` property](
+///   https://specifications.freedesktop.org/wm-spec/1.3/ar01s05.html#idm45684324619328)
+/// - [wlr-layer-shell layers](
+///   https://wayland.app/protocols/wlr-layer-shell-unstable-v1#zwlr_layer_shell_v1:enum:layer)
+/// - [xdg-positioner::anchor](
+///   https://wayland.app/protocols/xdg-shell#xdg_positioner:enum:anchor)
 enum class window_type : uint8_t {
+  /// @brief Acts as a normal window - has decorations, above
+  /// background, widgets and docks, below panels.
   NORMAL = 0,
-  DOCK,
-  PANEL,
+  /// @brief Screen background, no decorations, positioned at the very bottom
+  /// and behind widgets and docks.
   DESKTOP,
+  /// @brief Normal window, always shown above parent window (group).
+  ///
+  /// See: [Popup](https://wayland.app/protocols/xdg-shell#xdg_popup) XDG shell
+  /// surface.
+  UTILITY,
+  /// @brief No decorations, between windows and background, attached to screen
+  /// edge.
+  DOCK,
+  /// @brief No decorations, above windows, attached to screen edge, reserves
+  /// space.
+  PANEL,
+#ifdef BUILD_X11
+  /// @brief On top of everything else, not controlled by WM.
   OVERRIDE,
-  UTILITY
+#endif /* BUILD_X11 */
 };
 constexpr uint8_t operator*(window_type index) {
   return static_cast<uint8_t>(index);
 }
 
+#if defined(BUILD_X11) && defined(OWN_WINDOW)
+// Only works in X11 because Wayland doesn't support
+
+/// @brief Hints are used to tell WM how it should treat a window.
+///
+/// See: [X11 wm-spec `_NET_WM_STATE` property](
+/// https://specifications.freedesktop.org/wm-spec/1.3/ar01s05.html#idm45684324611552)
 enum class window_hints : uint16_t {
   UNDECORATED = 0,
   BELOW,
