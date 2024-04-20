@@ -2,7 +2,7 @@
 
 [📕 Documentaton](https://conky.cc/)
 
-[💬 Join the Matrix chat](https://matrix.to/#/#conky:frens.io)
+[💬 Join the Matrix chat](https://matrix.to/#/#conky:matrix.frens.io)
 
 <p align="center"><img width="300" src="data/logo/conky-logotype-horizontal-violet.png"></p>
 
