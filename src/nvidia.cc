@@ -315,6 +315,7 @@ const char *translate_nvidia_special_type[] = {
     "",             // SAVE_COORDINATES
     "",             // FONT
     "",             // GOTO
+    "",             // VGOTO
     ""              // TAB
 };
 

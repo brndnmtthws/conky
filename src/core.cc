@@ -1032,6 +1032,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ_ARG(goto, nullptr, "goto needs arguments") obj->data.l =
       strtol(arg, nullptr, 10);
   obj->callbacks.print = &new_goto;
+  END OBJ_ARG(vgoto, nullptr, "vgoto needs arguments") obj->data.l =
+      strtol(arg, nullptr, 10);
+  obj->callbacks.print = &new_vgoto;
 #ifdef BUILD_GUI
   END OBJ(tab, nullptr) scan_tab(obj, arg);
   obj->callbacks.print = &new_tab;
