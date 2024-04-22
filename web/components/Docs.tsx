@@ -12,8 +12,9 @@ export interface DocsProps {
 export default function Docs({ docs, braces, assign }: DocsProps) {
   const router = useRouter()
   return (
-    <div className="prose dark:prose-invert prose-lg">
-      <div dangerouslySetInnerHTML={{ __html: docs.desc_md }} />
+    <div className="prose dark:prose-invert prose-lg w-full max-w-3xl">
+      <div className="px-2 lg:px-4" dangerouslySetInnerHTML={{ __html: docs.desc_md }} />
+
       <div className="divide-y divide-gray-700/25 dark:divide-gray-300/25">
         {docs.values.map((doc) => {
           const target = router.asPath.endsWith(`#${doc.name}`)
@@ -22,7 +23,7 @@ export default function Docs({ docs, braces, assign }: DocsProps) {
               id={doc.name}
               key={doc.name}
               className={
-                'pt-4 scroll-mt-16 ' +
+                'pt-4 scroll-mt-16 overflow-auto ' +
                 (target
                   ? 'bg-rose-300 dark:bg-rose-900'
                   : 'bg-slate-200 dark:bg-slate-800 target:bg-rose-300 target:dark:bg-rose-900') +
@@ -30,12 +31,12 @@ export default function Docs({ docs, braces, assign }: DocsProps) {
               }
             >
               <div className="flex">
-                <div className="px-2 py-3">
+                <div className="px-2 lg:pl-4 py-3">
                   <Link href={`#${doc.name}`} data-anchor-name={doc.name}>
                     <LinkIcon size={20} />
                   </Link>
                 </div>
-                <div className="flex-col p-1">
+                <div className="flex-col p-1 pr-2 lg:pr-4">
                   <div>
                     {braces && <code>$&#123;</code>}
                     <code className="text-lg p-1 mx-1 bg-fuchsia-200 dark:bg-fuchsia-900 font-bold">

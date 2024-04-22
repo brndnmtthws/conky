@@ -45,10 +45,10 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div>
-      <div className="sticky top-0 z-10 h-16">
+      <div className="sticky top-0 z-10">
         <Header name="Conky" setDarkMode={setDarkMode} />
       </div>
-      <div className="relative pb-4">
+      <div className="relative pb-4 md:pt-4">
         <div className="flex flex-col items-center max-w-3xl w-full mx-auto">
           {children}
         </div>

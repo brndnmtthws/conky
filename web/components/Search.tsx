@@ -38,6 +38,7 @@ const SearchResult: React.FunctionComponent<SearchResultProps> = (props) => {
 
   return (
     <div className={`m-1 rounded flex flex-col p-2 ${selection}`}>
+      <hr className="border-black/10 dark:border-white/10 mb-2"/>
       <div className="flex justify-between">
         <div>
           <code className="text-lg p-1 mx-1 bg-fuchsia-200 dark:bg-fuchsia-900 font-bold">
@@ -49,7 +50,7 @@ const SearchResult: React.FunctionComponent<SearchResultProps> = (props) => {
         </div>
       </div>
       <div>
-        <p>{excerpt(props.result.item.desc)}</p>
+        <p className="w-11/12">{excerpt(props.result.item.desc)}</p>
       </div>
     </div>
   )

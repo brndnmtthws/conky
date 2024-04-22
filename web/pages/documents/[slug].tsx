@@ -54,7 +54,7 @@ export default function DocumentPage({
         title={`${frontMatter.title}`}
         description={frontMatter.description}
       />
-      <article className="px-6 md:px-0">
+      <article className="p-2 pt-4 lg:p-4 w-full">
         <header>
           <h1 className="text-3xl md:text-5xl dark:text-white mb-12">
             {frontMatter.title}
