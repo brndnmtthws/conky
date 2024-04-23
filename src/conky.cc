@@ -932,12 +932,6 @@ static draw_mode_t draw_mode; /* FG, BG or OUTLINE */
 #ifdef BUILD_GUI
 /*static*/ Colour current_color;
 
-static int saved_coordinates_x[100];
-static int saved_coordinates_y[100];
-
-int get_saved_coordinates_x(int i) { return saved_coordinates_x[i]; }
-int get_saved_coordinates_y(int i) { return saved_coordinates_y[i]; }
-
 static int text_size_updater(char *s, int special_index) {
   int w = 0;
   char *p;
@@ -1447,10 +1441,11 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           break;
 
         case text_node_t::SAVE_COORDINATES:
-          saved_coordinates_x[static_cast<int>(current->arg)] =
-              cur_x - text_start_x;
-          saved_coordinates_y[static_cast<int>(current->arg)] =
-              cur_y - text_start_y - last_font_height;
+#ifdef BUILD_IMLIB2
+          saved_coordinates[static_cast<int>(current->arg)] =
+              std::array<int, 2>{cur_x - text_start_x,
+                                 cur_y - text_start_y - last_font_height};
+#endif /* BUILD_IMLIB2 */
           break;
 
         case text_node_t::TAB: {
@@ -1590,7 +1585,9 @@ void draw_stuff() {
 
 #ifdef BUILD_IMLIB2
   text_offset_x = text_offset_y = 0;
-  cimlib_render(text_start_x, text_start_y, window.width, window.height);
+  cimlib_render(text_start_x, text_start_y, window.width, window.height,
+                imlib_cache_flush_interval.get(*state),
+                imlib_draw_blended.get(*state));
 #endif /* BUILD_IMLIB2 */
 
   for (auto output : display_outputs()) {
