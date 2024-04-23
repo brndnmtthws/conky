@@ -61,6 +61,7 @@ if(APP_GPERF)
   )
 else(APP_GPERF)
   message(WARNING "'gperf' program not found, using stub colour-names.cc; colors names will not be parsed")
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/colour-names-stub.cc" "${CMAKE_BINARY_DIR}/colour-names.cc" COPYONLY)
 endif(APP_GPERF)
 
 set(conky_sources

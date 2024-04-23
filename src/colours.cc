@@ -31,6 +31,8 @@
 
 #include "logging.h"
 
+#include <optional>
+
 Colour Colour::from_argb32(uint32_t argb) {
   Colour out;
   out.alpha = argb >> 24;
@@ -111,14 +113,8 @@ Colour parse_color(const std::string &color) {
   std::optional<Colour> value_##name = name(color); \
   if (value_##name.has_value()) { return value_##name.value(); }
 
-  std::optional<Colour> value_parse_color_name = parse_color_name(color);
-  if (value_parse_color_name.has_value()) {
-    return value_parse_color_name.value();
-  }
-  std::optional<Colour> value_parse_hex_color = parse_hex_color(color);
-  if (value_parse_hex_color.has_value()) {
-    return value_parse_hex_color.value();
-  }
+  TRY_PARSER(parse_color_name)
+  TRY_PARSER(parse_hex_color)
 
 #undef TRY_PARSER
 
