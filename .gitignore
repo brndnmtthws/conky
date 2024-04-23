@@ -16,12 +16,14 @@ cmake_uninstall.cmake
 CPackConfig.cmake
 CPackSourceConfig.cmake
 
+# Generated files
 data/convertconf.h
 data/defconfig.h
 *.so
 *.a
 /config.h
 /build.h
+src/colour-names.cc
 
 # Compiler cache
 .cache

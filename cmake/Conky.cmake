@@ -153,6 +153,8 @@ if(NOT APP_UNAME)
   message(FATAL_ERROR "Unable to find program 'uname'")
 endif(NOT APP_UNAME)
 
+find_program(APP_GPERF gperf)
+
 if(NOT RELEASE)
   find_program(APP_GIT git)
 
@@ -163,7 +165,7 @@ if(NOT RELEASE)
   mark_as_advanced(APP_GIT)
 endif(NOT RELEASE)
 
-mark_as_advanced(APP_AWK APP_WC APP_UNAME)
+mark_as_advanced(APP_AWK APP_WC APP_UNAME APP_GPERF)
 
 execute_process(COMMAND ${APP_UNAME} -sm
   RESULT_VARIABLE RETVAL

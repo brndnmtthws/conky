@@ -47,6 +47,22 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h)
   )
 endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h)
 
+# Generate colour-names.cc with gperf
+if(APP_GPERF)
+  execute_process(
+    INPUT_FILE "${CMAKE_SOURCE_DIR}/data/color-names.yml"
+    OUTPUT_FILE "${CMAKE_BINARY_DIR}/data/color-names.gperf"
+    COMMAND sh "${CMAKE_SOURCE_DIR}/bin/format-colors.sh"
+  )
+  execute_process(
+    INPUT_FILE "${CMAKE_BINARY_DIR}/data/color-names.gperf"
+    OUTPUT_FILE "${CMAKE_BINARY_DIR}/colour-names.cc"
+    COMMAND ${APP_GPERF} --ignore-case -LC++ -Zcolor_name_hash -t -7 -m1 -C -E
+  )
+else(APP_GPERF)
+  message(WARNING "'gperf' program not found, using stub colour-names.cc; colors names will not be parsed")
+endif(APP_GPERF)
+
 set(conky_sources
   ${conky_sources}
   c++wrap.cc
@@ -129,8 +145,6 @@ set(conky_sources
   update-cb.hh
   logging.h
   semaphore.hh
-  x11-color.cc
-  x11-color.h
 )
 
 # Platform specific sources
@@ -242,6 +256,7 @@ if(BUILD_X11)
     display-x11.hh
     x11-settings.cc
     x11-settings.h
+    x11-color.cc
     x11.cc
     x11.h
   )

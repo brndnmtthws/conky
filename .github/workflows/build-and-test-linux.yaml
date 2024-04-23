@@ -84,6 +84,7 @@ jobs:
             audacious-dev \
             cmake \
             gawk \
+            gperf \
             lcov \
             libaudclient-dev \
             libcairo2-dev \
