@@ -22,8 +22,9 @@
  */
 
 #include "conky-imlib2.h"
-#include "config.h"
-#include "conky.h"
+
+#include "common.h"
+#include "display-output.hh"
 #include "logging.h"
 #include "text_object.h"
 
@@ -292,3 +293,5 @@ void cimlib_render(int x, int y, int width, int height) {
 void print_image_callback(struct text_object *obj, char *, unsigned int) {
   cimlib_add_image(obj->data.s);
 }
+
+imlib_cache_size_setting imlib_cache_size;

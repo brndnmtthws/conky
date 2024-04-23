@@ -29,16 +29,17 @@
 
 #include "colours.h"
 
-#include "conky.h"
-#include "gui.h"
 #include "logging.h"
 
+#include <optional>
+
 #ifdef BUILD_X11
+#include <X11/Xlib.h>
 #include <string.h>
 #include <strings.h>
-
-#include <X11/Xlib.h>
 #endif /* BUILD_X11 */
+
+// sourced from X11, doesn't actually need X11
 #include "x11-color.h"
 
 Colour Colour::from_argb32(uint32_t argb) {

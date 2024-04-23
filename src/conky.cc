@@ -29,6 +29,8 @@
 
 #include "conky.h"
 
+#include "config.h"
+
 #include <algorithm>
 #include <cerrno>
 #include <climits>
@@ -63,7 +65,6 @@
 #endif /* HAVE_DIRENT_H */
 
 #include "common.h"
-#include "config.h"
 #include "text_object.h"
 
 #ifdef BUILD_WAYLAND
@@ -405,18 +406,6 @@ int calc_text_width(const char *s) {
 
   size_t slen = strlen(s);
   return slen;
-}
-
-int dpi_scale(int value) {
-#ifdef BUILD_GUI
-  if (display_output()) {
-    return display_output()->dpi_scale(value);
-  } else {
-    return value;
-  }
-#else  /* BUILD_GUI */
-  return value;
-#endif /* BUILD_GUI */
 }
 
 #ifdef BUILD_GUI

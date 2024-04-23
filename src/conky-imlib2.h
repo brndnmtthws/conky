@@ -24,7 +24,8 @@
 #ifndef _CONKY_IMBLI2_H_
 #define _CONKY_IMBLI2_H_
 
-#include "conky.h"
+#include "setting.hh"
+#include "text_object.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"

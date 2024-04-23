@@ -27,9 +27,12 @@
  *
  */
 
+#include "config.h"
+
 /* local headers */
-#include "core.h"
 #include "algebra.h"
+#include "core.h"
+
 #include "bsdapm.h"
 #include "build.h"
 #include "colour-settings.h"
@@ -40,11 +43,11 @@
 #include "exec.h"
 #include "i8k.h"
 #include "misc.h"
+#include "proc.h"
 #include "text_object.h"
 #ifdef BUILD_IMLIB2
 #include "conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
-#include "proc.h"
 #ifdef BUILD_MYSQL
 #include "mysql.h"
 #endif /* BUILD_MYSQL */
@@ -1893,9 +1896,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_combine;
   obj->callbacks.free = &free_combine;
 #ifdef BUILD_NVIDIA
-  END OBJ_ARG(
-      nvidia, 0,
-      "nvidia needs an argument") if (set_nvidia_query(obj, arg, text_node_t::NONSPECIAL)) {
+  END OBJ_ARG(nvidia, 0, "nvidia needs an argument") if (set_nvidia_query(
+                                                             obj, arg,
+                                                             text_node_t::
+                                                                 NONSPECIAL)) {
     CRIT_ERR_FREE(obj, free_at_crash,
                   "nvidia: invalid argument"
                   " specified: '%s'",
@@ -1905,7 +1909,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &free_nvidia;
   END OBJ_ARG(
       nvidiabar, 0,
-      "nvidiabar needs an argument") if (set_nvidia_query(obj, arg, text_node_t::BAR)) {
+      "nvidiabar needs an argument") if (set_nvidia_query(obj, arg,
+                                                          text_node_t::BAR)) {
     CRIT_ERR_FREE(obj, free_at_crash,
                   "nvidiabar: invalid argument"
                   " specified: '%s'",
@@ -1915,7 +1920,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &free_nvidia;
   END OBJ_ARG(
       nvidiagraph, 0,
-      "nvidiagraph needs an argument") if (set_nvidia_query(obj, arg, text_node_t::GRAPH)) {
+      "nvidiagraph needs an argument") if (set_nvidia_query(obj, arg,
+                                                            text_node_t::
+                                                                GRAPH)) {
     CRIT_ERR_FREE(obj, free_at_crash,
                   "nvidiagraph: invalid argument"
                   " specified: '%s'",
@@ -1925,7 +1932,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &free_nvidia;
   END OBJ_ARG(
       nvidiagauge, 0,
-      "nvidiagauge needs an argument") if (set_nvidia_query(obj, arg, text_node_t::GAUGE)) {
+      "nvidiagauge needs an argument") if (set_nvidia_query(obj, arg,
+                                                            text_node_t::
+                                                                GAUGE)) {
     CRIT_ERR_FREE(obj, free_at_crash,
                   "nvidiagauge: invalid argument"
                   " specified: '%s'",

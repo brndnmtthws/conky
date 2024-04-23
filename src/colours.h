@@ -26,15 +26,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#pragma once
 
-#include <config.h>
+#ifndef _COLOURS_H_
+#define _COLOURS_H_
+
+#include "config.h"
+
 #include <cassert>
 #include <climits>
 #include <memory>
-#include <optional>
 #include <string>
 #include <unordered_map>
+
 #ifdef BUILD_X11
 #include <X11/Xlib.h>
 #endif /* BUILD_X11 */
@@ -92,3 +95,5 @@ struct Colour {
 const Colour ERROR_COLOUR = Colour{UINT8_MAX, 0, 0, UINT8_MAX};
 
 Colour parse_color(const std::string &color);
+
+#endif /* _COLOURS_H_ */

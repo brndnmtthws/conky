@@ -107,7 +107,11 @@ class display_output_base {
   virtual void draw_arc(int /*x*/, int /*y*/, int /*w*/, int /*h*/, int /*a1*/,
                         int /*a2*/) {}
   virtual void move_win(int /*x*/, int /*y*/) {}
-  virtual int dpi_scale(int value) { return value; }
+  template <typename T, typename = typename std::enable_if<
+                            std::is_arithmetic<T>::value, T>::type>
+  T dpi_scale(T value) {
+    return value;
+  }
 
   virtual void begin_draw_stuff() {}
   virtual void end_draw_stuff() {}
@@ -180,6 +184,21 @@ static inline conky::display_output_base *display_output() {
   if (conky::active_display_outputs.size())
     return conky::active_display_outputs[0];
   return nullptr;
+}
+
+template <typename T, typename = typename std::enable_if<
+                          std::is_arithmetic<T>::value, T>::type>
+inline T dpi_scale(T value) {
+#ifdef BUILD_GUI
+  auto output = display_output();
+  if (output) {
+    return output->dpi_scale(value);
+  } else {
+    return value;
+  }
+#else  /* BUILD_GUI */
+  return value;
+#endif /* BUILD_GUI */
 }
 
 static inline void unset_display_output() {

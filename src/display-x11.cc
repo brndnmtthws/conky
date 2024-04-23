@@ -974,10 +974,12 @@ void display_output_x11::move_win(int x, int y) {
 #endif /* OWN_WINDOW */
 }
 
-int display_output_x11::dpi_scale(int value) {
+const size_t PIXELS_PER_INCH = 96;
+template <typename T, typename>
+T display_output_x11::dpi_scale(T value) {
 #if defined(BUILD_XFT)
   if (use_xft.get(*state) && xft_dpi > 0) {
-    return (value * xft_dpi + (value > 0 ? 48 : -48)) / 96;
+    return (value * xft_dpi + (value > 0 ? 48 : -48)) / PIXELS_PER_INCH;
   } else {
     return value;
   }

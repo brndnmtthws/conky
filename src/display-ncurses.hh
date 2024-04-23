@@ -25,10 +25,6 @@
 
 #include "config.h"
 
-#ifndef BUILD_NCURSES
-#error display-ncurses.hh included when BUILD_NCURSES is disabled
-#endif
-
 #include <limits>
 #include <string>
 #include <type_traits>

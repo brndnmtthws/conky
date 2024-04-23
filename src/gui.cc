@@ -37,9 +37,9 @@
 #include "wl.h"
 #endif /* BUILD_WAYLAND */
 
-#ifdef BUILD_IMLIB2
-#include "conky-imlib2.h"
-#endif /* BUILD_IMLIB2 */
+// #ifdef BUILD_IMLIB2
+// #include "conky-imlib2.h"
+// #endif /* BUILD_IMLIB2 */
 #ifndef OWN_WINDOW
 #include <iostream>
 #endif

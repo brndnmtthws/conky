@@ -25,10 +25,6 @@
 
 #include "config.h"
 
-#ifndef BUILD_HTTP
-#error display-http.hh included when BUILD_HTTP is disabled
-#endif
-
 #include <limits>
 #include <string>
 #include <type_traits>

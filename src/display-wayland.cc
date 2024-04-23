@@ -913,8 +913,10 @@ void display_output_wayland::move_win(int x, int y) {
   // window.y = y;
   // TODO
 }
-
-int display_output_wayland::dpi_scale(int value) { return value; }
+template <typename T, typename>
+T display_output_wayland::dpi_scale(T value) {
+  return value;
+}
 
 void display_output_wayland::end_draw_stuff() {
   window_commit_buffer(global_window);
