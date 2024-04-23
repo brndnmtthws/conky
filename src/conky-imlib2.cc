@@ -22,8 +22,9 @@
  */
 
 #include "conky-imlib2.h"
-#include "config.h"
-#include "conky.h"
+
+#include "common.h"
+#include "display-output.hh"
 #include "logging.h"
 #include "text_object.h"
 
@@ -47,22 +48,24 @@ struct image_list_s {
 };
 
 struct image_list_s *image_list_start, *image_list_end;
+std::array<std::array<int, 2>, 100> saved_coordinates;
 
 /* areas to update */
 Imlib_Updates updates, current_update;
 /* our virtual framebuffer image we draw into */
 Imlib_Image buffer, image;
 
-namespace {
-Imlib_Context context;
-
 conky::range_config_setting<unsigned int> imlib_cache_flush_interval(
     "imlib_cache_flush_interval", 0, std::numeric_limits<unsigned int>::max(),
     0, true);
 
-unsigned int cimlib_cache_flush_last = 0;
+conky::simple_config_setting<bool> imlib_draw_blended("draw_blended", true,
+                                                      true);
 
-conky::simple_config_setting<bool> draw_blended("draw_blended", true, true);
+namespace {
+Imlib_Context context;
+
+unsigned int cimlib_cache_flush_last = 0;
 }  // namespace
 
 void imlib_cache_size_setting::lua_setter(lua::state &l, bool init) {
@@ -162,8 +165,9 @@ void cimlib_add_image(const char *args) {
     tmp += 3;
     int i;
     if (sscanf(tmp, "%d", &i) == 1) {
-      cur->x = get_saved_coordinates_x(i);
-      cur->y = get_saved_coordinates_y(i);
+      const auto &coordinates = saved_coordinates.at(static_cast<size_t>(i));
+      cur->x = coordinates[0];
+      cur->y = coordinates[1];
     }
   }
   if (cur->flush_interval < 0) {
@@ -237,7 +241,8 @@ static void cimlib_draw_all(int *clip_x, int *clip_y, int *clip_x2,
   }
 }
 
-void cimlib_render(int x, int y, int width, int height) {
+void cimlib_render(int x, int y, int width, int height, uint32_t flush_interval,
+                   bool draw_blended) {
   int clip_x = INT_MAX, clip_y = INT_MAX;
   int clip_x2 = 0, clip_y2 = 0;
   time_t now;
@@ -248,8 +253,8 @@ void cimlib_render(int x, int y, int width, int height) {
 
   /* cheque if it's time to flush our cache */
   now = time(nullptr);
-  if ((imlib_cache_flush_interval.get(*state) != 0u) &&
-      now - imlib_cache_flush_interval.get(*state) > cimlib_cache_flush_last) {
+  if ((flush_interval != 0u) &&
+      now - flush_interval > cimlib_cache_flush_last) {
     int size = imlib_get_cache_size();
     imlib_set_cache_size(0);
     imlib_set_cache_size(size);
@@ -265,7 +270,7 @@ void cimlib_render(int x, int y, int width, int height) {
   imlib_image_clear();
 
   /* check if we should blend when rendering */
-  if (draw_blended.get(*state)) {
+  if (draw_blended) {
     /* we can blend stuff now */
     imlib_context_set_blend(1);
   } else {
@@ -295,3 +300,5 @@ void cimlib_render(int x, int y, int width, int height) {
 void print_image_callback(struct text_object *obj, char *, unsigned int) {
   cimlib_add_image(obj->data.s);
 }
+
+imlib_cache_size_setting imlib_cache_size;

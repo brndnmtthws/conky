@@ -29,10 +29,18 @@
 #ifndef _TEXT_OBJECT_H
 #define _TEXT_OBJECT_H
 
-#include <stdint.h> /* uint8_t */
-#include "config.h" /* for the defines */
+#include "config.h"
+
 #include "exec.h"
 #include "specials.h" /* enum special_types */
+
+#include <cstdint> /* uint8_t */
+
+enum class draw_mode_t : uint32_t {
+  BG = static_cast<uint32_t>(text_node_t::BG),
+  FG = static_cast<uint32_t>(text_node_t::FG),
+  OUTLINE = static_cast<uint32_t>(text_node_t::OUTLINE),
+};
 
 /* text object callbacks */
 struct obj_cb {

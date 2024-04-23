@@ -30,6 +30,7 @@
 #include <vector>
 
 #include "colours.h"
+#include "logging.h"
 #include "luamm.hh"
 
 namespace conky {
@@ -57,11 +58,11 @@ class display_output_base {
 
  public:
   const std::string name;
-  bool is_active;
-  bool is_graphical;
-  int priority;
+  bool is_active = false;
+  bool is_graphical = false;
+  int priority = -1;
 
-  explicit display_output_base(const std::string &name_);
+  explicit display_output_base(const std::string &name) : name(name){};
 
   virtual ~display_output_base() {}
 
@@ -106,7 +107,11 @@ class display_output_base {
   virtual void draw_arc(int /*x*/, int /*y*/, int /*w*/, int /*h*/, int /*a1*/,
                         int /*a2*/) {}
   virtual void move_win(int /*x*/, int /*y*/) {}
-  virtual int dpi_scale(int value) { return value; }
+  template <typename T, typename = typename std::enable_if<
+                            std::is_arithmetic<T>::value, T>::type>
+  T dpi_scale(T value) {
+    return value;
+  }
 
   virtual void begin_draw_stuff() {}
   virtual void end_draw_stuff() {}
@@ -137,6 +142,20 @@ class display_output_base {
   virtual bool active() { return is_active; }
 };
 
+using display_outputs_t = std::vector<display_output_base *>;
+
+enum class output_t : uint32_t {
+  CONSOLE,
+  NCURSES,
+  FILE,
+  HTTP,
+  X11,
+  WAYLAND,
+  OUTPUT_COUNT
+};
+template <output_t Output>
+void register_output(display_outputs_t &outputs);
+
 /*
  * The selected and active display outputs.
  */
@@ -147,17 +166,6 @@ extern std::vector<display_output_base *> active_display_outputs;
  * else we iterate over each active outputs.
  */
 extern std::vector<conky::display_output_base *> current_display_outputs;
-
-/*
- * Use this to declare a display output that has been disabled during
- * compilation. We can then print a nice error message telling the used which
- * setting to enable.
- */
-class disabled_display_output : public display_output_base {
- public:
-  const std::string define;
-  disabled_display_output(const std::string &name, const std::string &define);
-};
 
 }  // namespace conky
 
@@ -176,6 +184,21 @@ static inline conky::display_output_base *display_output() {
   if (conky::active_display_outputs.size())
     return conky::active_display_outputs[0];
   return nullptr;
+}
+
+template <typename T, typename = typename std::enable_if<
+                          std::is_arithmetic<T>::value, T>::type>
+inline T dpi_scale(T value) {
+#ifdef BUILD_GUI
+  auto output = display_output();
+  if (output) {
+    return output->dpi_scale(value);
+  } else {
+    return value;
+  }
+#else  /* BUILD_GUI */
+  return value;
+#endif /* BUILD_GUI */
 }
 
 static inline void unset_display_output() {

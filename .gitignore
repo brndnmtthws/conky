@@ -11,11 +11,17 @@ doc/*.html
 Makefile
 CMakeCache.txt
 CMakeFiles
+cmake_install.cmake
+cmake_uninstall.cmake
+CPackConfig.cmake
+CPackSourceConfig.cmake
+
 data/convertconf.h
 data/defconfig.h
 *.so
 *.a
 /config.h
+/build.h
 
 # Compiler cache
 .cache

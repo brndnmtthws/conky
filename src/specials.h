@@ -40,7 +40,7 @@
 #define LOGGRAPH "-l"
 #define TEMPGRAD "-t"
 
-enum special_types {
+enum class text_node_t : uint32_t {
   NONSPECIAL = 0,
   HORIZONTAL_LINE = 1,
   STIPPLED_HR,
@@ -59,9 +59,12 @@ enum special_types {
   GOTO,
   TAB
 };
+constexpr uint32_t operator*(text_node_t index) {
+  return static_cast<uint32_t>(index);
+}
 
-struct special_t {
-  int type;
+struct special_node {
+  text_node_t type;
   short height;
   short width;
   double arg;
@@ -77,11 +80,11 @@ struct special_t {
   Colour last_colour;
   short font_added;
   char tempgrad;
-  struct special_t *next;
+  struct special_node *next;
 };
 
 /* direct access to the registered specials (FIXME: bad encapsulation) */
-extern struct special_t *specials;
+extern struct special_node *specials;
 extern int special_count;
 
 /* forward declare to avoid mutual inclusion between specials.h and
@@ -119,6 +122,6 @@ void new_tab(struct text_object *, char *, unsigned int);
 
 void clear_stored_graphs();
 
-struct special_t *new_special(char *buf, enum special_types t);
+struct special_node *new_special(char *buf, enum text_node_t t);
 
 #endif /* _SPECIALS_H */

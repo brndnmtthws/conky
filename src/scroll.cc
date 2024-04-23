@@ -323,7 +323,8 @@ void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
 #ifdef BUILD_GUI
   // reset color when scroll is finished
   if (display_output() && display_output()->graphical()) {
-    new_special(p + strlen(p), FG)->arg = sd->resetcolor.to_argb32();
+    new_special(p + strlen(p), text_node_t::FG)->arg =
+        sd->resetcolor.to_argb32();
   }
 #endif
 }

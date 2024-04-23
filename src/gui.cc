@@ -32,11 +32,14 @@
 #include "config.h"
 #include "conky.h"
 #include "logging.h"
-#include "wl.h"
 
-#ifdef BUILD_IMLIB2
-#include "conky-imlib2.h"
-#endif /* BUILD_IMLIB2 */
+#ifdef BUILD_WAYLAND
+#include "wl.h"
+#endif /* BUILD_WAYLAND */
+
+// #ifdef BUILD_IMLIB2
+// #include "conky-imlib2.h"
+// #endif /* BUILD_IMLIB2 */
 #ifndef OWN_WINDOW
 #include <iostream>
 #endif
@@ -103,41 +106,46 @@ void own_window_setting::lua_setter(lua::state &l, bool init) {
 
 template <>
 conky::lua_traits<alignment>::Map conky::lua_traits<alignment>::map = {
-    {"top_left", TOP_LEFT},
-    {"top_right", TOP_RIGHT},
-    {"top_middle", TOP_MIDDLE},
-    {"bottom_left", BOTTOM_LEFT},
-    {"bottom_right", BOTTOM_RIGHT},
-    {"bottom_middle", BOTTOM_MIDDLE},
-    {"middle_left", MIDDLE_LEFT},
-    {"middle_middle", MIDDLE_MIDDLE},
-    {"middle_right", MIDDLE_RIGHT},
-    {"tl", TOP_LEFT},
-    {"tr", TOP_RIGHT},
-    {"tm", TOP_MIDDLE},
-    {"bl", BOTTOM_LEFT},
-    {"br", BOTTOM_RIGHT},
-    {"bm", BOTTOM_MIDDLE},
-    {"ml", MIDDLE_LEFT},
-    {"mm", MIDDLE_MIDDLE},
-    {"mr", MIDDLE_RIGHT},
-    {"none", NONE}};
+    {"top_left", alignment::TOP_LEFT},
+    {"top_right", alignment::TOP_RIGHT},
+    {"top_middle", alignment::TOP_MIDDLE},
+    {"top", alignment::TOP_MIDDLE},
+    {"bottom_left", alignment::BOTTOM_LEFT},
+    {"bottom_right", alignment::BOTTOM_RIGHT},
+    {"bottom_middle", alignment::BOTTOM_MIDDLE},
+    {"bottom", alignment::BOTTOM_MIDDLE},
+    {"middle_left", alignment::MIDDLE_LEFT},
+    {"left", alignment::MIDDLE_LEFT},
+    {"middle_middle", alignment::MIDDLE_MIDDLE},
+    {"center", alignment::MIDDLE_MIDDLE},
+    {"middle_right", alignment::MIDDLE_RIGHT},
+    {"right", alignment::MIDDLE_RIGHT},
+    {"tl", alignment::TOP_LEFT},
+    {"tr", alignment::TOP_RIGHT},
+    {"tm", alignment::TOP_MIDDLE},
+    {"bl", alignment::BOTTOM_LEFT},
+    {"br", alignment::BOTTOM_RIGHT},
+    {"bm", alignment::BOTTOM_MIDDLE},
+    {"ml", alignment::MIDDLE_LEFT},
+    {"mm", alignment::MIDDLE_MIDDLE},
+    {"mr", alignment::MIDDLE_RIGHT},
+    {"none", alignment::NONE}};
 
 #ifdef OWN_WINDOW
 template <>
 conky::lua_traits<window_type>::Map conky::lua_traits<window_type>::map = {
-    {"normal", TYPE_NORMAL},   {"dock", TYPE_DOCK},
-    {"panel", TYPE_PANEL},     {"desktop", TYPE_DESKTOP},
-    {"utility", TYPE_UTILITY}, {"override", TYPE_OVERRIDE}};
+    {"normal", window_type::NORMAL},   {"dock", window_type::DOCK},
+    {"panel", window_type::PANEL},     {"desktop", window_type::DESKTOP},
+    {"utility", window_type::UTILITY}, {"override", window_type::OVERRIDE}};
 
 template <>
 conky::lua_traits<window_hints>::Map conky::lua_traits<window_hints>::map = {
-    {"undecorated", HINT_UNDECORATED},
-    {"below", HINT_BELOW},
-    {"above", HINT_ABOVE},
-    {"sticky", HINT_STICKY},
-    {"skip_taskbar", HINT_SKIP_TASKBAR},
-    {"skip_pager", HINT_SKIP_PAGER}};
+    {"undecorated", window_hints::UNDECORATED},
+    {"below", window_hints::BELOW},
+    {"above", window_hints::ABOVE},
+    {"sticky", window_hints::STICKY},
+    {"skip_taskbar", window_hints::SKIP_TASKBAR},
+    {"skip_pager", window_hints::SKIP_PAGER}};
 
 std::pair<uint16_t, bool> window_hints_traits::convert(
     lua::state &l, int index, const std::string &name) {
@@ -185,7 +193,8 @@ std::string gethostnamecxx() {
  * setting.cc.
  */
 
-conky::simple_config_setting<alignment> text_alignment("alignment", BOTTOM_LEFT,
+conky::simple_config_setting<alignment> text_alignment("alignment",
+                                                       alignment::BOTTOM_LEFT,
                                                        false);
 
 priv::colour_setting default_shade_color("default_shade_color", black_argb32);
@@ -209,7 +218,8 @@ conky::simple_config_setting<std::string> own_window_title(
 conky::simple_config_setting<std::string> own_window_class("own_window_class",
                                                            PACKAGE_NAME, false);
 conky::simple_config_setting<window_type> own_window_type("own_window_type",
-                                                          TYPE_NORMAL, false);
+                                                          window_type::NORMAL,
+                                                          false);
 conky::simple_config_setting<uint16_t, window_hints_traits> own_window_hints(
     "own_window_hints", 0, false);
 #endif /* OWN_WINDOW && BUILD_X11 */

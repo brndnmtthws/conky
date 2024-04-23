@@ -23,6 +23,8 @@
 #ifndef DISPLAY_X11_HH
 #define DISPLAY_X11_HH
 
+#include "config.h"
+
 #include <limits>
 #include <string>
 #include <type_traits>
@@ -67,7 +69,9 @@ class display_output_x11 : public display_output_base {
   virtual void fill_rect(int, int, int, int);
   virtual void draw_arc(int, int, int, int, int, int);
   virtual void move_win(int, int);
-  virtual int dpi_scale(int);
+  template <typename T, typename = typename std::enable_if<
+                            std::is_arithmetic<T>::value, T>::type>
+  T dpi_scale(T value);
 
   virtual void end_draw_stuff();
   virtual void clear_text(int);

@@ -27,8 +27,14 @@
  *
  */
 
-#if defined(BUILD_WAYLAND) && !defined(CONKY_WL_H)
+#ifndef CONKY_WL_H
 #define CONKY_WL_H
+
+#include "config.h"
+
+#ifndef BUILD_WAYLAND
+#error wl.h included when BUILD_WAYLAND is disabled
+#endif
 
 #include <wayland-client.h>
 

@@ -28,6 +28,9 @@
  */
 
 #include "conky.h"
+
+#include "config.h"
+
 #include <algorithm>
 #include <cerrno>
 #include <climits>
@@ -40,24 +43,37 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include "common.h"
-#include "config.h"
-#include "text_object.h"
-#ifdef HAVE_DIRENT_H
-#include <dirent.h>
-#endif /* HAVE_DIRENT_H */
+
+#include <fcntl.h>
+#include <getopt.h>
+#include <netdb.h>
+#include <netinet/in.h>
 #include <sys/param.h>
+#include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/types.h>
+
 #ifdef HAVE_SYS_INOTIFY_H
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wc99-extensions"
 #include <sys/inotify.h>
 #pragma clang diagnostic pop
 #endif /* HAVE_SYS_INOTIFY_H */
+
+#ifdef HAVE_DIRENT_H
+#include <dirent.h>
+#endif /* HAVE_DIRENT_H */
+
+#include "common.h"
+#include "text_object.h"
+
 #ifdef BUILD_WAYLAND
 #include "wl.h"
 #endif /* BUILD_WAYLAND */
+
 #ifdef BUILD_X11
+#include "x11.h"
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
 #include <X11/Xutil.h>
@@ -69,21 +85,18 @@
 #include "conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
 #endif /* BUILD_X11 */
+
 #ifdef BUILD_NCURSES
 #include <ncurses.h>
-#endif
-#include <fcntl.h>
-#include <getopt.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#if defined BUILD_RSS
-#include <libxml/parser.h>
-#endif
+#endif /* BUILD_NCURSES */
+
 #ifdef BUILD_CURL
 #include <curl/curl.h>
-#endif
+#endif /* BUILD_CURL */
+
+#ifdef BUILD_RSS
+#include <libxml/parser.h>
+#endif /* BUILD_RSS */
 
 /* local headers */
 #include "colours.h"
@@ -97,7 +110,7 @@
 #include "fs.h"
 #ifdef BUILD_ICONV
 #include "iconv_tools.h"
-#endif
+#endif /* BUILD_ICONV */
 #include "llua.h"
 #include "logging.h"
 #include "mail.h"
@@ -108,12 +121,13 @@
 #include "template.h"
 #include "timeinfo.h"
 #include "top.h"
+
 #ifdef BUILD_MYSQL
 #include "mysql.h"
 #endif /* BUILD_MYSQL */
 #ifdef BUILD_NVIDIA
 #include "nvidia.h"
-#endif
+#endif /* BUILD_NVIDIA */
 #ifdef BUILD_CURL
 #include "ccurl_thread.h"
 #endif /* BUILD_CURL */
@@ -392,18 +406,6 @@ int calc_text_width(const char *s) {
 
   size_t slen = strlen(s);
   return slen;
-}
-
-int dpi_scale(int value) {
-#ifdef BUILD_GUI
-  if (display_output()) {
-    return display_output()->dpi_scale(value);
-  } else {
-    return value;
-  }
-#else  /* BUILD_GUI */
-  return value;
-#endif /* BUILD_GUI */
 }
 
 #ifdef BUILD_GUI
@@ -766,7 +768,7 @@ void remove_first_char(char *s) { memmove(s, s + 1, strlen(s)); }
 
 static int get_string_width_special(char *s, int special_index) {
   char *p, *final;
-  special_t *current = specials;
+  special_node *current = specials;
   int width = 0;
   long i;
 
@@ -789,22 +791,23 @@ static int get_string_width_special(char *s, int special_index) {
       /*for (i = 0; i < static_cast<long>(strlen(p)); i++) {
         *(p + i) = *(p + i + 1);
       }*/
-      if (current->type == GRAPH || current->type == GAUGE ||
-          current->type == BAR) {
+      if (current->type == text_node_t::GRAPH ||
+          current->type == text_node_t::GAUGE ||
+          current->type == text_node_t::BAR) {
         width += current->width;
       }
-      if (current->type == FONT) {
+      if (current->type == text_node_t::FONT) {
         // put all following text until the next fontchange/stringend in
         // influenced_by_font but do not include specials
         char *influenced_by_font = strdup(p);
-        special_t *current_after_font = current;
+        special_node *current_after_font = current;
         // influenced_by_font gets special chars removed, so after this loop i
         // counts the number of letters (not special chars) influenced by font
         for (i = 0; influenced_by_font[i] != 0; i++) {
           if (influenced_by_font[i] == SPECIAL_CHAR) {
             // remove specials and stop at fontchange
             current_after_font = current_after_font->next;
-            if (current_after_font->type == FONT) {
+            if (current_after_font->type == text_node_t::FONT) {
               influenced_by_font[i] = 0;
               break;
             }
@@ -867,50 +870,34 @@ void update_text_area() {
 
   alignment align = text_alignment.get(*state);
   /* get text position on workarea */
-  switch (align) {
-    case TOP_LEFT:
-    case TOP_RIGHT:
-    case TOP_MIDDLE:
+  switch (vertical_alignment(align)) {
+    case axis_align::START:
       y = workarea[1] + dpi_scale(gap_y.get(*state));
       break;
-
-    case BOTTOM_LEFT:
-    case BOTTOM_RIGHT:
-    case BOTTOM_MIDDLE:
+    case axis_align::END:
     default:
       y = workarea[3] - text_height - dpi_scale(gap_y.get(*state));
       break;
-
-    case MIDDLE_LEFT:
-    case MIDDLE_RIGHT:
-    case MIDDLE_MIDDLE:
+    case axis_align::MIDDLE:
       y = workarea[1] + (workarea[3] - workarea[1]) / 2 - text_height / 2 -
           dpi_scale(gap_y.get(*state));
       break;
   }
-  switch (align) {
-    case TOP_LEFT:
-    case BOTTOM_LEFT:
-    case MIDDLE_LEFT:
+  switch (horizontal_alignment(align)) {
+    case axis_align::START:
     default:
       x = workarea[0] + dpi_scale(gap_x.get(*state));
       break;
-
-    case TOP_RIGHT:
-    case BOTTOM_RIGHT:
-    case MIDDLE_RIGHT:
+    case axis_align::END:
       x = workarea[2] - text_width - dpi_scale(gap_x.get(*state));
       break;
-
-    case TOP_MIDDLE:
-    case BOTTOM_MIDDLE:
-    case MIDDLE_MIDDLE:
+    case axis_align::MIDDLE:
       x = workarea[0] + (workarea[2] - workarea[0]) / 2 - text_width / 2 -
           dpi_scale(gap_x.get(*state));
       break;
   }
 #ifdef OWN_WINDOW
-  if (align == NONE) {  // Let the WM manage the window
+  if (align == alignment::NONE) {  // Let the WM manage the window
     x = window.x;
     y = window.y;
 
@@ -941,20 +928,14 @@ static int cur_x, cur_y; /* current x and y for drawing */
 #endif
 // draw_mode also without BUILD_GUI because we only need to print to stdout with
 // FG
-static int draw_mode; /* FG, BG or OUTLINE */
+static draw_mode_t draw_mode; /* FG, BG or OUTLINE */
 #ifdef BUILD_GUI
 /*static*/ Colour current_color;
-
-static int saved_coordinates_x[100];
-static int saved_coordinates_y[100];
-
-int get_saved_coordinates_x(int i) { return saved_coordinates_x[i]; }
-int get_saved_coordinates_y(int i) { return saved_coordinates_y[i]; }
 
 static int text_size_updater(char *s, int special_index) {
   int w = 0;
   char *p;
-  special_t *current = specials;
+  special_node *current = specials;
 
   for (int i = 0; i < special_index; i++) { current = current->next; }
 
@@ -969,26 +950,27 @@ static int text_size_updater(char *s, int special_index) {
       w += get_string_width(s);
       *p = SPECIAL_CHAR;
 
-      if (current->type == BAR || current->type == GAUGE ||
-          current->type == GRAPH) {
+      if (current->type == text_node_t::BAR ||
+          current->type == text_node_t::GAUGE ||
+          current->type == text_node_t::GRAPH) {
         w += current->width;
         if (current->height > last_font_height) {
           last_font_height = current->height;
           last_font_height += font_height();
         }
-      } else if (current->type == OFFSET) {
+      } else if (current->type == text_node_t::OFFSET) {
         if (current->arg > 0) { w += current->arg; }
-      } else if (current->type == VOFFSET) {
+      } else if (current->type == text_node_t::VOFFSET) {
         last_font_height += current->arg;
-      } else if (current->type == GOTO) {
+      } else if (current->type == text_node_t::GOTO) {
         if (current->arg > cur_x) { w = static_cast<int>(current->arg); }
-      } else if (current->type == TAB) {
+      } else if (current->type == text_node_t::TAB) {
         int start = current->arg;
         int step = current->width;
 
         if ((step == 0) || step < 0) { step = 10; }
         w += step - (cur_x - text_start_x - start) % step;
-      } else if (current->type == FONT) {
+      } else if (current->type == text_node_t::FONT) {
         selected_font = current->font_added;
         if (font_height() > last_font_height) {
           last_font_height = font_height();
@@ -1033,7 +1015,7 @@ static void draw_string(const char *s) {
 #ifdef BUILD_GUI
   width_of_s = get_string_width(s);
 #endif /* BUILD_GUI */
-  if (draw_mode == FG) {
+  if (draw_mode == draw_mode_t::FG) {
     for (auto output : display_outputs())
       if (!output->graphical()) output->draw_string(s, 0);
   }
@@ -1163,11 +1145,11 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
         s = p + 1;
       }
       /* draw special */
-      special_t *current = specials;
+      special_node *current = specials;
       for (int i = 0; i < special_index; i++) { current = current->next; }
       switch (current->type) {
 #ifdef BUILD_GUI
-        case HORIZONTAL_LINE:
+        case text_node_t::HORIZONTAL_LINE:
           if (display_output() && display_output()->graphical()) {
             int h = current->height;
             int mid = font_ascent() / 2;
@@ -1183,7 +1165,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           }
           break;
 
-        case STIPPLED_HR:
+        case text_node_t::STIPPLED_HR:
           if (display_output() && display_output()->graphical()) {
             int h = current->height;
             char tmp_s = current->arg;
@@ -1201,7 +1183,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           }
           break;
 
-        case BAR:
+        case text_node_t::BAR:
           if (display_output() && display_output()->graphical()) {
             int h, by;
             double bar_usage, scale;
@@ -1229,7 +1211,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           }
           break;
 
-        case GAUGE: /* new GAUGE  */
+        case text_node_t::GAUGE: /* new GAUGE  */
           if (display_output() && display_output()->graphical()) {
             int h, by = 0;
             Colour last_colour = current_color;
@@ -1279,7 +1261,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           }
           break;
 
-        case GRAPH:
+        case text_node_t::GRAPH:
           if (display_output() && display_output()->graphical()) {
             int h, by, i = 0, j = 0;
             int colour_idx = 0;
@@ -1415,7 +1397,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           }
           break;
 
-        case FONT:
+        case text_node_t::FONT:
           if (display_output() && display_output()->graphical()) {
             int old = font_ascent();
 
@@ -1431,41 +1413,42 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           }
           break;
 #endif /* BUILD_GUI */
-        case FG:
-          if (draw_mode == FG) {
+        case text_node_t::FG:
+          if (draw_mode == draw_mode_t::FG) {
             set_foreground_color(Colour::from_argb32(current->arg));
           }
           break;
 
 #ifdef BUILD_GUI
-        case BG:
-          if (draw_mode == BG) {
+        case text_node_t::BG:
+          if (draw_mode == draw_mode_t::BG) {
             set_foreground_color(Colour::from_argb32(current->arg));
           }
           break;
 
-        case OUTLINE:
-          if (draw_mode == OUTLINE) {
+        case text_node_t::OUTLINE:
+          if (draw_mode == draw_mode_t::OUTLINE) {
             set_foreground_color(Colour::from_argb32(current->arg));
           }
           break;
 
-        case OFFSET:
+        case text_node_t::OFFSET:
           w += current->arg;
           break;
 
-        case VOFFSET:
+        case text_node_t::VOFFSET:
           cur_y += current->arg;
           break;
 
-        case SAVE_COORDINATES:
-          saved_coordinates_x[static_cast<int>(current->arg)] =
-              cur_x - text_start_x;
-          saved_coordinates_y[static_cast<int>(current->arg)] =
-              cur_y - text_start_y - last_font_height;
+        case text_node_t::SAVE_COORDINATES:
+#ifdef BUILD_IMLIB2
+          saved_coordinates[static_cast<int>(current->arg)] =
+              std::array<int, 2>{cur_x - text_start_x,
+                                 cur_y - text_start_y - last_font_height};
+#endif /* BUILD_IMLIB2 */
           break;
 
-        case TAB: {
+        case text_node_t::TAB: {
           int start = current->arg;
           int step = current->width;
 
@@ -1474,7 +1457,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           break;
         }
 
-        case ALIGNR: {
+        case text_node_t::ALIGNR: {
           /* TODO: add back in "+ window.border_inner_margin" to the end of
            * this line? */
           int pos_x = text_start_x + text_width -
@@ -1491,7 +1474,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           break;
         }
 
-        case ALIGNC: {
+        case text_node_t::ALIGNC: {
           int pos_x = (text_width) / 2 -
                       get_string_width_special(s, special_index) / 2 -
                       (cur_x - text_start_x);
@@ -1507,16 +1490,19 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           break;
         }
 #endif /* BUILD_GUI */
-        case GOTO:
+        case text_node_t::GOTO:
           if (current->arg >= 0) {
 #ifdef BUILD_GUI
             cur_x = static_cast<int>(current->arg);
             // make sure shades are 1 pixel to the right of the text
-            if (draw_mode == BG) { cur_x++; }
+            if (draw_mode == draw_mode_t::BG) { cur_x++; }
 #endif /* BUILD_GUI */
             cur_x = static_cast<int>(current->arg);
             for (auto output : display_outputs()) output->gotox(cur_x);
           }
+          break;
+        default:
+          // do nothing; not a special node or support not enabled
           break;
       }
 
@@ -1599,7 +1585,9 @@ void draw_stuff() {
 
 #ifdef BUILD_IMLIB2
   text_offset_x = text_offset_y = 0;
-  cimlib_render(text_start_x, text_start_y, window.width, window.height);
+  cimlib_render(text_start_x, text_start_y, window.width, window.height,
+                imlib_cache_flush_interval.get(*state),
+                imlib_draw_blended.get(*state));
 #endif /* BUILD_IMLIB2 */
 
   for (auto output : display_outputs()) {
@@ -1611,7 +1599,7 @@ void draw_stuff() {
     if (draw_shades.get(*state) && !draw_outline.get(*state)) {
       text_offset_x = text_offset_y = 1;
       set_foreground_color(default_shade_color.get(*state));
-      draw_mode = BG;
+      draw_mode = draw_mode_t::BG;
       draw_text();
       text_offset_x = text_offset_y = 0;
     }
@@ -1623,7 +1611,7 @@ void draw_stuff() {
         for (text_offset_y = -1; text_offset_y < 2; text_offset_y++) {
           if (text_offset_x == 0 && text_offset_y == 0) { continue; }
           set_foreground_color(default_outline_color.get(*state));
-          draw_mode = OUTLINE;
+          draw_mode = draw_mode_t::OUTLINE;
           draw_text();
         }
       }
@@ -1637,7 +1625,7 @@ void draw_stuff() {
 
 #endif /* BUILD_GUI */
   // always draw text
-  draw_mode = FG;
+  draw_mode = draw_mode_t::FG;
   draw_text();
 #ifdef BUILD_GUI
 
@@ -1874,10 +1862,10 @@ static void reload_config() {
   initialisation(argc_copy, argv_copy);
 }
 
-void free_specials(special_t *&current) {
+void free_specials(special_node *&current) {
   if (current != nullptr) {
     free_specials(current->next);
-    if (current->type == GRAPH) { free(current->graph); }
+    if (current->type == text_node_t::GRAPH) { free(current->graph); }
     delete current;
     current = nullptr;
   }

@@ -27,10 +27,38 @@ desc: |-
 values:
   - name: alignment
     desc: |-
-      Aligned position on screen, may be top_left, top_right,
-      top_middle, bottom_left, bottom_right, bottom_middle, middle_left,
-      middle_middle, middle_right, or none (also can be abbreviated as tl,
-      tr, tm, bl, br, bm, ml, mm, mr). See also gap_x and gap_y.
+      Aligned position on screen, may be `none` or one of:
+
+       <table>
+        <tr>
+          <td><code>top_left</code> (<em>or</em> <code>tl</code>)</td>
+          <td><code>top_middle</code> (<em>or</em> <code>tm</code>)</td>
+          <td><code>top_right</code> (<em>or</em> <code>tr</code>)</td>
+        </tr>
+        <tr>
+          <td><code>middle_left</code> (<em>or</em> <code>ml</code>)</td>
+          <td><code>middle_middle</code> (<em>or</em> <code>mm</code>)</td>
+          <td><code>middle_right</code> (<em>or</em> <code>mr</code>)</td>
+        </tr>
+        <tr>
+          <td><code>bottom_left</code> (<em>or</em> <code>bl</code>)</td>
+          <td><code>bottom_middle</code> (<em>or</em> <code>bm</code>)</td>
+          <td><code>bottom_right</code> (<em>or</em> <code>br</code>)</td>
+        </tr>
+      </table>
+
+      In case of `panel` and `dock` windows, it might make more sense to use one
+      of the following aliases:
+
+      | Alias  |     Value     |
+      |:------:|:-------------:|
+      | `top`  | `top_middle`  |
+      | `left` | `middle_left` |
+      |`right` |`middle_right` |
+      |`bottom`|`bottom_middle`|
+      |`center`|`middle_middle`|
+
+      See also `gap_x` and `gap_y` settings.
   - name: append_file
     desc: Append the file given as argument.
   - name: background
@@ -437,7 +465,7 @@ values:
     default: false
   - name: own_window_type
     desc: |-
-      If own_window is set, under X11 you can specify type of window conky
+      If `own_window` is set, under X11 you can specify type of window conky
       displayed as:
 
       - `normal` mode makes conky show as normal window. This mode can be
@@ -464,6 +492,7 @@ values:
         panels/windows as those will cover conky.
         `own_window_hints` are ignored for `override` windows.
 
+      To make conky mount on root window, set `own_window` to `false`.
     default: normal
     args:
       - (normal|desktop|dock|panel|utility|override)

@@ -1566,14 +1566,11 @@ static const BuiltinColor BuiltinColors[] = {
 
 #define NUM_BUILTIN_COLORS (sizeof(BuiltinColors) / sizeof(BuiltinColors[0]))
 
-int OsLookupColor(int screen, const char *name, unsigned int len,
-                  unsigned short *pred, unsigned short *pgreen,
-                  unsigned short *pblue) {
+int OsLookupColor(const char *name, unsigned int len, unsigned short *pred,
+                  unsigned short *pgreen, unsigned short *pblue) {
   const BuiltinColor *c;
   int low, mid, high;
   int r;
-
-  (void)screen;
 
   low = 0;
   high = NUM_BUILTIN_COLORS - 1;

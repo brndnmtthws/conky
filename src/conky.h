@@ -32,11 +32,14 @@
 
 #define __STDC_FORMAT_MACROS
 
+#include "config.h"
+
 #include <arpa/inet.h>
 #include <config.h>      /* defines */
 #include <sys/utsname.h> /* struct uname_s */
 #include <csignal>
 #include <memory>
+
 #include "colours.h"
 #include "common.h" /* at least for struct dns_data */
 #include "luamm.hh"
@@ -310,11 +313,6 @@ Colour get_current_text_color(void);
 void set_updatereset(int);
 int get_updatereset(void);
 int get_total_updates(void);
-
-int dpi_scale(int value);
-
-int get_saved_coordinates_x(int);
-int get_saved_coordinates_y(int);
 
 /* defined in conky.c */
 int spaced_print(char *, int, const char *, int, ...)
