@@ -1116,29 +1116,7 @@ void set_struts(alignment align) {
   Atom strut = ATOM(_NET_WM_STRUT);
   if (strut != None) {
     long sizes[STRUT_COUNT] = {0};
-    int i;
 
-    switch (vertical_alignment(align)) {
-      case axis_align::START:
-        sizes[*x11_strut::TOP] =
-            std::clamp(window.y + window.height, 0, display_height);
-        sizes[*x11_strut::TOP_START_X] = std::clamp(window.x, 0, display_width);
-        sizes[*x11_strut::TOP_END_X] =
-            std::clamp(window.x + window.width + 6, 0, display_width);
-        break;
-      case axis_align::END:
-        sizes[*x11_strut::BOTTOM] =
-            std::clamp(display_height - window.y, 0, display_height);
-        sizes[*x11_strut::BOTTOM_START_X] =
-            std::clamp(window.x, 0, display_width);
-        sizes[*x11_strut::BOTTOM_END_X] =
-            std::clamp(window.x + window.width, 0, display_width);
-        break;
-      case axis_align::MIDDLE:
-        // can't reserve space in middle of the screen
-      default:
-        break;
-    }
     switch (horizontal_alignment(align)) {
       case axis_align::START:
         sizes[*x11_strut::LEFT] =
@@ -1157,7 +1135,28 @@ void set_struts(alignment align) {
             std::clamp(window.y + window.height, 0, display_height);
         break;
       case axis_align::MIDDLE:
-        // can't reserve space in middle of the screen
+        switch (vertical_alignment(align)) {
+          case axis_align::START:
+            sizes[*x11_strut::TOP] =
+                std::clamp(window.y + window.height, 0, display_height);
+            sizes[*x11_strut::TOP_START_X] =
+                std::clamp(window.x, 0, display_width);
+            sizes[*x11_strut::TOP_END_X] =
+                std::clamp(window.x + window.width, 0, display_width);
+            break;
+          case axis_align::END:
+            sizes[*x11_strut::BOTTOM] =
+                std::clamp(display_height - window.y, 0, display_height);
+            sizes[*x11_strut::BOTTOM_START_X] =
+                std::clamp(window.x, 0, display_width);
+            sizes[*x11_strut::BOTTOM_END_X] =
+                std::clamp(window.x + window.width, 0, display_width);
+            break;
+          case axis_align::MIDDLE:
+            // can't reserve space in middle of the screen
+          default:
+            break;
+        }
       default:
         break;
     }
