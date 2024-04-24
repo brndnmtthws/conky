@@ -15,7 +15,7 @@ const Footer: React.FunctionComponent = () => {
           {modifiedYear} Conky developers, updated{' '}
           {new Date(modifiedDate).toLocaleString()} UTC
           {gitHash && (
-            <span>
+            <>
               {' '}
               <Link
                 target="_blank"
@@ -23,7 +23,7 @@ const Footer: React.FunctionComponent = () => {
               >
                 {`(${gitHash})`}
               </Link>
-            </span>
+            </>
           )}
         </p>
       </div>
