@@ -3,6 +3,7 @@ declare module 'next/config' {
     publicRuntimeConfig: {
       modifiedDate: string
       modifiedYear: string
+      gitHash: string?
     }
   }
 

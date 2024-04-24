@@ -7,6 +7,9 @@ const config = async (_phase, { _defaultConfig }) => {
     git.stdout.on('data', (data) => {
       resolve(data.toString().trim())
     })
+    git.on('error', () => {
+      resolve(undefined)
+    })
   })
 
   /**
