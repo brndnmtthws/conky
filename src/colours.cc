@@ -33,15 +33,6 @@
 
 #include <optional>
 
-#ifdef BUILD_X11
-#include <X11/Xlib.h>
-#include <string.h>
-#include <strings.h>
-#endif /* BUILD_X11 */
-
-// sourced from X11, doesn't actually need X11
-#include "x11-color.h"
-
 Colour Colour::from_argb32(uint32_t argb) {
   Colour out;
   out.alpha = argb >> 24;
@@ -51,58 +42,15 @@ Colour Colour::from_argb32(uint32_t argb) {
   return out;
 }
 
-#ifdef BUILD_X11
-unsigned long Colour::to_x11_color(Display *display, int screen,
-                                   bool transparency, bool premultiply) {
-  static std::unordered_map<Colour, unsigned long, Colour::Hash> x11_pixels;
-
-  if (display == nullptr) {
-    /* cannot work if display is not open */
-    return 0;
-  }
-
-  unsigned long pixel;
-
-  /* Either get a cached X11 pixel or allocate one */
-  if (auto pixel_iter = x11_pixels.find(*this);
-      pixel_iter != x11_pixels.end()) {
-    pixel = pixel_iter->second;
-  } else {
-    XColor xcolor{};
-    xcolor.red = this->red * 257;
-    xcolor.green = this->green * 257;
-    xcolor.blue = this->blue * 257;
-    if (XAllocColor(display, DefaultColormap(display, screen), &xcolor) == 0) {
-      // NORM_ERR("can't allocate X color");
-      return 0;
-    }
-
-    /* Save pixel value in the cache to avoid reallocating it */
-    x11_pixels[*this] = xcolor.pixel;
-    pixel = static_cast<unsigned long>(xcolor.pixel);
-  }
-
-  pixel &= 0xffffff;
-#ifdef BUILD_ARGB
-  if (transparency) {
-    if (premultiply)
-      pixel = (red * alpha / 255) << 16 | (green * alpha / 255) << 8 |
-              (blue * alpha / 255);
-    pixel |= ((unsigned long)alpha << 24);
-  }
-#endif /* BUILD_ARGB */
-  return pixel;
-}
-#endif /* BUILD_X11 */
+#include "colour-names.cc"
 
 std::optional<Colour> parse_color_name(const std::string &name) {
-  unsigned short r, g, b;
-  size_t len = name.length();
-  // Parse X11 color names.
-  if (OsLookupColor(name.c_str(), len, &r, &g, &b)) {
-    return Colour{(uint8_t)r, (uint8_t)g, (uint8_t)b, 0xff};
-  } else {
+  const rgb *value = color_name_hash::in_word_set(name.c_str(), name.length());
+
+  if (value == nullptr) {
     return std::nullopt;
+  } else {
+    return Colour{value->red, value->green, value->blue};
   }
 }
 
@@ -165,16 +113,18 @@ Colour parse_color(const std::string &color) {
   std::optional<Colour> value_##name = name(color); \
   if (value_##name.has_value()) { return value_##name.value(); }
 
-  std::optional<Colour> value_parse_color_name = parse_color_name(color);
-  if (value_parse_color_name.has_value()) {
-    return value_parse_color_name.value();
-  }
-  std::optional<Colour> value_parse_hex_color = parse_hex_color(color);
-  if (value_parse_hex_color.has_value()) {
-    return value_parse_hex_color.value();
-  }
+  TRY_PARSER(parse_color_name)
+  TRY_PARSER(parse_hex_color)
 
 #undef TRY_PARSER
 
   return ERROR_COLOUR;
+}
+
+Colour::Colour(const std::string &name) {
+  const auto result = parse_color(name);
+  this->red = result.red;
+  this->green = result.green;
+  this->blue = result.blue;
+  this->alpha = result.alpha;
 }

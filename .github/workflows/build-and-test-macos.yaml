@@ -37,6 +37,7 @@ jobs:
             freetype \
             gettext \
             imlib2 \
+            gperf \
             lcov \
             librsvg \
             libxft \

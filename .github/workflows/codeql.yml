@@ -31,6 +31,7 @@ jobs:
             audacious-dev \
             cmake \
             gawk \
+            gperf \
             lcov \
             libaudclient-dev \
             libc++-14-dev \

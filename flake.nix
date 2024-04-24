@@ -64,6 +64,7 @@
               llvmPackages_16.clang-unwrapped
               ninja
               pkg-config
+              gperf
             ];
             buildInputs =
               [
