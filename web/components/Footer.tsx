@@ -11,7 +11,8 @@ const Footer: React.FunctionComponent = () => {
       </div>
       <div className="pl-1 pr-2 lg:pr-4 font-sans text-xs">
         <p>
-          {modifiedYear} Conky developers, updated {new Date(modifiedDate).toLocaleString()}
+          {modifiedYear} Conky developers, updated{' '}
+          {new Date(modifiedDate).toLocaleString()} UTC
         </p>
       </div>
     </div>
