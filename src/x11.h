@@ -103,7 +103,7 @@ void destroy_window(void);
 void create_gc(void);
 void set_transparent_background(Window win);
 void get_x11_desktop_info(Display *current_display, Atom atom);
-void set_struts(int);
+void set_struts(alignment alignment);
 void x11_init_window(lua::state &l, bool own);
 void deinit_x11();
 
