@@ -1108,60 +1108,65 @@ constexpr size_t operator*(x11_strut index) {
 }
 
 /* reserve window manager space */
-void set_struts(int sidenum) {
-  Atom strut;
-  if ((strut = ATOM(_NET_WM_STRUT)) != None) {
-    /* reserve space at left, right, top, bottom */
-    signed long sizes[12] = {0};
-    int i;
+void set_struts(alignment align) {
+  // Middle and none align don't have least significant bit set.
+  // Ensures either vertical or horizontal axis are start/end
+  if ((*align & 0b0101) == 0) return;
 
-    /* define strut depth */
-    switch (sidenum) {
-      case 0:
-        /* left side */
-        sizes[0] = window.x + window.width;
-        break;
-      case 1:
-        /* right side */
-        sizes[1] = display_width - window.x;
-        break;
-      case 2:
-        /* top side */
-        sizes[2] = window.y + window.height;
-        break;
-      case 3:
-        /* bottom side */
-        sizes[3] = display_height - window.y;
-        break;
-    }
+  Atom strut = ATOM(_NET_WM_STRUT);
+  if (strut != None) {
+    long sizes[STRUT_COUNT] = {0};
 
-    /* define partial strut length */
-    if (sidenum <= 1) {
-      sizes[4 + (sidenum * 2)] = window.y;
-      sizes[5 + (sidenum * 2)] = window.y + window.height;
-    } else if (sidenum <= 3) {
-      sizes[4 + (sidenum * 2)] = window.x;
-      sizes[5 + (sidenum * 2)] = window.x + window.width;
-    }
-
-    /* check constraints */
-    for (i = 0; i < 12; i++) {
-      if (sizes[i] < 0) {
-        sizes[i] = 0;
-      } else {
-        if (i <= 1 || i >= 8) {
-          if (sizes[i] > display_width) { sizes[i] = display_width; }
-        } else {
-          if (sizes[i] > display_height) { sizes[i] = display_height; }
+    switch (horizontal_alignment(align)) {
+      case axis_align::START:
+        sizes[*x11_strut::LEFT] =
+            std::clamp(window.x + window.width, 0, display_width);
+        sizes[*x11_strut::LEFT_START_Y] =
+            std::clamp(window.y, 0, display_height);
+        sizes[*x11_strut::LEFT_END_Y] =
+            std::clamp(window.y + window.height, 0, display_height);
+        break;
+      case axis_align::END:
+        sizes[*x11_strut::RIGHT] =
+            std::clamp(display_width - window.x, 0, display_width);
+        sizes[*x11_strut::RIGHT_START_Y] =
+            std::clamp(window.y, 0, display_height);
+        sizes[*x11_strut::RIGHT_END_Y] =
+            std::clamp(window.y + window.height, 0, display_height);
+        break;
+      case axis_align::MIDDLE:
+        switch (vertical_alignment(align)) {
+          case axis_align::START:
+            sizes[*x11_strut::TOP] =
+                std::clamp(window.y + window.height, 0, display_height);
+            sizes[*x11_strut::TOP_START_X] =
+                std::clamp(window.x, 0, display_width);
+            sizes[*x11_strut::TOP_END_X] =
+                std::clamp(window.x + window.width, 0, display_width);
+            break;
+          case axis_align::END:
+            sizes[*x11_strut::BOTTOM] =
+                std::clamp(display_height - window.y, 0, display_height);
+            sizes[*x11_strut::BOTTOM_START_X] =
+                std::clamp(window.x, 0, display_width);
+            sizes[*x11_strut::BOTTOM_END_X] =
+                std::clamp(window.x + window.width, 0, display_width);
+            break;
+          case axis_align::MIDDLE:
+            // can't reserve space in middle of the screen
+          default:
+            break;
         }
-      }
+      default:
+        break;
     }
 
     XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
                     PropModeReplace, reinterpret_cast<unsigned char *>(&sizes),
                     4);
 
-    if ((strut = ATOM(_NET_WM_STRUT_PARTIAL)) != None) {
+    strut = ATOM(_NET_WM_STRUT_PARTIAL);
+    if (strut != None) {
       XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
                       PropModeReplace,
                       reinterpret_cast<unsigned char *>(&sizes), 12);
