@@ -56,6 +56,8 @@
               "-DBUILD_LUA_CAIRO=ON"
               "-DBUILD_LUA_IMLIB2=ON"
               "-DBUILD_LUA_RSVG=ON"
+              "-DBUILD_RSS=ON"
+              "-DBUILD_CURL=ON"
             ];
             nativeBuildInputs = [
               clang_16
@@ -69,10 +71,12 @@
             buildInputs =
               [
                 cairo
+                curl
                 freetype
                 gettext
                 imlib2
                 librsvg
+                libxml2
                 llvmPackages_16.libcxx
                 llvmPackages_16.libcxxabi
                 lua5_4
