@@ -27,16 +27,17 @@ struct point {
   /// @brief Compile time component type information
   using Component = T;
 
-  Eigen::Vector2<T> value;
+  using Vec2 = Eigen::Array<T, 2, 1>;
+
+  Vec2 value;
 
  protected:
-  point(Eigen::Vector2<T> vec) : value(vec) {}
+  point(Vec2 vec) : value(vec) {}
 
  public:
   template <typename O = T,
             typename = typename std::enable_if<std::is_arithmetic<O>::value>>
-  point(O x, O y)
-      : point(Eigen::Vector2<T>(static_cast<T>(x), static_cast<T>(y))) {}
+  point(O x, O y) : point(Vec2(static_cast<T>(x), static_cast<T>(y))) {}
 
   /// @brief Zero vector value
   static inline point<T> Zero() { return point<T>(0, 0); }
@@ -47,7 +48,7 @@ struct point {
   /// @brief Y unit vector value
   static inline point<T> UnitY() { return point<T>(0, 1); }
 
-  point() : value(Eigen::Vector2<T>::Zero()) {}
+  point() : value(Vec2::Zero()) {}
 
   /// @brief Point x component
   /// @return x value of this point
@@ -59,12 +60,12 @@ struct point {
   template <typename O = T,
             typename = typename std::enable_if<std::is_arithmetic<O>::value>>
   inline void set_x(O value) {
-    this->value = Eigen::Vector2<T>(static_cast<T>(value), this->value.y());
+    this->value = Vec2(static_cast<T>(value), this->value.y());
   }
   template <typename O = T,
             typename = typename std::enable_if<std::is_arithmetic<O>::value>>
   inline void set_y(O value) {
-    this->value = Eigen::Vector2<T>(this->value.x(), static_cast<T>(value));
+    this->value = Vec2(this->value.x(), static_cast<T>(value));
   }
 
   template <typename O = T>
@@ -73,8 +74,7 @@ struct point {
   template <typename O = T,
             typename = typename std::enable_if<std::is_arithmetic<O>::value>>
   point(std::array<O, 2> other)
-      : value(Eigen::Vector2<T>(static_cast<T>(other[0]),
-                                static_cast<T>(other[1]))) {}
+      : value(Vec2(static_cast<T>(other[0]), static_cast<T>(other[1]))) {}
 
   template <typename O = T,
             typename = typename std::enable_if<std::is_arithmetic<O>::value>>
@@ -120,8 +120,12 @@ struct point {
     return point<T>(this->value / other.value);
   }
 
-  bool operator==(point<T> other) const { return this->value == other.value; }
-  bool operator!=(point<T> other) const { return this->value != other.value; }
+  bool operator==(point<T> other) const {
+    return this->x() == other.x() && this->y() == other.y();
+  }
+  bool operator!=(point<T> other) const {
+    return this->x() != other.x() || this->y() != other.y();
+  }
 
   point<T> operator-() const { return point<T>(-this->value); }
   point<T> abs() const { return point<T>(this->value.abs()); }
