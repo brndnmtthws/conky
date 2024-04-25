@@ -1429,7 +1429,7 @@ std::vector<Window> x11_atom_window_list(Display *display, Window window,
   return std::vector<Window>{};
 }
 
-std::vector<Window> query_x11_windows(Display *display) {
+std::vector<Window> query_x11_windows(Display *display, bool eager) {
   Window root = DefaultRootWindow(display);
 
   std::vector<Window> result;
@@ -1448,25 +1448,28 @@ std::vector<Window> query_x11_windows(Display *display) {
 
   // slowest method
 
-  std::vector<Window> queue = {DefaultVRootWindow(display)};
+  if (eager) {
+    std::vector<Window> queue = {DefaultVRootWindow(display)};
 
-  Window _ignored, *children;
-  std::uint32_t count;
+    Window _ignored, *children;
+    std::uint32_t count;
 
-  const auto has_wm_hints = [&](Window window) {
-    auto hints = XGetWMHints(display, window);
-    bool result = hints != NULL;
-    if (result) XFree(hints);
-    return result;
-  };
+    const auto has_wm_hints = [&](Window window) {
+      auto hints = XGetWMHints(display, window);
+      bool result = hints != NULL;
+      if (result) XFree(hints);
+      return result;
+    };
 
-  while (!queue.empty()) {
-    Window current = queue.back();
-    queue.pop_back();
-    if (XQueryTree(display, current, &_ignored, &_ignored, &children, &count)) {
-      for (size_t i = 0; i < count; i++) queue.push_back(children[i]);
-      if (has_wm_hints(current)) result.push_back(current);
-      if (count > 0) XFree(children);
+    while (!queue.empty()) {
+      Window current = queue.back();
+      queue.pop_back();
+      if (XQueryTree(display, current, &_ignored, &_ignored, &children,
+                     &count)) {
+        for (size_t i = 0; i < count; i++) queue.push_back(children[i]);
+        if (has_wm_hints(current)) result.push_back(current);
+        if (count > 0) XFree(children);
+      }
     }
   }
 
@@ -1491,13 +1494,13 @@ Window query_x11_window_at_pos(Display *display, int x, int y) {
 
 std::vector<Window> query_x11_windows_at_pos(
     Display *display, int x, int y,
-    std::function<bool(XWindowAttributes &)> predicate) {
+    std::function<bool(XWindowAttributes &)> predicate, bool eager) {
   std::vector<Window> result;
 
   Window root = DefaultVRootWindow(display);
   XWindowAttributes attr;
 
-  for (Window current : query_x11_windows(display)) {
+  for (Window current : query_x11_windows(display, eager)) {
     int pos_x, pos_y;
     Window _ignore;
     // Doesn't account for decorations. There's no sane way to do that.

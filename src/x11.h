@@ -132,12 +132,13 @@ std::vector<Window> x11_atom_window_list(Display *display, Window window,
 ///
 /// If neither of the atoms are provided, this function tries traversing the
 /// window graph in order to collect windows. In this case, map state of windows
-/// is ignored. This also produces a lot of noise for some WM/DEs due to
-/// inserted window decorations.
+/// is ignored.
 ///
-/// @param display which display to query for windows @return a (likely) ordered
-/// list of windows
-std::vector<Window> query_x11_windows(Display *display);
+/// @param display which display to query for windows
+/// @param eager fallback to very slow tree traversal to ensure a list of
+/// windows is returned even if window list atoms aren't defined
+/// @return a (likely) ordered list of windows
+std::vector<Window> query_x11_windows(Display *display, bool eager = false);
 
 /// @brief Finds the last ascendant of a window (trunk) before root.
 ///
@@ -171,7 +172,8 @@ Window query_x11_window_at_pos(Display *display, int x, int y);
 std::vector<Window> query_x11_windows_at_pos(
     Display *display, int x, int y,
     std::function<bool(XWindowAttributes &)> predicate =
-        [](XWindowAttributes &a) { return true; });
+        [](XWindowAttributes &a) { return true; },
+    bool eager = false);
 
 #ifdef BUILD_XDBE
 void xdbe_swap_buffers(void);
