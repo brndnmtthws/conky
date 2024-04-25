@@ -49,6 +49,7 @@
 
 #include "conky.h"
 #include "display-output.hh"
+#include "geometry.h"
 #include "gui.h"
 #include "llua.h"
 #include "logging.h"
@@ -259,12 +260,8 @@ static struct epoll_event ep[1];
 static struct window *global_window;
 static wl_display *global_display;
 
-struct rectangle {
-  size_t x, y, width, height;
-};
-
 struct window {
-  struct rectangle rectangle;
+  struct rect<size_t> rectangle;
   struct wl_shm *shm;
   struct wl_surface *surface;
   struct zwlr_layer_surface_v1 *layer_surface;
@@ -406,26 +403,24 @@ void window_get_width_height(struct window *window, int *w, int *h);
 
 void window_layer_surface_set_size(struct window *window) {
   zwlr_layer_surface_v1_set_size(global_window->layer_surface,
-                                 global_window->rectangle.width,
-                                 global_window->rectangle.height);
+                                 global_window->rectangle.width(),
+                                 global_window->rectangle.height());
 }
 
 #ifdef BUILD_MOUSE_EVENTS
-static std::map<wl_pointer *, std::array<size_t, 2>> last_known_positions{};
+static std::map<wl_pointer *, point<size_t>> last_known_positions{};
 
 static void on_pointer_enter(void *data, wl_pointer *pointer,
                              std::uint32_t serial, wl_surface *surface,
                              wl_fixed_t surface_x, wl_fixed_t surface_y) {
   auto w = reinterpret_cast<struct window *>(data);
 
-  size_t x = static_cast<size_t>(wl_fixed_to_double(surface_x));
-  size_t y = static_cast<size_t>(wl_fixed_to_double(surface_y));
-  last_known_positions[pointer] = std::array<size_t, 2>{x, y};
+  auto pos = point<size_t>(wl_fixed_to_double(surface_x),
+                           wl_fixed_to_double(surface_y));
+  last_known_positions[pointer] = pos;
+  auto pos_abs = w->rectangle.pos + pos;
 
-  size_t abs_x = w->rectangle.x + x;
-  size_t abs_y = w->rectangle.y + y;
-
-  mouse_crossing_event event{mouse_event_t::AREA_ENTER, x, y, abs_x, abs_y};
+  mouse_crossing_event event{mouse_event_t::AREA_ENTER, pos, pos_abs};
   llua_mouse_hook(event);
 }
 
@@ -433,13 +428,10 @@ static void on_pointer_leave(void *data, struct wl_pointer *pointer,
                              std::uint32_t serial, struct wl_surface *surface) {
   auto w = reinterpret_cast<struct window *>(data);
 
-  std::array<size_t, 2> last = last_known_positions[pointer];
-  size_t x = last[0];
-  size_t y = last[1];
-  size_t abs_x = w->rectangle.x + x;
-  size_t abs_y = w->rectangle.y + y;
+  auto pos = last_known_positions[pointer];
+  auto pos_abs = w->rectangle.pos + pos;
 
-  mouse_crossing_event event{mouse_event_t::AREA_LEAVE, x, y, abs_x, abs_y};
+  mouse_crossing_event event{mouse_event_t::AREA_LEAVE, pos, pos_abs};
   llua_mouse_hook(event);
 }
 
@@ -448,14 +440,12 @@ static void on_pointer_motion(void *data, struct wl_pointer *pointer,
                               wl_fixed_t surface_y) {
   auto w = reinterpret_cast<struct window *>(data);
 
-  size_t x = static_cast<size_t>(wl_fixed_to_double(surface_x));
-  size_t y = static_cast<size_t>(wl_fixed_to_double(surface_y));
-  last_known_positions[pointer] = std::array<size_t, 2>{x, y};
+  auto pos = point<size_t>(wl_fixed_to_double(surface_x),
+                           wl_fixed_to_double(surface_y));
+  last_known_positions[pointer] = pos;
+  auto pos_abs = w->rectangle.pos + pos;
 
-  size_t abs_x = w->rectangle.x + x;
-  size_t abs_y = w->rectangle.y + y;
-
-  mouse_move_event event{x, y, abs_x, abs_y};
+  mouse_move_event event{pos, pos_abs};
   llua_mouse_hook(event);
 }
 
@@ -464,18 +454,13 @@ static void on_pointer_button(void *data, struct wl_pointer *pointer,
                               std::uint32_t button, std::uint32_t state) {
   auto w = reinterpret_cast<struct window *>(data);
 
-  std::array<size_t, 2> last = last_known_positions[pointer];
-  size_t x = last[0];
-  size_t y = last[1];
-  size_t abs_x = w->rectangle.x + x;
-  size_t abs_y = w->rectangle.y + y;
+  auto pos = last_known_positions[pointer];
+  auto pos_abs = w->rectangle.pos + pos;
 
   mouse_button_event event{
       mouse_event_t::RELEASE,
-      x,
-      y,
-      abs_x,
-      abs_y,
+      pos,
+      pos_abs,
       static_cast<mouse_button_t>(button),
   };
 
@@ -498,14 +483,13 @@ void on_pointer_axis(void *data, struct wl_pointer *pointer, std::uint32_t time,
 
   auto w = reinterpret_cast<struct window *>(data);
 
-  std::array<size_t, 2> last = last_known_positions[pointer];
-  size_t x = last[0];
-  size_t y = last[1];
-  size_t abs_x = w->rectangle.x + x;
-  size_t abs_y = w->rectangle.y + y;
+  auto pos = last_known_positions[pointer];
+  auto pos_abs = w->rectangle.pos + pos;
 
   mouse_scroll_event event{
-      x, y, abs_x, abs_y, scroll_direction_t::UP,
+      pos,
+      pos_abs,
+      scroll_direction_t::UP,
   };
 
   switch (static_cast<wl_pointer_axis>(axis)) {
@@ -1113,20 +1097,22 @@ static void shm_pool_destroy(struct shm_pool *pool) {
   delete pool;
 }
 
-static int stride_for_shm_surface(struct rectangle *rect, int scale) {
+static int stride_for_shm_surface(rect<size_t> *rect, int scale) {
   return cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32,
-                                       rect->width * scale);
+                                       rect->width() * scale);
 }
 
-static int data_length_for_shm_surface(struct rectangle *rect, int scale) {
+static int data_length_for_shm_surface(rect<size_t> *rect, int scale) {
   int stride;
 
   stride = stride_for_shm_surface(rect, scale);
-  return stride * rect->height * scale;
+  return stride * rect->height() * scale;
 }
 
-static cairo_surface_t *create_shm_surface_from_pool(
-    void *none, struct rectangle *rectangle, struct shm_pool *pool, int scale) {
+static cairo_surface_t *create_shm_surface_from_pool(void *none,
+                                                     rect<size_t> *rectangle,
+                                                     struct shm_pool *pool,
+                                                     int scale) {
   struct shm_surface_data *data;
   uint32_t format;
   cairo_surface_t *surface;
@@ -1149,18 +1135,18 @@ static cairo_surface_t *create_shm_surface_from_pool(
     return NULL;
   }
 
+  auto scaled = rectangle->size * scale;
   surface = cairo_image_surface_create_for_data(
-      static_cast<unsigned char *>(map), cairo_format, rectangle->width * scale,
-      rectangle->height * scale, stride);
+      static_cast<unsigned char *>(map), cairo_format, scaled.x(), scaled.y(),
+      stride);
 
   cairo_surface_set_user_data(surface, &shm_surface_data_key, data,
                               shm_surface_data_destroy);
 
   format = WL_SHM_FORMAT_ARGB8888; /*or WL_SHM_FORMAT_RGB565*/
 
-  data->buffer =
-      wl_shm_pool_create_buffer(pool->pool, offset, rectangle->width * scale,
-                                rectangle->height * scale, stride, format);
+  data->buffer = wl_shm_pool_create_buffer(pool->pool, offset, scaled.x(),
+                                           scaled.y(), stride, format);
 
   return surface;
 }
@@ -1202,10 +1188,8 @@ struct window *window_create(struct wl_surface *surface, struct wl_shm *shm,
   struct window *window;
   window = new struct window;
 
-  window->rectangle.x = 0;
-  window->rectangle.y = 0;
-  window->rectangle.width = width;
-  window->rectangle.height = height;
+  window->rectangle.pos = point<size_t>::Zero();
+  window->rectangle.size = point(width, height);
   window->scale = 0;
   window->pending_scale = 1;
 
@@ -1244,8 +1228,8 @@ void window_destroy(struct window *window) {
 
 void window_resize(struct window *window, int width, int height) {
   window_free_buffer(window);
-  window->rectangle.width = width;
-  window->rectangle.height = height;
+  window->rectangle.set_width(width);
+  window->rectangle.set_height(height);
   window_allocate_buffer(window);
   window_layer_surface_set_size(window);
 }
@@ -1258,14 +1242,15 @@ void window_commit_buffer(struct window *window) {
                     get_buffer_from_cairo_surface(window->cairo_surface), 0, 0);
   /* repaint all the pixels in the surface, change size to only repaint changed
    * area*/
-  wl_surface_damage(window->surface, window->rectangle.x, window->rectangle.y,
-                    window->rectangle.width, window->rectangle.height);
+  wl_surface_damage(window->surface, window->rectangle.x(),
+                    window->rectangle.y(), window->rectangle.width(),
+                    window->rectangle.height());
   wl_surface_commit(window->surface);
 }
 
 void window_get_width_height(struct window *window, int *w, int *h) {
-  *w = window->rectangle.width;
-  *h = window->rectangle.height;
+  *w = window->rectangle.width();
+  *h = window->rectangle.height();
 }
 
 }  // namespace conky
