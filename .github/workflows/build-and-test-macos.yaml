@@ -44,6 +44,7 @@ jobs:
             libxinerama \
             libxfixes \
             libxi \
+            eigen \
             lua \
             ninja \
             pkg-config \

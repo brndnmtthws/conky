@@ -75,6 +75,7 @@
                 librsvg
                 llvmPackages_16.libcxx
                 llvmPackages_16.libcxxabi
+                eigen
                 lua5_4
                 ncurses
                 xorg.libICE

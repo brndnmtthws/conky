@@ -96,6 +96,7 @@ jobs:
             libimlib2-dev \
             libircclient-dev \
             libiw-dev \
+            libeigen3-dev \
             liblua5.3-dev \
             libmicrohttpd-dev \
             libmysqlclient-dev \
