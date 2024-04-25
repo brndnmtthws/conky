@@ -71,11 +71,11 @@
 // TODO: cleanup externs (move to conky.h ?)
 #ifdef OWN_WINDOW
 extern int fixed_size, fixed_pos;
-#endif                                   /* OWN_WINDOW */
-extern int text_start_x, text_start_y;   /* text start position in window */
-extern int text_offset_x, text_offset_y; /* offset for start position */
-extern int text_width,
-    text_height; /* initially 1 so no zero-sized window is created */
+#endif                                /* OWN_WINDOW */
+extern conky::point<int> text_start;  /* text start position in window */
+extern conky::point<int> text_offset; /* offset for start position */
+extern conky::point<int>
+    text_size; /* initially 1 so no zero-sized window is created */
 extern double current_update_time, next_update_time, last_update_time;
 void update_text();
 extern int need_to_update;
@@ -270,7 +270,6 @@ bool display_output_x11::main_loop_wait(double t) {
       int border_total = get_border_total();
 
       /* resize window if it isn't right size */
-      auto text_size = point(text_width, text_height);
       auto border_size = point<long>::repeat(border_total * 2);
       if ((fixed_size == 0) &&
           (text_size + border_size != window.geometry.size)) {
@@ -303,8 +302,7 @@ bool display_output_x11::main_loop_wait(double t) {
 
         changed++;
         /* update lua window globals */
-        llua_update_window_table(text_start_x, text_start_y, text_width,
-                                 text_height);
+        llua_update_window_table(rect<int>(text_start, text_size));
       }
 
       /* move window if it isn't in right position */
@@ -332,10 +330,10 @@ bool display_output_x11::main_loop_wait(double t) {
       XRectangle r;
       int border_total = get_border_total();
 
-      r.x = text_start_x - border_total;
-      r.y = text_start_y - border_total;
-      r.width = text_width + 2 * border_total;
-      r.height = text_height + 2 * border_total;
+      r.x = text_start.x() - border_total;
+      r.y = text_start.y() - border_total;
+      r.width = text_size.x() + 2 * border_total;
+      r.height = text_size.y() + 2 * border_total;
       XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
     }
   }
@@ -365,10 +363,10 @@ bool display_output_x11::main_loop_wait(double t) {
       XRectangle r;
       int border_total = get_border_total();
 
-      r.x = text_start_x - border_total;
-      r.y = text_start_y - border_total;
-      r.width = text_width + 2 * border_total;
-      r.height = text_height + 2 * border_total;
+      r.x = text_start.x() - border_total;
+      r.y = text_start.y() - border_total;
+      r.width = text_size.x() + 2 * border_total;
+      r.height = text_size.y() + 2 * border_total;
       XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
     }
     XSetRegion(display, window.gc, x11_stuff.region);
@@ -653,12 +651,11 @@ bool handle_event<x_event_handler::CONFIGURE>(
       auto border_total = point<int>::repeat(get_border_total() * 2);
       auto new_text_size = window.geometry.size - border_total;
 
-      text_width = new_text_size.x();
-      text_height = new_text_size.y();
+      text_size = new_text_size;
 
       // don't apply dpi scaling to max pixel size
-      int mw = std::max(maximum_width.get(*state), 0);
-      if (text_width > mw) { text_width = mw; }
+      int mw = maximum_width.get(*state);
+      if (text_size.x() > mw && mw > 0) { text_size.set_x(mw); }
     }
 
     /* if position isn't what expected, set fixed pos
@@ -833,9 +830,9 @@ void display_output_x11::cleanup() {
   if (window_created == 1) {
     int border_total = get_border_total();
 
-    XClearArea(display, window.window, text_start_x - border_total,
-               text_start_y - border_total, text_width + 2 * border_total,
-               text_height + 2 * border_total, 0);
+    XClearArea(display, window.window, text_start.x() - border_total,
+               text_start.y() - border_total, text_size.x() + 2 * border_total,
+               text_size.y() + 2 * border_total, 0);
   }
   destroy_window();
   free_fonts(utf8_mode.get(*state));
@@ -980,9 +977,9 @@ void display_output_x11::clear_text(int exposures) {
     /* there is some extra space for borders and outlines */
     int border_total = get_border_total();
 
-    XClearArea(display, window.window, text_start_x - border_total,
-               text_start_y - border_total, text_width + 2 * border_total,
-               text_height + 2 * border_total, exposures != 0 ? True : 0);
+    XClearArea(display, window.window, text_start.x() - border_total,
+               text_start.y() - border_total, text_size.x() + 2 * border_total,
+               text_size.y() + 2 * border_total, exposures != 0 ? True : 0);
   }
 }
 

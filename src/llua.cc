@@ -20,11 +20,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+#include "config.h"
 
-#include "llua.h"
-#include <config.h>
 #include "build.h"
 #include "conky.h"
+#include "geometry.h"
+#include "llua.h"
 #include "logging.h"
 
 #ifdef BUILD_GUI
@@ -576,8 +577,7 @@ void llua_set_userdata(const char *key, const char *type, void *value) {
   lua_setfield(lua_L, -2, key);
 }
 
-void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
-                             int text_height) {
+void llua_setup_window_table(conky::rect<int> text_rect) {
   if (lua_L == nullptr) { return; }
   lua_newtable(lua_L);
 
@@ -599,18 +599,17 @@ void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
     llua_set_number("border_outer_margin", border_outer_margin.get(*state));
     llua_set_number("border_width", border_width.get(*state));
 
-    llua_set_number("text_start_x", text_start_x);
-    llua_set_number("text_start_y", text_start_y);
-    llua_set_number("text_width", text_width);
-    llua_set_number("text_height", text_height);
+    llua_set_number("text_start_x", text_rect.x());
+    llua_set_number("text_start_y", text_rect.y());
+    llua_set_number("text_width", text_rect.width());
+    llua_set_number("text_height", text_rect.height());
 
     lua_setglobal(lua_L, "conky_window");
   }
 #endif /*BUILD_GUI*/
 }
 
-void llua_update_window_table(int text_start_x, int text_start_y,
-                              int text_width, int text_height) {
+void llua_update_window_table(conky::rect<int> text_rect) {
   if (lua_L == nullptr) { return; }
 
   lua_getglobal(lua_L, "conky_window");
@@ -625,10 +624,10 @@ void llua_update_window_table(int text_start_x, int text_start_y,
   llua_set_number("height", window.geometry.height());
 #endif /*BUILD_X11*/
 
-  llua_set_number("text_start_x", text_start_x);
-  llua_set_number("text_start_y", text_start_y);
-  llua_set_number("text_width", text_width);
-  llua_set_number("text_height", text_height);
+  llua_set_number("text_start_x", text_rect.x());
+  llua_set_number("text_start_y", text_rect.y());
+  llua_set_number("text_width", text_rect.width());
+  llua_set_number("text_height", text_rect.height());
 
   lua_setglobal(lua_L, "conky_window");
 }

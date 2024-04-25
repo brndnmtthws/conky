@@ -156,10 +156,10 @@ static int os_create_anonymous_file(off_t size) {
 #ifdef OWN_WINDOW
 extern int fixed_size, fixed_pos;
 #endif
-extern int text_start_x, text_start_y;   /* text start position in window */
-extern int text_offset_x, text_offset_y; /* offset for start position */
-extern int text_width,
-    text_height; /* initially 1 so no zero-sized window is created */
+extern conky::point<int> text_start;  /* text start position in window */
+extern conky::point<int> text_offset; /* offset for start position */
+extern conky::point<int>
+    text_size; /* initially 1 so no zero-sized window is created */
 extern double current_update_time, next_update_time, last_update_time;
 void update_text();
 extern int need_to_update;
@@ -646,25 +646,24 @@ bool display_output_wayland::main_loop_wait(double t) {
 
     /* resize window if it isn't right size */
     if ((fixed_size == 0) &&
-        (text_width + 2 * border_total != width ||
-         text_height + 2 * border_total != height || scale_changed)) {
+        (text_size.x() + 2 * border_total != width ||
+         text_size.y() + 2 * border_total != height || scale_changed)) {
       /* clamp text_width to configured maximum */
       if (maximum_width.get(*state)) {
         int mw = global_window->scale * maximum_width.get(*state);
-        if (text_width > mw && mw > 0) { text_width = mw; }
+        if (text_size.x() > mw && mw > 0) { text_size.set_x(mw); }
       }
 
       /* pending scale will be applied by resizing the window */
       global_window->scale = global_window->pending_scale;
 
-      width = text_width + 2 * border_total;
-      height = text_height + 2 * border_total;
+      width = text_size.x() + 2 * border_total;
+      height = text_size.y() + 2 * border_total;
       window_resize(global_window, width, height); /* resize window */
 
       changed++;
       /* update lua window globals */
-      llua_update_window_table(text_start_x, text_start_y, text_width,
-                               text_height);
+      llua_update_window_table(conky::rect<int>(text_start, text_size));
     }
 
 /* move window if it isn't in right position */
@@ -798,8 +797,8 @@ int display_output_wayland::calc_text_width(const char *s) {
 }
 
 static void adjust_coords(int &x, int &y) {
-  x -= text_start_x;
-  y -= text_start_y;
+  x -= text_start.x();
+  y -= text_start.y();
   int border = get_border_total();
   x += border;
   y += border;
