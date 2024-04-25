@@ -592,8 +592,8 @@ void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
 #ifdef BUILD_GUI
   if (out_to_gui(*state)) {
 #ifdef BUILD_X11
-    llua_set_number("width", window.width);
-    llua_set_number("height", window.height);
+    llua_set_number("width", window.geometry.width());
+    llua_set_number("height", window.geometry.height());
 #endif /*BUILD_X11*/
     llua_set_number("border_inner_margin", border_inner_margin.get(*state));
     llua_set_number("border_outer_margin", border_outer_margin.get(*state));
@@ -621,8 +621,8 @@ void llua_update_window_table(int text_start_x, int text_start_y,
   }
 
 #ifdef BUILD_X11
-  llua_set_number("width", window.width);
-  llua_set_number("height", window.height);
+  llua_set_number("width", window.geometry.width());
+  llua_set_number("height", window.geometry.height());
 #endif /*BUILD_X11*/
 
   llua_set_number("text_start_x", text_start_x);

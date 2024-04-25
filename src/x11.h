@@ -51,6 +51,7 @@
 // TODO: remove lua requirement from x11_init_window
 #include "llua.h"
 
+#include "geometry.h"
 #include "gui.h"
 
 /* true if use_argb_visual=true and argb visual was found*/
@@ -88,12 +89,8 @@ struct conky_x11_window {
   std::int32_t xi_opcode;
 #endif /* BUILD_MOUSE_EVENTS || BUILD_XINPUT */
 
-  int width;
-  int height;
-#ifdef OWN_WINDOW
-  int x;
-  int y;
-#endif
+  /// @brief Window geometry in screen coordinate space
+  conky::rect<int> geometry;
 };
 
 extern struct conky_x11_window window;
@@ -155,7 +152,7 @@ Window query_x11_top_parent(Display *display, Window child);
 /// @param x screen X position contained by window
 /// @param y screen Y position contained by window
 /// @return a top-most window at provided screen coordinates, or root
-Window query_x11_window_at_pos(Display *display, int x, int y);
+Window query_x11_window_at_pos(Display *display, conky::point<int> pos);
 
 /// @brief Returns a list of windows overlapping provided screen coordinates.
 ///
@@ -169,7 +166,7 @@ Window query_x11_window_at_pos(Display *display, int x, int y);
 /// (besides bounds testing).
 /// @return a vector of windows at provided screen coordinates
 std::vector<Window> query_x11_windows_at_pos(
-    Display *display, int x, int y,
+    Display *display, conky::point<int> pos,
     std::function<bool(XWindowAttributes &)> predicate =
         [](XWindowAttributes &a) { return true; });
 

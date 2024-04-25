@@ -26,6 +26,8 @@
 #include <string>
 
 #include "config.h"
+
+#include "geometry.h"
 #include "logging.h"
 
 #ifdef BUILD_XINPUT
@@ -142,12 +144,14 @@ struct mouse_event {
 };
 
 struct mouse_positioned_event : public mouse_event {
-  std::size_t x = 0, y = 0;          // position relative to window
-  std::size_t x_abs = 0, y_abs = 0;  // position relative to root
+  /// @brief Position relative to event window
+  point<size_t> pos;
+  /// @brief Position relative to desktop/root window
+  point<size_t> pos_absolute;
 
-  mouse_positioned_event(mouse_event_t type, std::size_t x, std::size_t y,
-                         std::size_t x_abs, std::size_t y_abs)
-      : mouse_event(type), x(x), y(y), x_abs(x_abs), y_abs(y_abs){};
+  mouse_positioned_event(mouse_event_t type, point<size_t> pos,
+                         point<size_t> pos_absolute)
+      : mouse_event(type), pos(pos), pos_absolute(pos_absolute){};
 
   void push_lua_data(lua_State *L) const;
 };
@@ -183,9 +187,10 @@ inline modifier_state_t x11_modifier_state(unsigned int mods) {
 struct mouse_move_event : public mouse_positioned_event {
   modifier_state_t mods;  // held buttons and modifiers (ctrl, shift, ...)
 
-  mouse_move_event(std::size_t x, std::size_t y, std::size_t x_abs,
-                   std::size_t y_abs, modifier_state_t mods = 0)
-      : mouse_positioned_event{mouse_event_t::MOVE, x, y, x_abs, y_abs},
+  mouse_move_event(point<size_t> pos,
+                   point<size_t> pos_absolute,
+                   modifier_state_t mods = 0)
+      : mouse_positioned_event{mouse_event_t::MOVE, pos, pos_absolute},
         mods(mods){};
 
   void push_lua_data(lua_State *L) const;
@@ -227,10 +232,9 @@ struct mouse_scroll_event : public mouse_positioned_event {
   modifier_state_t mods;  // held buttons and modifiers (ctrl, shift, ...)
   scroll_direction_t direction;
 
-  mouse_scroll_event(std::size_t x, std::size_t y, std::size_t x_abs,
-                     std::size_t y_abs, scroll_direction_t direction,
-                     modifier_state_t mods = 0)
-      : mouse_positioned_event{mouse_event_t::SCROLL, x, y, x_abs, y_abs},
+  mouse_scroll_event(point<size_t> pos, point<size_t> pos_absolute,
+                     scroll_direction_t direction, modifier_state_t mods = 0)
+      : mouse_positioned_event{mouse_event_t::SCROLL, pos, pos_absolute},
         direction(direction),
         mods(mods){};
 
@@ -241,10 +245,10 @@ struct mouse_button_event : public mouse_positioned_event {
   modifier_state_t mods;  // held buttons and modifiers (ctrl, shift, ...)
   mouse_button_t button;
 
-  mouse_button_event(mouse_event_t type, std::size_t x, std::size_t y,
-                     std::size_t x_abs, std::size_t y_abs,
-                     mouse_button_t button, modifier_state_t mods = 0)
-      : mouse_positioned_event{type, x, y, x_abs, y_abs},
+  mouse_button_event(mouse_event_t type, point<size_t> pos,
+                     point<size_t> pos_absolute, mouse_button_t button,
+                     modifier_state_t mods = 0)
+      : mouse_positioned_event{type, pos, pos_absolute},
         button(button),
         mods(mods){};
 
@@ -252,9 +256,9 @@ struct mouse_button_event : public mouse_positioned_event {
 };
 
 struct mouse_crossing_event : public mouse_positioned_event {
-  mouse_crossing_event(mouse_event_t type, std::size_t x, std::size_t y,
-                       std::size_t x_abs, std::size_t y_abs)
-      : mouse_positioned_event{type, x, y, x_abs, y_abs} {};
+  mouse_crossing_event(mouse_event_t type, point<size_t> pos,
+                       point<size_t> pos_absolute)
+      : mouse_positioned_event{type, pos, pos_absolute} {};
 };
 #endif /* BUILD_MOUSE_EVENTS */
 
@@ -310,10 +314,8 @@ struct xi_event_data {
   Window root;
   Window event;
   Window child;
-  double root_x;
-  double root_y;
-  double event_x;
-  double event_y;
+  conky::point<double> pos_absolute;
+  conky::point<double> pos;
   int flags;
   /// pressed button mask
   std::bitset<32> buttons;
@@ -333,10 +335,8 @@ struct xi_event_data {
   std::optional<double> valuator_value(valuator_t id) const;
   std::optional<double> valuator_relative_value(valuator_t valuator) const;
 
-  std::vector<std::tuple<int, XEvent *>> generate_events(Window target,
-                                                         Window child,
-                                                         double target_x,
-                                                         double target_y) const;
+  std::vector<std::tuple<int, XEvent *>> generate_events(
+      Window target, Window child, conky::point<double> target_pos) const;
 };
 
 #endif /* BUILD_XINPUT */

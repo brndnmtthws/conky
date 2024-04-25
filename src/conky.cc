@@ -898,8 +898,8 @@ void update_text_area() {
   }
 #ifdef OWN_WINDOW
   if (align == alignment::NONE) {  // Let the WM manage the window
-    x = window.x;
-    y = window.y;
+    x = window.geometry.x();
+    y = window.geometry.y();
 
     fixed_pos = 1;
     fixed_size = 1;
@@ -910,8 +910,8 @@ void update_text_area() {
   if (own_window.get(*state) && (fixed_pos == 0)) {
     int border_total = get_border_total();
     text_start_x = text_start_y = border_total;
-    window.x = x - border_total;
-    window.y = y - border_total;
+    window.geometry.set_x(x - border_total);
+    window.geometry.set_x(y - border_total);
   } else
 #endif
   {
@@ -1585,7 +1585,8 @@ void draw_stuff() {
 
 #ifdef BUILD_IMLIB2
   text_offset_x = text_offset_y = 0;
-  cimlib_render(text_start_x, text_start_y, window.width, window.height,
+  cimlib_render(text_start_x, text_start_y, window.geometry.width(),
+                window.geometry.height(),
                 imlib_cache_flush_interval.get(*state),
                 imlib_draw_blended.get(*state));
 #endif /* BUILD_IMLIB2 */

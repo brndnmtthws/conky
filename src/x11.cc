@@ -27,13 +27,15 @@
  *
  */
 
+#include "config.h"
+
 #include "x11.h"
 
 #include <X11/X.h>
 #include <sys/types.h>
 #include "common.h"
-#include "config.h"
 #include "conky.h"
+#include "geometry.h"
 #include "gui.h"
 #include "logging.h"
 
@@ -214,7 +216,7 @@ static Window VRootWindowOfScreen(Screen *screen) {
       if (XGetWindowProperty(
               dpy, children[i], __SWM_VROOT, 0, 1, False, XA_WINDOW,
               &actual_type, &actual_format, &nitems, &bytesafter,
-              reinterpret_cast<unsigned char **>(&newRoot)) == Success &&
+              reinterpret_cast<unsigned char **>(&newRoot)) == 0 &&
           newRoot != None) {
         root = *newRoot;
         break;
@@ -271,7 +273,7 @@ void init_x11() {
 #ifdef HAVE_XCB_ERRORS
   auto connection = xcb_connect(NULL, NULL);
   if (!xcb_connection_has_error(connection)) {
-    if (xcb_errors_context_new(connection, &xcb_errors_ctx) != Success) {
+    if (xcb_errors_context_new(connection, &xcb_errors_ctx) != 0) {
       xcb_errors_ctx = nullptr;
     }
   }
@@ -524,9 +526,9 @@ void x11_init_window(lua::state &l, bool own) {
 #endif /* BUILD_ARGB */
 
       /* Parent is desktop window (which might be a child of root) */
-      window.window =
-          XCreateWindow(display, window.desktop, window.x, window.y, b, b, 0,
-                        depth, InputOutput, visual, flags, &attrs);
+      window.window = XCreateWindow(
+          display, window.desktop, window.geometry.x(), window.geometry.y(), b,
+          b, 0, depth, InputOutput, visual, flags, &attrs);
 
       XLowerWindow(display, window.window);
       XSetClassHint(display, window.window, &classHint);
@@ -567,12 +569,12 @@ void x11_init_window(lua::state &l, bool own) {
 #endif /* BUILD_ARGB */
 
       if (own_window_type.get(l) == window_type::DOCK) {
-        window.x = window.y = 0;
+        window.geometry.pos = conky::point<int>::Zero();
       }
       /* Parent is root window so WM can take control */
-      window.window =
-          XCreateWindow(display, window.root, window.x, window.y, b, b, 0,
-                        depth, InputOutput, visual, flags, &attrs);
+      window.window = XCreateWindow(display, window.root, window.geometry.x(),
+                                    window.geometry.y(), b, b, 0, depth,
+                                    InputOutput, visual, flags, &attrs);
 
       uint16_t hints = own_window_hints.get(l);
 
@@ -768,8 +770,7 @@ void x11_init_window(lua::state &l, bool own) {
     if (window.window == None) { window.window = window.desktop; }
 
     if (XGetWindowAttributes(display, window.window, &attrs) != 0) {
-      window.width = attrs.width;
-      window.height = attrs.height;
+      window.geometry.size = conky::point(attrs.width, attrs.height);
     }
 
     NORM_ERR("drawing to desktop window");
@@ -780,14 +781,14 @@ void x11_init_window(lua::state &l, bool own) {
 
   XFlush(display);
 
+  int root_mask = SubstructureNotifyMask;
+  XSelectInput(display, window.root, root_mask);
+
   int64_t input_mask = ExposureMask | PropertyChangeMask;
 #ifdef OWN_WINDOW
-  if (own_window.get(l)) {
-    input_mask |= StructureNotifyMask;
 #if !defined(BUILD_XINPUT)
-    input_mask |= ButtonPressMask | ButtonReleaseMask;
+  if (own_window.get(l)) { input_mask |= ButtonPressMask | ButtonReleaseMask; }
 #endif
-  }
 #if defined(BUILD_MOUSE_EVENTS) || defined(BUILD_XINPUT)
   bool xinput_ok = false;
 #ifdef BUILD_XINPUT
@@ -803,7 +804,7 @@ void x11_init_window(lua::state &l, bool own) {
 
     int major = 2, minor = 0;
     int retval = XIQueryVersion(display, &major, &minor);
-    if (retval != Success) {
+    if (retval != 0) {
       NORM_ERR("Error: XInput 2.0 is not supported!");
       break;
     }
@@ -924,7 +925,7 @@ static inline void get_x11_desktop_current(Display *current_display,
 
   if ((XGetWindowProperty(current_display, root, atom, 0, 1L, False,
                           XA_CARDINAL, &actual_type, &actual_format, &nitems,
-                          &bytes_after, &prop) == Success) &&
+                          &bytes_after, &prop) == 0) &&
       (actual_type == XA_CARDINAL) && (nitems == 1L) && (actual_format == 32)) {
     current_info->x11.desktop.current = prop[0] + 1;
   }
@@ -945,7 +946,7 @@ static inline void get_x11_desktop_number(Display *current_display, Window root,
 
   if ((XGetWindowProperty(current_display, root, atom, 0, 1L, False,
                           XA_CARDINAL, &actual_type, &actual_format, &nitems,
-                          &bytes_after, &prop) == Success) &&
+                          &bytes_after, &prop) == 0) &&
       (actual_type == XA_CARDINAL) && (nitems == 1L) && (actual_format == 32)) {
     current_info->x11.desktop.number = prop[0];
   }
@@ -966,7 +967,7 @@ static inline void get_x11_desktop_names(Display *current_display, Window root,
 
   if ((XGetWindowProperty(current_display, root, atom, 0, (~0L), False,
                           ATOM(UTF8_STRING), &actual_type, &actual_format,
-                          &nitems, &bytes_after, &prop) == Success) &&
+                          &nitems, &bytes_after, &prop) == 0) &&
       (actual_type == ATOM(UTF8_STRING)) && (nitems > 0L) &&
       (actual_format == 8)) {
     current_info->x11.desktop.all_names.assign(
@@ -1119,38 +1120,41 @@ void set_struts(alignment align) {
 
     switch (horizontal_alignment(align)) {
       case axis_align::START:
-        sizes[*x11_strut::LEFT] =
-            std::clamp(window.x + window.width, 0, display_width);
+        sizes[*x11_strut::LEFT] = std::clamp(
+            window.geometry.x() + window.geometry.width(), 0, display_width);
         sizes[*x11_strut::LEFT_START_Y] =
-            std::clamp(window.y, 0, display_height);
-        sizes[*x11_strut::LEFT_END_Y] =
-            std::clamp(window.y + window.height, 0, display_height);
+            std::clamp(window.geometry.y(), 0, display_height);
+        sizes[*x11_strut::LEFT_END_Y] = std::clamp(
+            window.geometry.y() + window.geometry.height(), 0, display_height);
         break;
       case axis_align::END:
         sizes[*x11_strut::RIGHT] =
-            std::clamp(display_width - window.x, 0, display_width);
+            std::clamp(display_width - window.geometry.x(), 0, display_width);
         sizes[*x11_strut::RIGHT_START_Y] =
-            std::clamp(window.y, 0, display_height);
-        sizes[*x11_strut::RIGHT_END_Y] =
-            std::clamp(window.y + window.height, 0, display_height);
+            std::clamp(window.geometry.y(), 0, display_height);
+        sizes[*x11_strut::RIGHT_END_Y] = std::clamp(
+            window.geometry.y() + window.geometry.height(), 0, display_height);
         break;
       case axis_align::MIDDLE:
         switch (vertical_alignment(align)) {
           case axis_align::START:
             sizes[*x11_strut::TOP] =
-                std::clamp(window.y + window.height, 0, display_height);
+                std::clamp(window.geometry.y() + window.geometry.height(), 0,
+                           display_height);
             sizes[*x11_strut::TOP_START_X] =
-                std::clamp(window.x, 0, display_width);
+                std::clamp(window.geometry.x(), 0, display_width);
             sizes[*x11_strut::TOP_END_X] =
-                std::clamp(window.x + window.width, 0, display_width);
+                std::clamp(window.geometry.x() + window.geometry.width(), 0,
+                           display_width);
             break;
           case axis_align::END:
-            sizes[*x11_strut::BOTTOM] =
-                std::clamp(display_height - window.y, 0, display_height);
+            sizes[*x11_strut::BOTTOM] = std::clamp(
+                display_height - window.geometry.y(), 0, display_height);
             sizes[*x11_strut::BOTTOM_START_X] =
-                std::clamp(window.x, 0, display_width);
+                std::clamp(window.geometry.x(), 0, display_width);
             sizes[*x11_strut::BOTTOM_END_X] =
-                std::clamp(window.x + window.width, 0, display_width);
+                std::clamp(window.geometry.x() + window.geometry.width(), 0,
+                           display_width);
             break;
           case axis_align::MIDDLE:
             // can't reserve space in middle of the screen
@@ -1295,11 +1299,10 @@ void propagate_xinput_event(const conky::xi_event_data *ev) {
 
   Window target = window.root;
   Window child = None;
-  int target_x = ev->event_x;
-  int target_y = ev->event_y;
+  conky::point<int> target_pos = ev->pos;
   {
     std::vector<Window> below = query_x11_windows_at_pos(
-        display, ev->root_x, ev->root_y,
+        display, ev->pos_absolute,
         [](XWindowAttributes &a) { return a.map_state == IsViewable; });
     auto it = std::remove_if(below.begin(), below.end(),
                              [](Window w) { return w == window.window; });
@@ -1307,13 +1310,17 @@ void propagate_xinput_event(const conky::xi_event_data *ev) {
     if (!below.empty()) {
       target = below.back();
 
+      int read_x, read_y;
       // Update event x and y coordinates to be target window relative
-      XTranslateCoordinates(display, window.desktop, ev->event, ev->root_x,
-                            ev->root_y, &target_x, &target_y, &child);
+      XTranslateCoordinates(display, window.desktop, ev->event,
+                            ev->pos_absolute.x(), ev->pos_absolute.y(), &read_x,
+                            &read_y, &child);
+      target_pos.set_x(read_x);
+      target_pos.set_x(read_y);
     }
   }
 
-  auto events = ev->generate_events(target, child, target_x, target_y);
+  auto events = ev->generate_events(target, child, target_pos);
 
   XUngrabPointer(display, CurrentTime);
   for (auto it : events) {
@@ -1358,7 +1365,7 @@ void propagate_x11_event(XEvent &ev, const void *cookie) {
   /* forward the event to the window below conky (e.g. caja) or desktop */
   {
     std::vector<Window> below = query_x11_windows_at_pos(
-        display, ev.xbutton.x_root, ev.xbutton.y_root,
+        display, conky::point<int>(ev.xbutton.x_root, ev.xbutton.y_root),
         [](XWindowAttributes &a) { return a.map_state == IsViewable; });
     auto it = std::remove_if(below.begin(), below.end(),
                              [](Window w) { return w == window.window; });
@@ -1417,7 +1424,7 @@ std::vector<Window> x11_atom_window_list(Display *display, Window window,
 
   if (XGetWindowProperty(display, window, atom, 0, (~0L), False, XA_WINDOW,
                          &actual_type, &actual_format, &nitems, &bytes_after,
-                         &data) == Success) {
+                         &data) == 0) {
     if (actual_format == XA_WINDOW && nitems > 0) {
       Window *wdata = reinterpret_cast<Window *>(data);
       std::vector<Window> result(wdata, wdata + nitems);
@@ -1468,7 +1475,7 @@ std::vector<Window> query_x11_windows(Display *display) {
   return result;
 }
 
-Window query_x11_window_at_pos(Display *display, int x, int y) {
+Window query_x11_window_at_pos(Display *display, conky::point<int> pos) {
   Window root = DefaultVRootWindow(display);
 
   // these values are ignored but NULL can't be passed to XQueryPointer.
@@ -1485,7 +1492,7 @@ Window query_x11_window_at_pos(Display *display, int x, int y) {
 }
 
 std::vector<Window> query_x11_windows_at_pos(
-    Display *display, int x, int y,
+    Display *display, conky::point<int> pos,
     std::function<bool(XWindowAttributes &)> predicate) {
   std::vector<Window> result;
 
@@ -1500,8 +1507,8 @@ std::vector<Window> query_x11_windows_at_pos(
                           &_ignore);
     XGetWindowAttributes(display, current, &attr);
 
-    if (pos_x <= x && pos_y <= y && pos_x + attr.width >= x &&
-        pos_y + attr.height >= y && predicate(attr)) {
+    if (pos_x <= pos.x() && pos_y <= pos.y() && pos_x + attr.width >= pos.x() &&
+        pos_y + attr.height >= pos.y() && predicate(attr)) {
       result.push_back(current);
     }
   }

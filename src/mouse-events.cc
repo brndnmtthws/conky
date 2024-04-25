@@ -191,10 +191,10 @@ void mouse_event::push_lua_table(lua_State *L) const {
 }
 
 void mouse_positioned_event::push_lua_data(lua_State *L) const {
-  push_table_value(L, "x", this->x);
-  push_table_value(L, "y", this->y);
-  push_table_value(L, "x_abs", this->x_abs);
-  push_table_value(L, "y_abs", this->y_abs);
+  push_table_value(L, "x", this->pos.x());
+  push_table_value(L, "y", this->pos.y());
+  push_table_value(L, "x_abs", this->pos_absolute.x());
+  push_table_value(L, "y_abs", this->pos_absolute.y());
 }
 
 void mouse_move_event::push_lua_data(lua_State *L) const {
@@ -286,7 +286,7 @@ size_t fixed_valuator_index(Display *display, XIDeviceInfo *device,
     if (XIGetProperty(display, device->deviceid, override_atom, 0, 1, False,
                       XA_INTEGER, &type_return, &format_return, &num_items,
                       &bytes_after,
-                      reinterpret_cast<unsigned char **>(&value)) == Success) {
+                      reinterpret_cast<unsigned char **>(&value)) == 0) {
       if (num_items == 0) break;
       if (type_return != XA_INTEGER) {
         NORM_ERR(
@@ -322,10 +322,10 @@ bool fixed_valuator_relative(Display *display, XIDeviceInfo *device,
   unsigned long bytes_after;
 
   do {
-    if (XIGetProperty(
-            display, device->deviceid, override_atom, 0, 9, False, XA_ATOM,
-            &type_return, &format_return, &num_items, &bytes_after,
-            reinterpret_cast<unsigned char **>(&value_return)) == Success) {
+    if (XIGetProperty(display, device->deviceid, override_atom, 0, 9, False,
+                      XA_ATOM, &type_return, &format_return, &num_items,
+                      &bytes_after,
+                      reinterpret_cast<unsigned char **>(&value_return)) == 0) {
       if (num_items == 0) break;
       if (type_return != XA_ATOM) {
         NORM_ERR(
@@ -450,10 +450,8 @@ xi_event_data *xi_event_data::read_cookie(Display *display, const void *data) {
       .root = source->root,
       .event = source->event,
       .child = source->child,
-      .root_x = source->root_x,
-      .root_y = source->root_y,
-      .event_x = source->event_x,
-      .event_y = source->event_y,
+      .pos_absolute = point<double>{source->root_x, source->root_y},
+      .pos = point<double>{source->event_x, source->event_y},
       .flags = source->flags,
       .buttons = buttons,
       .valuators = valuators,
@@ -503,7 +501,7 @@ std::optional<double> xi_event_data::valuator_relative_value(
 }
 
 std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(
-    Window target, Window child, double target_x, double target_y) const {
+    Window target, Window child, conky::point<double> target_pos) const {
   std::vector<std::tuple<int, XEvent *>> result{};
 
   if (this->evtype == XI_Motion) {
@@ -525,10 +523,10 @@ std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(
       e->window = target;
       e->subwindow = child;
       e->time = CurrentTime;
-      e->x = static_cast<int>(target_x);
-      e->y = static_cast<int>(target_y);
-      e->x_root = static_cast<int>(this->root_x);
-      e->y_root = static_cast<int>(this->root_y);
+      e->x = static_cast<int>(target_pos.x());
+      e->y = static_cast<int>(target_pos.y());
+      e->x_root = static_cast<int>(this->pos_absolute.x());
+      e->y_root = static_cast<int>(this->pos_absolute.y());
       e->state = this->mods.effective;
       e->is_hint = NotifyNormal;
       e->same_screen = True;
@@ -558,10 +556,10 @@ std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(
       e->window = target;
       e->subwindow = child;
       e->time = CurrentTime;
-      e->x = static_cast<int>(target_x);
-      e->y = static_cast<int>(target_y);
-      e->x_root = static_cast<int>(this->root_x);
-      e->y_root = static_cast<int>(this->root_y);
+      e->x = static_cast<int>(target_pos.x());
+      e->y = static_cast<int>(target_pos.y());
+      e->x_root = static_cast<int>(this->pos_absolute.x());
+      e->y_root = static_cast<int>(this->pos_absolute.y());
       e->state = this->mods.effective;
       e->button = scroll_direction;
       e->same_screen = True;
@@ -584,10 +582,10 @@ std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(
     e->window = target;
     e->subwindow = child;
     e->time = CurrentTime;
-    e->x = static_cast<int>(target_x);
-    e->y = static_cast<int>(target_y);
-    e->x_root = static_cast<int>(this->root_x);
-    e->y_root = static_cast<int>(this->root_y);
+    e->x = static_cast<int>(target_pos.x());
+    e->y = static_cast<int>(target_pos.y());
+    e->x_root = static_cast<int>(this->pos_absolute.x());
+    e->y_root = static_cast<int>(this->pos_absolute.y());
     e->state = this->mods.effective;
     e->button = this->detail;
     e->same_screen = True;
