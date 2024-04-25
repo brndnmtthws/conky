@@ -781,14 +781,14 @@ void x11_init_window(lua::state &l, bool own) {
 
   XFlush(display);
 
-  int root_mask = SubstructureNotifyMask;
-  XSelectInput(display, window.root, root_mask);
-
   int64_t input_mask = ExposureMask | PropertyChangeMask;
 #ifdef OWN_WINDOW
+  if (own_window.get(l)) {
+    input_mask |= StructureNotifyMask;
 #if !defined(BUILD_XINPUT)
-  if (own_window.get(l)) { input_mask |= ButtonPressMask | ButtonReleaseMask; }
+    input_mask |= ButtonPressMask | ButtonReleaseMask;
 #endif
+  }
 #if defined(BUILD_MOUSE_EVENTS) || defined(BUILD_XINPUT)
   bool xinput_ok = false;
 #ifdef BUILD_XINPUT
