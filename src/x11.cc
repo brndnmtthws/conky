@@ -1432,14 +1432,19 @@ std::vector<Window> x11_atom_window_list(Display *display, Window window,
 std::vector<Window> query_x11_windows(Display *display) {
   Window root = DefaultRootWindow(display);
 
-  Atom clients_atom = ATOM(_NET_CLIENT_LIST_STACKING);
-  std::vector<Window> result =
-      x11_atom_window_list(display, root, clients_atom);
-  if (result.empty()) { return result; }
+  std::vector<Window> result;
 
-  clients_atom = ATOM(_NET_CLIENT_LIST);
-  result = x11_atom_window_list(display, root, clients_atom);
-  if (result.empty()) { return result; }
+  Atom clients_atom = XInternAtom(display, "_NET_CLIENT_LIST_STACKING", True);
+  if (clients_atom != 0) {
+    result = x11_atom_window_list(display, root, clients_atom);
+    if (!result.empty()) { return result; }
+  }
+
+  clients_atom = XInternAtom(display, "_NET_CLIENT_LIST", True);
+  if (clients_atom != 0) {
+    result = x11_atom_window_list(display, root, clients_atom);
+    if (!result.empty()) { return result; }
+  }
 
   // slowest method
 
