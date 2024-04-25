@@ -592,17 +592,17 @@ void llua_setup_window_table(conky::rect<int> text_rect) {
 #ifdef BUILD_GUI
   if (out_to_gui(*state)) {
 #ifdef BUILD_X11
-    llua_set_number("width", window.geometry.width());
-    llua_set_number("height", window.geometry.height());
+    llua_set_number("width", window.geometry.width);
+    llua_set_number("height", window.geometry.height);
 #endif /*BUILD_X11*/
     llua_set_number("border_inner_margin", border_inner_margin.get(*state));
     llua_set_number("border_outer_margin", border_outer_margin.get(*state));
     llua_set_number("border_width", border_width.get(*state));
 
-    llua_set_number("text_start_x", text_rect.x());
-    llua_set_number("text_start_y", text_rect.y());
-    llua_set_number("text_width", text_rect.width());
-    llua_set_number("text_height", text_rect.height());
+    llua_set_number("text_start_x", text_rect.x);
+    llua_set_number("text_start_y", text_rect.y);
+    llua_set_number("text_width", text_rect.width);
+    llua_set_number("text_height", text_rect.height);
 
     lua_setglobal(lua_L, "conky_window");
   }
@@ -620,14 +620,14 @@ void llua_update_window_table(conky::rect<int> text_rect) {
   }
 
 #ifdef BUILD_X11
-  llua_set_number("width", window.geometry.width());
-  llua_set_number("height", window.geometry.height());
+  llua_set_number("width", window.geometry.width);
+  llua_set_number("height", window.geometry.height);
 #endif /*BUILD_X11*/
 
-  llua_set_number("text_start_x", text_rect.x());
-  llua_set_number("text_start_y", text_rect.y());
-  llua_set_number("text_width", text_rect.width());
-  llua_set_number("text_height", text_rect.height());
+  llua_set_number("text_start_x", text_rect.x);
+  llua_set_number("text_start_y", text_rect.y);
+  llua_set_number("text_width", text_rect.width);
+  llua_set_number("text_height", text_rect.height);
 
   lua_setglobal(lua_L, "conky_window");
 }

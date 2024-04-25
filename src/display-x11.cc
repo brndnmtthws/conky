@@ -163,8 +163,7 @@ static void X11_create_window() {
 #ifdef OWN_WINDOW
   if (own_window.get(*state)) {
     if (fixed_pos == 0) {
-      XMoveWindow(display, window.window, window.geometry.x(),
-                  window.geometry.y());
+      XMoveWindow(display, window.window, window.geometry.x, window.geometry.y);
     }
 
     set_transparent_background(window.window);
@@ -275,8 +274,8 @@ bool display_output_x11::main_loop_wait(double t) {
           (text_size + border_size != window.geometry.size)) {
         window.geometry.size = text_size + border_size;
         draw_stuff(); /* redraw everything in our newly sized window */
-        XResizeWindow(display, window.window, window.geometry.width(),
-                      window.geometry.height()); /* resize window */
+        XResizeWindow(display, window.window, window.geometry.width,
+                      window.geometry.height); /* resize window */
         set_transparent_background(window.window);
 #ifdef BUILD_XDBE
         /* swap buffers */
@@ -285,8 +284,8 @@ bool display_output_x11::main_loop_wait(double t) {
         if (use_xpmdb.get(*state)) {
           XFreePixmap(display, window.back_buffer);
           window.back_buffer = XCreatePixmap(
-              display, window.window, window.geometry.width(),
-              window.geometry.height(), DefaultDepth(display, screen));
+              display, window.window, window.geometry.width,
+              window.geometry.height, DefaultDepth(display, screen));
 
           if (window.back_buffer != None) {
             window.drawable = window.back_buffer;
@@ -296,7 +295,7 @@ bool display_output_x11::main_loop_wait(double t) {
           }
           XSetForeground(display, window.gc, 0);
           XFillRectangle(display, window.drawable, window.gc, 0, 0,
-                         window.geometry.width(), window.geometry.height());
+                         window.geometry.width, window.geometry.height);
         }
 #endif
 
@@ -307,8 +306,8 @@ bool display_output_x11::main_loop_wait(double t) {
 
       /* move window if it isn't in right position */
       if ((fixed_pos == 0) && old_pos != window.geometry.pos) {
-        XMoveWindow(display, window.window, window.geometry.x(),
-                    window.geometry.y());
+        XMoveWindow(display, window.window, window.geometry.x,
+                    window.geometry.y);
         changed++;
       }
 
@@ -330,10 +329,10 @@ bool display_output_x11::main_loop_wait(double t) {
       XRectangle r;
       int border_total = get_border_total();
 
-      r.x = text_start.x() - border_total;
-      r.y = text_start.y() - border_total;
-      r.width = text_size.x() + 2 * border_total;
-      r.height = text_size.y() + 2 * border_total;
+      r.x = text_start.x - border_total;
+      r.y = text_start.y - border_total;
+      r.width = text_size.x + 2 * border_total;
+      r.height = text_size.y + 2 * border_total;
       XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
     }
   }
@@ -363,10 +362,10 @@ bool display_output_x11::main_loop_wait(double t) {
       XRectangle r;
       int border_total = get_border_total();
 
-      r.x = text_start.x() - border_total;
-      r.y = text_start.y() - border_total;
-      r.width = text_size.x() + 2 * border_total;
-      r.height = text_size.y() + 2 * border_total;
+      r.x = text_start.x - border_total;
+      r.y = text_start.y - border_total;
+      r.width = text_size.x + 2 * border_total;
+      r.height = text_size.y + 2 * border_total;
       XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
     }
     XSetRegion(display, window.gc, x11_stuff.region);
@@ -655,7 +654,7 @@ bool handle_event<x_event_handler::CONFIGURE>(
 
       // don't apply dpi scaling to max pixel size
       int mw = maximum_width.get(*state);
-      if (text_size.x() > mw && mw > 0) { text_size.set_x(mw); }
+      if (text_size.x > mw && mw > 0) { text_size.x = mw; }
     }
 
     /* if position isn't what expected, set fixed pos
@@ -663,8 +662,8 @@ bool handle_event<x_event_handler::CONFIGURE>(
      * is set to weird locations when started */
     /* // this is broken
     if (total_updates >= 2 && !fixed_pos
-        && (window.geometry.x() != ev.xconfigure.x
-        || window.geometry.y() != ev.xconfigure.y)
+        && (window.geometry.x != ev.xconfigure.x
+        || window.geometry.y != ev.xconfigure.y)
         && (ev.xconfigure.x != 0
         || ev.xconfigure.y != 0)) {
       fixed_pos = 1;
@@ -730,10 +729,10 @@ bool handle_event<x_event_handler::EXPOSE>(conky::display_output_x11 *surface,
   if (ev.type != Expose) return false;
 
   XRectangle r{
-      .x = ev.xexpose.x,
-      .y = ev.xexpose.y,
-      .width = ev.xexpose.width,
-      .height = ev.xexpose.height,
+      .x = static_cast<short>(ev.xexpose.x),
+      .y = static_cast<short>(ev.xexpose.y),
+      .width = static_cast<unsigned short>(ev.xexpose.width),
+      .height = static_cast<unsigned short>(ev.xexpose.height),
   };
   XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
   XSync(display, False);
@@ -831,9 +830,9 @@ void display_output_x11::cleanup() {
   if (window_created == 1) {
     int border_total = get_border_total();
 
-    XClearArea(display, window.window, text_start.x() - border_total,
-               text_start.y() - border_total, text_size.x() + 2 * border_total,
-               text_size.y() + 2 * border_total, 0);
+    XClearArea(display, window.window, text_start.x - border_total,
+               text_start.y - border_total, text_size.x + 2 * border_total,
+               text_size.y + 2 * border_total, 0);
   }
   destroy_window();
   free_fonts(utf8_mode.get(*state));
@@ -978,9 +977,9 @@ void display_output_x11::clear_text(int exposures) {
     /* there is some extra space for borders and outlines */
     int border_total = get_border_total();
 
-    XClearArea(display, window.window, text_start.x() - border_total,
-               text_start.y() - border_total, text_size.x() + 2 * border_total,
-               text_size.y() + 2 * border_total, exposures != 0 ? True : 0);
+    XClearArea(display, window.window, text_start.x - border_total,
+               text_start.y - border_total, text_size.x + 2 * border_total,
+               text_size.y + 2 * border_total, exposures != 0 ? True : 0);
   }
 }
 

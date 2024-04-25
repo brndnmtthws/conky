@@ -526,9 +526,9 @@ void x11_init_window(lua::state &l, bool own) {
 #endif /* BUILD_ARGB */
 
       /* Parent is desktop window (which might be a child of root) */
-      window.window = XCreateWindow(
-          display, window.desktop, window.geometry.x(), window.geometry.y(), b,
-          b, 0, depth, InputOutput, visual, flags, &attrs);
+      window.window = XCreateWindow(display, window.desktop, window.geometry.x,
+                                    window.geometry.y, b, b, 0, depth,
+                                    InputOutput, visual, flags, &attrs);
 
       XLowerWindow(display, window.window);
       XSetClassHint(display, window.window, &classHint);
@@ -572,8 +572,8 @@ void x11_init_window(lua::state &l, bool own) {
         window.geometry.pos = conky::point<int>::Zero();
       }
       /* Parent is root window so WM can take control */
-      window.window = XCreateWindow(display, window.root, window.geometry.x(),
-                                    window.geometry.y(), b, b, 0, depth,
+      window.window = XCreateWindow(display, window.root, window.geometry.x,
+                                    window.geometry.y, b, b, 0, depth,
                                     InputOutput, visual, flags, &attrs);
 
       uint16_t hints = own_window_hints.get(l);
@@ -1121,40 +1121,37 @@ void set_struts(alignment align) {
     switch (horizontal_alignment(align)) {
       case axis_align::START:
         sizes[*x11_strut::LEFT] = std::clamp(
-            window.geometry.x() + window.geometry.width(), 0, display_width);
+            window.geometry.x + window.geometry.width, 0, display_width);
         sizes[*x11_strut::LEFT_START_Y] =
-            std::clamp(window.geometry.y(), 0, display_height);
+            std::clamp(*window.geometry.y, 0, display_height);
         sizes[*x11_strut::LEFT_END_Y] = std::clamp(
-            window.geometry.y() + window.geometry.height(), 0, display_height);
+            window.geometry.y + window.geometry.height, 0, display_height);
         break;
       case axis_align::END:
         sizes[*x11_strut::RIGHT] =
-            std::clamp(display_width - window.geometry.x(), 0, display_width);
+            std::clamp(display_width - window.geometry.x, 0, display_width);
         sizes[*x11_strut::RIGHT_START_Y] =
-            std::clamp(window.geometry.y(), 0, display_height);
+            std::clamp(*window.geometry.y, 0, display_height);
         sizes[*x11_strut::RIGHT_END_Y] = std::clamp(
-            window.geometry.y() + window.geometry.height(), 0, display_height);
+            window.geometry.y + window.geometry.height, 0, display_height);
         break;
       case axis_align::MIDDLE:
         switch (vertical_alignment(align)) {
           case axis_align::START:
-            sizes[*x11_strut::TOP] =
-                std::clamp(window.geometry.y() + window.geometry.height(), 0,
-                           display_height);
+            sizes[*x11_strut::TOP] = std::clamp(
+                window.geometry.y + window.geometry.height, 0, display_height);
             sizes[*x11_strut::TOP_START_X] =
-                std::clamp(window.geometry.x(), 0, display_width);
-            sizes[*x11_strut::TOP_END_X] =
-                std::clamp(window.geometry.x() + window.geometry.width(), 0,
-                           display_width);
+                std::clamp(*window.geometry.x, 0, display_width);
+            sizes[*x11_strut::TOP_END_X] = std::clamp(
+                window.geometry.x + window.geometry.width, 0, display_width);
             break;
           case axis_align::END:
             sizes[*x11_strut::BOTTOM] = std::clamp(
-                display_height - window.geometry.y(), 0, display_height);
+                display_height - window.geometry.y, 0, display_height);
             sizes[*x11_strut::BOTTOM_START_X] =
-                std::clamp(window.geometry.x(), 0, display_width);
-            sizes[*x11_strut::BOTTOM_END_X] =
-                std::clamp(window.geometry.x() + window.geometry.width(), 0,
-                           display_width);
+                std::clamp(*window.geometry.x, 0, display_width);
+            sizes[*x11_strut::BOTTOM_END_X] = std::clamp(
+                window.geometry.x + window.geometry.width, 0, display_width);
             break;
           case axis_align::MIDDLE:
             // can't reserve space in middle of the screen
@@ -1313,7 +1310,7 @@ void propagate_xinput_event(const conky::xi_event_data *ev) {
       int read_x, read_y;
       // Update event x and y coordinates to be target window relative
       XTranslateCoordinates(display, window.desktop, ev->event,
-                            ev->pos_absolute.x(), ev->pos_absolute.y(), &read_x,
+                            ev->pos_absolute.x, ev->pos_absolute.y, &read_x,
                             &read_y, &child);
       target_pos = conky::point<int>(read_x, read_y);
     }
@@ -1506,8 +1503,8 @@ std::vector<Window> query_x11_windows_at_pos(
                           &_ignore);
     XGetWindowAttributes(display, current, &attr);
 
-    if (pos_x <= pos.x() && pos_y <= pos.y() && pos_x + attr.width >= pos.x() &&
-        pos_y + attr.height >= pos.y() && predicate(attr)) {
+    if (pos_x <= pos.x && pos_y <= pos.y && pos_x + attr.width >= pos.x &&
+        pos_y + attr.height >= pos.y && predicate(attr)) {
       result.push_back(current);
     }
   }

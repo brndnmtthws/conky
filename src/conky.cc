@@ -860,12 +860,12 @@ void update_text_area() {
     text_size = conky::point<int>(dpi_scale(minimum_width.get(*state)), 0);
     last_font_height = font_height();
     for_each_line(text_buffer, text_size_updater);
-    text_size.set_x(text_size.x() + 1);
-    if (text_size.y() < dpi_scale(minimum_height.get(*state))) {
-      text_size.set_y(dpi_scale(minimum_height.get(*state)));
+    text_size.x += 1;
+    if (text_size.y < dpi_scale(minimum_height.get(*state))) {
+      text_size.y = dpi_scale(minimum_height.get(*state));
     }
     int mw = maximum_width.get(*state);
-    if (text_size.x() > mw && mw > 0) { text_size.set_x(mw); }
+    if (text_size.x > mw && mw > 0) { text_size.x = mw; }
   }
 
   alignment align = text_alignment.get(*state);
@@ -876,10 +876,10 @@ void update_text_area() {
       break;
     case axis_align::END:
     default:
-      y = workarea[3] - text_size.y() - dpi_scale(gap_y.get(*state));
+      y = workarea[3] - text_size.y - dpi_scale(gap_y.get(*state));
       break;
     case axis_align::MIDDLE:
-      y = workarea[1] + (workarea[3] - workarea[1]) / 2 - text_size.y() / 2 -
+      y = workarea[1] + (workarea[3] - workarea[1]) / 2 - text_size.y / 2 -
           dpi_scale(gap_y.get(*state));
       break;
   }
@@ -889,17 +889,17 @@ void update_text_area() {
       x = workarea[0] + dpi_scale(gap_x.get(*state));
       break;
     case axis_align::END:
-      x = workarea[2] - text_size.x() - dpi_scale(gap_x.get(*state));
+      x = workarea[2] - text_size.x - dpi_scale(gap_x.get(*state));
       break;
     case axis_align::MIDDLE:
-      x = workarea[0] + (workarea[2] - workarea[0]) / 2 - text_size.x() / 2 -
+      x = workarea[0] + (workarea[2] - workarea[0]) / 2 - text_size.x / 2 -
           dpi_scale(gap_x.get(*state));
       break;
   }
 #ifdef OWN_WINDOW
   if (align == alignment::NONE) {  // Let the WM manage the window
-    x = window.geometry.x();
-    y = window.geometry.y();
+    x = window.geometry.x;
+    y = window.geometry.y;
 
     fixed_pos = 1;
     fixed_size = 1;
@@ -967,7 +967,7 @@ static int text_size_updater(char *s, int special_index) {
         int step = current->width;
 
         if ((step == 0) || step < 0) { step = 10; }
-        w += step - (cur_x - text_start.x() - start) % step;
+        w += step - (cur_x - text_start.x - start) % step;
       } else if (current->type == text_node_t::FONT) {
         selected_font = current->font_added;
         if (font_height() > last_font_height) {
@@ -984,11 +984,11 @@ static int text_size_updater(char *s, int special_index) {
 
   w += get_string_width(s);
 
-  if (w > text_size.x()) { text_size.set_x(w); }
+  if (w > text_size.x) { text_size.x = w; }
   int mw = maximum_width.get(*state);
-  if (text_size.x() > mw && mw > 0) { text_size.set_x(mw); }
+  if (text_size.x > mw && mw > 0) { text_size.x = mw; }
 
-  text_size.set_y(text_size.y() + last_font_height);
+  text_size.y += last_font_height;
   last_font_height = font_height();
   return special_index;
 }
@@ -1026,7 +1026,7 @@ static void draw_string(const char *s) {
 
 #ifdef BUILD_GUI
   if (display_output() && display_output()->graphical()) {
-    max = ((text_size.x() - width_of_s) / std::max(1, get_string_width(" ")));
+    max = ((text_size.x - width_of_s) / std::max(1, get_string_width(" ")));
   }
 #endif /* BUILD_GUI */
   /* This code looks for tabs in the text and coverts them to spaces.
@@ -1050,10 +1050,10 @@ static void draw_string(const char *s) {
 #ifdef BUILD_GUI
   if (display_output() && display_output()->graphical()) {
     int mw = display_output()->dpi_scale(maximum_width.get(*state));
-    if (text_size.x() == mw) {
+    if (text_size.x == mw) {
       /* this means the text is probably pushing the limit,
        * so we'll chop it */
-      while (cur_x + get_string_width(tmpstring2) - text_start.x() > mw &&
+      while (cur_x + get_string_width(tmpstring2) - text_start.x > mw &&
              strlen(tmpstring2) > 0) {
         tmpstring2[strlen(tmpstring2) - 1] = '\0';
       }
@@ -1063,8 +1063,8 @@ static void draw_string(const char *s) {
   s = tmpstring2;
 #ifdef BUILD_GUI
   if (display_output() && display_output()->graphical()) {
-    display_output()->draw_string_at(text_offset.x() + cur_x,
-                                     text_offset.y() + cur_y, s, strlen(s));
+    display_output()->draw_string_at(text_offset.x + cur_x,
+                                     text_offset.y + cur_y, s, strlen(s));
 
     cur_x += width_of_s;
   }
@@ -1122,7 +1122,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
     font_h = font_height();
     cur_y += font_ascent();
   }
-  cur_x = text_start.x();
+  cur_x = text_start.x;
 #endif /* BUILD_GUI */
 
   while (*p != 0) {
@@ -1151,14 +1151,13 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             int h = current->height;
             int mid = font_ascent() / 2;
 
-            w = text_start.x() + text_size.x() - cur_x;
+            w = text_start.x + text_size.x - cur_x;
 
             if (display_output()) {
               display_output()->set_line_style(h, true);
-              display_output()->draw_line(text_offset.x() + cur_x,
-                                          text_offset.y() + cur_y - mid / 2,
-                                          text_offset.x() + cur_x + w,
-                                          text_offset.y() + cur_y - mid / 2);
+              display_output()->draw_line(
+                  text_offset.x + cur_x, text_offset.y + cur_y - mid / 2,
+                  text_offset.x + cur_x + w, text_offset.y + cur_y - mid / 2);
             }
           }
           break;
@@ -1170,14 +1169,13 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             int mid = font_ascent() / 2;
             char ss[2] = {tmp_s, tmp_s};
 
-            w = text_start.x() + text_size.x() - cur_x - 1;
+            w = text_start.x + text_size.x - cur_x - 1;
             if (display_output()) {
               display_output()->set_line_style(h, false);
               display_output()->set_dashes(ss);
-              display_output()->draw_line(text_offset.x() + cur_x,
-                                          text_offset.y() + cur_y - mid / 2,
-                                          text_offset.x() + cur_x + w,
-                                          text_offset.x() + cur_y - mid / 2);
+              display_output()->draw_line(
+                  text_offset.x + cur_x, text_offset.y + cur_y - mid / 2,
+                  text_offset.x + cur_x + w, text_offset.x + cur_y - mid / 2);
             }
           }
           break;
@@ -1186,7 +1184,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           if (display_output() && display_output()->graphical()) {
             int h, by;
             double bar_usage, scale;
-            if (cur_x - text_start.x() > mw && mw > 0) { break; }
+            if (cur_x - text_start.x > mw && mw > 0) { break; }
             h = current->height;
             bar_usage = current->arg;
             scale = current->scale;
@@ -1194,16 +1192,16 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 
             if (h < font_h) { by -= h / 2 - 1; }
             w = current->width;
-            if (w == 0) { w = text_start.x() + text_size.x() - cur_x - 1; }
+            if (w == 0) { w = text_start.x + text_size.x - cur_x - 1; }
             if (w < 0) { w = 0; }
 
             if (display_output()) {
               display_output()->set_line_style(dpi_scale(1), true);
 
-              display_output()->draw_rect(text_offset.x() + cur_x,
-                                          text_offset.y() + by, w, h);
-              display_output()->fill_rect(text_offset.x() + cur_x,
-                                          text_offset.y() + by,
+              display_output()->draw_rect(text_offset.x + cur_x,
+                                          text_offset.y + by, w, h);
+              display_output()->fill_rect(text_offset.x + cur_x,
+                                          text_offset.y + by,
                                           w * bar_usage / scale, h);
             }
             if (h > cur_y_add && h > font_h) { cur_y_add = h; }
@@ -1219,20 +1217,20 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             double usage, scale;
 #endif /* BUILD_MATH */
 
-            if (cur_x - text_start.x() > mw && mw > 0) { break; }
+            if (cur_x - text_start.x > mw && mw > 0) { break; }
 
             h = current->height;
             by = cur_y - (font_ascent() / 2) - 1;
 
             if (h < font_h) { by -= h / 2 - 1; }
             w = current->width;
-            if (w == 0) { w = text_start.x() + text_size.x() - cur_x - 1; }
+            if (w == 0) { w = text_start.x + text_size.x - cur_x - 1; }
             if (w < 0) { w = 0; }
 
             if (display_output()) {
               display_output()->set_line_style(1, true);
-              display_output()->draw_arc(text_offset.x() + cur_x,
-                                         text_offset.y() + by, w, h * 2, 0,
+              display_output()->draw_arc(text_offset.x + cur_x,
+                                         text_offset.y + by, w, h * 2, 0,
                                          180 * 64);
             }
 
@@ -1246,11 +1244,10 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
                  static_cast<float>(h) * sin(angle);
 
             if (display_output()) {
-              display_output()->draw_line(
-                  text_offset.x() + cur_x + (w / 2.),
-                  text_offset.y() + by + (h),
-                  text_offset.x() + static_cast<int>(px),
-                  text_offset.y() + static_cast<int>(py));
+              display_output()->draw_line(text_offset.x + cur_x + (w / 2.),
+                                          text_offset.y + by + (h),
+                                          text_offset.x + static_cast<int>(px),
+                                          text_offset.y + static_cast<int>(py));
             }
 
 #endif /* BUILD_MATH */
@@ -1266,14 +1263,14 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             int h, by, i = 0, j = 0;
             int colour_idx = 0;
             Colour last_colour = current_color;
-            if (cur_x - text_start.x() > mw && mw > 0) { break; }
+            if (cur_x - text_start.x > mw && mw > 0) { break; }
             h = current->height;
             by = cur_y - (font_ascent() / 2) - 1;
 
             if (h < font_h) { by -= h / 2 - 1; }
             w = current->width;
             if (w == 0) {
-              w = text_start.x() + text_size.x() - cur_x - 1;
+              w = text_start.x + text_size.x - cur_x - 1;
               current->graph_width = std::max(w - 1, 0);
               if (current->graph_width != current->graph_allocated) {
                 w = current->graph_allocated + 1;
@@ -1283,8 +1280,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             if (draw_graph_borders.get(*state)) {
               if (display_output()) {
                 display_output()->set_line_style(dpi_scale(1), true);
-                display_output()->draw_rect(text_offset.x() + cur_x,
-                                            text_offset.y() + by, w, h);
+                display_output()->draw_rect(text_offset.x + cur_x,
+                                            text_offset.y + by, w, h);
               }
             }
             if (display_output()) display_output()->set_line_style(1, true);
@@ -1315,9 +1312,9 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
                 /* this is mugfugly, but it works */
                 if (display_output()) {
                   display_output()->draw_line(
-                      text_offset.x() + cur_x + i + 1, text_offset.y() + by + h,
-                      text_offset.x() + cur_x + i + 1,
-                      text_offset.y() +
+                      text_offset.x + cur_x + i + 1, text_offset.y + by + h,
+                      text_offset.x + cur_x + i + 1,
+                      text_offset.y +
                           round_to_positive_int(static_cast<double>(by) + h -
                                                 current->graph[j] * (h - 1) /
                                                     current->scale));
@@ -1443,8 +1440,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
         case text_node_t::SAVE_COORDINATES:
 #ifdef BUILD_IMLIB2
           saved_coordinates[static_cast<int>(current->arg)] =
-              std::array<int, 2>{cur_x - text_start.x(),
-                                 cur_y - text_start.y() - last_font_height};
+              std::array<int, 2>{cur_x - text_start.x,
+                                 cur_y - text_start.y - last_font_height};
 #endif /* BUILD_IMLIB2 */
           break;
 
@@ -1453,20 +1450,20 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           int step = current->width;
 
           if ((step == 0) || step < 0) { step = 10; }
-          w = step - (cur_x - text_start.x() - start) % step;
+          w = step - (cur_x - text_start.x - start) % step;
           break;
         }
 
         case text_node_t::ALIGNR: {
           /* TODO: add back in "+ window.border_inner_margin" to the end of
            * this line? */
-          int pos_x = text_start.x() + text_size.x() -
+          int pos_x = text_start.x + text_size.x -
                       get_string_width_special(s, special_index);
 
-          /* printf("pos_x %i text_start.x() %i text_size.x() %i cur_x %i "
+          /* printf("pos_x %i text_start.x %i text_size.x %i cur_x %i "
             "get_string_width(p) %i gap_x %i "
             "current->arg %i window.border_inner_margin %i "
-            "window.border_width %i\n", pos_x, text_start.x(), text_size.x(),
+            "window.border_width %i\n", pos_x, text_start.x, text_size.x,
             cur_x, get_string_width_special(s), gap_x,
             current->arg, window.border_inner_margin,
             window.border_width); */
@@ -1475,16 +1472,16 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
         }
 
         case text_node_t::ALIGNC: {
-          int pos_x = text_size.x() / 2 -
+          int pos_x = text_size.x / 2 -
                       get_string_width_special(s, special_index) / 2 -
-                      (cur_x - text_start.x());
-          /* int pos_x = text_start_x + text_size.x() / 2 -
+                      (cur_x - text_start.x);
+          /* int pos_x = text_start_x + text_size.x / 2 -
             get_string_width_special(s) / 2; */
 
-          /* printf("pos_x %i text_start.x() %i text_size.x() %i cur_x %i "
+          /* printf("pos_x %i text_start.x %i text_size.x %i cur_x %i "
             "get_string_width(p) %i gap_x %i "
-            "current->arg %i\n", pos_x, text_start.x(),
-            text_size.x(), cur_x, get_string_width(s), gap_x,
+            "current->arg %i\n", pos_x, text_start.x,
+            text_size.x, cur_x, get_string_width(s), gap_x,
             current->arg); */
           if (pos_x > current->arg) { w = pos_x - current->arg; }
           break;
@@ -1548,7 +1545,7 @@ static void draw_text() {
   // XXX:only works if inside set_display_output()
   for (auto output : display_outputs()) {
     if (output && output->graphical()) {
-      cur_y = text_start.y();
+      cur_y = text_start.y;
       int bw = dpi_scale(border_width.get(*state));
 
       /* draw borders */
@@ -1563,10 +1560,9 @@ static void draw_text() {
         }
 
         int offset = dpi_scale(border_inner_margin.get(*state)) + bw;
-        output->draw_rect(text_offset.x() + text_start.x() - offset,
-                          text_offset.y() + text_start.y() - offset,
-                          text_size.x() + 2 * offset,
-                          text_size.y() + 2 * offset);
+        output->draw_rect(text_offset.x + text_start.x - offset,
+                          text_offset.y + text_start.y - offset,
+                          text_size.x + 2 * offset, text_size.y + 2 * offset);
       }
 
       /* draw text */
@@ -1586,9 +1582,8 @@ void draw_stuff() {
 
 #ifdef BUILD_IMLIB2
   text_offset = conky::point<int>::Zero();
-  cimlib_render(text_start.x(), text_start.y(), window.geometry.width(),
-                window.geometry.height(),
-                imlib_cache_flush_interval.get(*state),
+  cimlib_render(text_start.x, text_start.y, window.geometry.width,
+                window.geometry.height, imlib_cache_flush_interval.get(*state),
                 imlib_draw_blended.get(*state));
 #endif /* BUILD_IMLIB2 */
 

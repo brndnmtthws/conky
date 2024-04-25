@@ -403,8 +403,8 @@ void window_get_width_height(struct window *window, int *w, int *h);
 
 void window_layer_surface_set_size(struct window *window) {
   zwlr_layer_surface_v1_set_size(global_window->layer_surface,
-                                 global_window->rectangle.width(),
-                                 global_window->rectangle.height());
+                                 global_window->rectangle.width,
+                                 global_window->rectangle.height);
 }
 
 #ifdef BUILD_MOUSE_EVENTS
@@ -646,19 +646,19 @@ bool display_output_wayland::main_loop_wait(double t) {
 
     /* resize window if it isn't right size */
     if ((fixed_size == 0) &&
-        (text_size.x() + 2 * border_total != width ||
-         text_size.y() + 2 * border_total != height || scale_changed)) {
+        (text_size.x + 2 * border_total != width ||
+         text_size.y + 2 * border_total != height || scale_changed)) {
       /* clamp text_width to configured maximum */
       if (maximum_width.get(*state)) {
         int mw = global_window->scale * maximum_width.get(*state);
-        if (text_size.x() > mw && mw > 0) { text_size.set_x(mw); }
+        if (text_size.x > mw && mw > 0) { text_size.x = mw; }
       }
 
       /* pending scale will be applied by resizing the window */
       global_window->scale = global_window->pending_scale;
 
-      width = text_size.x() + 2 * border_total;
-      height = text_size.y() + 2 * border_total;
+      width = text_size.x + 2 * border_total;
+      height = text_size.y + 2 * border_total;
       window_resize(global_window, width, height); /* resize window */
 
       changed++;
@@ -797,8 +797,8 @@ int display_output_wayland::calc_text_width(const char *s) {
 }
 
 static void adjust_coords(int &x, int &y) {
-  x -= text_start.x();
-  y -= text_start.y();
+  x -= text_start.x;
+  y -= text_start.y;
   int border = get_border_total();
   x += border;
   y += border;
@@ -1098,14 +1098,14 @@ static void shm_pool_destroy(struct shm_pool *pool) {
 
 static int stride_for_shm_surface(rect<size_t> *rect, int scale) {
   return cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32,
-                                       rect->width() * scale);
+                                       rect->width * scale);
 }
 
 static int data_length_for_shm_surface(rect<size_t> *rect, int scale) {
   int stride;
 
   stride = stride_for_shm_surface(rect, scale);
-  return stride * rect->height() * scale;
+  return stride * rect->height * scale;
 }
 
 static cairo_surface_t *create_shm_surface_from_pool(void *none,
@@ -1136,7 +1136,7 @@ static cairo_surface_t *create_shm_surface_from_pool(void *none,
 
   auto scaled = rectangle->size * scale;
   surface = cairo_image_surface_create_for_data(
-      static_cast<unsigned char *>(map), cairo_format, scaled.x(), scaled.y(),
+      static_cast<unsigned char *>(map), cairo_format, scaled.x, scaled.y,
       stride);
 
   cairo_surface_set_user_data(surface, &shm_surface_data_key, data,
@@ -1144,8 +1144,8 @@ static cairo_surface_t *create_shm_surface_from_pool(void *none,
 
   format = WL_SHM_FORMAT_ARGB8888; /*or WL_SHM_FORMAT_RGB565*/
 
-  data->buffer = wl_shm_pool_create_buffer(pool->pool, offset, scaled.x(),
-                                           scaled.y(), stride, format);
+  data->buffer = wl_shm_pool_create_buffer(pool->pool, offset, scaled.x,
+                                           scaled.y, stride, format);
 
   return surface;
 }
@@ -1240,15 +1240,14 @@ void window_commit_buffer(struct window *window) {
                     get_buffer_from_cairo_surface(window->cairo_surface), 0, 0);
   /* repaint all the pixels in the surface, change size to only repaint changed
    * area*/
-  wl_surface_damage(window->surface, window->rectangle.x(),
-                    window->rectangle.y(), window->rectangle.width(),
-                    window->rectangle.height());
+  wl_surface_damage(window->surface, window->rectangle.x, window->rectangle.y,
+                    window->rectangle.width, window->rectangle.height);
   wl_surface_commit(window->surface);
 }
 
 void window_get_width_height(struct window *window, int *w, int *h) {
-  *w = window->rectangle.width();
-  *h = window->rectangle.height();
+  *w = window->rectangle.width;
+  *h = window->rectangle.height;
 }
 
 }  // namespace conky

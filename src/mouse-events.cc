@@ -191,10 +191,10 @@ void mouse_event::push_lua_table(lua_State *L) const {
 }
 
 void mouse_positioned_event::push_lua_data(lua_State *L) const {
-  push_table_value(L, "x", this->pos.x());
-  push_table_value(L, "y", this->pos.y());
-  push_table_value(L, "x_abs", this->pos_absolute.x());
-  push_table_value(L, "y_abs", this->pos_absolute.y());
+  push_table_value(L, "x", this->pos.x);
+  push_table_value(L, "y", this->pos.y);
+  push_table_value(L, "x_abs", this->pos_absolute.x);
+  push_table_value(L, "y_abs", this->pos_absolute.y);
 }
 
 void mouse_move_event::push_lua_data(lua_State *L) const {
@@ -523,10 +523,10 @@ std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(
       e->window = target;
       e->subwindow = child;
       e->time = CurrentTime;
-      e->x = static_cast<int>(target_pos.x());
-      e->y = static_cast<int>(target_pos.y());
-      e->x_root = static_cast<int>(this->pos_absolute.x());
-      e->y_root = static_cast<int>(this->pos_absolute.y());
+      e->x = static_cast<int>(target_pos.x);
+      e->y = static_cast<int>(target_pos.y);
+      e->x_root = static_cast<int>(this->pos_absolute.x);
+      e->y_root = static_cast<int>(this->pos_absolute.y);
       e->state = this->mods.effective;
       e->is_hint = NotifyNormal;
       e->same_screen = True;
@@ -556,10 +556,10 @@ std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(
       e->window = target;
       e->subwindow = child;
       e->time = CurrentTime;
-      e->x = static_cast<int>(target_pos.x());
-      e->y = static_cast<int>(target_pos.y());
-      e->x_root = static_cast<int>(this->pos_absolute.x());
-      e->y_root = static_cast<int>(this->pos_absolute.y());
+      e->x = static_cast<int>(target_pos.x);
+      e->y = static_cast<int>(target_pos.y);
+      e->x_root = static_cast<int>(this->pos_absolute.x);
+      e->y_root = static_cast<int>(this->pos_absolute.y);
       e->state = this->mods.effective;
       e->button = scroll_direction;
       e->same_screen = True;
@@ -582,10 +582,10 @@ std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(
     e->window = target;
     e->subwindow = child;
     e->time = CurrentTime;
-    e->x = static_cast<int>(target_pos.x());
-    e->y = static_cast<int>(target_pos.y());
-    e->x_root = static_cast<int>(this->pos_absolute.x());
-    e->y_root = static_cast<int>(this->pos_absolute.y());
+    e->x = static_cast<int>(target_pos.x);
+    e->y = static_cast<int>(target_pos.y);
+    e->x_root = static_cast<int>(this->pos_absolute.x);
+    e->y_root = static_cast<int>(this->pos_absolute.y);
     e->state = this->mods.effective;
     e->button = this->detail;
     e->same_screen = True;
