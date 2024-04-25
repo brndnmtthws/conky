@@ -52,10 +52,18 @@ struct point {
 
   /// @brief Point x component
   /// @return x value of this point
-  inline T x() const { return value.x(); }
+  template <typename R = T,
+            typename = typename std::enable_if<std::is_arithmetic<R>::value>>
+  inline R x() const {
+    return static_cast<R>(this->value.x());
+  }
   /// @brief Point y component
   /// @return y value of this point
-  inline T y() const { return value.y(); }
+  template <typename R = T,
+            typename = typename std::enable_if<std::is_arithmetic<R>::value>>
+  inline R y() const {
+    return static_cast<R>(this->value.y());
+  }
 
   template <typename O = T,
             typename = typename std::enable_if<std::is_arithmetic<O>::value>>
@@ -148,16 +156,32 @@ struct rect {
 
   /// @brief Rectangle x position
   /// @return x position of this rectangle
-  inline T x() const { return this->pos.x(); }
+  template <typename R = T,
+            typename = typename std::enable_if<std::is_arithmetic<R>::value>>
+  inline R x() const {
+    return static_cast<R>(this->pos.x());
+  }
   /// @brief Rectangle y position
   /// @return y position of this rectangle
-  inline T y() const { return this->pos.y(); }
+  template <typename R = T,
+            typename = typename std::enable_if<std::is_arithmetic<R>::value>>
+  inline R y() const {
+    return static_cast<R>(this->pos.y());
+  }
   /// @brief Rectangle width
   /// @return width of this rectangle
-  inline T width() const { return this->size.x(); }
+  template <typename R = T,
+            typename = typename std::enable_if<std::is_arithmetic<R>::value>>
+  inline R width() const {
+    return static_cast<R>(this->size.x());
+  }
   /// @brief Rectangle height
   /// @return height of this rectangle
-  inline T height() const { return this->size.y(); }
+  template <typename R = T,
+            typename = typename std::enable_if<std::is_arithmetic<R>::value>>
+  inline R height() const {
+    return static_cast<R>(this->size.y());
+  }
 
   template <typename O = T,
             typename = typename std::enable_if<std::is_arithmetic<O>::value>>
