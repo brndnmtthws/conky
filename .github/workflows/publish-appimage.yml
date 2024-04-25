@@ -103,6 +103,8 @@ jobs:
           echo "CXX=clang++-${CLANG_VERSION}" | tee -a $GITHUB_ENV
       - name: Build AppImage
         run: ./appimage/build.sh
+        env:
+          RELEASE: "${{ startsWith(github.ref, 'refs/tags/') && 'ON' || 'OFF' }}"
       - run: ./conky-x86_64.AppImage --version # print version
       - run: mv conky-x86_64.AppImage conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage
       - run: mv conky-x86_64.AppImage.sha256 conky-${{ matrix.os }}-${{ matrix.arch }}-${{ env.GIT_VERSION }}.AppImage.sha256
