@@ -5,6 +5,10 @@
 #include <cstdint>
 #include <type_traits>
 
+#ifdef BUILD_X11
+#include <X11/Xlib.h>
+#endif /* BUILD_X11 */
+
 #ifdef Success
 // Undefine X11 Success definition; not used by us; conflicts with Eigen
 // (namespaced) enum declarations
@@ -241,6 +245,15 @@ struct rect {
   bool intersects(rect<O> other) const {
     return this->_intersects_partial(other) || other._intersects_partial(*this);
   }
+
+#ifdef BUILD_X11
+  XRectangle to_xrectangle() const {
+    return XRectangle{.x = static_cast<short>(this->x()),
+                      .y = static_cast<short>(this->y()),
+                      .width = static_cast<unsigned short>(this->width()),
+                      .height = static_cast<unsigned short>(this->height())};
+  }
+#endif /* BUILD_X11 */
 };
 
 }  // namespace conky

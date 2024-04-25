@@ -909,7 +909,7 @@ void update_text_area() {
 
   if (own_window.get(*state) && (fixed_pos == 0)) {
     int border_total = get_border_total();
-    text_start = conky::point<int>(border_total, border_total);
+    text_start = conky::point<int>::repeat(border_total);
     window.geometry.pos = conky::point<int>(x, y) - text_start;
   } else
 #endif

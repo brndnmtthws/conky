@@ -1315,8 +1315,7 @@ void propagate_xinput_event(const conky::xi_event_data *ev) {
       XTranslateCoordinates(display, window.desktop, ev->event,
                             ev->pos_absolute.x(), ev->pos_absolute.y(), &read_x,
                             &read_y, &child);
-      target_pos.set_x(read_x);
-      target_pos.set_x(read_y);
+      target_pos = conky::point<int>(read_x, read_y);
     }
   }
 

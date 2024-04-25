@@ -1227,8 +1227,7 @@ void window_destroy(struct window *window) {
 
 void window_resize(struct window *window, int width, int height) {
   window_free_buffer(window);
-  window->rectangle.set_width(width);
-  window->rectangle.set_height(height);
+  window->rectangle.size = conky::point<int>(width, height);
   window_allocate_buffer(window);
   window_layer_surface_set_size(window);
 }

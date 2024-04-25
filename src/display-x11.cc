@@ -729,11 +729,12 @@ bool handle_event<x_event_handler::EXPOSE>(conky::display_output_x11 *surface,
                                            bool *consumed, void **cookie) {
   if (ev.type != Expose) return false;
 
-  XRectangle r;
-  r.x = ev.xexpose.x;
-  r.y = ev.xexpose.y;
-  r.width = ev.xexpose.width;
-  r.height = ev.xexpose.height;
+  XRectangle r{
+      .x = ev.xexpose.x,
+      .y = ev.xexpose.y,
+      .width = ev.xexpose.width,
+      .height = ev.xexpose.height,
+  };
   XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
   XSync(display, False);
   return true;
