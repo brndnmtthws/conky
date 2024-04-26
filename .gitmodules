@@ -1,4 +1,0 @@
-[submodule "3rdparty/eigen"]
-	path = 3rdparty/eigen
-	url = https://gitlab.com/libeigen/eigen.git
-	branch = 3.4

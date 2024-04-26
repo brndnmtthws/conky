@@ -20,11 +20,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v10
       - name: Setup Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v4
-      - run: nix build '.?submodules=1#conky'
+      - run: nix build
       - run: nix flake check

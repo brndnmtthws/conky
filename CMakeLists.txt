@@ -28,9 +28,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 # 'core' CMake stuff
 include(Conky)
 
-# Ensure git submodules are initialized
-include(InitSubmodules)
-
 # Handle build options
 include(ConkyBuildOptions)
 
