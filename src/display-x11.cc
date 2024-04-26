@@ -26,6 +26,8 @@
 
 #include "config.h"
 
+#include "display-x11.hh"
+
 #include <X11/X.h>
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
@@ -60,12 +62,12 @@
 
 #include "colours.h"
 #include "conky.h"
-#include "display-x11.hh"
 #include "geometry.h"
 #include "gui.h"
 #include "llua.h"
-
 #include "logging.h"
+
+#include "x11-settings.h"
 #include "x11.h"
 
 // TODO: cleanup externs (move to conky.h ?)

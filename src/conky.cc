@@ -72,6 +72,7 @@
 #endif /* BUILD_WAYLAND */
 
 #ifdef BUILD_X11
+#include "x11-settings.h"
 #include "x11.h"
 
 #pragma GCC diagnostic push

@@ -59,7 +59,10 @@ extern bool have_argb_visual;
 
 #define ATOM(a) XInternAtom(display, #a, False)
 
+/// @brief Display where conky is placed
 extern Display *display;
+/// @brief Screen with conky
+extern int screen;
 
 struct conky_x11_window {
   /// XID of x11 root window

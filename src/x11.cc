@@ -29,10 +29,12 @@
 
 #include "config.h"
 
+#include "x11-settings.h"
 #include "x11.h"
 
 #include <X11/X.h>
 #include <sys/types.h>
+
 #include "common.h"
 #include "conky.h"
 #include "geometry.h"
@@ -94,8 +96,8 @@ extern "C" {
 #endif
 }
 
-/* some basic X11 stuff */
 Display *display = nullptr;
+int screen;
 
 #ifdef HAVE_XCB_ERRORS
 xcb_connection_t *xcb_connection;
@@ -263,8 +265,8 @@ void init_x11() {
   info.x11.desktop.name.clear();
 
   screen = DefaultScreen(display);
-  display_width = DisplayWidth(display, screen);
-  display_height = DisplayHeight(display, screen);
+  workarea.width = DisplayWidth(display, screen);
+  workarea.height = DisplayHeight(display, screen);
 
   get_x11_desktop_info(display, 0);
 
@@ -295,12 +297,6 @@ void deinit_x11() {
 }
 
 static void update_workarea() {
-  /* default work area is display */
-  workarea[0] = 0;
-  workarea[1] = 0;
-  workarea[2] = display_width;
-  workarea[3] = display_height;
-
 #ifdef BUILD_XINERAMA
   /* if xinerama is being used, adjust workarea to the head's area */
   int useless1, useless2;
@@ -886,9 +882,9 @@ static Window find_subwindow(Window win, int w, int h) {
       if (XGetWindowAttributes(display, children[j], &attrs) != 0) {
         /* Window must be mapped and same size as display or
          * work space */
-        if (attrs.map_state != 0 &&
-            ((attrs.width == display_width && attrs.height == display_height) ||
-             (attrs.width == w && attrs.height == h))) {
+        if (attrs.map_state != 0 && ((attrs.width == workarea.width &&
+                                      attrs.height == workarea.height) ||
+                                     (attrs.width == w && attrs.height == h))) {
           win = children[j];
           break;
         }
@@ -1121,37 +1117,38 @@ void set_struts(alignment align) {
     switch (horizontal_alignment(align)) {
       case axis_align::START:
         sizes[*x11_strut::LEFT] = std::clamp(
-            window.geometry.x + window.geometry.width, 0, display_width);
+            window.geometry.x + window.geometry.width, 0, *workarea.width);
         sizes[*x11_strut::LEFT_START_Y] =
-            std::clamp(*window.geometry.y, 0, display_height);
+            std::clamp(*window.geometry.y, 0, *workarea.height);
         sizes[*x11_strut::LEFT_END_Y] = std::clamp(
-            window.geometry.y + window.geometry.height, 0, display_height);
+            window.geometry.y + window.geometry.height, 0, *workarea.height);
         break;
       case axis_align::END:
         sizes[*x11_strut::RIGHT] =
-            std::clamp(display_width - window.geometry.x, 0, display_width);
+            std::clamp(workarea.width - window.geometry.x, 0, *workarea.width);
         sizes[*x11_strut::RIGHT_START_Y] =
-            std::clamp(*window.geometry.y, 0, display_height);
+            std::clamp(*window.geometry.y, 0, *workarea.height);
         sizes[*x11_strut::RIGHT_END_Y] = std::clamp(
-            window.geometry.y + window.geometry.height, 0, display_height);
+            window.geometry.y + window.geometry.height, 0, *workarea.height);
         break;
       case axis_align::MIDDLE:
         switch (vertical_alignment(align)) {
           case axis_align::START:
-            sizes[*x11_strut::TOP] = std::clamp(
-                window.geometry.y + window.geometry.height, 0, display_height);
+            sizes[*x11_strut::TOP] =
+                std::clamp(window.geometry.y + window.geometry.height, 0,
+                           *workarea.height);
             sizes[*x11_strut::TOP_START_X] =
-                std::clamp(*window.geometry.x, 0, display_width);
+                std::clamp(*window.geometry.x, 0, *workarea.width);
             sizes[*x11_strut::TOP_END_X] = std::clamp(
-                window.geometry.x + window.geometry.width, 0, display_width);
+                window.geometry.x + window.geometry.width, 0, *workarea.width);
             break;
           case axis_align::END:
             sizes[*x11_strut::BOTTOM] = std::clamp(
-                display_height - window.geometry.y, 0, display_height);
+                workarea.height - window.geometry.y, 0, *workarea.height);
             sizes[*x11_strut::BOTTOM_START_X] =
-                std::clamp(*window.geometry.x, 0, display_width);
+                std::clamp(*window.geometry.x, 0, *workarea.width);
             sizes[*x11_strut::BOTTOM_END_X] = std::clamp(
-                window.geometry.x + window.geometry.width, 0, display_width);
+                window.geometry.x + window.geometry.width, 0, *workarea.width);
             break;
           case axis_align::MIDDLE:
             // can't reserve space in middle of the screen

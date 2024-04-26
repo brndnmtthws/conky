@@ -32,6 +32,7 @@
 #include "gui.h"
 
 #ifdef BUILD_X11
+#include "x11-settings.h"
 #include "x11.h"
 #endif /* BUILD_X11 */
 
