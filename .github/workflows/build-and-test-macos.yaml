@@ -33,20 +33,22 @@ jobs:
       - name: Install dependencies
         run: |
           brew install --force \
-            cmake \
-            freetype \
-            gettext \
-            imlib2 \
-            gperf \
-            lcov \
-            librsvg \
-            libxft \
-            libxinerama \
-            libxfixes \
-            libxi \
-            lua \
-            ninja \
-            pkg-config \
+            cmake              \
+            curl               \
+            freetype           \
+            gettext            \
+            gperf              \
+            imlib2             \
+            lcov               \
+            librsvg            \
+            libxfixes          \
+            libxft             \
+            libxi              \
+            libxinerama        \
+            libxml2            \
+            lua                \
+            ninja              \
+            pkg-config         \
             || true # Ignore errors
       - name: Checkout
         uses: actions/checkout@v4
@@ -57,6 +59,8 @@ jobs:
           cmake .. -G Ninja                    \
           -DMAINTAINER_MODE=ON                 \
           -DBUILD_WAYLAND=OFF                  \
+          -DBUILD_RSS=ON                       \
+          -DBUILD_CURL=ON                      \
           -DBUILD_TESTS=ON
       - name: Compile
         run: cmake --build build
