@@ -18,11 +18,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-include_directories(${conky_includes})
-
 if(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
   # include config output dir
-  include_directories(${CMAKE_BINARY_DIR}/data)
+  add_library(conky-data INTERFACE)
+  target_include_directories(conky-data INTERFACE ${CMAKE_BINARY_DIR}/data)
+  set(conky_libs ${conky_libs} conky-data)
 endif(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
 
 # ensure build.h and config.h aren't in the way
@@ -378,17 +378,22 @@ if(BUILD_TESTS)
   # Create a library strictly for testing
   add_library(conky_core ${conky_sources} ${optional_sources})
   add_dependencies(conky_core generated_hdr_files)
+  target_include_directories(conky_core PUBLIC ${conky_includes})
   target_link_libraries(conky_core ${conky_libs})
-  add_executable(conky main.cc)
-  add_dependencies(conky generated_hdr_files)
-  target_link_libraries(conky conky_core ${conky_libs})
+
   install(TARGETS conky_core
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION ${LIB_INSTALL_DIR}
     ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
+
+  add_executable(conky main.cc)
+  add_dependencies(conky generated_hdr_files)
+  target_include_directories(conky PRIVATE ${conky_includes})
+  target_link_libraries(conky conky_core ${conky_libs})
 else()
   add_executable(conky main.cc ${conky_sources} ${optional_sources})
   add_dependencies(conky generated_hdr_files)
+  target_include_directories(conky PRIVATE ${conky_includes})
   target_link_libraries(conky ${conky_libs})
 endif()
 

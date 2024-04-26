@@ -19,7 +19,7 @@
 // (namespaced) enum declarations
 #undef Success
 #endif
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 namespace conky {
 

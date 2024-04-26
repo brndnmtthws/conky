@@ -35,7 +35,6 @@ jobs:
           brew install --force \
             cmake              \
             curl               \
-            eigen              \
             freetype           \
             gettext            \
             gperf              \

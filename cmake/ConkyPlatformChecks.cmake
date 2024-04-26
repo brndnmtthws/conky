@@ -145,21 +145,14 @@ endif(NOT
   NOT
   OS_DARWIN)
 
-
 find_package(Lua "5.3" REQUIRED)
-find_package(Eigen3 "3.0" REQUIRED)
 
 if(NOT LUA_FOUND)
   message(FATAL_ERROR "Unable to find Lua")
 endif(NOT LUA_FOUND)
 
-if(NOT EIGEN3_FOUND)
-  message(FATAL_ERROR "Unable to find Eigen3")
-endif(NOT EIGEN3_FOUND)
-
 set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
-set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR})
-include_directories(3rdparty/toluapp/include)
+set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIR})
 
 # Check for soundcard header
 if(OS_LINUX)
