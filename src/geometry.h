@@ -1,8 +1,12 @@
 #ifndef _CONKY_GEOMETRY_H_
 #define _CONKY_GEOMETRY_H_
 
+#include "config.h"
+
 #include <array>
+#include <cmath>
 #include <cstdint>
+#include <stdexcept>
 #include <type_traits>
 
 #ifdef BUILD_X11
@@ -83,9 +87,7 @@ struct point {
   point(Data vec) : value(vec) {}
 
  public:
-  template <typename O = T,
-            typename = typename std::enable_if<std::is_arithmetic<O>::value>>
-  point(O x, O y) : point(Data(static_cast<T>(x), static_cast<T>(y))) {}
+  inline point(T x, T y) : point(Data{x, y}) {}
 
   /// @brief Zero vector value.
   static inline point<T> Zero() { return point<T>(0, 0); }
@@ -96,30 +98,19 @@ struct point {
   /// @brief Y unit vector value.
   static inline point<T> UnitY() { return point<T>(0, 1); }
 
-  point() : value(Data::Zero()) {}
+  inline point() : point(0, 0) {}
 
   /// @brief Point x component.
   /// @return x value of this point.
-  template <typename R = T,
-            typename = typename std::enable_if<std::is_arithmetic<R>::value>>
-  inline R get_x() const {
-    return static_cast<R>(this->value.x());
-  }
+  inline T get_x() const { return this->value[0]; }
   /// @brief Point y component.
   /// @return y value of this point.
-  template <typename R = T,
-            typename = typename std::enable_if<std::is_arithmetic<R>::value>>
-  inline R get_y() const {
-    return static_cast<R>(this->value.y());
-  }
+  inline T get_y() const { return this->value[1]; }
 
   /// @brief Returns point component at `index`.
-  /// @tparam R value return type.
   /// @param index component index.
   /// @return component at `index` of this point.
-  template <typename R = T,
-            typename = typename std::enable_if<std::is_arithmetic<R>::value>>
-  inline R at(size_t index) const {
+  inline T at(size_t index) const {
     switch (index) {
       case 0:
         return this->get_x();
@@ -130,20 +121,14 @@ struct point {
     }
   }
 
-  template <typename O = T,
-            typename = typename std::enable_if<std::is_arithmetic<O>::value>>
-  inline void set_x(O value) {
-    this->value = Data(static_cast<T>(value), this->value.y());
+  inline void set_x(T new_value) {
+    this->value = Data{new_value, this->get_y()};
   }
-  template <typename O = T,
-            typename = typename std::enable_if<std::is_arithmetic<O>::value>>
-  inline void set_y(O value) {
-    this->value = Data(this->value.x(), static_cast<T>(value));
+  inline void set_y(T new_value) {
+    this->value = Data{this->get_x(), new_value};
   }
 
-  template <typename O = T,
-            typename = typename std::enable_if<std::is_arithmetic<O>::value>>
-  inline void set(size_t index, O value) {
+  inline void set(size_t index, T value) {
     switch (index) {
       case 0:
         return this->set_x(value);
@@ -177,20 +162,16 @@ struct point {
     return point<T>(static_cast<T>(v), static_cast<T>(v));
   }
 
-  template <typename O = T>
-  T distance_squared(point<O> other) const {
+  T distance_squared(point<T> other) const {
     return (this->value - other->value).square();
   }
-  template <typename O = T>
-  T distance(point<O> &other) const {
-    return this->distance_squared(other).sqrt();
+  T distance(point<T> &other) const {
+    return std::sqrt(this->distance_squared(other));
   }
-  T magnitude_squared() const {
-    return this->distance_squared(point<T>::Zero());
-  }
+  T magnitude_squared() const { return this->value.square(); }
   T magnitude() const { return std::sqrt(this->magnitude_squared()); }
 
-  T surface() const { return this->value.x() * this->value.y(); }
+  T surface() const { return this->get_x() * this->get_y(); }
 
   point<T> &operator=(point<T> other) {
     this->value = other.value;
@@ -203,7 +184,7 @@ struct point {
     return *this;
   }
 
-  const ComponentRef &operator[](size_t index) {
+  constexpr inline const ComponentRef &operator[](size_t index) {
     switch (index) {
       case 0:
         return this->x;
@@ -220,35 +201,27 @@ struct point {
   point<T> operator-(point<T> other) const {
     return point<T>(this->value - other.value);
   }
-  template <typename O = T,
-            typename = typename std::enable_if<std::is_arithmetic<O>::value>>
-  point<T> operator*(O scalar) const {
-    return point<T>(this->value * static_cast<T>(scalar));
-  }
+  point<T> operator*(T scalar) const { return point<T>(this->value * scalar); }
   point<T> operator*(point<T> other) const {
     return point<T>(this->value * other.value);
   }
-  template <typename O = T,
-            typename = typename std::enable_if<std::is_arithmetic<O>::value>>
-  point<T> operator/(O scalar) const {
-    return point<T>(this->value / static_cast<T>(scalar));
-  }
+  point<T> operator/(T scalar) const { return point<T>(this->value / scalar); }
   point<T> operator/(point<T> other) const {
     return point<T>(this->value / other.value);
   }
 
   bool operator==(point<T> other) const {
-    return this->x == other.x && this->y == other.y;
+    return this->get_x() == other.get_x() && this->get_y() == other.get_y();
   }
   bool operator!=(point<T> other) const {
-    return this->x != other.x || this->y != other.y;
+    return this->get_x() != other.get_x() || this->get_y() != other.get_y();
   }
 
   point<T> operator-() const { return point<T>(-this->value); }
   point<T> abs() const { return point<T>(this->value.abs()); }
 
   inline std::array<T, 2> to_array() const {
-    return std::array<T, 2>{this->value.x(), this->value.y()};
+    return std::array<T, 2>{this->get_x(), this->get_y()};
   }
 };
 
@@ -268,40 +241,21 @@ struct rect {
 
   /// @brief Rectangle x position.
   /// @return x position of this rectangle.
-  template <typename R = T,
-            typename = typename std::enable_if<std::is_arithmetic<R>::value>>
-  inline R get_x() const {
-    return static_cast<R>(this->pos.x);
-  }
+  inline T get_x() const { return this->pos.get_x(); }
   /// @brief Rectangle y position.
   /// @return y position of this rectangle.
-  template <typename R = T,
-            typename = typename std::enable_if<std::is_arithmetic<R>::value>>
-  inline R get_y() const {
-    return static_cast<R>(this->pos.y);
-  }
+  inline T get_y() const { return this->pos.get_y(); }
   /// @brief Rectangle width.
   /// @return width of this rectangle.
-  template <typename R = T,
-            typename = typename std::enable_if<std::is_arithmetic<R>::value>>
-  inline R get_width() const {
-    return static_cast<R>(this->size.x);
-  }
+  inline T get_width() const { return this->size.get_x(); }
   /// @brief Rectangle height.
   /// @return height of this rectangle.
-  template <typename R = T,
-            typename = typename std::enable_if<std::is_arithmetic<R>::value>>
-  inline R get_height() const {
-    return static_cast<R>(this->size.y);
-  }
+  inline T get_height() const { return this->size.get_y(); }
 
   /// @brief Returns rectangle component at `index`.
-  /// @tparam R value return type.
   /// @param index component index.
   /// @return component at `index` of this rectangle.
-  template <typename R = T,
-            typename = typename std::enable_if<std::is_arithmetic<R>::value>>
-  inline R at(size_t index) const {
+  inline T at(size_t index) const {
     switch (index) {
       case 0:
         return this->get_x();
@@ -316,30 +270,12 @@ struct rect {
     }
   }
 
-  template <typename O = T,
-            typename = typename std::enable_if<std::is_arithmetic<O>::value>>
-  inline void set_x(O value) {
-    this->pos.set_x(value);
-  }
-  template <typename O = T,
-            typename = typename std::enable_if<std::is_arithmetic<O>::value>>
-  inline void set_y(O value) {
-    this->pos.set_y(value);
-  }
-  template <typename O = T,
-            typename = typename std::enable_if<std::is_arithmetic<O>::value>>
-  inline void set_width(O value) {
-    this->size.set_x(value);
-  }
-  template <typename O = T,
-            typename = typename std::enable_if<std::is_arithmetic<O>::value>>
-  inline void set_height(O value) {
-    this->size.set_y(value);
-  }
+  inline void set_x(T value) { this->pos.set_x(value); }
+  inline void set_y(T value) { this->pos.set_y(value); }
+  inline void set_width(T value) { this->size.set_x(value); }
+  inline void set_height(T value) { this->size.set_y(value); }
 
-  template <typename O = T,
-            typename = typename std::enable_if<std::is_arithmetic<O>::value>>
-  inline void set(size_t index, O value) {
+  inline void set(size_t index, T value) {
     switch (index) {
       case 0:
         return this->set_x(value);
@@ -374,33 +310,35 @@ struct rect {
   inline std::array<point<T>, 4> corners() const {
     return std::array<point<T>, 4>{
         this->pos,
-        this->pos + point<T>(this->width, 0),
+        this->pos + point<T>(this->get_width(), 0),
         this->pos + this->size,
-        this->pos + point<T>(0, this->height),
+        this->pos + point<T>(0, this->get_height()),
     };
   }
 
   template <typename O = T>
   bool contains(point<O> p) const {
-    return p.x >= this->x && p.x < this->x + this->width && p.y >= this->y &&
-           p.y < this->y + this->height;
+    return p.get_x() >= this->get_x() &&
+           p.get_x() < this->get_x() + this->get_width() &&
+           p.get_y() >= this->get_y() &&
+           p.get_y() < this->get_y() + this->get_height();
   }
 
   template <typename O = T>
   bool contains(rect<O> other) const {
     return contains(other.pos) &&
-           contains(other.pos + point<O>(other.width, 0)) &&
+           contains(other.pos + point<O>(other.get_width(), 0)) &&
            contains(other.pos + other.size) &&
-           contains(other.pos + point<O>(0, other.height));
+           contains(other.pos + point<O>(0, other.get_height()));
   }
 
  private:
   template <typename O = T>
   inline bool _intersects_partial(rect<O> other) const {
     return contains(other.pos) ||
-           contains(other.pos + point<O>(other.width, 0)) ||
+           contains(other.pos + point<O>(other.get_width(), 0)) ||
            contains(other.pos + other.size) ||
-           contains(other.pos + point<O>(0, other.height));
+           contains(other.pos + point<O>(0, other.get_height()));
   }
 
  public:
@@ -409,7 +347,7 @@ struct rect {
     return this->_intersects_partial(other) || other._intersects_partial(*this);
   }
 
-  const ComponentRef &operator[](size_t index) {
+  constexpr inline const ComponentRef &operator[](size_t index) {
     switch (index) {
       case 0:
         return this->x;
@@ -426,10 +364,11 @@ struct rect {
 
 #ifdef BUILD_X11
   XRectangle to_xrectangle() const {
-    return XRectangle{.x = static_cast<short>(this->x),
-                      .y = static_cast<short>(this->y),
-                      .width = static_cast<unsigned short>(this->width),
-                      .height = static_cast<unsigned short>(this->height)};
+    return XRectangle{
+        .x = static_cast<short>(this->get_x()),
+        .y = static_cast<short>(this->get_y()),
+        .width = static_cast<unsigned short>(this->get_width()),
+        .height = static_cast<unsigned short>(this->get_height())};
   }
 #endif /* BUILD_X11 */
 };
