@@ -3,10 +3,11 @@
 
 #include "config.h"
 
+#include "macros.h"
+
 #include <array>
 #include <cmath>
 #include <cstdint>
-#include <stdexcept>
 #include <type_traits>
 
 #ifdef BUILD_X11
@@ -117,7 +118,7 @@ struct point {
       case 1:
         return this->get_y();
       default:
-        throw std::out_of_range("index out of range");
+        UNREACHABLE();
     }
   }
 
@@ -135,7 +136,7 @@ struct point {
       case 1:
         return this->set_y(value);
       default:
-        throw std::out_of_range("index out of range");
+        UNREACHABLE();
     }
   }
 
@@ -191,7 +192,7 @@ struct point {
       case 1:
         return this->y;
       default:
-        throw std::out_of_range("index out of range");
+        UNREACHABLE();
     }
   }
 
@@ -266,7 +267,7 @@ struct rect {
       case 3:
         return this->get_height();
       default:
-        throw std::out_of_range("index out of range");
+        UNREACHABLE();
     }
   }
 
@@ -286,7 +287,7 @@ struct rect {
       case 3:
         return this->set_height(value);
       default:
-        throw std::out_of_range("index out of range");
+        UNREACHABLE();
     }
   }
 
@@ -358,7 +359,7 @@ struct rect {
       case 3:
         return this->height;
       default:
-        throw std::out_of_range("index out of range");
+        UNREACHABLE();
     }
   }
 
