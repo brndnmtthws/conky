@@ -498,6 +498,7 @@ find_package(Lua "5.3" REQUIRED)
 set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
 set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIR})
 include_directories(3rdparty/toluapp/include)
+include_directories(3rdparty/eigen)
 
 # Check for libraries used by Lua bindings
 if(BUILD_LUA_CAIRO)
@@ -510,7 +511,7 @@ if(BUILD_LUA_CAIRO)
     set(luacairo_libs ${CAIROXLIB_LIBRARIES} ${luacairo_libs})
     set(luacairo_includes ${CAIROXLIB_INCLUDE_DIRS} ${luacairo_includes})
   endif(BUILD_LUA_CAIRO_XLIB)
-  
+
   find_program(APP_PATCH patch)
 
   if(NOT APP_PATCH)

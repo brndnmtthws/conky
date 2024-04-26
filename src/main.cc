@@ -27,6 +27,7 @@
  */
 
 #include <getopt.h>
+#include <Eigen/Dense>
 #include <cstdio>
 #include <iostream>
 
@@ -57,13 +58,18 @@
 #endif /* BUILD_BUILTIN_CONFIG */
 
 static void print_version() {
+  Eigen::MatrixXd m(2, 2);
+  m(0, 0) = 3;
+  m(1, 0) = 2.5;
+  m(0, 1) = -1;
+  m(1, 1) = m(1, 0) + m(0, 1);
   std::cout << _(PACKAGE_NAME " " VERSION " compiled for " BUILD_ARCH
                               "\n"
                               "\nCompiled in features:\n\n"
                               "System config file: " SYSTEM_CONFIG_FILE
                               "\n"
                               "Package library path: " PACKAGE_LIBDIR "\n\n")
-            << _("\n General:\n")
+            << _("\n General:\n") << "Eigen matrix: " << m << std::endl
 #ifdef HAVE_OPENMP
             << _("  * OpenMP\n")
 #endif /* HAVE_OPENMP */
