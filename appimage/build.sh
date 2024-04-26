@@ -39,7 +39,7 @@ pushd "$BUILD_DIR"
 # we need to explicitly set the install prefix, as CMake's default is /usr/local for some reason...
 cmake -G Ninja                         \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo    \
-  -DRELEASE=ON                         \
+  -DRELEASE=$RELEASE                   \
   -DBUILD_AUDACIOUS=ON                 \
   -DBUILD_DOCS=ON                      \
   -DBUILD_HTTP=ON                      \
@@ -55,6 +55,7 @@ cmake -G Ninja                         \
   -DBUILD_NVIDIA=ON                    \
   -DBUILD_PULSEAUDIO=ON                \
   -DBUILD_RSS=ON                       \
+  -DBUILD_CURL=ON                      \
   -DBUILD_WAYLAND=ON                   \
   -DBUILD_WLAN=ON                      \
   -DBUILD_X11=ON                       \
