@@ -155,6 +155,10 @@ endif(NOT APP_UNAME)
 
 find_program(APP_GPERF gperf)
 
+if(NOT APP_GPERF)
+  message(FATAL_ERROR "Unable to find program 'gperf' (required at build-time as of Conky v1.20.2)")
+endif(NOT APP_GPERF)
+
 if(NOT RELEASE)
   find_program(APP_GIT git)
 

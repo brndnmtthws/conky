@@ -51,21 +51,16 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h)
 endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h)
 
 # Generate colour-names.hh with gperf
-if(APP_GPERF)
-  execute_process(
-    INPUT_FILE "${CMAKE_SOURCE_DIR}/data/color-names.yml"
-    OUTPUT_FILE "${CMAKE_BINARY_DIR}/data/color-names.gperf"
-    COMMAND sh "${CMAKE_SOURCE_DIR}/bin/format-colors.sh"
-  )
-  execute_process(
-    INPUT_FILE "${CMAKE_BINARY_DIR}/data/color-names.gperf"
-    OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/colour-names.hh"
-    COMMAND ${APP_GPERF} --ignore-case -LC++ -Zcolor_name_hash -t -7 -m1 -C -E
-  )
-else(APP_GPERF)
-  message(WARNING "'gperf' program not found, using stub colour-names.hh; colors names will not be parsed")
-  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/colour-names-stub.hh" "${CMAKE_CURRENT_BINARY_DIR}/colour-names.hh" COPYONLY)
-endif(APP_GPERF)
+execute_process(
+  INPUT_FILE "${CMAKE_SOURCE_DIR}/data/color-names.yml"
+  OUTPUT_FILE "${CMAKE_BINARY_DIR}/data/color-names.gperf"
+  COMMAND sh "${CMAKE_SOURCE_DIR}/bin/format-colors.sh"
+)
+execute_process(
+  INPUT_FILE "${CMAKE_BINARY_DIR}/data/color-names.gperf"
+  OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/colour-names.hh"
+  COMMAND ${APP_GPERF} --ignore-case -LC++ -Zcolor_name_hash -t -7 -m1 -C -E
+)
 
 set(conky_sources
   ${conky_sources}
