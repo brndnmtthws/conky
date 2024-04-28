@@ -1,5 +1,5 @@
 /*
- * To generate colour-names.cc, you must have gperf installed during build.
+ * To generate colour-names.hh, you must have gperf installed during build.
  * This is a dummy implementation for builds without gperf.
  * Color name matching will always return null (i.e. no match).
  */
