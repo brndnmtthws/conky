@@ -9,6 +9,7 @@ RUN apt-get update \
   curl \
   gfortran \
   git \
+  gperf \
   libarchive-dev \
   libaudclient-dev \
   libc++-dev \
@@ -74,6 +75,7 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   -DBUILD_IRC=ON \
   -DBUILD_JOURNAL=ON \
   -DBUILD_LUA_CAIRO=ON \
+  -DBUILD_LUA_CAIRO_XLIB=ON \
   -DBUILD_LUA_IMLIB2=ON \
   -DBUILD_LUA_RSVG=ON \
   -DBUILD_MYSQL=ON \
