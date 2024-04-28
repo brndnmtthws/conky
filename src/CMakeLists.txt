@@ -47,7 +47,7 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h)
   )
 endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h)
 
-# Generate colour-names.cc with gperf
+# Generate colour-names.hh with gperf
 if(APP_GPERF)
   execute_process(
     INPUT_FILE "${CMAKE_SOURCE_DIR}/data/color-names.yml"
@@ -56,12 +56,13 @@ if(APP_GPERF)
   )
   execute_process(
     INPUT_FILE "${CMAKE_BINARY_DIR}/data/color-names.gperf"
-    OUTPUT_FILE "${CMAKE_BINARY_DIR}/colour-names.cc"
+    OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/colour-names.hh"
     COMMAND ${APP_GPERF} --ignore-case -LC++ -Zcolor_name_hash -t -7 -m1 -C -E
   )
+  include_directories(${CMAKE_CURRENT_BINARY_DIR})
 else(APP_GPERF)
-  message(WARNING "'gperf' program not found, using stub colour-names.cc; colors names will not be parsed")
-  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/colour-names-stub.cc" "${CMAKE_BINARY_DIR}/colour-names.cc" COPYONLY)
+  message(WARNING "'gperf' program not found, using stub colour-names.hh; colors names will not be parsed")
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/colour-names-stub.hh" "${CMAKE_CURRENT_BINARY_DIR}/colour-names.hh" COPYONLY)
 endif(APP_GPERF)
 
 set(conky_sources
@@ -253,7 +254,7 @@ endif(BUILD_HTTP)
 
 if(BUILD_X11)
   set(x11
-    display-x11.cc 
+    display-x11.cc
     display-x11.hh
     x11-settings.cc
     x11-settings.h
@@ -274,11 +275,10 @@ if(BUILD_GUI)
   endif(BUILD_MOUSE_EVENTS OR BUILD_XINPUT)
 endif(BUILD_GUI)
 
-
 if(BUILD_WAYLAND)
   set(wl_srcs
     wl.cc
-    wl.h 
+    wl.h
     display-wayland.cc
     display-wayland.hh
     xdg-shell-protocol.c
@@ -356,10 +356,10 @@ endif(BUILD_ICONV)
 
 if(BUILD_NCURSES)
   set(ncurses_srcs
-  nc.cc
-  nc.h
-  display-ncurses.cc
-  display-ncurses.hh
+    nc.cc
+    nc.h
+    display-ncurses.cc
+    display-ncurses.hh
   )
   set(optional_sources ${optional_sources} ${ncurses_srcs})
 endif(BUILD_NCURSES)
