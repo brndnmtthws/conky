@@ -23,7 +23,7 @@ data/defconfig.h
 *.a
 /config.h
 /build.h
-src/colour-names.cc
+src/colour-names.hh
 
 # Compiler cache
 .cache
