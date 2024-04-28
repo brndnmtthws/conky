@@ -1,8 +1,0 @@
-# This file exports the Eigen3::Eigen CMake target which should be passed to the
-# target_link_libraries command.
-
-@PACKAGE_INIT@
-
-if (NOT TARGET Eigen3::Eigen)
-  include ("${CMAKE_CURRENT_LIST_DIR}/Eigen3Targets.cmake")
-endif (NOT TARGET Eigen3::Eigen)

@@ -266,6 +266,11 @@ option(BUILD_PULSEAUDIO
 option(BUILD_INTEL_BACKLIGHT
   "Enable support for Intel backlight" false)
 
+option(ENABLE_SEE "Enable SSE support" true)
+dependent_option(ENABLE_SEE2 "Enable SSE2 support" true
+  "ENABLE_SEE" false
+  "SSE2 requires SSE to be enabled")
+
 run_dependency_checks()
 
 message(STATUS "CMAKE_C_FLAGS: " ${CMAKE_C_FLAGS})

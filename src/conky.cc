@@ -264,11 +264,10 @@ static const char *suffixes[] = {_nop("B"),   _nop("KiB"), _nop("MiB"),
 
 /* text size */
 
-conky::point<int> text_start;  /* text start position in window */
-conky::point<int> text_offset; /* offset for start position */
-conky::point<int> text_size =
-    conky::point<int>::One(); /* initially 1 so no zero-sized window is created
-                               */
+conky::vec2i text_start;  /* text start position in window */
+conky::vec2i text_offset; /* offset for start position */
+conky::vec2i text_size =
+    conky::vec2i::One(); /* initially 1 so no zero-sized window is created */
 
 #endif /* BUILD_GUI */
 
@@ -858,7 +857,7 @@ void update_text_area() {
   if (fixed_size == 0)
 #endif
   {
-    text_size = conky::point<int>(dpi_scale(minimum_width.get(*state)), 0);
+    text_size = conky::vec2i(dpi_scale(minimum_width.get(*state)), 0);
     last_font_height = font_height();
     for_each_line(text_buffer, text_size_updater);
     text_size.x += 1;
@@ -910,12 +909,12 @@ void update_text_area() {
 
   if (own_window.get(*state) && (fixed_pos == 0)) {
     int border_total = get_border_total();
-    text_start = conky::point<int>::repeat(border_total);
-    window.geometry.pos = conky::point<int>(x, y) - text_start;
+    text_start = conky::vec2i::uniform(border_total);
+    window.geometry.pos = conky::vec2i(x, y) - text_start;
   } else
 #endif
   {
-    text_start = conky::point<int>(x, y);
+    text_start = conky::vec2i(x, y);
   }
   /* update lua window globals */
   llua_update_window_table(conky::rect<int>(text_start, text_size));
@@ -1582,7 +1581,7 @@ void draw_stuff() {
   llua_draw_pre_hook();
 
 #ifdef BUILD_IMLIB2
-  text_offset = conky::point<int>::Zero();
+  text_offset = conky::vec2i::Zero();
   cimlib_render(text_start.x, text_start.y, window.geometry.width,
                 window.geometry.height, imlib_cache_flush_interval.get(*state),
                 imlib_draw_blended.get(*state));
@@ -1595,11 +1594,11 @@ void draw_stuff() {
 
     selected_font = 0;
     if (draw_shades.get(*state) && !draw_outline.get(*state)) {
-      text_offset = conky::point<int>::One();
+      text_offset = conky::vec2i::One();
       set_foreground_color(default_shade_color.get(*state));
       draw_mode = draw_mode_t::BG;
       draw_text();
-      text_offset = conky::point<int>::Zero();
+      text_offset = conky::vec2i::Zero();
     }
 
     if (draw_outline.get(*state)) {
@@ -1608,13 +1607,13 @@ void draw_stuff() {
       for (int ix = -1; ix < 2; ix++) {
         for (int iy = -1; iy < 2; iy++) {
           if (ix == 0 && iy == 0) { continue; }
-          text_offset = conky::point<int>(ix, iy);
+          text_offset = conky::vec2i(ix, iy);
           set_foreground_color(default_outline_color.get(*state));
           draw_mode = draw_mode_t::OUTLINE;
           draw_text();
         }
       }
-      text_offset = conky::point<int>::Zero();
+      text_offset = conky::vec2i::Zero();
     }
 
     selected_font = 0;

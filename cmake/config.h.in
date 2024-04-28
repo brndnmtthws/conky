@@ -143,6 +143,11 @@
 #cmakedefine BUILD_HSV_GRADIENT 1
 
 #cmakedefine HAVE_STATFS64 1
+
+#cmakedefine ENABLE_SEE 1
+
+#cmakedefine ENABLE_SEE2 1
+
 #ifndef HAVE_STATFS64
 #define statfs64 statfs
 #endif

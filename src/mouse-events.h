@@ -145,12 +145,12 @@ struct mouse_event {
 
 struct mouse_positioned_event : public mouse_event {
   /// @brief Position relative to event window
-  point<size_t> pos;
+  vec2<size_t> pos;
   /// @brief Position relative to desktop/root window
-  point<size_t> pos_absolute;
+  vec2<size_t> pos_absolute;
 
-  mouse_positioned_event(mouse_event_t type, point<size_t> pos,
-                         point<size_t> pos_absolute)
+  mouse_positioned_event(mouse_event_t type, vec2<size_t> pos,
+                         vec2<size_t> pos_absolute)
       : mouse_event(type), pos(pos), pos_absolute(pos_absolute){};
 
   void push_lua_data(lua_State *L) const;
@@ -187,8 +187,7 @@ inline modifier_state_t x11_modifier_state(unsigned int mods) {
 struct mouse_move_event : public mouse_positioned_event {
   modifier_state_t mods;  // held buttons and modifiers (ctrl, shift, ...)
 
-  mouse_move_event(point<size_t> pos,
-                   point<size_t> pos_absolute,
+  mouse_move_event(vec2<size_t> pos, vec2<size_t> pos_absolute,
                    modifier_state_t mods = 0)
       : mouse_positioned_event{mouse_event_t::MOVE, pos, pos_absolute},
         mods(mods){};
@@ -232,7 +231,7 @@ struct mouse_scroll_event : public mouse_positioned_event {
   modifier_state_t mods;  // held buttons and modifiers (ctrl, shift, ...)
   scroll_direction_t direction;
 
-  mouse_scroll_event(point<size_t> pos, point<size_t> pos_absolute,
+  mouse_scroll_event(vec2<size_t> pos, vec2<size_t> pos_absolute,
                      scroll_direction_t direction, modifier_state_t mods = 0)
       : mouse_positioned_event{mouse_event_t::SCROLL, pos, pos_absolute},
         direction(direction),
@@ -245,8 +244,8 @@ struct mouse_button_event : public mouse_positioned_event {
   modifier_state_t mods;  // held buttons and modifiers (ctrl, shift, ...)
   mouse_button_t button;
 
-  mouse_button_event(mouse_event_t type, point<size_t> pos,
-                     point<size_t> pos_absolute, mouse_button_t button,
+  mouse_button_event(mouse_event_t type, vec2<size_t> pos,
+                     vec2<size_t> pos_absolute, mouse_button_t button,
                      modifier_state_t mods = 0)
       : mouse_positioned_event{type, pos, pos_absolute},
         button(button),
@@ -256,8 +255,8 @@ struct mouse_button_event : public mouse_positioned_event {
 };
 
 struct mouse_crossing_event : public mouse_positioned_event {
-  mouse_crossing_event(mouse_event_t type, point<size_t> pos,
-                       point<size_t> pos_absolute)
+  mouse_crossing_event(mouse_event_t type, vec2<size_t> pos,
+                       vec2<size_t> pos_absolute)
       : mouse_positioned_event{type, pos, pos_absolute} {};
 };
 #endif /* BUILD_MOUSE_EVENTS */
@@ -314,8 +313,8 @@ struct xi_event_data {
   Window root;
   Window event;
   Window child;
-  conky::point<double> pos_absolute;
-  conky::point<double> pos;
+  conky::vec2d pos_absolute;
+  conky::vec2d pos;
   int flags;
   /// pressed button mask
   std::bitset<32> buttons;
@@ -336,7 +335,7 @@ struct xi_event_data {
   std::optional<double> valuator_relative_value(valuator_t valuator) const;
 
   std::vector<std::tuple<int, XEvent *>> generate_events(
-      Window target, Window child, conky::point<double> target_pos) const;
+      Window target, Window child, conky::vec2d target_pos) const;
 };
 
 #endif /* BUILD_XINPUT */

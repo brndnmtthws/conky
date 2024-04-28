@@ -450,8 +450,8 @@ xi_event_data *xi_event_data::read_cookie(Display *display, const void *data) {
       .root = source->root,
       .event = source->event,
       .child = source->child,
-      .pos_absolute = point<double>{source->root_x, source->root_y},
-      .pos = point<double>{source->event_x, source->event_y},
+      .pos_absolute = vec2d{source->root_x, source->root_y},
+      .pos = vec2d{source->event_x, source->event_y},
       .flags = source->flags,
       .buttons = buttons,
       .valuators = valuators,
@@ -501,7 +501,7 @@ std::optional<double> xi_event_data::valuator_relative_value(
 }
 
 std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(
-    Window target, Window child, conky::point<double> target_pos) const {
+    Window target, Window child, conky::vec2d target_pos) const {
   std::vector<std::tuple<int, XEvent *>> result{};
 
   if (this->evtype == XI_Motion) {

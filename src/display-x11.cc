@@ -73,10 +73,10 @@
 // TODO: cleanup externs (move to conky.h ?)
 #ifdef OWN_WINDOW
 extern int fixed_size, fixed_pos;
-#endif                                /* OWN_WINDOW */
-extern conky::point<int> text_start;  /* text start position in window */
-extern conky::point<int> text_offset; /* offset for start position */
-extern conky::point<int>
+#endif                           /* OWN_WINDOW */
+extern conky::vec2i text_start;  /* text start position in window */
+extern conky::vec2i text_offset; /* offset for start position */
+extern conky::vec2i
     text_size; /* initially 1 so no zero-sized window is created */
 extern double current_update_time, next_update_time, last_update_time;
 void update_text();
@@ -271,7 +271,7 @@ bool display_output_x11::main_loop_wait(double t) {
       int border_total = get_border_total();
 
       /* resize window if it isn't right size */
-      auto border_size = point<long>::repeat(border_total * 2);
+      vec2<long> border_size = vec2<long>::uniform(border_total * 2);
       if ((fixed_size == 0) &&
           (text_size + border_size != window.geometry.size)) {
         window.geometry.size = text_size + border_size;
@@ -633,7 +633,7 @@ bool handle_event<x_event_handler::CONFIGURE>(
   if (ev.type != ConfigureNotify) return false;
 
   if (own_window.get(*state)) {
-    auto configure_size = point(ev.xconfigure.width, ev.xconfigure.height);
+    auto configure_size = vec2i(ev.xconfigure.width, ev.xconfigure.height);
     /* if window size isn't what's expected, set fixed size */
     if (configure_size != window.geometry.size) {
       if (window.geometry.size.surface() != 0) { fixed_size = 1; }
@@ -645,11 +645,11 @@ bool handle_event<x_event_handler::CONFIGURE>(
       {
         XWindowAttributes attrs;
         if (XGetWindowAttributes(display, window.window, &attrs) != 0) {
-          window.geometry.size = point(attrs.width, attrs.height);
+          window.geometry.size = vec2i(attrs.width, attrs.height);
         }
       }
 
-      auto border_total = point<int>::repeat(get_border_total() * 2);
+      auto border_total = vec2i::uniform(get_border_total() * 2);
       auto new_text_size = window.geometry.size - border_total;
 
       text_size = new_text_size;
@@ -683,7 +683,7 @@ bool handle_event<x_event_handler::BORDER_CROSSING>(
   if (ev.type != EnterNotify && ev.type != LeaveNotify) return false;
   if (window.xi_opcode != 0) return true;  // handled by mouse_input already
 
-  auto crossing_pos = point(ev.xcrossing.x_root, ev.xcrossing.y_root);
+  auto crossing_pos = vec2i(ev.xcrossing.x_root, ev.xcrossing.y_root);
   bool over_conky = window.geometry.contains(crossing_pos);
 
   if ((!over_conky && ev.xcrossing.type == LeaveNotify) ||
@@ -691,8 +691,8 @@ bool handle_event<x_event_handler::BORDER_CROSSING>(
     llua_mouse_hook(mouse_crossing_event(
         ev.xcrossing.type == EnterNotify ? mouse_event_t::AREA_ENTER
                                          : mouse_event_t::AREA_LEAVE,
-        point<int>(ev.xcrossing.x, ev.xcrossing.y),
-        point<int>(ev.xcrossing.x_root, ev.xcrossing.y_root)));
+        vec2i(ev.xcrossing.x, ev.xcrossing.y),
+        vec2i(ev.xcrossing.x_root, ev.xcrossing.y_root)));
   }
   return true;
 }
@@ -936,7 +936,7 @@ void display_output_x11::draw_arc(int x, int y, int w, int h, int a1, int a2) {
 
 void display_output_x11::move_win(int x, int y) {
 #ifdef OWN_WINDOW
-  window.geometry.pos = point(x, y);
+  window.geometry.pos = vec2i(x, y);
   XMoveWindow(display, window.window, x, y);
 #endif /* OWN_WINDOW */
 }

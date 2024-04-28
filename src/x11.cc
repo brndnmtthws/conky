@@ -565,7 +565,7 @@ void x11_init_window(lua::state &l, bool own) {
 #endif /* BUILD_ARGB */
 
       if (own_window_type.get(l) == window_type::DOCK) {
-        window.geometry.pos = conky::point<int>::Zero();
+        window.geometry.pos = conky::vec2i::Zero();
       }
       /* Parent is root window so WM can take control */
       window.window = XCreateWindow(display, window.root, window.geometry.x,
@@ -766,7 +766,7 @@ void x11_init_window(lua::state &l, bool own) {
     if (window.window == None) { window.window = window.desktop; }
 
     if (XGetWindowAttributes(display, window.window, &attrs) != 0) {
-      window.geometry.size = conky::point(attrs.width, attrs.height);
+      window.geometry.size = conky::vec2i(attrs.width, attrs.height);
     }
 
     NORM_ERR("drawing to desktop window");
@@ -1293,7 +1293,7 @@ void propagate_xinput_event(const conky::xi_event_data *ev) {
 
   Window target = window.root;
   Window child = None;
-  conky::point<int> target_pos = ev->pos;
+  conky::vec2i target_pos = ev->pos;
   {
     std::vector<Window> below = query_x11_windows_at_pos(
         display, ev->pos_absolute,
@@ -1309,7 +1309,7 @@ void propagate_xinput_event(const conky::xi_event_data *ev) {
       XTranslateCoordinates(display, window.desktop, ev->event,
                             ev->pos_absolute.x, ev->pos_absolute.y, &read_x,
                             &read_y, &child);
-      target_pos = conky::point<int>(read_x, read_y);
+      target_pos = conky::vec2i(read_x, read_y);
     }
   }
 
@@ -1358,7 +1358,7 @@ void propagate_x11_event(XEvent &ev, const void *cookie) {
   /* forward the event to the window below conky (e.g. caja) or desktop */
   {
     std::vector<Window> below = query_x11_windows_at_pos(
-        display, conky::point<int>(ev.xbutton.x_root, ev.xbutton.y_root),
+        display, conky::vec2i(ev.xbutton.x_root, ev.xbutton.y_root),
         [](XWindowAttributes &a) { return a.map_state == IsViewable; });
     auto it = std::remove_if(below.begin(), below.end(),
                              [](Window w) { return w == window.window; });
@@ -1476,7 +1476,7 @@ std::vector<Window> query_x11_windows(Display *display, bool eager) {
   return result;
 }
 
-Window query_x11_window_at_pos(Display *display, conky::point<int> pos) {
+Window query_x11_window_at_pos(Display *display, conky::vec2i pos) {
   Window root = DefaultVRootWindow(display);
 
   // these values are ignored but NULL can't be passed to XQueryPointer.
@@ -1493,7 +1493,7 @@ Window query_x11_window_at_pos(Display *display, conky::point<int> pos) {
 }
 
 std::vector<Window> query_x11_windows_at_pos(
-    Display *display, conky::point<int> pos,
+    Display *display, conky::vec2i pos,
     std::function<bool(XWindowAttributes &)> predicate, bool eager) {
   std::vector<Window> result;
 

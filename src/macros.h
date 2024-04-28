@@ -16,6 +16,10 @@
 #define UNLIKELY(x) (!!(x))
 #endif  // defined(__clang__) || defined(__GNUC__)
 
+// Assertion with custom error message.
+#define assert_print(cond, error) \
+  (LIKELY(cond) ? static_cast<void>(0) : CRIT_ERR(error))
+
 // Assumptions are contracts which are expected to be upheld by the developer
 // 100% of the time. They help the compiler significantly optimize code, but
 // cause UB if not upheld. As such, they are not a substitute for proper error
@@ -34,8 +38,7 @@
 #define ASSUME(cond) static_cast<void>(!!(cond))
 #endif /* compiler selection */
 #else  /* DEBUG */
-#define ASSUME(cond) \
-  (LIKELY(cond) ? static_cast<void>(0) : CRIT_ERR("assertion " #cond " failed"))
+#define ASSUME(cond) assert_print(cond, "assertion " #cond " failed")
 #endif /* NDEBUG */
 
 // UNREACHABLE is used to mark unreachable part of code execution which helps
