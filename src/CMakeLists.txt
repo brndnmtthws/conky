@@ -20,6 +20,9 @@
 
 include_directories(${conky_includes})
 
+# always include the binary dir
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 if(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
   # include config output dir
   include_directories(${CMAKE_BINARY_DIR}/data)
@@ -59,7 +62,6 @@ if(APP_GPERF)
     OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/colour-names.hh"
     COMMAND ${APP_GPERF} --ignore-case -LC++ -Zcolor_name_hash -t -7 -m1 -C -E
   )
-  include_directories(${CMAKE_CURRENT_BINARY_DIR})
 else(APP_GPERF)
   message(WARNING "'gperf' program not found, using stub colour-names.hh; colors names will not be parsed")
   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/colour-names-stub.hh" "${CMAKE_CURRENT_BINARY_DIR}/colour-names.hh" COPYONLY)
@@ -304,9 +306,6 @@ if(BUILD_WAYLAND)
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-protocol.c
     COMMAND ${Wayland_SCANNER} private-code ${WLR_LAYER_SHELL_PROT_DEF} wlr-layer-shell-protocol.c
     DEPENDS wlr-layer-shell-client-protocol.h)
-
-  # include output dir in include path
-  include_directories(${CMAKE_CURRENT_BINARY_DIR})
 endif(BUILD_WAYLAND)
 
 if(BUILD_HDDTEMP)
