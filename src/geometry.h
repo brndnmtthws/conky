@@ -369,13 +369,13 @@ struct vec
     return Traits::test_neq(this->value, other.value);
   }
 
-  template <typename = std::enable_if<Traits::Signed, bool>>
-  vec<T, Length> operator-() const {
+  std::enable_if_t<Traits::Signed, vec<T, Length>> operator-() const {
     return vec<T, Length>(
         Traits::mul(this->value, Traits::load_uniform(static_cast<T>(-1))));
   }
-  // vec<T, Length> abs() const { return vec<T, Length>(this->value.abs());
-  // }
+  std::enable_if_t<Traits::Signed, vec<T, Length>> abs() const {
+    return vec<T, Length>(Traits::abs(this->value));
+  }
 
   inline T distance_squared(vec<T, Length> other) const {
     auto a = Traits::sub(other.value, this->value);

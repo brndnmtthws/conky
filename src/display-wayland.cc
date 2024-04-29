@@ -156,9 +156,9 @@ static int os_create_anonymous_file(off_t size) {
 #ifdef OWN_WINDOW
 extern int fixed_size, fixed_pos;
 #endif
-extern conky::point<int> text_start;  /* text start position in window */
-extern conky::point<int> text_offset; /* offset for start position */
-extern conky::point<int>
+extern conky::vec2i text_start;  /* text start position in window */
+extern conky::vec2i text_offset; /* offset for start position */
+extern conky::vec2i
     text_size; /* initially 1 so no zero-sized window is created */
 extern double current_update_time, next_update_time, last_update_time;
 void update_text();
@@ -418,15 +418,15 @@ void window_layer_surface_set_size(struct window *window) {
 }
 
 #ifdef BUILD_MOUSE_EVENTS
-static std::map<wl_pointer *, point<size_t>> last_known_positions{};
+static std::map<wl_pointer *, vec2<size_t>> last_known_positions{};
 
 static void on_pointer_enter(void *data, wl_pointer *pointer,
                              std::uint32_t serial, wl_surface *surface,
                              wl_fixed_t surface_x, wl_fixed_t surface_y) {
   auto w = reinterpret_cast<struct window *>(data);
 
-  auto pos = point<size_t>(wl_fixed_to_double(surface_x),
-                           wl_fixed_to_double(surface_y));
+  auto pos =
+      vec2d(wl_fixed_to_double(surface_x), wl_fixed_to_double(surface_y));
   last_known_positions[pointer] = pos;
   auto pos_abs = w->rectangle.pos + pos;
 
@@ -450,8 +450,8 @@ static void on_pointer_motion(void *data, struct wl_pointer *pointer,
                               wl_fixed_t surface_y) {
   auto w = reinterpret_cast<struct window *>(data);
 
-  auto pos = point<size_t>(wl_fixed_to_double(surface_x),
-                           wl_fixed_to_double(surface_y));
+  auto pos =
+      vec2d(wl_fixed_to_double(surface_x), wl_fixed_to_double(surface_y));
   last_known_positions[pointer] = pos;
   auto pos_abs = w->rectangle.pos + pos;
 
@@ -1198,7 +1198,7 @@ struct window *window_create(struct wl_surface *surface, struct wl_shm *shm,
   struct window *window;
   window = new struct window;
 
-  window->rectangle.pos = point<size_t>::Zero();
+  window->rectangle.pos = vec2<size_t>::Zero();
   window->rectangle.size = point(width, height);
   window->scale = 0;
   window->pending_scale = 1;
@@ -1238,7 +1238,7 @@ void window_destroy(struct window *window) {
 
 void window_resize(struct window *window, int width, int height) {
   window_free_buffer(window);
-  window->rectangle.size = conky::point<int>(width, height);
+  window->rectangle.size = conky::vec2i(width, height);
   window_allocate_buffer(window);
   window_layer_surface_set_size(window);
 }

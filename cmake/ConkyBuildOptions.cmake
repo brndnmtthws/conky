@@ -266,9 +266,9 @@ option(BUILD_PULSEAUDIO
 option(BUILD_INTEL_BACKLIGHT
   "Enable support for Intel backlight" false)
 
-option(ENABLE_SEE "Enable SSE support" true)
-dependent_option(ENABLE_SEE2 "Enable SSE2 support" true
-  "ENABLE_SEE" false
+option(ENABLE_SSE "Enable SSE support" true)
+dependent_option(ENABLE_SSE2 "Enable SSE2 support" true
+  "ENABLE_SSE" false
   "SSE2 requires SSE to be enabled")
 
 run_dependency_checks()

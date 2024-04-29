@@ -144,9 +144,9 @@
 
 #cmakedefine HAVE_STATFS64 1
 
-#cmakedefine ENABLE_SEE 1
+#cmakedefine ENABLE_SSE 1
 
-#cmakedefine ENABLE_SEE2 1
+#cmakedefine ENABLE_SSE2 1
 
 #ifndef HAVE_STATFS64
 #define statfs64 statfs

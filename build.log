@@ -1,0 +1,2063 @@
+In file included from /data/code/FOSS/conky/src/geometry.h:7,
+                 from /data/code/FOSS/conky/src/mouse-events.h:30,
+                 from /data/code/FOSS/conky/src/llua.h:36,
+                 from /data/code/FOSS/conky/src/x11.h:52,
+                 from /data/code/FOSS/conky/src/main.cc:40:
+/data/code/FOSS/conky/src/simd.h:54:35: error: expected unqualified-id before ‘)’ token
+   54 |   constexpr std::array<T, Length>() { return this->value; };
+      |                                   ^
+/data/code/FOSS/conky/src/simd.h:85:17: error: ‘simd_repr’ does not name a type
+   85 |   static inline simd_repr load_zero() { return array_repr_aligned{0}; }
+      |                 ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:85:17: note: (perhaps ‘typename conky::simd::_base_types<T, Length>::simd_repr’ was intended)
+/data/code/FOSS/conky/src/simd.h:86:17: error: ‘simd_repr’ does not name a type
+   86 |   static inline simd_repr load_uniform(T value) {
+      |                 ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:86:17: note: (perhaps ‘typename conky::simd::_base_types<T, Length>::simd_repr’ was intended)
+/data/code/FOSS/conky/src/simd.h:89:17: error: ‘simd_repr’ does not name a type
+   89 |   static inline simd_repr loadu(const T *data) {
+      |                 ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:89:17: note: (perhaps ‘typename conky::simd::_base_types<T, Length>::simd_repr’ was intended)
+/data/code/FOSS/conky/src/simd.h:94:17: error: ‘simd_repr’ does not name a type
+   94 |   static inline simd_repr load(const T *data) {
+      |                 ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:94:17: note: (perhaps ‘typename conky::simd::_base_types<T, Length>::simd_repr’ was intended)
+/data/code/FOSS/conky/src/simd.h:99:17: error: ‘simd_repr’ does not name a type
+   99 |   static inline simd_repr load(const array_repr_aligned &value) {
+      |                 ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:99:17: note: (perhaps ‘typename conky::simd::_base_types<T, Length>::simd_repr’ was intended)
+/data/code/FOSS/conky/src/simd.h:102:37: error: ‘simd_repr’ has not been declared
+  102 |   static inline void store(T *data, simd_repr source) {
+      |                                     ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:106:17: error: ‘array_repr’ does not name a type
+  106 |   static inline array_repr to_array(simd_repr source) {
+      |                 ^~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:106:17: note: (perhaps ‘typename conky::simd::_base_types<T, Length>::array_repr’ was intended)
+/data/code/FOSS/conky/src/simd.h:110:17: error: ‘simd_repr’ does not name a type
+  110 |   static inline simd_repr from_array(const array_repr_aligned source) {
+      |                 ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:110:17: note: (perhaps ‘typename conky::simd::_base_types<T, Length>::simd_repr’ was intended)
+/data/code/FOSS/conky/src/simd.h: In static member function ‘static void conky::simd::_load_store<T, Length>::store(T*, int)’:
+/data/code/FOSS/conky/src/simd.h:103:22: error: request for member ‘begin’ in ‘source’, which is of non-class type ‘int’
+  103 |     std::copy(source.begin(), source.begin() + Length, data);
+      |                      ^~~~~
+/data/code/FOSS/conky/src/simd.h:103:38: error: request for member ‘begin’ in ‘source’, which is of non-class type ‘int’
+  103 |     std::copy(source.begin(), source.begin() + Length, data);
+      |                                      ^~~~~
+/data/code/FOSS/conky/src/simd.h: At global scope:
+/data/code/FOSS/conky/src/simd.h:134:9: error: expected nested-name-specifier before ‘Args’
+  134 |   using Args;
+      |         ^~~~
+/data/code/FOSS/conky/src/simd.h:135:9: error: expected nested-name-specifier before ‘Return’
+  135 |   using Return;
+      |         ^~~~~~
+/data/code/FOSS/conky/src/simd.h:138:17: error: ‘Return’ does not name a type
+  138 |   static inline Return operator()(const Args &args) {
+      |                 ^~~~~~
+/data/code/FOSS/conky/src/simd.h:147:29: error: ‘simd_repr’ was not declared in this scope
+  147 |     using Args = std::tuple<simd_repr, simd_repr>;                          \
+      |                             ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:160:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  160 | BINARY_OP_BASE_IMPL(ADD, +)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:147:40: error: ‘simd_repr’ was not declared in this scope
+  147 |     using Args = std::tuple<simd_repr, simd_repr>;                          \
+      |                                        ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:160:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  160 | BINARY_OP_BASE_IMPL(ADD, +)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:147:49: error: template argument 1 is invalid
+  147 |     using Args = std::tuple<simd_repr, simd_repr>;                          \
+      |                                                 ^
+/data/code/FOSS/conky/src/simd.h:160:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  160 | BINARY_OP_BASE_IMPL(ADD, +)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:147:49: error: template argument 2 is invalid
+  147 |     using Args = std::tuple<simd_repr, simd_repr>;                          \
+      |                                                 ^
+/data/code/FOSS/conky/src/simd.h:160:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  160 | BINARY_OP_BASE_IMPL(ADD, +)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:148:20: error: ‘simd_repr’ does not name a type
+  148 |     using Return = simd_repr;                                               \
+      |                    ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:160:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  160 | BINARY_OP_BASE_IMPL(ADD, +)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:151:19: error: ‘Return’ does not name a type
+  151 |     static inline Return operator()(const Args &args) {                     \
+      |                   ^~~~~~
+/data/code/FOSS/conky/src/simd.h:160:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  160 | BINARY_OP_BASE_IMPL(ADD, +)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:147:29: error: ‘simd_repr’ was not declared in this scope
+  147 |     using Args = std::tuple<simd_repr, simd_repr>;                          \
+      |                             ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:161:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  161 | BINARY_OP_BASE_IMPL(SUB, -)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:147:40: error: ‘simd_repr’ was not declared in this scope
+  147 |     using Args = std::tuple<simd_repr, simd_repr>;                          \
+      |                                        ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:161:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  161 | BINARY_OP_BASE_IMPL(SUB, -)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:147:49: error: template argument 1 is invalid
+  147 |     using Args = std::tuple<simd_repr, simd_repr>;                          \
+      |                                                 ^
+/data/code/FOSS/conky/src/simd.h:161:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  161 | BINARY_OP_BASE_IMPL(SUB, -)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:147:49: error: template argument 2 is invalid
+  147 |     using Args = std::tuple<simd_repr, simd_repr>;                          \
+      |                                                 ^
+/data/code/FOSS/conky/src/simd.h:161:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  161 | BINARY_OP_BASE_IMPL(SUB, -)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:148:20: error: ‘simd_repr’ does not name a type
+  148 |     using Return = simd_repr;                                               \
+      |                    ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:161:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  161 | BINARY_OP_BASE_IMPL(SUB, -)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:151:19: error: ‘Return’ does not name a type
+  151 |     static inline Return operator()(const Args &args) {                     \
+      |                   ^~~~~~
+/data/code/FOSS/conky/src/simd.h:161:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  161 | BINARY_OP_BASE_IMPL(SUB, -)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:147:29: error: ‘simd_repr’ was not declared in this scope
+  147 |     using Args = std::tuple<simd_repr, simd_repr>;                          \
+      |                             ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:162:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  162 | BINARY_OP_BASE_IMPL(MUL, *)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:147:40: error: ‘simd_repr’ was not declared in this scope
+  147 |     using Args = std::tuple<simd_repr, simd_repr>;                          \
+      |                                        ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:162:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  162 | BINARY_OP_BASE_IMPL(MUL, *)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:147:49: error: template argument 1 is invalid
+  147 |     using Args = std::tuple<simd_repr, simd_repr>;                          \
+      |                                                 ^
+/data/code/FOSS/conky/src/simd.h:162:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  162 | BINARY_OP_BASE_IMPL(MUL, *)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:147:49: error: template argument 2 is invalid
+  147 |     using Args = std::tuple<simd_repr, simd_repr>;                          \
+      |                                                 ^
+/data/code/FOSS/conky/src/simd.h:162:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  162 | BINARY_OP_BASE_IMPL(MUL, *)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:148:20: error: ‘simd_repr’ does not name a type
+  148 |     using Return = simd_repr;                                               \
+      |                    ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:162:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  162 | BINARY_OP_BASE_IMPL(MUL, *)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:151:19: error: ‘Return’ does not name a type
+  151 |     static inline Return operator()(const Args &args) {                     \
+      |                   ^~~~~~
+/data/code/FOSS/conky/src/simd.h:162:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  162 | BINARY_OP_BASE_IMPL(MUL, *)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:147:29: error: ‘simd_repr’ was not declared in this scope
+  147 |     using Args = std::tuple<simd_repr, simd_repr>;                          \
+      |                             ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:163:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  163 | BINARY_OP_BASE_IMPL(DIV, /)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:147:40: error: ‘simd_repr’ was not declared in this scope
+  147 |     using Args = std::tuple<simd_repr, simd_repr>;                          \
+      |                                        ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:163:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  163 | BINARY_OP_BASE_IMPL(DIV, /)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:147:49: error: template argument 1 is invalid
+  147 |     using Args = std::tuple<simd_repr, simd_repr>;                          \
+      |                                                 ^
+/data/code/FOSS/conky/src/simd.h:163:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  163 | BINARY_OP_BASE_IMPL(DIV, /)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:147:49: error: template argument 2 is invalid
+  147 |     using Args = std::tuple<simd_repr, simd_repr>;                          \
+      |                                                 ^
+/data/code/FOSS/conky/src/simd.h:163:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  163 | BINARY_OP_BASE_IMPL(DIV, /)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:148:20: error: ‘simd_repr’ does not name a type
+  148 |     using Return = simd_repr;                                               \
+      |                    ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:163:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  163 | BINARY_OP_BASE_IMPL(DIV, /)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:151:19: error: ‘Return’ does not name a type
+  151 |     static inline Return operator()(const Args &args) {                     \
+      |                   ^~~~~~
+/data/code/FOSS/conky/src/simd.h:163:1: note: in expansion of macro ‘BINARY_OP_BASE_IMPL’
+  163 | BINARY_OP_BASE_IMPL(DIV, /)
+      | ^~~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:171:29: error: ‘simd_repr’ was not declared in this scope
+  171 |     using Args = std::tuple<simd_repr>;                               \
+      |                             ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:183:1: note: in expansion of macro ‘UNARY_OP_BASE_IMPL’
+  183 | UNARY_OP_BASE_IMPL(SQRT, std::sqrt)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:171:38: error: template argument 1 is invalid
+  171 |     using Args = std::tuple<simd_repr>;                               \
+      |                                      ^
+/data/code/FOSS/conky/src/simd.h:183:1: note: in expansion of macro ‘UNARY_OP_BASE_IMPL’
+  183 | UNARY_OP_BASE_IMPL(SQRT, std::sqrt)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:172:20: error: ‘simd_repr’ does not name a type
+  172 |     using Return = simd_repr;                                         \
+      |                    ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:183:1: note: in expansion of macro ‘UNARY_OP_BASE_IMPL’
+  183 | UNARY_OP_BASE_IMPL(SQRT, std::sqrt)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:175:19: error: ‘Return’ does not name a type
+  175 |     static inline Return operator()(const Args &args) {               \
+      |                   ^~~~~~
+/data/code/FOSS/conky/src/simd.h:183:1: note: in expansion of macro ‘UNARY_OP_BASE_IMPL’
+  183 | UNARY_OP_BASE_IMPL(SQRT, std::sqrt)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:171:29: error: ‘simd_repr’ was not declared in this scope
+  171 |     using Args = std::tuple<simd_repr>;                               \
+      |                             ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:184:1: note: in expansion of macro ‘UNARY_OP_BASE_IMPL’
+  184 | UNARY_OP_BASE_IMPL(ABS, std::abs)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:171:38: error: template argument 1 is invalid
+  171 |     using Args = std::tuple<simd_repr>;                               \
+      |                                      ^
+/data/code/FOSS/conky/src/simd.h:184:1: note: in expansion of macro ‘UNARY_OP_BASE_IMPL’
+  184 | UNARY_OP_BASE_IMPL(ABS, std::abs)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:172:20: error: ‘simd_repr’ does not name a type
+  172 |     using Return = simd_repr;                                         \
+      |                    ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:184:1: note: in expansion of macro ‘UNARY_OP_BASE_IMPL’
+  184 | UNARY_OP_BASE_IMPL(ABS, std::abs)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:175:19: error: ‘Return’ does not name a type
+  175 |     static inline Return operator()(const Args &args) {               \
+      |                   ^~~~~~
+/data/code/FOSS/conky/src/simd.h:184:1: note: in expansion of macro ‘UNARY_OP_BASE_IMPL’
+  184 | UNARY_OP_BASE_IMPL(ABS, std::abs)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:171:29: error: ‘simd_repr’ was not declared in this scope
+  171 |     using Args = std::tuple<simd_repr>;                               \
+      |                             ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:189:1: note: in expansion of macro ‘UNARY_OP_BASE_IMPL’
+  189 | UNARY_OP_BASE_IMPL(NEG, neg)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:171:38: error: template argument 1 is invalid
+  171 |     using Args = std::tuple<simd_repr>;                               \
+      |                                      ^
+/data/code/FOSS/conky/src/simd.h:189:1: note: in expansion of macro ‘UNARY_OP_BASE_IMPL’
+  189 | UNARY_OP_BASE_IMPL(NEG, neg)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:172:20: error: ‘simd_repr’ does not name a type
+  172 |     using Return = simd_repr;                                         \
+      |                    ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:189:1: note: in expansion of macro ‘UNARY_OP_BASE_IMPL’
+  189 | UNARY_OP_BASE_IMPL(NEG, neg)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:175:19: error: ‘Return’ does not name a type
+  175 |     static inline Return operator()(const Args &args) {               \
+      |                   ^~~~~~
+/data/code/FOSS/conky/src/simd.h:189:1: note: in expansion of macro ‘UNARY_OP_BASE_IMPL’
+  189 | UNARY_OP_BASE_IMPL(NEG, neg)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:195:27: error: ‘simd_repr’ was not declared in this scope
+  195 |   using Args = std::tuple<simd_repr, simd_repr>;
+      |                           ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:195:38: error: ‘simd_repr’ was not declared in this scope
+  195 |   using Args = std::tuple<simd_repr, simd_repr>;
+      |                                      ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:195:47: error: template argument 1 is invalid
+  195 |   using Args = std::tuple<simd_repr, simd_repr>;
+      |                                               ^
+/data/code/FOSS/conky/src/simd.h:195:47: error: template argument 2 is invalid
+/data/code/FOSS/conky/src/simd.h:199:41: error: ‘Args’ does not name a type
+  199 |   static inline Return operator()(const Args &args) {
+      |                                         ^~~~
+/data/code/FOSS/conky/src/simd.h:199:24: warning: ‘static conky::simd::_simd_op_impl<T, Length, conky::simd::_simd_op::EQ>::Return conky::simd::_simd_op_impl<T, Length, conky::simd::_simd_op::EQ>::operator()(const int&)’ may be a static member function only with ‘-std=c++23’ or ‘-std=gnu++23’ [-Wc++23-extensions]
+  199 |   static inline Return operator()(const Args &args) {
+      |                        ^~~~~~~~
+/data/code/FOSS/conky/src/simd.h: In static member function ‘static conky::simd::_simd_op_impl<T, Length, conky::simd::_simd_op::EQ>::Return conky::simd::_simd_op_impl<T, Length, conky::simd::_simd_op::EQ>::operator()(const int&)’:
+/data/code/FOSS/conky/src/simd.h:200:34: error: no matching function for call to ‘get<0>(const int&)’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+In file included from /usr/include/c++/13.2.1/bits/stl_algobase.h:64,
+                 from /usr/include/c++/13.2.1/string:51,
+                 from /usr/include/c++/13.2.1/bits/locale_classes.h:40,
+                 from /usr/include/c++/13.2.1/bits/ios_base.h:41,
+                 from /usr/include/c++/13.2.1/ios:44,
+                 from /usr/include/c++/13.2.1/ostream:40,
+                 from /usr/include/c++/13.2.1/iostream:41,
+                 from /data/code/FOSS/conky/src/main.cc:31:
+/usr/include/c++/13.2.1/bits/stl_pair.h:1035:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type& std::get(pair<_Tp1, _Tp2>&)’
+ 1035 |     get(pair<_Tp1, _Tp2>& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1035:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: note:   mismatched types ‘std::pair<_Tp1, _Tp2>’ and ‘const int’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1040:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&& std::get(pair<_Tp1, _Tp2>&&)’
+ 1040 |     get(pair<_Tp1, _Tp2>&& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1040:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: note:   mismatched types ‘std::pair<_Tp1, _Tp2>’ and ‘const int’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1045:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr const typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type& std::get(const pair<_Tp1, _Tp2>&)’
+ 1045 |     get(const pair<_Tp1, _Tp2>& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1045:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: note:   mismatched types ‘const std::pair<_Tp1, _Tp2>’ and ‘const int’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1050:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr const typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&& std::get(const pair<_Tp1, _Tp2>&&)’
+ 1050 |     get(const pair<_Tp1, _Tp2>&& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1050:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: note:   mismatched types ‘const std::pair<_Tp1, _Tp2>’ and ‘const int’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1059:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_T1, _T2>&)’
+ 1059 |     get(pair<_Tp, _Up>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1059:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_T1, _T2>&)’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:200:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1064:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_T1, _T2>&)’
+ 1064 |     get(const pair<_Tp, _Up>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1064:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_T1, _T2>&)’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:200:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1069:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_T1, _T2>&&)’
+ 1069 |     get(pair<_Tp, _Up>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1069:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_T1, _T2>&&)’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:200:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1074:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_T1, _T2>&&)’
+ 1074 |     get(const pair<_Tp, _Up>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1074:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_T1, _T2>&&)’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:200:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1079:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_Up, _Tp>&)’
+ 1079 |     get(pair<_Up, _Tp>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1079:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_Up, _Tp>&)’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:200:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1084:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_Up, _Tp>&)’
+ 1084 |     get(const pair<_Up, _Tp>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1084:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_Up, _Tp>&)’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:200:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1089:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_Up, _Tp>&&)’
+ 1089 |     get(pair<_Up, _Tp>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1089:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_Up, _Tp>&&)’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:200:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1094:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_Up, _Tp>&&)’
+ 1094 |     get(const pair<_Up, _Tp>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1094:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_Up, _Tp>&&)’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:200:34: note:   expected a type, got ‘0’
+In file included from /usr/include/c++/13.2.1/bits/memory_resource.h:47,
+                 from /usr/include/c++/13.2.1/string:58:
+/usr/include/c++/13.2.1/tuple:1789:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >& std::get(tuple<_UTypes ...>&)’
+ 1789 |     get(tuple<_Elements...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1789:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: note:   mismatched types ‘std::tuple<_UTypes ...>’ and ‘const int’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1795:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >& std::get(const tuple<_UTypes ...>&)’
+ 1795 |     get(const tuple<_Elements...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1795:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: note:   mismatched types ‘const std::tuple<_UTypes ...>’ and ‘const int’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1801:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >&& std::get(tuple<_UTypes ...>&&)’
+ 1801 |     get(tuple<_Elements...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1801:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: note:   mismatched types ‘std::tuple<_UTypes ...>’ and ‘const int’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1810:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >&& std::get(const tuple<_UTypes ...>&&)’
+ 1810 |     get(const tuple<_Elements...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1810:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: note:   mismatched types ‘const std::tuple<_UTypes ...>’ and ‘const int’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1820:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__enable_if_t<(__i >= sizeof... (_Types))> std::get(const tuple<_UTypes ...>&)’ (deleted)
+ 1820 |     get(const tuple<_Elements...>&) = delete;
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1820:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: note:   mismatched types ‘const std::tuple<_UTypes ...>’ and ‘const int’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1830:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(tuple<_UTypes ...>&)’
+ 1830 |     get(tuple<_Types...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1830:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(tuple<_UTypes ...>&)’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:200:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/tuple:1841:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(tuple<_UTypes ...>&&)’
+ 1841 |     get(tuple<_Types...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1841:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(tuple<_UTypes ...>&&)’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:200:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/tuple:1852:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const tuple<_UTypes ...>&)’
+ 1852 |     get(const tuple<_Types...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1852:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const tuple<_UTypes ...>&)’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:200:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/tuple:1864:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const tuple<_UTypes ...>&&)’
+ 1864 |     get(const tuple<_Types...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1864:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const tuple<_UTypes ...>&&)’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:200:34: note:   expected a type, got ‘0’
+In file included from /usr/include/c++/13.2.1/functional:65,
+                 from /data/code/FOSS/conky/src/luamm.hh:26,
+                 from /data/code/FOSS/conky/src/setting.hh:31,
+                 from /data/code/FOSS/conky/src/common.h:33,
+                 from /data/code/FOSS/conky/src/conky.h:44,
+                 from /data/code/FOSS/conky/src/main.cc:35:
+/usr/include/c++/13.2.1/array:384:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr _Tp& std::get(array<_Tp, _Nm>&)’
+  384 |     get(array<_Tp, _Nm>& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:384:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: note:   mismatched types ‘std::array<_Tp, _Nm>’ and ‘const int’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/array:393:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr _Tp&& std::get(array<_Tp, _Nm>&&)’
+  393 |     get(array<_Tp, _Nm>&& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:393:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: note:   mismatched types ‘std::array<_Tp, _Nm>’ and ‘const int’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/array:402:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr const _Tp& std::get(const array<_Tp, _Nm>&)’
+  402 |     get(const array<_Tp, _Nm>& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:402:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: note:   mismatched types ‘const std::array<_Tp, _Nm>’ and ‘const int’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/array:411:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr const _Tp&& std::get(const array<_Tp, _Nm>&&)’
+  411 |     get(const array<_Tp, _Nm>&& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:411:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: note:   mismatched types ‘const std::array<_Tp, _Nm>’ and ‘const int’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+In file included from /data/code/FOSS/conky/src/simd.h:13:
+/usr/include/c++/13.2.1/variant:1687:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >& std::get(variant<_Types ...>&)’
+ 1687 |     get(variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1687:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: note:   mismatched types ‘std::variant<_Types ...>’ and ‘const int’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1698:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >&& std::get(variant<_Types ...>&&)’
+ 1698 |     get(variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1698:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: note:   mismatched types ‘std::variant<_Types ...>’ and ‘const int’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1709:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >& std::get(const variant<_Types ...>&)’
+ 1709 |     get(const variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1709:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: note:   mismatched types ‘const std::variant<_Types ...>’ and ‘const int’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1720:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >&& std::get(const variant<_Types ...>&&)’
+ 1720 |     get(const variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1720:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: note:   mismatched types ‘const std::variant<_Types ...>’ and ‘const int’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1122:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(variant<_Types ...>&)’
+ 1122 |     get(variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1122:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(variant<_Types ...>&)’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:200:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/variant:1133:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(variant<_Types ...>&&)’
+ 1133 |     get(variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1133:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(variant<_Types ...>&&)’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:200:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/variant:1144:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const variant<_Types ...>&)’
+ 1144 |     get(const variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1144:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const variant<_Types ...>&)’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:200:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/variant:1155:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const variant<_Types ...>&&)’
+ 1155 |     get(const variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1155:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:200:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const variant<_Types ...>&&)’
+  200 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:200:34: note:   expected a type, got ‘0’
+/data/code/FOSS/conky/src/simd.h:200:14: error: there are no arguments to ‘to_array’ that depend on a template parameter, so a declaration of ‘to_array’ must be available [-fpermissive]
+  200 |     auto a = to_array(std::get<0>(args));
+      |              ^~~~~~~~
+/data/code/FOSS/conky/src/simd.h:200:14: note: (if you use ‘-fpermissive’, G++ will accept your code, but allowing the use of an undeclared name is deprecated)
+/data/code/FOSS/conky/src/simd.h:201:34: error: no matching function for call to ‘get<1>(const int&)’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1035:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type& std::get(pair<_Tp1, _Tp2>&)’
+ 1035 |     get(pair<_Tp1, _Tp2>& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1035:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: note:   mismatched types ‘std::pair<_Tp1, _Tp2>’ and ‘const int’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1040:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&& std::get(pair<_Tp1, _Tp2>&&)’
+ 1040 |     get(pair<_Tp1, _Tp2>&& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1040:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: note:   mismatched types ‘std::pair<_Tp1, _Tp2>’ and ‘const int’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1045:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr const typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type& std::get(const pair<_Tp1, _Tp2>&)’
+ 1045 |     get(const pair<_Tp1, _Tp2>& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1045:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: note:   mismatched types ‘const std::pair<_Tp1, _Tp2>’ and ‘const int’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1050:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr const typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&& std::get(const pair<_Tp1, _Tp2>&&)’
+ 1050 |     get(const pair<_Tp1, _Tp2>&& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1050:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: note:   mismatched types ‘const std::pair<_Tp1, _Tp2>’ and ‘const int’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1059:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_T1, _T2>&)’
+ 1059 |     get(pair<_Tp, _Up>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1059:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_T1, _T2>&)’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:201:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1064:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_T1, _T2>&)’
+ 1064 |     get(const pair<_Tp, _Up>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1064:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_T1, _T2>&)’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:201:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1069:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_T1, _T2>&&)’
+ 1069 |     get(pair<_Tp, _Up>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1069:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_T1, _T2>&&)’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:201:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1074:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_T1, _T2>&&)’
+ 1074 |     get(const pair<_Tp, _Up>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1074:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_T1, _T2>&&)’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:201:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1079:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_Up, _Tp>&)’
+ 1079 |     get(pair<_Up, _Tp>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1079:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_Up, _Tp>&)’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:201:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1084:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_Up, _Tp>&)’
+ 1084 |     get(const pair<_Up, _Tp>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1084:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_Up, _Tp>&)’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:201:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1089:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_Up, _Tp>&&)’
+ 1089 |     get(pair<_Up, _Tp>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1089:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_Up, _Tp>&&)’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:201:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1094:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_Up, _Tp>&&)’
+ 1094 |     get(const pair<_Up, _Tp>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1094:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_Up, _Tp>&&)’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:201:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/tuple:1789:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >& std::get(tuple<_UTypes ...>&)’
+ 1789 |     get(tuple<_Elements...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1789:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: note:   mismatched types ‘std::tuple<_UTypes ...>’ and ‘const int’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1795:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >& std::get(const tuple<_UTypes ...>&)’
+ 1795 |     get(const tuple<_Elements...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1795:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: note:   mismatched types ‘const std::tuple<_UTypes ...>’ and ‘const int’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1801:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >&& std::get(tuple<_UTypes ...>&&)’
+ 1801 |     get(tuple<_Elements...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1801:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: note:   mismatched types ‘std::tuple<_UTypes ...>’ and ‘const int’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1810:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >&& std::get(const tuple<_UTypes ...>&&)’
+ 1810 |     get(const tuple<_Elements...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1810:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: note:   mismatched types ‘const std::tuple<_UTypes ...>’ and ‘const int’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1820:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__enable_if_t<(__i >= sizeof... (_Types))> std::get(const tuple<_UTypes ...>&)’ (deleted)
+ 1820 |     get(const tuple<_Elements...>&) = delete;
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1820:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: note:   mismatched types ‘const std::tuple<_UTypes ...>’ and ‘const int’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1830:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(tuple<_UTypes ...>&)’
+ 1830 |     get(tuple<_Types...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1830:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(tuple<_UTypes ...>&)’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:201:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/tuple:1841:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(tuple<_UTypes ...>&&)’
+ 1841 |     get(tuple<_Types...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1841:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(tuple<_UTypes ...>&&)’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:201:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/tuple:1852:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const tuple<_UTypes ...>&)’
+ 1852 |     get(const tuple<_Types...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1852:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const tuple<_UTypes ...>&)’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:201:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/tuple:1864:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const tuple<_UTypes ...>&&)’
+ 1864 |     get(const tuple<_Types...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1864:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const tuple<_UTypes ...>&&)’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:201:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/array:384:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr _Tp& std::get(array<_Tp, _Nm>&)’
+  384 |     get(array<_Tp, _Nm>& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:384:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: note:   mismatched types ‘std::array<_Tp, _Nm>’ and ‘const int’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/array:393:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr _Tp&& std::get(array<_Tp, _Nm>&&)’
+  393 |     get(array<_Tp, _Nm>&& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:393:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: note:   mismatched types ‘std::array<_Tp, _Nm>’ and ‘const int’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/array:402:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr const _Tp& std::get(const array<_Tp, _Nm>&)’
+  402 |     get(const array<_Tp, _Nm>& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:402:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: note:   mismatched types ‘const std::array<_Tp, _Nm>’ and ‘const int’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/array:411:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr const _Tp&& std::get(const array<_Tp, _Nm>&&)’
+  411 |     get(const array<_Tp, _Nm>&& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:411:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: note:   mismatched types ‘const std::array<_Tp, _Nm>’ and ‘const int’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1687:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >& std::get(variant<_Types ...>&)’
+ 1687 |     get(variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1687:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: note:   mismatched types ‘std::variant<_Types ...>’ and ‘const int’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1698:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >&& std::get(variant<_Types ...>&&)’
+ 1698 |     get(variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1698:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: note:   mismatched types ‘std::variant<_Types ...>’ and ‘const int’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1709:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >& std::get(const variant<_Types ...>&)’
+ 1709 |     get(const variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1709:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: note:   mismatched types ‘const std::variant<_Types ...>’ and ‘const int’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1720:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >&& std::get(const variant<_Types ...>&&)’
+ 1720 |     get(const variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1720:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: note:   mismatched types ‘const std::variant<_Types ...>’ and ‘const int’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1122:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(variant<_Types ...>&)’
+ 1122 |     get(variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1122:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(variant<_Types ...>&)’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:201:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/variant:1133:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(variant<_Types ...>&&)’
+ 1133 |     get(variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1133:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(variant<_Types ...>&&)’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:201:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/variant:1144:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const variant<_Types ...>&)’
+ 1144 |     get(const variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1144:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const variant<_Types ...>&)’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:201:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/variant:1155:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const variant<_Types ...>&&)’
+ 1155 |     get(const variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1155:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:201:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const variant<_Types ...>&&)’
+  201 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:201:34: note:   expected a type, got ‘1’
+/data/code/FOSS/conky/src/simd.h:201:14: error: there are no arguments to ‘to_array’ that depend on a template parameter, so a declaration of ‘to_array’ must be available [-fpermissive]
+  201 |     auto b = to_array(std::get<1>(args));
+      |              ^~~~~~~~
+/data/code/FOSS/conky/src/simd.h: At global scope:
+/data/code/FOSS/conky/src/simd.h:209:27: error: ‘simd_repr’ was not declared in this scope
+  209 |   using Args = std::tuple<simd_repr, simd_repr>;
+      |                           ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:209:38: error: ‘simd_repr’ was not declared in this scope
+  209 |   using Args = std::tuple<simd_repr, simd_repr>;
+      |                                      ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:209:47: error: template argument 1 is invalid
+  209 |   using Args = std::tuple<simd_repr, simd_repr>;
+      |                                               ^
+/data/code/FOSS/conky/src/simd.h:209:47: error: template argument 2 is invalid
+/data/code/FOSS/conky/src/simd.h:213:26: error: expected nested-name-specifier before ‘Return’
+  213 |   static inline typename Return operator()(const Args &args) {
+      |                          ^~~~~~
+/data/code/FOSS/conky/src/simd.h:213:26: error: expected ‘;’ at end of member declaration
+  213 |   static inline typename Return operator()(const Args &args) {
+      |                          ^~~~~~
+      |                                ;
+/data/code/FOSS/conky/src/simd.h:213:26: error: ‘int conky::simd::_simd_op_impl<T, Length, conky::simd::_simd_op::NEQ>::Return’ conflicts with a previous declaration
+/data/code/FOSS/conky/src/simd.h:210:9: note: previous declaration ‘using conky::simd::_simd_op_impl<T, Length, conky::simd::_simd_op::NEQ>::Return = bool’
+  210 |   using Return = bool;
+      |         ^~~~~~
+/data/code/FOSS/conky/src/simd.h:213:50: error: ‘Args’ does not name a type
+  213 |   static inline typename Return operator()(const Args &args) {
+      |                                                  ^~~~
+/data/code/FOSS/conky/src/simd.h:213:33: error: ISO C++ forbids declaration of ‘operator()’ with no type [-fpermissive]
+  213 |   static inline typename Return operator()(const Args &args) {
+      |                                 ^~~~~~~~
+/data/code/FOSS/conky/src/simd.h: In member function ‘int conky::simd::_simd_op_impl<T, Length, conky::simd::_simd_op::NEQ>::operator()(const int&)’:
+/data/code/FOSS/conky/src/simd.h:214:34: error: no matching function for call to ‘get<0>(const int&)’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1035:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type& std::get(pair<_Tp1, _Tp2>&)’
+ 1035 |     get(pair<_Tp1, _Tp2>& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1035:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: note:   mismatched types ‘std::pair<_Tp1, _Tp2>’ and ‘const int’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1040:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&& std::get(pair<_Tp1, _Tp2>&&)’
+ 1040 |     get(pair<_Tp1, _Tp2>&& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1040:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: note:   mismatched types ‘std::pair<_Tp1, _Tp2>’ and ‘const int’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1045:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr const typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type& std::get(const pair<_Tp1, _Tp2>&)’
+ 1045 |     get(const pair<_Tp1, _Tp2>& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1045:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: note:   mismatched types ‘const std::pair<_Tp1, _Tp2>’ and ‘const int’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1050:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr const typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&& std::get(const pair<_Tp1, _Tp2>&&)’
+ 1050 |     get(const pair<_Tp1, _Tp2>&& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1050:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: note:   mismatched types ‘const std::pair<_Tp1, _Tp2>’ and ‘const int’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1059:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_T1, _T2>&)’
+ 1059 |     get(pair<_Tp, _Up>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1059:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_T1, _T2>&)’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:214:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1064:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_T1, _T2>&)’
+ 1064 |     get(const pair<_Tp, _Up>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1064:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_T1, _T2>&)’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:214:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1069:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_T1, _T2>&&)’
+ 1069 |     get(pair<_Tp, _Up>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1069:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_T1, _T2>&&)’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:214:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1074:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_T1, _T2>&&)’
+ 1074 |     get(const pair<_Tp, _Up>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1074:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_T1, _T2>&&)’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:214:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1079:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_Up, _Tp>&)’
+ 1079 |     get(pair<_Up, _Tp>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1079:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_Up, _Tp>&)’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:214:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1084:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_Up, _Tp>&)’
+ 1084 |     get(const pair<_Up, _Tp>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1084:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_Up, _Tp>&)’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:214:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1089:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_Up, _Tp>&&)’
+ 1089 |     get(pair<_Up, _Tp>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1089:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_Up, _Tp>&&)’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:214:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1094:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_Up, _Tp>&&)’
+ 1094 |     get(const pair<_Up, _Tp>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1094:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_Up, _Tp>&&)’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:214:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/tuple:1789:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >& std::get(tuple<_UTypes ...>&)’
+ 1789 |     get(tuple<_Elements...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1789:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: note:   mismatched types ‘std::tuple<_UTypes ...>’ and ‘const int’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1795:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >& std::get(const tuple<_UTypes ...>&)’
+ 1795 |     get(const tuple<_Elements...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1795:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: note:   mismatched types ‘const std::tuple<_UTypes ...>’ and ‘const int’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1801:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >&& std::get(tuple<_UTypes ...>&&)’
+ 1801 |     get(tuple<_Elements...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1801:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: note:   mismatched types ‘std::tuple<_UTypes ...>’ and ‘const int’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1810:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >&& std::get(const tuple<_UTypes ...>&&)’
+ 1810 |     get(const tuple<_Elements...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1810:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: note:   mismatched types ‘const std::tuple<_UTypes ...>’ and ‘const int’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1820:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__enable_if_t<(__i >= sizeof... (_Types))> std::get(const tuple<_UTypes ...>&)’ (deleted)
+ 1820 |     get(const tuple<_Elements...>&) = delete;
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1820:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: note:   mismatched types ‘const std::tuple<_UTypes ...>’ and ‘const int’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1830:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(tuple<_UTypes ...>&)’
+ 1830 |     get(tuple<_Types...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1830:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(tuple<_UTypes ...>&)’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:214:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/tuple:1841:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(tuple<_UTypes ...>&&)’
+ 1841 |     get(tuple<_Types...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1841:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(tuple<_UTypes ...>&&)’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:214:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/tuple:1852:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const tuple<_UTypes ...>&)’
+ 1852 |     get(const tuple<_Types...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1852:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const tuple<_UTypes ...>&)’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:214:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/tuple:1864:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const tuple<_UTypes ...>&&)’
+ 1864 |     get(const tuple<_Types...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1864:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const tuple<_UTypes ...>&&)’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:214:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/array:384:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr _Tp& std::get(array<_Tp, _Nm>&)’
+  384 |     get(array<_Tp, _Nm>& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:384:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: note:   mismatched types ‘std::array<_Tp, _Nm>’ and ‘const int’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/array:393:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr _Tp&& std::get(array<_Tp, _Nm>&&)’
+  393 |     get(array<_Tp, _Nm>&& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:393:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: note:   mismatched types ‘std::array<_Tp, _Nm>’ and ‘const int’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/array:402:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr const _Tp& std::get(const array<_Tp, _Nm>&)’
+  402 |     get(const array<_Tp, _Nm>& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:402:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: note:   mismatched types ‘const std::array<_Tp, _Nm>’ and ‘const int’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/array:411:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr const _Tp&& std::get(const array<_Tp, _Nm>&&)’
+  411 |     get(const array<_Tp, _Nm>&& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:411:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: note:   mismatched types ‘const std::array<_Tp, _Nm>’ and ‘const int’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1687:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >& std::get(variant<_Types ...>&)’
+ 1687 |     get(variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1687:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: note:   mismatched types ‘std::variant<_Types ...>’ and ‘const int’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1698:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >&& std::get(variant<_Types ...>&&)’
+ 1698 |     get(variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1698:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: note:   mismatched types ‘std::variant<_Types ...>’ and ‘const int’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1709:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >& std::get(const variant<_Types ...>&)’
+ 1709 |     get(const variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1709:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: note:   mismatched types ‘const std::variant<_Types ...>’ and ‘const int’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1720:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >&& std::get(const variant<_Types ...>&&)’
+ 1720 |     get(const variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1720:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: note:   mismatched types ‘const std::variant<_Types ...>’ and ‘const int’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1122:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(variant<_Types ...>&)’
+ 1122 |     get(variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1122:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(variant<_Types ...>&)’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:214:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/variant:1133:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(variant<_Types ...>&&)’
+ 1133 |     get(variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1133:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(variant<_Types ...>&&)’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:214:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/variant:1144:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const variant<_Types ...>&)’
+ 1144 |     get(const variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1144:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const variant<_Types ...>&)’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:214:34: note:   expected a type, got ‘0’
+/usr/include/c++/13.2.1/variant:1155:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const variant<_Types ...>&&)’
+ 1155 |     get(const variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1155:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:214:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const variant<_Types ...>&&)’
+  214 |     auto a = to_array(std::get<0>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:214:34: note:   expected a type, got ‘0’
+/data/code/FOSS/conky/src/simd.h:214:14: error: there are no arguments to ‘to_array’ that depend on a template parameter, so a declaration of ‘to_array’ must be available [-fpermissive]
+  214 |     auto a = to_array(std::get<0>(args));
+      |              ^~~~~~~~
+/data/code/FOSS/conky/src/simd.h:215:34: error: no matching function for call to ‘get<1>(const int&)’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1035:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type& std::get(pair<_Tp1, _Tp2>&)’
+ 1035 |     get(pair<_Tp1, _Tp2>& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1035:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: note:   mismatched types ‘std::pair<_Tp1, _Tp2>’ and ‘const int’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1040:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&& std::get(pair<_Tp1, _Tp2>&&)’
+ 1040 |     get(pair<_Tp1, _Tp2>&& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1040:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: note:   mismatched types ‘std::pair<_Tp1, _Tp2>’ and ‘const int’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1045:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr const typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type& std::get(const pair<_Tp1, _Tp2>&)’
+ 1045 |     get(const pair<_Tp1, _Tp2>& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1045:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: note:   mismatched types ‘const std::pair<_Tp1, _Tp2>’ and ‘const int’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1050:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr const typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&& std::get(const pair<_Tp1, _Tp2>&&)’
+ 1050 |     get(const pair<_Tp1, _Tp2>&& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1050:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: note:   mismatched types ‘const std::pair<_Tp1, _Tp2>’ and ‘const int’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1059:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_T1, _T2>&)’
+ 1059 |     get(pair<_Tp, _Up>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1059:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_T1, _T2>&)’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:215:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1064:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_T1, _T2>&)’
+ 1064 |     get(const pair<_Tp, _Up>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1064:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_T1, _T2>&)’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:215:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1069:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_T1, _T2>&&)’
+ 1069 |     get(pair<_Tp, _Up>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1069:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_T1, _T2>&&)’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:215:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1074:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_T1, _T2>&&)’
+ 1074 |     get(const pair<_Tp, _Up>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1074:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_T1, _T2>&&)’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:215:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1079:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_Up, _Tp>&)’
+ 1079 |     get(pair<_Up, _Tp>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1079:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_Up, _Tp>&)’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:215:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1084:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_Up, _Tp>&)’
+ 1084 |     get(const pair<_Up, _Tp>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1084:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_Up, _Tp>&)’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:215:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1089:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_Up, _Tp>&&)’
+ 1089 |     get(pair<_Up, _Tp>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1089:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_Up, _Tp>&&)’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:215:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/bits/stl_pair.h:1094:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_Up, _Tp>&&)’
+ 1094 |     get(const pair<_Up, _Tp>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1094:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_Up, _Tp>&&)’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:215:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/tuple:1789:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >& std::get(tuple<_UTypes ...>&)’
+ 1789 |     get(tuple<_Elements...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1789:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: note:   mismatched types ‘std::tuple<_UTypes ...>’ and ‘const int’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1795:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >& std::get(const tuple<_UTypes ...>&)’
+ 1795 |     get(const tuple<_Elements...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1795:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: note:   mismatched types ‘const std::tuple<_UTypes ...>’ and ‘const int’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1801:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >&& std::get(tuple<_UTypes ...>&&)’
+ 1801 |     get(tuple<_Elements...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1801:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: note:   mismatched types ‘std::tuple<_UTypes ...>’ and ‘const int’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1810:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >&& std::get(const tuple<_UTypes ...>&&)’
+ 1810 |     get(const tuple<_Elements...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1810:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: note:   mismatched types ‘const std::tuple<_UTypes ...>’ and ‘const int’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1820:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__enable_if_t<(__i >= sizeof... (_Types))> std::get(const tuple<_UTypes ...>&)’ (deleted)
+ 1820 |     get(const tuple<_Elements...>&) = delete;
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1820:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: note:   mismatched types ‘const std::tuple<_UTypes ...>’ and ‘const int’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/tuple:1830:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(tuple<_UTypes ...>&)’
+ 1830 |     get(tuple<_Types...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1830:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(tuple<_UTypes ...>&)’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:215:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/tuple:1841:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(tuple<_UTypes ...>&&)’
+ 1841 |     get(tuple<_Types...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1841:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(tuple<_UTypes ...>&&)’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:215:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/tuple:1852:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const tuple<_UTypes ...>&)’
+ 1852 |     get(const tuple<_Types...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1852:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const tuple<_UTypes ...>&)’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:215:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/tuple:1864:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const tuple<_UTypes ...>&&)’
+ 1864 |     get(const tuple<_Types...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1864:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const tuple<_UTypes ...>&&)’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:215:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/array:384:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr _Tp& std::get(array<_Tp, _Nm>&)’
+  384 |     get(array<_Tp, _Nm>& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:384:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: note:   mismatched types ‘std::array<_Tp, _Nm>’ and ‘const int’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/array:393:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr _Tp&& std::get(array<_Tp, _Nm>&&)’
+  393 |     get(array<_Tp, _Nm>&& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:393:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: note:   mismatched types ‘std::array<_Tp, _Nm>’ and ‘const int’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/array:402:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr const _Tp& std::get(const array<_Tp, _Nm>&)’
+  402 |     get(const array<_Tp, _Nm>& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:402:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: note:   mismatched types ‘const std::array<_Tp, _Nm>’ and ‘const int’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/array:411:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr const _Tp&& std::get(const array<_Tp, _Nm>&&)’
+  411 |     get(const array<_Tp, _Nm>&& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:411:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: note:   mismatched types ‘const std::array<_Tp, _Nm>’ and ‘const int’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1687:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >& std::get(variant<_Types ...>&)’
+ 1687 |     get(variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1687:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: note:   mismatched types ‘std::variant<_Types ...>’ and ‘const int’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1698:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >&& std::get(variant<_Types ...>&&)’
+ 1698 |     get(variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1698:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: note:   mismatched types ‘std::variant<_Types ...>’ and ‘const int’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1709:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >& std::get(const variant<_Types ...>&)’
+ 1709 |     get(const variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1709:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: note:   mismatched types ‘const std::variant<_Types ...>’ and ‘const int’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1720:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >&& std::get(const variant<_Types ...>&&)’
+ 1720 |     get(const variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1720:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: note:   mismatched types ‘const std::variant<_Types ...>’ and ‘const int’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/usr/include/c++/13.2.1/variant:1122:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(variant<_Types ...>&)’
+ 1122 |     get(variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1122:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(variant<_Types ...>&)’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:215:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/variant:1133:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(variant<_Types ...>&&)’
+ 1133 |     get(variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1133:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(variant<_Types ...>&&)’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:215:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/variant:1144:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const variant<_Types ...>&)’
+ 1144 |     get(const variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1144:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const variant<_Types ...>&)’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:215:34: note:   expected a type, got ‘1’
+/usr/include/c++/13.2.1/variant:1155:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const variant<_Types ...>&&)’
+ 1155 |     get(const variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1155:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:215:34: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const variant<_Types ...>&&)’
+  215 |     auto b = to_array(std::get<1>(args));
+      |                       ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:215:34: note:   expected a type, got ‘1’
+/data/code/FOSS/conky/src/simd.h:215:14: error: there are no arguments to ‘to_array’ that depend on a template parameter, so a declaration of ‘to_array’ must be available [-fpermissive]
+  215 |     auto b = to_array(std::get<1>(args));
+      |              ^~~~~~~~
+/data/code/FOSS/conky/src/simd.h: At global scope:
+/data/code/FOSS/conky/src/simd.h:262:44: error: ‘T’ was not declared in this scope
+  262 |   using array_repr_aligned = aligned_array<T, sizeof(array_repr) / sizeof(T)>;
+      |                                            ^
+/data/code/FOSS/conky/src/simd.h:262:75: error: ‘T’ was not declared in this scope
+  262 |   using array_repr_aligned = aligned_array<T, sizeof(array_repr) / sizeof(T)>;
+      |                                                                           ^
+/data/code/FOSS/conky/src/simd.h:262:77: error: template argument 1 is invalid
+  262 |   using array_repr_aligned = aligned_array<T, sizeof(array_repr) / sizeof(T)>;
+      |                                                                             ^
+/data/code/FOSS/conky/src/simd.h:262:77: error: template argument 2 is invalid
+/data/code/FOSS/conky/src/simd.h:267:56: error: ‘T’ was not declared in this scope
+  267 | struct _load_store<float, Length> : public _base_types<T, Length>,
+      |                                                        ^
+/data/code/FOSS/conky/src/simd.h:267:65: error: template argument 1 is invalid
+  267 | struct _load_store<float, Length> : public _base_types<T, Length>,
+      |                                                                 ^
+/data/code/FOSS/conky/src/simd.h:269:10: error: ‘simd_repr’ does not name a type
+  269 |   static simd_repr load_zero() { return _mm_setzero_ps(); }
+      |          ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:270:10: error: ‘simd_repr’ does not name a type
+  270 |   static simd_repr load_uniform(float value) { return _mm_set1_ps(value); }
+      |          ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:271:10: error: ‘simd_repr’ does not name a type
+  271 |   static simd_repr loadu(const float *in) { return _mm_loadu_ps(in); }
+      |          ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:272:33: error: ‘simd_repr’ has not been declared
+  272 |   static void store(float *out, simd_repr value) {
+      |                                 ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h: In static member function ‘static void conky::simd::_load_store<float, Length>::store(float*, int)’:
+/data/code/FOSS/conky/src/simd.h:273:30: error: cannot convert ‘int’ to ‘__m128’
+  273 |     return _mm_store_ps(out, value);
+      |                              ^~~~~
+      |                              |
+      |                              int
+In file included from /usr/lib/gcc/x86_64-pc-linux-gnu/13.2.1/include/immintrin.h:31,
+                 from /data/code/FOSS/conky/src/simd.h:25:
+/usr/lib/gcc/x86_64-pc-linux-gnu/13.2.1/include/xmmintrin.h:980:34: note:   initializing argument 2 of ‘void _mm_store_ps(float*, __m128)’
+  980 | _mm_store_ps (float *__P, __m128 __A)
+      |                           ~~~~~~~^~~
+/data/code/FOSS/conky/src/simd.h: At global scope:
+/data/code/FOSS/conky/src/simd.h:247:3: error: expected class-name before ‘{’ token
+  247 |   {                                                                        \
+      |   ^
+/data/code/FOSS/conky/src/simd.h:277:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  277 | IMPL_BIN_INTRINSIC(float, 0, 4, ADD, _mm_add_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:248:29: error: ‘simd_repr’ was not declared in this scope
+  248 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                             ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:277:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  277 | IMPL_BIN_INTRINSIC(float, 0, 4, ADD, _mm_add_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:248:40: error: ‘simd_repr’ was not declared in this scope
+  248 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                                        ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:277:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  277 | IMPL_BIN_INTRINSIC(float, 0, 4, ADD, _mm_add_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:248:49: error: template argument 1 is invalid
+  248 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                                                 ^
+/data/code/FOSS/conky/src/simd.h:277:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  277 | IMPL_BIN_INTRINSIC(float, 0, 4, ADD, _mm_add_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:248:49: error: template argument 2 is invalid
+  248 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                                                 ^
+/data/code/FOSS/conky/src/simd.h:277:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  277 | IMPL_BIN_INTRINSIC(float, 0, 4, ADD, _mm_add_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:249:20: error: ‘simd_repr’ does not name a type
+  249 |     using Return = simd_repr;                                              \
+      |                    ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:277:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  277 | IMPL_BIN_INTRINSIC(float, 0, 4, ADD, _mm_add_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:252:19: error: ‘Return’ does not name a type
+  252 |     static inline Return operator()(const Args &args) const {              \
+      |                   ^~~~~~
+/data/code/FOSS/conky/src/simd.h:277:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  277 | IMPL_BIN_INTRINSIC(float, 0, 4, ADD, _mm_add_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:247:3: error: expected class-name before ‘{’ token
+  247 |   {                                                                        \
+      |   ^
+/data/code/FOSS/conky/src/simd.h:278:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  278 | IMPL_BIN_INTRINSIC(float, 0, 4, SUB, _mm_sub_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:248:29: error: ‘simd_repr’ was not declared in this scope
+  248 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                             ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:278:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  278 | IMPL_BIN_INTRINSIC(float, 0, 4, SUB, _mm_sub_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:248:40: error: ‘simd_repr’ was not declared in this scope
+  248 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                                        ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:278:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  278 | IMPL_BIN_INTRINSIC(float, 0, 4, SUB, _mm_sub_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:248:49: error: template argument 1 is invalid
+  248 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                                                 ^
+/data/code/FOSS/conky/src/simd.h:278:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  278 | IMPL_BIN_INTRINSIC(float, 0, 4, SUB, _mm_sub_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:248:49: error: template argument 2 is invalid
+  248 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                                                 ^
+/data/code/FOSS/conky/src/simd.h:278:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  278 | IMPL_BIN_INTRINSIC(float, 0, 4, SUB, _mm_sub_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:249:20: error: ‘simd_repr’ does not name a type
+  249 |     using Return = simd_repr;                                              \
+      |                    ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:278:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  278 | IMPL_BIN_INTRINSIC(float, 0, 4, SUB, _mm_sub_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:252:19: error: ‘Return’ does not name a type
+  252 |     static inline Return operator()(const Args &args) const {              \
+      |                   ^~~~~~
+/data/code/FOSS/conky/src/simd.h:278:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  278 | IMPL_BIN_INTRINSIC(float, 0, 4, SUB, _mm_sub_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:247:3: error: expected class-name before ‘{’ token
+  247 |   {                                                                        \
+      |   ^
+/data/code/FOSS/conky/src/simd.h:279:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  279 | IMPL_BIN_INTRINSIC(float, 0, 4, MUL, _mm_mul_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:248:29: error: ‘simd_repr’ was not declared in this scope
+  248 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                             ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:279:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  279 | IMPL_BIN_INTRINSIC(float, 0, 4, MUL, _mm_mul_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:248:40: error: ‘simd_repr’ was not declared in this scope
+  248 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                                        ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:279:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  279 | IMPL_BIN_INTRINSIC(float, 0, 4, MUL, _mm_mul_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:248:49: error: template argument 1 is invalid
+  248 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                                                 ^
+/data/code/FOSS/conky/src/simd.h:279:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  279 | IMPL_BIN_INTRINSIC(float, 0, 4, MUL, _mm_mul_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:248:49: error: template argument 2 is invalid
+  248 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                                                 ^
+/data/code/FOSS/conky/src/simd.h:279:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  279 | IMPL_BIN_INTRINSIC(float, 0, 4, MUL, _mm_mul_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:249:20: error: ‘simd_repr’ does not name a type
+  249 |     using Return = simd_repr;                                              \
+      |                    ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:279:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  279 | IMPL_BIN_INTRINSIC(float, 0, 4, MUL, _mm_mul_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:252:19: error: ‘Return’ does not name a type
+  252 |     static inline Return operator()(const Args &args) const {              \
+      |                   ^~~~~~
+/data/code/FOSS/conky/src/simd.h:279:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  279 | IMPL_BIN_INTRINSIC(float, 0, 4, MUL, _mm_mul_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:247:3: error: expected class-name before ‘{’ token
+  247 |   {                                                                        \
+      |   ^
+/data/code/FOSS/conky/src/simd.h:280:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  280 | IMPL_BIN_INTRINSIC(float, 0, 4, DIV, _mm_div_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:248:29: error: ‘simd_repr’ was not declared in this scope
+  248 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                             ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:280:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  280 | IMPL_BIN_INTRINSIC(float, 0, 4, DIV, _mm_div_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:248:40: error: ‘simd_repr’ was not declared in this scope
+  248 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                                        ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:280:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  280 | IMPL_BIN_INTRINSIC(float, 0, 4, DIV, _mm_div_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:248:49: error: template argument 1 is invalid
+  248 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                                                 ^
+/data/code/FOSS/conky/src/simd.h:280:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  280 | IMPL_BIN_INTRINSIC(float, 0, 4, DIV, _mm_div_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:248:49: error: template argument 2 is invalid
+  248 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                                                 ^
+/data/code/FOSS/conky/src/simd.h:280:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  280 | IMPL_BIN_INTRINSIC(float, 0, 4, DIV, _mm_div_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:249:20: error: ‘simd_repr’ does not name a type
+  249 |     using Return = simd_repr;                                              \
+      |                    ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:280:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  280 | IMPL_BIN_INTRINSIC(float, 0, 4, DIV, _mm_div_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:252:19: error: ‘Return’ does not name a type
+  252 |     static inline Return operator()(const Args &args) const {              \
+      |                   ^~~~~~
+/data/code/FOSS/conky/src/simd.h:280:1: note: in expansion of macro ‘IMPL_BIN_INTRINSIC’
+  280 | IMPL_BIN_INTRINSIC(float, 0, 4, DIV, _mm_div_ps)
+      | ^~~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:232:3: error: expected class-name before ‘{’ token
+  232 |   {                                                                        \
+      |   ^
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:233:29: error: ‘simd_repr’ was not declared in this scope
+  233 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                             ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:233:40: error: ‘simd_repr’ was not declared in this scope
+  233 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                                        ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:233:49: error: template argument 1 is invalid
+  233 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                                                 ^
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:233:49: error: template argument 2 is invalid
+  233 |     using Args = std::tuple<simd_repr, simd_repr>;                         \
+      |                                                 ^
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:234:20: error: ‘simd_repr’ does not name a type
+  234 |     using Return = simd_repr;                                              \
+      |                    ^~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:237:28: error: expected nested-name-specifier before ‘Return’
+  237 |     static inline typename Return operator()(const Args &args) const {     \
+      |                            ^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:237:28: error: expected ‘;’ at end of member declaration
+  237 |     static inline typename Return operator()(const Args &args) const {     \
+      |                            ^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:237:52: error: ‘Args’ does not name a type
+  237 |     static inline typename Return operator()(const Args &args) const {     \
+      |                                                    ^~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:237:35: error: ISO C++ forbids declaration of ‘operator()’ with no type [-fpermissive]
+  237 |     static inline typename Return operator()(const Args &args) const {     \
+      |                                   ^~~~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h: In member function ‘int conky::simd::_simd_op_impl<float, Length, conky::simd::_simd_op::SQRT>::operator()(const int&) const’:
+/data/code/FOSS/conky/src/simd.h:238:35: error: no matching function for call to ‘get<0>(const int&)’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1035:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type& std::get(pair<_Tp1, _Tp2>&)’
+ 1035 |     get(pair<_Tp1, _Tp2>& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1035:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: note:   mismatched types ‘std::pair<_Tp1, _Tp2>’ and ‘const int’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1040:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&& std::get(pair<_Tp1, _Tp2>&&)’
+ 1040 |     get(pair<_Tp1, _Tp2>&& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1040:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: note:   mismatched types ‘std::pair<_Tp1, _Tp2>’ and ‘const int’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1045:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr const typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type& std::get(const pair<_Tp1, _Tp2>&)’
+ 1045 |     get(const pair<_Tp1, _Tp2>& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1045:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: note:   mismatched types ‘const std::pair<_Tp1, _Tp2>’ and ‘const int’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1050:5: note: candidate: ‘template<long unsigned int _Int, class _Tp1, class _Tp2> constexpr const typename std::tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&& std::get(const pair<_Tp1, _Tp2>&&)’
+ 1050 |     get(const pair<_Tp1, _Tp2>&& __in) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1050:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: note:   mismatched types ‘const std::pair<_Tp1, _Tp2>’ and ‘const int’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1059:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_T1, _T2>&)’
+ 1059 |     get(pair<_Tp, _Up>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1059:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_T1, _T2>&)’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:238:35: note:   expected a type, got ‘0’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1064:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_T1, _T2>&)’
+ 1064 |     get(const pair<_Tp, _Up>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1064:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_T1, _T2>&)’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:238:35: note:   expected a type, got ‘0’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1069:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_T1, _T2>&&)’
+ 1069 |     get(pair<_Tp, _Up>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1069:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_T1, _T2>&&)’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:238:35: note:   expected a type, got ‘0’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1074:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_T1, _T2>&&)’
+ 1074 |     get(const pair<_Tp, _Up>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1074:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_T1, _T2>&&)’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:238:35: note:   expected a type, got ‘0’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1079:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_Up, _Tp>&)’
+ 1079 |     get(pair<_Up, _Tp>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1079:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp& std::get(pair<_Up, _Tp>&)’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:238:35: note:   expected a type, got ‘0’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1084:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_Up, _Tp>&)’
+ 1084 |     get(const pair<_Up, _Tp>& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1084:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp& std::get(const pair<_Up, _Tp>&)’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:238:35: note:   expected a type, got ‘0’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1089:5: note: candidate: ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_Up, _Tp>&&)’
+ 1089 |     get(pair<_Up, _Tp>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1089:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr _Tp&& std::get(pair<_Up, _Tp>&&)’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:238:35: note:   expected a type, got ‘0’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1094:5: note: candidate: ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_Up, _Tp>&&)’
+ 1094 |     get(const pair<_Up, _Tp>&& __p) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/bits/stl_pair.h:1094:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class _Up> constexpr const _Tp&& std::get(const pair<_Up, _Tp>&&)’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:238:35: note:   expected a type, got ‘0’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/tuple:1789:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >& std::get(tuple<_UTypes ...>&)’
+ 1789 |     get(tuple<_Elements...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1789:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: note:   mismatched types ‘std::tuple<_UTypes ...>’ and ‘const int’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/tuple:1795:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >& std::get(const tuple<_UTypes ...>&)’
+ 1795 |     get(const tuple<_Elements...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1795:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: note:   mismatched types ‘const std::tuple<_UTypes ...>’ and ‘const int’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/tuple:1801:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >&& std::get(tuple<_UTypes ...>&&)’
+ 1801 |     get(tuple<_Elements...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1801:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: note:   mismatched types ‘std::tuple<_UTypes ...>’ and ‘const int’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/tuple:1810:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__tuple_element_t<__i, std::tuple<_UTypes ...> >&& std::get(const tuple<_UTypes ...>&&)’
+ 1810 |     get(const tuple<_Elements...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1810:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: note:   mismatched types ‘const std::tuple<_UTypes ...>’ and ‘const int’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/tuple:1820:5: note: candidate: ‘template<long unsigned int __i, class ... _Elements> constexpr std::__enable_if_t<(__i >= sizeof... (_Types))> std::get(const tuple<_UTypes ...>&)’ (deleted)
+ 1820 |     get(const tuple<_Elements...>&) = delete;
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1820:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: note:   mismatched types ‘const std::tuple<_UTypes ...>’ and ‘const int’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/tuple:1830:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(tuple<_UTypes ...>&)’
+ 1830 |     get(tuple<_Types...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1830:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(tuple<_UTypes ...>&)’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:238:35: note:   expected a type, got ‘0’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/tuple:1841:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(tuple<_UTypes ...>&&)’
+ 1841 |     get(tuple<_Types...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1841:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(tuple<_UTypes ...>&&)’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:238:35: note:   expected a type, got ‘0’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/tuple:1852:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const tuple<_UTypes ...>&)’
+ 1852 |     get(const tuple<_Types...>& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1852:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const tuple<_UTypes ...>&)’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:238:35: note:   expected a type, got ‘0’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/tuple:1864:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const tuple<_UTypes ...>&&)’
+ 1864 |     get(const tuple<_Types...>&& __t) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/tuple:1864:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const tuple<_UTypes ...>&&)’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:238:35: note:   expected a type, got ‘0’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/array:384:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr _Tp& std::get(array<_Tp, _Nm>&)’
+  384 |     get(array<_Tp, _Nm>& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:384:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: note:   mismatched types ‘std::array<_Tp, _Nm>’ and ‘const int’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/array:393:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr _Tp&& std::get(array<_Tp, _Nm>&&)’
+  393 |     get(array<_Tp, _Nm>&& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:393:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: note:   mismatched types ‘std::array<_Tp, _Nm>’ and ‘const int’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/array:402:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr const _Tp& std::get(const array<_Tp, _Nm>&)’
+  402 |     get(const array<_Tp, _Nm>& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:402:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: note:   mismatched types ‘const std::array<_Tp, _Nm>’ and ‘const int’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/array:411:5: note: candidate: ‘template<long unsigned int _Int, class _Tp, long unsigned int _Nm> constexpr const _Tp&& std::get(const array<_Tp, _Nm>&&)’
+  411 |     get(const array<_Tp, _Nm>&& __arr) noexcept
+      |     ^~~
+/usr/include/c++/13.2.1/array:411:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: note:   mismatched types ‘const std::array<_Tp, _Nm>’ and ‘const int’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/variant:1687:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >& std::get(variant<_Types ...>&)’
+ 1687 |     get(variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1687:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: note:   mismatched types ‘std::variant<_Types ...>’ and ‘const int’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/variant:1698:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >&& std::get(variant<_Types ...>&&)’
+ 1698 |     get(variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1698:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: note:   mismatched types ‘std::variant<_Types ...>’ and ‘const int’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/variant:1709:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >& std::get(const variant<_Types ...>&)’
+ 1709 |     get(const variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1709:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: note:   mismatched types ‘const std::variant<_Types ...>’ and ‘const int’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/variant:1720:5: note: candidate: ‘template<long unsigned int _Np, class ... _Types> constexpr std::variant_alternative_t<_Np, std::variant<_Types ...> >&& std::get(const variant<_Types ...>&&)’
+ 1720 |     get(const variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1720:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: note:   mismatched types ‘const std::variant<_Types ...>’ and ‘const int’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/variant:1122:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(variant<_Types ...>&)’
+ 1122 |     get(variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1122:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp& std::get(variant<_Types ...>&)’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:238:35: note:   expected a type, got ‘0’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/variant:1133:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(variant<_Types ...>&&)’
+ 1133 |     get(variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1133:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr _Tp&& std::get(variant<_Types ...>&&)’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:238:35: note:   expected a type, got ‘0’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/variant:1144:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const variant<_Types ...>&)’
+ 1144 |     get(const variant<_Types...>& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1144:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp& std::get(const variant<_Types ...>&)’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:238:35: note:   expected a type, got ‘0’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/usr/include/c++/13.2.1/variant:1155:5: note: candidate: ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const variant<_Types ...>&&)’
+ 1155 |     get(const variant<_Types...>&& __v)
+      |     ^~~
+/usr/include/c++/13.2.1/variant:1155:5: note:   template argument deduction/substitution failed:
+/data/code/FOSS/conky/src/simd.h:238:35: error: type/value mismatch at argument 1 in template parameter list for ‘template<class _Tp, class ... _Types> constexpr const _Tp&& std::get(const variant<_Types ...>&&)’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+/data/code/FOSS/conky/src/simd.h:238:35: note:   expected a type, got ‘0’
+  238 |       return Intrinsic(std::get<0>(args));                                 \
+      |                        ~~~~~~~~~~~^~~~~~
+/data/code/FOSS/conky/src/simd.h:281:1: note: in expansion of macro ‘IMPL_UN_INTRINSIC’
+  281 | IMPL_UN_INTRINSIC(float, 0, 4, SQRT, _mm_sqrt_ps)
+      | ^~~~~~~~~~~~~~~~~
+In file included from /usr/include/c++/13.2.1/bits/move.h:37,
+                 from /usr/include/c++/13.2.1/bits/exception_ptr.h:41,
+                 from /usr/include/c++/13.2.1/exception:164,
+                 from /usr/include/c++/13.2.1/ios:41:
+/usr/include/c++/13.2.1/type_traits: In substitution of ‘template<bool _Cond, class _Tp> using std::enable_if_t = typename std::enable_if::type [with bool _Cond = false; _Tp = conky::vec<long unsigned int, 2, true>]’:
+/data/code/FOSS/conky/src/geometry.h:372:52:   required from ‘struct conky::vec<long unsigned int, 2, true>’
+/data/code/FOSS/conky/src/mouse-events.h:148:16:   required from here
+/usr/include/c++/13.2.1/type_traits:2610:11: error: no type named ‘type’ in ‘struct std::enable_if<false, conky::vec<long unsigned int, 2, true> >’
+ 2610 |     using enable_if_t = typename enable_if<_Cond, _Tp>::type;
+      |           ^~~~~~~~~~~
+make[2]: *** [src/CMakeFiles/conky.dir/build.make:76: src/CMakeFiles/conky.dir/main.cc.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:322: src/CMakeFiles/conky.dir/all] Error 2
+make: *** [Makefile:156: all] Error 2
