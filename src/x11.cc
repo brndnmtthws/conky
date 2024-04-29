@@ -192,36 +192,35 @@ __attribute__((noreturn)) static int x11_ioerror_handler(Display *d) {
 /// manage workspaces. These are direct descendants of root and WMs reparent all
 /// children to them.
 ///
-/// @param screen screen to get the (current) virtual root of @return the
-/// virtual root window of the screen
+/// @param screen screen to get the (current) virtual root of
+/// @return the virtual root window of the screen
 static Window VRootWindowOfScreen(Screen *screen) {
-  Window root = screen->root;
-  Display *dpy = screen->display;
+  Window root = RootWindowOfScreen(screen);
+  Display *dpy = DisplayOfScreen(screen);
 
-  Window rootReturn, parentReturn, *children;
-  unsigned int numChildren;
+  /* go look for a virtual root */
+  Atom _NET_VIRTUAL_ROOTS = XInternAtom(display, "_NET_VIRTUAL_ROOTS", True);
+  if (_NET_VIRTUAL_ROOTS == 0) return root;
+
+  auto vroots = x11_atom_window_list(dpy, root, _NET_VIRTUAL_ROOTS);
+
+  if (vroots.empty()) return root;
+
+  Atom _NET_CURRENT_DESKTOP =
+      XInternAtom(display, "_NET_CURRENT_DESKTOP", True);
+  if (_NET_CURRENT_DESKTOP == 0) return root;
+
   Atom actual_type;
   int actual_format;
   unsigned long nitems, bytesafter;
+  int *cardinal;
 
-  /* go look for a virtual root */
-  Atom __SWM_VROOT = ATOM(__SWM_VROOT);
-  if (XQueryTree(dpy, root, &rootReturn, &parentReturn, &children,
-                 &numChildren)) {
-    for (int i = 0; i < numChildren; i++) {
-      Window *newRoot = None;
+  XGetWindowProperty(dpy, root, _NET_CURRENT_DESKTOP, 0, 1, False, XA_CARDINAL,
+                     &actual_type, &actual_format, &nitems, &bytesafter,
+                     (unsigned char **)&cardinal);
 
-      if (XGetWindowProperty(
-              dpy, children[i], __SWM_VROOT, 0, 1, False, XA_WINDOW,
-              &actual_type, &actual_format, &nitems, &bytesafter,
-              reinterpret_cast<unsigned char **>(&newRoot)) == Success &&
-          newRoot != None) {
-        root = *newRoot;
-        break;
-      }
-    }
-    if (children) XFree((char *)children);
-  }
+  if (vroots.size() > *cardinal) { root = vroots[*cardinal]; }
+  XFree(cardinal);
 
   return root;
 }
