@@ -210,10 +210,10 @@ dependent_option(BUILD_MOUSE_EVENTS "Enable mouse event support" true
   "Mouse event support requires Wayland or X11 enabled")
 
 # Lua library options
-dependent_option(BUILD_LUA_CAIRO "Build cairo bindings for Lua" false
+dependent_option(BUILD_LUA_CAIRO "Build Cairo bindings for Lua" false
   "BUILD_GUI" false
   "Cairo Lua bindings depend on BUILD_GUI")
-dependent_option(BUILD_LUA_CAIRO_XLIB "Build Imlib2 bindings for Lua" true
+dependent_option(BUILD_LUA_CAIRO_XLIB "Build Cairo & Xlib interoperability for Lua" true
   "BUILD_X11;BUILD_LUA_CAIRO" false
   "Cairo Xlib Lua bindings require Cairo and X11")
 dependent_option(BUILD_LUA_IMLIB2 "Build Imlib2 bindings for Lua" false

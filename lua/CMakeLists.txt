@@ -79,7 +79,7 @@ if(BUILD_LUA_IMLIB2)
   print_target_properties(conky-imlib2)
 endif(BUILD_LUA_IMLIB2)
 
-if(BUILD_LUA_IMLIB2)
+if(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
   include_directories(${luacairo_includes} ${luaimlib2_includes}
     ${CMAKE_CURRENT_SOURCE_DIR})
   wrap_tolua(luacairo_imlib2_helper_src cairo_imlib2_helper.pkg)
@@ -93,7 +93,7 @@ if(BUILD_LUA_IMLIB2)
     ${luaimlib2_libs}
     toluapp_lib_static)
   set(lua_libs ${lua_libs} conky-cairo_imlib2_helper)
-endif(BUILD_LUA_IMLIB2)
+endif(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
 
 if(BUILD_LUA_RSVG)
   include_directories(${luarsvg_includes} ${CMAKE_CURRENT_SOURCE_DIR})
