@@ -45,8 +45,6 @@
 #endif
 
 /* basic display attributes */
-int display_width;
-int display_height;
 int screen;
 
 /* workarea where window / text is aligned (from _NET_WORKAREA on X11) */

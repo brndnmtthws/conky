@@ -49,6 +49,7 @@
 #include <X11/extensions/XInput2.h>
 #undef COUNT
 #endif /* BUILD_XINPUT */
+#include <X11/Xresource.h>
 
 #include <cstdint>
 #include <iostream>
@@ -82,7 +83,7 @@ int get_border_total();
 extern conky::range_config_setting<int> maximum_width;
 extern Colour current_color;
 #ifdef BUILD_XFT
-static int xft_dpi = -1;
+static float xft_dpi = -1;
 #endif /* BUILD_XFT */
 
 /* for x_fonts */
@@ -147,16 +148,36 @@ struct _x11_stuff_s {
 #endif
 } x11_stuff;
 
+void update_dpi() {
+  // Add XRandR support if used
+  // See dunst PR: https://github.com/dunst-project/dunst/pull/608
+
+#ifdef BUILD_XFT
+  if (xft_dpi > 0) return;
+  if (use_xft.get(*state)) {
+    XrmDatabase db = XrmGetDatabase(display);
+    if (db != nullptr) {
+      char *xrmType;
+      XrmValue xrmValue;
+      if (XrmGetResource(db, "Xft.dpi", "Xft.dpi", &xrmType, &xrmValue)) {
+        xft_dpi = strtof(xrmValue.addr, NULL);
+      }
+    } else {
+      auto dpi = XGetDefault(display, "Xft", "dpi");
+      if (dpi) { xft_dpi = strtof(dpi, nullptr); }
+    }
+  }
+#endif /* BUILD_XFT */
+  if (xft_dpi > 0) return;
+  xft_dpi = static_cast<float>(display_width) * 25.4 /
+            static_cast<float>(DisplayWidthMM(display, screen));
+}
+
 static void X11_create_window() {
   if (!window.window) { return; }
   setup_fonts();
   load_fonts(utf8_mode.get(*state));
-#ifdef BUILD_XFT
-  if (use_xft.get(*state)) {
-    auto dpi = XGetDefault(display, "Xft", "dpi");
-    if (dpi) { xft_dpi = strtol(dpi, nullptr, 10); }
-  }
-#endif                /* BUILD_XFT */
+  update_dpi();
   update_text_area(); /* to position text/window on screen */
 
 #ifdef OWN_WINDOW
@@ -713,19 +734,31 @@ bool handle_event<x_event_handler::PROPERTY_NOTIFY>(
     get_x11_desktop_info(ev.xproperty.display, ev.xproperty.atom);
   }
 
-#ifdef USE_ARGB
-  if (have_argb_visual) return true;
-#endif
+  if (ev.xproperty.atom == 0) return false;
 
-  if (ev.xproperty.atom == ATOM(_XROOTPMAP_ID) ||
-      ev.xproperty.atom == ATOM(_XROOTMAP_ID)) {
-    if (forced_redraw.get(*state)) {
-      draw_stuff();
-      next_update_time = get_time();
-      need_to_update = 1;
+  if (ev.xproperty.atom == XA_RESOURCE_MANAGER) {
+    update_x11_resource_db();
+    update_x11_workarea();
+    xft_dpi = -1;
+    update_dpi();
+    return true;
+  }
+
+  if (!have_argb_visual) {
+    Atom _XROOTPMAP_ID = XInternAtom(display, "_XROOTPMAP_ID", True);
+    Atom _XROOTMAP_ID = XInternAtom(display, "_XROOTMAP_ID", True);
+    if (ev.xproperty.atom == _XROOTPMAP_ID ||
+        ev.xproperty.atom == _XROOTMAP_ID) {
+      if (forced_redraw.get(*state)) {
+        draw_stuff();
+        next_update_time = get_time();
+        need_to_update = 1;
+      }
+      return true;
     }
   }
-  return true;
+
+  return false;
 }
 
 template <>
