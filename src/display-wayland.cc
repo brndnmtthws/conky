@@ -300,7 +300,17 @@ static void output_geometry(void *data, struct wl_output *wl_output, int32_t x,
                             int32_t y, int32_t physical_width,
                             int32_t physical_height, int32_t subpixel,
                             const char *make, const char *model,
-                            int32_t transform) {}
+                            int32_t transform) {
+  // TODO: Add support for proper output management through:
+  // - xdg-output-unstable-v1
+  // Maybe also support (if XDG protocol not reported):
+  // - kde-output-management(-v2)
+  // - wlr-output-management-unstable-v1
+  workarea[0] = x;  // TODO: use xdg_output.logical_position
+  workarea[1] = y;
+  workarea[2] = physical_width;
+  workarea[3] = physical_height;
+}
 
 static void output_mode(void *data, struct wl_output *wl_output, uint32_t flags,
                         int32_t width, int32_t height, int32_t refresh) {}
@@ -913,10 +923,7 @@ void display_output_wayland::move_win(int x, int y) {
   // window.y = y;
   // TODO
 }
-template <typename T, typename>
-T display_output_wayland::dpi_scale(T value) {
-  return value;
-}
+float display_output_wayland::get_dpi_scale() { return 1.0; }
 
 void display_output_wayland::end_draw_stuff() {
   window_commit_buffer(global_window);

@@ -38,6 +38,7 @@
 #include <config.h>      /* defines */
 #include <sys/utsname.h> /* struct uname_s */
 #include <csignal>
+#include <filesystem>
 #include <memory>
 
 #include "colours.h"
@@ -346,7 +347,7 @@ extern conky::simple_config_setting<bool> utf8_mode;
 extern conky::range_config_setting<unsigned int> max_user_text;
 
 /* path to config file */
-extern std::string current_config;
+extern std::filesystem::path current_config;
 
 #define DEFAULT_TEXT_BUFFER_SIZE_S "##DEFAULT_TEXT_BUFFER_SIZE"
 

@@ -38,6 +38,7 @@
 #include <cmath>
 #include <cstdarg>
 #include <ctime>
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -275,7 +276,7 @@ int text_width = 1,
 struct information info;
 
 /* path to config file */
-std::string current_config;
+std::filesystem::path current_config;
 
 /* set to 1 if you want all text to be in uppercase */
 static conky::simple_config_setting<bool> stuff_in_uppercase("uppercase", false,
@@ -864,7 +865,7 @@ void update_text_area() {
     if (text_height < dpi_scale(minimum_height.get(*state))) {
       text_height = dpi_scale(minimum_height.get(*state));
     }
-    int mw = dpi_scale(maximum_width.get(*state));
+    int mw = maximum_width.get(*state);
     if (text_width > mw && mw > 0) { text_width = mw; }
   }
 
@@ -987,7 +988,7 @@ static int text_size_updater(char *s, int special_index) {
   w += get_string_width(s);
 
   if (w > text_width) { text_width = w; }
-  int mw = dpi_scale(maximum_width.get(*state));
+  int mw = maximum_width.get(*state);
   if (text_width > mw && mw > 0) { text_width = mw; }
 
   text_height += last_font_height;
@@ -1051,7 +1052,7 @@ static void draw_string(const char *s) {
   }
 #ifdef BUILD_GUI
   if (display_output() && display_output()->graphical()) {
-    int mw = display_output()->dpi_scale(maximum_width.get(*state));
+    int mw = maximum_width.get(*state);
     if (text_width == mw) {
       /* this means the text is probably pushing the limit,
        * so we'll chop it */
@@ -1121,7 +1122,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 
 #ifdef BUILD_GUI
   if (display_output() && display_output()->graphical()) {
-    mw = display_output()->dpi_scale(maximum_width.get(*state));
+    mw = maximum_width.get(*state);
     font_h = font_height();
     cur_y += font_ascent();
   }
@@ -1960,6 +1961,40 @@ void load_config_file() {
   lua::state &l = *state;
   lua::stack_sentry s(l);
   l.checkstack(2);
+
+  // Extend lua package.path so scripts can use relative paths
+  {
+    struct stat file_stat {};
+
+    std::string path_ext;
+
+    // add XDG directory to lua path
+    auto xdg_path =
+        std::filesystem::path(to_real_path(XDG_CONFIG_FILE)).parent_path();
+    if (stat(xdg_path.c_str(), &file_stat) == 0) {
+      path_ext.push_back(';');
+      path_ext.append(xdg_path);
+      path_ext.append("/?.lua");
+    }
+
+    auto parent_path = current_config.parent_path();
+    if (xdg_path != parent_path && stat(path_ext.c_str(), &file_stat) == 0) {
+      path_ext.push_back(';');
+      path_ext.append(parent_path);
+      path_ext.append("/?.lua");
+    }
+
+    l.getglobal("package");
+    l.getfield(-1, "path");
+
+    auto path = l.tostring(-1);
+    path.append(path_ext);
+    l.pop();
+    l.pushstring(path.c_str());
+
+    l.setfield(-2, "path");
+    l.pop();
+  }
 
   try {
 #ifdef BUILD_BUILTIN_CONFIG

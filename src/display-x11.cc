@@ -657,7 +657,7 @@ bool handle_event<x_event_handler::CONFIGURE>(
 
       text_width = window.width - 2 * border_total;
       text_height = window.height - 2 * border_total;
-      int mw = surface->dpi_scale(maximum_width.get(*state));
+      int mw = maximum_width.get(*state);
       if (text_width > mw && mw > 0) { text_width = mw; }
     }
 
@@ -945,18 +945,14 @@ void display_output_x11::move_win(int x, int y) {
 #endif /* OWN_WINDOW */
 }
 
-const size_t PIXELS_PER_INCH = 96;
-template <typename T, typename>
-T display_output_x11::dpi_scale(T value) {
-#if defined(BUILD_XFT)
+const float PIXELS_PER_INCH = 96.0;
+float display_output_x11::get_dpi_scale() {
+#ifdef BUILD_XFT
   if (use_xft.get(*state) && xft_dpi > 0) {
-    return (value * xft_dpi + (value > 0 ? 48 : -48)) / PIXELS_PER_INCH;
-  } else {
-    return value;
+    return static_cast<float>(xft_dpi) / PIXELS_PER_INCH;
   }
-#else  /* defined(BUILD_XFT) */
-  return value;
-#endif /* defined(BUILD_XFT) */
+#endif /* BUILD_XFT */
+  return 1.0;
 }
 
 void display_output_x11::end_draw_stuff() {

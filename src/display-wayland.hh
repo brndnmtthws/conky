@@ -71,9 +71,7 @@ class display_output_wayland : public display_output_base {
   virtual void fill_rect(int, int, int, int);
   virtual void draw_arc(int, int, int, int, int, int);
   virtual void move_win(int, int);
-  template <typename T, typename = typename std::enable_if<
-                            std::is_arithmetic<T>::value, T>::type>
-  T dpi_scale(T value);
+  virtual float get_dpi_scale();
 
   virtual void end_draw_stuff();
   virtual void clear_text(int);
