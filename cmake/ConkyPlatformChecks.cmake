@@ -145,15 +145,6 @@ endif(NOT
   NOT
   OS_DARWIN)
 
-find_package(Lua "5.3" REQUIRED)
-
-if(NOT LUA_FOUND)
-  message(FATAL_ERROR "Unable to find Lua")
-endif(NOT LUA_FOUND)
-
-set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
-set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIR})
-
 # Check for soundcard header
 if(OS_LINUX)
   check_include_files("linux/soundcard.h" HAVE_SOME_SOUNDCARD_H)
@@ -501,6 +492,12 @@ if(BUILD_WAYLAND)
   set(conky_libs ${conky_libs} ${PANGOFT2_LIBRARIES})
   set(conky_includes ${conky_includes} ${PANGOFT2_INCLUDE_DIRS})
 endif(BUILD_WAYLAND)
+
+find_package(Lua "5.3" REQUIRED)
+
+set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
+set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIR})
+include_directories(3rdparty/toluapp/include)
 
 # Check for libraries used by Lua bindings
 if(BUILD_LUA_CAIRO)

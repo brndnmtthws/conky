@@ -35,7 +35,6 @@ if(BUILD_LUA_CAIRO)
   add_library(conky-cairo SHARED ${luacairo_src})
   set_target_properties(conky-cairo PROPERTIES OUTPUT_NAME "cairo")
 
-  target_include_directories(conky-cairo PRIVATE ${toluapp_includes})
   target_link_libraries(conky-cairo ${luacairo_libs} toluapp_lib_static)
   set(lua_libs ${lua_libs} conky-cairo)
 
@@ -53,7 +52,6 @@ if(BUILD_LUA_CAIRO_XLIB)
   add_library(conky-cairo_xlib SHARED ${luacairoxlib_src})
   set_target_properties(conky-cairo_xlib PROPERTIES OUTPUT_NAME "cairo_xlib")
 
-  target_include_directories(conky-cairo_xlib PRIVATE ${toluapp_includes})
   target_link_libraries(conky-cairo_xlib
     ${luacairoxlib_libs}
     ${luacairo_libs}
@@ -75,7 +73,6 @@ if(BUILD_LUA_IMLIB2)
   add_library(conky-imlib2 SHARED ${luaimlib2_src})
   set_target_properties(conky-imlib2 PROPERTIES OUTPUT_NAME "imlib2")
 
-  target_include_directories(conky-imlib2 PRIVATE ${toluapp_includes})
   target_link_libraries(conky-imlib2 ${luaimlib2_libs} toluapp_lib_static)
   set(lua_libs ${lua_libs} conky-imlib2)
 
@@ -91,7 +88,6 @@ if(BUILD_LUA_IMLIB2)
   set_target_properties(conky-cairo_imlib2_helper
     PROPERTIES OUTPUT_NAME "cairo_imlib2_helper")
 
-  target_include_directories(conky-cairo_imlib2_helper PRIVATE ${toluapp_includes})
   target_link_libraries(conky-cairo_imlib2_helper
     ${luacairo_libs}
     ${luaimlib2_libs}
@@ -106,7 +102,6 @@ if(BUILD_LUA_RSVG)
   add_library(conky-rsvg SHARED ${luarsvg_src})
   set_target_properties(conky-rsvg PROPERTIES OUTPUT_NAME "rsvg")
 
-  target_include_directories(conky-rsvg PRIVATE ${toluapp_includes})
   target_link_libraries(conky-rsvg ${luarsvg_libs} toluapp_lib_static)
   set(lua_libs ${lua_libs} conky-rsvg)
 
