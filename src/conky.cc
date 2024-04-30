@@ -864,7 +864,7 @@ void update_text_area() {
     if (text_height < dpi_scale(minimum_height.get(*state))) {
       text_height = dpi_scale(minimum_height.get(*state));
     }
-    int mw = dpi_scale(maximum_width.get(*state));
+    int mw = maximum_width.get(*state);
     if (text_width > mw && mw > 0) { text_width = mw; }
   }
 
@@ -987,7 +987,7 @@ static int text_size_updater(char *s, int special_index) {
   w += get_string_width(s);
 
   if (w > text_width) { text_width = w; }
-  int mw = dpi_scale(maximum_width.get(*state));
+  int mw = maximum_width.get(*state);
   if (text_width > mw && mw > 0) { text_width = mw; }
 
   text_height += last_font_height;

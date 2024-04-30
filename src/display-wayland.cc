@@ -300,7 +300,17 @@ static void output_geometry(void *data, struct wl_output *wl_output, int32_t x,
                             int32_t y, int32_t physical_width,
                             int32_t physical_height, int32_t subpixel,
                             const char *make, const char *model,
-                            int32_t transform) {}
+                            int32_t transform) {
+  // TODO: Add support for proper output management through:
+  // - xdg-output-unstable-v1
+  // Maybe also support (if XDG protocol not reported):
+  // - kde-output-management(-v2)
+  // - wlr-output-management-unstable-v1
+  workarea.x = x;  // TODO: use xdg_output.logical_position
+  workarea.y = y;
+  workarea.width = physical_width;
+  workarea.height = physical_height;
+}
 
 static void output_mode(void *data, struct wl_output *wl_output, uint32_t flags,
                         int32_t width, int32_t height, int32_t refresh) {}

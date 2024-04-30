@@ -657,7 +657,7 @@ bool handle_event<x_event_handler::CONFIGURE>(
 
       text_width = window.width - 2 * border_total;
       text_height = window.height - 2 * border_total;
-      int mw = surface->dpi_scale(maximum_width.get(*state));
+      int mw = maximum_width.get(*state);
       if (text_width > mw && mw > 0) { text_width = mw; }
     }
 
