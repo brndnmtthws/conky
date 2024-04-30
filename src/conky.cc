@@ -1052,7 +1052,7 @@ static void draw_string(const char *s) {
   }
 #ifdef BUILD_GUI
   if (display_output() && display_output()->graphical()) {
-    int mw = display_output()->dpi_scale(maximum_width.get(*state));
+    int mw = maximum_width.get(*state);
     if (text_width == mw) {
       /* this means the text is probably pushing the limit,
        * so we'll chop it */
@@ -1122,7 +1122,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 
 #ifdef BUILD_GUI
   if (display_output() && display_output()->graphical()) {
-    mw = display_output()->dpi_scale(maximum_width.get(*state));
+    mw = maximum_width.get(*state);
     font_h = font_height();
     cur_y += font_ascent();
   }
