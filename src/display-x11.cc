@@ -947,15 +947,12 @@ void display_output_x11::move_win(int x, int y) {
 
 const float PIXELS_PER_INCH = 96.0;
 float display_output_x11::get_dpi_scale() {
-#if defined(BUILD_XFT)
+#ifdef BUILD_XFT
   if (use_xft.get(*state) && xft_dpi > 0) {
     return static_cast<float>(xft_dpi) / PIXELS_PER_INCH;
-  } else {
-    return 1.0;
   }
-#else  /* defined(BUILD_XFT) */
-  return value;
-#endif /* defined(BUILD_XFT) */
+#endif /* BUILD_XFT */
+  return 1.0;
 }
 
 void display_output_x11::end_draw_stuff() {
