@@ -170,8 +170,6 @@ extern Display *display;
 #endif /* BUILD_X11 */
 extern int screen;
 extern int workarea[4];
-#define display_width workarea[2]
-#define display_height workarea[3]
 
 extern char window_created;
 

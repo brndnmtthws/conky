@@ -368,7 +368,9 @@ static Window find_desktop_window(Window root) {
   Window desktop = root;
 
   /* get subwindows from root */
-  desktop = find_subwindow(root, -1, -1);
+  int display_width = DisplayWidth(display, screen);
+  int display_height = DisplayHeight(display, screen);
+  desktop = find_subwindow(root, display_width, display_height);
   update_x11_workarea();
   desktop = find_subwindow(desktop, workarea[2], workarea[3]);
 
@@ -900,13 +902,11 @@ static Window find_subwindow(Window win, int w, int h) {
 
     for (j = 0; j < n; j++) {
       XWindowAttributes attrs;
-
       if (XGetWindowAttributes(display, children[j], &attrs) != 0) {
         /* Window must be mapped and same size as display or
          * work space */
-        if (attrs.map_state != 0 &&
-            ((attrs.width == display_width && attrs.height == display_height) ||
-             (attrs.width == w && attrs.height == h))) {
+        if (attrs.map_state == IsViewable &&
+            ((attrs.width == w && attrs.height == h))) {
           win = children[j];
           break;
         }
@@ -1135,6 +1135,9 @@ void set_struts(alignment align) {
   Atom strut = ATOM(_NET_WM_STRUT);
   if (strut != None) {
     long sizes[STRUT_COUNT] = {0};
+
+    int display_width = workarea[2] - workarea[0];
+    int display_height = workarea[3] - workarea[1];
 
     switch (horizontal_alignment(align)) {
       case axis_align::START:

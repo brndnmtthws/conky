@@ -169,7 +169,7 @@ void update_dpi() {
   }
 #endif /* BUILD_XFT */
   if (xft_dpi > 0) return;
-  xft_dpi = static_cast<float>(display_width) * 25.4 /
+  xft_dpi = static_cast<float>(DisplayWidth(display, screen)) * 25.4 /
             static_cast<float>(DisplayWidthMM(display, screen));
 }
 
