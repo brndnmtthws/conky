@@ -87,8 +87,10 @@
 #endif
 
 #ifdef BUILD_WLAN
+#include <libnl3/netlink/attr.h>
 #include <libnl3/netlink/cache.h>
 #include <libnl3/netlink/route/link.h>
+#include <uapi/linux/nl80211.h>
 #endif
 
 struct sysfs {
@@ -636,7 +638,7 @@ void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
     if (nl_cache != nullptr) {
       for (nl_index = 0; nl_index < nl_cache_size; nl_index++) {
         nl_link = rtnl_link_get(nl_cache, nl_index);
-        if (strcmp(rtnl_link_get_name(link), name) == 0) {
+        if (strcmp(rtnl_link_get_name(nl_link), name) == 0) {
           // Found the interface
           break;
         }
@@ -651,11 +653,13 @@ void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
       // struct nl_addr *broadcast_addr = rtnl_link_get_broadcast(nl_link);
       // unsigned int max_trasmission_unit = rtnl_link_get_mtu(nl_link);
       // unsigned int trasmission_queue_length = rtnl_link_get_txqlen(nl_link);
-      // uint8_t operational_status = rtnl_link_get_operstate(nl_link); // up/down/dormant/etc.
-      // - to string: char *rtnl_link_operstate2str(uint8_t state, char *buf, size_t size);
-      // uint8_t mode = rtnl_link_get_linkmode(nl_link); // default/dormant
-      // - to string: char *rtnl_link_mode2str(uint8_t mode, char *buf, size_t len);
-      // char *if_alias = rtnl_link_get_ifalias(nl_link); // SNMP IfAlias.
+      // uint8_t operational_status = rtnl_link_get_operstate(nl_link); //
+      // up/down/dormant/etc.
+      // - to string: char *rtnl_link_operstate2str(uint8_t state, char *buf,
+      // size_t size); uint8_t mode = rtnl_link_get_linkmode(nl_link); //
+      // default/dormant
+      // - to string: char *rtnl_link_mode2str(uint8_t mode, char *buf, size_t
+      // len); char *if_alias = rtnl_link_get_ifalias(nl_link); // SNMP IfAlias.
       // unsigned int hardware_type = rtnl_link_get_arptype(nl_link);
       // - to string: char *nl_llproto2str(int arptype, char *buf, size_t len);
       // char *queueing_discipline = rtnl_link_get_qdisc(nl_link);
