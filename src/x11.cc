@@ -108,7 +108,7 @@ bool have_argb_visual = false;
 
 /* local prototypes */
 static Window find_desktop_window(Window *p_root, Window *p_desktop);
-static Window find_subwindow(Window win, int w, int h);
+static Window find_desktop_window_impl(Window win, int w, int h);
 
 /* WARNING, this type not in Xlib spec */
 static int x11_error_handler(Display *d, XErrorEvent *err) {
@@ -370,9 +370,10 @@ static Window find_desktop_window(Window root) {
   /* get subwindows from root */
   int display_width = DisplayWidth(display, screen);
   int display_height = DisplayHeight(display, screen);
-  desktop = find_subwindow(root, display_width, display_height);
+  desktop = find_desktop_window_impl(root, display_width, display_height);
   update_x11_workarea();
-  desktop = find_subwindow(desktop, workarea[2], workarea[3]);
+  desktop = find_desktop_window_impl(desktop, workarea[2] - workarea[0],
+                                     workarea[3] - workarea[1]);
 
   if (desktop != root) {
     NORM_ERR("desktop window (0x%lx) is subwindow of root window (0x%lx)",
@@ -890,7 +891,7 @@ void x11_init_window(lua::state &l, bool own) {
   DBGP("leave x11_init_window()");
 }
 
-static Window find_subwindow(Window win, int w, int h) {
+static Window find_desktop_window_impl(Window win, int w, int h) {
   unsigned int i, j;
   Window troot, parent, *children;
   unsigned int n;
@@ -905,7 +906,7 @@ static Window find_subwindow(Window win, int w, int h) {
       if (XGetWindowAttributes(display, children[j], &attrs) != 0) {
         /* Window must be mapped and same size as display or
          * work space */
-        if (attrs.map_state == IsViewable &&
+        if (attrs.map_state == IsViewable && attrs.override_redirect == false &&
             ((attrs.width == w && attrs.height == h))) {
           win = children[j];
           break;
