@@ -240,6 +240,11 @@ if(BUILD_MYSQL)
   set(optional_sources ${optional_sources} ${mysql})
 endif(BUILD_MYSQL)
 
+if(BUILD_WLAN)
+  set(netlink-conky netlink-conky.cc netlink-conky.h)
+  set(optional_sources ${optional_sources} ${netlink-conky})
+endif(BUILD_WLAN)
+
 if(BUILD_MOC)
   set(moc data/audio/moc.cc data/audio/moc.h)
   set(optional_sources ${optional_sources} ${moc})
