@@ -16,9 +16,13 @@ extern "C" {
 #include <uapi/linux/nl80211.h>
 }
 
-#include <array>
-
 #include "net_stat.h"
+
+#include <map>
+#include <string>
+#include <variant>
+
+using nl_link_id = std::variant<int, char *, std::string>;
 
 class net_device_cache {
   struct nl_sock *sock;
@@ -29,8 +33,16 @@ class net_device_cache {
   net_device_cache();
   ~net_device_cache();
 
+  /// @brief Update link cache and device information.
   void update();
-  void populate_interface(struct net_stat *ns, const char *name);
+
+  struct rtnl_link *get_link(const nl_link_id &id);
+
+  /// @brief Populate `net_stat` interface from netlink cache.
+  ///
+  /// @param ns interface stats struct to populate
+  /// @param link index or name of link
+  void populate_interface(struct net_stat *ns, const nl_link_id &link);
 };
 
 #endif /* _CONKY_NETLINK_H_ */
