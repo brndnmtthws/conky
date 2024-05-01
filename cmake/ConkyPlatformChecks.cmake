@@ -510,7 +510,7 @@ if(BUILD_LUA_CAIRO)
     set(luacairo_libs ${CAIROXLIB_LIBRARIES} ${luacairo_libs})
     set(luacairo_includes ${CAIROXLIB_INCLUDE_DIRS} ${luacairo_includes})
   endif(BUILD_LUA_CAIRO_XLIB)
-  
+
   find_program(APP_PATCH patch)
 
   if(NOT APP_PATCH)
@@ -668,6 +668,16 @@ if(BUILD_DOCS OR BUILD_EXTRAS)
     )
   endif()
 endif(BUILD_DOCS OR BUILD_EXTRAS)
+
+if(BUILD_COLOUR_NAME_MAP)
+  find_program(APP_GPERF gperf)
+
+  if(NOT APP_GPERF)
+    message(FATAL_ERROR "Unable to find program 'gperf' (required at build-time as of Conky v1.20.2)")
+  endif(NOT APP_GPERF)
+
+  mark_as_advanced(APP_GPERF)
+endif(BUILD_COLOUR_NAME_MAP)
 
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
   set(DEBUG true)

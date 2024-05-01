@@ -67,6 +67,8 @@ option(BUILD_EXTRAS "Build extras (includes syntax files for editors)" false)
 
 option(BUILD_I18N "Enable if you want internationalization support" true)
 
+option(BUILD_COLOUR_NAME_MAP "Include mappings of colour name -> RGB (i.e., red -> ff0000)" true)
+
 if(BUILD_I18N)
   set(LOCALE_DIR "${CMAKE_INSTALL_PREFIX}/share/locale"
     CACHE STRING "Directory containing the locales")
