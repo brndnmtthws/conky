@@ -82,9 +82,7 @@ extern int need_to_update;
 int get_border_total();
 extern conky::range_config_setting<int> maximum_width;
 extern Colour current_color;
-#ifdef BUILD_XFT
-static float xft_dpi = -1;
-#endif /* BUILD_XFT */
+static float screen_dpi = -1;
 
 /* for x_fonts */
 struct x_font_list {
@@ -153,24 +151,24 @@ void update_dpi() {
   // See dunst PR: https://github.com/dunst-project/dunst/pull/608
 
 #ifdef BUILD_XFT
-  if (xft_dpi > 0) return;
+  if (screen_dpi > 0) return;
   if (use_xft.get(*state)) {
     XrmDatabase db = XrmGetDatabase(display);
     if (db != nullptr) {
       char *xrmType;
       XrmValue xrmValue;
       if (XrmGetResource(db, "Xft.dpi", "Xft.dpi", &xrmType, &xrmValue)) {
-        xft_dpi = strtof(xrmValue.addr, NULL);
+        screen_dpi = strtof(xrmValue.addr, NULL);
       }
     } else {
       auto dpi = XGetDefault(display, "Xft", "dpi");
-      if (dpi) { xft_dpi = strtof(dpi, nullptr); }
+      if (dpi) { screen_dpi = strtof(dpi, nullptr); }
     }
   }
 #endif /* BUILD_XFT */
-  if (xft_dpi > 0) return;
-  xft_dpi = static_cast<float>(DisplayWidth(display, screen)) * 25.4 /
-            static_cast<float>(DisplayWidthMM(display, screen));
+  if (screen_dpi > 0) return;
+  screen_dpi = static_cast<float>(DisplayWidth(display, screen)) * 25.4 /
+               static_cast<float>(DisplayWidthMM(display, screen));
 }
 
 static void X11_create_window() {
@@ -739,7 +737,7 @@ bool handle_event<x_event_handler::PROPERTY_NOTIFY>(
   if (ev.xproperty.atom == XA_RESOURCE_MANAGER) {
     update_x11_resource_db();
     update_x11_workarea();
-    xft_dpi = -1;
+    screen_dpi = -1;
     update_dpi();
     return true;
   }
@@ -980,11 +978,9 @@ void display_output_x11::move_win(int x, int y) {
 
 const float PIXELS_PER_INCH = 96.0;
 float display_output_x11::get_dpi_scale() {
-#ifdef BUILD_XFT
-  if (use_xft.get(*state) && xft_dpi > 0) {
-    return static_cast<float>(xft_dpi) / PIXELS_PER_INCH;
+  if (screen_dpi > 0) {
+    return static_cast<float>(screen_dpi) / PIXELS_PER_INCH;
   }
-#endif /* BUILD_XFT */
   return 1.0;
 }
 
