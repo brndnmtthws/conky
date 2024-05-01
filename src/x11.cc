@@ -90,6 +90,7 @@ extern "C" {
 #include <xcb/xcb.h>
 #include <xcb/xcb_errors.h>
 #endif
+#include <X11/Xresource.h>
 }
 
 /* some basic X11 stuff */
@@ -106,9 +107,8 @@ struct conky_x11_window window;
 bool have_argb_visual = false;
 
 /* local prototypes */
-static void update_workarea();
 static Window find_desktop_window(Window *p_root, Window *p_desktop);
-static Window find_subwindow(Window win, int w, int h);
+static Window find_desktop_window_impl(Window win, int w, int h);
 
 /* WARNING, this type not in Xlib spec */
 static int x11_error_handler(Display *d, XErrorEvent *err) {
@@ -260,12 +260,14 @@ void init_x11() {
   info.x11.desktop.name.clear();
 
   screen = DefaultScreen(display);
-  display_width = DisplayWidth(display, screen);
-  display_height = DisplayHeight(display, screen);
+
+  XSetErrorHandler(&x11_error_handler);
+  XSetIOErrorHandler(&x11_ioerror_handler);
+
+  update_x11_resource_db(true);
+  update_x11_workarea();
 
   get_x11_desktop_info(display, 0);
-
-  update_workarea();
 
 #ifdef HAVE_XCB_ERRORS
   auto connection = xcb_connect(NULL, NULL);
@@ -275,11 +277,6 @@ void init_x11() {
     }
   }
 #endif /* HAVE_XCB_ERRORS */
-
-  /* WARNING, this type not in Xlib spec */
-  XSetErrorHandler(&x11_error_handler);
-  XSetIOErrorHandler(&x11_ioerror_handler);
-
   DBGP("leave init_x11()");
 }
 
@@ -291,12 +288,39 @@ void deinit_x11() {
   }
 }
 
-static void update_workarea() {
+// Source: dunst
+// https://github.com/bebehei/dunst/blob/1bc3237a359f37905426012c0cca90d71c4b3b18/src/x11/x.c#L463
+void update_x11_resource_db(bool first_run) {
+  XrmDatabase db;
+  XTextProperty prop;
+  Window root;
+
+  XFlush(display);
+
+  root = RootWindow(display, screen);
+
+  XLockDisplay(display);
+  if (XGetTextProperty(display, root, &prop, XA_RESOURCE_MANAGER)) {
+    if (!first_run) {
+      db = XrmGetDatabase(display);
+      XrmDestroyDatabase(db);
+    }
+
+    db = XrmGetStringDatabase((const char *)prop.value);
+    XrmSetDatabase(display, db);
+  }
+  XUnlockDisplay(display);
+
+  XFlush(display);
+  XSync(display, false);
+}
+
+void update_x11_workarea() {
   /* default work area is display */
   workarea[0] = 0;
   workarea[1] = 0;
-  workarea[2] = display_width;
-  workarea[3] = display_height;
+  workarea[2] = DisplayWidth(display, screen);
+  workarea[3] = DisplayHeight(display, screen);
 
 #ifdef BUILD_XINERAMA
   /* if xinerama is being used, adjust workarea to the head's area */
@@ -344,9 +368,12 @@ static Window find_desktop_window(Window root) {
   Window desktop = root;
 
   /* get subwindows from root */
-  desktop = find_subwindow(root, -1, -1);
-  update_workarea();
-  desktop = find_subwindow(desktop, workarea[2], workarea[3]);
+  int display_width = DisplayWidth(display, screen);
+  int display_height = DisplayHeight(display, screen);
+  desktop = find_desktop_window_impl(root, display_width, display_height);
+  update_x11_workarea();
+  desktop = find_desktop_window_impl(desktop, workarea[2] - workarea[0],
+                                     workarea[3] - workarea[1]);
 
   if (desktop != root) {
     NORM_ERR("desktop window (0x%lx) is subwindow of root window (0x%lx)",
@@ -514,13 +541,11 @@ void x11_init_window(lua::state &l, bool own) {
                                     0,
                                     0};
       flags |= CWBackPixel;
-#ifdef BUILD_ARGB
       if (have_argb_visual) {
         attrs.colormap = window.colourmap;
         flags &= ~CWBackPixel;
         flags |= CWBorderPixel | CWColormap;
       }
-#endif /* BUILD_ARGB */
 
       /* Parent is desktop window (which might be a child of root) */
       window.window =
@@ -557,13 +582,11 @@ void x11_init_window(lua::state &l, bool own) {
       Atom xa;
 
       flags |= CWBackPixel;
-#ifdef BUILD_ARGB
       if (have_argb_visual) {
         attrs.colormap = window.colourmap;
         flags &= ~CWBackPixel;
         flags |= CWBorderPixel | CWColormap;
       }
-#endif /* BUILD_ARGB */
 
       if (own_window_type.get(l) == window_type::DOCK) {
         window.x = window.y = 0;
@@ -868,7 +891,7 @@ void x11_init_window(lua::state &l, bool own) {
   DBGP("leave x11_init_window()");
 }
 
-static Window find_subwindow(Window win, int w, int h) {
+static Window find_desktop_window_impl(Window win, int w, int h) {
   unsigned int i, j;
   Window troot, parent, *children;
   unsigned int n;
@@ -880,13 +903,11 @@ static Window find_subwindow(Window win, int w, int h) {
 
     for (j = 0; j < n; j++) {
       XWindowAttributes attrs;
-
       if (XGetWindowAttributes(display, children[j], &attrs) != 0) {
         /* Window must be mapped and same size as display or
          * work space */
-        if (attrs.map_state != 0 &&
-            ((attrs.width == display_width && attrs.height == display_height) ||
-             (attrs.width == w && attrs.height == h))) {
+        if (attrs.map_state == IsViewable && attrs.override_redirect == false &&
+            ((attrs.width == w && attrs.height == h))) {
           win = children[j];
           break;
         }
@@ -1115,6 +1136,9 @@ void set_struts(alignment align) {
   Atom strut = ATOM(_NET_WM_STRUT);
   if (strut != None) {
     long sizes[STRUT_COUNT] = {0};
+
+    int display_width = workarea[2] - workarea[0];
+    int display_height = workarea[3] - workarea[1];
 
     switch (horizontal_alignment(align)) {
       case axis_align::START:
