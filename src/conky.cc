@@ -2101,9 +2101,9 @@ const char *getopt_string =
     ;
 
 const struct option longopts[] = {
-    {"help", 0, nullptr, 'h'},          {"version", 0, nullptr, 'V'},
-    {"quiet", 0, nullptr, 'q'},         {"debug", 0, nullptr, 'D'},
-    {"config", 1, nullptr, 'c'},
+    {"help", 0, nullptr, 'h'},          {"version", 0, nullptr, 'v'},
+    {"short-version", 0, nullptr, 'V'}, {"quiet", 0, nullptr, 'q'},
+    {"debug", 0, nullptr, 'D'},         {"config", 1, nullptr, 'c'},
 #ifdef BUILD_BUILTIN_CONFIG
     {"print-config", 0, nullptr, 'C'},
 #endif
