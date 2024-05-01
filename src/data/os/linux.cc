@@ -518,7 +518,7 @@ void parse_rate_info(struct nlattr *bitrate_attr, char *buf, int buflen) {
                   {NL80211_RATE_INFO_SHORT_GI, NLA_FLAG});
 
   if (nla_parse_nested(rinfo, NL80211_RATE_INFO_MAX, bitrate_attr,
-                       rate_policy.data())) {
+                       const_cast<nla_policy *>(rate_policy))) {
     snprintf(buf, buflen, "failed to parse nested rate attributes!");
     return;
   }
@@ -807,7 +807,8 @@ void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
         // FIXME: return;
       }
       if (nla_parse_nested(sinfo, NL80211_STA_INFO_MAX,
-                           tb[NL80211_ATTR_STA_INFO], stats_policy.data())) {
+                           tb[NL80211_ATTR_STA_INFO],
+                           const_cast<nla_policy *>(stats_policy.data()))) {
         fprintf(stderr, "failed to parse nested attributes!\n");
         // FIXME: return;
       }
@@ -842,7 +843,7 @@ void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
       if (sinfo[NL80211_STA_INFO_BSS_PARAM]) {
         if (nla_parse_nested(binfo, NL80211_STA_BSS_PARAM_MAX,
                              sinfo[NL80211_STA_INFO_BSS_PARAM],
-                             bss_policy.data())) {
+                             const_cast<nla_policy *>((bss_policy.data()))) {
           fprintf(stderr, "failed to parse nested bss parameters!\n");
         } else {
           printf("\n\tbss flags:\t");
