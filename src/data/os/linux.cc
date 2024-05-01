@@ -89,7 +89,13 @@
 #ifdef BUILD_WLAN
 #include <netlink/attr.h>
 #include <netlink/cache.h>
+#include <netlink/genl/ctrl.h>
+#include <netlink/genl/family.h>
+#include <netlink/genl/genl.h>
+#include <netlink/msg.h>
 #include <netlink/route/link.h>
+
+#include <linux/ieee80211.h>
 #include <uapi/linux/nl80211.h>
 #endif
 
@@ -489,6 +495,95 @@ void print_gateway_ip(struct text_object *obj, char *p,
   snprintf(p, p_max_size, "%s", gw_info.ip);
 }
 
+#ifdef BUILD_WLAN
+#define DECL_NLA_POLICY(NAME, SIZE, ...)                          \
+  static const auto NAME = []() {                                 \
+    std::array<struct nla_policy, SIZE> NAME;                     \
+    const std::pair<size_t, uint16_t> kv_pairs[] = {__VA_ARGS__}; \
+    for (const auto &kv : kv_pairs) {                             \
+      NAME[kv.first] = nla_policy{.type = kv.second};             \
+    }                                                             \
+    return NAME;                                                  \
+  }()
+
+void parse_rate_info(struct nlattr *bitrate_attr, char *buf, int buflen) {
+  int rate = 0;
+  char *pos = buf;
+  struct nlattr *rinfo[NL80211_RATE_INFO_MAX + 1];
+  DECL_NLA_POLICY(rate_policy, NL80211_RATE_INFO_MAX + 1,
+                  {NL80211_RATE_INFO_BITRATE, NLA_U16},
+                  {NL80211_RATE_INFO_BITRATE32, NLA_U32},
+                  {NL80211_RATE_INFO_MCS, NLA_U8},
+                  {NL80211_RATE_INFO_40_MHZ_WIDTH, NLA_FLAG},
+                  {NL80211_RATE_INFO_SHORT_GI, NLA_FLAG});
+
+  if (nla_parse_nested(rinfo, NL80211_RATE_INFO_MAX, bitrate_attr,
+                       rate_policy.data())) {
+    snprintf(buf, buflen, "failed to parse nested rate attributes!");
+    return;
+  }
+
+  if (rinfo[NL80211_RATE_INFO_BITRATE32])
+    rate = nla_get_u32(rinfo[NL80211_RATE_INFO_BITRATE32]);
+  else if (rinfo[NL80211_RATE_INFO_BITRATE])
+    rate = nla_get_u16(rinfo[NL80211_RATE_INFO_BITRATE]);
+  if (rate > 0)
+    pos += snprintf(pos, buflen - (pos - buf), "%d.%d MBit/s", rate / 10,
+                    rate % 10);
+  else
+    pos += snprintf(pos, buflen - (pos - buf), "(unknown)");
+
+  if (rinfo[NL80211_RATE_INFO_MCS])
+    pos += snprintf(pos, buflen - (pos - buf), " MCS %d",
+                    nla_get_u8(rinfo[NL80211_RATE_INFO_MCS]));
+  if (rinfo[NL80211_RATE_INFO_VHT_MCS])
+    pos += snprintf(pos, buflen - (pos - buf), " VHT-MCS %d",
+                    nla_get_u8(rinfo[NL80211_RATE_INFO_VHT_MCS]));
+  if (rinfo[NL80211_RATE_INFO_40_MHZ_WIDTH])
+    pos += snprintf(pos, buflen - (pos - buf), " 40MHz");
+  if (rinfo[NL80211_RATE_INFO_80_MHZ_WIDTH])
+    pos += snprintf(pos, buflen - (pos - buf), " 80MHz");
+  if (rinfo[NL80211_RATE_INFO_80P80_MHZ_WIDTH])
+    pos += snprintf(pos, buflen - (pos - buf), " 80P80MHz");
+  if (rinfo[NL80211_RATE_INFO_160_MHZ_WIDTH])
+    pos += snprintf(pos, buflen - (pos - buf), " 160MHz");
+  if (rinfo[NL80211_RATE_INFO_320_MHZ_WIDTH])
+    pos += snprintf(pos, buflen - (pos - buf), " 320MHz");
+  if (rinfo[NL80211_RATE_INFO_SHORT_GI])
+    pos += snprintf(pos, buflen - (pos - buf), " short GI");
+  if (rinfo[NL80211_RATE_INFO_VHT_NSS])
+    pos += snprintf(pos, buflen - (pos - buf), " VHT-NSS %d",
+                    nla_get_u8(rinfo[NL80211_RATE_INFO_VHT_NSS]));
+  if (rinfo[NL80211_RATE_INFO_HE_MCS])
+    pos += snprintf(pos, buflen - (pos - buf), " HE-MCS %d",
+                    nla_get_u8(rinfo[NL80211_RATE_INFO_HE_MCS]));
+  if (rinfo[NL80211_RATE_INFO_HE_NSS])
+    pos += snprintf(pos, buflen - (pos - buf), " HE-NSS %d",
+                    nla_get_u8(rinfo[NL80211_RATE_INFO_HE_NSS]));
+  if (rinfo[NL80211_RATE_INFO_HE_GI])
+    pos += snprintf(pos, buflen - (pos - buf), " HE-GI %d",
+                    nla_get_u8(rinfo[NL80211_RATE_INFO_HE_GI]));
+  if (rinfo[NL80211_RATE_INFO_HE_DCM])
+    pos += snprintf(pos, buflen - (pos - buf), " HE-DCM %d",
+                    nla_get_u8(rinfo[NL80211_RATE_INFO_HE_DCM]));
+  if (rinfo[NL80211_RATE_INFO_HE_RU_ALLOC])
+    pos += snprintf(pos, buflen - (pos - buf), " HE-RU-ALLOC %d",
+                    nla_get_u8(rinfo[NL80211_RATE_INFO_HE_RU_ALLOC]));
+  if (rinfo[NL80211_RATE_INFO_EHT_MCS])
+    pos += snprintf(pos, buflen - (pos - buf), " EHT-MCS %d",
+                    nla_get_u8(rinfo[NL80211_RATE_INFO_EHT_MCS]));
+  if (rinfo[NL80211_RATE_INFO_EHT_NSS])
+    pos += snprintf(pos, buflen - (pos - buf), " EHT-NSS %d",
+                    nla_get_u8(rinfo[NL80211_RATE_INFO_EHT_NSS]));
+  if (rinfo[NL80211_RATE_INFO_EHT_GI])
+    pos += snprintf(pos, buflen - (pos - buf), " EHT-GI %d",
+                    nla_get_u8(rinfo[NL80211_RATE_INFO_EHT_GI]));
+  if (rinfo[NL80211_RATE_INFO_EHT_RU_ALLOC])
+    pos += snprintf(pos, buflen - (pos - buf), " EHT-RU-ALLOC %d",
+                    nla_get_u8(rinfo[NL80211_RATE_INFO_EHT_RU_ALLOC]));
+}
+#endif /* BUILD_WLAN */
+
 void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
                            double time_between_updates) {
 #ifdef BUILD_WLAN
@@ -680,6 +775,93 @@ void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
       ns->freq[0]
       */
 
+      struct nlattr *tb[NL80211_ATTR_MAX + 1];
+      struct genlmsghdr *gnlh = nullptr;  // FIXME: nlmsg_data(nlmsg_hdr(msg));
+      struct nlattr *sinfo[NL80211_STA_INFO_MAX + 1];
+      struct nlattr *binfo[NL80211_STA_BSS_PARAM_MAX + 1];
+
+      DECL_NLA_POLICY(stats_policy, NL80211_STA_INFO_MAX + 1,
+                      {NL80211_STA_INFO_INACTIVE_TIME, NLA_U32},
+                      {NL80211_STA_INFO_RX_BYTES, NLA_U32},
+                      {NL80211_STA_INFO_TX_BYTES, NLA_U32},
+                      {NL80211_STA_INFO_RX_PACKETS, NLA_U32},
+                      {NL80211_STA_INFO_TX_PACKETS, NLA_U32},
+                      {NL80211_STA_INFO_SIGNAL, NLA_U8},
+                      {NL80211_STA_INFO_RX_BITRATE, NLA_NESTED},
+                      {NL80211_STA_INFO_TX_BITRATE, NLA_NESTED},
+                      {NL80211_STA_INFO_LLID, NLA_U16},
+                      {NL80211_STA_INFO_PLID, NLA_U16},
+                      {NL80211_STA_INFO_PLINK_STATE, NLA_U8});
+      DECL_NLA_POLICY(bss_policy, NL80211_STA_BSS_PARAM_MAX + 1,
+                      {NL80211_STA_BSS_PARAM_CTS_PROT, NLA_FLAG},
+                      {NL80211_STA_BSS_PARAM_SHORT_PREAMBLE, NLA_FLAG},
+                      {NL80211_STA_BSS_PARAM_SHORT_SLOT_TIME, NLA_FLAG},
+                      {NL80211_STA_BSS_PARAM_DTIM_PERIOD, NLA_U8},
+                      {NL80211_STA_BSS_PARAM_BEACON_INTERVAL, NLA_U16});
+
+      nla_parse(tb, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
+                genlmsg_attrlen(gnlh, 0), NULL);
+
+      if (!tb[NL80211_ATTR_STA_INFO]) {
+        fprintf(stderr, "sta stats missing!\n");
+        // FIXME: return;
+      }
+      if (nla_parse_nested(sinfo, NL80211_STA_INFO_MAX,
+                           tb[NL80211_ATTR_STA_INFO], stats_policy.data())) {
+        fprintf(stderr, "failed to parse nested attributes!\n");
+        // FIXME: return;
+      }
+
+      if (sinfo[NL80211_STA_INFO_RX_BYTES] &&
+          sinfo[NL80211_STA_INFO_RX_PACKETS])
+        printf("\tRX: %u bytes (%u packets)\n",
+               nla_get_u32(sinfo[NL80211_STA_INFO_RX_BYTES]),
+               nla_get_u32(sinfo[NL80211_STA_INFO_RX_PACKETS]));
+      if (sinfo[NL80211_STA_INFO_TX_BYTES] &&
+          sinfo[NL80211_STA_INFO_TX_PACKETS])
+        printf("\tTX: %u bytes (%u packets)\n",
+               nla_get_u32(sinfo[NL80211_STA_INFO_TX_BYTES]),
+               nla_get_u32(sinfo[NL80211_STA_INFO_TX_PACKETS]));
+      if (sinfo[NL80211_STA_INFO_SIGNAL])
+        printf("\tsignal: %d dBm\n",
+               (int8_t)nla_get_u8(sinfo[NL80211_STA_INFO_SIGNAL]));
+
+      if (sinfo[NL80211_STA_INFO_RX_BITRATE]) {
+        char buf[100];
+
+        parse_rate_info(sinfo[NL80211_STA_INFO_RX_BITRATE], buf, sizeof(buf));
+        printf("\trx bitrate: %s\n", buf);
+      }
+      if (sinfo[NL80211_STA_INFO_TX_BITRATE]) {
+        char buf[100];
+
+        parse_rate_info(sinfo[NL80211_STA_INFO_TX_BITRATE], buf, sizeof(buf));
+        printf("\ttx bitrate: %s\n", buf);
+      }
+
+      if (sinfo[NL80211_STA_INFO_BSS_PARAM]) {
+        if (nla_parse_nested(binfo, NL80211_STA_BSS_PARAM_MAX,
+                             sinfo[NL80211_STA_INFO_BSS_PARAM],
+                             bss_policy.data())) {
+          fprintf(stderr, "failed to parse nested bss parameters!\n");
+        } else {
+          printf("\n\tbss flags:\t");
+          if (binfo[NL80211_STA_BSS_PARAM_CTS_PROT]) {
+            printf("CTS-protection");
+          }
+          if (binfo[NL80211_STA_BSS_PARAM_SHORT_PREAMBLE]) {
+            printf("short-preamble");
+          }
+          if (binfo[NL80211_STA_BSS_PARAM_SHORT_SLOT_TIME])
+            printf("short-slot-time");
+          printf("\n\tdtim period:\t%d",
+                 nla_get_u8(binfo[NL80211_STA_BSS_PARAM_DTIM_PERIOD]));
+          printf("\n\tbeacon int:\t%d",
+                 nla_get_u16(binfo[NL80211_STA_BSS_PARAM_BEACON_INTERVAL]));
+          printf("\n");
+        }
+      }
+
       auto modes = rtnl_link_get_flags(nl_link);
       rtnl_link_flags2str(modes, ns->mode, 64);
     }
@@ -752,6 +934,7 @@ void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
 
 #ifdef BUILD_WLAN
   if (nl_cache != nullptr) { nl_cache_free(nl_cache); }
+#undef DECL_NLA_POLICY
 #endif
 }
 

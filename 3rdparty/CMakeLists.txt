@@ -7,8 +7,9 @@ if(BUILD_WLAN AND OS_LINUX)
   set(linux_net_libs_INCLUDE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/linux")
 
   # Sourced from linux kernel
-  # SHA: 97bf6af1f928216fd6c5a66e8a57bfa95a659672
-  # https://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless.git/tree/
+  # SHA: 18daea77cca626f590fb140fc11e3a43c5d41354
+  # https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/
+  # Only added structures and data that's used by conky to avoid cloning entire kernel
 
   set(conky_includes ${conky_includes} ${linux_net_libs_INCLUDE_PATH})
 endif(BUILD_WLAN AND OS_LINUX)
