@@ -77,7 +77,7 @@ struct net_stat {
   int channel;
   char freq[16];
   char bitrate[16];
-  char mode[16];
+  char mode[64];
   int link_qual;
   int link_qual_max;
   char ap[18];

@@ -87,7 +87,8 @@
 #endif
 
 #ifdef BUILD_WLAN
-#include <iwlib.h>
+#include <libnl3/netlink/cache.h>
+#include <libnl3/netlink/route/link.h>
 #endif
 
 struct sysfs {
@@ -488,16 +489,21 @@ void print_gateway_ip(struct text_object *obj, char *p,
 
 void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
                            double time_between_updates) {
-  /* read each interface */
 #ifdef BUILD_WLAN
-  // wireless info variables
-  struct wireless_info *winfo;
-  struct iwreq wrq;
+  /* init socket and cache for wireless info */
+  struct nl_sock *sk = nl_socket_alloc();
+  struct nl_cache *nl_cache;
+  int nl_cache_size;
+  if (rtnl_link_alloc_cache(sk, AF_UNSPEC, &nl_cache) != 0) {
+    nl_cache = nullptr;
+  } else {
+    nl_cache_size = nl_cache_nitems(nl_cache);
+  };
 #endif
 
   for (int i = 0; i < MAX_NET_INTERFACES; i++) {
     struct net_stat *ns;
-    char *s, *p;
+    char *name, *p;
     long long r, t, last_recv, last_trans;
 
     /* quit only after all non-header lines from /proc/net/dev parsed */
@@ -509,7 +515,7 @@ void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
      * of the interface name */
     while (*p != '\0' && isspace((unsigned char)*p)) { p++; }
 
-    s = p;
+    name = p;
 
     /* increment p until the end of the interface name has been reached */
     while (*p != '\0' && *p != ':') { p++; }
@@ -519,14 +525,13 @@ void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
     p++;
 
     /* get pointer to interface statistics with the interface name in s */
-    ns = get_net_stat(s, nullptr, NULL);
+    ns = get_net_stat(name, nullptr, NULL);
     ns->up = 1;
     memset(&(ns->addr.sa_data), 0, 14);
 
-    memset(ns->addrs, 0,
-           17 * MAX_NET_INTERFACES +
-               1); /* Up to 17 chars per ip, max MAX_NET_INTERFACES interfaces.
-                      Nasty memory usage... */
+    /* Up to 17 chars per ip, max MAX_NET_INTERFACES interfaces. Nasty memory
+     * usage... */
+    memset(ns->addrs, 0, 17 * MAX_NET_INTERFACES + 1);
 
     /* bytes packets errs drop fifo frame compressed multicast|bytes ... */
     sscanf(p, "%lld  %*d     %*d  %*d  %*d  %*d   %*d        %*d       %lld",
@@ -626,75 +631,124 @@ void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
 
 #ifdef BUILD_WLAN
     /* update wireless info */
-    winfo = (struct wireless_info *)malloc(sizeof(struct wireless_info));
-    memset(winfo, 0, sizeof(struct wireless_info));
-
-    int skfd = iw_sockets_open();
-    if (iw_get_basic_config(skfd, s, &(winfo->b)) > -1) {
-      // set present winfo variables
-      if (iw_get_range_info(skfd, s, &(winfo->range)) >= 0) {
-        winfo->has_range = 1;
-      }
-      if (iw_get_stats(skfd, s, &(winfo->stats), &winfo->range,
-                       winfo->has_range) >= 0) {
-        winfo->has_stats = 1;
-      }
-      if (iw_get_ext(skfd, s, SIOCGIWAP, &wrq) >= 0) {
-        winfo->has_ap_addr = 1;
-        memcpy(&(winfo->ap_addr), &(wrq.u.ap_addr), sizeof(sockaddr));
-      }
-
-      // get bitrate
-      if (iw_get_ext(skfd, s, SIOCGIWRATE, &wrq) >= 0) {
-        memcpy(&(winfo->bitrate), &(wrq.u.bitrate), sizeof(iwparam));
-        iw_print_bitrate(ns->bitrate, 16, winfo->bitrate.value);
-      }
-
-      // get link quality
-      if (winfo->has_range && winfo->has_stats) {
-        bool has_qual_level = (winfo->stats.qual.level != 0) ||
-                              (winfo->stats.qual.updated & IW_QUAL_DBM);
-
-        if (has_qual_level &&
-            !(winfo->stats.qual.updated & IW_QUAL_QUAL_INVALID)) {
-          ns->link_qual = winfo->stats.qual.qual;
-
-          if (winfo->range.max_qual.qual > 0) {
-            ns->link_qual_max = winfo->range.max_qual.qual;
-          }
+    int nl_index = -1;
+    struct rtnl_link *nl_link;
+    if (nl_cache != nullptr) {
+      for (nl_index = 0; nl_index < nl_cache_size; nl_index++) {
+        nl_link = rtnl_link_get(nl_cache, nl_index);
+        if (strcmp(rtnl_link_get_name(link), name) == 0) {
+          // Found the interface
+          break;
         }
+        nl_link = nullptr;
       }
+      if (nl_link == nullptr) { nl_index == -1; }
+    }
+    if (nl_link != nullptr) {
+      // See: http://www.infradead.org/~tgr/libnl/doc/route.html#link_object
+      // uint32_t link_group = rtnl_link_get_group(nl_link);
+      // struct nl_addr *link_layer_addr = rtnl_link_get_addr(nl_link);
+      // struct nl_addr *broadcast_addr = rtnl_link_get_broadcast(nl_link);
+      // unsigned int max_trasmission_unit = rtnl_link_get_mtu(nl_link);
+      // unsigned int trasmission_queue_length = rtnl_link_get_txqlen(nl_link);
+      // uint8_t operational_status = rtnl_link_get_operstate(nl_link); // up/down/dormant/etc.
+      // - to string: char *rtnl_link_operstate2str(uint8_t state, char *buf, size_t size);
+      // uint8_t mode = rtnl_link_get_linkmode(nl_link); // default/dormant
+      // - to string: char *rtnl_link_mode2str(uint8_t mode, char *buf, size_t len);
+      // char *if_alias = rtnl_link_get_ifalias(nl_link); // SNMP IfAlias.
+      // unsigned int hardware_type = rtnl_link_get_arptype(nl_link);
+      // - to string: char *nl_llproto2str(int arptype, char *buf, size_t len);
+      // char *queueing_discipline = rtnl_link_get_qdisc(nl_link);
+      // uint32_t promiscuity = rtnl_link_get_promiscuity(nl_link);
+      // uint32_t tx_queues = rtnl_link_get_num_tx_queues(nl_link);
+      // uint32_t rx_queues = rtnl_link_get_num_rx_queues(nl_link);
 
-      // get ap mac
-      if (winfo->has_ap_addr) { iw_sawap_ntop(&winfo->ap_addr, ns->ap); }
+      /*
+      TODO:
+      ns->bitrate
+      ns->link_qual
+      ns->link_qual_max
+      ns->ap
+      ns->essid
+      ns->channel
+      ns->freq
+      ns->channel
+      ns->freq[0]
+      */
 
-      // get essid
-      if (winfo->b.has_essid) {
-        if (winfo->b.essid_on) {
-          snprintf(ns->essid, 34, "%s", winfo->b.essid);
-        } else {
-          snprintf(ns->essid, 34, "%s", "off/any");
-        }
-      }
-
-      // get channel and freq
-      if (winfo->b.has_freq) {
-        if (winfo->has_range == 1) {
-          ns->channel = iw_freq_to_channel(winfo->b.freq, &(winfo->range));
-          iw_print_freq_value(ns->freq, 16, winfo->b.freq);
-        } else {
-          ns->channel = 0;
-          ns->freq[0] = 0;
-        }
-      }
-
-      snprintf(ns->mode, 16, "%s", iw_operation_mode[winfo->b.mode]);
+      auto modes = rtnl_link_get_flags(struct rtnl_link * link);
+      rtnl_link_flags2str(modes, ns->mode, 64);
     }
 
-    iw_sockets_close(skfd);
-    free(winfo);
+    // int skfd = iw_sockets_open();
+    // if (iw_get_basic_config(skfd, s, &(winfo->b)) > -1) {
+    //   // set present winfo variables
+    //   if (iw_get_range_info(skfd, s, &(winfo->range)) >= 0) {
+    //     winfo->has_range = 1;
+    //   }
+    //   if (iw_get_stats(skfd, s, &(winfo->stats), &winfo->range,
+    //                    winfo->has_range) >= 0) {
+    //     winfo->has_stats = 1;
+    //   }
+    //   if (iw_get_ext(skfd, s, SIOCGIWAP, &wrq) >= 0) {
+    //     winfo->has_ap_addr = 1;
+    //     memcpy(&(winfo->ap_addr), &(wrq.u.ap_addr), sizeof(sockaddr));
+    //   }
+
+    //   // get bitrate
+    //   if (iw_get_ext(skfd, s, SIOCGIWRATE, &wrq) >= 0) {
+    //     memcpy(&(winfo->bitrate), &(wrq.u.bitrate), sizeof(iwparam));
+    //     iw_print_bitrate(ns->bitrate, 16, winfo->bitrate.value);
+    //   }
+
+    //   // get link quality
+    //   if (winfo->has_range && winfo->has_stats) {
+    //     bool has_qual_level = (winfo->stats.qual.level != 0) ||
+    //                           (winfo->stats.qual.updated & IW_QUAL_DBM);
+
+    //     if (has_qual_level &&
+    //         !(winfo->stats.qual.updated & IW_QUAL_QUAL_INVALID)) {
+    //       ns->link_qual = winfo->stats.qual.qual;
+
+    //       if (winfo->range.max_qual.qual > 0) {
+    //         ns->link_qual_max = winfo->range.max_qual.qual;
+    //       }
+    //     }
+    //   }
+
+    //   // get ap mac
+    //   if (winfo->has_ap_addr) { iw_sawap_ntop(&winfo->ap_addr, ns->ap); }
+
+    //   // get essid
+    //   if (winfo->b.has_essid) {
+    //     if (winfo->b.essid_on) {
+    //       snprintf(ns->essid, 34, "%s", winfo->b.essid);
+    //     } else {
+    //       snprintf(ns->essid, 34, "%s", "off/any");
+    //     }
+    //   }
+
+    //   // get channel and freq
+    //   if (winfo->b.has_freq) {
+    //     if (winfo->has_range == 1) {
+    //       ns->channel = iw_freq_to_channel(winfo->b.freq, &(winfo->range));
+    //       iw_print_freq_value(ns->freq, 16, winfo->b.freq);
+    //     } else {
+    //       ns->channel = 0;
+    //       ns->freq[0] = 0;
+    //     }
+    //   }
+    // }
+
+    // iw_sockets_close(skfd);
+    // free(winfo);
+
 #endif
   }
+
+#ifdef BUILD_WLAN
+  if (nl_cache != nullptr) { nl_cache_free(nl_cache); }
+#endif
 }
 
 #ifdef BUILD_IPV6

@@ -326,21 +326,14 @@ if(BUILD_MYSQL)
 endif(BUILD_MYSQL)
 
 if(BUILD_WLAN AND OS_LINUX)
-  set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
-  check_include_files(iwlib.h IWLIB_H)
+  find_package(NL REQUIRED)
 
-  if(NOT IWLIB_H)
-    message(FATAL_ERROR "Unable to find iwlib.h")
-  endif(NOT IWLIB_H)
+  if(NOT NL_FOUND)
+    message(FATAL_ERROR "Unable to find netlink library")
+  endif(NOT NL_FOUND)
 
-  find_library(IWLIB_LIB NAMES iw)
-
-  if(NOT IWLIB_LIB)
-    message(FATAL_ERROR "Unable to find libiw.so")
-  endif(NOT IWLIB_LIB)
-
-  set(conky_libs ${conky_libs} ${IWLIB_LIB})
-  check_function_exists(iw_sockets_open IWLIB_SOCKETS_OPEN_FUNC)
+  set(conky_includes ${conky_includes} ${NL_INCLUDE_DIRS})
+  set(conky_libs ${conky_libs} ${NL_LIBRARIES})
 endif(BUILD_WLAN AND OS_LINUX)
 
 if(BUILD_PORT_MONITORS)

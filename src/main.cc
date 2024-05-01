@@ -26,15 +26,16 @@
  *
  */
 
-#include <getopt.h>
-#include <cstdio>
-#include <iostream>
-
 #include "build.h"
 #include "config.h"
+
 #include "conky.h"
 #include "output/display-output.hh"
 #include "lua/lua-config.hh"
+
+#include <getopt.h>
+#include <cstdio>
+#include <iostream>
 
 #ifdef BUILD_X11
 #include "output/x11.h"
