@@ -330,7 +330,10 @@ if(BUILD_WLAN AND OS_LINUX)
 
   if(NOT NL_FOUND)
     message(FATAL_ERROR "Unable to find netlink library")
-  endif(NOT NL_FOUND)
+  endif()
+  if(NOT HAVE_LIBNL_ROUTE)
+    message(FATAL_ERROR "Unable to find netlink route library")
+  endif()
 
   set(conky_includes ${conky_includes} ${NL_INCLUDE_DIRS})
   set(conky_libs ${conky_libs} ${NL_LIBRARIES})

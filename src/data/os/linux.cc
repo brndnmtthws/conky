@@ -87,9 +87,9 @@
 #endif
 
 #ifdef BUILD_WLAN
-#include <libnl3/netlink/attr.h>
-#include <libnl3/netlink/cache.h>
-#include <libnl3/netlink/route/link.h>
+#include <netlink/attr.h>
+#include <netlink/cache.h>
+#include <netlink/route/link.h>
 #include <uapi/linux/nl80211.h>
 #endif
 
@@ -644,7 +644,7 @@ void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
         }
         nl_link = nullptr;
       }
-      if (nl_link == nullptr) { nl_index == -1; }
+      if (nl_link == nullptr) { nl_index = -1; }
     }
     if (nl_link != nullptr) {
       // See: http://www.infradead.org/~tgr/libnl/doc/route.html#link_object
@@ -680,7 +680,7 @@ void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
       ns->freq[0]
       */
 
-      auto modes = rtnl_link_get_flags(struct rtnl_link * link);
+      auto modes = rtnl_link_get_flags(nl_link);
       rtnl_link_flags2str(modes, ns->mode, 64);
     }
 
