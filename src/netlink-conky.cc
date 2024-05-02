@@ -25,39 +25,186 @@ struct nla_policy_cache {
   nla_policy *data() { return this->value.data(); }
 };
 
+template class nl_task<net_stat>;
+
 template <typename Data>
-nl_task<Data>::nl_task(int family, uint8_t request,
-                       std::function<int(struct nl_msg *, Data *)> processor) {
+int valid_handler(struct nl_msg *msg, void *arg) {
+  using response_proc = typename nl_task<Data>::response_proc;
+
+  NORM_ERR("DEBUG: valid_handler recv msg addr %lp", msg);
+  auto arg_pair = static_cast<std::pair<response_proc *, Data *> *>(arg);
+  response_proc *processor = arg_pair->first;
+  Data *data = arg_pair->second;
+  return (*processor)(msg, static_cast<Data *>(data));
+}
+int finish_handler(struct nl_msg *msg, void *arg) {
+  reinterpret_cast<std::atomic<callback_state> *>(arg)->store(
+      callback_state::DONE, std::memory_order_release);
+  return NL_SKIP;
+};
+int invalid_handler(struct nl_msg *msg, void *arg) {
+  reinterpret_cast<std::atomic<callback_state> *>(arg)->store(
+      callback_state::INVALID, std::memory_order_release);
+  return NL_SKIP;
+};
+
+template <typename Data>
+nl_task<Data>::nl_task(int family, uint8_t request, response_proc processor)
+    : family(family), request(request), processor(processor) {
   this->cb = nl_cb_alloc(NL_CB_DEFAULT);
   if (!this->cb) {
     NORM_ERR("unable to allocate netlink callback.");
     return;
   }
 
-  const auto valid_handler = [processor = std::move(processor)](
-                                 struct nl_msg *msg, void *arg) {
-    return processor(msg, arg);
-  };
-  const auto finish_handler = [](struct nl_msg *msg, void *arg) {
-    *reinterpret_cast<std::atomic<callback_state> *>(arg) =
-        callback_state::DONE;
-    return NL_SKIP;
-  };
-  const auto invalid_handler = [](struct nl_msg *msg, void *arg) {
-    *reinterpret_cast<std::atomic<callback_state> *>(arg) =
-        callback_state::INVALID;
-    return NL_SKIP;
-  };
+  nl_cb_set(this->cb, NL_CB_VALID, NL_CB_CUSTOM, &valid_handler<Data>,
+            std::make_pair(&this->processor, &this->data));
+  nl_cb_set(this->cb, NL_CB_FINISH, NL_CB_CUSTOM, &finish_handler,
+            &this->state);
+  nl_cb_set(this->cb, NL_CB_INVALID, NL_CB_CUSTOM, &invalid_handler,
+            &this->state);
+};
 
-  nl_cb_set(this->cb, NL_CB_VALID, NL_CB_CUSTOM, valid_handler, &this->data);
-  nl_cb_set(this->cb, NL_CB_FINISH, NL_CB_CUSTOM, finish_handler, &state);
-  nl_cb_set(this->cb, NL_CB_INVALID, NL_CB_CUSTOM, invalid_handler, &state);
+template <typename Data>
+nl_task<Data>::~nl_task() {
+  nl_cb_put(this->cb);
+};
+
+template <typename Data>
+void nl_task<Data>::send_message(struct nl_sock *sock) {
+  struct nl_msg *msg = nlmsg_alloc();
+  if (!msg) {
+    NORM_ERR("failed to allocate netlink message.");
+    return;
+  }
+
+  NORM_ERR("DEBUG: msgaddr %lp", msg);
+
+  // if (w->ifindex < 0) { return -1; }
+
+  genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, this->family, 0, NLM_F_DUMP,
+              this->request, 0);
+  // nla_put_u32(msg2, NL80211_ATTR_IFINDEX, w->ifindex);
+
+  nl_send_auto(sock, msg);
+  while (static_cast<int>(this->state.load(std::memory_order_acquire)) > 0) {
+    nl_recvmsgs(sock, this->cb);
+  }
+  nlmsg_free(msg);
 }
 
 template <typename Data>
-nl_task<Data>::~nl_task() {}
+nl_task<Data> &nl_task<Data>::operator=(const nl_task<Data> &other) {
+  nl_cb_put(this->cb);
+  this->cb = other.cb;
+  this->state.store(other.state.load());
+  this->family = other.family;
+  this->request = other.request;
+  return *this;
+}
 
-void net_device_cache::setup_callbacks() {}
+int ieee80211_frequency_to_channel(int freq) {
+  /* see 802.11-2007 17.3.8.3.2 and Annex J */
+  if (freq == 2484) return 14;
+  /* see 802.11ax D6.1 27.3.23.2 and Annex E */
+  else if (freq == 5935)
+    return 2;
+  else if (freq < 2484)
+    return (freq - 2407) / 5;
+  else if (freq >= 4910 && freq <= 4980)
+    return (freq - 4000) / 5;
+  else if (freq < 5950)
+    return (freq - 5000) / 5;
+  else if (freq <= 45000) /* DMG band lower limit */
+    /* see 802.11ax D6.1 27.3.23.2 */
+    return (freq - 5950) / 5;
+  else if (freq >= 58320 && freq <= 70200)
+    return (freq - 56160) / 2160;
+  else
+    return 0;
+}
+
+std::string mac_addr_to_str(const uint8_t *addr) {
+  static const size_t ETH_ALEN = 6;
+
+  std::string result;
+  result.reserve(ETH_ALEN * 2 + (ETH_ALEN - 1));
+
+  char buffer[4];
+  snprintf(buffer, sizeof(buffer), "%02x", addr[0]);
+  result += buffer;
+  for (size_t i = 1; i < ETH_ALEN; i++) {
+    snprintf(buffer, sizeof(buffer), ":%02x", addr[i]);
+    result += buffer;
+  }
+
+  return result;
+}
+
+std::string ssid_to_utf8(const uint8_t len, const uint8_t *data) {
+  std::string result;
+  result.reserve(len);
+
+  char buffer[5];
+  for (int i = 0; i < len; i++) {
+    if (isprint(data[i]) && data[i] != ' ' && data[i] != '\\') {
+      result += static_cast<char>(data[i]);
+    } else if (data[i] == ' ' && (i != 0 && i != len - 1)) {
+      result += ' ';
+    } else {
+      snprintf(buffer, sizeof(buffer), "\\x%.2x", data[i]);
+      result += buffer;
+    }
+  }
+
+  return result;
+}
+
+int interface_callback(struct nl_msg *msg, net_stat *ns) {
+  struct genlmsghdr *gnlh =
+      static_cast<struct genlmsghdr *>(nlmsg_data(nlmsg_hdr(msg)));
+  struct nlattr *tb_msg[NL80211_ATTR_MAX + 1];
+  const char *indent = "";
+
+  nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
+            genlmsg_attrlen(gnlh, 0), NULL);
+
+  if (tb_msg[NL80211_ATTR_MAC]) {
+    ns->ap = mac_addr_to_str(
+        static_cast<uint8_t *>(nla_data(tb_msg[NL80211_ATTR_MAC])));
+  }
+
+  if (tb_msg[NL80211_ATTR_SSID]) {
+    ns->essid = ssid_to_utf8(
+        nla_len(tb_msg[NL80211_ATTR_SSID]),
+        static_cast<uint8_t *>(nla_data(tb_msg[NL80211_ATTR_SSID])));
+  }
+
+  if (tb_msg[NL80211_ATTR_WIPHY_FREQ]) {
+    uint32_t freq = nla_get_u32(tb_msg[NL80211_ATTR_WIPHY_FREQ]);
+
+    snprintf(&ns->freq[0], 16, "%d", freq);
+    ns->channel = ieee80211_frequency_to_channel(freq);
+  }
+
+  return NL_SKIP;
+}
+
+int station_callack(struct nl_msg *msg, net_stat *ns) {
+  /*
+  ns->bitrate NL80211_STA_INFO_TX_BITRATE
+  ns->link_qual NL80211_STA_INFO_SIGNAL
+  ns->link_qual_max NL80211_STA_INFO_SIGNAL_AVG
+  */
+  return NL_SKIP;
+}
+
+void net_device_cache::setup_callbacks() {
+  this->interface_data_cb = nl_task<net_stat>(
+      this->id_nl80211, NL80211_CMD_GET_INTERFACE, interface_callback);
+  this->station_data_cb = nl_task<net_stat>(
+      this->id_nl80211, NL80211_CMD_GET_STATION, station_callack);
+}
 
 net_device_cache::net_device_cache() {
   this->sock = nl_socket_alloc();
@@ -193,6 +340,7 @@ void net_device_cache::populate_interface(struct net_stat *ns,
   struct rtnl_link *nl_link = this->get_link(link);
   if (nl_link == nullptr) return;
 
+  // The following properties are already in cache and cheap to access:
   // See: http://www.infradead.org/~tgr/libnl/doc/route.html#link_object
   // clang-format off
   // uint32_t link_group = rtnl_link_get_group(nl_link);
@@ -215,167 +363,4 @@ void net_device_cache::populate_interface(struct net_stat *ns,
 
   auto modes = rtnl_link_get_flags(nl_link);
   rtnl_link_flags2str(modes, ns->mode, 64);
-
-  /*
-  TODO:
-  ns->bitrate
-  ns->link_qual
-  ns->link_qual_max
-  ns->ap
-  ns->essid
-  ns->channel
-  ns->freq
-  ns->channel
-  ns->freq[0]
-  */
-
-  //   struct nlattr *tb[NL80211_ATTR_MAX + 1];
-  //   struct genlmsghdr *gnlh = nullptr;  // FIXME: nlmsg_data(nlmsg_hdr(msg));
-  //   struct nlattr *sinfo[NL80211_STA_INFO_MAX + 1];
-  //   struct nlattr *binfo[NL80211_STA_BSS_PARAM_MAX + 1];
-
-  //   static auto stats_policy = nla_policy_cache<NL80211_STA_INFO_MAX + 1>{
-  //       {NL80211_STA_INFO_INACTIVE_TIME, NLA_U32},
-  //       {NL80211_STA_INFO_RX_BYTES, NLA_U32},
-  //       {NL80211_STA_INFO_TX_BYTES, NLA_U32},
-  //       {NL80211_STA_INFO_RX_PACKETS, NLA_U32},
-  //       {NL80211_STA_INFO_TX_PACKETS, NLA_U32},
-  //       {NL80211_STA_INFO_SIGNAL, NLA_U8},
-  //       {NL80211_STA_INFO_RX_BITRATE, NLA_NESTED},
-  //       {NL80211_STA_INFO_TX_BITRATE, NLA_NESTED},
-  //       {NL80211_STA_INFO_LLID, NLA_U16},
-  //       {NL80211_STA_INFO_PLID, NLA_U16},
-  //       {NL80211_STA_INFO_PLINK_STATE, NLA_U8}};
-  //   static auto bss_policy = nla_policy_cache<NL80211_STA_BSS_PARAM_MAX + 1>{
-  //       {NL80211_STA_BSS_PARAM_CTS_PROT, NLA_FLAG},
-  //       {NL80211_STA_BSS_PARAM_SHORT_PREAMBLE, NLA_FLAG},
-  //       {NL80211_STA_BSS_PARAM_SHORT_SLOT_TIME, NLA_FLAG},
-  //       {NL80211_STA_BSS_PARAM_DTIM_PERIOD, NLA_U8},
-  //       {NL80211_STA_BSS_PARAM_BEACON_INTERVAL, NLA_U16}};
-
-  //   nla_parse(tb, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
-  //             genlmsg_attrlen(gnlh, 0), NULL);
-
-  //   if (!tb[NL80211_ATTR_STA_INFO]) {
-  //     fprintf(stderr, "sta stats missing!\n");
-  //     return;
-  //   }
-  //   if (nla_parse_nested(sinfo, NL80211_STA_INFO_MAX,
-  //   tb[NL80211_ATTR_STA_INFO],
-  //                        stats_policy.data())) {
-  //     fprintf(stderr, "failed to parse nested attributes!\n");
-  //     return;
-  //   }
-
-  //   if (sinfo[NL80211_STA_INFO_RX_BYTES] &&
-  //   sinfo[NL80211_STA_INFO_RX_PACKETS])
-  //     printf("\tRX: %u bytes (%u packets)\n",
-  //            nla_get_u32(sinfo[NL80211_STA_INFO_RX_BYTES]),
-  //            nla_get_u32(sinfo[NL80211_STA_INFO_RX_PACKETS]));
-  //   if (sinfo[NL80211_STA_INFO_TX_BYTES] &&
-  //   sinfo[NL80211_STA_INFO_TX_PACKETS])
-  //     printf("\tTX: %u bytes (%u packets)\n",
-  //            nla_get_u32(sinfo[NL80211_STA_INFO_TX_BYTES]),
-  //            nla_get_u32(sinfo[NL80211_STA_INFO_TX_PACKETS]));
-  //   if (sinfo[NL80211_STA_INFO_SIGNAL])
-  //     printf("\tsignal: %d dBm\n",
-  //            (int8_t)nla_get_u8(sinfo[NL80211_STA_INFO_SIGNAL]));
-
-  //   if (sinfo[NL80211_STA_INFO_RX_BITRATE]) {
-  //     char buf[100];
-
-  //     parse_rate_info(sinfo[NL80211_STA_INFO_RX_BITRATE], buf, sizeof(buf));
-  //     printf("\trx bitrate: %s\n", buf);
-  //   }
-  //   if (sinfo[NL80211_STA_INFO_TX_BITRATE]) {
-  //     char buf[100];
-
-  //     parse_rate_info(sinfo[NL80211_STA_INFO_TX_BITRATE], buf, sizeof(buf));
-  //     printf("\ttx bitrate: %s\n", buf);
-  //   }
-
-  //   if (sinfo[NL80211_STA_INFO_BSS_PARAM]) {
-  //     if (nla_parse_nested(binfo, NL80211_STA_BSS_PARAM_MAX,
-  //                          sinfo[NL80211_STA_INFO_BSS_PARAM],
-  //                          bss_policy.data())) {
-  //       fprintf(stderr, "failed to parse nested bss parameters!\n");
-  //     } else {
-  //       printf("\n\tbss flags:\t");
-  //       if (binfo[NL80211_STA_BSS_PARAM_CTS_PROT]) {
-  //       printf("CTS-protection"); } if
-  //       (binfo[NL80211_STA_BSS_PARAM_SHORT_PREAMBLE]) {
-  //         printf("short-preamble");
-  //       }
-  //       if (binfo[NL80211_STA_BSS_PARAM_SHORT_SLOT_TIME])
-  //         printf("short-slot-time");
-  //       printf("\n\tdtim period:\t%d",
-  //              nla_get_u8(binfo[NL80211_STA_BSS_PARAM_DTIM_PERIOD]));
-  //       printf("\n\tbeacon int:\t%d",
-  //              nla_get_u16(binfo[NL80211_STA_BSS_PARAM_BEACON_INTERVAL]));
-  //       printf("\n");
-  //     }
-  //   }
-
-  // int skfd = iw_sockets_open();
-  // if (iw_get_basic_config(skfd, s, &(winfo->b)) > -1) {
-  //   // set present winfo variables
-  //   if (iw_get_range_info(skfd, s, &(winfo->range)) >= 0) {
-  //     winfo->has_range = 1;
-  //   }
-  //   if (iw_get_stats(skfd, s, &(winfo->stats), &winfo->range,
-  //                    winfo->has_range) >= 0) {
-  //     winfo->has_stats = 1;
-  //   }
-  //   if (iw_get_ext(skfd, s, SIOCGIWAP, &wrq) >= 0) {
-  //     winfo->has_ap_addr = 1;
-  //     memcpy(&(winfo->ap_addr), &(wrq.u.ap_addr), sizeof(sockaddr));
-  //   }
-
-  //   // get bitrate
-  //   if (iw_get_ext(skfd, s, SIOCGIWRATE, &wrq) >= 0) {
-  //     memcpy(&(winfo->bitrate), &(wrq.u.bitrate), sizeof(iwparam));
-  //     iw_print_bitrate(ns->bitrate, 16, winfo->bitrate.value);
-  //   }
-
-  //   // get link quality
-  //   if (winfo->has_range && winfo->has_stats) {
-  //     bool has_qual_level = (winfo->stats.qual.level != 0) ||
-  //                           (winfo->stats.qual.updated & IW_QUAL_DBM);
-
-  //     if (has_qual_level &&
-  //         !(winfo->stats.qual.updated & IW_QUAL_QUAL_INVALID)) {
-  //       ns->link_qual = winfo->stats.qual.qual;
-
-  //       if (winfo->range.max_qual.qual > 0) {
-  //         ns->link_qual_max = winfo->range.max_qual.qual;
-  //       }
-  //     }
-  //   }
-
-  //   // get ap mac
-  //   if (winfo->has_ap_addr) { iw_sawap_ntop(&winfo->ap_addr, ns->ap); }
-
-  //   // get essid
-  //   if (winfo->b.has_essid) {
-  //     if (winfo->b.essid_on) {
-  //       snprintf(ns->essid, 34, "%s", winfo->b.essid);
-  //     } else {
-  //       snprintf(ns->essid, 34, "%s", "off/any");
-  //     }
-  //   }
-
-  //   // get channel and freq
-  //   if (winfo->b.has_freq) {
-  //     if (winfo->has_range == 1) {
-  //       ns->channel = iw_freq_to_channel(winfo->b.freq, &(winfo->range));
-  //       iw_print_freq_value(ns->freq, 16, winfo->b.freq);
-  //     } else {
-  //       ns->channel = 0;
-  //       ns->freq[0] = 0;
-  //     }
-  //   }
-  // }
-
-  // iw_sockets_close(skfd);
-  // free(winfo);
 }

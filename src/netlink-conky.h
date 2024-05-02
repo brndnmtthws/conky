@@ -38,15 +38,24 @@ enum class callback_state : int {
 };
 
 template <typename Data>
-class nl_task {
+struct nl_task {
+  using response_proc = std::function<int(struct nl_msg *, Data *)>;
+
+ private:
   struct nl_cb *cb;
   std::atomic<callback_state> state;
-  Data data;
+
+  int family;
+  uint8_t request;
+  response_proc processor;
+
+  void send_message(struct nl_sock *sock);
 
  public:
-  nl_task(int family, uint8_t request,
-          std::function<int(struct nl_msg *, Data *)> processor);
+  nl_task(int family, uint8_t request, response_proc processor);
   ~nl_task();
+
+  nl_task<Data> &operator=(const nl_task<Data> &other);
 };
 
 class net_device_cache {
@@ -55,6 +64,9 @@ class net_device_cache {
   int nl_cache_size;
 
   int id_nl80211;
+
+  nl_task<net_stat> interface_data_cb;
+  nl_task<net_stat> station_data_cb;
 
   void setup_callbacks();
 
