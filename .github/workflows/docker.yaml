@@ -62,22 +62,20 @@ jobs:
 
           image_tags+=("--tag" "$DOCKERHUB_IMAGE_ID:$VERSION_TAG")
 
-          if [ "$RELEASE" == "ON" ]; then
-            # tag as latest on releases
-            image_tags+=("--tag" "$DOCKERHUB_IMAGE_ID:latest")
-          fi
+          # tag as latest on releases
+          [[ "$RELEASE" == "ON" ]] && image_tags+=("--tag" "$DOCKERHUB_IMAGE_ID:latest")
 
           # Only build amd64 on PRs, build all platforms on main. The arm builds
           # take far too long.
           image_platforms="--platform linux/amd64"
           push_image=""
           cache_tag="pr-cache"
-          if [ "${{ github.ref }}" == "refs/head/main" ]; then
-            # Only push on main
-            push_image="--push"
-            image_platforms="--platform linux/arm/v7,linux/arm64/v8,linux/amd64"
-            cache_tag="main-cache"
-          fi
+
+          # Only push on main
+          [[ "${{ github.ref }}" == "refs/head/main" ]] \
+            && push_image="--push" \
+            && image_platforms="--platform linux/arm/v7,linux/arm64/v8,linux/amd64" \
+            && cache_tag="main-cache"
 
           docker buildx build \
             ${push_image} \
