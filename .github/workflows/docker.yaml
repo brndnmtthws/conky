@@ -58,12 +58,12 @@ jobs:
           VERSION_TAG=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
 
           # Strip "v" prefix from tag name
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION_TAG=$(echo $VERSION_TAG | sed -e 's/^v//')
+          [[ "${{ github.ref }}" == refs/tags/* ]] && VERSION_TAG=$(echo $VERSION_TAG | sed -e 's/^v//')
 
           image_tags+=("--tag" "$DOCKERHUB_IMAGE_ID:$VERSION_TAG")
 
           # tag as latest on releases
-          [[ "$RELEASE" == "ON" ]] && image_tags+=("--tag" "$DOCKERHUB_IMAGE_ID:latest")
+          [[ "$RELEASE" == ON ]] && image_tags+=("--tag" "$DOCKERHUB_IMAGE_ID:latest")
 
           # Only build amd64 on PRs, build all platforms on main. The arm builds
           # take far too long.
@@ -72,7 +72,7 @@ jobs:
           cache_tag="pr-cache"
 
           # Only push on main
-          [[ "${{ github.ref }}" == "refs/head/main" ]] \
+          [[ "${{ github.ref }}" == refs/head/main ]] \
             && push_image="--push" \
             && image_platforms="--platform linux/arm/v7,linux/arm64/v8,linux/amd64" \
             && cache_tag="main-cache"
