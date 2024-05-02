@@ -18,16 +18,45 @@ extern "C" {
 
 #include "net_stat.h"
 
+#include <atomic>
+#include <functional>
 #include <map>
 #include <string>
 #include <variant>
 
 using nl_link_id = std::variant<int, char *, std::string>;
 
+/// @brief State of the callback.
+///
+/// Values smaller than 0 indicate an error.
+/// 0 means the callback is finished.
+/// Values greater than 0 indicate the callback isn't finished yet.
+enum class callback_state : int {
+  INVALID = -1,
+  DONE = 0,
+  IN_FLIGHT,
+};
+
+template <typename Data>
+class nl_task {
+  struct nl_cb *cb;
+  std::atomic<callback_state> state;
+  Data data;
+
+ public:
+  nl_task(int family, uint8_t request,
+          std::function<int(struct nl_msg *, Data *)> processor);
+  ~nl_task();
+};
+
 class net_device_cache {
   struct nl_sock *sock;
   struct nl_cache *nl_cache;
   int nl_cache_size;
+
+  int id_nl80211;
+
+  void setup_callbacks();
 
  public:
   net_device_cache();
