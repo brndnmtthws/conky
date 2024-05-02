@@ -140,7 +140,7 @@ void run_all_callbacks() {
     if (cb.remaining-- == 0) {
       /* run the callback as long as someone holds a pointer to it;
        * if no one owns the callback, run it at most UNUSED_MAX times */
-      if (!i->unique() || ++cb.unused < UNUSED_MAX) {
+      if (i->use_count() > 1 || ++cb.unused < UNUSED_MAX) {
         cb.remaining = cb.period - 1;
         cb.run();
         if (cb.wait) { ++wait; }
