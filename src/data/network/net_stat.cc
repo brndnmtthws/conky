@@ -379,15 +379,15 @@ void print_wireless_essid(struct text_object *obj, char *p,
 
   if (!ns) {
     for (unsigned int i = 0; *(netstats[i].dev) != 0; i++) {
-      if (*(netstats[i].essid) != 0) {
-        snprintf(p, p_max_size, "%s", netstats[i].essid);
+      if (!netstats[i].essid.empty()) {
+        snprintf(p, p_max_size, "%s", netstats[i].essid.c_str());
         return;
       }
     }
     return;
   }
 
-  snprintf(p, p_max_size, "%s", ns->essid);
+  snprintf(p, p_max_size, "%s", ns->essid.c_str());
 }
 void print_wireless_mode(struct text_object *obj, char *p,
                          unsigned int p_max_size) {
@@ -435,7 +435,7 @@ void print_wireless_ap(struct text_object *obj, char *p,
 
   if (!ns) return;
 
-  snprintf(p, p_max_size, "%s", ns->ap);
+  snprintf(p, p_max_size, "%s", ns->ap.c_str());
 }
 void print_wireless_link_qual(struct text_object *obj, char *p,
                               unsigned int p_max_size) {

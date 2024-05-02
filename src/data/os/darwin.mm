@@ -702,14 +702,14 @@ void update_wlan_stats(struct net_stat *ns) {
   /*
    * Setup
    */
-  memcpy(ns->essid, essid, sizeof(char)*strlen(essid));
+  ns->essid = std::string(essid);
   ns->channel = interface.wlanChannel.channelNumber;
   memcpy(ns->freq, freq, sizeof(char)*strlen(freq));
   memcpy(ns->bitrate, bitrate, sizeof(char)*strlen(bitrate));
   memcpy(ns->mode, mode, sizeof(char)*strlen(mode));
   ns->link_qual = 0;
   ns->link_qual_max = 0;
-  memcpy(ns->ap, ap, sizeof(char)*strlen(ap));
+  ns->ap = std::string(ap);
 }
 
 #endif /* BUILD_WLAN */
