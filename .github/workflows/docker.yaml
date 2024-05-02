@@ -2,7 +2,13 @@ name: Docker
 
 on:
   push:
-    # Publish `main` as Docker `latest` image.
+    branches:
+      - main
+    paths-ignore:
+      - web/**
+      - doc/**
+
+  pull_request:
     branches:
       - main
     paths-ignore:
