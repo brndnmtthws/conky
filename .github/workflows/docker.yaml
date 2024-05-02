@@ -29,7 +29,7 @@ env:
   DOCKER_BUILDKIT: 1
 
 jobs:
-  buildx:
+  docker-buildx:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -41,26 +41,48 @@ jobs:
         uses: docker/setup-buildx-action@v3
       - name: Log into Dockerhub registry
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u $DOCKERHUB_ACCOUNT --password-stdin
-      - name: Build
+      - name: Build and push Docker image
+        env:
+          RELEASE: "${{ startsWith(github.ref, 'refs/tags/') && 'ON' || 'OFF' }}"
         run: |
+          set -ex
+
           DOCKERHUB_IMAGE_ID=$DOCKERHUB_ACCOUNT/$IMAGE_NAME
 
           # Change all uppercase to lowercase
           DOCKERHUB_IMAGE_ID=$(echo $DOCKERHUB_IMAGE_ID | tr '[A-Z]' '[a-z]')
 
+          image_tags=()
+
           # Strip git ref prefix from version
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          VERSION_TAG=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
 
           # Strip "v" prefix from tag name
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION_TAG=$(echo $VERSION_TAG | sed -e 's/^v//')
 
-          # Use Docker `latest` tag convention
-          [ "$VERSION" == "main" ] && VERSION=latest
+          image_tags+=("--tag" "$DOCKERHUB_IMAGE_ID:$VERSION_TAG")
+
+          if [ "$RELEASE" == "ON" ]; then
+            # tag as latest on releases
+            image_tags+=("--tag" "$DOCKERHUB_IMAGE_ID:latest")
+          fi
+
+          # Only build amd64 on PRs, build all platforms on main. The arm builds
+          # take far too long.
+          image_platforms="--platform linux/amd64"
+          push_image=""
+          cache_tag="pr-cache"
+          if [ "${{ github.ref }}" == "refs/head/main" ]; then
+            # Only push on main
+            push_image="--push"
+            image_platforms="--platform linux/arm/v7,linux/arm64/v8,linux/amd64"
+            cache_tag="main-cache"
+          fi
 
           docker buildx build \
-            --push \
-            --platform linux/arm/v7,linux/arm64/v8,linux/amd64 \
-            --cache-from=type=registry,ref=$DOCKERHUB_ACCOUNT/$IMAGE_NAME:buildcache \
-            --cache-to=type=registry,ref=$DOCKERHUB_ACCOUNT/$IMAGE_NAME:buildcache,mode=max \
-            --tag $DOCKERHUB_IMAGE_ID:$VERSION \
+            ${push_image} \
+            ${image_platforms} \
+            --cache-from=type=registry,ref=$DOCKERHUB_ACCOUNT/$IMAGE_NAME:$cache_tag \
+            --cache-to=type=registry,ref=$DOCKERHUB_ACCOUNT/$IMAGE_NAME:$cache_tag,mode=max \
+            "${image_tags[@]}" \
             .
