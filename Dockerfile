@@ -108,14 +108,14 @@ RUN apt-get update \
   libc++1 \
   libc++abi1 \
   libcairo2 \
-  libcurl4 \
+  libcurl4t64 \
   libdbus-glib-1-2 \
-  libical3 \
-  libimlib2 \
+  libical3t64 \
+  libimlib2t64 \
   libircclient1 \
-  libiw30 \
+  libiw30t64 \
   liblua5.3-0 \
-  libmicrohttpd12 \
+  libmicrohttpd12t64 \
   libmysqlclient21 \
   libncurses6 \
   libpulse0 \
