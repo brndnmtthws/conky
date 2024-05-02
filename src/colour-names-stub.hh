@@ -23,6 +23,6 @@ class color_name_hash {
 };
 
 const struct rgb *color_name_hash::in_word_set(const char *str, size_t len) {
-  DBGP("color parsing not supported");
+  DBGP2("color parsing not supported");
   return nullptr;
 }
