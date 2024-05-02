@@ -30,20 +30,25 @@
             default = conky;
           };
 
-          apps.conky = flake-utils.lib.mkApp {drv = packages.conky;};
-          apps.default = apps.conky;
-          devShells.default = mkShell {
-            buildInputs =
-              packages.conky.buildInputs
-              ++ packages.conky.nativeBuildInputs
-              ++ [
-                alejandra # for beautifying flake
-                lefthook # for git hooks
-                nodejs # for web/ stuff
-                # for docs
-                (python3.withPackages (ps: with ps; [jinja2]))
-              ];
+          apps.conky = flake-utils.lib.mkApp {
+            drv = packages.conky;
           };
+          apps.default = apps.conky;
+          devShells.default =
+            mkShell.override {
+              stdenv = llvmPackages_18.libcxxStdenv;
+            } rec {
+              buildInputs =
+                packages.conky.buildInputs
+                ++ packages.conky.nativeBuildInputs
+                ++ [
+                  alejandra # for beautifying flake
+                  lefthook # for git hooks
+                  nodejs # for web/ stuff
+                  # for docs
+                  (python3.withPackages (ps: with ps; [jinja2]))
+                ];
+            };
         }
     )
     // {
