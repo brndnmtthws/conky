@@ -30,7 +30,7 @@ push_image=""
 cache_tag="pr-cache"
 
 # Only push on main
-if [[ "$GITHUB_REF" == refs/head/main ]]; then
+if [[ "$GITHUB_REF" == refs/heads/main ]]; then
     push_image="--push"
     image_platforms="--platform linux/arm/v7,linux/arm64/v8,linux/amd64"
     cache_tag="main-cache"
