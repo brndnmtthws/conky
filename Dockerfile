@@ -22,6 +22,9 @@ RUN apt-get update \
   libimlib2-dev \
   libircclient-dev \
   libiw-dev \
+  libnl-3-dev\
+  libnl-genl-3-dev\
+  libnl-route-3-dev\
   libjsoncpp-dev \
   liblua5.3-dev \
   libmicrohttpd-dev \
