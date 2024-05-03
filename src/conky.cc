@@ -1917,6 +1917,11 @@ void clean_up(void) {
   state.reset();
 }
 
+void handle_terminate() {
+  clean_up();
+  std::abort();
+}
+
 static void set_default_configurations() {
   update_uname();
   info.memmax = 0;

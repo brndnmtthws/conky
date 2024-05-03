@@ -282,6 +282,8 @@ inline void reset_optind() {
 }
 
 int main(int argc, char **argv) {
+  std::set_terminate(&handle_terminate);
+
 #ifdef BUILD_I18N
   setlocale(LC_ALL, "");
   bindtextdomain(PACKAGE_NAME, LOCALE_DIR);

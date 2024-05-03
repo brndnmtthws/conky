@@ -106,6 +106,9 @@ struct text_object;
 /* sony support */
 #include "sony.h"
 
+void clean_up(void);
+void handle_terminate();
+
 /* A size for temporary, static buffers to use when
  * one doesn't know what to choose. Defaults to 256.  */
 extern conky::range_config_setting<unsigned int> text_buffer_size;

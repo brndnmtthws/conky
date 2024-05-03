@@ -62,8 +62,6 @@ class obj_create_error : public std::runtime_error {
   obj_create_error(const std::string &msg) : std::runtime_error(msg) {}
 };
 
-void clean_up(void);
-
 template <typename... Args>
 inline void gettextize_format(const char *format, Args &&...args) {
   fprintf(stderr, _(format), args...);
@@ -80,24 +78,23 @@ void NORM_ERR(const char *format, Args &&...args) {
   fputs("\n", stderr);
 }
 
+/* critical error */
+template <typename... Args>
+__attribute__((noreturn)) inline void CRIT_ERR(const char *format,
+                                               Args &&...args) {
+  NORM_ERR(format, args...);
+  std::terminate();
+}
+
 /* critical error with additional cleanup */
 template <typename... Args>
 __attribute__((noreturn)) inline void CRIT_ERR_FREE(void *memtofree1,
                                                     void *memtofree2,
                                                     const char *format,
                                                     Args &&...args) {
-  NORM_ERR(format, args...);
   free(memtofree1);
   free(memtofree2);
-  clean_up();
-  exit(EXIT_FAILURE);
-}
-
-/* critical error */
-template <typename... Args>
-__attribute__((noreturn)) inline void CRIT_ERR(const char *format,
-                                               Args &&...args) {
-  CRIT_ERR_FREE(nullptr, nullptr, format, args...);
+  CRIT_ERR(format, args...);
 }
 
 namespace conky {
