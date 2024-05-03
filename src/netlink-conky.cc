@@ -7,22 +7,47 @@
 #include <variant>
 
 template <size_t Size>
-struct nla_policy_cache {
-  std::array<struct nla_policy, Size> value;
+class nested_attributes {
+  std::array<struct nla_policy, Size + 1> value_policies;
 
-  constexpr nla_policy_cache(
+ public:
+  constexpr nested_attributes(
       const std::initializer_list<
           std::pair<size_t, std::variant<uint16_t, nla_policy>>> &data) {
     for (const auto &kv : data) {
       if (std::holds_alternative<uint16_t>(kv.second)) {
-        value[kv.first] = nla_policy{.type = std::get<uint16_t>(kv.second)};
+        value_policies[kv.first] =
+            nla_policy{.type = std::get<uint16_t>(kv.second)};
+      } else if (std::holds_alternative<nla_policy>(kv.second)) {
+        value_policies[kv.first] = std::get<nla_policy>(kv.second);
       } else {
-        value[kv.first] = std::get<nla_policy>(kv.second);
+        // caused when assignment throws an exception
+        // shouldn't happen as nla_policy is a POD type
+        NORM_ERR("erroneous nla_policy variant value: %d", kv.first);
       }
     }
   }
 
-  nla_policy *data() { return this->value.data(); }
+  inline nla_policy *policies() { return this->value_policies.data(); }
+
+  class value_index {
+    std::array<struct nlattr *, Size + 1> values;
+
+   public:
+    inline std::array<struct nlattr *, Size + 1> &attributes() {
+      return this->values.data();
+    }
+
+    inline struct nlattr *attribute(size_t index) {
+      return this->values[index];
+    }
+  };
+
+  inline value_index parse(struct nlattr *attrib) {
+    value_index result;
+    nla_parse_nested(result.values, Size, attrib, value_policies.data());
+    return result;
+  }
 };
 
 template class nl_task<net_stat *>;
@@ -250,6 +275,7 @@ struct rtnl_link *net_device_cache::get_link(const nl_link_id &id) {
   if (std::holds_alternative<int>(id)) {
     return rtnl_link_get(this->nl_cache, std::get<int>(id));
   } else if (std::holds_alternative<char *>(id)) {
+    NORM_ERR("cache: %p, name: %s", this->nl_cache, std::get<char *>(id));
     return rtnl_link_get_by_name(this->nl_cache, std::get<char *>(id));
   } else {
     return rtnl_link_get_by_name(this->nl_cache,
