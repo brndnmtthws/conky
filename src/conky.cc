@@ -171,9 +171,6 @@ const char builtin_config_magic[] = "==builtin==";
 // #define SIGNAL_BLOCKING
 #undef SIGNAL_BLOCKING
 
-/* debugging level, used by logging.h */
-int global_debug_level = 0;
-
 /* disable inotify auto reload feature if desired */
 static conky::simple_config_setting<bool> disable_auto_reload(
     "disable_auto_reload", false, false);
@@ -1915,6 +1912,7 @@ void clean_up(void) {
 
   conky::cleanup_config_settings(*state);
   state.reset();
+  conky::log::terminate_logging();
 }
 
 void handle_terminate() {
@@ -2216,7 +2214,7 @@ void initialisation(int argc, char **argv) {
       case 'u':
         state->pushnumber(strtod(optarg, &conv_end));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is an invalid update interval", optarg);
+          USER_ERR("'%s' is an invalid update interval", optarg);
         }
         update_interval.lua_set(*state);
         break;
@@ -2224,7 +2222,7 @@ void initialisation(int argc, char **argv) {
       case 'i':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is an invalid number of update times", optarg);
+          USER_ERR("'%s' is an invalid number of update times", optarg);
         }
         total_run_times.lua_set(*state);
         break;
@@ -2232,7 +2230,7 @@ void initialisation(int argc, char **argv) {
       case 'x':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is an invalid value for the X-position", optarg);
+          USER_ERR("'%s' is an invalid value for the X-position", optarg);
         }
         gap_x.lua_set(*state);
         break;
@@ -2240,7 +2238,7 @@ void initialisation(int argc, char **argv) {
       case 'y':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is a wrong value for the Y-position", optarg);
+          USER_ERR("'%s' is a wrong value for the Y-position", optarg);
         }
         gap_y.lua_set(*state);
         break;

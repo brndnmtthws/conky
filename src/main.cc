@@ -141,7 +141,7 @@ static void print_version() {
 #ifdef BUILD_PULSEAUDIO
             << _("  * PulseAudio\n")
 #endif /* BUIL_PULSEAUDIO */
-#ifdef DEBUG
+#ifndef NDEBUG
             << _("  * Debugging extensions\n")
 #endif
 #if defined BUILD_LUA_CAIRO || defined BUILD_LUA_IMLIB2 || BUILD_LUA_RSVG
@@ -283,6 +283,7 @@ inline void reset_optind() {
 
 int main(int argc, char **argv) {
   std::set_terminate(&handle_terminate);
+  conky::log::init_system_logging();
 
 #ifdef BUILD_I18N
   setlocale(LC_ALL, "");
@@ -322,7 +323,7 @@ int main(int argc, char **argv) {
 
     switch (c) {
       case 'D':
-        global_debug_level++;
+        conky::log::log_more();
         break;
       case 'v':
         print_version();
@@ -334,9 +335,7 @@ int main(int argc, char **argv) {
         current_config = optarg;
         break;
       case 'q':
-        if (freopen("/dev/null", "w", stderr) == nullptr) {
-          CRIT_ERR("could not open /dev/null as stderr!");
-        }
+        conky::log::set_log_level(conky::log::level::OFF);
         break;
       case 'h':
         print_help(argv[0]);

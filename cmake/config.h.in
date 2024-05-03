@@ -6,8 +6,6 @@
 #ifndef _conky_config_h_
 #define _conky_config_h_
 
-#cmakedefine DEBUG
-
 #define SYSTEM_NAME "@CMAKE_SYSTEM_NAME@"
 #define PACKAGE_NAME "@PROJECT_NAME@"
 #define VERSION "@VERSION@"

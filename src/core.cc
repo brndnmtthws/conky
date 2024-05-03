@@ -2034,7 +2034,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END {
     auto *buf = static_cast<char *>(malloc(text_buffer_size.get(*state)));
 
-    NORM_ERR("unknown variable '$%s'", s);
+    LOG_WARNING("unknown variable '$%s'", s);
     snprintf(buf, text_buffer_size.get(*state), "${%s}", s);
     obj_be_plain_text(obj, buf);
     free(buf);

@@ -88,10 +88,10 @@
 #endif
 
 /* debugging defines */
-#define DEBUG_MODE
+#undef NDEBUG
 
 /* (E)nhanced printf */
-#ifdef DEBUG_MODE
+#ifndef NDEBUG
 #include <cstdarg>
 void eprintf(const char *fmt, ...) {
   va_list args;
@@ -928,9 +928,8 @@ void get_cpu_count() {
     /*
      * Allocate ncpus+1 slots because cpu_usage[0] is overall usage.
      */
-    info.cpu_usage =
-        static_cast<float *>(malloc((info.cpu_count + 1) * sizeof(float)));
-    if (info.cpu_usage == nullptr) { CRIT_ERR("malloc"); }
+    info.cpu_usage = new float[info.cpu_count + 1];
+    if (info.cpu_usage == nullptr) { CRIT_ERR("unable to allocate cpu_usage for %d cores", info.cpu_count + 1); }
   }
 }
 
