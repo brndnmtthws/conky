@@ -21,10 +21,12 @@ extern "C" {
 #include <atomic>
 #include <functional>
 #include <map>
+#include <optional>
 #include <string>
 #include <variant>
 
 using nl_link_id = std::variant<int, char *, std::string>;
+using nl_interface_id = size_t;
 
 /// @brief State of the callback.
 ///
@@ -37,25 +39,29 @@ enum class callback_state : int {
   IN_FLIGHT,
 };
 
-template <typename Data>
+template <typename... Args>
 struct nl_task {
-  using response_proc = std::function<int(struct nl_msg *, Data *)>;
+  using response_proc = std::function<int(struct nl_msg *, Args...)>;
+  using arg_state = std::tuple<Args...> *;
 
  private:
   struct nl_cb *cb;
-  std::atomic<callback_state> state;
+  std::atomic<callback_state> state = callback_state::DONE;
+  std::atomic<arg_state> arguments = nullptr;
 
   int family;
   uint8_t request;
   response_proc processor;
 
-  void send_message(struct nl_sock *sock);
+  static int valid_handler(struct nl_msg *msg, void *arg);
+  static int finish_handler(struct nl_msg *msg, void *arg);
+  static int invalid_handler(struct nl_msg *msg, void *arg);
+
+  void send_message(struct nl_sock *sock, Args &&...args);
 
  public:
   nl_task(int family, uint8_t request, response_proc processor);
   ~nl_task();
-
-  nl_task<Data> &operator=(const nl_task<Data> &other);
 };
 
 class net_device_cache {
@@ -65,8 +71,8 @@ class net_device_cache {
 
   int id_nl80211;
 
-  nl_task<net_stat> interface_data_cb;
-  nl_task<net_stat> station_data_cb;
+  nl_task<net_stat *> *interface_data_cb;
+  nl_task<net_stat *, nl_interface_id> *station_data_cb;
 
   void setup_callbacks();
 

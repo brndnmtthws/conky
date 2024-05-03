@@ -25,31 +25,38 @@ struct nla_policy_cache {
   nla_policy *data() { return this->value.data(); }
 };
 
-template class nl_task<net_stat>;
+template class nl_task<net_stat *>;
+template class nl_task<net_stat *, nl_interface_id>;
 
-template <typename Data>
-int valid_handler(struct nl_msg *msg, void *arg) {
-  using response_proc = typename nl_task<Data>::response_proc;
+using nl_cb_t = std::remove_pointer_t<nl_recvmsg_msg_cb_t>;
+
+template <typename... Args>
+int nl_task<Args...>::valid_handler(struct nl_msg *msg, void *arg) {
+  using response_proc = typename nl_task<Args...>::response_proc;
+  using arg_state = typename nl_task<Args...>::arg_state;
 
   NORM_ERR("DEBUG: valid_handler recv msg addr %lp", msg);
-  auto arg_pair = static_cast<std::pair<response_proc *, Data *> *>(arg);
-  response_proc *processor = arg_pair->first;
-  Data *data = arg_pair->second;
-  return (*processor)(msg, static_cast<Data *>(data));
+  auto *task = static_cast<nl_task<Args...> *>(arg);
+  return std::apply(task->processor,
+                    std::tuple_cat(std::make_tuple(msg),
+                                   std::tuple(*(task->arguments.load()))));
 }
-int finish_handler(struct nl_msg *msg, void *arg) {
+template <typename... Args>
+int nl_task<Args...>::finish_handler(struct nl_msg *msg, void *arg) {
   reinterpret_cast<std::atomic<callback_state> *>(arg)->store(
       callback_state::DONE, std::memory_order_release);
+  // FIXME: DELETE ARGUMENTS
   return NL_SKIP;
-};
-int invalid_handler(struct nl_msg *msg, void *arg) {
+}
+template <typename... Args>
+int nl_task<Args...>::invalid_handler(struct nl_msg *msg, void *arg) {
   reinterpret_cast<std::atomic<callback_state> *>(arg)->store(
       callback_state::INVALID, std::memory_order_release);
   return NL_SKIP;
-};
+}
 
-template <typename Data>
-nl_task<Data>::nl_task(int family, uint8_t request, response_proc processor)
+template <typename... Args>
+nl_task<Args...>::nl_task(int family, uint8_t request, response_proc processor)
     : family(family), request(request), processor(processor) {
   this->cb = nl_cb_alloc(NL_CB_DEFAULT);
   if (!this->cb) {
@@ -57,21 +64,27 @@ nl_task<Data>::nl_task(int family, uint8_t request, response_proc processor)
     return;
   }
 
-  nl_cb_set(this->cb, NL_CB_VALID, NL_CB_CUSTOM, &valid_handler<Data>,
-            std::make_pair(&this->processor, &this->data));
-  nl_cb_set(this->cb, NL_CB_FINISH, NL_CB_CUSTOM, &finish_handler,
-            &this->state);
-  nl_cb_set(this->cb, NL_CB_INVALID, NL_CB_CUSTOM, &invalid_handler,
-            &this->state);
+  nl_cb_set(this->cb, NL_CB_VALID, NL_CB_CUSTOM,
+            &nl_task<Args...>::valid_handler, static_cast<void *>(this));
+  nl_cb_set(this->cb, NL_CB_FINISH, NL_CB_CUSTOM,
+            &nl_task<Args...>::finish_handler,
+            static_cast<void *>(&this->state));
+  nl_cb_set(this->cb, NL_CB_INVALID, NL_CB_CUSTOM,
+            &nl_task<Args...>::invalid_handler,
+            static_cast<void *>(&this->state));
 };
 
-template <typename Data>
-nl_task<Data>::~nl_task() {
+template <typename... Args>
+nl_task<Args...>::~nl_task() {
   nl_cb_put(this->cb);
 };
 
-template <typename Data>
-void nl_task<Data>::send_message(struct nl_sock *sock) {
+template <typename... Args>
+void nl_task<Args...>::send_message(struct nl_sock *sock, Args &&...args) {
+  this->state.store(callback_state::IN_FLIGHT, std::memory_order_release);
+  this->arguments.store(new auto(std::make_tuple<Args...>(std::move(args)...)),
+                        std::memory_order_release);
+
   struct nl_msg *msg = nlmsg_alloc();
   if (!msg) {
     NORM_ERR("failed to allocate netlink message.");
@@ -91,16 +104,6 @@ void nl_task<Data>::send_message(struct nl_sock *sock) {
     nl_recvmsgs(sock, this->cb);
   }
   nlmsg_free(msg);
-}
-
-template <typename Data>
-nl_task<Data> &nl_task<Data>::operator=(const nl_task<Data> &other) {
-  nl_cb_put(this->cb);
-  this->cb = other.cb;
-  this->state.store(other.state.load());
-  this->family = other.family;
-  this->request = other.request;
-  return *this;
 }
 
 int ieee80211_frequency_to_channel(int freq) {
@@ -190,7 +193,8 @@ int interface_callback(struct nl_msg *msg, net_stat *ns) {
   return NL_SKIP;
 }
 
-int station_callack(struct nl_msg *msg, net_stat *ns) {
+int station_callack(struct nl_msg *msg, net_stat *ns,
+                    nl_interface_id interface) {
   /*
   ns->bitrate NL80211_STA_INFO_TX_BITRATE
   ns->link_qual NL80211_STA_INFO_SIGNAL
@@ -200,9 +204,9 @@ int station_callack(struct nl_msg *msg, net_stat *ns) {
 }
 
 void net_device_cache::setup_callbacks() {
-  this->interface_data_cb = nl_task<net_stat>(
+  this->interface_data_cb = new nl_task<net_stat *>(
       this->id_nl80211, NL80211_CMD_GET_INTERFACE, interface_callback);
-  this->station_data_cb = nl_task<net_stat>(
+  this->station_data_cb = new nl_task<net_stat *, nl_interface_id>(
       this->id_nl80211, NL80211_CMD_GET_STATION, station_callack);
 }
 
@@ -233,6 +237,8 @@ net_device_cache::net_device_cache() {
 }
 
 net_device_cache::~net_device_cache() {
+  if (this->station_data_cb != nullptr) { delete this->station_data_cb; }
+  if (this->interface_data_cb != nullptr) { delete this->interface_data_cb; }
   if (this->nl_cache != nullptr) { nl_cache_free(this->nl_cache); }
   if (this->sock != nullptr) {
     nl_close(this->sock);
@@ -258,16 +264,17 @@ void net_device_cache::update() {
   }
 }
 
+/*
 void parse_rate_info(struct nlattr *bitrate_attr, char *buf, int buflen) {
   int rate = 0;
   char *pos = buf;
   struct nlattr *rinfo[NL80211_RATE_INFO_MAX + 1];
   static auto rate_policy = nla_policy_cache<NL80211_RATE_INFO_MAX + 1>{
-      {NL80211_RATE_INFO_BITRATE, NLA_U16},
-      {NL80211_RATE_INFO_BITRATE32, NLA_U32},
-      {NL80211_RATE_INFO_MCS, NLA_U8},
-      {NL80211_RATE_INFO_40_MHZ_WIDTH, NLA_FLAG},
-      {NL80211_RATE_INFO_SHORT_GI, NLA_FLAG}};
+      {{NL80211_RATE_INFO_BITRATE, NLA_U16},
+       {NL80211_RATE_INFO_BITRATE32, NLA_U32},
+       {NL80211_RATE_INFO_MCS, NLA_U8},
+       {NL80211_RATE_INFO_40_MHZ_WIDTH, NLA_FLAG},
+       {NL80211_RATE_INFO_SHORT_GI, NLA_FLAG}}};
 
   if (nla_parse_nested(rinfo, NL80211_RATE_INFO_MAX, bitrate_attr,
                        rate_policy.data())) {
@@ -334,6 +341,7 @@ void parse_rate_info(struct nlattr *bitrate_attr, char *buf, int buflen) {
     pos += snprintf(pos, buflen - (pos - buf), " EHT-RU-ALLOC %d",
                     nla_get_u8(rinfo[NL80211_RATE_INFO_EHT_RU_ALLOC]));
 }
+*/
 
 void net_device_cache::populate_interface(struct net_stat *ns,
                                           const nl_link_id &link) {
