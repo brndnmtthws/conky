@@ -43,6 +43,7 @@
 #include <filesystem>
 #include <optional>
 #include <stdexcept>
+#include <tuple>
 #include <type_traits>
 
 #if __has_include(<syslog.h>)
@@ -144,7 +145,6 @@ struct source_details {
 };
 
 struct log_details {
-  level log_level = level::NOTICE;
   std::optional<source_details> source;
   std::optional<instant> time;
 };
@@ -171,6 +171,20 @@ inline size_t format_log_time(FILE *out, size_t max_len, instant time) {
   size_t result = format_log_time(&buffer[0], max_len, time);
   fprintf(out, "%s", buffer);
   return result;
+}
+
+#define VAL_AND_LEN(STR) (std::make_pair("][" STR "]", sizeof(STR) + 3))
+const std::array<std::pair<const char *, size_t>, 7> _FMT_DATA{
+    VAL_AND_LEN("CRITICAL"), VAL_AND_LEN("ERROR"), VAL_AND_LEN("WARNING"),
+    VAL_AND_LEN("NOTICE"),   VAL_AND_LEN("INFO"),  VAL_AND_LEN("DEBUG"),
+    VAL_AND_LEN("TRACE"),
+};
+#undef VAL_AND_LEN
+constexpr inline const char *_log_level_fmt(level log_level) {
+  return _FMT_DATA[static_cast<size_t>(log_level) - 2].first;
+}
+constexpr inline size_t _log_level_fmt_len(level log_level) {
+  return _FMT_DATA[static_cast<size_t>(log_level) - 2].second;
 }
 
 /// @brief Given some `base` path string view, returns last part of the string
@@ -210,19 +224,19 @@ inline void _impl_fprintf(FILE *out, const char *format) {
 }
 }  // namespace _priv
 
-template <typename... Args>
+template <level log_level, typename... Args>
 inline void log_print_fmt(log_details &&details, const char *format,
                           Args &&...args) {
 #ifdef HAS_SYSLOG
-  int lvl = static_cast<int>(details.log_level);
-  if (lvl >= static_cast<int>(level::CRITICAL) &&
-      lvl < static_cast<int>(level::TRACE)) {
-    _priv::_impl_syslog(details.log_level, format, args...);
+  if constexpr (static_cast<int>(log_level) >=
+                    static_cast<int>(level::CRITICAL) &&
+                static_cast<int>(log_level) < static_cast<int>(level::TRACE)) {
+    _priv::_impl_syslog(log_level, format, args...);
   }
 #endif
 
   auto streams = _log_streams();
-  if (!is_enabled(details.log_level) && streams[1] != nullptr) return;
+  if (!is_enabled(log_level) && streams[1] != nullptr) return;
 
   static const size_t MAX_FILE_LEN = 32;
   static const size_t MAX_LOCATION_LEN = MAX_FILE_LEN + 1 + 5;  // name:line
@@ -230,10 +244,14 @@ inline void log_print_fmt(log_details &&details, const char *format,
       2 + TIME_LEN + 2 + MAX_LEVEL_NAME_LEN + 2 + MAX_LOCATION_LEN;
   char preamble[PREAMBLE_LENGTH + 1] = "[";
   size_t offset = 1;
+  // append time
   offset += _priv::format_log_time(&preamble[offset], TIME_LEN,
                                    details.time.value_or(clock::now()));
-  offset += snprintf(&preamble[offset], PREAMBLE_LENGTH - offset, "][%s]",
-                     log_level_to_cstr(details.log_level));
+  // append log level
+  std::strncat(&preamble[offset], _priv::_log_level_fmt(log_level),
+               _priv::_log_level_fmt_len(log_level));
+  offset += _priv::_log_level_fmt_len(log_level) - 1;
+  // append source information
   if (details.source.has_value()) {
     auto source = details.source.value();
     offset += snprintf(&preamble[offset], PREAMBLE_LENGTH - offset, "[%s:%ld]",
@@ -241,7 +259,7 @@ inline void log_print_fmt(log_details &&details, const char *format,
   }
 
   // localized output to console
-  if (is_enabled(details.log_level)) {
+  if (is_enabled(log_level)) {
     fprintf(streams[0], "%s: ", preamble);
     _priv::_impl_fprintf(streams[0], _(format), args...);
     fputs("\n", streams[0]);
@@ -254,29 +272,23 @@ inline void log_print_fmt(log_details &&details, const char *format,
   }
 }
 
-template <typename... Args>
-void log_location(level log_level, const char *file, size_t line,
-                  const char *format, Args &&...args) {
-  log_print_fmt(
+template <level log_level, typename... Args>
+void log_location(const char *file, size_t line, const char *format,
+                  Args &&...args) {
+  log_print_fmt<log_level>(
       log_details{
-          log_level,
-          source_details{file, line},
+          std::optional(source_details{file, line}),
       },
       format, args...);
 }
 
-template <typename... Args>
-void log(level log_level, const char *format, Args &&...args) {
-  log_print_fmt(
-      log_details{
-          log_level,
-      },
-      format, args...);
+template <level log_level, typename... Args>
+void log(const char *format, Args &&...args) {
+  log_print_fmt<log_level>(log_details{}, format, args...);
 }
 
 #define LOG(Level, ...)                                              \
-  ::conky::log::log_location(                                        \
-      ::conky::log::level::Level,                                    \
+  ::conky::log::log_location<::conky::log::level::Level>(            \
       ::conky::log::_priv::relative_source_path(__FILE__), __LINE__, \
       __VA_ARGS__)
 
