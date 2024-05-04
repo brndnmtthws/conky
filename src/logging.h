@@ -32,6 +32,8 @@
 
 #include "logger.hh"
 
+#include <string>
+
 class fork_throw : public std::runtime_error {
  public:
   fork_throw() : std::runtime_error("Fork happened") {}
@@ -92,9 +94,9 @@ namespace _priv_error_print {
 template <typename... Args>
 inline std::string alloc_printf(const char *format, Args &&...args) {
   auto size = std::snprintf(nullptr, 0, format, args...);
-  std::string output(size + 1, '\0');
-  std::sprintf(&output[0], format, args...);
-  return output;
+  char output[size + 1];
+  std::snprintf(output, sizeof(output), format, args...);
+  return std::string(&output[0]);
 }
 inline std::string alloc_printf(const char *format) {
   return std::string(format);
@@ -103,6 +105,10 @@ inline std::string alloc_printf(const char *format) {
 
 class error : public std::runtime_error {
  public:
+  /// @brief Construct a new error object.
+  ///
+  /// @param Msg Already localized error message.
+  error(const std::string &msg) : std::runtime_error(msg) {}
   error(const char *msg) : std::runtime_error(_(msg)) {}
   template <typename... Args>
   error(const char *format, Args &&...args)

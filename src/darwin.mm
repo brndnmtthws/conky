@@ -87,11 +87,8 @@
 #include <time.h>
 #endif
 
-/* debugging defines */
-#undef NDEBUG
-
 /* (E)nhanced printf */
-#ifndef NDEBUG
+#if true // ifdef NDEBUG
 #include <cstdarg>
 void eprintf(const char *fmt, ...) {
   va_list args;

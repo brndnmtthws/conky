@@ -36,8 +36,11 @@
 #define gettext
 #endif
 
-#define NORM_ERR(Format, ...) \
-  fprintf(stderr, gettext(Format), ##__VA_ARGS__);
+// TODO: inject reference to conky logger
+// Lua allows modifying .so loading, so for each loaded library check if it has
+// some hardcoded set_logger function symbol, and call it to set per-library
+// reference to the global logger.
+#define NORM_ERR(Format, ...) fprintf(stderr, gettext(Format), ##__VA_ARGS__);
 
 void cairo_place_image(const char *file, cairo_t *cr, int x, int y, int width,
                        int height, double alpha) {

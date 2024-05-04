@@ -72,7 +72,7 @@ if(BUILD_LUA_IMLIB2)
   add_library(conky-imlib2 MODULE ${luaimlib2_src})
   set_target_properties(conky-imlib2 PROPERTIES OUTPUT_NAME "imlib2")
 
-  target_link_libraries(conky-imlib2 ${luaimlib2_libs} toluapp_lib_static )
+  target_link_libraries(conky-imlib2 ${luaimlib2_libs} toluapp_lib_static)
   set(lua_libs ${lua_libs} conky-imlib2)
 
   print_target_properties(conky-imlib2)
@@ -83,16 +83,14 @@ if(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
     ${CMAKE_CURRENT_SOURCE_DIR})
   wrap_tolua(luacairo_imlib2_helper_src cairo_imlib2_helper.pkg)
 
-  set(imlib_helper_libs ${luacairo_libs} ${luaimlib2_libs} toluapp_lib_static)
-  # if(BUILD_I18N)
-  #   set(imlib_helper_libs ${imlib_helper_libs} -lintl)
-  # endif()
-
   add_library(conky-cairo_imlib2_helper MODULE ${luacairo_imlib2_helper_src})
   set_target_properties(conky-cairo_imlib2_helper
     PROPERTIES OUTPUT_NAME "cairo_imlib2_helper")
 
-  target_link_libraries(conky-cairo_imlib2_helper ${imlib_helper_libs})
+  target_link_libraries(conky-cairo_imlib2_helper
+    ${luacairo_libs}
+    ${luaimlib2_libs}
+    toluapp_lib_static)
   set(lua_libs ${lua_libs} conky-cairo_imlib2_helper)
 endif(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
 

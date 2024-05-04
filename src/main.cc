@@ -281,8 +281,6 @@ inline void reset_optind() {
 #endif
 }
 
-conky::log::logger DEFAULT_LOGGER("conky");
-
 int main(int argc, char **argv) {
   std::set_terminate(&handle_terminate);
 
