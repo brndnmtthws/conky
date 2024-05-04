@@ -405,8 +405,8 @@ unique_display_t nvidia_display_setting::get_nvdisplay() {
   if (!nvdisplay.empty()) {
     unique_display_t nvd(XOpenDisplay(nvdisplay.c_str()), &close_nvdisplay);
     if (!nvd) {
-      NORM_ERR(nullptr, NULL, "can't open nvidia display: %s",
-               XDisplayName(nvdisplay.c_str()));
+      SYSTEM_ERR("can't open nvidia display: %s",
+                 XDisplayName(nvdisplay.c_str()));
     }
     return nvd;
   }
@@ -704,14 +704,14 @@ static inline int get_nvidia_target_count(Display *dpy, TARGET_ID tid) {
 
   if (num_tgts < 1 && tid == TARGET_GPU) {
     // Print error and exit if there's no NVIDIA's GPU
-    NORM_ERR(nullptr, NULL,
-             "%s:"
-             "\n          Trying to query Nvidia target failed (using the "
-             "proprietary drivers)."
-             "\n          Are you sure they are installed correctly and a "
-             "Nvidia GPU is in use?"
-             "\n          (display: %d,Nvidia target_count: %d)",
-             __func__, dpy, num_tgts);
+    SYSTEM_ERR(
+        "%s:"
+        "\n          Trying to query Nvidia target failed (using the "
+        "proprietary drivers)."
+        "\n          Are you sure they are installed correctly and a "
+        "Nvidia GPU is in use?"
+        "\n          (display: %d, Nvidia target_count: %d)",
+        __func__, dpy, num_tgts);
   }
 
   return num_tgts;
