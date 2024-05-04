@@ -215,6 +215,7 @@ inline void _impl_syslog(level log_level, const char *format, Args &&...args) {
 inline void _impl_syslog(level log_level, const char *format) {
   syslog(static_cast<int>(log_level), "%s", format);
 }
+
 template <typename... Args>
 inline void _impl_fprintf(FILE *out, const char *format, Args &&...args) {
   fprintf(out, format, args...);
@@ -316,7 +317,28 @@ void log(const char *format, Args &&...args) {
   LOG_CRITICAL(__VA_ARGS__); \
   std::terminate()
 
-extern void clean_up();
+namespace conky {
+namespace _priv_error_print {
+template <typename... Args>
+inline std::string alloc_printf(const char *format, Args &&...args) {
+  auto size = std::snprintf(nullptr, 0, format, args...);
+  std::string output(size + 1, '\0');
+  std::sprintf(&output[0], format, args...);
+  return output;
+}
+inline std::string alloc_printf(const char *format) {
+  return std::string(format);
+}
+}  // namespace _priv_error_print
+
+class error : public std::runtime_error {
+ public:
+  error(const char *msg) : std::runtime_error(std::string(_(msg))) {}
+  template <typename... Args>
+  error(const char *format, Args &&...args)
+      : error(_priv_error_print::alloc_printf(_(format), args...)) {}
+};
+}  // namespace conky
 
 /// @brief Error that warrants termination of the program, but is caused by user
 /// error (e.g. bad input) and as such a core dump isn't useful.
@@ -325,8 +347,7 @@ extern void clean_up();
 /// @param Args printf style arguments.
 #define USER_ERR(...)     \
   LOG_ERROR(__VA_ARGS__); \
-  clean_up();             \
-  std::exit(EXIT_FAILURE)
+  throw conky::error(__VA_ARGS__)
 
 /// @brief Error caused by system not supporting some required conky feature.
 ///
@@ -337,20 +358,12 @@ extern void clean_up();
 /// @param Args printf style arguments.
 #define SYSTEM_ERR(...)   \
   LOG_ERROR(__VA_ARGS__); \
-  clean_up();             \
-  std::exit(EXIT_FAILURE)
+  throw conky::error(__VA_ARGS__)
 
 /* critical error with additional cleanup */
 #define CRIT_ERR_FREE(memtofree1, memtofree2, ...) \
   free(memtofree1);                                \
   free(memtofree2);                                \
   SYSTEM_ERR(__VA_ARGS__);
-
-namespace conky {
-class error : public std::runtime_error {
- public:
-  error(const std::string &msg) : std::runtime_error(msg) {}
-};
-}  // namespace conky
 
 #endif /* _LOGGING_H */

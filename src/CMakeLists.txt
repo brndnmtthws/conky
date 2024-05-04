@@ -62,9 +62,12 @@ execute_process(
   COMMAND ${APP_GPERF} --ignore-case -LC++ -Zcolor_name_hash -t -7 -m1 -C -E
 )
 
+
+add_library(conky_logging logging.cc logging.h)
+set(conky_libs ${conky_libs} conky_logging)
+
 set(conky_sources
   ${conky_sources}
-  logging.cc
   c++wrap.cc
   c++wrap.hh
   colour-settings.cc

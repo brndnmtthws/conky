@@ -2019,12 +2019,7 @@ void load_config_file() {
     l.pushstring(current_config.c_str());
     l.call(1, 1);
 #else
-    char *syntaxerr;
-    if (asprintf(&syntaxerr, _(SYNTAX_ERR_READ_CONF), e.what())) {
-      std::string syntaxerrobj(syntaxerr);
-      free(syntaxerr);
-      throw conky::error(syntaxerrobj);
-    }
+    throw conky::error(SYNTAX_ERR_READ_CONF, e.what());
 #endif
   }
   l.call(0, 0);
@@ -2033,7 +2028,7 @@ void load_config_file() {
   l.getfield(-1, "text");
   l.replace(-2);
   if (l.type(-1) != lua::TSTRING) {
-    throw conky::error(_("missing text block in configuration"));
+    throw conky::error("missing text block in configuration");
   }
 
   /* Remove \\-\n. */
