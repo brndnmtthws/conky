@@ -281,9 +281,10 @@ inline void reset_optind() {
 #endif
 }
 
+conky::log::logger DEFAULT_LOGGER("conky");
+
 int main(int argc, char **argv) {
   std::set_terminate(&handle_terminate);
-  conky::log::init_system_logging();
 
 #ifdef BUILD_I18N
   setlocale(LC_ALL, "");
@@ -323,7 +324,7 @@ int main(int argc, char **argv) {
 
     switch (c) {
       case 'D':
-        conky::log::log_more();
+        DEFAULT_LOGGER.get_stream_target(stderr)->log_more();
         break;
       case 'v':
         print_version();
@@ -335,7 +336,8 @@ int main(int argc, char **argv) {
         current_config = optarg;
         break;
       case 'q':
-        conky::log::set_log_level(conky::log::level::OFF);
+        DEFAULT_LOGGER.get_stream_target(stderr)->set_log_level(
+            conky::log::level::OFF);
         break;
       case 'h':
         print_help(argv[0]);

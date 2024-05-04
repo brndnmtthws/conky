@@ -1912,7 +1912,6 @@ void clean_up(void) {
 
   conky::cleanup_config_settings(*state);
   state.reset();
-  conky::log::terminate_logging();
 }
 
 void handle_terminate() {
