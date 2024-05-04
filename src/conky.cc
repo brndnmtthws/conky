@@ -2084,7 +2084,7 @@ void set_current_config() {
 
 /* : means that character before that takes an argument */
 const char *getopt_string =
-    "vVqdDSs:t:u:i:hc:p:"
+    "vVqdDLSs:t:u:i:hc:p:"
 #ifdef BUILD_X11
     "x:y:w:a:X:m:f:"
 #ifdef OWN_WINDOW
@@ -2100,7 +2100,8 @@ const char *getopt_string =
 const struct option longopts[] = {
     {"help", 0, nullptr, 'h'},          {"version", 0, nullptr, 'v'},
     {"short-version", 0, nullptr, 'V'}, {"quiet", 0, nullptr, 'q'},
-    {"debug", 0, nullptr, 'D'},         {"config", 1, nullptr, 'c'},
+    {"debug", 0, nullptr, 'D'},         {"log-less", 0, nullptr, 'L'},
+    {"config", 1, nullptr, 'c'},
 #ifdef BUILD_BUILTIN_CONFIG
     {"print-config", 0, nullptr, 'C'},
 #endif

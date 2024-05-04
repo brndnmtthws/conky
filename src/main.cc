@@ -237,8 +237,10 @@ static void print_help(const char *prog_name) {
          "   -v, --version             version with build details\n"
          "   -V, --short-version       short version\n"
          "   -q, --quiet               quiet mode\n"
-         "   -D, --debug               increase debugging output, ie. -DD for "
-         "more debugging\n"
+         "   -D, --debug               increase logging output, e.g. -DD for "
+         "tracing messages\n"
+         "   -L, --log-less            decrease logging output, e.g. -LL for "
+         "only errors\n"
          "   -c, --config=FILE         config file to load\n"
 #ifdef BUILD_BUILTIN_CONFIG
          "   -C, --print-config        print the builtin default config to "
@@ -323,6 +325,9 @@ int main(int argc, char **argv) {
     switch (c) {
       case 'D':
         DEFAULT_LOGGER.get_stream_target(stderr)->log_more();
+        break;
+      case 'L':
+        DEFAULT_LOGGER.get_stream_target(stderr)->log_less();
         break;
       case 'v':
         print_version();

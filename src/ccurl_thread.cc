@@ -31,7 +31,7 @@
 
 #ifndef NDEBUG
 #include <assert.h>
-#endif /* NDEBUG */
+#endif /* DEBUG */
 
 #include <curl/easy.h>
 

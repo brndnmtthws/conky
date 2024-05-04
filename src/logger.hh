@@ -196,7 +196,8 @@ struct logger {
 
    public:
     bool is_enabled(level log_level) const {
-      return static_cast<int>(this->log_level) >= static_cast<int>(log_level);
+      return this->stream != nullptr &&
+             static_cast<int>(this->log_level) >= static_cast<int>(log_level);
     }
     void set_log_level(level log_level) { this->log_level = log_level; }
     void log_more() {
@@ -281,6 +282,7 @@ struct logger {
     }
 #endif
 
+    // skip formatting if no targets will log
     if (!is_any_enabled(log_level)) return;
 
     static const size_t MAX_FILE_LEN = 32;
