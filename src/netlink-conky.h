@@ -25,6 +25,8 @@ extern "C" {
 #include <string>
 #include <variant>
 
+namespace conky::netlink {
+
 using nl_link_id = std::variant<int, char *, std::string>;
 using nl_interface_id = size_t;
 
@@ -65,7 +67,9 @@ struct nl_task {
 };
 
 class net_device_cache {
-  struct nl_sock *sock;
+  struct nl_sock *socket_route;
+  struct nl_sock *socket_genl;
+
   struct nl_cache *nl_cache;
   int nl_cache_size;
 
@@ -91,5 +95,44 @@ class net_device_cache {
   /// @param link index or name of link
   void populate_interface(struct net_stat *ns, const nl_link_id &link);
 };
+
+static const std::array<const char *, NLE_MAX + 1> NLE_ERROR_MSG{
+    "success",
+    "unspecific failure",
+    "interrupted system call",
+    "bad socket",
+    "try again",
+    "out of memory",
+    "object exists",
+    "invalid input data or parameter",
+    "input data out of range",
+    "message size not sufficient",
+    "operation not supported",
+    "address family not supported",
+    "object not found",
+    "attribute not available",
+    "missing attribute",
+    "address family mismatch",
+    "message sequence number mismatch",
+    "kernel reported message overflow",
+    "kernel reported truncated message",
+    "invalid address for specified address family",
+    "source based routing not supported",
+    "netlink message is too short",
+    "netlink message type is not supported",
+    "object type does not match cache",
+    "unknown or invalid cache type",
+    "object busy",
+    "protocol mismatch",
+    "no access",
+    "operation not permitted",
+    "unable to open packet location file",
+    "unable to parse object",
+    "no such device",
+    "immutable attribute",
+    "dump inconsistency detected, interrupted",
+    "attribute max length exceeded",
+};
+}  // namespace conky::netlink
 
 #endif /* _CONKY_NETLINK_H_ */
