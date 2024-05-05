@@ -1196,7 +1196,7 @@ struct window *window_create(struct wl_surface *surface, struct wl_shm *shm,
   window = new struct window;
 
   window->rectangle.pos = vec2<size_t>::Zero();
-  window->rectangle.size = point(width, height);
+  window->rectangle.size = vec2<size_t>(width, height);
   window->scale = 0;
   window->pending_scale = 1;
 

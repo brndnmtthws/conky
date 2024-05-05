@@ -154,23 +154,26 @@ struct vec
 
  public:
   vec() : value(Data{0}) {}
-  vec(const Data value) : value(value) {}
-  vec(const std::array<T, Length> array) {
+  vec(Data value) : value(value) {}
+  vec(std::array<T, Length> array) {
     Vc::array<T, Length> vc_array;
     for (size_t i = 0; i < Length; ++i) { vc_array[i] = array[i]; }
     this->value = vc_array;
   }
 
   template <typename O = T>
-  vec(const vec<O, Length> other)
+  vec(vec<O, Length> other)
       : vec(_priv_geom::cast_array<O, T, Length>(other.to_array())) {}
 
-  template <typename V = std::conditional_t<(Length == 2), T, _disabled>>
-  vec(V x, V y) : vec(std::array<V, 2>{x, y}) {}
-  template <typename V = std::conditional_t<(Length == 3), T, _disabled>>
-  vec(V x, V y, V z) : vec(std::array<V, 3>{x, y, z, 0}) {}
-  template <typename V = std::conditional_t<(Length == 4), T, _disabled>>
-  vec(V x, V y, V z, V w) : vec(std::array<V, 4>{x, y, z, w}) {}
+  vec(T x, T y) : vec<T, 2>(std::array<T, 2>{x, y}) {
+    static_assert(Length == 2, "constructor only valid for vec2<T>");
+  }
+  vec(T x, T y, T z) : vec<T, 3>(std::array<T, 3>{x, y, z, 0}) {
+    static_assert(Length == 3, "constructor only valid for vec3<T>");
+  }
+  vec(T x, T y, T z, T w) : vec<T, 4>(std::array<T, 4>{x, y, z, w}) {
+    static_assert(Length == 4, "constructor only valid for vec4<T>");
+  }
 
   static inline vec<T, Length> uniform(T x) {
     return vec<T, Length>(std::array<T, Length>{x});
