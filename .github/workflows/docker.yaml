@@ -2,7 +2,13 @@ name: Docker
 
 on:
   push:
-    # Publish `main` as Docker `latest` image.
+    branches:
+      - main
+    paths-ignore:
+      - web/**
+      - doc/**
+
+  pull_request:
     branches:
       - main
     paths-ignore:
@@ -23,7 +29,7 @@ env:
   DOCKER_BUILDKIT: 1
 
 jobs:
-  buildx:
+  docker-buildx:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -35,26 +41,8 @@ jobs:
         uses: docker/setup-buildx-action@v3
       - name: Log into Dockerhub registry
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u $DOCKERHUB_ACCOUNT --password-stdin
-      - name: Build
-        run: |
-          DOCKERHUB_IMAGE_ID=$DOCKERHUB_ACCOUNT/$IMAGE_NAME
-
-          # Change all uppercase to lowercase
-          DOCKERHUB_IMAGE_ID=$(echo $DOCKERHUB_IMAGE_ID | tr '[A-Z]' '[a-z]')
-
-          # Strip git ref prefix from version
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-
-          # Strip "v" prefix from tag name
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-
-          # Use Docker `latest` tag convention
-          [ "$VERSION" == "main" ] && VERSION=latest
-
-          docker buildx build \
-            --push \
-            --platform linux/arm/v7,linux/arm64/v8,linux/amd64 \
-            --cache-from=type=registry,ref=$DOCKERHUB_ACCOUNT/$IMAGE_NAME:buildcache \
-            --cache-to=type=registry,ref=$DOCKERHUB_ACCOUNT/$IMAGE_NAME:buildcache,mode=max \
-            --tag $DOCKERHUB_IMAGE_ID:$VERSION \
-            .
+      - name: Build and push Docker image
+        env:
+          RELEASE: "${{ startsWith(github.ref, 'refs/tags/') && 'ON' || 'OFF' }}"
+          GITHUB_REF: ${{ github.ref }}
+        run: ./.github/scripts/docker-build.bash

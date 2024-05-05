@@ -42,6 +42,7 @@ Colour Colour::from_argb32(uint32_t argb) {
   return out;
 }
 
+#ifdef BUILD_COLOUR_NAME_MAP
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wregister"
 #pragma GCC diagnostic push
@@ -49,6 +50,9 @@ Colour Colour::from_argb32(uint32_t argb) {
 #include <colour-names.hh>
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
+#else /* BUILD_COLOUR_NAME_MAP */
+#include "colour-names-stub.hh"
+#endif /* BUILD_COLOUR_NAME_MAP */
 
 std::optional<Colour> parse_color_name(const std::string &name) {
   const rgb *value = color_name_hash::in_word_set(name.c_str(), name.length());

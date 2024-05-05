@@ -38,6 +38,7 @@
 #include <cmath>
 #include <cstdarg>
 #include <ctime>
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -276,7 +277,7 @@ conky::vec2i text_size =
 struct information info;
 
 /* path to config file */
-std::string current_config;
+std::filesystem::path current_config;
 
 /* set to 1 if you want all text to be in uppercase */
 static conky::simple_config_setting<bool> stuff_in_uppercase("uppercase", false,
@@ -1049,896 +1050,904 @@ static void draw_string(const char *s) {
   }
 #ifdef BUILD_GUI
   if (display_output() && display_output()->graphical()) {
-    int mw = display_output()->dpi_scale(maximum_width.get(*state));
+    int mw = maximum_width.get(*state);
     if (text_size.x == mw) {
       /* this means the text is probably pushing the limit,
        * so we'll chop it */
-      while (cur_x + get_string_width(tmpstring2) - text_start.x > mw &&
-             strlen(tmpstring2) > 0) {
-        tmpstring2[strlen(tmpstring2) - 1] = '\0';
-      }
     }
   }
 #endif /* BUILD_GUI */
-  s = tmpstring2;
+      s = tmpstring2;
 #ifdef BUILD_GUI
-  if (display_output() && display_output()->graphical()) {
-    display_output()->draw_string_at(text_offset.x + cur_x,
-                                     text_offset.y + cur_y, s, strlen(s));
+      if (display_output() && display_output()->graphical()) {
+        display_output()->draw_string_at(text_offset.x + cur_x,
+                                         text_offset.y + cur_y, s, strlen(s));
 
-    cur_x += width_of_s;
-  }
+        cur_x += width_of_s;
+      }
 #endif /* BUILD_GUI */
-  memcpy(tmpstring1, s, tbs);
-}
+      memcpy(tmpstring1, s, tbs);
+    }
 
 #if defined(BUILD_MATH) && defined(BUILD_GUI)
-/// Format \a size as a real followed by closest SI unit, with \a prec number
-/// of digits after the decimal point.
-static std::string formatSizeWithUnits(double size, int prec = 1) {
-  int div = 0;
-  double rem = 0;
+    /// Format \a size as a real followed by closest SI unit, with \a prec
+    /// number of digits after the decimal point.
+    static std::string formatSizeWithUnits(double size, int prec = 1) {
+      int div = 0;
+      double rem = 0;
 
-  while (size >= 1024.0 &&
-         static_cast<size_t>(div) < (sizeof suffixes / sizeof *suffixes)) {
-    rem = fmod(size, 1024.0);
-    div++;
-    size /= 1024.0;
-  }
+      while (size >= 1024.0 &&
+             static_cast<size_t>(div) < (sizeof suffixes / sizeof *suffixes)) {
+        rem = fmod(size, 1024.0);
+        div++;
+        size /= 1024.0;
+      }
 
-  double size_d = size + rem / 1024.0;
+      double size_d = size + rem / 1024.0;
 
-  std::ostringstream result;
-  result.setf(std::ios::fixed, std::ios::floatfield);
-  result.precision(prec);
-  result << size_d;
-  result << " ";
+      std::ostringstream result;
+      result.setf(std::ios::fixed, std::ios::floatfield);
+      result.precision(prec);
+      result << size_d;
+      result << " ";
 
-  if (short_units.get(*state)) {
-    result << suffixes[div][0];
-  } else {
-    result << suffixes[div];
-  }
+      if (short_units.get(*state)) {
+        result << suffixes[div][0];
+      } else {
+        result << suffixes[div];
+      }
 
-  return result.str();
-}
+      return result.str();
+    }
 #endif /* BUILD_MATH && BUILD_GUI */
 
-int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
+    int draw_each_line_inner(char *s, int special_index,
+                             int last_special_applied) {
 #ifndef BUILD_GUI
-  static int cur_x, cur_y; /* current x and y for drawing */
-  (void)cur_y;
+      static int cur_x, cur_y; /* current x and y for drawing */
+      (void)cur_y;
 #endif
 #ifdef BUILD_GUI
-  int font_h = 0;
-  int cur_y_add = 0;
-  int mw = maximum_width.get(*state);
+      int font_h = 0;
+      int cur_y_add = 0;
+      int mw = maximum_width.get(*state);
 #endif /* BUILD_GUI */
-  char *p = s;
-  int orig_special_index = special_index;
+      char *p = s;
+      int orig_special_index = special_index;
 
 #ifdef BUILD_GUI
-  if (display_output() && display_output()->graphical()) {
-    font_h = font_height();
-    cur_y += font_ascent();
-  }
-  cur_x = text_start.x;
-#endif /* BUILD_GUI */
-
-  while (*p != 0) {
-    if (*p == SPECIAL_CHAR || last_special_applied > -1) {
-#ifdef BUILD_GUI
-      int w = 0;
-#endif /* BUILD_GUI */
-
-      /* draw string before special, unless we're dealing multiline
-       * specials */
-      if (last_special_applied > -1) {
-        special_index = last_special_applied;
-      } else {
-        *p = '\0';
-        draw_string(s);
-        *p = SPECIAL_CHAR;
-        s = p + 1;
+      if (display_output() && display_output()->graphical()) {
+        font_h = font_height();
+        cur_y += font_ascent();
       }
-      /* draw special */
-      special_node *current = specials;
-      for (int i = 0; i < special_index; i++) { current = current->next; }
-      switch (current->type) {
+      cur_x = text_start.x;
+#endif /* BUILD_GUI */
+
+      while (*p != 0) {
+        if (*p == SPECIAL_CHAR || last_special_applied > -1) {
 #ifdef BUILD_GUI
-        case text_node_t::HORIZONTAL_LINE:
-          if (display_output() && display_output()->graphical()) {
-            int h = current->height;
-            int mid = font_ascent() / 2;
+          int w = 0;
+#endif /* BUILD_GUI */
 
-            w = text_start.x + text_size.x - cur_x;
-
-            if (display_output()) {
-              display_output()->set_line_style(h, true);
-              display_output()->draw_line(
-                  text_offset.x + cur_x, text_offset.y + cur_y - mid / 2,
-                  text_offset.x + cur_x + w, text_offset.y + cur_y - mid / 2);
-            }
+          /* draw string before special, unless we're dealing multiline
+           * specials */
+          if (last_special_applied > -1) {
+            special_index = last_special_applied;
+          } else {
+            *p = '\0';
+            draw_string(s);
+            *p = SPECIAL_CHAR;
+            s = p + 1;
           }
-          break;
+          /* draw special */
+          special_node *current = specials;
+          for (int i = 0; i < special_index; i++) { current = current->next; }
+          switch (current->type) {
+#ifdef BUILD_GUI
+            case text_node_t::HORIZONTAL_LINE:
+              if (display_output() && display_output()->graphical()) {
+                int h = current->height;
+                int mid = font_ascent() / 2;
 
-        case text_node_t::STIPPLED_HR:
-          if (display_output() && display_output()->graphical()) {
-            int h = current->height;
-            char tmp_s = current->arg;
-            int mid = font_ascent() / 2;
-            char ss[2] = {tmp_s, tmp_s};
+                w = text_start.x + text_size.x - cur_x;
 
-            w = text_start.x + text_size.x - cur_x - 1;
-            if (display_output()) {
-              display_output()->set_line_style(h, false);
-              display_output()->set_dashes(ss);
-              display_output()->draw_line(
-                  text_offset.x + cur_x, text_offset.y + cur_y - mid / 2,
-                  text_offset.x + cur_x + w, text_offset.x + cur_y - mid / 2);
-            }
-          }
-          break;
-
-        case text_node_t::BAR:
-          if (display_output() && display_output()->graphical()) {
-            int h, by;
-            double bar_usage, scale;
-            if (cur_x - text_start.x > mw && mw > 0) { break; }
-            h = current->height;
-            bar_usage = current->arg;
-            scale = current->scale;
-            by = cur_y - (font_ascent() / 2) - 1;
-
-            if (h < font_h) { by -= h / 2 - 1; }
-            w = current->width;
-            if (w == 0) { w = text_start.x + text_size.x - cur_x - 1; }
-            if (w < 0) { w = 0; }
-
-            if (display_output()) {
-              display_output()->set_line_style(dpi_scale(1), true);
-
-              display_output()->draw_rect(text_offset.x + cur_x,
-                                          text_offset.y + by, w, h);
-              display_output()->fill_rect(text_offset.x + cur_x,
-                                          text_offset.y + by,
-                                          w * bar_usage / scale, h);
-            }
-            if (h > cur_y_add && h > font_h) { cur_y_add = h; }
-          }
-          break;
-
-        case text_node_t::GAUGE: /* new GAUGE  */
-          if (display_output() && display_output()->graphical()) {
-            int h, by = 0;
-            Colour last_colour = current_color;
-#ifdef BUILD_MATH
-            float angle, px, py;
-            double usage, scale;
-#endif /* BUILD_MATH */
-
-            if (cur_x - text_start.x > mw && mw > 0) { break; }
-
-            h = current->height;
-            by = cur_y - (font_ascent() / 2) - 1;
-
-            if (h < font_h) { by -= h / 2 - 1; }
-            w = current->width;
-            if (w == 0) { w = text_start.x + text_size.x - cur_x - 1; }
-            if (w < 0) { w = 0; }
-
-            if (display_output()) {
-              display_output()->set_line_style(1, true);
-              display_output()->draw_arc(text_offset.x + cur_x,
-                                         text_offset.y + by, w, h * 2, 0,
-                                         180 * 64);
-            }
-
-#ifdef BUILD_MATH
-            usage = current->arg;
-            scale = current->scale;
-            angle = M_PI * usage / scale;
-            px = static_cast<float>(cur_x + (w / 2.)) -
-                 static_cast<float>(w / 2.) * cos(angle);
-            py = static_cast<float>(by + (h)) -
-                 static_cast<float>(h) * sin(angle);
-
-            if (display_output()) {
-              display_output()->draw_line(text_offset.x + cur_x + (w / 2.),
-                                          text_offset.y + by + (h),
-                                          text_offset.x + static_cast<int>(px),
-                                          text_offset.y + static_cast<int>(py));
-            }
-
-#endif /* BUILD_MATH */
-
-            if (h > cur_y_add && h > font_h) { cur_y_add = h; }
-
-            set_foreground_color(last_colour);
-          }
-          break;
-
-        case text_node_t::GRAPH:
-          if (display_output() && display_output()->graphical()) {
-            int h, by, i = 0, j = 0;
-            int colour_idx = 0;
-            Colour last_colour = current_color;
-            if (cur_x - text_start.x > mw && mw > 0) { break; }
-            h = current->height;
-            by = cur_y - (font_ascent() / 2) - 1;
-
-            if (h < font_h) { by -= h / 2 - 1; }
-            w = current->width;
-            if (w == 0) {
-              w = text_start.x + text_size.x - cur_x - 1;
-              current->graph_width = std::max(w - 1, 0);
-              if (current->graph_width != current->graph_allocated) {
-                w = current->graph_allocated + 1;
-              }
-            }
-            if (w < 0) { w = 0; }
-            if (draw_graph_borders.get(*state)) {
-              if (display_output()) {
-                display_output()->set_line_style(dpi_scale(1), true);
-                display_output()->draw_rect(text_offset.x + cur_x,
-                                            text_offset.y + by, w, h);
-              }
-            }
-            if (display_output()) display_output()->set_line_style(1, true);
-
-            /* in case we don't have a graph yet */
-            if (current->graph != nullptr) {
-              std::unique_ptr<Colour[]> tmpcolour;
-
-              if (current->colours_set) {
-                auto factory = create_gradient_factory(w, current->last_colour,
-                                                       current->first_colour);
-                tmpcolour = factory->create_gradient();
-                delete factory;
-              }
-              colour_idx = 0;
-              for (i = w - 2; i > -1; i--) {
-                if (current->colours_set) {
-                  if (current->tempgrad != 0) {
-                    set_foreground_color(tmpcolour[static_cast<int>(
-                        static_cast<float>(w - 2) -
-                        current->graph[j] * (w - 2) /
-                            std::max(static_cast<float>(current->scale),
-                                     1.0F))]);
-                  } else {
-                    set_foreground_color(tmpcolour[colour_idx++]);
-                  }
+                if (display_output()) {
+                  display_output()->set_line_style(h, true);
+                  display_output()->draw_line(text_offset.x + cur_x,
+                                              text_offset.y + cur_y - mid / 2,
+                                              text_offset.x + cur_x + w,
+                                              text_offset.y + cur_y - mid / 2);
                 }
-                /* this is mugfugly, but it works */
+              }
+              break;
+
+            case text_node_t::STIPPLED_HR:
+              if (display_output() && display_output()->graphical()) {
+                int h = current->height;
+                char tmp_s = current->arg;
+                int mid = font_ascent() / 2;
+                char ss[2] = {tmp_s, tmp_s};
+
+                w = text_start.x + text_size.x - cur_x - 1;
+                if (display_output()) {
+                  display_output()->set_line_style(h, false);
+                  display_output()->set_dashes(ss);
+                  display_output()->draw_line(text_offset.x + cur_x,
+                                              text_offset.y + cur_y - mid / 2,
+                                              text_offset.x + cur_x + w,
+                                              text_offset.x + cur_y - mid / 2);
+                }
+              }
+              break;
+
+            case text_node_t::BAR:
+              if (display_output() && display_output()->graphical()) {
+                int h, by;
+                double bar_usage, scale;
+                if (cur_x - text_start.x > mw && mw > 0) { break; }
+                h = current->height;
+                bar_usage = current->arg;
+                scale = current->scale;
+                by = cur_y - (font_ascent() / 2) - 1;
+
+                if (h < font_h) { by -= h / 2 - 1; }
+                w = current->width;
+                if (w == 0) { w = text_start.x + text_size.x - cur_x - 1; }
+                if (w < 0) { w = 0; }
+
+                if (display_output()) {
+                  display_output()->set_line_style(dpi_scale(1), true);
+
+                  display_output()->draw_rect(text_offset.x + cur_x,
+                                              text_offset.y + by, w, h);
+                  display_output()->fill_rect(text_offset.x + cur_x,
+                                              text_offset.y + by,
+                                              w * bar_usage / scale, h);
+                }
+                if (h > cur_y_add && h > font_h) { cur_y_add = h; }
+              }
+              break;
+
+            case text_node_t::GAUGE: /* new GAUGE  */
+              if (display_output() && display_output()->graphical()) {
+                int h, by = 0;
+                Colour last_colour = current_color;
+#ifdef BUILD_MATH
+                float angle, px, py;
+                double usage, scale;
+#endif /* BUILD_MATH */
+
+                if (cur_x - text_start.x > mw && mw > 0) { break; }
+
+                h = current->height;
+                by = cur_y - (font_ascent() / 2) - 1;
+
+                if (h < font_h) { by -= h / 2 - 1; }
+                w = current->width;
+                if (w == 0) { w = text_start.x + text_size.x - cur_x - 1; }
+                if (w < 0) { w = 0; }
+
+                if (display_output()) {
+                  display_output()->set_line_style(1, true);
+                  display_output()->draw_arc(text_offset.x + cur_x,
+                                             text_offset.y + by, w, h * 2, 0,
+                                             180 * 64);
+                }
+
+#ifdef BUILD_MATH
+                usage = current->arg;
+                scale = current->scale;
+                angle = M_PI * usage / scale;
+                px = static_cast<float>(cur_x + (w / 2.)) -
+                     static_cast<float>(w / 2.) * cos(angle);
+                py = static_cast<float>(by + (h)) -
+                     static_cast<float>(h) * sin(angle);
+
                 if (display_output()) {
                   display_output()->draw_line(
-                      text_offset.x + cur_x + i + 1, text_offset.y + by + h,
-                      text_offset.x + cur_x + i + 1,
-                      text_offset.y +
-                          round_to_positive_int(static_cast<double>(by) + h -
-                                                current->graph[j] * (h - 1) /
-                                                    current->scale));
+                      text_offset.x + cur_x + (w / 2.),
+                      text_offset.y + by + (h),
+                      text_offset.x + static_cast<int>(px),
+                      text_offset.y + static_cast<int>(py));
                 }
-                ++j;
+
+#endif /* BUILD_MATH */
+
+                if (h > cur_y_add && h > font_h) { cur_y_add = h; }
+
+                set_foreground_color(last_colour);
               }
-            }
-            if (h > cur_y_add && h > font_h) { cur_y_add = h; }
-            if (show_graph_range.get(*state)) {
-              int tmp_x = cur_x;
-              int tmp_y = cur_y;
-              unsigned short int seconds = active_update_interval() * w;
-              char *tmp_day_str;
-              char *tmp_hour_str;
-              char *tmp_min_str;
-              char *tmp_sec_str;
-              char *tmp_str;
-              unsigned short int timeunits;
-              if (seconds != 0) {
-                timeunits = seconds / 86400;
-                seconds %= 86400;
-                if (timeunits <= 0 ||
-                    asprintf(&tmp_day_str, _("%dd"), timeunits) == -1) {
-                  tmp_day_str = strdup("");
+              break;
+
+            case text_node_t::GRAPH:
+              if (display_output() && display_output()->graphical()) {
+                int h, by, i = 0, j = 0;
+                int colour_idx = 0;
+                Colour last_colour = current_color;
+                if (cur_x - text_start.x > mw && mw > 0) { break; }
+                h = current->height;
+                by = cur_y - (font_ascent() / 2) - 1;
+
+                if (h < font_h) { by -= h / 2 - 1; }
+                w = current->width;
+                if (w == 0) {
+                  w = text_start.x + text_size.x - cur_x - 1;
+                  current->graph_width = std::max(w - 1, 0);
+                  if (current->graph_width != current->graph_allocated) {
+                    w = current->graph_allocated + 1;
+                  }
                 }
-                timeunits = seconds / 3600;
-                seconds %= 3600;
-                if (timeunits <= 0 ||
-                    asprintf(&tmp_hour_str, _("%dh"), timeunits) == -1) {
-                  tmp_hour_str = strdup("");
+                if (w < 0) { w = 0; }
+                if (draw_graph_borders.get(*state)) {
+                  if (display_output()) {
+                    display_output()->set_line_style(dpi_scale(1), true);
+                    display_output()->draw_rect(text_offset.x + cur_x,
+                                                text_offset.y + by, w, h);
+                  }
                 }
-                timeunits = seconds / 60;
-                seconds %= 60;
-                if (timeunits <= 0 ||
-                    asprintf(&tmp_min_str, _("%dm"), timeunits) == -1) {
-                  tmp_min_str = strdup("");
+                if (display_output()) display_output()->set_line_style(1, true);
+
+                /* in case we don't have a graph yet */
+                if (current->graph != nullptr) {
+                  std::unique_ptr<Colour[]> tmpcolour;
+
+                  if (current->colours_set) {
+                    auto factory = create_gradient_factory(
+                        w, current->last_colour, current->first_colour);
+                    tmpcolour = factory->create_gradient();
+                    delete factory;
+                  }
+                  colour_idx = 0;
+                  for (i = w - 2; i > -1; i--) {
+                    if (current->colours_set) {
+                      if (current->tempgrad != 0) {
+                        set_foreground_color(tmpcolour[static_cast<int>(
+                            static_cast<float>(w - 2) -
+                            current->graph[j] * (w - 2) /
+                                std::max(static_cast<float>(current->scale),
+                                         1.0F))]);
+                      } else {
+                        set_foreground_color(tmpcolour[colour_idx++]);
+                      }
+                    }
+                    /* this is mugfugly, but it works */
+                    if (display_output()) {
+                      display_output()->draw_line(
+                          text_offset.x + cur_x + i + 1, text_offset.y + by + h,
+                          text_offset.x + cur_x + i + 1,
+                          text_offset.y + round_to_positive_int(
+                                              static_cast<double>(by) + h -
+                                              current->graph[j] * (h - 1) /
+                                                  current->scale));
+                    }
+                    ++j;
+                  }
                 }
-                if (seconds <= 0 ||
-                    asprintf(&tmp_sec_str, _("%ds"), seconds) == -1) {
-                  tmp_sec_str = strdup("");
+                if (h > cur_y_add && h > font_h) { cur_y_add = h; }
+                if (show_graph_range.get(*state)) {
+                  int tmp_x = cur_x;
+                  int tmp_y = cur_y;
+                  unsigned short int seconds = active_update_interval() * w;
+                  char *tmp_day_str;
+                  char *tmp_hour_str;
+                  char *tmp_min_str;
+                  char *tmp_sec_str;
+                  char *tmp_str;
+                  unsigned short int timeunits;
+                  if (seconds != 0) {
+                    timeunits = seconds / 86400;
+                    seconds %= 86400;
+                    if (timeunits <= 0 ||
+                        asprintf(&tmp_day_str, _("%dd"), timeunits) == -1) {
+                      tmp_day_str = strdup("");
+                    }
+                    timeunits = seconds / 3600;
+                    seconds %= 3600;
+                    if (timeunits <= 0 ||
+                        asprintf(&tmp_hour_str, _("%dh"), timeunits) == -1) {
+                      tmp_hour_str = strdup("");
+                    }
+                    timeunits = seconds / 60;
+                    seconds %= 60;
+                    if (timeunits <= 0 ||
+                        asprintf(&tmp_min_str, _("%dm"), timeunits) == -1) {
+                      tmp_min_str = strdup("");
+                    }
+                    if (seconds <= 0 ||
+                        asprintf(&tmp_sec_str, _("%ds"), seconds) == -1) {
+                      tmp_sec_str = strdup("");
+                    }
+                    if (asprintf(&tmp_str, "%s%s%s%s", tmp_day_str,
+                                 tmp_hour_str, tmp_min_str,
+                                 tmp_sec_str) == -1) {
+                      tmp_str = strdup("");
+                    }
+                    free(tmp_day_str);
+                    free(tmp_hour_str);
+                    free(tmp_min_str);
+                    free(tmp_sec_str);
+                  } else {
+                    tmp_str = strdup(
+                        _("Range not possible"));  // should never happen, but
+                                                   // better safe then sorry
+                  }
+                  cur_x += (w / 2) - (font_ascent() * (strlen(tmp_str) / 2));
+                  cur_y += font_h / 2;
+                  draw_string(tmp_str);
+                  free(tmp_str);
+                  cur_x = tmp_x;
+                  cur_y = tmp_y;
                 }
-                if (asprintf(&tmp_str, "%s%s%s%s", tmp_day_str, tmp_hour_str,
-                             tmp_min_str, tmp_sec_str) == -1) {
-                  tmp_str = strdup("");
-                }
-                free(tmp_day_str);
-                free(tmp_hour_str);
-                free(tmp_min_str);
-                free(tmp_sec_str);
-              } else {
-                tmp_str = strdup(
-                    _("Range not possible"));  // should never happen, but
-                                               // better safe then sorry
-              }
-              cur_x += (w / 2) - (font_ascent() * (strlen(tmp_str) / 2));
-              cur_y += font_h / 2;
-              draw_string(tmp_str);
-              free(tmp_str);
-              cur_x = tmp_x;
-              cur_y = tmp_y;
-            }
 #ifdef BUILD_MATH
-            if (show_graph_scale.get(*state) && (current->show_scale == 1)) {
-              int tmp_x = cur_x;
-              int tmp_y = cur_y;
-              cur_x += font_ascent() / 2;
-              cur_y += font_h / 2;
-              std::string tmp_str = formatSizeWithUnits(
-                  current->scale_log != 0 ? std::pow(10.0, current->scale)
-                                          : current->scale);
-              draw_string(tmp_str.c_str());
-              cur_x = tmp_x;
-              cur_y = tmp_y;
-            }
+                if (show_graph_scale.get(*state) &&
+                    (current->show_scale == 1)) {
+                  int tmp_x = cur_x;
+                  int tmp_y = cur_y;
+                  cur_x += font_ascent() / 2;
+                  cur_y += font_h / 2;
+                  std::string tmp_str = formatSizeWithUnits(
+                      current->scale_log != 0 ? std::pow(10.0, current->scale)
+                                              : current->scale);
+                  draw_string(tmp_str.c_str());
+                  cur_x = tmp_x;
+                  cur_y = tmp_y;
+                }
 #endif
-            set_foreground_color(last_colour);
+                set_foreground_color(last_colour);
+              }
+              break;
+
+            case text_node_t::FONT:
+              if (display_output() && display_output()->graphical()) {
+                int old = font_ascent();
+
+                cur_y -= font_ascent();
+                selected_font = current->font_added;
+                set_font();
+                if (cur_y + font_ascent() < cur_y + old) {
+                  cur_y += old;
+                } else {
+                  cur_y += font_ascent();
+                }
+                font_h = font_height();
+              }
+              break;
+#endif /* BUILD_GUI */
+            case text_node_t::FG:
+              if (draw_mode == draw_mode_t::FG) {
+                set_foreground_color(Colour::from_argb32(current->arg));
+              }
+              break;
+
+#ifdef BUILD_GUI
+            case text_node_t::BG:
+              if (draw_mode == draw_mode_t::BG) {
+                set_foreground_color(Colour::from_argb32(current->arg));
+              }
+              break;
+
+            case text_node_t::OUTLINE:
+              if (draw_mode == draw_mode_t::OUTLINE) {
+                set_foreground_color(Colour::from_argb32(current->arg));
+              }
+              break;
+
+            case text_node_t::OFFSET:
+              w += current->arg;
+              break;
+
+            case text_node_t::VOFFSET:
+              cur_y += current->arg;
+              break;
+
+            case text_node_t::SAVE_COORDINATES:
+#ifdef BUILD_IMLIB2
+              saved_coordinates[static_cast<int>(current->arg)] =
+                  std::array<int, 2>{cur_x - text_start.x,
+                                     cur_y - text_start.y - last_font_height};
+#endif /* BUILD_IMLIB2 */
+              break;
+
+            case text_node_t::TAB: {
+              int start = current->arg;
+              int step = current->width;
+
+              if ((step == 0) || step < 0) { step = 10; }
+              w = step - (cur_x - text_start.x - start) % step;
+              break;
+            }
+
+            case text_node_t::ALIGNR: {
+              /* TODO: add back in "+ window.border_inner_margin" to the end of
+               * this line? */
+              int pos_x = text_start.x + text_size.x -
+                          get_string_width_special(s, special_index);
+
+              /* printf("pos_x %i text_start.x %i text_size.x %i cur_x %i "
+                "get_string_width(p) %i gap_x %i "
+                "current->arg %i window.border_inner_margin %i "
+                "window.border_width %i\n", pos_x, text_start.x, text_size.x,
+                cur_x, get_string_width_special(s), gap_x,
+                current->arg, window.border_inner_margin,
+                window.border_width); */
+              cur_x = pos_x - current->arg;
+              break;
+            }
+
+            case text_node_t::ALIGNC: {
+              int pos_x = text_size.x / 2 -
+                          get_string_width_special(s, special_index) / 2 -
+                          (cur_x - text_start.x);
+              /* int pos_x = text_start_x + text_size.x / 2 -
+                get_string_width_special(s) / 2; */
+
+              /* printf("pos_x %i text_start.x %i text_size.x %i cur_x %i "
+                "get_string_width(p) %i gap_x %i "
+                "current->arg %i\n", pos_x, text_start.x,
+                text_size.x, cur_x, get_string_width(s), gap_x,
+                current->arg); */
+              if (pos_x > current->arg) { w = pos_x - current->arg; }
+              break;
+            }
+#endif /* BUILD_GUI */
+            case text_node_t::GOTO:
+              if (current->arg >= 0) {
+#ifdef BUILD_GUI
+                cur_x = static_cast<int>(current->arg);
+                // make sure shades are 1 pixel to the right of the text
+                if (draw_mode == draw_mode_t::BG) { cur_x++; }
+#endif /* BUILD_GUI */
+                cur_x = static_cast<int>(current->arg);
+                for (auto output : display_outputs()) output->gotox(cur_x);
+              }
+              break;
+            default:
+              // do nothing; not a special node or support not enabled
+              break;
           }
-          break;
 
-        case text_node_t::FONT:
-          if (display_output() && display_output()->graphical()) {
-            int old = font_ascent();
+#ifdef BUILD_GUI
+          cur_x += w;
+#endif /* BUILD_GUI */
 
-            cur_y -= font_ascent();
-            selected_font = current->font_added;
-            set_font();
-            if (cur_y + font_ascent() < cur_y + old) {
-              cur_y += old;
+          if (special_index != last_special_applied) {
+            special_index++;
+          } else {
+            special_index = orig_special_index;
+            last_special_applied = -1;
+          }
+        }
+        p++;
+      }
+
+#ifdef BUILD_GUI
+      cur_y += cur_y_add;
+#endif /* BUILD_GUI */
+      draw_string(s);
+      for (auto output : display_outputs()) output->line_inner_done();
+#ifdef BUILD_GUI
+      if (display_output() && display_output()->graphical()) {
+        cur_y += font_descent();
+      }
+#endif /* BUILD_GUI */
+      return special_index;
+    }
+
+    static int draw_line(char *s, int special_index) {
+      if (display_output() && display_output()->draw_line_inner_required()) {
+        return draw_each_line_inner(s, special_index, -1);
+      }
+      draw_string(s);
+      UNUSED(special_index);
+      return 0;
+    }
+
+    static void draw_text() {
+      for (auto output : display_outputs()) output->begin_draw_text();
+#ifdef BUILD_GUI
+      // XXX:only works if inside set_display_output()
+      for (auto output : display_outputs()) {
+        if (output && output->graphical()) {
+          cur_y = text_start.y;
+          int bw = dpi_scale(border_width.get(*state));
+
+          /* draw borders */
+          if (draw_borders.get(*state) && bw > 0) {
+            if (stippled_borders.get(*state) != 0) {
+              char ss[2] = {(char)dpi_scale(stippled_borders.get(*state)),
+                            (char)dpi_scale(stippled_borders.get(*state))};
+              output->set_line_style(bw, false);
+              output->set_dashes(ss);
             } else {
-              cur_y += font_ascent();
+              output->set_line_style(bw, true);
             }
-            font_h = font_height();
+
+            int offset = dpi_scale(border_inner_margin.get(*state)) + bw;
+            output->draw_rect(text_offset.x + text_start.x - offset,
+                              text_offset.y + text_start.y - offset,
+                              text_size.x + 2 * offset,
+                              text_size.y + 2 * offset);
           }
-          break;
-#endif /* BUILD_GUI */
-        case text_node_t::FG:
-          if (draw_mode == draw_mode_t::FG) {
-            set_foreground_color(Colour::from_argb32(current->arg));
-          }
-          break;
 
-#ifdef BUILD_GUI
-        case text_node_t::BG:
-          if (draw_mode == draw_mode_t::BG) {
-            set_foreground_color(Colour::from_argb32(current->arg));
-          }
-          break;
-
-        case text_node_t::OUTLINE:
-          if (draw_mode == draw_mode_t::OUTLINE) {
-            set_foreground_color(Colour::from_argb32(current->arg));
-          }
-          break;
-
-        case text_node_t::OFFSET:
-          w += current->arg;
-          break;
-
-        case text_node_t::VOFFSET:
-          cur_y += current->arg;
-          break;
-
-        case text_node_t::SAVE_COORDINATES:
-#ifdef BUILD_IMLIB2
-          saved_coordinates[static_cast<int>(current->arg)] =
-              std::array<int, 2>{cur_x - text_start.x,
-                                 cur_y - text_start.y - last_font_height};
-#endif /* BUILD_IMLIB2 */
-          break;
-
-        case text_node_t::TAB: {
-          int start = current->arg;
-          int step = current->width;
-
-          if ((step == 0) || step < 0) { step = 10; }
-          w = step - (cur_x - text_start.x - start) % step;
-          break;
+          /* draw text */
         }
-
-        case text_node_t::ALIGNR: {
-          /* TODO: add back in "+ window.border_inner_margin" to the end of
-           * this line? */
-          int pos_x = text_start.x + text_size.x -
-                      get_string_width_special(s, special_index);
-
-          /* printf("pos_x %i text_start.x %i text_size.x %i cur_x %i "
-            "get_string_width(p) %i gap_x %i "
-            "current->arg %i window.border_inner_margin %i "
-            "window.border_width %i\n", pos_x, text_start.x, text_size.x,
-            cur_x, get_string_width_special(s), gap_x,
-            current->arg, window.border_inner_margin,
-            window.border_width); */
-          cur_x = pos_x - current->arg;
-          break;
-        }
-
-        case text_node_t::ALIGNC: {
-          int pos_x = text_size.x / 2 -
-                      get_string_width_special(s, special_index) / 2 -
-                      (cur_x - text_start.x);
-          /* int pos_x = text_start_x + text_size.x / 2 -
-            get_string_width_special(s) / 2; */
-
-          /* printf("pos_x %i text_start.x %i text_size.x %i cur_x %i "
-            "get_string_width(p) %i gap_x %i "
-            "current->arg %i\n", pos_x, text_start.x,
-            text_size.x, cur_x, get_string_width(s), gap_x,
-            current->arg); */
-          if (pos_x > current->arg) { w = pos_x - current->arg; }
-          break;
-        }
-#endif /* BUILD_GUI */
-        case text_node_t::GOTO:
-          if (current->arg >= 0) {
-#ifdef BUILD_GUI
-            cur_x = static_cast<int>(current->arg);
-            // make sure shades are 1 pixel to the right of the text
-            if (draw_mode == draw_mode_t::BG) { cur_x++; }
-#endif /* BUILD_GUI */
-            cur_x = static_cast<int>(current->arg);
-            for (auto output : display_outputs()) output->gotox(cur_x);
-          }
-          break;
-        default:
-          // do nothing; not a special node or support not enabled
-          break;
       }
-
-#ifdef BUILD_GUI
-      cur_x += w;
+      setup_fonts();
 #endif /* BUILD_GUI */
-
-      if (special_index != last_special_applied) {
-        special_index++;
-      } else {
-        special_index = orig_special_index;
-        last_special_applied = -1;
-      }
+      for_each_line(text_buffer, draw_line);
+      for (auto output : display_outputs()) output->end_draw_text();
     }
-    p++;
-  }
+
+    void draw_stuff() {
+      for (auto output : display_outputs()) output->begin_draw_stuff();
 
 #ifdef BUILD_GUI
-  cur_y += cur_y_add;
-#endif /* BUILD_GUI */
-  draw_string(s);
-  for (auto output : display_outputs()) output->line_inner_done();
-#ifdef BUILD_GUI
-  if (display_output() && display_output()->graphical()) {
-    cur_y += font_descent();
-  }
-#endif /* BUILD_GUI */
-  return special_index;
-}
-
-static int draw_line(char *s, int special_index) {
-  if (display_output() && display_output()->draw_line_inner_required()) {
-    return draw_each_line_inner(s, special_index, -1);
-  }
-  draw_string(s);
-  UNUSED(special_index);
-  return 0;
-}
-
-static void draw_text() {
-  for (auto output : display_outputs()) output->begin_draw_text();
-#ifdef BUILD_GUI
-  // XXX:only works if inside set_display_output()
-  for (auto output : display_outputs()) {
-    if (output && output->graphical()) {
-      cur_y = text_start.y;
-      int bw = dpi_scale(border_width.get(*state));
-
-      /* draw borders */
-      if (draw_borders.get(*state) && bw > 0) {
-        if (stippled_borders.get(*state) != 0) {
-          char ss[2] = {(char)dpi_scale(stippled_borders.get(*state)),
-                        (char)dpi_scale(stippled_borders.get(*state))};
-          output->set_line_style(bw, false);
-          output->set_dashes(ss);
-        } else {
-          output->set_line_style(bw, true);
-        }
-
-        int offset = dpi_scale(border_inner_margin.get(*state)) + bw;
-        output->draw_rect(text_offset.x + text_start.x - offset,
-                          text_offset.y + text_start.y - offset,
-                          text_size.x + 2 * offset, text_size.y + 2 * offset);
-      }
-
-      /* draw text */
-    }
-  }
-  setup_fonts();
-#endif /* BUILD_GUI */
-  for_each_line(text_buffer, draw_line);
-  for (auto output : display_outputs()) output->end_draw_text();
-}
-
-void draw_stuff() {
-  for (auto output : display_outputs()) output->begin_draw_stuff();
-
-#ifdef BUILD_GUI
-  llua_draw_pre_hook();
+      llua_draw_pre_hook();
 
 #ifdef BUILD_IMLIB2
-  text_offset = conky::vec2i::Zero();
-  cimlib_render(text_start.x, text_start.y, window.geometry.width,
-                window.geometry.height, imlib_cache_flush_interval.get(*state),
-                imlib_draw_blended.get(*state));
-#endif /* BUILD_IMLIB2 */
-
-  for (auto output : display_outputs()) {
-    if (!output->graphical()) continue;
-    // XXX: we assume a single graphical display
-    set_display_output(output);
-
-    selected_font = 0;
-    if (draw_shades.get(*state) && !draw_outline.get(*state)) {
-      text_offset = conky::vec2i::One();
-      set_foreground_color(default_shade_color.get(*state));
-      draw_mode = draw_mode_t::BG;
-      draw_text();
       text_offset = conky::vec2i::Zero();
-    }
+      cimlib_render(text_start.x, text_start.y, window.geometry.width,
+                    window.geometry.height,
+                    imlib_cache_flush_interval.get(*state),
+                    imlib_draw_blended.get(*state));
+#endif /* BUILD_IMLIB2 */
 
-    if (draw_outline.get(*state)) {
-      selected_font = 0;
+      for (auto output : display_outputs()) {
+        if (!output->graphical()) continue;
+        // XXX: we assume a single graphical display
+        set_display_output(output);
 
-      for (int ix = -1; ix < 2; ix++) {
-        for (int iy = -1; iy < 2; iy++) {
-          if (ix == 0 && iy == 0) { continue; }
-          text_offset = conky::vec2i(ix, iy);
-          set_foreground_color(default_outline_color.get(*state));
-          draw_mode = draw_mode_t::OUTLINE;
+        selected_font = 0;
+        if (draw_shades.get(*state) && !draw_outline.get(*state)) {
+          text_offset = conky::vec2i::One();
+          set_foreground_color(default_shade_color.get(*state));
+          draw_mode = draw_mode_t::BG;
           draw_text();
+          text_offset = conky::vec2i::Zero();
         }
+
+        if (draw_outline.get(*state)) {
+          selected_font = 0;
+
+          for (int ix = -1; ix < 2; ix++) {
+            for (int iy = -1; iy < 2; iy++) {
+              if (ix == 0 && iy == 0) { continue; }
+              text_offset = conky::vec2i(ix, iy);
+              set_foreground_color(default_outline_color.get(*state));
+              draw_mode = draw_mode_t::OUTLINE;
+              draw_text();
+            }
+          }
+          text_offset = conky::vec2i::Zero();
+        }
+
+        selected_font = 0;
+        set_foreground_color(default_color.get(*state));
+        unset_display_output();
       }
-      text_offset = conky::vec2i::Zero();
+
+#endif /* BUILD_GUI */
+      // always draw text
+      draw_mode = draw_mode_t::FG;
+      draw_text();
+#ifdef BUILD_GUI
+
+      llua_draw_post_hook();
+#endif /* BUILD_GUI */
+
+      for (auto output : display_outputs()) output->end_draw_stuff();
     }
 
-    selected_font = 0;
-    set_foreground_color(default_color.get(*state));
-    unset_display_output();
-  }
+    int need_to_update;
 
-#endif /* BUILD_GUI */
-  // always draw text
-  draw_mode = draw_mode_t::FG;
-  draw_text();
-#ifdef BUILD_GUI
-
-  llua_draw_post_hook();
-#endif /* BUILD_GUI */
-
-  for (auto output : display_outputs()) output->end_draw_stuff();
-}
-
-int need_to_update;
-
-/* update_text() generates new text and clears old text area */
-void update_text() {
+    /* update_text() generates new text and clears old text area */
+    void update_text() {
 #ifdef BUILD_IMLIB2
-  cimlib_cleanup();
+      cimlib_cleanup();
 #endif /* BUILD_IMLIB2 */
-  generate_text();
+      generate_text();
 #ifdef BUILD_GUI
-  for (auto output : display_outputs()) {
-    if (output->graphical()) output->clear_text(1);
-  }
+      for (auto output : display_outputs()) {
+        if (output->graphical()) output->clear_text(1);
+      }
 #endif /* BUILD_GUI */
-  need_to_update = 1;
-  llua_update_info(&info, active_update_interval());
-}
+      need_to_update = 1;
+      llua_update_info(&info, active_update_interval());
+    }
 
 #ifdef HAVE_SYS_INOTIFY_H
-int inotify_fd = -1;
+    int inotify_fd = -1;
 #endif
 
-template <typename Out>
-void split(const std::string &s, char delim, Out result) {
-  std::stringstream ss(s);
-  std::string item;
-  while (std::getline(ss, item, delim)) { *(result++) = item; }
-}
-std::vector<std::string> split(const std::string &s, char delim) {
-  std::vector<std::string> elems;
-  split(s, delim, std::back_inserter(elems));
-  return elems;
-}
+    template <typename Out>
+    void split(const std::string &s, char delim, Out result) {
+      std::stringstream ss(s);
+      std::string item;
+      while (std::getline(ss, item, delim)) { *(result++) = item; }
+    }
+    std::vector<std::string> split(const std::string &s, char delim) {
+      std::vector<std::string> elems;
+      split(s, delim, std::back_inserter(elems));
+      return elems;
+    }
 
-bool is_on_battery() {  // checks if at least one battery specified in
-                        // "detect_battery" is discharging
-  char buf[64];
-  std::vector<std::string> b_items = split(detect_battery.get(*state), ',');
+    bool is_on_battery() {  // checks if at least one battery specified in
+                            // "detect_battery" is discharging
+      char buf[64];
+      std::vector<std::string> b_items = split(detect_battery.get(*state), ',');
 
-  for (auto const &value : b_items) {
-    get_battery_short_status(buf, 64, value.c_str());
-    if (buf[0] == 'D') { return true; }
-  }
-  return false;
-}
+      for (auto const &value : b_items) {
+        get_battery_short_status(buf, 64, value.c_str());
+        if (buf[0] == 'D') { return true; }
+      }
+      return false;
+    }
 
-volatile sig_atomic_t g_sigterm_pending, g_sighup_pending, g_sigusr2_pending;
+    volatile sig_atomic_t g_sigterm_pending, g_sighup_pending,
+        g_sigusr2_pending;
 
-void log_system_details() {
-  char *session_ty = getenv("XDG_SESSION_TYPE");
-  char *session = getenv("GDMSESSION");
-  char *desktop = getenv("XDG_CURRENT_DESKTOP");
-  if (desktop != nullptr || session != nullptr) {
-    NORM_ERR("'%s' %s session running '%s' destop", session, session_ty,
-             desktop);
-  }
-}
+    void log_system_details() {
+      char *session_ty = getenv("XDG_SESSION_TYPE");
+      char *session = getenv("GDMSESSION");
+      char *desktop = getenv("XDG_CURRENT_DESKTOP");
+      if (desktop != nullptr || session != nullptr) {
+        NORM_ERR("'%s' %s session running '%s' destop", session, session_ty,
+                 desktop);
+      }
+    }
 
-void main_loop() {
-  int terminate = 0;
+    void main_loop() {
+      int terminate = 0;
 #ifdef SIGNAL_BLOCKING
-  sigset_t newmask, oldmask;
+      sigset_t newmask, oldmask;
 #endif
 #ifdef BUILD_GUI
-  double t;
+      double t;
 #endif /* BUILD_GUI */
 #ifdef HAVE_SYS_INOTIFY_H
-  int inotify_config_wd = -1;
+      int inotify_config_wd = -1;
 #define INOTIFY_EVENT_SIZE (sizeof(struct inotify_event))
 #define INOTIFY_BUF_LEN (20 * (INOTIFY_EVENT_SIZE + 16)) + 1
-  char inotify_buff[INOTIFY_BUF_LEN];
+      char inotify_buff[INOTIFY_BUF_LEN];
 #endif /* HAVE_SYS_INOTIFY_H */
 
 #ifdef SIGNAL_BLOCKING
-  sigemptyset(&newmask);
-  sigaddset(&newmask, SIGINT);
-  sigaddset(&newmask, SIGTERM);
-  sigaddset(&newmask, SIGUSR1);
+      sigemptyset(&newmask);
+      sigaddset(&newmask, SIGINT);
+      sigaddset(&newmask, SIGTERM);
+      sigaddset(&newmask, SIGUSR1);
 #endif
 
-  log_system_details();
+      log_system_details();
 
-  last_update_time = 0.0;
-  next_update_time = get_time() - fmod(get_time(), active_update_interval());
-  info.looped = 0;
-  while (terminate == 0 && (total_run_times.get(*state) == 0 ||
-                            info.looped < total_run_times.get(*state))) {
-    if ((update_interval_on_battery.get(*state) != NOBATTERY)) {
-      on_battery = is_on_battery();
-    }
-    info.looped++;
-
-#ifdef SIGNAL_BLOCKING
-    /* block signals.  we will inspect for pending signals later */
-    if (sigprocmask(SIG_BLOCK, &newmask, &oldmask) < 0) {
-      CRIT_ERR("unable to sigprocmask()");
-    }
-#endif
-
-#ifdef BUILD_GUI
-    if (display_output() && display_output()->graphical()) {
-      t = next_update_time - get_time();
-      display_output()->main_loop_wait(t);
-    } else {
-#endif /* BUILD_GUI */
-      struct timespec req, rem;
-      auto time_to_sleep = next_update_time - get_time();
-      auto seconds = static_cast<time_t>(std::floor(time_to_sleep));
-      auto nanos = (time_to_sleep - seconds) * 1000000000L;
-      req.tv_sec = seconds;
-      req.tv_nsec = nanos;
-      nanosleep(&req, &rem);
-      update_text();
-      draw_stuff();
-      for (auto output : display_outputs()) output->flush();
-#ifdef BUILD_GUI
-    }
-#endif /* BUILD_GUI */
-
-#ifdef SIGNAL_BLOCKING
-    /* unblock signals of interest and let handler fly */
-    if (sigprocmask(SIG_SETMASK, &oldmask, nullptr) < 0) {
-      CRIT_ERR("unable to sigprocmask()");
-    }
-#endif
-
-    if (g_sighup_pending != 0) {
-      g_sighup_pending = 0;
-      NORM_ERR("received SIGUSR1. reloading the config file.");
-
-      reload_config();
-    }
-
-    if (g_sigusr2_pending != 0) {
-      g_sigusr2_pending = 0;
-      // refresh view;
-      NORM_ERR("received SIGUSR2. refreshing.");
-      update_text();
-      draw_stuff();
-      for (auto output : display_outputs()) output->flush();
-    }
-
-    if (g_sigterm_pending != 0) {
-      g_sigterm_pending = 0;
-      NORM_ERR("received SIGHUP, SIGINT, or SIGTERM to terminate. bye!");
-      terminate = 1;
-      for (auto output : display_outputs()) output->sigterm_cleanup();
-    }
-#ifdef HAVE_SYS_INOTIFY_H
-    if (!disable_auto_reload.get(*state) && inotify_fd != -1 &&
-        inotify_config_wd == -1 && !current_config.empty()) {
-      inotify_config_wd =
-          inotify_add_watch(inotify_fd, current_config.c_str(), IN_MODIFY);
-    }
-    if (!disable_auto_reload.get(*state) && inotify_fd != -1 &&
-        inotify_config_wd != -1 && !current_config.empty()) {
-      int len = 0, idx = 0;
-      fd_set descriptors;
-      struct timeval time_to_wait;
-
-      FD_ZERO(&descriptors);
-      FD_SET(inotify_fd, &descriptors);
-
-      time_to_wait.tv_sec = time_to_wait.tv_usec = 0;
-
-      select(inotify_fd + 1, &descriptors, nullptr, NULL, &time_to_wait);
-      if (FD_ISSET(inotify_fd, &descriptors)) {
-        /* process inotify events */
-        len = read(inotify_fd, inotify_buff, INOTIFY_BUF_LEN - 1);
-        inotify_buff[len] = 0;
-        while (len > 0 && idx < len) {
-          struct inotify_event *ev = (struct inotify_event *)&inotify_buff[idx];
-          if (ev->wd == inotify_config_wd &&
-              (ev->mask & IN_MODIFY || ev->mask & IN_IGNORED)) {
-            /* current_config should be reloaded */
-            NORM_ERR("'%s' modified, reloading...", current_config.c_str());
-            reload_config();
-            if (ev->mask & IN_IGNORED) {
-              /* for some reason we get IN_IGNORED here
-               * sometimes, so we need to re-add the watch */
-              inotify_config_wd = inotify_add_watch(
-                  inotify_fd, current_config.c_str(), IN_MODIFY);
-            }
-            break;
-          } else {
-            llua_inotify_query(ev->wd, ev->mask);
-          }
-          idx += INOTIFY_EVENT_SIZE + ev->len;
+      last_update_time = 0.0;
+      next_update_time =
+          get_time() - fmod(get_time(), active_update_interval());
+      info.looped = 0;
+      while (terminate == 0 && (total_run_times.get(*state) == 0 ||
+                                info.looped < total_run_times.get(*state))) {
+        if ((update_interval_on_battery.get(*state) != NOBATTERY)) {
+          on_battery = is_on_battery();
         }
-      }
-    } else if (disable_auto_reload.get(*state) && inotify_fd != -1) {
-      inotify_rm_watch(inotify_fd, inotify_config_wd);
-      close(inotify_fd);
-      inotify_fd = inotify_config_wd = -1;
-    }
-#endif /* HAVE_SYS_INOTIFY_H */
+        info.looped++;
 
-    llua_update_info(&info, active_update_interval());
-  }
-  clean_up();
+#ifdef SIGNAL_BLOCKING
+        /* block signals.  we will inspect for pending signals later */
+        if (sigprocmask(SIG_BLOCK, &newmask, &oldmask) < 0) {
+          CRIT_ERR("unable to sigprocmask()");
+        }
+#endif
 
-#ifdef HAVE_SYS_INOTIFY_H
-  if (inotify_fd != -1) {
-    inotify_rm_watch(inotify_fd, inotify_config_wd);
-    close(inotify_fd);
-    inotify_fd = inotify_config_wd = -1;
-  }
-#endif /* HAVE_SYS_INOTIFY_H */
-}
-
-/* reload the config file */
-static void reload_config() {
-  struct stat sb {};
-  if ((stat(current_config.c_str(), &sb) != 0) ||
-      (!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
-    NORM_ERR(_("Config file '%s' is gone, continuing with config from "
-               "memory.\nIf you recreate this file sent me a SIGUSR1 to tell "
-               "me about it. ( kill -s USR1 %d )"),
-             current_config.c_str(), getpid());
-    return;
-  }
-  clean_up();
-  state = std::make_unique<lua::state>();
-  conky::export_symbols(*state);
-  sleep(1); /* slight pause */
-  initialisation(argc_copy, argv_copy);
-}
-
-void free_specials(special_node *&current) {
-  if (current != nullptr) {
-    free_specials(current->next);
-    if (current->type == text_node_t::GRAPH) { free(current->graph); }
-    delete current;
-    current = nullptr;
-  }
-
-  clear_stored_graphs();
-}
-
-void clean_up(void) {
-  /* free_update_callbacks(); XXX: some new equivalent of this? */
-  free_and_zero(info.cpu_usage);
-  for (auto output : display_outputs()) output->cleanup();
-  conky::shutdown_display_outputs();
 #ifdef BUILD_GUI
-  if (!display_output() || !display_output()->graphical()) {
-    fonts.clear();  // in set_default_configurations a font is set but not
-                    // loaded
-    selected_font = 0;
-  }
+        if (display_output() && display_output()->graphical()) {
+          t = next_update_time - get_time();
+          display_output()->main_loop_wait(t);
+        } else {
+#endif /* BUILD_GUI */
+          struct timespec req, rem;
+          auto time_to_sleep = next_update_time - get_time();
+          auto seconds = static_cast<time_t>(std::floor(time_to_sleep));
+          auto nanos = (time_to_sleep - seconds) * 1000000000L;
+          req.tv_sec = seconds;
+          req.tv_nsec = nanos;
+          nanosleep(&req, &rem);
+          update_text();
+          draw_stuff();
+          for (auto output : display_outputs()) output->flush();
+#ifdef BUILD_GUI
+        }
 #endif /* BUILD_GUI */
 
-  if (info.first_process != nullptr) {
-    free_all_processes();
-    info.first_process = nullptr;
-  }
+#ifdef SIGNAL_BLOCKING
+        /* unblock signals of interest and let handler fly */
+        if (sigprocmask(SIG_SETMASK, &oldmask, nullptr) < 0) {
+          CRIT_ERR("unable to sigprocmask()");
+        }
+#endif
 
-  free_text_objects(&global_root_object);
-  delete_block_and_zero(tmpstring1);
-  delete_block_and_zero(tmpstring2);
-  delete_block_and_zero(text_buffer);
-  free_and_zero(global_text);
+        if (g_sighup_pending != 0) {
+          g_sighup_pending = 0;
+          NORM_ERR("received SIGUSR1. reloading the config file.");
+
+          reload_config();
+        }
+
+        if (g_sigusr2_pending != 0) {
+          g_sigusr2_pending = 0;
+          // refresh view;
+          NORM_ERR("received SIGUSR2. refreshing.");
+          update_text();
+          draw_stuff();
+          for (auto output : display_outputs()) output->flush();
+        }
+
+        if (g_sigterm_pending != 0) {
+          g_sigterm_pending = 0;
+          NORM_ERR("received SIGHUP, SIGINT, or SIGTERM to terminate. bye!");
+          terminate = 1;
+          for (auto output : display_outputs()) output->sigterm_cleanup();
+        }
+#ifdef HAVE_SYS_INOTIFY_H
+        if (!disable_auto_reload.get(*state) && inotify_fd != -1 &&
+            inotify_config_wd == -1 && !current_config.empty()) {
+          inotify_config_wd =
+              inotify_add_watch(inotify_fd, current_config.c_str(), IN_MODIFY);
+        }
+        if (!disable_auto_reload.get(*state) && inotify_fd != -1 &&
+            inotify_config_wd != -1 && !current_config.empty()) {
+          int len = 0, idx = 0;
+          fd_set descriptors;
+          struct timeval time_to_wait;
+
+          FD_ZERO(&descriptors);
+          FD_SET(inotify_fd, &descriptors);
+
+          time_to_wait.tv_sec = time_to_wait.tv_usec = 0;
+
+          select(inotify_fd + 1, &descriptors, nullptr, NULL, &time_to_wait);
+          if (FD_ISSET(inotify_fd, &descriptors)) {
+            /* process inotify events */
+            len = read(inotify_fd, inotify_buff, INOTIFY_BUF_LEN - 1);
+            inotify_buff[len] = 0;
+            while (len > 0 && idx < len) {
+              struct inotify_event *ev =
+                  (struct inotify_event *)&inotify_buff[idx];
+              if (ev->wd == inotify_config_wd &&
+                  (ev->mask & IN_MODIFY || ev->mask & IN_IGNORED)) {
+                /* current_config should be reloaded */
+                NORM_ERR("'%s' modified, reloading...", current_config.c_str());
+                reload_config();
+                if (ev->mask & IN_IGNORED) {
+                  /* for some reason we get IN_IGNORED here
+                   * sometimes, so we need to re-add the watch */
+                  inotify_config_wd = inotify_add_watch(
+                      inotify_fd, current_config.c_str(), IN_MODIFY);
+                }
+                break;
+              } else {
+                llua_inotify_query(ev->wd, ev->mask);
+              }
+              idx += INOTIFY_EVENT_SIZE + ev->len;
+            }
+          }
+        } else if (disable_auto_reload.get(*state) && inotify_fd != -1) {
+          inotify_rm_watch(inotify_fd, inotify_config_wd);
+          close(inotify_fd);
+          inotify_fd = inotify_config_wd = -1;
+        }
+#endif /* HAVE_SYS_INOTIFY_H */
+
+        llua_update_info(&info, active_update_interval());
+      }
+      clean_up();
+
+#ifdef HAVE_SYS_INOTIFY_H
+      if (inotify_fd != -1) {
+        inotify_rm_watch(inotify_fd, inotify_config_wd);
+        close(inotify_fd);
+        inotify_fd = inotify_config_wd = -1;
+      }
+#endif /* HAVE_SYS_INOTIFY_H */
+    }
+
+    /* reload the config file */
+    static void reload_config() {
+      struct stat sb {};
+      if ((stat(current_config.c_str(), &sb) != 0) ||
+          (!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
+        NORM_ERR(
+            _("Config file '%s' is gone, continuing with config from "
+              "memory.\nIf you recreate this file sent me a SIGUSR1 to tell "
+              "me about it. ( kill -s USR1 %d )"),
+            current_config.c_str(), getpid());
+        return;
+      }
+      clean_up();
+      state = std::make_unique<lua::state>();
+      conky::export_symbols(*state);
+      sleep(1); /* slight pause */
+      initialisation(argc_copy, argv_copy);
+    }
+
+    void free_specials(special_node * &current) {
+      if (current != nullptr) {
+        free_specials(current->next);
+        if (current->type == text_node_t::GRAPH) { free(current->graph); }
+        delete current;
+        current = nullptr;
+      }
+
+      clear_stored_graphs();
+    }
+
+    void clean_up(void) {
+      /* free_update_callbacks(); XXX: some new equivalent of this? */
+      free_and_zero(info.cpu_usage);
+      for (auto output : display_outputs()) output->cleanup();
+      conky::shutdown_display_outputs();
+#ifdef BUILD_GUI
+      if (!display_output() || !display_output()->graphical()) {
+        fonts.clear();  // in set_default_configurations a font is set but not
+                        // loaded
+        selected_font = 0;
+      }
+#endif /* BUILD_GUI */
+
+      if (info.first_process != nullptr) {
+        free_all_processes();
+        info.first_process = nullptr;
+      }
+
+      free_text_objects(&global_root_object);
+      delete_block_and_zero(tmpstring1);
+      delete_block_and_zero(tmpstring2);
+      delete_block_and_zero(text_buffer);
+      free_and_zero(global_text);
 
 #ifdef BUILD_PORT_MONITORS
-  tcp_portmon_clear();
+      tcp_portmon_clear();
 #endif
-  llua_shutdown_hook();
+      llua_shutdown_hook();
 #if defined BUILD_RSS
-  xmlCleanupParser();
+      xmlCleanupParser();
 #endif
 
-  free_specials(specials);
+      free_specials(specials);
 
-  clear_net_stats();
-  clear_fs_stats();
-  clear_diskio_stats();
-  free_and_zero(global_cpu);
+      clear_net_stats();
+      clear_fs_stats();
+      clear_diskio_stats();
+      free_and_zero(global_cpu);
 
-  conky::cleanup_config_settings(*state);
-  state.reset();
-}
+      conky::cleanup_config_settings(*state);
+      state.reset();
+    }
 
-static void set_default_configurations() {
-  update_uname();
-  info.memmax = 0;
-  top_cpu = 0;
-  top_mem = 0;
-  top_time = 0;
+    static void set_default_configurations() {
+      update_uname();
+      info.memmax = 0;
+      top_cpu = 0;
+      top_mem = 0;
+      top_time = 0;
 #ifdef BUILD_IOSTATS
-  top_io = 0;
+      top_io = 0;
 #endif
-  top_running = 0;
+      top_running = 0;
 #ifdef BUILD_XMMS2
-  info.xmms2.artist = nullptr;
-  info.xmms2.album = nullptr;
-  info.xmms2.title = nullptr;
-  info.xmms2.genre = nullptr;
-  info.xmms2.comment = nullptr;
-  info.xmms2.url = nullptr;
-  info.xmms2.status = nullptr;
-  info.xmms2.playlist = nullptr;
+      info.xmms2.artist = nullptr;
+      info.xmms2.album = nullptr;
+      info.xmms2.title = nullptr;
+      info.xmms2.genre = nullptr;
+      info.xmms2.comment = nullptr;
+      info.xmms2.url = nullptr;
+      info.xmms2.status = nullptr;
+      info.xmms2.playlist = nullptr;
 #endif /* BUILD_XMMS2 */
 
 /* Enable a single output by default based on what was enabled at build-time */
 #ifdef BUILD_WAYLAND
-  state->pushboolean(true);
-  out_to_wayland.lua_set(*state);
+      state->pushboolean(true);
+      out_to_wayland.lua_set(*state);
 #else
 #ifdef BUILD_X11
   state->pushboolean(true);
@@ -1949,35 +1958,70 @@ static void set_default_configurations() {
 #endif
 #endif
 
-  info.users.number = 1;
-}
-
-void load_config_file() {
-  DBGP(_("reading contents from config file '%s'"), current_config.c_str());
-
-  lua::state &l = *state;
-  lua::stack_sentry s(l);
-  l.checkstack(2);
-
-  try {
-#ifdef BUILD_BUILTIN_CONFIG
-    if (current_config == builtin_config_magic) {
-      l.loadstring(defconfig);
-    } else {
-#endif
-      l.loadfile(current_config.c_str());
-#ifdef BUILD_BUILTIN_CONFIG
+      info.users.number = 1;
     }
+
+    void load_config_file() {
+      DBGP(_("reading contents from config file '%s'"), current_config.c_str());
+
+      lua::state &l = *state;
+      lua::stack_sentry s(l);
+      l.checkstack(2);
+
+      // Extend lua package.path so scripts can use relative paths
+      {
+        struct stat file_stat {};
+
+        std::string path_ext;
+
+        // add XDG directory to lua path
+        auto xdg_path =
+            std::filesystem::path(to_real_path(XDG_CONFIG_FILE)).parent_path();
+        if (stat(xdg_path.c_str(), &file_stat) == 0) {
+          path_ext.push_back(';');
+          path_ext.append(xdg_path);
+          path_ext.append("/?.lua");
+        }
+
+        auto parent_path = current_config.parent_path();
+        if (xdg_path != parent_path &&
+            stat(path_ext.c_str(), &file_stat) == 0) {
+          path_ext.push_back(';');
+          path_ext.append(parent_path);
+          path_ext.append("/?.lua");
+        }
+
+        l.getglobal("package");
+        l.getfield(-1, "path");
+
+        auto path = l.tostring(-1);
+        path.append(path_ext);
+        l.pop();
+        l.pushstring(path.c_str());
+
+        l.setfield(-2, "path");
+        l.pop();
+      }
+
+      try {
+#ifdef BUILD_BUILTIN_CONFIG
+        if (current_config == builtin_config_magic) {
+          l.loadstring(defconfig);
+        } else {
 #endif
-  } catch (lua::syntax_error &e) {
+          l.loadfile(current_config.c_str());
+#ifdef BUILD_BUILTIN_CONFIG
+        }
+#endif
+      } catch (lua::syntax_error &e) {
 #define SYNTAX_ERR_READ_CONF "Syntax error (%s) while reading config file. "
 #ifdef BUILD_OLD_CONFIG
-    NORM_ERR(_(SYNTAX_ERR_READ_CONF), e.what());
-    NORM_ERR(_("Assuming it's in old syntax and attempting conversion."));
-    // the strchr thingy skips the first line (#! /usr/bin/lua)
-    l.loadstring(strchr(convertconf, '\n'));
-    l.pushstring(current_config.c_str());
-    l.call(1, 1);
+        NORM_ERR(_(SYNTAX_ERR_READ_CONF), e.what());
+        NORM_ERR(_("Assuming it's in old syntax and attempting conversion."));
+        // the strchr thingy skips the first line (#! /usr/bin/lua)
+        l.loadstring(strchr(convertconf, '\n'));
+        l.pushstring(current_config.c_str());
+        l.call(1, 1);
 #else
     char *syntaxerr;
     if (asprintf(&syntaxerr, _(SYNTAX_ERR_READ_CONF), e.what())) {
@@ -1986,333 +2030,333 @@ void load_config_file() {
       throw conky::error(syntaxerrobj);
     }
 #endif
-  }
-  l.call(0, 0);
+      }
+      l.call(0, 0);
 
-  l.getglobal("conky");
-  l.getfield(-1, "text");
-  l.replace(-2);
-  if (l.type(-1) != lua::TSTRING) {
-    throw conky::error(_("missing text block in configuration"));
-  }
+      l.getglobal("conky");
+      l.getfield(-1, "text");
+      l.replace(-2);
+      if (l.type(-1) != lua::TSTRING) {
+        throw conky::error(_("missing text block in configuration"));
+      }
 
-  /* Remove \\-\n. */
-  l.gsub(l.tocstring(-1), "\\\n", "");
-  l.replace(-2);
-  global_text = strdup(l.tocstring(-1));
-  l.pop();
-}
+      /* Remove \\-\n. */
+      l.gsub(l.tocstring(-1), "\\\n", "");
+      l.replace(-2);
+      global_text = strdup(l.tocstring(-1));
+      l.pop();
+    }
 
-inline void reset_optind() {
+    inline void reset_optind() {
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
     defined(__OpenBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
-  optind = optreset = 1;
+      optind = optreset = 1;
 #else
   optind = 0;
 #endif
-}
+    }
 
-void set_current_config() {
-  /* load current_config, CONFIG_FILE or SYSTEM_CONFIG_FILE */
-  struct stat s {};
+    void set_current_config() {
+      /* load current_config, CONFIG_FILE or SYSTEM_CONFIG_FILE */
+      struct stat s {};
 
-  if (current_config.empty()) {
-    /* Try to use personal config file first */
-    std::string buf = to_real_path(XDG_CONFIG_FILE);
-    if (stat(buf.c_str(), &s) == 0) { current_config = buf; }
-  }
+      if (current_config.empty()) {
+        /* Try to use personal config file first */
+        std::string buf = to_real_path(XDG_CONFIG_FILE);
+        if (stat(buf.c_str(), &s) == 0) { current_config = buf; }
+      }
 
-  if (current_config.empty()) {
-    /* Try to use personal config file first */
-    std::string buf = to_real_path(CONFIG_FILE);
-    if (stat(buf.c_str(), &s) == 0) { current_config = buf; }
-  }
+      if (current_config.empty()) {
+        /* Try to use personal config file first */
+        std::string buf = to_real_path(CONFIG_FILE);
+        if (stat(buf.c_str(), &s) == 0) { current_config = buf; }
+      }
 
-  /* Try to use system config file if personal config does not exist */
-  if (current_config.empty() && (stat(SYSTEM_CONFIG_FILE, &s) == 0)) {
-    current_config = SYSTEM_CONFIG_FILE;
-  }
+      /* Try to use system config file if personal config does not exist */
+      if (current_config.empty() && (stat(SYSTEM_CONFIG_FILE, &s) == 0)) {
+        current_config = SYSTEM_CONFIG_FILE;
+      }
 
-  /* No readable config found */
-  if (current_config.empty()) {
+      /* No readable config found */
+      if (current_config.empty()) {
 #define NOCFGFILEFOUND "no personal or system-wide config file found"
 #ifdef BUILD_BUILTIN_CONFIG
-    current_config = builtin_config_magic;
-    NORM_ERR(NOCFGFILEFOUND ", using builtin default");
+        current_config = builtin_config_magic;
+        NORM_ERR(NOCFGFILEFOUND ", using builtin default");
 #else
     throw conky::error(NOCFGFILEFOUND);
 #endif
-  }
+      }
 
-  // "-" stands for "read from stdin"
-  if (current_config == "-") { current_config = "/dev/stdin"; }
-}
+      // "-" stands for "read from stdin"
+      if (current_config == "-") { current_config = "/dev/stdin"; }
+    }
 
-/* : means that character before that takes an argument */
-const char *getopt_string =
-    "vVqdDSs:t:u:i:hc:p:"
+    /* : means that character before that takes an argument */
+    const char *getopt_string =
+        "vVqdDSs:t:u:i:hc:p:"
 #ifdef BUILD_X11
-    "x:y:w:a:X:m:f:"
+        "x:y:w:a:X:m:f:"
 #ifdef OWN_WINDOW
-    "o"
+        "o"
 #endif
-    "b"
+        "b"
 #endif /* BUILD_X11 */
 #ifdef BUILD_BUILTIN_CONFIG
-    "C"
+        "C"
 #endif
-    ;
+        ;
 
-const struct option longopts[] = {
-    {"help", 0, nullptr, 'h'},          {"version", 0, nullptr, 'V'},
-    {"quiet", 0, nullptr, 'q'},         {"debug", 0, nullptr, 'D'},
-    {"config", 1, nullptr, 'c'},
+    const struct option longopts[] = {
+        {"help", 0, nullptr, 'h'},          {"version", 0, nullptr, 'v'},
+        {"short-version", 0, nullptr, 'V'}, {"quiet", 0, nullptr, 'q'},
+        {"debug", 0, nullptr, 'D'},         {"config", 1, nullptr, 'c'},
 #ifdef BUILD_BUILTIN_CONFIG
-    {"print-config", 0, nullptr, 'C'},
+        {"print-config", 0, nullptr, 'C'},
 #endif
-    {"daemonize", 0, nullptr, 'd'},
+        {"daemonize", 0, nullptr, 'd'},
 #ifdef BUILD_X11
-    {"alignment", 1, nullptr, 'a'},     {"display", 1, nullptr, 'X'},
-    {"xinerama-head", 1, nullptr, 'm'}, {"font", 1, nullptr, 'f'},
+        {"alignment", 1, nullptr, 'a'},     {"display", 1, nullptr, 'X'},
+        {"xinerama-head", 1, nullptr, 'm'}, {"font", 1, nullptr, 'f'},
 #ifdef OWN_WINDOW
-    {"own-window", 0, nullptr, 'o'},
+        {"own-window", 0, nullptr, 'o'},
 #endif
-    {"double-buffer", 0, nullptr, 'b'}, {"window-id", 1, nullptr, 'w'},
+        {"double-buffer", 0, nullptr, 'b'}, {"window-id", 1, nullptr, 'w'},
 #endif /* BUILD_X11 */
-    {"text", 1, nullptr, 't'},          {"interval", 1, nullptr, 'u'},
-    {"pause", 1, nullptr, 'p'},         {nullptr, 0, nullptr, 0}};
+        {"text", 1, nullptr, 't'},          {"interval", 1, nullptr, 'u'},
+        {"pause", 1, nullptr, 'p'},         {nullptr, 0, nullptr, 0}};
 
-void setup_inotify() {
+    void setup_inotify() {
 #ifdef HAVE_SYS_INOTIFY_H
-  // the file descriptor will be automatically closed on exit
-  inotify_fd = inotify_init();
-  if (inotify_fd != -1) {
-    fcntl(inotify_fd, F_SETFL, fcntl(inotify_fd, F_GETFL) | O_NONBLOCK);
+      // the file descriptor will be automatically closed on exit
+      inotify_fd = inotify_init();
+      if (inotify_fd != -1) {
+        fcntl(inotify_fd, F_SETFL, fcntl(inotify_fd, F_GETFL) | O_NONBLOCK);
 
-    fcntl(inotify_fd, F_SETFD, fcntl(inotify_fd, F_GETFD) | FD_CLOEXEC);
-  }
+        fcntl(inotify_fd, F_SETFD, fcntl(inotify_fd, F_GETFD) | FD_CLOEXEC);
+      }
 #endif /* HAVE_SYS_INOTIFY_H */
-}
-void initialisation(int argc, char **argv) {
-  struct sigaction act {
-  }, oact{};
+    }
+    void initialisation(int argc, char **argv) {
+      struct sigaction act {
+      }, oact{};
 
-  clear_net_stats();
-  set_default_configurations();
+      clear_net_stats();
+      set_default_configurations();
 
-  set_current_config();
-  load_config_file();
+      set_current_config();
+      load_config_file();
 
-  /* handle other command line arguments */
+      /* handle other command line arguments */
 
-  reset_optind();
+      reset_optind();
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-  if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null", O_RDONLY,
-                     "kvm_open")) == nullptr) {
-    CRIT_ERR("cannot read kvm");
-  }
+      if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null", O_RDONLY,
+                         "kvm_open")) == nullptr) {
+        CRIT_ERR("cannot read kvm");
+      }
 #endif
 
-  while (1) {
-    int c = getopt_long(argc, argv, getopt_string, longopts, nullptr);
-    int startup_pause;
-    char *conv_end;
+      while (1) {
+        int c = getopt_long(argc, argv, getopt_string, longopts, nullptr);
+        int startup_pause;
+        char *conv_end;
 
-    if (c == -1) { break; }
+        if (c == -1) { break; }
 
-    switch (c) {
-      case 'd':
-        state->pushboolean(true);
-        fork_to_background.lua_set(*state);
-        break;
+        switch (c) {
+          case 'd':
+            state->pushboolean(true);
+            fork_to_background.lua_set(*state);
+            break;
 #ifdef BUILD_X11
-      case 'f':
-        state->pushstring(optarg);
-        font.lua_set(*state);
-        break;
-      case 'a':
-        state->pushstring(optarg);
-        text_alignment.lua_set(*state);
-        break;
-      case 'm':
-        state->pushinteger(strtol(optarg, &conv_end, 10));
-        if (*conv_end != 0) {
-          CRIT_ERR("'%s' is a wrong xinerama-head index", optarg);
-        }
-        head_index.lua_set(*state);
-        break;
-      case 'X':
-        state->pushstring(optarg);
-        display_name.lua_set(*state);
-        break;
+          case 'f':
+            state->pushstring(optarg);
+            font.lua_set(*state);
+            break;
+          case 'a':
+            state->pushstring(optarg);
+            text_alignment.lua_set(*state);
+            break;
+          case 'm':
+            state->pushinteger(strtol(optarg, &conv_end, 10));
+            if (*conv_end != 0) {
+              CRIT_ERR("'%s' is a wrong xinerama-head index", optarg);
+            }
+            head_index.lua_set(*state);
+            break;
+          case 'X':
+            state->pushstring(optarg);
+            display_name.lua_set(*state);
+            break;
 
 #ifdef OWN_WINDOW
-      case 'o':
-        state->pushboolean(true);
-        own_window.lua_set(*state);
-        break;
+          case 'o':
+            state->pushboolean(true);
+            own_window.lua_set(*state);
+            break;
 #endif
 #ifdef BUILD_XDBE
-      case 'b':
-        state->pushboolean(true);
-        use_xdbe.lua_set(*state);
-        break;
+          case 'b':
+            state->pushboolean(true);
+            use_xdbe.lua_set(*state);
+            break;
 #else
-      case 'b':
-        state->pushboolean(true);
-        use_xpmdb.lua_set(*state);
-        break;
+          case 'b':
+            state->pushboolean(true);
+            use_xpmdb.lua_set(*state);
+            break;
 #endif
 #endif /* BUILD_X11 */
-      case 't':
-        free_and_zero(global_text);
-        global_text = strndup(optarg, max_user_text.get(*state));
-        convert_escapes(global_text);
-        break;
+          case 't':
+            free_and_zero(global_text);
+            global_text = strndup(optarg, max_user_text.get(*state));
+            convert_escapes(global_text);
+            break;
 
-      case 'u':
-        state->pushnumber(strtod(optarg, &conv_end));
-        if (*conv_end != 0) {
-          CRIT_ERR("'%s' is an invalid update interval", optarg);
-        }
-        update_interval.lua_set(*state);
-        break;
+          case 'u':
+            state->pushnumber(strtod(optarg, &conv_end));
+            if (*conv_end != 0) {
+              CRIT_ERR("'%s' is an invalid update interval", optarg);
+            }
+            update_interval.lua_set(*state);
+            break;
 
-      case 'i':
-        state->pushinteger(strtol(optarg, &conv_end, 10));
-        if (*conv_end != 0) {
-          CRIT_ERR("'%s' is an invalid number of update times", optarg);
-        }
-        total_run_times.lua_set(*state);
-        break;
+          case 'i':
+            state->pushinteger(strtol(optarg, &conv_end, 10));
+            if (*conv_end != 0) {
+              CRIT_ERR("'%s' is an invalid number of update times", optarg);
+            }
+            total_run_times.lua_set(*state);
+            break;
 #ifdef BUILD_X11
-      case 'x':
-        state->pushinteger(strtol(optarg, &conv_end, 10));
-        if (*conv_end != 0) {
-          CRIT_ERR("'%s' is an invalid value for the X-position", optarg);
-        }
-        gap_x.lua_set(*state);
-        break;
+          case 'x':
+            state->pushinteger(strtol(optarg, &conv_end, 10));
+            if (*conv_end != 0) {
+              CRIT_ERR("'%s' is an invalid value for the X-position", optarg);
+            }
+            gap_x.lua_set(*state);
+            break;
 
-      case 'y':
-        state->pushinteger(strtol(optarg, &conv_end, 10));
-        if (*conv_end != 0) {
-          CRIT_ERR("'%s' is a wrong value for the Y-position", optarg);
-        }
-        gap_y.lua_set(*state);
-        break;
+          case 'y':
+            state->pushinteger(strtol(optarg, &conv_end, 10));
+            if (*conv_end != 0) {
+              CRIT_ERR("'%s' is a wrong value for the Y-position", optarg);
+            }
+            gap_y.lua_set(*state);
+            break;
 #endif /* BUILD_X11 */
-      case 'p':
-        if (first_pass != 0) {
-          startup_pause = strtol(optarg, nullptr, 10);
-          sleep(startup_pause);
+          case 'p':
+            if (first_pass != 0) {
+              startup_pause = strtol(optarg, nullptr, 10);
+              sleep(startup_pause);
+            }
+            break;
+
+          case '?':
+            throw unknown_arg_throw();
         }
-        break;
+      }
 
-      case '?':
-        throw unknown_arg_throw();
-    }
-  }
-
-  conky::set_config_settings(*state);
+      conky::set_config_settings(*state);
 
 #ifdef BUILD_GUI
-  if (display_output() && display_output()->graphical()) {
-    current_text_color = default_color.get(*state);
-  }
+      if (display_output() && display_output()->graphical()) {
+        current_text_color = default_color.get(*state);
+      }
 #endif
 
-  /* generate text and get initial size */
-  extract_variable_text(global_text);
-  free_and_zero(global_text);
-  /* fork */
-  if (fork_to_background.get(*state) && (first_pass != 0)) {
-    int pid = fork();
+      /* generate text and get initial size */
+      extract_variable_text(global_text);
+      free_and_zero(global_text);
+      /* fork */
+      if (fork_to_background.get(*state) && (first_pass != 0)) {
+        int pid = fork();
 
-    switch (pid) {
-      case -1:
-        NORM_ERR(PACKAGE_NAME ": couldn't fork() to background: %s",
-                 strerror(errno));
-        break;
+        switch (pid) {
+          case -1:
+            NORM_ERR(PACKAGE_NAME ": couldn't fork() to background: %s",
+                     strerror(errno));
+            break;
 
-      case 0:
-        /* child process */
-        usleep(25000);
-        fprintf(stderr, "\n");
-        fflush(stderr);
-        break;
+          case 0:
+            /* child process */
+            usleep(25000);
+            fprintf(stderr, "\n");
+            fflush(stderr);
+            break;
 
-      default:
-        /* parent process */
-        fprintf(stderr, PACKAGE_NAME ": forked to background, pid is %d\n",
-                pid);
-        fflush(stderr);
-        throw fork_throw();
-    }
-  }
+          default:
+            /* parent process */
+            fprintf(stderr, PACKAGE_NAME ": forked to background, pid is %d\n",
+                    pid);
+            fflush(stderr);
+            throw fork_throw();
+        }
+      }
 
-  text_buffer = new char[max_user_text.get(*state)];
-  memset(text_buffer, 0, max_user_text.get(*state));
-  tmpstring1 = new char[text_buffer_size.get(*state)];
-  memset(tmpstring1, 0, text_buffer_size.get(*state));
-  tmpstring2 = new char[text_buffer_size.get(*state)];
-  memset(tmpstring2, 0, text_buffer_size.get(*state));
+      text_buffer = new char[max_user_text.get(*state)];
+      memset(text_buffer, 0, max_user_text.get(*state));
+      tmpstring1 = new char[text_buffer_size.get(*state)];
+      memset(tmpstring1, 0, text_buffer_size.get(*state));
+      tmpstring2 = new char[text_buffer_size.get(*state)];
+      memset(tmpstring2, 0, text_buffer_size.get(*state));
 
-  if (!conky::initialize_display_outputs()) {
-    CRIT_ERR("initialize_display_outputs() failed.");
-  }
+      if (!conky::initialize_display_outputs()) {
+        CRIT_ERR("initialize_display_outputs() failed.");
+      }
 #ifdef BUILD_GUI
-  /* setup lua window globals */
-  llua_setup_window_table(conky::rect<int>(text_start, text_size));
+      /* setup lua window globals */
+      llua_setup_window_table(conky::rect<int>(text_start, text_size));
 #endif /* BUILD_GUI */
 
-  llua_setup_info(&info, active_update_interval());
+      llua_setup_info(&info, active_update_interval());
 
-  /* Set signal handlers */
-  act.sa_handler = signal_handler;
-  sigemptyset(&act.sa_mask);
-  act.sa_flags = 0;
+      /* Set signal handlers */
+      act.sa_handler = signal_handler;
+      sigemptyset(&act.sa_mask);
+      act.sa_flags = 0;
 #ifdef SA_RESTART
-  act.sa_flags |= SA_RESTART;
+      act.sa_flags |= SA_RESTART;
 #endif
 
-  if (sigaction(SIGINT, &act, &oact) < 0 ||
-      sigaction(SIGALRM, &act, &oact) < 0 ||
-      sigaction(SIGUSR1, &act, &oact) < 0 ||
-      sigaction(SIGUSR2, &act, &oact) < 0 ||
-      sigaction(SIGHUP, &act, &oact) < 0 ||
-      sigaction(SIGTERM, &act, &oact) < 0) {
-    NORM_ERR("error setting signal handler: %s", strerror(errno));
-  }
+      if (sigaction(SIGINT, &act, &oact) < 0 ||
+          sigaction(SIGALRM, &act, &oact) < 0 ||
+          sigaction(SIGUSR1, &act, &oact) < 0 ||
+          sigaction(SIGUSR2, &act, &oact) < 0 ||
+          sigaction(SIGHUP, &act, &oact) < 0 ||
+          sigaction(SIGTERM, &act, &oact) < 0) {
+        NORM_ERR("error setting signal handler: %s", strerror(errno));
+      }
 
-  llua_startup_hook();
-}
+      llua_startup_hook();
+    }
 
-static void signal_handler(int sig) {
-  /* signal handler is light as a feather, as it should be.
-   * we will poll g_signal_pending with each loop of conky
-   * and do any signal processing there, NOT here */
+    static void signal_handler(int sig) {
+      /* signal handler is light as a feather, as it should be.
+       * we will poll g_signal_pending with each loop of conky
+       * and do any signal processing there, NOT here */
 
-  switch (sig) {
-    case SIGHUP:
-    case SIGINT:
-    case SIGTERM:
-      g_sigterm_pending = 1;
-      break;
-    case SIGUSR1:
-      g_sighup_pending = 1;
-      break;
-    case SIGUSR2:
-      g_sigusr2_pending = 1;
-    default:
-      /* Reaching here means someone set a signal
-       * (SIGXXXX, signal_handler), but didn't write any code
-       * to deal with it.
-       * If you don't want to handle a signal, don't set a handler on
-       * it in the first place.
-       * We cannot print debug messages from a sighandler, so simply ignore.
-       */
-      break;
-  }
-}
+      switch (sig) {
+        case SIGHUP:
+        case SIGINT:
+        case SIGTERM:
+          g_sigterm_pending = 1;
+          break;
+        case SIGUSR1:
+          g_sighup_pending = 1;
+          break;
+        case SIGUSR2:
+          g_sigusr2_pending = 1;
+        default:
+          /* Reaching here means someone set a signal
+           * (SIGXXXX, signal_handler), but didn't write any code
+           * to deal with it.
+           * If you don't want to handle a signal, don't set a handler on
+           * it in the first place.
+           * We cannot print debug messages from a sighandler, so simply ignore.
+           */
+          break;
+      }
+    }

@@ -300,7 +300,7 @@ static void output_geometry(void *data, struct wl_output *wl_output, int32_t x,
                             int32_t transform) {
   // TODO: Add support for proper output management through:
   // - xdg-output-unstable-v1
-  // Maybe also support (if XDG one not reported elsewhere):
+  // Maybe also support (if XDG protocol not reported):
   // - kde-output-management(-v2)
   // - wlr-output-management-unstable-v1
   workarea.x = x;  // TODO: use xdg_output.logical_position
@@ -907,10 +907,7 @@ void display_output_wayland::move_win(int x, int y) {
   // window.y = y;
   // TODO
 }
-template <typename T, typename>
-T display_output_wayland::dpi_scale(T value) {
-  return value;
-}
+float display_output_wayland::get_dpi_scale() { return 1.0; }
 
 void display_output_wayland::end_draw_stuff() {
   window_commit_buffer(global_window);
@@ -1059,7 +1056,7 @@ static struct wl_shm_pool *make_shm_pool(struct wl_shm *shm, int size,
     return NULL;
   }
 
-  *data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  *data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
   if (*data == MAP_FAILED) {
     fprintf(stderr, "mmap failed: %m\n");
     close(fd);

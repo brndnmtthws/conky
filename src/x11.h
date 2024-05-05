@@ -98,6 +98,8 @@ struct conky_x11_window {
 
 extern struct conky_x11_window window;
 
+void update_x11_resource_db(bool first_run = false);
+void update_x11_workarea();
 void init_x11();
 void destroy_window(void);
 void create_gc(void);

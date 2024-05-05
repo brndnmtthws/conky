@@ -94,6 +94,7 @@ extern "C" {
 #include <xcb/xcb.h>
 #include <xcb/xcb_errors.h>
 #endif
+#include <X11/Xresource.h>
 }
 
 Display *display = nullptr;
@@ -110,9 +111,8 @@ struct conky_x11_window window;
 bool have_argb_visual = false;
 
 /* local prototypes */
-static void update_workarea();
 static Window find_desktop_window(Window *p_root, Window *p_desktop);
-static Window find_subwindow(Window win, int w, int h);
+static Window find_desktop_window_impl(Window win, int w, int h);
 
 /* WARNING, this type not in Xlib spec */
 static int x11_error_handler(Display *d, XErrorEvent *err) {
@@ -196,36 +196,35 @@ __attribute__((noreturn)) static int x11_ioerror_handler(Display *d) {
 /// manage workspaces. These are direct descendants of root and WMs reparent all
 /// children to them.
 ///
-/// @param screen screen to get the (current) virtual root of @return the
-/// virtual root window of the screen
+/// @param screen screen to get the (current) virtual root of
+/// @return the virtual root window of the screen
 static Window VRootWindowOfScreen(Screen *screen) {
-  Window root = screen->root;
-  Display *dpy = screen->display;
+  Window root = RootWindowOfScreen(screen);
+  Display *dpy = DisplayOfScreen(screen);
 
-  Window rootReturn, parentReturn, *children;
-  unsigned int numChildren;
+  /* go look for a virtual root */
+  Atom _NET_VIRTUAL_ROOTS = XInternAtom(display, "_NET_VIRTUAL_ROOTS", True);
+  if (_NET_VIRTUAL_ROOTS == 0) return root;
+
+  auto vroots = x11_atom_window_list(dpy, root, _NET_VIRTUAL_ROOTS);
+
+  if (vroots.empty()) return root;
+
+  Atom _NET_CURRENT_DESKTOP =
+      XInternAtom(display, "_NET_CURRENT_DESKTOP", True);
+  if (_NET_CURRENT_DESKTOP == 0) return root;
+
   Atom actual_type;
   int actual_format;
   unsigned long nitems, bytesafter;
+  int *cardinal;
 
-  /* go look for a virtual root */
-  Atom __SWM_VROOT = ATOM(__SWM_VROOT);
-  if (XQueryTree(dpy, root, &rootReturn, &parentReturn, &children,
-                 &numChildren)) {
-    for (int i = 0; i < numChildren; i++) {
-      Window *newRoot = None;
+  XGetWindowProperty(dpy, root, _NET_CURRENT_DESKTOP, 0, 1, False, XA_CARDINAL,
+                     &actual_type, &actual_format, &nitems, &bytesafter,
+                     (unsigned char **)&cardinal);
 
-      if (XGetWindowProperty(
-              dpy, children[i], __SWM_VROOT, 0, 1, False, XA_WINDOW,
-              &actual_type, &actual_format, &nitems, &bytesafter,
-              reinterpret_cast<unsigned char **>(&newRoot)) == 0 &&
-          newRoot != None) {
-        root = *newRoot;
-        break;
-      }
-    }
-    if (children) XFree((char *)children);
-  }
+  if (vroots.size() > *cardinal) { root = vroots[*cardinal]; }
+  XFree(cardinal);
 
   return root;
 }
@@ -265,12 +264,14 @@ void init_x11() {
   info.x11.desktop.name.clear();
 
   screen = DefaultScreen(display);
-  workarea.width = DisplayWidth(display, screen);
-  workarea.height = DisplayHeight(display, screen);
+
+  XSetErrorHandler(&x11_error_handler);
+  XSetIOErrorHandler(&x11_ioerror_handler);
+
+  update_x11_resource_db(true);
+  update_x11_workarea();
 
   get_x11_desktop_info(display, 0);
-
-  update_workarea();
 
 #ifdef HAVE_XCB_ERRORS
   auto connection = xcb_connect(NULL, NULL);
@@ -280,11 +281,6 @@ void init_x11() {
     }
   }
 #endif /* HAVE_XCB_ERRORS */
-
-  /* WARNING, this type not in Xlib spec */
-  XSetErrorHandler(&x11_error_handler);
-  XSetIOErrorHandler(&x11_ioerror_handler);
-
   DBGP("leave init_x11()");
 }
 
@@ -296,7 +292,39 @@ void deinit_x11() {
   }
 }
 
-static void update_workarea() {
+// Source: dunst
+// https://github.com/bebehei/dunst/blob/1bc3237a359f37905426012c0cca90d71c4b3b18/src/x11/x.c#L463
+void update_x11_resource_db(bool first_run) {
+  XrmDatabase db;
+  XTextProperty prop;
+  Window root;
+
+  XFlush(display);
+
+  root = RootWindow(display, screen);
+
+  XLockDisplay(display);
+  if (XGetTextProperty(display, root, &prop, XA_RESOURCE_MANAGER)) {
+    if (!first_run) {
+      db = XrmGetDatabase(display);
+      XrmDestroyDatabase(db);
+    }
+
+    db = XrmGetStringDatabase((const char *)prop.value);
+    XrmSetDatabase(display, db);
+  }
+  XUnlockDisplay(display);
+
+  XFlush(display);
+  XSync(display, false);
+}
+
+void update_x11_workarea() {
+  /* default work area is display */
+  workarea.pos = conky::vec2i();
+  workarea.width = DisplayWidth(display, screen);
+  workarea.height = DisplayHeight(display, screen);
+
 #ifdef BUILD_XINERAMA
   /* if xinerama is being used, adjust workarea to the head's area */
   int useless1, useless2;
@@ -343,9 +371,12 @@ static Window find_desktop_window(Window root) {
   Window desktop = root;
 
   /* get subwindows from root */
-  desktop = find_subwindow(root, -1, -1);
-  update_workarea();
-  desktop = find_subwindow(desktop, workarea[2], workarea[3]);
+  int display_width = DisplayWidth(display, screen);
+  int display_height = DisplayHeight(display, screen);
+  desktop = find_desktop_window_impl(root, display_width, display_height);
+  update_x11_workarea();
+  desktop = find_desktop_window_impl(desktop, workarea[2] - workarea[0],
+                                     workarea[3] - workarea[1]);
 
   if (desktop != root) {
     NORM_ERR("desktop window (0x%lx) is subwindow of root window (0x%lx)",
@@ -513,13 +544,11 @@ void x11_init_window(lua::state &l, bool own) {
                                     0,
                                     0};
       flags |= CWBackPixel;
-#ifdef BUILD_ARGB
       if (have_argb_visual) {
         attrs.colormap = window.colourmap;
         flags &= ~CWBackPixel;
         flags |= CWBorderPixel | CWColormap;
       }
-#endif /* BUILD_ARGB */
 
       /* Parent is desktop window (which might be a child of root) */
       window.window = XCreateWindow(display, window.desktop, window.geometry.x,
@@ -556,13 +585,11 @@ void x11_init_window(lua::state &l, bool own) {
       Atom xa;
 
       flags |= CWBackPixel;
-#ifdef BUILD_ARGB
       if (have_argb_visual) {
         attrs.colormap = window.colourmap;
         flags &= ~CWBackPixel;
         flags |= CWBorderPixel | CWColormap;
       }
-#endif /* BUILD_ARGB */
 
       if (own_window_type.get(l) == window_type::DOCK) {
         window.geometry.pos = conky::vec2i::Zero();
@@ -866,7 +893,7 @@ void x11_init_window(lua::state &l, bool own) {
   DBGP("leave x11_init_window()");
 }
 
-static Window find_subwindow(Window win, int w, int h) {
+static Window find_desktop_window_impl(Window win, int w, int h) {
   unsigned int i, j;
   Window troot, parent, *children;
   unsigned int n;
@@ -878,13 +905,11 @@ static Window find_subwindow(Window win, int w, int h) {
 
     for (j = 0; j < n; j++) {
       XWindowAttributes attrs;
-
       if (XGetWindowAttributes(display, children[j], &attrs) != 0) {
         /* Window must be mapped and same size as display or
          * work space */
-        if (attrs.map_state != 0 && ((attrs.width == workarea.width &&
-                                      attrs.height == workarea.height) ||
-                                     (attrs.width == w && attrs.height == h))) {
+        if (attrs.map_state == IsViewable && attrs.override_redirect == false &&
+            ((attrs.width == w && attrs.height == h))) {
           win = children[j];
           break;
         }
@@ -1113,6 +1138,9 @@ void set_struts(alignment align) {
   Atom strut = ATOM(_NET_WM_STRUT);
   if (strut != None) {
     long sizes[STRUT_COUNT] = {0};
+
+    int display_width = workarea[2] - workarea[0];
+    int display_height = workarea[3] - workarea[1];
 
     switch (horizontal_alignment(align)) {
       case axis_align::START:

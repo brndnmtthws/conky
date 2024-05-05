@@ -24,6 +24,7 @@
 #define DISPLAY_OUTPUT_HH
 
 #include <string.h>
+#include <cmath>
 #include <limits>
 #include <string>
 #include <type_traits>
@@ -107,11 +108,7 @@ class display_output_base {
   virtual void draw_arc(int /*x*/, int /*y*/, int /*w*/, int /*h*/, int /*a1*/,
                         int /*a2*/) {}
   virtual void move_win(int /*x*/, int /*y*/) {}
-  template <typename T, typename = typename std::enable_if<
-                            std::is_arithmetic<T>::value, T>::type>
-  T dpi_scale(T value) {
-    return value;
-  }
+  virtual float get_dpi_scale() { return 1.0; };
 
   virtual void begin_draw_stuff() {}
   virtual void end_draw_stuff() {}
@@ -186,19 +183,26 @@ static inline conky::display_output_base *display_output() {
   return nullptr;
 }
 
-template <typename T, typename = typename std::enable_if<
-                          std::is_arithmetic<T>::value, T>::type>
-inline T dpi_scale(T value) {
+template <typename T>
+inline std::enable_if_t<std::is_arithmetic<T>::value, T> dpi_scale(T value) {
 #ifdef BUILD_GUI
   auto output = display_output();
   if (output) {
-    return output->dpi_scale(value);
-  } else {
-    return value;
+    if constexpr (std::is_integral_v<T>) {
+      if (value > 0) {
+        return static_cast<T>(
+            std::ceil(static_cast<float>(value) * output->get_dpi_scale()));
+      } else {
+        return static_cast<T>(
+            std::floor(static_cast<float>(value) * output->get_dpi_scale()));
+      }
+    } else {
+      return value * output->get_dpi_scale();
+    }
   }
-#else  /* BUILD_GUI */
-  return value;
 #endif /* BUILD_GUI */
+
+  return value;
 }
 
 static inline void unset_display_output() {

@@ -24,7 +24,6 @@ add_definitions(-DTOLUA_RELEASE)
 
 # NOTE: Don't chain options in IFs here, their dependency is already handled by
 # ConkyBuildOptions.cmake
-
 if(BUILD_LUA_CAIRO)
   include_directories(${luacairo_includes} ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -32,7 +31,7 @@ if(BUILD_LUA_CAIRO)
   # better solution, please let me know
   wrap_tolua(luacairo_src cairo.pkg libcairo.patch)
 
-  add_library(conky-cairo SHARED ${luacairo_src})
+  add_library(conky-cairo MODULE ${luacairo_src})
   set_target_properties(conky-cairo PROPERTIES OUTPUT_NAME "cairo")
 
   target_link_libraries(conky-cairo ${luacairo_libs} toluapp_lib_static)
@@ -70,7 +69,7 @@ if(BUILD_LUA_IMLIB2)
     wrap_tolua(luaimlib2_src imlib2_old.pkg)
   endif(IMLIB2_VERSION VERSION_GREATER_EQUAL "1.10.0")
 
-  add_library(conky-imlib2 SHARED ${luaimlib2_src})
+  add_library(conky-imlib2 MODULE ${luaimlib2_src})
   set_target_properties(conky-imlib2 PROPERTIES OUTPUT_NAME "imlib2")
 
   target_link_libraries(conky-imlib2 ${luaimlib2_libs} toluapp_lib_static)
@@ -79,12 +78,12 @@ if(BUILD_LUA_IMLIB2)
   print_target_properties(conky-imlib2)
 endif(BUILD_LUA_IMLIB2)
 
-if(BUILD_LUA_IMLIB2)
+if(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
   include_directories(${luacairo_includes} ${luaimlib2_includes}
     ${CMAKE_CURRENT_SOURCE_DIR})
   wrap_tolua(luacairo_imlib2_helper_src cairo_imlib2_helper.pkg)
 
-  add_library(conky-cairo_imlib2_helper SHARED ${luacairo_imlib2_helper_src})
+  add_library(conky-cairo_imlib2_helper MODULE ${luacairo_imlib2_helper_src})
   set_target_properties(conky-cairo_imlib2_helper
     PROPERTIES OUTPUT_NAME "cairo_imlib2_helper")
 
@@ -93,13 +92,13 @@ if(BUILD_LUA_IMLIB2)
     ${luaimlib2_libs}
     toluapp_lib_static)
   set(lua_libs ${lua_libs} conky-cairo_imlib2_helper)
-endif(BUILD_LUA_IMLIB2)
+endif(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
 
 if(BUILD_LUA_RSVG)
   include_directories(${luarsvg_includes} ${CMAKE_CURRENT_SOURCE_DIR})
   wrap_tolua(luarsvg_src rsvg.pkg)
 
-  add_library(conky-rsvg SHARED ${luarsvg_src})
+  add_library(conky-rsvg MODULE ${luarsvg_src})
   set_target_properties(conky-rsvg PROPERTIES OUTPUT_NAME "rsvg")
 
   target_link_libraries(conky-rsvg ${luarsvg_libs} toluapp_lib_static)

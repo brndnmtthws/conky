@@ -132,8 +132,8 @@ endif(OS_HAIKU)
 
 # Do version stuff
 set(VERSION_MAJOR "1")
-set(VERSION_MINOR "20")
-set(VERSION_PATCH "3")
+set(VERSION_MINOR "21")
+set(VERSION_PATCH "0")
 
 find_program(APP_AWK awk)
 
@@ -153,8 +153,6 @@ if(NOT APP_UNAME)
   message(FATAL_ERROR "Unable to find program 'uname'")
 endif(NOT APP_UNAME)
 
-find_program(APP_GPERF gperf)
-
 if(NOT RELEASE)
   find_program(APP_GIT git)
 
@@ -165,18 +163,24 @@ if(NOT RELEASE)
   mark_as_advanced(APP_GIT)
 endif(NOT RELEASE)
 
-mark_as_advanced(APP_AWK APP_WC APP_UNAME APP_GPERF)
+mark_as_advanced(APP_AWK APP_WC APP_UNAME)
 
 execute_process(COMMAND ${APP_UNAME} -sm
   RESULT_VARIABLE RETVAL
   OUTPUT_VARIABLE BUILD_ARCH
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
+execute_process(COMMAND ${APP_GIT} rev-parse --short HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  RESULT_VARIABLE RETVAL
+  OUTPUT_VARIABLE GIT_SHORT_SHA
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 if(RELEASE)
   set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 else(RELEASE)
   set(VERSION
-    "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}_pre${COMMIT_COUNT}")
+    "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}-pre-${GIT_SHORT_SHA}")
 endif(RELEASE)
 
 set(COPYRIGHT "Copyright Brenden Matthews, et al, 2005-2024")

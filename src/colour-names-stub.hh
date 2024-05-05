@@ -4,6 +4,12 @@
  * Color name matching will always return null (i.e. no match).
  */
 
+#pragma once
+
+#include <cstdint>
+
+#include "logging.h"
+
 struct rgb {
   const char *name;
   uint8_t red;
@@ -17,6 +23,6 @@ class color_name_hash {
 };
 
 const struct rgb *color_name_hash::in_word_set(const char *str, size_t len) {
-  DBGP("color parsing not supported");
+  DBGP2("color parsing not supported");
   return nullptr;
 }

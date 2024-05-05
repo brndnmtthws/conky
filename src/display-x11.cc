@@ -51,6 +51,7 @@
 #include <X11/extensions/XInput2.h>
 #undef COUNT
 #endif /* BUILD_XINPUT */
+#include <X11/Xresource.h>
 
 #include <cstdint>
 #include <iostream>
@@ -84,9 +85,7 @@ extern int need_to_update;
 int get_border_total();
 extern conky::range_config_setting<int> maximum_width;
 extern Colour current_color;
-#ifdef BUILD_XFT
-static int xft_dpi = -1;
-#endif /* BUILD_XFT */
+static float screen_dpi = -1;
 
 /* for x_fonts */
 struct x_font_list {
@@ -150,16 +149,36 @@ struct _x11_stuff_s {
 #endif
 } x11_stuff;
 
+void update_dpi() {
+  // Add XRandR support if used
+  // See dunst PR: https://github.com/dunst-project/dunst/pull/608
+
+#ifdef BUILD_XFT
+  if (screen_dpi > 0) return;
+  if (use_xft.get(*state)) {
+    XrmDatabase db = XrmGetDatabase(display);
+    if (db != nullptr) {
+      char *xrmType;
+      XrmValue xrmValue;
+      if (XrmGetResource(db, "Xft.dpi", "Xft.dpi", &xrmType, &xrmValue)) {
+        screen_dpi = strtof(xrmValue.addr, NULL);
+      }
+    } else {
+      auto dpi = XGetDefault(display, "Xft", "dpi");
+      if (dpi) { screen_dpi = strtof(dpi, nullptr); }
+    }
+  }
+#endif /* BUILD_XFT */
+  if (screen_dpi > 0) return;
+  screen_dpi = static_cast<float>(DisplayWidth(display, screen)) * 25.4 /
+               static_cast<float>(DisplayWidthMM(display, screen));
+}
+
 static void X11_create_window() {
   if (!window.window) { return; }
   setup_fonts();
   load_fonts(utf8_mode.get(*state));
-#ifdef BUILD_XFT
-  if (use_xft.get(*state)) {
-    auto dpi = XGetDefault(display, "Xft", "dpi");
-    if (dpi) { xft_dpi = strtol(dpi, nullptr, 10); }
-  }
-#endif                /* BUILD_XFT */
+  update_dpi();
   update_text_area(); /* to position text/window on screen */
 
 #ifdef OWN_WINDOW
@@ -705,19 +724,31 @@ bool handle_event<x_event_handler::PROPERTY_NOTIFY>(
     get_x11_desktop_info(ev.xproperty.display, ev.xproperty.atom);
   }
 
-#ifdef USE_ARGB
-  if (have_argb_visual) return true;
-#endif
+  if (ev.xproperty.atom == 0) return false;
 
-  if (ev.xproperty.atom == ATOM(_XROOTPMAP_ID) ||
-      ev.xproperty.atom == ATOM(_XROOTMAP_ID)) {
-    if (forced_redraw.get(*state)) {
-      draw_stuff();
-      next_update_time = get_time();
-      need_to_update = 1;
+  if (ev.xproperty.atom == XA_RESOURCE_MANAGER) {
+    update_x11_resource_db();
+    update_x11_workarea();
+    screen_dpi = -1;
+    update_dpi();
+    return true;
+  }
+
+  if (!have_argb_visual) {
+    Atom _XROOTPMAP_ID = XInternAtom(display, "_XROOTPMAP_ID", True);
+    Atom _XROOTMAP_ID = XInternAtom(display, "_XROOTMAP_ID", True);
+    if (ev.xproperty.atom == _XROOTPMAP_ID ||
+        ev.xproperty.atom == _XROOTMAP_ID) {
+      if (forced_redraw.get(*state)) {
+        draw_stuff();
+        next_update_time = get_time();
+        need_to_update = 1;
+      }
+      return true;
     }
   }
-  return true;
+
+  return false;
 }
 
 template <>
@@ -937,18 +968,12 @@ void display_output_x11::move_win(int x, int y) {
 #endif /* OWN_WINDOW */
 }
 
-const size_t PIXELS_PER_INCH = 96;
-template <typename T, typename>
-T display_output_x11::dpi_scale(T value) {
-#if defined(BUILD_XFT)
-  if (use_xft.get(*state) && xft_dpi > 0) {
-    return (value * xft_dpi + (value > 0 ? 48 : -48)) / PIXELS_PER_INCH;
-  } else {
-    return value;
+const float PIXELS_PER_INCH = 96.0;
+float display_output_x11::get_dpi_scale() {
+  if (screen_dpi > 0) {
+    return static_cast<float>(screen_dpi) / PIXELS_PER_INCH;
   }
-#else  /* defined(BUILD_XFT) */
-  return value;
-#endif /* defined(BUILD_XFT) */
+  return 1.0;
 }
 
 void display_output_x11::end_draw_stuff() {
