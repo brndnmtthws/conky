@@ -20,6 +20,7 @@ extern "C" {
 
 #include <atomic>
 #include <functional>
+#include <future>
 #include <map>
 #include <optional>
 #include <string>
@@ -27,32 +28,29 @@ extern "C" {
 
 namespace conky::netlink {
 
-using nl_link_id = std::variant<int, char *, std::string>;
-using nl_interface_id = size_t;
+using nl_interface_id = std::variant<int, char *, std::string>;
 
-/// @brief State of the callback.
-///
-/// Values smaller than 0 indicate an error.
-/// 0 means the callback is finished.
-/// Values greater than 0 indicate the callback isn't finished yet.
-enum class callback_state : int {
-  INVALID = -1,
-  DONE = 0,
-  IN_FLIGHT,
+template <typename R>
+struct callback_result {
+  int action;
+  R value;
 };
 
-template <typename... Args>
+using msg_cfg = std::function<void(struct nl_msg *)>;
+
+template <typename R, typename... Args>
 struct nl_task {
-  using response_proc = std::function<int(struct nl_msg *, Args...)>;
-  using arg_state = std::tuple<Args...> *;
+  using response_proc =
+      std::function<callback_result<R>(struct nl_msg *, Args...)>;
+  using processor_args = std::tuple<std::promise<R>, Args...> *;
 
  private:
   struct nl_cb *cb;
-  std::atomic<callback_state> state = callback_state::DONE;
-  std::atomic<arg_state> arguments = nullptr;
+  std::atomic<processor_args> arguments;
 
   int family;
   uint8_t request;
+  std::optional<std::future<R>> previous_request;
   response_proc processor;
 
   static int valid_handler(struct nl_msg *msg, void *arg);
@@ -63,8 +61,17 @@ struct nl_task {
   nl_task(int family, uint8_t request, response_proc processor);
   ~nl_task();
 
-  void send_message(struct nl_sock *sock, Args&... args);
+  std::optional<R> send_message(struct nl_sock *sock, msg_cfg configure,
+                                Args &...pargs);
 };
+
+struct interface_result {
+  std::optional<std::string> mac;
+  std::optional<std::string> ssid;
+  std::optional<std::string> freq;
+  std::optional<std::string> channel;
+};
+struct station_result {};
 
 class net_device_cache {
   struct nl_sock *socket_route;
@@ -75,8 +82,8 @@ class net_device_cache {
 
   int id_nl80211;
 
-  nl_task<net_stat *> *interface_data_cb;
-  nl_task<net_stat *, nl_interface_id> *station_data_cb;
+  nl_task<interface_result, net_stat *> *interface_data_cb;
+  nl_task<station_result, net_stat *> *station_data_cb;
 
   void setup_callbacks();
 
@@ -87,13 +94,13 @@ class net_device_cache {
   /// @brief Update link cache and device information.
   void update();
 
-  struct rtnl_link *get_link(const nl_link_id &id);
+  struct rtnl_link *get_link(const nl_interface_id &id);
 
   /// @brief Populate `net_stat` interface from netlink cache.
   ///
   /// @param ns interface stats struct to populate
   /// @param link index or name of link
-  void populate_interface(struct net_stat *ns, const nl_link_id &link);
+  void populate_interface(struct net_stat *ns, const nl_interface_id &link);
 };
 
 static const std::array<const char *, NLE_MAX + 1> NLE_ERROR_MSG{
