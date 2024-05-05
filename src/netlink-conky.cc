@@ -65,37 +65,51 @@ class nested_attributes {
   }
 };
 
-template class nl_task<net_stat *>;
-template class nl_task<net_stat *, nl_interface_id>;
-
-using nl_cb_t = std::remove_pointer_t<nl_recvmsg_msg_cb_t>;
-
-template <typename... Args>
-int nl_task<Args...>::valid_handler(struct nl_msg *msg, void *arg) {
-  using response_proc = typename nl_task<Args...>::response_proc;
-  using arg_state = typename nl_task<Args...>::arg_state;
-
-  auto *task = static_cast<nl_task<Args...> *>(arg);
-  return std::apply(task->processor,
-                    std::tuple_cat(std::make_tuple(msg),
-                                   std::tuple(*(task->arguments.load()))));
+template <typename T, typename Tuple>
+auto push_front(const T &t, const Tuple &tuple) {
+  return std::tuple_cat(std::make_tuple(t), tuple);
 }
-template <typename... Args>
-int nl_task<Args...>::finish_handler(struct nl_msg *msg, void *arg) {
-  reinterpret_cast<std::atomic<callback_state> *>(arg)->store(
-      callback_state::DONE, std::memory_order_release);
+
+template <typename Tuple, std::size_t... Is>
+auto copy_tail_impl(const Tuple &tuple, std::index_sequence<Is...>) {
+  return std::make_tuple(std::get<1 + Is>(tuple)...);
+}
+
+template <typename Tuple>
+auto copy_tail(const Tuple &tuple) {
+  return copy_tail_impl(
+      tuple, std::make_index_sequence<std::tuple_size<Tuple>::value - 1>());
+}
+
+template <typename R, typename... Args>
+int nl_task<R, Args...>::valid_handler(struct nl_msg *msg, void *arg) {
+  auto *task = static_cast<nl_task<R, Args...> *>(arg);
+  nl_task<R, Args...>::processor_args args =
+      task->arguments.load(std::memory_order_acquire);
+  if (args == nullptr) {
+    NORM_ERR("no arguments provided to callback");
+    return NL_STOP;
+  }
+  std::promise<R> promise = std::move(std::get<0>(args));
+  callback_result<R> result = std::apply(
+      task->processor, std::tuple_cat(std::make_tuple(msg), copy_tail(args)));
+  promise.set_value(result.value);
+  return result.action;
+}
+template <typename R, typename... Args>
+int nl_task<R, Args...>::finish_handler(struct nl_msg *msg, void *arg) {
   // FIXME: DELETE ARGUMENTS
   return NL_SKIP;
 }
-template <typename... Args>
-int nl_task<Args...>::invalid_handler(struct nl_msg *msg, void *arg) {
-  reinterpret_cast<std::atomic<callback_state> *>(arg)->store(
-      callback_state::INVALID, std::memory_order_release);
+template <typename R, typename... Args>
+int nl_task<R, Args...>::invalid_handler(struct nl_msg *msg, void *arg) {
+  // Future will never resolve; prevents us from sending more invalid requests
   return NL_SKIP;
 }
 
-template <typename... Args>
-nl_task<Args...>::nl_task(int family, uint8_t request, response_proc processor)
+template <typename R, typename... Args>
+nl_task<R, Args...>::nl_task(int family, uint8_t request,
+                             response_proc processor)
     : family(family), request(request), processor(processor) {
   this->cb = nl_cb_alloc(NL_CB_DEFAULT);
   if (!this->cb) {
@@ -104,45 +118,56 @@ nl_task<Args...>::nl_task(int family, uint8_t request, response_proc processor)
   }
 
   nl_cb_set(this->cb, NL_CB_VALID, NL_CB_CUSTOM,
-            &nl_task<Args...>::valid_handler, static_cast<void *>(this));
+            &nl_task<R, Args...>::valid_handler, static_cast<void *>(this));
   nl_cb_set(this->cb, NL_CB_FINISH, NL_CB_CUSTOM,
-            &nl_task<Args...>::finish_handler,
-            static_cast<void *>(&this->state));
+            &nl_task<R, Args...>::finish_handler, nullptr);
   nl_cb_set(this->cb, NL_CB_INVALID, NL_CB_CUSTOM,
-            &nl_task<Args...>::invalid_handler,
-            static_cast<void *>(&this->state));
+            &nl_task<R, Args...>::invalid_handler, nullptr);
 };
 
-template <typename... Args>
-nl_task<Args...>::~nl_task() {
+template <typename R, typename... Args>
+nl_task<R, Args...>::~nl_task() {
   nl_cb_put(this->cb);
 };
 
-template <typename... Args>
-void nl_task<Args...>::send_message(struct nl_sock *sock, Args &...args) {
-  this->state.store(callback_state::IN_FLIGHT, std::memory_order_release);
-  this->arguments.store(new auto(std::make_tuple<Args...>(Args(args)...)),
-                        std::memory_order_release);
+template <typename R, typename... Args>
+std::optional<R> nl_task<R, Args...>::send_message(struct nl_sock *sock,
+                                                   msg_cfg configure,
+                                                   Args &...args) {
+  if (this->previous_request.has_value()) {
+    std::future<R> &prev = this->previous_request.value();
+    if (prev.valid() &&
+        prev.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+      return prev.get();
+    }
+  }
+
+  std::promise<R> result_promise;
+  auto result_future = result_promise.get_future();
+
+  this->arguments.store(
+      std::make_tuple(std::move(result_promise), Args(args)...),
+      std::memory_order_release);
 
   struct nl_msg *msg = nlmsg_alloc();
   if (!msg) {
     NORM_ERR("failed to allocate netlink message.");
-    return;
+    return std::nullopt;
   }
 
   // if (w->ifindex < 0) { return -1; }
 
   genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, this->family, 0, NLM_F_DUMP,
               this->request, 0);
-  // nla_put_u32(msg2, NL80211_ATTR_IFINDEX, w->ifindex);
+  configure(msg);
 
   nl_send_auto(sock, msg);
   nlmsg_free(msg);
 
-  while (static_cast<int>(this->state.load(std::memory_order_acquire)) > 0) {
-    DBGP2("INSIDE");
-    nl_recvmsgs(sock, this->cb);
-  }
+  nl_recvmsgs(sock, this->cb);
+
+  this->previous_request = std::move(result_future);
+  return std::nullopt;
 }
 
 int ieee80211_frequency_to_channel(int freq) {
@@ -203,12 +228,13 @@ std::string ssid_to_utf8(const uint8_t len, const uint8_t *data) {
   return result;
 }
 
-int interface_callback(struct nl_msg *msg, net_stat *ns) {
+callback_result<interface_result> interface_callback(struct nl_msg *msg,
+                                                     net_stat *ns) {
   struct genlmsghdr *gnlh =
       static_cast<struct genlmsghdr *>(nlmsg_data(nlmsg_hdr(msg)));
   struct nlattr *tb_msg[NL80211_ATTR_MAX + 1];
   const char *indent = "";
-  DBGP2("INTERFACE CBK A");
+  DBGP2("INTERFACE %d", nla_get_u32(tb_msg[NL80211_ATTR_WIPHY]));
   nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
             genlmsg_attrlen(gnlh, 0), NULL);
   DBGP2("B");
@@ -238,23 +264,25 @@ int interface_callback(struct nl_msg *msg, net_stat *ns) {
   }
   DBGP2("E");
 
-  return NL_SKIP;
+  return callback_result<interface_result>{.action = NL_SKIP,
+                                           .value = interface_result{}};
 }
 
-int station_callack(struct nl_msg *msg, net_stat *ns,
-                    nl_interface_id interface) {
+callback_result<station_result> station_callack(struct nl_msg *msg,
+                                                net_stat *ns) {
   /*
   ns->bitrate NL80211_STA_INFO_TX_BITRATE
   ns->link_qual NL80211_STA_INFO_SIGNAL
   ns->link_qual_max NL80211_STA_INFO_SIGNAL_AVG
   */
-  return NL_SKIP;
+  return callback_result<station_result>{.action = NL_SKIP,
+                                         .value = station_result{}};
 }
 
 void net_device_cache::setup_callbacks() {
-  this->interface_data_cb = new nl_task<net_stat *>(
+  this->interface_data_cb = new nl_task<interface_result, net_stat *>(
       this->id_nl80211, NL80211_CMD_GET_INTERFACE, interface_callback);
-  this->station_data_cb = new nl_task<net_stat *, nl_interface_id>(
+  this->station_data_cb = new nl_task<station_result, net_stat *>(
       this->id_nl80211, NL80211_CMD_GET_STATION, station_callack);
 }
 
@@ -304,7 +332,7 @@ net_device_cache::~net_device_cache() {
   }
 }
 
-struct rtnl_link *net_device_cache::get_link(const nl_link_id &id) {
+struct rtnl_link *net_device_cache::get_link(const nl_interface_id &id) {
   if (this->nl_cache == nullptr) { return nullptr; }
   if (std::holds_alternative<int>(id)) {
     return rtnl_link_get(this->nl_cache, std::get<int>(id));
@@ -314,7 +342,7 @@ struct rtnl_link *net_device_cache::get_link(const nl_link_id &id) {
     return rtnl_link_get_by_name(this->nl_cache,
                                  std::get<std::string>(id).c_str());
   } else {
-    DBGP("invalid nl_link_id variant");
+    DBGP("invalid nl_interface_id variant");
     return nullptr;
   }
 }
@@ -406,9 +434,11 @@ void parse_rate_info(struct nlattr *bitrate_attr, char *buf, int buflen) {
 */
 
 void net_device_cache::populate_interface(struct net_stat *ns,
-                                          const nl_link_id &link) {
+                                          const nl_interface_id &link) {
   struct rtnl_link *nl_link = this->get_link(link);
   if (nl_link == nullptr) return;
+
+  uint32_t id = rtnl_link_get_ifindex(nl_link);
 
   // The following properties are already in cache and cheap to access:
   // See: http://www.infradead.org/~tgr/libnl/doc/route.html#link_object
@@ -434,5 +464,8 @@ void net_device_cache::populate_interface(struct net_stat *ns,
   auto modes = rtnl_link_get_flags(nl_link);
   rtnl_link_flags2str(modes, ns->mode, 64);
 
-  this->interface_data_cb->send_message(this->socket_genl, ns);
+  this->interface_data_cb->send_message(
+      this->socket_genl,
+      [&](struct nl_msg *msg) { nla_put_u32(msg, NL80211_ATTR_IFINDEX, id); },
+      ns);
 }
