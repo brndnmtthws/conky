@@ -75,7 +75,6 @@ int nl_task<Args...>::valid_handler(struct nl_msg *msg, void *arg) {
   using response_proc = typename nl_task<Args...>::response_proc;
   using arg_state = typename nl_task<Args...>::arg_state;
 
-  NORM_ERR("DEBUG: valid_handler recv msg addr %lp", msg);
   auto *task = static_cast<nl_task<Args...> *>(arg);
   return std::apply(task->processor,
                     std::tuple_cat(std::make_tuple(msg),
@@ -120,9 +119,9 @@ nl_task<Args...>::~nl_task() {
 };
 
 template <typename... Args>
-void nl_task<Args...>::send_message(struct nl_sock *sock, Args &&...args) {
+void nl_task<Args...>::send_message(struct nl_sock *sock, Args &...args) {
   this->state.store(callback_state::IN_FLIGHT, std::memory_order_release);
-  this->arguments.store(new auto(std::make_tuple<Args...>(std::move(args)...)),
+  this->arguments.store(new auto(std::make_tuple<Args...>(Args(args)...)),
                         std::memory_order_release);
 
   struct nl_msg *msg = nlmsg_alloc();
@@ -131,8 +130,6 @@ void nl_task<Args...>::send_message(struct nl_sock *sock, Args &&...args) {
     return;
   }
 
-  NORM_ERR("DEBUG: msgaddr %lp", msg);
-
   // if (w->ifindex < 0) { return -1; }
 
   genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, this->family, 0, NLM_F_DUMP,
@@ -140,10 +137,12 @@ void nl_task<Args...>::send_message(struct nl_sock *sock, Args &&...args) {
   // nla_put_u32(msg2, NL80211_ATTR_IFINDEX, w->ifindex);
 
   nl_send_auto(sock, msg);
+  nlmsg_free(msg);
+
   while (static_cast<int>(this->state.load(std::memory_order_acquire)) > 0) {
+    DBGP2("INSIDE");
     nl_recvmsgs(sock, this->cb);
   }
-  nlmsg_free(msg);
 }
 
 int ieee80211_frequency_to_channel(int freq) {
@@ -188,13 +187,14 @@ std::string ssid_to_utf8(const uint8_t len, const uint8_t *data) {
   std::string result;
   result.reserve(len);
 
-  char buffer[5];
   for (int i = 0; i < len; i++) {
+    auto curr = std::string(result.begin(), result.end());
     if (isprint(data[i]) && data[i] != ' ' && data[i] != '\\') {
-      result += static_cast<char>(data[i]);
+      result.push_back(static_cast<char>(data[i]));
     } else if (data[i] == ' ' && (i != 0 && i != len - 1)) {
-      result += ' ';
+      result.push_back(' ');
     } else {
+      char buffer[5];
       snprintf(buffer, sizeof(buffer), "\\x%.2x", data[i]);
       result += buffer;
     }
@@ -208,27 +208,35 @@ int interface_callback(struct nl_msg *msg, net_stat *ns) {
       static_cast<struct genlmsghdr *>(nlmsg_data(nlmsg_hdr(msg)));
   struct nlattr *tb_msg[NL80211_ATTR_MAX + 1];
   const char *indent = "";
-
+  DBGP2("INTERFACE CBK A");
   nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
             genlmsg_attrlen(gnlh, 0), NULL);
-
+  DBGP2("B");
   if (tb_msg[NL80211_ATTR_MAC]) {
+    DBGP2("By");
     ns->ap = mac_addr_to_str(
         static_cast<uint8_t *>(nla_data(tb_msg[NL80211_ATTR_MAC])));
   }
+  DBGP2("C");
 
   if (tb_msg[NL80211_ATTR_SSID]) {
+    DBGP2("Cy, %lx", &ns->essid);
+    ns->essid = "temp";
     ns->essid = ssid_to_utf8(
         nla_len(tb_msg[NL80211_ATTR_SSID]),
         static_cast<uint8_t *>(nla_data(tb_msg[NL80211_ATTR_SSID])));
+    DBGP2("Cd");
   }
 
+  DBGP2("D");
   if (tb_msg[NL80211_ATTR_WIPHY_FREQ]) {
+    DBGP2("Dy");
     uint32_t freq = nla_get_u32(tb_msg[NL80211_ATTR_WIPHY_FREQ]);
 
-    snprintf(&ns->freq[0], 16, "%d", freq);
+    snprintf(&ns->freq[0], 16, "%d MHz", freq);
     ns->channel = ieee80211_frequency_to_channel(freq);
   }
+  DBGP2("E");
 
   return NL_SKIP;
 }
@@ -297,14 +305,17 @@ net_device_cache::~net_device_cache() {
 }
 
 struct rtnl_link *net_device_cache::get_link(const nl_link_id &id) {
+  if (this->nl_cache == nullptr) { return nullptr; }
   if (std::holds_alternative<int>(id)) {
     return rtnl_link_get(this->nl_cache, std::get<int>(id));
   } else if (std::holds_alternative<char *>(id)) {
-    NORM_ERR("cache: %p, name: %s", this->nl_cache, std::get<char *>(id));
     return rtnl_link_get_by_name(this->nl_cache, std::get<char *>(id));
-  } else {
+  } else if (std::holds_alternative<std::string>(id)) {
     return rtnl_link_get_by_name(this->nl_cache,
                                  std::get<std::string>(id).c_str());
+  } else {
+    DBGP("invalid nl_link_id variant");
+    return nullptr;
   }
 }
 
@@ -422,4 +433,6 @@ void net_device_cache::populate_interface(struct net_stat *ns,
 
   auto modes = rtnl_link_get_flags(nl_link);
   rtnl_link_flags2str(modes, ns->mode, 64);
+
+  this->interface_data_cb->send_message(this->socket_genl, ns);
 }

@@ -59,11 +59,11 @@ struct nl_task {
   static int finish_handler(struct nl_msg *msg, void *arg);
   static int invalid_handler(struct nl_msg *msg, void *arg);
 
-  void send_message(struct nl_sock *sock, Args &&...args);
-
  public:
   nl_task(int family, uint8_t request, response_proc processor);
   ~nl_task();
+
+  void send_message(struct nl_sock *sock, Args&... args);
 };
 
 class net_device_cache {
