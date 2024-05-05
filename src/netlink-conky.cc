@@ -6,6 +6,21 @@
 #include <initializer_list>
 #include <variant>
 
+using namespace conky::netlink;
+
+void nle_err_format(const char *desc, int error) {
+  int index = error;
+  if (error < 0) { index = -error; }
+  if (index > NLE_MAX) {
+    NORM_ERR("%s; error %d", desc, index);
+  } else {
+    NORM_ERR("%s; error %d (%s)", desc, index, NLE_ERROR_MSG[index]);
+  }
+}
+#define CHECK_RESPONSE(response, msg)               \
+  (response < 0) { nle_err_format(msg, response); } \
+  if (response < 0)
+
 template <size_t Size>
 class nested_attributes {
   std::array<struct nla_policy, Size + 1> value_policies;
@@ -236,27 +251,33 @@ void net_device_cache::setup_callbacks() {
 }
 
 net_device_cache::net_device_cache() {
-  this->sock = nl_socket_alloc();
-  nl_socket_set_buffer_size(this->sock, 8192, 8192);
-
-  if (!this->sock) {
-    NORM_ERR("unable to connect to netlink socket.");
+  this->socket_route = nl_socket_alloc();
+  if (this->socket_route == nullptr) {
+    NORM_ERR("unable to allocate routing netlink socket");
     return;
   }
 
-  if (rtnl_link_alloc_cache(this->sock, AF_UNSPEC, &this->nl_cache) == 0) {
-    this->nl_cache_size = nl_cache_nitems(nl_cache);
-  } else {
-    NORM_ERR("can't allocate netlink device cache.");
-    return;
-  };
+  nl_socket_set_buffer_size(this->socket_route, 8192, 8192);
+  int resp = nl_connect(this->socket_route, NETLINK_ROUTE);
+  if CHECK_RESPONSE (resp, "routing socket already connected") return;
 
-  this->id_nl80211 = genl_ctrl_resolve(this->sock, "nl80211");
-  if (this->id_nl80211 < 0) {
-    // limited data
-    DBGP("nl80211 module not loaded");
+  resp = rtnl_link_alloc_cache(this->socket_route, AF_UNSPEC, &this->nl_cache);
+  if CHECK_RESPONSE (resp, "can't allocate netlink device cache") return;
+
+  this->nl_cache_size = nl_cache_nitems(nl_cache);
+
+  this->socket_genl = nl_socket_alloc();
+  if (this->socket_genl == nullptr) {
+    NORM_ERR("unable to allocate generic link netlink socket");
     return;
   }
+
+  nl_socket_set_buffer_size(this->socket_genl, 8192, 8192);
+  resp = nl_connect(this->socket_genl, NETLINK_GENERIC);
+  if CHECK_RESPONSE (resp, "generic link socket already connected") return;
+
+  this->id_nl80211 = genl_ctrl_resolve(this->socket_genl, "nl80211");
+  if CHECK_RESPONSE (this->id_nl80211, "nl80211 module not loaded") return;
 
   this->setup_callbacks();
 }
@@ -265,9 +286,13 @@ net_device_cache::~net_device_cache() {
   if (this->station_data_cb != nullptr) { delete this->station_data_cb; }
   if (this->interface_data_cb != nullptr) { delete this->interface_data_cb; }
   if (this->nl_cache != nullptr) { nl_cache_free(this->nl_cache); }
-  if (this->sock != nullptr) {
-    nl_close(this->sock);
-    nl_socket_free(this->sock);
+  if (this->socket_route != nullptr) {
+    nl_close(this->socket_route);
+    nl_socket_free(this->socket_route);
+  }
+  if (this->socket_genl != nullptr) {
+    nl_close(this->socket_genl);
+    nl_socket_free(this->socket_genl);
   }
 }
 
@@ -285,7 +310,7 @@ struct rtnl_link *net_device_cache::get_link(const nl_link_id &id) {
 
 void net_device_cache::update() {
   if (this->nl_cache != nullptr) {
-    nl_cache_refill(this->sock, this->nl_cache);
+    nl_cache_refill(this->socket_route, this->nl_cache);
     this->nl_cache_size = nl_cache_nitems(this->nl_cache);
   }
 }

@@ -487,7 +487,7 @@ void print_gateway_ip(struct text_object *obj, char *p,
 }
 
 #ifdef BUILD_WLAN
-static net_device_cache nl_cache;
+static conky::netlink::net_device_cache nl_cache;
 #endif /* BUILD_WLAN */
 
 void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
