@@ -94,9 +94,10 @@ std::array<T, Target> resize_array(std::array<T, Source> value) {
 }
 
 class _no_z_member {};
-template <typename Of, typename T,
-          typename = std::enable_if<(std::is_arithmetic<T>::value)>>
+template <typename Of, typename T>
 struct _has_z_member {
+  static_assert(std::is_arithmetic_v<T>,
+                "vector z member type (T) must be a number");
   using ComponentRef = _member_access<Of, T>;
 
   /// @brief vec z value.
@@ -106,9 +107,10 @@ struct _has_z_member {
 };
 
 class _no_w_member {};
-template <typename Of, typename T,
-          typename = std::enable_if<(std::is_arithmetic<T>::value)>>
+template <typename Of, typename T>
 struct _has_w_member {
+  static_assert(std::is_arithmetic_v<T>,
+                "vector w member type (T) must be a number");
   using ComponentRef = _member_access<Of, T>;
 
   /// @brief vec w value.
@@ -198,14 +200,14 @@ struct vec
   inline T get_y() const { return this->at(1); }
   /// @brief vec z component.
   /// @return z value of this vec.
-  template <typename = std::enable_if<(Length >= 3)>>
   inline T get_z() const {
+    static_assert(Length >= 3, "vector doesn't have a z component");
     return this->at(2);
   }
   /// @brief vec w component.
   /// @return w value of this vec.
-  template <typename = std::enable_if<(Length >= 4)>>
   inline T get_w() const {
+    static_assert(Length >= 4, "vector doesn't have a w component");
     return this->at(3);
   }
 
@@ -213,12 +215,12 @@ struct vec
 
   inline void set_x(T new_value) { this->set(0, new_value); }
   inline void set_y(T new_value) { this->set(1, new_value); }
-  template <typename = std::enable_if<(Length >= 3)>>
   inline void set_z(T new_value) {
+    static_assert(Length >= 3, "vector doesn't have a z component");
     this->set(2, new_value);
   }
-  template <typename = std::enable_if<(Length >= 4)>>
   inline void set_w(T new_value) {
+    static_assert(Length >= 4, "vector doesn't have a w component");
     this->set(3, new_value);
   }
 
@@ -247,7 +249,7 @@ struct vec
 
   inline const ComponentRef &operator[](size_t index) {
     assert_print(index < std::min(Length, static_cast<size_t>(4)),
-                 "reference index out of bounds");
+                 "index out of bounds");
     switch (index) {
       case 0:
         return this->x;
@@ -257,6 +259,8 @@ struct vec
         return this->z;
       case 3:
         return this->w;
+      default:
+        UNREACHABLE();
     }
   }
 
@@ -277,15 +281,15 @@ struct vec
     return vec(buffer);
   }
   /// @brief Z unit vector value.
-  template <typename = std::enable_if<(Length >= 3), bool>>
   static vec<T, Length> UnitZ() {
+    static_assert(Length >= 3, "vector doesn't have a z component");
     Data buffer{0};
     buffer[2] = static_cast<T>(1);
     return vec(buffer);
   }
   /// @brief W unit vector value.
-  template <typename = std::enable_if<(Length >= 4), bool>>
   static vec<T, Length> UnitW() {
+    static_assert(Length >= 4, "vector doesn't have a w component");
     Data buffer{0};
     buffer[3] = static_cast<T>(1);
     return vec(buffer);
@@ -388,8 +392,8 @@ struct vec
   }
   inline T magnitude() const { return std::sqrt(this->magnitude_squared()); }
 
-  template <typename = std::enable_if<(Length == 2), bool>>
   T surface() const {
+    static_assert(Length == 2, "surface computable only for 2D vectors");
     return this->get_x() * this->get_y();
   }
 };
@@ -398,23 +402,24 @@ template <typename T>
 using vec2 = vec<T, 2>;
 using vec2f = vec2<float>;
 using vec2d = vec2<double>;
-using vec2i = vec2<int32_t>;
+using vec2i = vec2<std::int32_t>;
 template <typename T>
 using vec3 = vec<T, 3>;
 using vec3f = vec3<float>;
 using vec3d = vec3<double>;
-using vec3i = vec3<int32_t>;
+using vec3i = vec3<std::int32_t>;
 template <typename T>
 using vec4 = vec<T, 4>;
 using vec4f = vec4<float>;
 using vec4d = vec4<double>;
-using vec4i = vec4<int32_t>;
+using vec4i = vec4<std::int32_t>;
 
 /// @brief 2D rectangle representation using position and size vectors.
 /// @tparam T component number type.
-template <typename T = std::intmax_t,
-          typename = typename std::enable_if<std::is_arithmetic<T>::value>>
+template <typename T = std::int32_t>
 struct rect {
+  static_assert(std::is_arithmetic_v<T>, "T must be a number");
+
   using Component = T;
   using ComponentRef = _priv_geom::_member_access<rect<T>, T>;
 
@@ -441,6 +446,7 @@ struct rect {
   /// @param index component index.
   /// @return component at `index` of this rectangle.
   T at(size_t index) const {
+    assert_print(index < static_cast<size_t>(4), "index out of bounds");
     switch (index) {
       case 0:
         return this->get_x();
@@ -461,6 +467,7 @@ struct rect {
   void set_height(T value) { this->size.set_y(value); }
 
   void set(size_t index, T value) {
+    assert_print(index < static_cast<size_t>(4), "index out of bounds");
     switch (index) {
       case 0:
         return this->set_x(value);
@@ -533,6 +540,7 @@ struct rect {
   }
 
   constexpr const ComponentRef &operator[](size_t index) {
+    assert_print(index < static_cast<size_t>(4), "index out of bounds");
     switch (index) {
       case 0:
         return this->x;
