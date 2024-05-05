@@ -256,6 +256,7 @@ bool display_output_x11::main_loop_wait(double t) {
     }
   }
 
+  vec2i border_total = vec2i::uniform(get_border_total());
   if (need_to_update != 0) {
 #ifdef OWN_WINDOW
     auto old_pos = window.geometry.pos;
@@ -268,10 +269,9 @@ bool display_output_x11::main_loop_wait(double t) {
 #ifdef OWN_WINDOW
     if (own_window.get(*state)) {
       int changed = 0;
-      int border_total = get_border_total();
 
       /* resize window if it isn't right size */
-      vec2<long> border_size = vec2<long>::uniform(border_total * 2);
+      vec2<long> border_size = border_total * 2;
       if ((fixed_size == 0) &&
           (text_size + border_size != window.geometry.size)) {
         window.geometry.size = text_size + border_size;
@@ -328,14 +328,12 @@ bool display_output_x11::main_loop_wait(double t) {
 #else
     if (use_xpmdb.get(*state)) {
 #endif
-      XRectangle r;
-      int border_total = get_border_total();
+      conky::rect<int> r(text_start, text_size);
+      r.pos -= border_total;
+      r.size += border_total * 2;
 
-      r.x = text_start.x - border_total;
-      r.y = text_start.y - border_total;
-      r.width = text_size.x + 2 * border_total;
-      r.height = text_size.y + 2 * border_total;
-      XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
+      XRectangle rect = r.to_xrectangle();
+      XUnionRectWithRegion(&rect, x11_stuff.region, x11_stuff.region);
     }
   }
 
@@ -361,14 +359,12 @@ bool display_output_x11::main_loop_wait(double t) {
 #else
     if (use_xpmdb.get(*state)) {
 #endif
-      XRectangle r;
-      int border_total = get_border_total();
+      conky::rect<int> r(text_start, text_size);
+      r.pos -= border_total;
+      r.size += border_total * 2;
 
-      r.x = text_start.x - border_total;
-      r.y = text_start.y - border_total;
-      r.width = text_size.x + 2 * border_total;
-      r.height = text_size.y + 2 * border_total;
-      XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
+      XRectangle rect = r.to_xrectangle();
+      XUnionRectWithRegion(&rect, x11_stuff.region, x11_stuff.region);
     }
     XSetRegion(display, window.gc, x11_stuff.region);
 #ifdef BUILD_XFT

@@ -4,24 +4,24 @@
 #include "config.h"
 
 #include "macros.h"
-#include "simd.h"
 
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <numeric>
 #include <type_traits>
+
+#include <Vc/Vc>
 
 #ifdef BUILD_X11
 #include <X11/Xlib.h>
 #endif /* BUILD_X11 */
 
 namespace conky {
-
 namespace _priv_geom {
-
 /// @brief Member access wrapper for containers of values.
 ///
 /// Emulates member access to abstract away the fact that components might not
@@ -126,9 +126,7 @@ struct _has_w_member {
 /// directly to avoid pollution.
 ///
 /// @tparam T numeric component type.
-template <typename T, size_t Length,
-          std::enable_if_t<(std::is_arithmetic<T>::value && Length >= 2),
-                           bool> = true>
+template <typename T, size_t Length>
 struct vec
     // conditionally add z member accessor
     : public std::conditional_t<(Length >= 3),
@@ -138,6 +136,9 @@ struct vec
       public std::conditional_t<(Length >= 4),
                                 _priv_geom::_has_w_member<vec<T, Length>, T>,
                                 _priv_geom::_no_w_member> {
+  static_assert(std::is_arithmetic_v<T>, "T must be a number");
+  static_assert(Length >= 2, "Length must be greater than 2");
+
   /// @brief Compile time component type information.
   using Component = T;
 
@@ -147,74 +148,44 @@ struct vec
 
  protected:
   using ComponentRef = _priv_geom::_member_access<vec<T, Length>, T>;
-  using Traits = simd::simd_traits<T, Length>;
-  using Data = typename Traits::simd_repr;
-  using RawArray = typename Traits::array_repr;
+  using Data = Vc::array<T, Length>;
 
   Data value;
 
-  vec(std::conditional_t<!std::is_same_v<Data, RawArray>, Data, _disabled>
-          value)
-      : value(value) {}
-
  public:
-  vec() : value(Traits::load_zero()) {}
-
-  vec(std::array<T, Length> array) {
-    if constexpr (Length == Traits::MinSize) {
-      this->value = Traits::load(array.data());
-    } else {
-      RawArray buffer = _priv_geom::resize_array(array);
-      this->value = Traits::load(buffer.data());
-    }
+  vec() : value(Data{0}) {}
+  vec(const Data value) : value(value) {}
+  vec(const std::array<T, Length> array) {
+    Vc::array<T, Length> vc_array;
+    for (size_t i = 0; i < Length; ++i) { vc_array[i] = array[i]; }
+    this->value = vc_array;
   }
 
   template <typename O = T>
-  vec(const vec<O, Length> &other) {
-    if constexpr (std::is_same_v<T, O>) {
-      this->value = other.value;
-    } else {
-      RawArray buffer = _priv_geom::cast_array<O, T, Length>(other.to_array());
-      this->value = Traits::load(buffer.data());
-    }
-  }
-  template <typename O = T>
-  vec(vec<O, Length> &&other) {
-    if constexpr (std::is_same_v<T, O>) {
-      this->value = other.value;
-    } else {
-      RawArray buffer = _priv_geom::cast_array<O, T, Length>(other.to_array());
-      this->value = Traits::load(buffer.data());
-    }
-  }
+  vec(const vec<O, Length> other)
+      : vec(_priv_geom::cast_array<O, T, Length>(other.to_array())) {}
 
-  vec(T x, T y) : vec(std::array<T, 2>{x, y}) {}
-
+  template <typename V = std::conditional_t<(Length == 2), T, _disabled>>
+  vec(V x, V y) : vec(std::array<V, 2>{x, y}) {}
   template <typename V = std::conditional_t<(Length == 3), T, _disabled>>
   vec(V x, V y, V z) : vec(std::array<V, 3>{x, y, z, 0}) {}
-
   template <typename V = std::conditional_t<(Length == 4), T, _disabled>>
   vec(V x, V y, V z, V w) : vec(std::array<V, 4>{x, y, z, w}) {}
 
-  static vec<T, Length> uniform(T x) {
-    return vec<T, Length>(Traits::load_uniform(x));
+  static inline vec<T, Length> uniform(T x) {
+    return vec<T, Length>(std::array<T, Length>{x});
   }
 
   std::array<T, Length> to_array() const {
-    RawArray result{0};
-    Traits::store(result.data(), this->value);
-    return _priv_geom::resize_array<T, Traits::MinSize, Length>(result);
+    std::array<T, Length> result;
+    for (size_t i = 0; i < Length; ++i) { result[i] = this->value[i]; }
+    return result;
   }
 
   /// @brief Returns vec component at `index`.
   /// @param index component index.
   /// @return component at `index` of this vec.
-  T at(size_t index) const {
-    assert_print(index < Length, "index out of bounds");
-    RawArray result{0};
-    Traits::store(result.data(), this->value);
-    return result[index];
-  }
+  T at(size_t index) const { return static_cast<T>(this->value[index]); }
 
   /// @brief vec x component.
   /// @return x value of this vec.
@@ -235,13 +206,7 @@ struct vec
     return this->at(3);
   }
 
-  void set(size_t index, T value) {
-    assert_print(index < Length, "index out of bounds");
-    RawArray result{0};
-    Traits::store(result.data(), this->value);
-    result[index] = value;
-    this->value = Traits::load(result.data());
-  }
+  void set(size_t index, T value) { this->value[index] = value; }
 
   inline void set_x(T new_value) { this->set(0, new_value); }
   inline void set_y(T new_value) { this->set(1, new_value); }
@@ -272,8 +237,8 @@ struct vec
   }
   template <typename O = T>
   vec<T, Length> &operator=(std::array<O, Length> other) {
-    RawArray buffer = _priv_geom::resize_array(other);
-    this->value = Traits::load(buffer.data());
+    Data buffer = _priv_geom::cast_array(other);
+    this->value = buffer;
     return *this;
   }
 
@@ -298,98 +263,125 @@ struct vec
   static vec<T, Length> One() { return vec<T, Length>::uniform(1); }
   /// @brief X unit vector value.
   static vec<T, Length> UnitX() {
-    RawArray buffer{0};
+    Data buffer{0};
     buffer[0] = static_cast<T>(1);
-    return vec(Traits::load(buffer.data()));
+    return vec(buffer);
   }
   /// @brief Y unit vector value.
   static vec<T, Length> UnitY() {
-    RawArray buffer{0};
+    Data buffer{0};
     buffer[1] = static_cast<T>(1);
-    return vec(Traits::load(buffer.data()));
+    return vec(buffer);
   }
   /// @brief Z unit vector value.
   template <typename = std::enable_if<(Length >= 3), bool>>
   static vec<T, Length> UnitZ() {
-    RawArray buffer{0};
+    Data buffer{0};
     buffer[2] = static_cast<T>(1);
-    return vec(Traits::load(buffer.data()));
+    return vec(buffer);
   }
   /// @brief W unit vector value.
   template <typename = std::enable_if<(Length >= 4), bool>>
   static vec<T, Length> UnitW() {
-    RawArray buffer{0};
+    Data buffer{0};
     buffer[3] = static_cast<T>(1);
-    return vec(Traits::load(buffer.data()));
+    return vec(buffer);
   }
 
   inline vec<T, Length> operator+(vec<T, Length> other) const {
-    return vec<T, Length>(Traits::add(this->value, other.value));
+    Data result{this->value};
+    for (size_t i = 0; i < Length; i++) { result[i] += other.value[i]; }
+    return vec<T, Length>(result);
   }
-  inline void operator+=(vec<T, Length> other) {
-    this->value = Traits::add(this->value, other.value);
+  inline vec<T, Length> &operator+=(vec<T, Length> other) {
+    for (size_t i = 0; i < Length; i++) { this->value[i] += other.value[i]; }
+    return *this;
   }
   inline vec<T, Length> operator-(vec<T, Length> other) const {
-    return vec<T, Length>(Traits::sub(this->value, other.value));
+    Data result{this->value};
+    for (size_t i = 0; i < Length; i++) { result[i] -= other.value[i]; }
+    return vec<T, Length>(result);
   }
-  inline void operator-=(vec<T, Length> other) {
-    this->value = Traits::sub(this->value, other.value);
+  inline vec<T, Length> &operator-=(vec<T, Length> other) {
+    for (size_t i = 0; i < Length; i++) { this->value[i] -= other.value[i]; }
+    return *this;
   }
   inline vec<T, Length> operator*(T scalar) const {
-    return vec<T, Length>(
-        Traits::mul(this->value, Traits::load_uniform(scalar)));
+    Data result{this->value};
+    for (size_t i = 0; i < Length; i++) { result[i] *= scalar; }
+    return vec<T, Length>(result);
   }
-  inline void operator*=(T scalar) {
-    this->value = Traits::mul(this->value, Traits::load_uniform(scalar));
+  inline vec<T, Length> &operator*=(T scalar) {
+    for (size_t i = 0; i < Length; i++) { this->value[i] *= scalar; }
+    return *this;
   }
   inline vec<T, Length> operator*(vec<T, Length> other) const {
-    return vec<T, Length>(Traits::mul(this->value, other.value));
+    Data result{this->value};
+    for (size_t i = 0; i < Length; i++) { result[i] *= other.value[i]; }
+    return vec<T, Length>(result);
   }
-  inline void operator*=(vec<T, Length> other) {
-    this->value = Traits::mul(this->value, other.value);
+  inline vec<T, Length> &operator*=(vec<T, Length> other) {
+    for (size_t i = 0; i < Length; i++) { this->value[i] *= other.value[i]; }
+    return *this;
   }
   inline vec<T, Length> operator/(T scalar) const {
-    return vec<T, Length>(
-        Traits::div(this->value, Traits::load_uniform(scalar)));
+    Data result{this->value};
+    for (size_t i = 0; i < Length; i++) { result[i] /= scalar; }
+    return vec<T, Length>(result);
   }
-  inline void operator/=(T scalar) {
-    this->value = Traits::div(this->value, Traits::load_uniform(scalar));
+  inline vec<T, Length> &operator/=(T scalar) {
+    for (size_t i = 0; i < Length; i++) { this->value[i] /= scalar; }
+    return *this;
   }
   inline vec<T, Length> operator/(vec<T, Length> other) const {
-    return vec<T, Length>(Traits::div(this->value, other.value));
+    Data result{this->value};
+    for (size_t i = 0; i < Length; i++) { result[i] /= other.value[i]; }
+    return vec<T, Length>(result);
   }
-  inline void operator/=(vec<T, Length> other) {
-    this->value = Traits::div(this->value, other.value);
+  inline vec<T, Length> &operator/=(vec<T, Length> other) {
+    for (size_t i = 0; i < Length; i++) { this->value[i] /= other.value[i]; }
+    return *this;
   }
 
   inline bool operator==(vec<T, Length> other) const {
-    return Traits::test_eq(this->value, other.value);
+    for (size_t i = 0; i < Length; i++) {
+      if (this->value[i] != other.value[i]) { return false; }
+    }
+    return true;
   }
   inline bool operator!=(vec<T, Length> other) const {
-    return Traits::test_neq(this->value, other.value);
+    return !(*this == other);
   }
 
-  std::enable_if_t<Traits::Signed, vec<T, Length>> operator-() const {
-    return vec<T, Length>(
-        Traits::mul(this->value, Traits::load_uniform(static_cast<T>(-1))));
+  inline vec<T, Length> operator-() const {
+    if constexpr (std::is_signed_v<T>) {
+      return *this * Data{-1};
+    } else {
+      return Data{std::numeric_limits<T>::max()} - *this;
+    }
   }
-  std::enable_if_t<Traits::Signed, vec<T, Length>> abs() const {
-    return vec<T, Length>(Traits::abs(this->value));
+  inline vec<T, Length> abs() const {
+    if constexpr (std::is_signed_v<T>) {
+      Data result;
+      std::transform(this->value.begin(), this->value.end(), result.begin(),
+                     std::abs);
+      return vec<T, Length>(result);
+    } else {
+      return *this;
+    }
   }
 
   inline T distance_squared(vec<T, Length> other) const {
-    auto a = Traits::sub(other.value, this->value);
-    RawArray buffer{0};
-    Traits::store(buffer.data(), Traits::mul(a, a));
-    return std::accumulate(buffer.begin(), buffer.end(), T{0});
+    vec<T, Length> buffer = other - *this;
+    buffer *= buffer;
+    return std::accumulate(buffer->value.begin(), buffer->value.end(), T{0});
   }
   inline T distance(vec<T, Length> &other) const {
     return std::sqrt(this->distance_squared(other));
   }
   inline T magnitude_squared() const {
-    RawArray buffer{0};
-    Traits::store(buffer.data(), Traits::mul(this->value, this->value));
-    return std::accumulate(buffer.begin(), buffer.end(), T{0});
+    vec<T, Length> buffer = this->value * this->value;
+    return std::accumulate(buffer->value.begin(), buffer->value.end(), T{0});
   }
   inline T magnitude() const { return std::sqrt(this->magnitude_squared()); }
 
