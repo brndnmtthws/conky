@@ -29,23 +29,11 @@ values:
     desc: |-
       Aligned position on screen, may be `none` or one of:
 
-       <table>
-        <tr>
-          <td><code>top_left</code> (<em>or</em> <code>tl</code>)</td>
-          <td><code>top_middle</code> (<em>or</em> <code>tm</code>)</td>
-          <td><code>top_right</code> (<em>or</em> <code>tr</code>)</td>
-        </tr>
-        <tr>
-          <td><code>middle_left</code> (<em>or</em> <code>ml</code>)</td>
-          <td><code>middle_middle</code> (<em>or</em> <code>mm</code>)</td>
-          <td><code>middle_right</code> (<em>or</em> <code>mr</code>)</td>
-        </tr>
-        <tr>
-          <td><code>bottom_left</code> (<em>or</em> <code>bl</code>)</td>
-          <td><code>bottom_middle</code> (<em>or</em> <code>bm</code>)</td>
-          <td><code>bottom_right</code> (<em>or</em> <code>br</code>)</td>
-        </tr>
-      </table>
+      |                       |                         |                        |
+      |:----------------------|:-----------------------:|-----------------------:|
+      |`top_left` (or `tl`)   | `top_middle` (or `tm`)  |   `top_right` (or `tr`)|
+      |`middle_left` (or `ml`)|`middle_middle` (or `mm`)|`middle_right` (or `mr`)|
+      |`bottom_left` (or `bl`)|`bottom_middle` (or `bm`)|`bottom_right` (or `br`)|
 
       In case of `panel` and `dock` windows, it might make more sense to use one
       of the following aliases:
