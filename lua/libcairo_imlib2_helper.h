@@ -40,7 +40,10 @@
 // Lua allows modifying .so loading, so for each loaded library check if it has
 // some hardcoded set_logger function symbol, and call it to set per-library
 // reference to the global logger.
-#define NORM_ERR(Format, ...) fprintf(stderr, gettext(Format), ##__VA_ARGS__);
+#define PRINT_ERROR(Format, ...)                   \
+  fputs(stderr, "cairoimagehelper: ");             \
+  fprintf(stderr, gettext(Format), ##__VA_ARGS__); \
+  fputs(stderr, "\n")
 
 void cairo_place_image(const char *file, cairo_t *cr, int x, int y, int width,
                        int height, double alpha) {
@@ -49,18 +52,18 @@ void cairo_place_image(const char *file, cairo_t *cr, int x, int y, int width,
   cairo_surface_t *result;
 
   if (!file) {
-    NORM_ERR("cairoimagehelper: File is NULL\n");
+    PRINT_ERROR("File is nil");
     return;
   }
 
   if (!cr) {
-    NORM_ERR("cairoimagehelper: cairo_t is NULL\n");
+    PRINT_ERROR("cairo_t is nil");
     return;
   }
 
   image = (Imlib_Image *)imlib_load_image(file);
   if (!image) {
-    NORM_ERR("cairoimagehelper: Couldn't load %s\n", file);
+    PRINT_ERROR("can't load %s", file);
     return;
   }
 
@@ -69,7 +72,7 @@ void cairo_place_image(const char *file, cairo_t *cr, int x, int y, int width,
   h = imlib_image_get_height();
 
   if ((w <= 0) && (h <= 0)) {
-    NORM_ERR("cairoimagehelper: %s has 0 size\n", file);
+    PRINT_ERROR("%s has 0 size", file);
     return;
   }
 
@@ -79,7 +82,7 @@ void cairo_place_image(const char *file, cairo_t *cr, int x, int y, int width,
   /* create temporary image */
   premul = imlib_create_image(width, height);
   if (!premul) {
-    NORM_ERR("cairoimagehelper: Couldn't create premul image for %s\n", file);
+    PRINT_ERROR("can't create premul image for %s", file);
     return;
   }
 
@@ -123,23 +126,23 @@ void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
   double scaled_w, scaled_h;
 
   if (!file) {
-    NORM_ERR("cairoimagehelper: File is NULL\n");
+    PRINT_ERROR("File is nil");
     return;
   }
 
   if (!cs) {
-    NORM_ERR("cairoimagehelper: Surface is NULL\n");
+    PRINT_ERROR("Surface is nil");
     return;
   }
 
   if ((scale_x <= 0.0) && (scale_y <= 0.0)) {
-    NORM_ERR("cairoimagehelper: Image Scale is 0, %s\n", file);
+    PRINT_ERROR("Image Scale is 0, %s", file);
     return;
   }
 
   Imlib_Image *image = (Imlib_Image *)imlib_load_image(file);
   if (!image) {
-    NORM_ERR("cairoimagehelper: Couldn't load %s\n", file);
+    PRINT_ERROR("Couldn't load %s", file);
     return;
   }
 
@@ -148,7 +151,7 @@ void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
   h = imlib_image_get_height();
 
   if ((w <= 0) && (h <= 0)) {
-    NORM_ERR("cairoimagehelper: %s has 0 size\n", file);
+    PRINT_ERROR("%s has 0 size", file);
     return;
   }
 
@@ -156,7 +159,7 @@ void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
   scaled_h = *return_scale_h = scale_y * (double)h;
 
   if ((scaled_w <= 0.0) && (scaled_h <= 0.0)) {
-    NORM_ERR("cairoimagehelper: %s scaled image has 0 size\n", file);
+    PRINT_ERROR("%s scaled image has 0 size", file);
     return;
   }
 

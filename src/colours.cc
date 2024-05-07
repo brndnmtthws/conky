@@ -83,17 +83,13 @@ std::optional<Colour> parse_hex_color(const std::string &color) {
     }
     return -1;
   };
-  const auto none = [&]() {
-    NORM_ERR("can't parse hex color '%s' (%d)", name, len);
-    return std::nullopt;
-  };
 
   uint8_t argb[4] = {0xff, 0, 0, 0};
   if (len == 3 || len == 4) {
     bool skip_alpha = (len == 3);
     for (size_t i = 0; i < len; i++) {
       int nib = hex_nibble_value(name[i]);
-      if (nib < 0) { return none(); }
+      if (nib < 0) { return std::nullopt; }
       // Duplicate the nibble, so "#abc" -> 0xaa, 0xbb, 0xcc
       int val = (nib << 4) + nib;
 
@@ -104,13 +100,13 @@ std::optional<Colour> parse_hex_color(const std::string &color) {
     for (size_t i = 0; i + 1 < len; i += 2) {
       int nib1 = hex_nibble_value(name[i]);
       int nib2 = hex_nibble_value(name[i + 1]);
-      if (nib1 < 0 || nib2 < 0) { return none(); }
+      if (nib1 < 0 || nib2 < 0) { return std::nullopt; }
       int val = (nib1 << 4) + nib2;
 
       argb[skip_alpha + i / 2] = val;
     }
   } else {
-    return none();
+    return std::nullopt;
   }
 
   return Colour(argb[1], argb[2], argb[3], argb[0]);
@@ -127,6 +123,8 @@ Colour parse_color(const std::string &color) {
   TRY_PARSER(parse_hex_color)
 
 #undef TRY_PARSER
+
+  LOG_WARNING("can't parse color '%s'", color.c_str());
 
   return ERROR_COLOUR;
 }

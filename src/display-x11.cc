@@ -196,7 +196,7 @@ static void X11_create_window() {
 #ifdef BUILD_XDAMAGE
   if (XDamageQueryExtension(display, &x11_stuff.event_base,
                             &x11_stuff.error_base) == 0) {
-    NORM_ERR("Xdamage extension unavailable");
+    LOG_WARNING("Xdamage extension unavailable");
     x11_stuff.damage = 0;
   } else {
     x11_stuff.damage =
@@ -265,7 +265,11 @@ bool display_output_x11::main_loop_wait(double t) {
 
     s = select(ConnectionNumber(display) + 1, &fdsr, nullptr, nullptr, &tv);
     if (s == -1) {
-      if (errno != EINTR) { NORM_ERR("can't select(): %s", strerror(errno)); }
+      if (errno != EINTR) {
+        LOG_ERROR("can't check X11 display readyness with select(): %s",
+                  strerror(errno));
+        LOG_INFO("text won't be updated");
+      }
     } else {
       /* timeout */
       if (s == 0) { update_text(); }
@@ -310,7 +314,7 @@ bool display_output_x11::main_loop_wait(double t) {
             window.drawable = window.back_buffer;
           } else {
             // this is probably reallllly bad
-            NORM_ERR("Failed to allocate back buffer");
+            LOG_ERROR("failed to allocate back buffer");
           }
           XSetForeground(display, window.gc, 0);
           XFillRectangle(display, window.drawable, window.gc, 0, 0,
@@ -332,7 +336,7 @@ bool display_output_x11::main_loop_wait(double t) {
 
       /* update struts */
       if ((changed != 0) && own_window_type.get(*state) == window_type::PANEL) {
-        NORM_ERR("defining struts");
+        LOG_DEBUG("modifying X11 WM struts (if supported)");
         set_struts(text_alignment.get(*state));
       }
     }
@@ -1114,6 +1118,9 @@ void display_output_x11::free_fonts(bool utf8) {
   }
 #endif /* BUILD_XFT */
 }
+
+const char *X_FALLBACK_FONT = "fixed";
+const char *XFT_FALLBACK_FONT = "courier-12";
 void display_output_x11::load_fonts(bool utf8) {
   x_fonts.resize(fonts.size());
   for (unsigned int i = 0; i < fonts.size(); i++) {
@@ -1128,15 +1135,14 @@ void display_output_x11::load_fonts(bool utf8) {
 
       if (xfont.xftfont != nullptr) { continue; }
 
-      NORM_ERR("can't load Xft font '%s'", font.name.c_str());
-      if ((xfont.xftfont = XftFontOpenName(display, screen, "courier-12")) !=
-          nullptr) {
+      LOG_WARNING("can't load Xft font '%s'", font.name.c_str());
+      LOG_INFO("using font '%s' as fallback", XFT_FALLBACK_FONT);
+      if ((xfont.xftfont = XftFontOpenName(display, screen,
+                                           XFT_FALLBACK_FONT)) != nullptr) {
         continue;
       }
 
-      CRIT_ERR("can't load Xft font '%s'", "courier-12");
-
-      continue;
+      SYSTEM_ERR("fallback Xft font (%s) can't be loaded", XFT_FALLBACK_FONT);
     }
 #endif
     if (utf8 && xfont.fontset == nullptr) {
@@ -1147,20 +1153,22 @@ void display_output_x11::load_fonts(bool utf8) {
                                      &missingnum, &missingdrawn);
       XFreeStringList(missing);
       if (xfont.fontset == nullptr) {
-        NORM_ERR("can't load font '%s'", font.name.c_str());
+        LOG_WARNING("can't load font '%s'", font.name.c_str());
+        LOG_INFO("using '%s' font as fallback", X_FALLBACK_FONT);
         xfont.fontset = XCreateFontSet(display, "fixed", &missing, &missingnum,
                                        &missingdrawn);
         if (xfont.fontset == nullptr) {
-          CRIT_ERR("can't load font '%s'", "fixed");
+          SYSTEM_ERR("fallback font (%s) can't be loaded", X_FALLBACK_FONT);
         }
       }
     }
     /* load normal font */
     if ((xfont.font == nullptr) &&
         (xfont.font = XLoadQueryFont(display, font.name.c_str())) == nullptr) {
-      NORM_ERR("can't load font '%s'", font.name.c_str());
+      LOG_WARNING("can't load font '%s'", font.name.c_str());
+      LOG_INFO("using '%s' font as fallback", X_FALLBACK_FONT);
       if ((xfont.font = XLoadQueryFont(display, "fixed")) == nullptr) {
-        CRIT_ERR("can't load font '%s'", "fixed");
+        SYSTEM_ERR("fallback font (%s) can't be loaded", X_FALLBACK_FONT);
       }
     }
   }

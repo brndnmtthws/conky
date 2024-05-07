@@ -161,7 +161,7 @@ static void do_format_time(struct text_object *obj, char *p,
        hidestring;
 
   if (!times_in_seconds.get(*state)) {
-    NORM_ERR("Enable \"times_in_seconds\" to use $format_time");
+    LOG_WARNING("Enable \"times_in_seconds\" to use $format_time");
     return;
   }
 
@@ -242,7 +242,7 @@ static void do_format_time(struct text_object *obj, char *p,
                   }
                 } else {
                   currentchar--;
-                  NORM_ERR(
+                  LOG_WARNING(
                       "$format_time needs a digit behind 'S' to specify "
                       "precision");
                 }
@@ -254,8 +254,8 @@ static void do_format_time(struct text_object *obj, char *p,
                 output_length++;
                 break;
               default:
-                NORM_ERR("$format_time doesn't have a special char '%c'",
-                         *currentchar);
+                LOG_WARNING("$format_time doesn't have a special char '%c'",
+                            *currentchar);
             }
           } else if (*currentchar == '(') {
             for (temp = currentchar + 1; *temp != 0 && *temp != ')'; temp++) {
@@ -293,7 +293,7 @@ static void do_format_time(struct text_object *obj, char *p,
                       p_max_size - output_length + strlen(temp));
               output_length += strlen(temp);
             } else {
-              NORM_ERR("The format string for $format_time is too long");
+              LOG_WARNING("The format string for $format_time is too long");
             }
             free(temp);
           }
@@ -304,12 +304,13 @@ static void do_format_time(struct text_object *obj, char *p,
       }
       p[output_length] = 0;
     } else {
-      NORM_ERR(
+      LOG_WARNING(
           "$format_time needs a output-format starting with a \"-char as 2nd "
           "argument");
     }
   } else {
-    NORM_ERR("$format_time didn't receive a time in seconds as first argument");
+    LOG_WARNING(
+        "$format_time didn't receive a time in seconds as first argument");
   }
 }
 

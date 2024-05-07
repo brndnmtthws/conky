@@ -75,6 +75,10 @@ extern conky::log::logger DEFAULT_LOGGER;
 #define LOG_DEBUG(...) LOG(DEBUG, __VA_ARGS__)
 #define LOG_TRACE(...) LOG(TRACE, __VA_ARGS__)
 
+#define LOG_CONTEXT(Key, Value)                                   \
+  volatile ::conky::log::logger::context_guard _log_guard_##Key = \
+      DEFAULT_LOGGER.add_context(#Key, Value)
+
 // backwards compatibility aliases
 #define NORM_ERR(...) LOG_INFO(__VA_ARGS__)
 #define DBGP(...) LOG_DEBUG(__VA_ARGS__)
@@ -103,16 +107,50 @@ inline std::string alloc_printf(const char *format) {
 }
 }  // namespace _priv_error_print
 
-class error : public std::runtime_error {
- public:
-  /// @brief Construct a new error object.
+struct error : public std::runtime_error {
+  /// @brief Construct a new error.
   ///
-  /// @param Msg Already localized error message.
+  /// @param msg already localized error message.
   error(const std::string &msg) : std::runtime_error(msg) {}
+  /// @brief Construct a new error.
+  ///
+  /// @param msg unlocalized error message.
   error(const char *msg) : std::runtime_error(_(msg)) {}
+  /// @brief Construct a new error.
+  ///
+  /// @param format unlocalized format of error message.
+  /// @param args format arguments.
   template <typename... Args>
   error(const char *format, Args &&...args)
       : error(_priv_error_print::alloc_printf(_(format), args...)) {}
+};
+
+struct bad_command_arguments_error : public std::runtime_error {
+  std::string command;
+
+  /// @brief Construct a new error.
+  ///
+  /// @param command command with invalid arguments.
+  /// @param msg already localized error message.
+  bad_command_arguments_error(const char *command, const std::string &msg)
+      : std::runtime_error(msg), command(command) {}
+  /// @brief Construct a new error.
+  ///
+  /// @param command command with invalid arguments.
+  /// @param msg unlocalized error message.
+  bad_command_arguments_error(const char *command, const char *msg)
+      : std::runtime_error(_(msg)), command(std::string(command)) {}
+  /// @brief Construct a new error.
+  ///
+  /// @param command command with invalid arguments.
+  /// @param format unlocalized format of error message.
+  /// @param args format arguments.
+  template <typename... Args>
+  bad_command_arguments_error(const char *command, const char *format,
+                              Args &&...args)
+      : bad_command_arguments_error(
+            _priv_error_print::alloc_printf(_(format), args...)),
+        command(std::string(command)) {}
 };
 }  // namespace conky
 
@@ -135,6 +173,15 @@ class error : public std::runtime_error {
 #define SYSTEM_ERR(...)   \
   LOG_ERROR(__VA_ARGS__); \
   throw conky::error(__VA_ARGS__)
+
+/// @brief Invalid command arguments error.
+///
+/// @param Command command with invalid arguments.
+/// @param Format printf style format string.
+/// @param Args printf style arguments.
+#define COMMAND_ARG_ERR(Command, ...) \
+  LOG_ERROR(__VA_ARGS__);             \
+  throw conky::bad_command_arguments_error(Command, __VA_ARGS__)
 
 /* critical error with additional cleanup */
 #define CRIT_ERR_FREE(memtofree1, memtofree2, ...) \

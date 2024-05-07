@@ -75,7 +75,7 @@ static void update_kstat() {
   if (kstat == nullptr) {
     if ((kstat = kstat_open()) == nullptr) {
       pthread_mutex_unlock(&kstat_mtx);
-      NORM_ERR("can't open kstat: %s", strerror(errno));
+      LOG_ERROR("can't open kstat: %s", strerror(errno));
       return;
     }
     kstat_updated = 0;
@@ -104,7 +104,7 @@ static kstat_named_t *get_kstat(const char *module, int inst, const char *name,
   pthread_mutex_lock(&kstat_mtx);
   ksp = kstat_lookup(kstat, (char *)module, inst, (char *)name);
   if (ksp == nullptr) {
-    NORM_ERR("cannot lookup kstat %s:%d:%s:%s %s", module, inst, name, stat,
+    LOG_WARNING("cannot lookup kstat %s:%d:%s:%s %s", module, inst, name, stat,
              strerror(errno));
     pthread_mutex_unlock(&kstat_mtx);
     return nullptr;
@@ -117,13 +117,13 @@ static kstat_named_t *get_kstat(const char *module, int inst, const char *name,
       pthread_mutex_unlock(&kstat_mtx);
       return knp;
     } else {
-      NORM_ERR("kstat %s:%d:%s:%s has unexpected type %d", module, inst, name,
+      LOG_ERROR("kstat %s:%d:%s:%s has unexpected type %d", module, inst, name,
                stat, ksp->ks_type);
       pthread_mutex_unlock(&kstat_mtx);
       return nullptr;
     }
   }
-  NORM_ERR("cannot read kstat %s:%d:%s:%s", module, inst, name, stat);
+  LOG_ERROR("cannot read kstat %s:%d:%s:%s", module, inst, name, stat);
   pthread_mutex_unlock(&kstat_mtx);
   return nullptr;
 }
@@ -220,13 +220,13 @@ int update_net_stats(void) {
 
   /* Find all active net interfaces */
   if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-    NORM_ERR("cannot create socket: %s", strerror(errno));
+    LOG_ERROR("cannot create socket: %s", strerror(errno));
     return 0;
   }
   ifc.ifc_buf = buf;
   ifc.ifc_len = sizeof(buf);
   if (ioctl(sockfd, SIOCGIFCONF, &ifc) < 0) {
-    NORM_ERR("ioctl(SIOCGIFCONF) failed: %s", strerror(errno));
+    LOG_ERROR("ioctl(SIOCGIFCONF) failed: %s", strerror(errno));
     (void)close(sockfd);
     return 0;
   }
@@ -253,7 +253,7 @@ int update_net_stats(void) {
     /* Get received bytes */
     knp = get_kstat("link", -1, ifr->ifr_name, "rbytes");
     if (knp == nullptr) {
-      NORM_ERR("cannot read rbytes for %s\n", ifr->ifr_name);
+      LOG_WARNING("cannot read rbytes for %s\n", ifr->ifr_name);
       continue;
     }
     r = (long long)knp->value.ui32;
@@ -267,7 +267,7 @@ int update_net_stats(void) {
     /* Get transceived bytes */
     knp = get_kstat("link", -1, ifr->ifr_name, "obytes");
     if (knp == nullptr) {
-      NORM_ERR("cannot read obytes for %s\n", ifr->ifr_name);
+      LOG_WARNING("cannot read obytes for %s\n", ifr->ifr_name);
       continue;
     }
     t = (long long)knp->value.ui32;

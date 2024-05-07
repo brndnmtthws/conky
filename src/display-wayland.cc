@@ -559,7 +559,7 @@ static void seat_name_listener(void *data, struct wl_seat *wl_seat,
 bool display_output_wayland::initialize() {
   epoll_fd = epoll_create1(0);
   if (epoll_fd < 0) {
-    perror("conky: epoll_create");
+    SYSTEM_ERR("unable to create epoll");
     return false;
   }
   global_display = wl_display_connect(NULL);
@@ -630,7 +630,7 @@ bool display_output_wayland::main_loop_wait(double t) {
     ep[0].data.ptr = nullptr;
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, wl_display_get_fd(global_display),
                   &ep[0]) == -1) {
-      perror("conky: epoll_ctl: add");
+      SYSTEM_ERR("can't watch for wayland display fd: %s", strerror(errno));
       return false;
     }
     added = true;
@@ -640,8 +640,7 @@ bool display_output_wayland::main_loop_wait(double t) {
   int ep_count = epoll_wait(epoll_fd, ep, ARRAY_LENGTH(ep), ms);
   if (ep_count > 0) {
     if (ep[0].events & (EPOLLERR | EPOLLHUP)) {
-      NORM_ERR("output closed");
-      exit(1);
+      SYSTEM_ERR("wayland display fd watcher closed unexpectedly");
       return false;
     }
   }

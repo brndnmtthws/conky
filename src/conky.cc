@@ -715,9 +715,7 @@ static void generate_text() {
           p[k] = '\n';
           j = 0;
         } else {
-          NORM_ERR(
-              "The end of the text_buffer is reached, increase "
-              "\"text_buffer_size\"");
+          LOG_WARNING("text_buffer exhausted, increase \"text_buffer_size\"");
         }
       } else {
         j++;
@@ -1685,7 +1683,7 @@ void log_system_details() {
   char *session = getenv("GDMSESSION");
   char *desktop = getenv("XDG_CURRENT_DESKTOP");
   if (desktop != nullptr || session != nullptr) {
-    NORM_ERR("'%s' %s session running '%s' destop", session, session_ty,
+    LOG_INFO("'%s' %s session running '%s' destop", session, session_ty,
              desktop);
   }
 }
@@ -1760,7 +1758,7 @@ void main_loop() {
 
     if (g_sighup_pending != 0) {
       g_sighup_pending = 0;
-      NORM_ERR("received SIGUSR1. reloading the config file.");
+      LOG_NOTICE("received SIGUSR1. reloading the config file.");
 
       reload_config();
     }
@@ -1768,7 +1766,7 @@ void main_loop() {
     if (g_sigusr2_pending != 0) {
       g_sigusr2_pending = 0;
       // refresh view;
-      NORM_ERR("received SIGUSR2. refreshing.");
+      LOG_NOTICE("received SIGUSR2. refreshing.");
       update_text();
       draw_stuff();
       for (auto output : display_outputs()) output->flush();
@@ -1776,7 +1774,7 @@ void main_loop() {
 
     if (g_sigterm_pending != 0) {
       g_sigterm_pending = 0;
-      NORM_ERR("received SIGHUP, SIGINT, or SIGTERM to terminate. bye!");
+      LOG_NOTICE("received SIGHUP, SIGINT, or SIGTERM to terminate. bye!");
       terminate = 1;
       for (auto output : display_outputs()) output->sigterm_cleanup();
     }
@@ -1807,7 +1805,7 @@ void main_loop() {
           if (ev->wd == inotify_config_wd &&
               (ev->mask & IN_MODIFY || ev->mask & IN_IGNORED)) {
             /* current_config should be reloaded */
-            NORM_ERR("'%s' modified, reloading...", current_config.c_str());
+            LOG_NOTICE("'%s' modified, reloading...", current_config.c_str());
             reload_config();
             if (ev->mask & IN_IGNORED) {
               /* for some reason we get IN_IGNORED here
@@ -1847,10 +1845,11 @@ static void reload_config() {
   struct stat sb {};
   if ((stat(current_config.c_str(), &sb) != 0) ||
       (!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
-    NORM_ERR(_("Config file '%s' is gone, continuing with config from "
-               "memory.\nIf you recreate this file sent me a SIGUSR1 to tell "
-               "me about it. ( kill -s USR1 %d )"),
-             current_config.c_str(), getpid());
+    LOG_WARNING(
+        _("Config file '%s' is gone, continuing with config from "
+          "memory.\nIf you recreate this file sent me a SIGUSR1 to tell "
+          "me about it. ( kill -s USR1 %d )"),
+        current_config.c_str(), getpid());
     return;
   }
   clean_up();
@@ -2011,8 +2010,8 @@ void load_config_file() {
   } catch (lua::syntax_error &e) {
 #define SYNTAX_ERR_READ_CONF "Syntax error (%s) while reading config file. "
 #ifdef BUILD_OLD_CONFIG
-    NORM_ERR(_(SYNTAX_ERR_READ_CONF), e.what());
-    NORM_ERR(_("Assuming it's in old syntax and attempting conversion."));
+    LOG_WARNING(SYNTAX_ERR_READ_CONF, e.what());
+    LOG_NOTICE("assuming old syntax in use; attempting conversion...");
     // the strchr thingy skips the first line (#! /usr/bin/lua)
     l.loadstring(strchr(convertconf, '\n'));
     l.pushstring(current_config.c_str());
@@ -2072,7 +2071,7 @@ void set_current_config() {
 #define NOCFGFILEFOUND "no personal or system-wide config file found"
 #ifdef BUILD_BUILTIN_CONFIG
     current_config = builtin_config_magic;
-    NORM_ERR(NOCFGFILEFOUND ", using builtin default");
+    LOG_WARNING(NOCFGFILEFOUND ", using builtin default");
 #else
     throw conky::error(NOCFGFILEFOUND);
 #endif
@@ -2267,8 +2266,7 @@ void initialisation(int argc, char **argv) {
 
     switch (pid) {
       case -1:
-        NORM_ERR(PACKAGE_NAME ": couldn't fork() to background: %s",
-                 strerror(errno));
+        LOG_WARNING("couldn't fork() to background: %s", strerror(errno));
         break;
 
       case 0:
@@ -2280,8 +2278,7 @@ void initialisation(int argc, char **argv) {
 
       default:
         /* parent process */
-        fprintf(stderr, PACKAGE_NAME ": forked to background, pid is %d\n",
-                pid);
+        LOG_NOTICE("forked to background, pid is %d\n", pid);
         fflush(stderr);
         throw fork_throw();
     }
@@ -2318,7 +2315,7 @@ void initialisation(int argc, char **argv) {
       sigaction(SIGUSR2, &act, &oact) < 0 ||
       sigaction(SIGHUP, &act, &oact) < 0 ||
       sigaction(SIGTERM, &act, &oact) < 0) {
-    NORM_ERR("error setting signal handler: %s", strerror(errno));
+    LOG_ERROR("can't set signal handler: %s", strerror(errno));
   }
 
   llua_startup_hook();

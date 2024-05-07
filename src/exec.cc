@@ -198,15 +198,12 @@ static inline double get_barnum(const char *buf) {
   double barnum;
 
   if (sscanf(buf, "%lf", &barnum) != 1) {
-    NORM_ERR(
-        "reading exec value failed (perhaps it's not the "
-        "correct format?)");
+    LOG_WARNING("can't read value ('%s') failed; is it in the correct format?",
+                buf);
     return 0.0;
   }
   if (barnum > 100.0 || barnum < 0.0) {
-    NORM_ERR(
-        "your exec value is not between 0 and 100, "
-        "therefore it will be ignored");
+    LOG_WARNING("value is not between 0 and 100; will be ignored");
     return 0.0;
   }
 
@@ -256,7 +253,7 @@ void scan_exec_arg(struct text_object *obj, const char *arg,
 
     /* store the interval in ed->interval */
     if (sscanf(arg, "%f %n", &ed->interval, &n) <= 0) {
-      NORM_ERR("missing execi interval: ${execi* <interval> command}");
+      LOG_WARNING("missing interval (${execi* <interval> <command>})a");
       delete ed;
       ed = nullptr;
       return;
@@ -277,9 +274,7 @@ void scan_exec_arg(struct text_object *obj, const char *arg,
     auto [buf, skip] = scan_command(cmd);
     scan_graph(obj, cmd + skip, 100);
     cmd = buf;
-    if (cmd == nullptr) {
-      NORM_ERR("error parsing arguments to execgraph object");
-    }
+    if (cmd == nullptr) { LOG_WARNING("error parsing object arguments"); }
 #endif /* BUILD_GUI */
   }
 

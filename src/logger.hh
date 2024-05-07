@@ -41,6 +41,7 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -214,7 +215,32 @@ struct logger {
  private:
   const char *name;
   std::array<log_target, MAX_LOG_TARGETS> entries;
+  std::map<const char *, std::string> context;
+  size_t context_length;
 
+ public:
+  volatile struct context_guard {
+    logger *parent;
+    const char *key;
+
+    context_guard(logger *parent, const char *key) : parent(parent), key(key) {
+      if (parent->context_length > 0)
+        parent->context_length++;  // delimiter (';')
+      parent->context_length +=
+          strlen(key) + 1 + parent->context.at(key).length();  // key=value
+    }
+    ~context_guard() {
+      parent->context_length +=
+          strlen(key) + 1 + parent->context.at(key).length();  // key=value
+      if (parent->context_length > 0)
+        parent->context_length--;  // delimiter (';')
+      parent->context.erase(key);
+    }
+
+    std::string &value() const { return parent->context.at(key); }
+  };
+
+ private:
   size_t check_available() const {
     for (size_t i = 0; i < MAX_LOG_TARGETS; i++) {
       if (entries[i].stream == nullptr) return MAX_LOG_TARGETS - i;
@@ -270,6 +296,14 @@ struct logger {
     return nullptr;
   }
 
+  template <typename T>
+  volatile context_guard add_context(const char *key, T value) {
+    static_assert(std::is_convertible_v<T, std::string>,
+                  "can't convert context value to std::string");
+    context.emplace(std::make_pair(key, std::string(value)));
+    return context_guard(this, key);
+  }
+
   template <level log_level, typename... Args>
   inline void log_print_fmt(log_details &&details, const char *format,
                             Args &&...args) {
@@ -287,22 +321,45 @@ struct logger {
 
     static const size_t MAX_FILE_LEN = 32;
     static const size_t MAX_LOCATION_LEN = MAX_FILE_LEN + 1 + 5;  // name:line
-    static const size_t PREAMBLE_LENGTH =
+    static const size_t BASE_PREAMBLE_LENGTH =
         2 + TIME_LEN + 2 + MAX_LEVEL_NAME_LEN + 2 + MAX_LOCATION_LEN;
-    char preamble[PREAMBLE_LENGTH + 1] = "[";
+    size_t preamble_length = BASE_PREAMBLE_LENGTH;
+    if (context_length > 0) {
+      preamble_length += 2 + context_length;  // [context]
+    }
+
+    // using a string here would require several intermediate buffers so it's
+    // not really worth the convenience
+    char preamble[preamble_length + 1] = "[";
     size_t offset = 1;
+
     // append time
     offset += _priv::format_log_time(&preamble[offset], TIME_LEN,
                                      details.time.value_or(clock::now()));
+
     // append log level
     std::strncat(&preamble[offset], _priv::_log_level_fmt(log_level),
                  _priv::_log_level_fmt_len(log_level));
     offset += _priv::_log_level_fmt_len(log_level) - 1;
+
     // append source information
     if (details.source.has_value()) {
       auto source = details.source.value();
-      offset += snprintf(&preamble[offset], PREAMBLE_LENGTH - offset,
+      offset += snprintf(&preamble[offset], preamble_length - offset,
                          "[%s:%ld]", source.file, source.line);
+    }
+
+    if (context_length > 0) {
+      std::string buffer;
+      buffer.reserve(context_length);
+      for (const auto &[key, value] : context) {
+        if (!buffer.empty()) buffer += ";";
+        buffer += key;
+        buffer += '=';
+        buffer += value;
+      }
+      offset += snprintf(&preamble[offset], preamble_length - offset, "[%s]",
+                         buffer.c_str());
     }
 
     // localized output to console
@@ -319,7 +376,7 @@ struct logger {
                     Args &&...args) {
     this->log_print_fmt<log_level>(
         log_details{
-            std::optional(source_details{file, line}),
+            .source = std::optional(source_details{file, line}),
         },
         format, args...);
   }

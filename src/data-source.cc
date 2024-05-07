@@ -23,6 +23,7 @@
 #include <config.h>
 
 #include "data-source.hh"
+#include "logging.h"
 
 #include <iostream>
 #include <sstream>
@@ -108,10 +109,11 @@ disabled_data_source::disabled_data_source(lua::state *l,
                                            const std::string &name,
                                            const std::string &setting)
     : simple_numeric_source<float>(l, name, &NaN) {
-  // XXX some generic way of reporting errors? NORM_ERR?
-  std::cerr << "Support for variable '" << name
-            << "' has been disabled during compilation. Please recompile with '"
-            << setting << "'" << std::endl;
+  LOG_CONTEXT(variable, name);
+  LOG_WARNING(
+      "support for variable hasn't been enabled at "
+      "compilation; please recompile conky with '%s'",
+      setting.c_str());
 }
 }  // namespace priv
 

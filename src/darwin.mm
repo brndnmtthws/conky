@@ -414,7 +414,7 @@ int check_mount(struct text_object *obj) {
   num_mounts = getmntinfo(&mounts, MNT_WAIT);
 
   if (num_mounts < 0) {
-    NORM_ERR("could not get mounts using getmntinfo");
+    LOG_ERROR("could not get mounts using getmntinfo");
     return 0;
   }
 
@@ -1353,7 +1353,7 @@ int get_sip_status() {
   if (csr_get_active_config ==
       nullptr) /*  check if weakly linked symbol exists    */
   {
-    NORM_ERR("$sip_status will not work on this version of macOS\n");
+    LOG_WARNING("$sip_status will not work on this version of macOS\n");
     return 0;
   }
 
@@ -1396,7 +1396,7 @@ void print_sip_status(struct text_object *obj, char *p, unsigned int p_max_size)
       nullptr) /*  check if weakly linked symbol exists    */
   {
     snprintf(p, p_max_size, "%s", "unsupported");
-    NORM_ERR("$sip_status will not work on this version of macOS\n");
+    LOG_WARNING("$sip_status will not work on this version of macOS\n");
     return;
   }
 
@@ -1467,13 +1467,12 @@ void print_sip_status(struct text_object *obj, char *p, unsigned int p_max_size)
         break;
       default:
         snprintf(p, p_max_size, "%s", "unsupported");
-        NORM_ERR(
-            "print_sip_status: unsupported argument passed to $sip_status");
+        LOG_WARNING("unsupported argument");
         break;
     }
   } else { /* bad argument */
     snprintf(p, p_max_size, "%s", "unsupported");
-    NORM_ERR("print_sip_status: unsupported argument passed to $sip_status");
+    LOG_WARNING("unsupported argument");
   }
 }
 
@@ -1513,13 +1512,13 @@ void print_sip_status(struct text_object *obj, char *p, int p_max_size) {
         break;
       default:
         snprintf(p, p_max_size, "%s", "unsupported");
-        NORM_ERR(
-            "print_sip_status: unsupported argument passed to $sip_status");
+        LOG_WARNING(
+            "unsupported argument provided: %s", );
         break;
     }
   } else { /* bad argument */
     snprintf(p, p_max_size, "%s", "unsupported");
-    NORM_ERR("print_sip_status: unsupported argument passed to $sip_status");
+    LOG_WARNING("unsupported argument provided: %s", );
   }
 }
 
