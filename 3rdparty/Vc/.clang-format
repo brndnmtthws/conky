@@ -1,0 +1,130 @@
+BasedOnStyle: Google
+
+#    The extra indent or outdent of access modifiers, e.g. public:.
+AccessModifierOffset: -4
+
+#    If true, aligns escaped newlines as far left as possible. Otherwise puts them into the right-most column.
+AlignEscapedNewlinesLeft: false
+
+#    If true, aligns trailing comments.
+AlignTrailingComments: true
+
+#    Allow putting all parameters of a function declaration onto the next line even if BinPackParameters is false.
+AllowAllParametersOfDeclarationOnNextLine: false
+
+#    If true, if (a) return; can be put on a single line.
+AllowShortIfStatementsOnASingleLine: false
+
+#    If true, while (true) continue; can be put on a single line.
+AllowShortLoopsOnASingleLine: false
+
+AllowShortFunctionsOnASingleLine: true
+
+#    If true, always break before multiline string literals.
+AlwaysBreakBeforeMultilineStrings: false
+
+#    If true, always break after the template<...> of a template declaration.
+AlwaysBreakTemplateDeclarations: false
+
+#    If false, a function call’s or function definition’s parameters will either all be on the same line or will have one line each.
+BinPackParameters: true
+
+#    If true, binary operators will be placed after line breaks.
+BreakBeforeBinaryOperators: false
+
+#    The brace breaking style to use.
+#    Possible values:
+#        BS_Attach (in configuration: Attach) Always attach braces to surrounding context.
+#        BS_Linux (in configuration: Linux) Like Attach, but break before braces on function, namespace and class definitions.
+#        BS_Stroustrup (in configuration: Stroustrup) Like Attach, but break before function definitions.
+#        BS_Allman (in configuration: Allman) Always break before braces.
+BreakBeforeBraces: Linux
+
+#    Always break constructor initializers before commas and align the commas with the colon.
+BreakConstructorInitializersBeforeComma: true
+
+#    The column limit.
+#    A column limit of 0 means that there is no column limit. In this case, clang-format will respect the input’s line breaking decisions within statements.
+ColumnLimit: 90
+
+#    If the constructor initializers don’t fit on a line, put each initializer on its own line.
+#ConstructorInitializerAllOnOneLineOrOnePerLine (bool)
+
+#    The number of characters to use for indentation of constructor initializer lists.
+#ConstructorInitializerIndentWidth (unsigned)
+
+#    If true, format braced lists as best suited for C++11 braced lists.
+#    Important differences: - No spaces inside the braced list. - No line break before the closing brace. - Indentation with the continuation indent, not with the block indent.
+#    Fundamentally, C++11 braced lists are formatted exactly like function calls would be formatted in their place. If the braced list follows a name (e.g. a type or variable name), clang-format formats as if the {} were the parentheses of a function call with that name. If there is no name, a zero-length name is assumed.
+Cpp11BracedListStyle: true
+
+#    If true, analyze the formatted file for the most common binding.
+#DerivePointerBinding (bool)
+
+#    If true, clang-format detects whether function calls and definitions are formatted with one parameter per line.
+#    Each call can be bin-packed, one-per-line or inconclusive. If it is inconclusive, e.g. completely on one line, but a decision needs to be made, clang-format analyzes whether there are other bin-packed cases in the input file and act accordingly.
+#    NOTE: This is an experimental flag, that might go away or be renamed. Do not use this in config files, etc. Use at your own risk.
+#ExperimentalAutoDetectBinPacking (bool)
+
+#    Indent case labels one level from the switch statement.
+#    When false, use the same indentation level as for the switch statement. Switch statement body is always indented one level more than case labels.
+IndentCaseLabels: false
+
+#    If true, indent when breaking function declarations which are not also definitions after the type.
+#IndentFunctionDeclarationAfterType (bool)
+
+#    The number of characters to use for indentation.
+IndentWidth: 4
+
+#    The maximum number of consecutive empty lines to keep.
+MaxEmptyLinesToKeep: 1
+
+#    The indentation used for namespaces.
+#    Possible values:
+#        NI_None (in configuration: None) Don’t indent in namespaces.
+#        NI_Inner (in configuration: Inner) Indent only in inner namespaces (nested in other namespaces).
+#        NI_All (in configuration: All) Indent in all namespaces.
+NamespaceIndentation: None
+
+#    Add a space in front of an Objective-C protocol list, i.e. use Foo <Protocol> instead of Foo<Protocol>.
+#ObjCSpaceBeforeProtocolList (bool)
+
+#    The penalty for each line break introduced inside a comment.
+#PenaltyBreakComment (unsigned)
+
+#    The penalty for breaking before the first <<.
+#PenaltyBreakFirstLessLess (unsigned)
+
+#    The penalty for each line break introduced inside a string literal.
+#PenaltyBreakString (unsigned)
+#    The penalty for each character outside of the column limit.
+#PenaltyExcessCharacter (unsigned)
+#    Penalty for putting the return type of a function onto its own line.
+#PenaltyReturnTypeOnItsOwnLine (unsigned)
+#    Set whether & and * bind to the type as opposed to the variable.
+#PointerBindsToType: false
+#    If true, spaces will be inserted between ‘for’/’if’/’while’/... and ‘(‘.
+#SpaceAfterControlStatementKeyword: true
+#    If false, spaces will be removed before ‘=’, ‘+=’, etc.
+#SpaceBeforeAssignmentOperators: true
+#    If false, spaces may be inserted into ‘()’.
+#SpaceInEmptyParentheses: false
+#    The number of spaces to before trailing line comments.
+#SpacesBeforeTrailingComments (unsigned)
+#    If false, spaces may be inserted into C style casts.
+#SpacesInCStyleCastParentheses (bool)
+
+#    If true, spaces will be inserted after every ‘(‘ and before every ‘)’.
+SpacesInParentheses: false
+
+#    Format compatible with this standard, e.g. use A<A<int> > instead of A<A<int>> for LS_Cpp03.
+#    Possible values:
+#        LS_Cpp03 (in configuration: Cpp03) Use C++03-compatible syntax.
+#        LS_Cpp11 (in configuration: Cpp11) Use features of C++11 (e.g. A<A<int>> instead of A<A<int> >).
+#        LS_Auto (in configuration: Auto) Automatic detection based on the input.
+Standard: Cpp11
+
+#    If true, IndentWidth consecutive spaces will be replaced with tab characters.
+UseTab: false
+
+# vim: ft=yaml

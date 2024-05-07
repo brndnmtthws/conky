@@ -21,19 +21,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#pragma once
+#ifndef _CONKY_GUI_H_
+#define _CONKY_GUI_H_
 
 #include "config.h"
 
-#include "colours.h"
+#include "geometry.h"
 #include "setting.hh"
 
 #include "colour-settings.h"
-
-#ifdef BUILD_X11
-#include <X11/Xlib.h>
-#include "x11-settings.h"
-#endif /* BUILD_X11 */
 
 /// @brief Represents alignment on a single axis.
 enum class axis_align : uint8_t {
@@ -165,11 +161,7 @@ inline bool TEST_HINT(uint16_t mask, window_hints hint) {
 }
 #endif
 
-#ifdef BUILD_X11
-extern Display *display;
-#endif /* BUILD_X11 */
-extern int screen;
-extern int workarea[4];
+extern conky::rect<int> workarea;
 
 extern char window_created;
 
@@ -193,12 +185,6 @@ void print_key_scroll_lock(struct text_object *, char *, unsigned int);
 /* Keyboard layout and mouse speed in percentage */
 void print_keyboard_layout(struct text_object *, char *, unsigned int);
 void print_mouse_speed(struct text_object *, char *, unsigned int);
-
-#ifdef BUILD_XDBE
-void xdbe_swap_buffers(void);
-#else
-void xpmdb_swap_buffers(void);
-#endif /* BUILD_XDBE */
 
 extern conky::simple_config_setting<alignment> text_alignment;
 
@@ -227,6 +213,13 @@ extern conky::simple_config_setting<bool> forced_redraw;
 #ifdef OWN_WINDOW
 extern priv::own_window_setting own_window;
 extern conky::simple_config_setting<std::string> own_window_title;
+
+/// @brief Window type.
+///
+/// @see window_type
+extern conky::simple_config_setting<window_type> own_window_type;
+/// @brief X11 window class; Wayland XDG Shell app_id.
+extern conky::simple_config_setting<std::string> own_window_class;
 #endif /* OWN_WINDOW */
 
 #if defined(OWN_WINDOW) && defined(BUILD_X11)
@@ -236,9 +229,6 @@ struct window_hints_traits {
   static std::pair<Type, bool> convert(lua::state &l, int index,
                                        const std::string &name);
 };
-
-extern conky::simple_config_setting<std::string> own_window_class;
-extern conky::simple_config_setting<window_type> own_window_type;
 extern conky::simple_config_setting<uint16_t, window_hints_traits>
     own_window_hints;
 #endif /* OWN_WINDOW && BUILD_X11 */
@@ -252,3 +242,5 @@ extern conky::simple_config_setting<bool> set_transparent;
 extern conky::simple_config_setting<bool> use_argb_visual;
 extern conky::range_config_setting<int> own_window_argb_value;
 #endif /* BUILD_ARGB || BUILD_WAYLAND */
+
+#endif /* _CONKY_GUI_H_ */

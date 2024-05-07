@@ -33,6 +33,10 @@
 #include "conky.h"
 #include "logging.h"
 
+#ifdef BUILD_X11
+#include "x11-settings.h"
+#endif /* BUILD_X11 */
+
 #ifdef BUILD_WAYLAND
 #include "wl.h"
 #endif /* BUILD_WAYLAND */
@@ -44,11 +48,8 @@
 #include <iostream>
 #endif
 
-/* basic display attributes */
-int screen;
-
 /* workarea where window / text is aligned (from _NET_WORKAREA on X11) */
-int workarea[4];
+conky::rect<int> workarea;
 
 /* Window stuff */
 char window_created = 0;
@@ -210,14 +211,14 @@ conky::range_config_setting<int> border_width("border_width", 0,
 #ifdef OWN_WINDOW
 conky::simple_config_setting<std::string> own_window_title(
     "own_window_title", PACKAGE_NAME " (" + gethostnamecxx() + ")", false);
-#endif /* OWN_WINDOW */
-
-#if defined(OWN_WINDOW) && defined(BUILD_X11)
-conky::simple_config_setting<std::string> own_window_class("own_window_class",
-                                                           PACKAGE_NAME, false);
 conky::simple_config_setting<window_type> own_window_type("own_window_type",
                                                           window_type::NORMAL,
                                                           false);
+conky::simple_config_setting<std::string> own_window_class("own_window_class",
+                                                           PACKAGE_NAME, false);
+#endif /* OWN_WINDOW */
+
+#if defined(OWN_WINDOW) && defined(BUILD_X11)
 conky::simple_config_setting<uint16_t, window_hints_traits> own_window_hints(
     "own_window_hints", 0, false);
 #endif /* OWN_WINDOW && BUILD_X11 */
