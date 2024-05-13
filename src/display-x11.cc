@@ -657,7 +657,7 @@ bool handle_event<x_event_handler::CONFIGURE>(
       {
         XWindowAttributes attrs;
         if (XGetWindowAttributes(display, window.window, &attrs) != 0) {
-          window.geometry.set_size(vec2i(attrs.width, attrs.height));
+          window.geometry.set_size(attrs.width, attrs.height);
         }
       }
 
@@ -958,7 +958,7 @@ void display_output_x11::draw_arc(int x, int y, int w, int h, int a1, int a2) {
 
 void display_output_x11::move_win(int x, int y) {
 #ifdef OWN_WINDOW
-  window.geometry.set_pos(vec2i(x, y));
+  window.geometry.set_pos(x, y);
   XMoveWindow(display, window.window, x, y);
 #endif /* OWN_WINDOW */
 }

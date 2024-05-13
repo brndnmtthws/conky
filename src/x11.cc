@@ -356,8 +356,8 @@ void update_x11_workarea() {
   }
 
   XineramaScreenInfo *ps = &si[i];
-  workarea.set_pos(conky::vec2i(ps->x_org, ps->y_org));
-  workarea.set_size(conky::vec2i(ps->width, ps->height));
+  workarea.set_pos(ps->x_org, ps->y_org);
+  workarea.set_size(ps->width, ps->height);
   XFree(si);
 
   DBGP("Fixed xinerama area to: %d %d %d %d", workarea[0], workarea[1],
@@ -795,7 +795,7 @@ void x11_init_window(lua::state &l, bool own) {
     if (window.window == None) { window.window = window.desktop; }
 
     if (XGetWindowAttributes(display, window.window, &attrs) != 0) {
-      window.geometry.set_size(conky::vec2i(attrs.width, attrs.height));
+      window.geometry.set_size(attrs.width, attrs.height);
     }
 
     NORM_ERR("drawing to desktop window");

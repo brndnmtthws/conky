@@ -467,12 +467,16 @@ struct rect {
   }
 
   inline void set_pos(vec2<T> value) { this->m_pos = value; }
+  inline void set_pos(T x, T y) { this->set_pos(vec2<T>(x, y)); }
   inline void set_size(vec2<T> value) {
     if constexpr (Kind == rect_kind::SIZED) {
       this->m_other = value;
     } else {
       this->m_other = this->m_pos + value;
     }
+  }
+  inline void set_size(T width, T height) {
+    this->set_size(vec2<T>(width, height));
   }
   inline void set_end_pos(vec2<T> value) {
     if constexpr (Kind == rect_kind::SIZED) {
@@ -481,6 +485,7 @@ struct rect {
       this->m_other = value;
     }
   }
+  inline void set_end_pos(T x, T y) { this->set_end_pos(vec2<T>(x, y)); }
 
   inline void set_x(T value) { this->m_pos.set_x(value); }
   inline void set_y(T value) { this->m_pos.set_y(value); }
