@@ -180,8 +180,12 @@ static int x11_error_handler(Display *d, XErrorEvent *err) {
       error_name, reinterpret_cast<uint64_t>(err->display),
       static_cast<int64_t>(err->resourceid), err->serial, code_description);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfree-nonheap-object"
+  // *_allocated takes care of avoiding freeing unallocated objects
   if (name_allocated) delete[] error_name;
   if (code_allocated) delete[] code_description;
+#pragma GCC diagnostic pop
 
   return 0;
 }
@@ -321,9 +325,9 @@ void update_x11_resource_db(bool first_run) {
 
 void update_x11_workarea() {
   /* default work area is display */
-  workarea.pos = conky::vec2i();
-  workarea.width = DisplayWidth(display, screen);
-  workarea.height = DisplayHeight(display, screen);
+  workarea = conky::absolute_rect<int>(
+      conky::vec2i::Zero(), conky::vec2i(DisplayWidth(display, screen),
+                                         DisplayHeight(display, screen)));
 
 #ifdef BUILD_XINERAMA
   /* if xinerama is being used, adjust workarea to the head's area */
@@ -352,10 +356,8 @@ void update_x11_workarea() {
   }
 
   XineramaScreenInfo *ps = &si[i];
-  workarea[0] = ps->x_org;
-  workarea[1] = ps->y_org;
-  workarea[2] = workarea[0] + ps->width;
-  workarea[3] = workarea[1] + ps->height;
+  workarea.set_pos(conky::vec2i(ps->x_org, ps->y_org));
+  workarea.set_size(conky::vec2i(ps->width, ps->height));
   XFree(si);
 
   DBGP("Fixed xinerama area to: %d %d %d %d", workarea[0], workarea[1],
@@ -375,8 +377,8 @@ static Window find_desktop_window(Window root) {
   int display_height = DisplayHeight(display, screen);
   desktop = find_desktop_window_impl(root, display_width, display_height);
   update_x11_workarea();
-  desktop = find_desktop_window_impl(desktop, workarea[2] - workarea[0],
-                                     workarea[3] - workarea[1]);
+  desktop =
+      find_desktop_window_impl(desktop, workarea.width(), workarea.height());
 
   if (desktop != root) {
     NORM_ERR("desktop window (0x%lx) is subwindow of root window (0x%lx)",
@@ -551,9 +553,9 @@ void x11_init_window(lua::state &l, bool own) {
       }
 
       /* Parent is desktop window (which might be a child of root) */
-      window.window = XCreateWindow(display, window.desktop, window.geometry.x,
-                                    window.geometry.y, b, b, 0, depth,
-                                    InputOutput, visual, flags, &attrs);
+      window.window = XCreateWindow(
+          display, window.desktop, window.geometry.x(), window.geometry.y(), b,
+          b, 0, depth, InputOutput, visual, flags, &attrs);
 
       XLowerWindow(display, window.window);
       XSetClassHint(display, window.window, &classHint);
@@ -592,11 +594,11 @@ void x11_init_window(lua::state &l, bool own) {
       }
 
       if (own_window_type.get(l) == window_type::DOCK) {
-        window.geometry.pos = conky::vec2i::Zero();
+        window.geometry.set_pos(conky::vec2i::Zero());
       }
       /* Parent is root window so WM can take control */
-      window.window = XCreateWindow(display, window.root, window.geometry.x,
-                                    window.geometry.y, b, b, 0, depth,
+      window.window = XCreateWindow(display, window.root, window.geometry.x(),
+                                    window.geometry.y(), b, b, 0, depth,
                                     InputOutput, visual, flags, &attrs);
 
       uint16_t hints = own_window_hints.get(l);
@@ -793,7 +795,7 @@ void x11_init_window(lua::state &l, bool own) {
     if (window.window == None) { window.window = window.desktop; }
 
     if (XGetWindowAttributes(display, window.window, &attrs) != 0) {
-      window.geometry.size = conky::vec2i(attrs.width, attrs.height);
+      window.geometry.set_size(conky::vec2i(attrs.width, attrs.height));
     }
 
     NORM_ERR("drawing to desktop window");
@@ -1139,44 +1141,46 @@ void set_struts(alignment align) {
   if (strut != None) {
     long sizes[STRUT_COUNT] = {0};
 
-    int display_width = workarea[2] - workarea[0];
-    int display_height = workarea[3] - workarea[1];
+    int display_width = workarea.width();
+    int display_height = workarea.height();
 
     switch (horizontal_alignment(align)) {
       case axis_align::START:
         sizes[*x11_strut::LEFT] = std::clamp(
-            window.geometry.x + window.geometry.width, 0, *workarea.width);
+            window.geometry.x() + window.geometry.end_x(), 0, display_width);
         sizes[*x11_strut::LEFT_START_Y] =
-            std::clamp(*window.geometry.y, 0, *workarea.height);
+            std::clamp(window.geometry.y(), 0, display_height);
         sizes[*x11_strut::LEFT_END_Y] = std::clamp(
-            window.geometry.y + window.geometry.height, 0, *workarea.height);
+            window.geometry.y() + window.geometry.height(), 0, display_height);
         break;
       case axis_align::END:
         sizes[*x11_strut::RIGHT] =
-            std::clamp(workarea.width - window.geometry.x, 0, *workarea.width);
+            std::clamp(display_width - window.geometry.x(), 0, display_width);
         sizes[*x11_strut::RIGHT_START_Y] =
-            std::clamp(*window.geometry.y, 0, *workarea.height);
+            std::clamp(window.geometry.y(), 0, display_height);
         sizes[*x11_strut::RIGHT_END_Y] = std::clamp(
-            window.geometry.y + window.geometry.height, 0, *workarea.height);
+            window.geometry.y() + window.geometry.height(), 0, display_height);
         break;
       case axis_align::MIDDLE:
         switch (vertical_alignment(align)) {
           case axis_align::START:
             sizes[*x11_strut::TOP] =
-                std::clamp(window.geometry.y + window.geometry.height, 0,
-                           *workarea.height);
+                std::clamp(window.geometry.y() + window.geometry.height(), 0,
+                           display_height);
             sizes[*x11_strut::TOP_START_X] =
-                std::clamp(*window.geometry.x, 0, *workarea.width);
-            sizes[*x11_strut::TOP_END_X] = std::clamp(
-                window.geometry.x + window.geometry.width, 0, *workarea.width);
+                std::clamp(window.geometry.x(), 0, display_width);
+            sizes[*x11_strut::TOP_END_X] =
+                std::clamp(window.geometry.x() + window.geometry.width(), 0,
+                           display_width);
             break;
           case axis_align::END:
             sizes[*x11_strut::BOTTOM] = std::clamp(
-                workarea.height - window.geometry.y, 0, *workarea.height);
+                display_height - window.geometry.y(), 0, display_height);
             sizes[*x11_strut::BOTTOM_START_X] =
-                std::clamp(*window.geometry.x, 0, *workarea.width);
-            sizes[*x11_strut::BOTTOM_END_X] = std::clamp(
-                window.geometry.x + window.geometry.width, 0, *workarea.width);
+                std::clamp(window.geometry.x(), 0, display_width);
+            sizes[*x11_strut::BOTTOM_END_X] =
+                std::clamp(window.geometry.x() + window.geometry.width(), 0,
+                           display_width);
             break;
           case axis_align::MIDDLE:
             // can't reserve space in middle of the screen
@@ -1335,7 +1339,7 @@ void propagate_xinput_event(const conky::xi_event_data *ev) {
       int read_x, read_y;
       // Update event x and y coordinates to be target window relative
       XTranslateCoordinates(display, window.desktop, ev->event,
-                            ev->pos_absolute.x, ev->pos_absolute.y, &read_x,
+                            ev->pos_absolute.x(), ev->pos_absolute.y(), &read_x,
                             &read_y, &child);
       target_pos = conky::vec2i(read_x, read_y);
     }
@@ -1536,8 +1540,8 @@ std::vector<Window> query_x11_windows_at_pos(
                           &_ignore);
     XGetWindowAttributes(display, current, &attr);
 
-    if (pos_x <= pos.x && pos_y <= pos.y && pos_x + attr.width >= pos.x &&
-        pos_y + attr.height >= pos.y && predicate(attr)) {
+    if (pos_x <= pos.x() && pos_y <= pos.y() && pos_x + attr.width >= pos.x() &&
+        pos_y + attr.height >= pos.y() && predicate(attr)) {
       result.push_back(current);
     }
   }

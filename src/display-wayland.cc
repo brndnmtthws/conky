@@ -303,10 +303,10 @@ static void output_geometry(void *data, struct wl_output *wl_output, int32_t x,
   // Maybe also support (if XDG protocol not reported):
   // - kde-output-management(-v2)
   // - wlr-output-management-unstable-v1
-  workarea.x = x;  // TODO: use xdg_output.logical_position
-  workarea.y = y;
-  workarea.width = physical_width;
-  workarea.height = physical_height;
+  workarea = rect(
+      vec2i(x, y),
+      vec2i(x + physical_width,
+            y + physical_height));  // TODO: use xdg_output.logical_position
 }
 
 static void output_mode(void *data, struct wl_output *wl_output, uint32_t flags,

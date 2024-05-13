@@ -49,7 +49,7 @@
 #endif
 
 /* workarea where window / text is aligned (from _NET_WORKAREA on X11) */
-conky::rect<int> workarea;
+conky::absolute_rect<int> workarea;
 
 /* Window stuff */
 char window_created = 0;
