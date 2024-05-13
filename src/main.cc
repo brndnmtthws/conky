@@ -324,10 +324,10 @@ int main(int argc, char **argv) {
 
     switch (c) {
       case 'D':
-        DEFAULT_LOGGER.get_stream_target(stderr)->log_more();
+        DEFAULT_LOGGER.get_stream_sink(stderr)->log_more();
         break;
       case 'L':
-        DEFAULT_LOGGER.get_stream_target(stderr)->log_less();
+        DEFAULT_LOGGER.get_stream_sink(stderr)->log_less();
         break;
       case 'v':
         print_version();
@@ -339,8 +339,8 @@ int main(int argc, char **argv) {
         current_config = optarg;
         break;
       case 'q':
-        DEFAULT_LOGGER.get_stream_target(stderr)->set_log_level(
-            conky::log::level::OFF);
+        DEFAULT_LOGGER.get_stream_sink(stderr)->set_log_level(
+            conky::log::log_level::OFF);
         break;
       case 'h':
         print_help(argv[0]);

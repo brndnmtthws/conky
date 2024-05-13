@@ -32,7 +32,14 @@
 
 #include "config.h"
 
-#include "i18n.h"
+#include "str_buffer.hh"
+
+#ifdef BUILD_I18N
+#include <libintl.h>
+#else
+#define gettext(string) (string)
+#endif
+#define _(string) gettext(string)
 
 #include <algorithm>
 #include <array>
@@ -41,12 +48,16 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <filesystem>
+#include <functional>
 #include <map>
+#include <memory>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <unordered_set>
 
 #if __has_include(<syslog.h>)
 #define HAS_SYSLOG
@@ -67,13 +78,69 @@ extern "C" {
 }
 #endif /* HAS_SYSLOG */
 
+#define ENABLE_LOG_COLORS  // FIXME: Make compile option after debugging
+
+#ifdef ENABLE_LOG_COLORS
+
+extern "C" {
+#include <unistd.h>
+}
+
+namespace fs = std::filesystem;
+
+namespace conky::log {
+/// Control Sequence Introducer
+#define CSI "\033["
+#define NORMAL "0;"
+#define BOLD "1;"
+
+struct colors {
+  struct color {
+    const char *value;
+    size_t length;
+  };
+
+#define DECL_COLOR(Name, Value) \
+  static inline color Name = color { #Value, sizeof(#Value) }
+
+  // Should work on most posix compliant systems (or be hidden): Linux, FreeBSD,
+  // MacOS, and (even) Windows 10. Feel free to add custom definitions if ANSI
+  // colors don't work for you
+  DECL_COLOR(BLACK, CSI NORMAL "30m");
+  DECL_COLOR(RED, CSI NORMAL "31m");
+  DECL_COLOR(GREEN, CSI NORMAL "32m");
+  DECL_COLOR(YELLOW, CSI NORMAL "33m");
+  DECL_COLOR(BLUE, CSI NORMAL "34m");
+  DECL_COLOR(MAGENTA, CSI NORMAL "35m");
+  DECL_COLOR(CYAN, CSI NORMAL "36m");
+  DECL_COLOR(WHITE, CSI NORMAL "37m");
+  DECL_COLOR(BLACK_BOLD, CSI BOLD "30m");
+  DECL_COLOR(RED_BOLD, CSI BOLD "31m");
+  DECL_COLOR(GREEN_BOLD, CSI BOLD "32m");
+  DECL_COLOR(YELLOW_BOLD, CSI BOLD "33m");
+  DECL_COLOR(BLUE_BOLD, CSI BOLD "34m");
+  DECL_COLOR(MAGENTA_BOLD, CSI BOLD "35m");
+  DECL_COLOR(CYAN_BOLD, CSI BOLD "36m");
+  DECL_COLOR(WHITE_BOLD, CSI BOLD "37m");
+  DECL_COLOR(RESET, CSI "0m");
+
+#undef DECL_COLOR
+};
+
+#undef BOLD
+#undef NORMAL
+#undef CSI
+}  // namespace conky::log
+
+#endif /* ENABLE_LOG_COLORS */
+
 namespace conky::log {
 /// @brief Logging levels.
 ///
 /// Values match syslog ones, with addition of `TRACE` which is local.
 /// `Emergency` (0) and `Alert` (1) are not used as they're not warranted from a
 /// userspace application.
-enum class level {
+enum class log_level : uint8_t {
   OFF = 1,
   CRITICAL = 2,
   ERROR = 3,
@@ -95,8 +162,8 @@ const auto level_names = std::array<const char *, 7>{
 };
 const size_t MAX_LEVEL_NAME_LEN = 8;
 
-constexpr inline const char *log_level_to_cstr(level log_level) {
-  return level_names[static_cast<size_t>(log_level) - 2];
+constexpr inline const char *log_level_to_cstr(log_level level) {
+  return level_names[static_cast<size_t>(level) - 2];
 }
 
 using clock = std::chrono::system_clock;
@@ -107,47 +174,27 @@ struct source_details {
   size_t line;
 };
 
-struct log_details {
+struct msg_details {
+  log_level level;
   std::optional<source_details> source;
   std::optional<instant> time;
+};
+
+enum class detail {
+  LEVEL,
+  SOURCE,
+  TIME,
+  CONTEXT,
 };
 
 static const size_t TIME_LEN = 24;
 
 namespace _priv {
-inline size_t format_log_time(char *out, size_t max_len, instant time) {
-  std::time_t current_time = std::chrono::system_clock::to_time_t(time);
-  auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(
-      time.time_since_epoch());
-  struct tm local_time;
-  localtime_r(&current_time, &local_time);
-  size_t time_len = 0;
-  time_len += std::strftime(out, max_len, "%F %T", &local_time);
-  time_len += snprintf(&out[time_len], max_len - time_len, ".%03d",
-                       static_cast<int>(millis.count() % 1000));
-
-  return time_len;
+constexpr inline const char *_log_level_fmt(log_level level) {
+  return _FMT_DATA[static_cast<size_t>(level) - 2].first;
 }
-
-inline size_t format_log_time(FILE *out, size_t max_len, instant time) {
-  char buffer[TIME_LEN];
-  size_t result = format_log_time(&buffer[0], max_len, time);
-  fprintf(out, "%s", buffer);
-  return result;
-}
-
-#define VAL_AND_LEN(STR) (std::make_pair("][" STR "]", sizeof(STR) + 3))
-const std::array<std::pair<const char *, size_t>, 7> _FMT_DATA{
-    VAL_AND_LEN("CRITICAL"), VAL_AND_LEN("ERROR"), VAL_AND_LEN("WARNING"),
-    VAL_AND_LEN("NOTICE"),   VAL_AND_LEN("INFO"),  VAL_AND_LEN("DEBUG"),
-    VAL_AND_LEN("TRACE"),
-};
-#undef VAL_AND_LEN
-constexpr inline const char *_log_level_fmt(level log_level) {
-  return _FMT_DATA[static_cast<size_t>(log_level) - 2].first;
-}
-constexpr inline size_t _log_level_fmt_len(level log_level) {
-  return _FMT_DATA[static_cast<size_t>(log_level) - 2].second;
+constexpr inline size_t _log_level_fmt_len(log_level level) {
+  return _FMT_DATA[static_cast<size_t>(level) - 2].second;
 }
 
 /// @brief Given some `base` path string view, returns last part of the string
@@ -172,54 +219,131 @@ constexpr const char *relative_source_path(const std::string_view &base) {
 }
 
 template <typename... Args>
-inline void _impl_syslog(level log_level, const char *format, Args &&...args) {
-  syslog(static_cast<int>(log_level), format, args...);
-}
-inline void _impl_syslog(level log_level, const char *format) {
-  syslog(static_cast<int>(log_level), "%s", format);
-}
-
-template <typename... Args>
 inline void _impl_fprintf(FILE *out, const char *format, Args &&...args) {
   fprintf(out, format, args...);
 }
 inline void _impl_fprintf(FILE *out, const char *format) {
   fprintf(out, "%s", format);
 }
+
+inline bool check_color_support(FILE *stream) {
+#ifdef ENABLE_LOG_COLORS
+  if (stream == stdout) {
+    return isatty(1);
+  } else if (stream == stderr) {
+    return isatty(2);
+  }
+  return false;
+#else
+  return false;
+#endif /* ENABLE_LOG_COLORS */
+}
+
+class ::conky::log::logger;
+void format_detail(str_buffer &buffer, const ::conky::log::logger &logger_state,
+                   const ::conky::log::msg_details &entry_state, detail detail);
 }  // namespace _priv
 
-const size_t MAX_LOG_TARGETS = 5;
-const level DEFAULT_LOG_LEVEL = level::NOTICE;
-struct logger {
-  struct log_target {
-    FILE *stream = nullptr;
-    level log_level = DEFAULT_LOG_LEVEL;
-
-   public:
-    bool is_enabled(level log_level) const {
-      return this->stream != nullptr &&
-             static_cast<int>(this->log_level) >= static_cast<int>(log_level);
-    }
-    void set_log_level(level log_level) { this->log_level = log_level; }
-    void log_more() {
-      this->log_level =
-          static_cast<level>(std::min(static_cast<int>(this->log_level) + 1,
-                                      static_cast<int>(level::TRACE)));
-    }
-    void log_less() {
-      this->log_level = static_cast<level>(std::max(
-          static_cast<int>(this->log_level) - 1, static_cast<int>(level::OFF)));
-    }
-  };
-
- private:
+const log_level DEFAULT_LOG_LEVEL = log_level::NOTICE;
+class logger {
   const char *name;
-  std::array<log_target, MAX_LOG_TARGETS> entries;
   std::map<const char *, std::string> context;
   size_t context_length;
 
  public:
-  volatile struct context_guard {
+  struct sink {
+    log_level level = DEFAULT_LOG_LEVEL;
+    bool colorize = false;
+    std::unordered_set<detail> details;
+
+    sink(log_level level, bool colorize)
+        : log_level(level), colorize(colorize) {}
+
+    bool is_enabled(log_level level) const {
+      return static_cast<int>(this->level) >= static_cast<int>(level);
+    }
+    void set_log_level(log_level level) { this->level = level; }
+    void log_more() {
+      this->level =
+          static_cast<log_level>(std::min(static_cast<int>(this->level) + 1,
+                                          static_cast<int>(log_level::TRACE)));
+    }
+    void log_less() {
+      this->level =
+          static_cast<log_level>(std::max(static_cast<int>(this->log_level) - 1,
+                                          static_cast<int>(log_level::OFF)));
+    }
+
+    virtual FILE *get_stream() { return nullptr; }
+
+    virtual void format_detail(const char *out, size_t max_length,
+                               const msg_details &info, detail detail) {
+      std::string formatted = _priv::format_detail(str_buffer(out, max_length),
+                                                   *this, info, detail);
+    }
+
+    virtual void format_preamble() {}
+
+    virtual void format_output() {}
+
+    virtual void write(const msg_details &info, const char *message) = 0;
+  };
+
+#ifdef HAS_SYSLOG
+  class syslog_sink : public sink {
+   public:
+    syslog_sink() : sink(log_level, false) {
+      openlog(PACKAGE_NAME, LOG_PID, LOG_USER);
+    }
+    ~syslog_sink() { closelog(); }
+
+    void write(const msg_details &info, const char *message) override {
+      if (static_cast<int>(info.level) >=
+              static_cast<int>(log_level::CRITICAL) &&
+          static_cast<int>(info.level) < static_cast<int>(log_level::TRACE)) {
+        syslog(static_cast<int>(info.level), "%s", message);
+      }
+    }
+  };
+#endif /* HAS_SYSLOG */
+
+  class console_sink : public sink {
+    FILE *stream;
+
+   public:
+    console_sink(FILE *stream, log_level level, bool colorize)
+        : sink(level, colorize), stream(stream) {}
+
+    FILE *get_stream() override { return stream; }
+
+    void write(const msg_details &info, const char *message) override {
+      fputs(message, stream);
+    }
+  };
+
+  struct file_sink : public sink {
+    fs::path file;
+    FILE *stream;
+
+   public:
+    file_sink(fs::path file, log_level log_level) : sink(level, false) {
+      this->stream = fopen(file.c_str(), "a+");
+    }
+    ~file_sink() { fclose(stream); }
+
+    const fs::path &get_path() const { return this->file; }
+    FILE *get_stream() override { return stream; }
+
+    void write(const msg_details &info, const char *message) override {
+      fputs(message, stream);
+    }
+  };
+
+ private:
+  std::vector<std::shared_ptr<sink>> sinks;
+
+ public:
+  struct context_guard {
     logger *parent;
     const char *key;
 
@@ -230,7 +354,7 @@ struct logger {
           strlen(key) + 1 + parent->context.at(key).length();  // key=value
     }
     ~context_guard() {
-      parent->context_length +=
+      parent->context_length -=
           strlen(key) + 1 + parent->context.at(key).length();  // key=value
       if (parent->context_length > 0)
         parent->context_length--;  // delimiter (';')
@@ -240,98 +364,107 @@ struct logger {
     std::string &value() const { return parent->context.at(key); }
   };
 
- private:
-  size_t check_available() const {
-    for (size_t i = 0; i < MAX_LOG_TARGETS; i++) {
-      if (entries[i].stream == nullptr) return MAX_LOG_TARGETS - i;
-    }
-    return 0;
-  }
-
-  bool is_any_enabled(level log_level) const {
-    for (size_t i = 0; i < MAX_LOG_TARGETS; i++) {
-      if (this->entries.at(i).is_enabled(log_level)) return true;
-    }
-    return false;
-  }
-
  public:
   logger(const char *name) : name(name) {
-    this->entries[0] = log_target{
+    this->sinks.emplace_back(console_sink{
         stderr,
-        level::NOTICE,
-    };
+        log_level::NOTICE,
+        _priv::check_color_support(stderr),
+    });
 
 #ifdef HAS_SYSLOG
-    openlog(PACKAGE_NAME, LOG_PID, LOG_USER);
+    this->sinks.emplace_back(syslog_sink());
 #else
-    use_log_file();
-#endif
-  }
-  ~logger() {
-    for (auto &entry : this->entries) {
-      if (entry.stream != nullptr) {
-        fclose(entry.stream);
-        entry.stream = nullptr;
-      }
-    }
-
-#ifdef HAS_SYSLOG
-    closelog();
+    this->sinks.emplace_back(file_sink{
+        "/tmp/conky.log",
+        level::DEBUG,
+    });
 #endif
   }
 
-  const log_target *add_log_file(const std::string &path) {
-    int available = check_available();
-    if (available < 0) { return nullptr; }
-    this->entries[available].stream = fopen(path.c_str(), "a+");
-    this->entries[available].log_level = DEFAULT_LOG_LEVEL;
-    return &this->entries[available];
+  std::shared_ptr<sink> add_log_file(const fs::path &path,
+                                     log_level level = DEFAULT_LOG_LEVEL) {
+    auto s = std::shared_ptr<sink>(new file_sink{path, level});
+    this->sinks.emplace_back(s);
+    return s;
   }
 
-  log_target *get_stream_target(FILE *stream) {
-    for (size_t i = 0; i < MAX_LOG_TARGETS; i++) {
-      if (this->entries[i].stream == stream) { return &this->entries[i]; }
+  std::shared_ptr<sink> get_stream_sink(FILE *stream) {
+    for (const auto &s : this->sinks) {
+      if (s->get_stream() == stream) { return s; }
     }
     return nullptr;
   }
 
   template <typename T>
-  volatile context_guard add_context(const char *key, T value) {
+  [[nodiscard]] volatile context_guard add_context(const char *key, T value) {
     static_assert(std::is_convertible_v<T, std::string>,
                   "can't convert context value to std::string");
     context.emplace(std::make_pair(key, std::string(value)));
     return context_guard(this, key);
   }
 
-  template <level log_level, typename... Args>
-  inline void log_print_fmt(log_details &&details, const char *format,
+  template <log_level log_level, typename... Args>
+  inline void log_print_fmt(msg_details &&details, const char *format,
                             Args &&...args) {
-#ifdef HAS_SYSLOG
-    if constexpr (static_cast<int>(log_level) >=
-                      static_cast<int>(level::CRITICAL) &&
-                  static_cast<int>(log_level) <
-                      static_cast<int>(level::TRACE)) {
-      _priv::_impl_syslog(log_level, format, args...);
-    }
-#endif
-
     // skip formatting if no targets will log
     if (!is_any_enabled(log_level)) return;
 
     static const size_t MAX_FILE_LEN = 32;
     static const size_t MAX_LOCATION_LEN = MAX_FILE_LEN + 1 + 5;  // name:line
+
+#ifdef ENABLE_LOG_COLORS
+    static const size_t MAX_COLOR_LEN = 16;
+#else
+    static const size_t MAX_COLOR_LEN = 0;
+#endif
+
     static const size_t BASE_PREAMBLE_LENGTH =
-        2 + TIME_LEN + 2 + MAX_LEVEL_NAME_LEN + 2 + MAX_LOCATION_LEN;
+        2 + TIME_LEN + 2 + MAX_LEVEL_NAME_LEN + 2 + MAX_LOCATION_LEN +
+        3 * MAX_COLOR_LEN;
+
     size_t preamble_length = BASE_PREAMBLE_LENGTH;
     if (context_length > 0) {
       preamble_length += 2 + context_length;  // [context]
+#ifdef ENABLE_LOG_COLORS
+      preamble_length += COLOR_LEN;
+#endif
     }
 
     // using a string here would require several intermediate buffers so it's
     // not really worth the convenience
-    char preamble[preamble_length + 1] = "[";
-    size_t offset = 1;
+    char preamble[preamble_length + 1];
+    size_t offset = 0;
+
+    template <typename F>
+    const auto print_tag = inline[&](
+        F formatter, std::optional<colors::color> color = std::nullopt) {
+      preamble[offset] = '[';
+      offset++;
+
+#ifdef ENABLE_LOG_COLORS
+      if (color.has_value()) {
+        std::strncat(&preamble[offset], color.value, color.length);
+        offset += color.length;
+      }
+#endif
+
+      offset += formatter(offset);
+
+#ifdef ENABLE_LOG_COLORS
+      if (color.has_value()) {
+        std::strncat(&preamble[offset], colors::RESET.value,
+                     colors::RESET.length);
+        offset += colors::RESET.length;
+      }
+#endif
+
+      preamble[offset] = ']';
+      offset++;
+      preamble[offset] = '\0';
+    };
+
+    preamble[0] = '[';
 
     // append time
     offset += _priv::format_log_time(&preamble[offset], TIME_LEN,
@@ -371,19 +504,24 @@ struct logger {
     }
   }
 
-  template <level log_level, typename... Args>
+  template <log_level level, typename... Args>
   void log_location(const char *file, size_t line, const char *format,
                     Args &&...args) {
     this->log_print_fmt<log_level>(
-        log_details{
+        msg_details{
+            .level = level,
             .source = std::optional(source_details{file, line}),
         },
         format, args...);
   }
 
-  template <level log_level, typename... Args>
+  template <log_level level, typename... Args>
   void log(const char *format, Args &&...args) {
-    this->log_print_fmt<log_level>(log_details{}, format, args...);
+    this->log_print_fmt<log_level>(
+        msg_details{
+            .level = level,
+        },
+        format, args...);
   }
 };
 

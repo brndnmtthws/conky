@@ -62,6 +62,18 @@ execute_process(
   COMMAND ${APP_GPERF} --ignore-case -LC++ -Zcolor_name_hash -t -7 -m1 -C -E
 )
 
+# Separate logger library to allow optional artifacts like lua libraries to use
+# it at some point.
+# With this intent, logger shouldn't depend on anything to be built before it.
+add_library(conky_logger
+  str_buffer.cc
+  str_buffer.hh
+  logger.cc
+  logger.hh
+)
+target_include_directories(conky_logger PRIVATE ${CMAKE_BINARY_DIR}) # config.h only
+set(conky_libs ${conky_libs} conky_logger)
+
 set(conky_sources
   ${conky_sources}
   logging.cc

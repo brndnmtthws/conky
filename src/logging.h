@@ -63,7 +63,7 @@ class obj_create_error : public std::runtime_error {
 extern conky::log::logger DEFAULT_LOGGER;
 
 #define LOG(Level, ...)                                              \
-  DEFAULT_LOGGER.log_location<::conky::log::level::Level>(           \
+  DEFAULT_LOGGER.log_location<::conky::log::log_level::Level>(           \
       ::conky::log::_priv::relative_source_path(__FILE__), __LINE__, \
       __VA_ARGS__)
 
