@@ -43,10 +43,11 @@ configure_file(${CMAKE_MODULE_PATH}/build.h.in ${CMAKE_BINARY_DIR}/build.h)
 
 set(conky_sources ${CMAKE_BINARY_DIR}/config.h ${CMAKE_BINARY_DIR}/build.h)
 
-# Include 3rdparty toluapp
+# Include 3rdparty code
 add_subdirectory(3rdparty)
-add_subdirectory(3rdparty/toluapp)
 set(conky_libs ${conky_libs} toluapp_lib_static)
+set(conky_libs ${conky_libs} Vc)
+set(conky_includes ${conky_includes} "${CMAKE_SOURCE_DIR}/3rdparty/Vc")
 
 # Finally, add some code
 add_subdirectory(lua)
