@@ -226,7 +226,7 @@ char *find_and_replace_templates(const char *inbuf) {
       outlen += len;
       *o = '\0';
       outbuf = static_cast<char *>(realloc(outbuf, outlen * sizeof(char)));
-      strncat(outbuf, tmpl_out, len);
+      strcat(outbuf, tmpl_out);
       free(tmpl_out);
       o = outbuf + strlen(outbuf);
     } else {

@@ -51,7 +51,10 @@ if(MAINTAINER_MODE)
 endif(MAINTAINER_MODE)
 
 # Always use libc++ when compiling w/ clang
-add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>)
+add_compile_options(
+  $<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>
+  $<$<COMPILE_LANG_AND_ID:CXX,Clang>:-Wno-unknown-warning-option>
+  $<$<COMPILE_LANG_AND_ID:CXX,GCC>:-Wno-unknown-warning>)
 add_link_options($<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>)
 
 option(CHECK_CODE_QUALITY "Check code formatting/quality with clang" false)

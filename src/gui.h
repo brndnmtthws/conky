@@ -161,7 +161,7 @@ inline bool TEST_HINT(uint16_t mask, window_hints hint) {
 }
 #endif
 
-extern conky::rect<int> workarea;
+extern conky::absolute_rect<int> workarea;
 
 extern char window_created;
 

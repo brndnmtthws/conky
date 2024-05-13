@@ -303,10 +303,10 @@ static void output_geometry(void *data, struct wl_output *wl_output, int32_t x,
   // Maybe also support (if XDG protocol not reported):
   // - kde-output-management(-v2)
   // - wlr-output-management-unstable-v1
-  workarea.x = x;  // TODO: use xdg_output.logical_position
-  workarea.y = y;
-  workarea.width = physical_width;
-  workarea.height = physical_height;
+  workarea = absolute_rect<int>(
+      vec2i(x, y),
+      vec2i(x + physical_width,
+            y + physical_height));  // TODO: use xdg_output.logical_position
 }
 
 static void output_mode(void *data, struct wl_output *wl_output, uint32_t flags,
@@ -413,8 +413,8 @@ void window_get_width_height(struct window *window, int *w, int *h);
 
 void window_layer_surface_set_size(struct window *window) {
   zwlr_layer_surface_v1_set_size(global_window->layer_surface,
-                                 global_window->rectangle.width,
-                                 global_window->rectangle.height);
+                                 global_window->rectangle.width(),
+                                 global_window->rectangle.height());
 }
 
 #ifdef BUILD_MOUSE_EVENTS
@@ -428,7 +428,7 @@ static void on_pointer_enter(void *data, wl_pointer *pointer,
   auto pos =
       vec2d(wl_fixed_to_double(surface_x), wl_fixed_to_double(surface_y));
   last_known_positions[pointer] = pos;
-  auto pos_abs = w->rectangle.pos + pos;
+  auto pos_abs = w->rectangle.pos() + pos;
 
   mouse_crossing_event event{mouse_event_t::AREA_ENTER, pos, pos_abs};
   llua_mouse_hook(event);
@@ -439,7 +439,7 @@ static void on_pointer_leave(void *data, struct wl_pointer *pointer,
   auto w = reinterpret_cast<struct window *>(data);
 
   auto pos = last_known_positions[pointer];
-  auto pos_abs = w->rectangle.pos + pos;
+  auto pos_abs = w->rectangle.pos() + pos;
 
   mouse_crossing_event event{mouse_event_t::AREA_LEAVE, pos, pos_abs};
   llua_mouse_hook(event);
@@ -453,7 +453,7 @@ static void on_pointer_motion(void *data, struct wl_pointer *pointer,
   auto pos =
       vec2d(wl_fixed_to_double(surface_x), wl_fixed_to_double(surface_y));
   last_known_positions[pointer] = pos;
-  auto pos_abs = w->rectangle.pos + pos;
+  auto pos_abs = w->rectangle.pos() + pos;
 
   mouse_move_event event{pos, pos_abs};
   llua_mouse_hook(event);
@@ -465,7 +465,7 @@ static void on_pointer_button(void *data, struct wl_pointer *pointer,
   auto w = reinterpret_cast<struct window *>(data);
 
   auto pos = last_known_positions[pointer];
-  auto pos_abs = w->rectangle.pos + pos;
+  auto pos_abs = w->rectangle.pos() + pos;
 
   mouse_button_event event{
       mouse_event_t::RELEASE,
@@ -494,7 +494,7 @@ void on_pointer_axis(void *data, struct wl_pointer *pointer, std::uint32_t time,
   auto w = reinterpret_cast<struct window *>(data);
 
   auto pos = last_known_positions[pointer];
-  auto pos_abs = w->rectangle.pos + pos;
+  auto pos_abs = w->rectangle.pos() + pos;
 
   mouse_scroll_event event{
       pos,
@@ -657,19 +657,19 @@ bool display_output_wayland::main_loop_wait(double t) {
 
     /* resize window if it isn't right size */
     if ((fixed_size == 0) &&
-        (text_size.x + 2 * border_total != width ||
-         text_size.y + 2 * border_total != height || scale_changed)) {
+        (text_size.x() + 2 * border_total != width ||
+         text_size.y() + 2 * border_total != height || scale_changed)) {
       /* clamp text_width to configured maximum */
       if (maximum_width.get(*state)) {
         int mw = global_window->scale * maximum_width.get(*state);
-        if (text_size.x > mw && mw > 0) { text_size.x = mw; }
+        if (text_size.x() > mw && mw > 0) { text_size.set_x(mw); }
       }
 
       /* pending scale will be applied by resizing the window */
       global_window->scale = global_window->pending_scale;
 
-      width = text_size.x + 2 * border_total;
-      height = text_size.y + 2 * border_total;
+      width = text_size.x() + 2 * border_total;
+      height = text_size.y() + 2 * border_total;
       window_resize(global_window, width, height); /* resize window */
 
       changed++;
@@ -808,8 +808,8 @@ int display_output_wayland::calc_text_width(const char *s) {
 }
 
 static void adjust_coords(int &x, int &y) {
-  x -= text_start.x;
-  y -= text_start.y;
+  x -= text_start.x();
+  y -= text_start.y();
   int border = get_border_total();
   x += border;
   y += border;
@@ -1106,14 +1106,14 @@ static void shm_pool_destroy(struct shm_pool *pool) {
 
 static int stride_for_shm_surface(rect<size_t> *rect, int scale) {
   return cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32,
-                                       rect->width * scale);
+                                       rect->width() * scale);
 }
 
 static int data_length_for_shm_surface(rect<size_t> *rect, int scale) {
   int stride;
 
   stride = stride_for_shm_surface(rect, scale);
-  return stride * rect->height * scale;
+  return stride * rect->height() * scale;
 }
 
 static cairo_surface_t *create_shm_surface_from_pool(void *none,
@@ -1142,9 +1142,9 @@ static cairo_surface_t *create_shm_surface_from_pool(void *none,
     return NULL;
   }
 
-  auto scaled = rectangle->size * scale;
+  auto scaled = rectangle->size() * scale;
   surface = cairo_image_surface_create_for_data(
-      static_cast<unsigned char *>(map), cairo_format, scaled.x, scaled.y,
+      static_cast<unsigned char *>(map), cairo_format, scaled.x(), scaled.y(),
       stride);
 
   cairo_surface_set_user_data(surface, &shm_surface_data_key, data,
@@ -1152,8 +1152,8 @@ static cairo_surface_t *create_shm_surface_from_pool(void *none,
 
   format = WL_SHM_FORMAT_ARGB8888; /*or WL_SHM_FORMAT_RGB565*/
 
-  data->buffer = wl_shm_pool_create_buffer(pool->pool, offset, scaled.x,
-                                           scaled.y, stride, format);
+  data->buffer = wl_shm_pool_create_buffer(pool->pool, offset, scaled.x(),
+                                           scaled.y(), stride, format);
 
   return surface;
 }
@@ -1195,8 +1195,8 @@ struct window *window_create(struct wl_surface *surface, struct wl_shm *shm,
   struct window *window;
   window = new struct window;
 
-  window->rectangle.pos = vec2<size_t>::Zero();
-  window->rectangle.size = vec2<size_t>(width, height);
+  window->rectangle.set_pos(vec2<size_t>::Zero());
+  window->rectangle.set_size(width, height);
   window->scale = 0;
   window->pending_scale = 1;
 
@@ -1235,7 +1235,7 @@ void window_destroy(struct window *window) {
 
 void window_resize(struct window *window, int width, int height) {
   window_free_buffer(window);
-  window->rectangle.size = conky::vec2i(width, height);
+  window->rectangle.set_size(width, height);
   window_allocate_buffer(window);
   window_layer_surface_set_size(window);
 }
@@ -1248,14 +1248,15 @@ void window_commit_buffer(struct window *window) {
                     get_buffer_from_cairo_surface(window->cairo_surface), 0, 0);
   /* repaint all the pixels in the surface, change size to only repaint changed
    * area*/
-  wl_surface_damage(window->surface, window->rectangle.x, window->rectangle.y,
-                    window->rectangle.width, window->rectangle.height);
+  wl_surface_damage(window->surface, window->rectangle.x(),
+                    window->rectangle.y(), window->rectangle.width(),
+                    window->rectangle.height());
   wl_surface_commit(window->surface);
 }
 
 void window_get_width_height(struct window *window, int *w, int *h) {
-  *w = window->rectangle.width;
-  *h = window->rectangle.height;
+  *w = window->rectangle.width();
+  *h = window->rectangle.height();
 }
 
 }  // namespace conky

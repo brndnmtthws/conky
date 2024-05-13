@@ -10,6 +10,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <limits>
 #include <numeric>
 #include <type_traits>
@@ -22,60 +23,43 @@
 
 namespace conky {
 namespace _priv_geom {
-/// @brief Member access wrapper for containers of values.
+/// @brief Constructs an index assignable type from an array with different
+/// value types using `static_cast`.
 ///
-/// Emulates member access to abstract away the fact that components might not
-/// be discrete `T` types.
+/// Panics at runtime if `O` can be indexed by every value in range `0` to
+/// (excluding) `Length`.
 ///
-/// This is implementation detail for `geometry.h` and not intended to be used
-/// elsewhere.
-template <typename Container, typename T>
-struct _member_access {
-  Container *value;
-  size_t index;
-
-  constexpr _member_access(Container *value, size_t index)
-      : value(value), index(index) {}
-
-  /// @brief Converts `_member_access` to `T`.
-  inline T operator*() const { return this->value->at(this->index); }
-
-  /// @brief Assignment handler for `new_value` to `T` at `index`.
-  inline const _member_access &operator=(T new_value) const {
-    this->value->set(this->index, new_value);
-    return *this;
+/// @tparam Input source array element
+/// @tparam R target element type
+/// @tparam Output target container
+/// @tparam Length array length
+/// @param value array to pad/trim
+/// @return casted array
+template <typename Input, typename R, size_t Length, typename Output>
+inline Output cast_to_assignable(const Input &value, Output &target) {
+  if constexpr (std::is_same_v<Input, Output>) { return value; }
+  for (size_t i = 0; i < Length; i++) {
+    target[i] = static_cast<R>(value.at(i));
   }
+  return target;
+}
 
-#define ASSIGN_OP_IMPL(assign_op_name, application)                   \
-  inline T assign_op_name(T other) const {                            \
-    this->value->set(this->index,                                     \
-                     this->value->at(this->index) application other); \
-    return *this;                                                     \
-  }
-  ASSIGN_OP_IMPL(operator+=, +)
-  ASSIGN_OP_IMPL(operator-=, -)
-  ASSIGN_OP_IMPL(operator*=, *)
-  ASSIGN_OP_IMPL(operator/=, /)
-#undef ASSIGN_OP_IMPL
-
-  /// @brief Converts `_member_access` to `T`.
-  inline operator T() const { return this->value->at(this->index); }
-};
-
-/// @brief Takes an array and pads/trims it to the desired length by inserting
-/// zeros or discarding unwanted elements
+/// @brief Constructs a casted array from an array with different value types
+/// using `static_cast`.
+///
 /// @tparam T source array element
 /// @tparam R target array element
 /// @tparam Length array length
 /// @param value array to pad/trim
-/// @return padded/trimmed array
+/// @return casted array
 template <typename T, typename R, size_t Length>
-std::array<R, Length> cast_array(std::array<T, Length> value) {
+inline std::array<R, Length> cast_array(const std::array<T, Length> &value) {
   static_assert(std::is_convertible_v<T, R>, "T is not convertible to R");
   if constexpr (std::is_same_v<T, R>) { return value; }
-  std::array<R, Length> buff;
-  std::copy_n(value.begin(), Length, buff.begin());
-  return buff;
+  std::array<R, Length> result;
+  cast_to_assignable<std::array<T, Length>, R, Length, std::array<R, Length>>(
+      value, result);
+  return result;
 }
 
 /// @brief Takes an array and pads/trims it to the desired length by inserting
@@ -86,39 +70,12 @@ std::array<R, Length> cast_array(std::array<T, Length> value) {
 /// @param value array to pad/trim
 /// @return padded/trimmed array
 template <typename T, size_t Source, size_t Target>
-std::array<T, Target> resize_array(std::array<T, Source> value) {
+inline std::array<T, Target> resize_array(std::array<T, Source> value) {
   if constexpr (Source == Target) { return value; }
   auto buff = std::array<T, Target>{0};
   std::copy_n(value.begin(), std::min(Source, Target), buff.begin());
   return buff;
 }
-
-class _no_z_member {};
-template <typename Of, typename T>
-struct _has_z_member {
-  static_assert(std::is_arithmetic_v<T>,
-                "vector z member type (T) must be a number");
-  using ComponentRef = _member_access<Of, T>;
-
-  /// @brief vec z value.
-  ///
-  /// Treat it as `T`. Use `*z` in case type coertion is needed.
-  const ComponentRef z = ComponentRef(this, 2);
-};
-
-class _no_w_member {};
-template <typename Of, typename T>
-struct _has_w_member {
-  static_assert(std::is_arithmetic_v<T>,
-                "vector w member type (T) must be a number");
-  using ComponentRef = _member_access<Of, T>;
-
-  /// @brief vec w value.
-  ///
-  /// Treat it as `T`. Use `*w` in case type coertion is needed.
-  const ComponentRef w = ComponentRef(this, 3);
-};
-
 }  // namespace _priv_geom
 
 /// @brief A 2D vector representation.
@@ -129,15 +86,7 @@ struct _has_w_member {
 ///
 /// @tparam T numeric component type.
 template <typename T, size_t Length>
-struct vec
-    // conditionally add z member accessor
-    : public std::conditional_t<(Length >= 3),
-                                _priv_geom::_has_z_member<vec<T, Length>, T>,
-                                _priv_geom::_no_z_member>,
-      // conditionally add w member accessor
-      public std::conditional_t<(Length >= 4),
-                                _priv_geom::_has_w_member<vec<T, Length>, T>,
-                                _priv_geom::_no_w_member> {
+struct vec {
   static_assert(std::is_arithmetic_v<T>, "T must be a number");
   static_assert(Length >= 2, "Length must be greater than 2");
 
@@ -149,23 +98,19 @@ struct vec
   class _disabled {};
 
  protected:
-  using ComponentRef = _priv_geom::_member_access<vec<T, Length>, T>;
   using Data = Vc::array<T, Length>;
 
   Data value;
 
  public:
   vec() : value(Data{0}) {}
-  vec(Data value) : value(value) {}
+  vec(const Data &value) : value(value) {}
   vec(std::array<T, Length> array) {
-    Vc::array<T, Length> vc_array;
-    for (size_t i = 0; i < Length; ++i) { vc_array[i] = array[i]; }
-    this->value = vc_array;
+    _priv_geom::cast_to_assignable<std::array<T, Length>, T, Length,
+                                   Vc::array<T, Length>>(array, this->value);
   }
 
-  template <typename O = T>
-  vec(vec<O, Length> other)
-      : vec(_priv_geom::cast_array<O, T, Length>(other.to_array())) {}
+  vec(const vec<T, Length> &other) : vec(other.value) {}
 
   vec(T x, T y) : vec<T, 2>(std::array<T, 2>{x, y}) {
     static_assert(Length == 2, "constructor only valid for vec2<T>");
@@ -177,14 +122,10 @@ struct vec
     static_assert(Length == 4, "constructor only valid for vec4<T>");
   }
 
+  vec(vec<T, Length> &&other) { this->value = other->value; }
+
   static inline vec<T, Length> uniform(T x) {
     return vec<T, Length>(std::array<T, Length>{x});
-  }
-
-  std::array<T, Length> to_array() const {
-    std::array<T, Length> result;
-    for (size_t i = 0; i < Length; ++i) { result[i] = this->value[i]; }
-    return result;
   }
 
   /// @brief Returns vec component at `index`.
@@ -194,19 +135,19 @@ struct vec
 
   /// @brief vec x component.
   /// @return x value of this vec.
-  inline T get_x() const { return this->at(0); }
+  inline T x() const { return this->at(0); }
   /// @brief vec y component.
   /// @return y value of this vec.
-  inline T get_y() const { return this->at(1); }
+  inline T y() const { return this->at(1); }
   /// @brief vec z component.
   /// @return z value of this vec.
-  inline T get_z() const {
+  inline T z() const {
     static_assert(Length >= 3, "vector doesn't have a z component");
     return this->at(2);
   }
   /// @brief vec w component.
   /// @return w value of this vec.
-  inline T get_w() const {
+  inline T w() const {
     static_assert(Length >= 4, "vector doesn't have a w component");
     return this->at(3);
   }
@@ -224,45 +165,21 @@ struct vec
     this->set(3, new_value);
   }
 
-  /// @brief vec x value.
-  ///
-  /// Treat it as `T`. Use `*x` in case type coertion is needed.
-  const ComponentRef x = ComponentRef(this, 0);
-  /// @brief vec y value.
-  ///
-  /// Treat it as `T`. Use `*y` in case type coertion is needed.
-  const ComponentRef y = ComponentRef(this, 1);
-
-  // z & w are conditionally defined by _has_z_member and _has_w_member in
-  // _priv_geom because member templates aren't allowed.
-
-  vec<T, Length> &operator=(vec<T, Length> other) {
+  vec<T, Length> &operator=(const vec<T, Length> &other) {
     this->value = other.value;
+    return *this;
+  }
+  vec<T, Length> &operator=(vec<T, Length> &&other) {
+    this->value = std::move(other.value);
     return *this;
   }
   template <typename O = T>
   vec<T, Length> &operator=(std::array<O, Length> other) {
-    Data buffer = _priv_geom::cast_array(other);
-    this->value = buffer;
+    _priv_geom::cast_to_assignable(other, this->value);
     return *this;
   }
 
-  inline const ComponentRef &operator[](size_t index) {
-    assert_print(index < std::min(Length, static_cast<size_t>(4)),
-                 "index out of bounds");
-    switch (index) {
-      case 0:
-        return this->x;
-      case 1:
-        return this->y;
-      case 2:
-        return this->z;
-      case 3:
-        return this->w;
-      default:
-        UNREACHABLE();
-    }
-  }
+  inline T operator[](size_t index) { return this->at(index); }
 
   /// @brief Zero vector value.
   static vec<T, Length> Zero() { return vec<T, Length>::uniform(0); }
@@ -294,6 +211,9 @@ struct vec
     buffer[3] = static_cast<T>(1);
     return vec(buffer);
   }
+
+  // NOTE: All of the following loops will get unrolled by the compiler because
+  // Length is a constant expression (unless Length is very large).
 
   inline vec<T, Length> operator+(vec<T, Length> other) const {
     Data result{this->value};
@@ -378,6 +298,28 @@ struct vec
     }
   }
 
+  /// @brief Computes component-wise vector minimum
+  /// @param other other vector
+  /// @returns new vector with min values
+  inline vec<T, Length> min(const vec<T, Length> &other) {
+    Data result{this->value};
+    for (size_t i = 0; i < Length; i++) {
+      result[i] = std::min(result[i], other.value[i]);
+    }
+    return vec<T, Length>(result);
+  }
+
+  /// @brief Computes component-wise vector maximum
+  /// @param other other vector
+  /// @returns new vector with max values
+  inline vec<T, Length> max(const vec<T, Length> &other) {
+    Data result{this->value};
+    for (size_t i = 0; i < Length; i++) {
+      result[i] = std::max(result[i], other.value[i]);
+    }
+    return vec<T, Length>(result);
+  }
+
   inline T distance_squared(vec<T, Length> other) const {
     vec<T, Length> buffer = other - *this;
     buffer *= buffer;
@@ -394,8 +336,28 @@ struct vec
 
   T surface() const {
     static_assert(Length == 2, "surface computable only for 2D vectors");
-    return this->get_x() * this->get_y();
+    return this->x() * this->y();
   }
+
+  template <typename O>
+  vec<O, Length> cast() const {
+    Vc::array<O, Length> buffer;
+    _priv_geom::cast_to_assignable<Vc::array<T, Length>, O, Length,
+                                   Vc::array<O, Length>>(this->value, buffer);
+    return vec<O, Length>(buffer);
+  }
+
+  std::array<T, Length> to_array() const {
+    std::array<T, Length> result;
+    for (size_t i = 0; i < Length; ++i) { result[i] = this->value[i]; }
+    return result;
+  }
+
+  template <typename O>
+  operator vec<O, Length>() const {
+    return this->cast<O>();
+  }
+  operator std::array<T, Length>() const { return this->to_array(); }
 };
 
 template <typename T>
@@ -414,33 +376,76 @@ using vec4f = vec4<float>;
 using vec4d = vec4<double>;
 using vec4i = vec4<std::int32_t>;
 
+enum class rect_kind {
+  SIZED,
+  ABSOLUTE,
+};
+
 /// @brief 2D rectangle representation using position and size vectors.
 /// @tparam T component number type.
-template <typename T = std::int32_t>
+template <typename T = std::int32_t, rect_kind Kind = rect_kind::SIZED>
 struct rect {
   static_assert(std::is_arithmetic_v<T>, "T must be a number");
 
   using Component = T;
-  using ComponentRef = _priv_geom::_member_access<rect<T>, T>;
 
-  vec2<T> pos;
-  vec2<T> size;
+ private:
+  vec2<T> m_pos;
+  vec2<T> m_other;
 
-  rect() : pos(vec2<T>::Zero()), size(vec2<T>::Zero()) {}
-  rect(vec2<T> pos, vec2<T> size) : pos(pos), size(size) {}
+ public:
+  rect() : m_pos(vec2<T>::Zero()), m_other(vec2<T>::Zero()) {}
+  rect(vec2<T> pos, vec2<T> other) : m_pos(pos), m_other(other) {}
 
   /// @brief Rectangle x position.
   /// @return x position of this rectangle.
-  T get_x() const { return this->pos.get_x(); }
+  inline T x() const { return this->m_pos.x(); }
   /// @brief Rectangle y position.
   /// @return y position of this rectangle.
-  T get_y() const { return this->pos.get_y(); }
+  inline T y() const { return this->m_pos.y(); }
+
+  inline vec2<T> pos() const { return this->m_pos; }
+  inline vec2<T> size() const {
+    if constexpr (Kind == rect_kind::SIZED) {
+      return this->m_other;
+    } else {
+      return this->m_other - this->m_pos;
+    }
+  }
+  inline vec2<T> end_pos() const {
+    if constexpr (Kind == rect_kind::SIZED) {
+      return this->m_pos + this->m_other;
+    } else {
+      return this->m_other;
+    }
+  }
+
+  /// @brief Rectangle end x position.
+  /// @return ending x position of this rectangle.
+  inline T end_x() const { return this->end_pos().x(); }
+  /// @brief Rectangle end y position.
+  /// @return ending y position of this rectangle.
+  inline T end_y() const { return this->end_pos().y(); }
+
   /// @brief Rectangle width.
   /// @return width of this rectangle.
-  T get_width() const { return this->size.get_x(); }
+  inline T width() const {
+    if constexpr (Kind == rect_kind::SIZED) {
+      return this->m_other.x();
+    } else {
+      return this->m_other.x() + this->m_pos.x();
+    }
+  }
+
   /// @brief Rectangle height.
   /// @return height of this rectangle.
-  T get_height() const { return this->size.get_y(); }
+  inline T height() const {
+    if constexpr (Kind == rect_kind::SIZED) {
+      return this->m_other.y();
+    } else {
+      return this->m_other.y() + this->m_pos.y();
+    }
+  }
 
   /// @brief Returns rectangle component at `index`.
   /// @param index component index.
@@ -449,122 +454,199 @@ struct rect {
     assert_print(index < static_cast<size_t>(4), "index out of bounds");
     switch (index) {
       case 0:
-        return this->get_x();
+        return this->m_pos.x();
       case 1:
-        return this->get_y();
+        return this->m_pos.y();
       case 2:
-        return this->get_width();
+        return this->m_other.x();
       case 3:
-        return this->get_height();
+        return this->m_other.y();
       default:
         UNREACHABLE();
     }
   }
 
-  void set_x(T value) { this->pos.set_x(value); }
-  void set_y(T value) { this->pos.set_y(value); }
-  void set_width(T value) { this->size.set_x(value); }
-  void set_height(T value) { this->size.set_y(value); }
+  inline void set_pos(vec2<T> value) { this->m_pos = value; }
+  inline void set_pos(T x, T y) { this->set_pos(vec2<T>(x, y)); }
+  inline void set_size(vec2<T> value) {
+    if constexpr (Kind == rect_kind::SIZED) {
+      this->m_other = value;
+    } else {
+      this->m_other = this->m_pos + value;
+    }
+  }
+  inline void set_size(T width, T height) {
+    this->set_size(vec2<T>(width, height));
+  }
+  inline void set_end_pos(vec2<T> value) {
+    if constexpr (Kind == rect_kind::SIZED) {
+      this->m_other = value - this->m_pos;
+    } else {
+      this->m_other = value;
+    }
+  }
+  inline void set_end_pos(T x, T y) { this->set_end_pos(vec2<T>(x, y)); }
+
+  inline void set_x(T value) { this->m_pos.set_x(value); }
+  inline void set_y(T value) { this->m_pos.set_y(value); }
+
+  inline void set_width(T value) {
+    if constexpr (Kind == rect_kind::SIZED) {
+      this->other.set_x(value);
+    } else {
+      this->other.set_x(this->m_pos.get_x() + value);
+    }
+  }
+  inline void set_height(T value) {
+    if constexpr (Kind == rect_kind::SIZED) {
+      this->m_other.set_y(value);
+    } else {
+      this->m_other.set_y(this->m_pos.get_y() + value);
+    }
+  }
+  inline void set_end_x(T value) {
+    if constexpr (Kind == rect_kind::SIZED) {
+      this->m_other.set_x(value - this->m_pos.get_x());
+    } else {
+      this->m_other.set_x(value);
+    }
+  }
+  inline void set_end_y(T value) {
+    if constexpr (Kind == rect_kind::SIZED) {
+      this->m_other.set_y(value - this->m_pos.get_y());
+    } else {
+      this->m_other.set_y(value);
+    }
+  }
 
   void set(size_t index, T value) {
     assert_print(index < static_cast<size_t>(4), "index out of bounds");
     switch (index) {
       case 0:
-        return this->set_x(value);
+        return this->m_pos.set_x(value);
       case 1:
-        return this->set_y(value);
+        return this->m_pos.set_y(value);
       case 2:
-        return this->set_width(value);
+        return this->m_other.set_x(value);
       case 3:
-        return this->set_height(value);
+        return this->m_other.set_y(value);
       default:
         UNREACHABLE();
     }
   }
 
-  /// @brief rectangle position x value.
-  ///
-  /// Treat it as `T`. Use `*x` in case type coertion is needed.
-  const ComponentRef x = ComponentRef(this, 0);
-  /// @brief rectangle position y value.
-  ///
-  /// Treat it as `T`. Use `*y` in case type coertion is needed.
-  const ComponentRef y = ComponentRef(this, 1);
-  /// @brief rectangle width value.
-  ///
-  /// Treat it as `T`. Use `*width` in case type coertion is needed.
-  const ComponentRef width = ComponentRef(this, 2);
-  /// @brief rectangle height value.
-  ///
-  /// Treat it as `T`. Use `*height` in case type coertion is needed.
-  const ComponentRef height = ComponentRef(this, 3);
-
   std::array<vec2<T>, 4> corners() const {
     return std::array<vec2<T>, 4>{
-        this->pos,
-        this->pos + vec2<T>(this->get_width(), 0),
-        this->pos + this->size,
-        this->pos + vec2<T>(0, this->get_height()),
+        this->m_pos,
+        this->m_pos + vec2<T>(this->get_width(), 0),
+        this->get_end_pos(),
+        this->m_pos + vec2<T>(0, this->get_height()),
     };
   }
 
   template <typename O = T>
   bool contains(vec2<O> p) const {
-    return p.get_x() >= this->get_x() &&
-           p.get_x() < this->get_x() + this->get_width() &&
-           p.get_y() >= this->get_y() &&
-           p.get_y() < this->get_y() + this->get_height();
+    return p.x() >= this->x() && p.x() < this->x() + this->width() &&
+           p.y() >= this->y() && p.y() < this->y() + this->height();
   }
 
   template <typename O = T>
   bool contains(rect<O> other) const {
-    return contains(other.pos) &&
-           contains(other.pos + vec2<O>(other.get_width(), 0)) &&
-           contains(other.pos + other.size) &&
-           contains(other.pos + vec2<O>(0, other.get_height()));
+    return contains(other.m_pos) &&
+           contains(other.m_pos + vec2<O>(other.width(), 0)) &&
+           contains(other.m_pos + other.m_other) &&
+           contains(other.m_pos + vec2<O>(0, other.height()));
   }
 
  private:
   template <typename O = T>
   bool _intersects_partial(rect<O> other) const {
-    return contains(other.pos) ||
-           contains(other.pos + vec2<O>(other.get_width(), 0)) ||
-           contains(other.pos + other.size) ||
-           contains(other.pos + vec2<O>(0, other.get_height()));
+    return contains(other.m_pos) ||
+           contains(other.m_pos + vec2<O>(other.width(), 0)) ||
+           contains(other.m_pos + other.m_other) ||
+           contains(other.m_pos + vec2<O>(0, other.height()));
   }
 
  public:
   template <typename O = T>
   bool intersects(rect<O> other) const {
-    return this->_intersects_partial(other) || other._intersects_partial(*this);
+    return this->_intersects_partial(m_other) ||
+           other._intersects_partial(*this);
   }
 
-  constexpr const ComponentRef &operator[](size_t index) {
-    assert_print(index < static_cast<size_t>(4), "index out of bounds");
-    switch (index) {
-      case 0:
-        return this->x;
-      case 1:
-        return this->y;
-      case 2:
-        return this->width;
-      case 3:
-        return this->height;
-      default:
-        UNREACHABLE();
+  rect<T, Kind> &operator=(const rect<T, Kind> &other) {
+    this->m_pos = other.m_pos;
+    this->m_other = other.m_other;
+    return *this;
+  }
+  rect<T, Kind> &operator=(rect<T, Kind> &&other) {
+    this->m_pos = other.m_pos;
+    this->m_other = other.m_other;
+    return *this;
+  }
+  template <typename O = T>
+  rect<T, Kind> &operator=(std::array<O, 4> other) {
+    _priv_geom::cast_to_assignable(other.m_pos, this->m_pos);
+    _priv_geom::cast_to_assignable(other.m_other, this->m_other);
+    return *this;
+  }
+
+  inline T operator[](size_t index) {
+    if (index < 2) {
+      return this->m_pos[index];
+    } else if (index < 4) {
+      return this->m_other[index - 2];
+    } else {
+      CRIT_ERR("index out of bounds");
     }
   }
 
 #ifdef BUILD_X11
   XRectangle to_xrectangle() const {
-    return XRectangle{
-        .x = static_cast<short>(this->get_x()),
-        .y = static_cast<short>(this->get_y()),
-        .width = static_cast<unsigned short>(this->get_width()),
-        .height = static_cast<unsigned short>(this->get_height())};
+    return XRectangle{.x = static_cast<short>(this->x()),
+                      .y = static_cast<short>(this->y()),
+                      .width = static_cast<unsigned short>(this->width()),
+                      .height = static_cast<unsigned short>(this->height())};
   }
 #endif /* BUILD_X11 */
+
+  rect<T, rect_kind::SIZED> to_sized() const {
+    if constexpr (Kind == rect_kind::SIZED) {
+      return *this;
+    } else {
+      return rect<T, rect_kind::SIZED>{this->m_pos,
+                                       this->m_other - this->m_pos};
+    }
+  }
+
+  rect<T, rect_kind::ABSOLUTE> to_absolute() const {
+    if constexpr (Kind == rect_kind::ABSOLUTE) {
+      return *this;
+    } else {
+      return rect<T, rect_kind::ABSOLUTE>{this->m_pos,
+                                          this->m_pos + this->m_other};
+    }
+  }
+
+  std::array<T, 4> to_array() const {
+    return std::array<T, 4>{this->m_pos.x(), this->m_pos.y(), this->m_other.x(),
+                            this->m_other.y()};
+  }
+
+  inline operator std::array<T, 4>() const { return this->to_array(); }
+  inline explicit operator rect<T, rect_kind::SIZED>() const {
+    return this->to_sized();
+  }
+  inline explicit operator rect<T, rect_kind::ABSOLUTE>() const {
+    return this->to_absolute();
+  }
 };
+
+template <typename T>
+using sized_rect = rect<T>;
+
+template <typename T>
+using absolute_rect = rect<T, rect_kind::ABSOLUTE>;
 
 }  // namespace conky
 

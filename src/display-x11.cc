@@ -184,7 +184,8 @@ static void X11_create_window() {
 #ifdef OWN_WINDOW
   if (own_window.get(*state)) {
     if (fixed_pos == 0) {
-      XMoveWindow(display, window.window, window.geometry.x, window.geometry.y);
+      XMoveWindow(display, window.window, window.geometry.x(),
+                  window.geometry.y());
     }
 
     set_transparent_background(window.window);
@@ -278,7 +279,7 @@ bool display_output_x11::main_loop_wait(double t) {
   vec2i border_total = vec2i::uniform(get_border_total());
   if (need_to_update != 0) {
 #ifdef OWN_WINDOW
-    auto old_pos = window.geometry.pos;
+    auto old_pos = window.geometry.pos();
 #endif
 
     need_to_update = 0;
@@ -292,11 +293,11 @@ bool display_output_x11::main_loop_wait(double t) {
       /* resize window if it isn't right size */
       vec2<long> border_size = border_total * 2;
       if ((fixed_size == 0) &&
-          (text_size + border_size != window.geometry.size)) {
-        window.geometry.size = text_size + border_size;
+          (text_size + border_size != window.geometry.size())) {
+        window.geometry.set_size(text_size + border_size);
         draw_stuff(); /* redraw everything in our newly sized window */
-        XResizeWindow(display, window.window, window.geometry.width,
-                      window.geometry.height); /* resize window */
+        XResizeWindow(display, window.window, window.geometry.width(),
+                      window.geometry.height()); /* resize window */
         set_transparent_background(window.window);
 #ifdef BUILD_XDBE
         /* swap buffers */
@@ -305,8 +306,8 @@ bool display_output_x11::main_loop_wait(double t) {
         if (use_xpmdb.get(*state)) {
           XFreePixmap(display, window.back_buffer);
           window.back_buffer = XCreatePixmap(
-              display, window.window, window.geometry.width,
-              window.geometry.height, DefaultDepth(display, screen));
+              display, window.window, window.geometry.width(),
+              window.geometry.height(), DefaultDepth(display, screen));
 
           if (window.back_buffer != None) {
             window.drawable = window.back_buffer;
@@ -316,7 +317,7 @@ bool display_output_x11::main_loop_wait(double t) {
           }
           XSetForeground(display, window.gc, 0);
           XFillRectangle(display, window.drawable, window.gc, 0, 0,
-                         window.geometry.width, window.geometry.height);
+                         window.geometry.width(), window.geometry.height());
         }
 #endif
 
@@ -326,9 +327,9 @@ bool display_output_x11::main_loop_wait(double t) {
       }
 
       /* move window if it isn't in right position */
-      if ((fixed_pos == 0) && old_pos != window.geometry.pos) {
-        XMoveWindow(display, window.window, window.geometry.x,
-                    window.geometry.y);
+      if ((fixed_pos == 0) && old_pos != window.geometry.pos()) {
+        XMoveWindow(display, window.window, window.geometry.x(),
+                    window.geometry.y());
         changed++;
       }
 
@@ -347,11 +348,9 @@ bool display_output_x11::main_loop_wait(double t) {
 #else
     if (use_xpmdb.get(*state)) {
 #endif
-      conky::rect<int> r(text_start, text_size);
-      r.pos -= border_total;
-      r.size += border_total * 2;
-
-      XRectangle rect = r.to_xrectangle();
+      XRectangle rect = conky::rect<int>(text_start - border_total,
+                                         text_size + border_total * 2)
+                            .to_xrectangle();
       XUnionRectWithRegion(&rect, x11_stuff.region, x11_stuff.region);
     }
   }
@@ -378,11 +377,9 @@ bool display_output_x11::main_loop_wait(double t) {
 #else
     if (use_xpmdb.get(*state)) {
 #endif
-      conky::rect<int> r(text_start, text_size);
-      r.pos -= border_total;
-      r.size += border_total * 2;
-
-      XRectangle rect = r.to_xrectangle();
+      XRectangle rect = conky::rect<int>(text_start - border_total,
+                                         text_size + border_total * 2)
+                            .to_xrectangle();
       XUnionRectWithRegion(&rect, x11_stuff.region, x11_stuff.region);
     }
     XSetRegion(display, window.gc, x11_stuff.region);
@@ -507,13 +504,13 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
         if (!cursor_inside) {
           *consumed = llua_mouse_hook(mouse_crossing_event(
               mouse_event_t::AREA_ENTER,
-              data->pos_absolute - window.geometry.pos, data->pos_absolute));
+              data->pos_absolute - window.geometry.pos(), data->pos_absolute));
         }
         cursor_inside = true;
       } else if (cursor_inside) {
         *consumed = llua_mouse_hook(mouse_crossing_event(
-            mouse_event_t::AREA_LEAVE, data->pos_absolute - window.geometry.pos,
-            data->pos_absolute));
+            mouse_event_t::AREA_LEAVE,
+            data->pos_absolute - window.geometry.pos(), data->pos_absolute));
         cursor_inside = false;
       }
 
@@ -650,8 +647,8 @@ bool handle_event<x_event_handler::CONFIGURE>(
   if (own_window.get(*state)) {
     auto configure_size = vec2i(ev.xconfigure.width, ev.xconfigure.height);
     /* if window size isn't what's expected, set fixed size */
-    if (configure_size != window.geometry.size) {
-      if (window.geometry.size.surface() != 0) { fixed_size = 1; }
+    if (configure_size != window.geometry.size()) {
+      if (window.geometry.size().surface() != 0) { fixed_size = 1; }
 
       /* clear old stuff before screwing up
        * size and pos */
@@ -660,18 +657,16 @@ bool handle_event<x_event_handler::CONFIGURE>(
       {
         XWindowAttributes attrs;
         if (XGetWindowAttributes(display, window.window, &attrs) != 0) {
-          window.geometry.size = vec2i(attrs.width, attrs.height);
+          window.geometry.set_size(attrs.width, attrs.height);
         }
       }
 
       auto border_total = vec2i::uniform(get_border_total() * 2);
-      auto new_text_size = window.geometry.size - border_total;
-
-      text_size = new_text_size;
+      text_size = window.geometry.size() - border_total;
 
       // don't apply dpi scaling to max pixel size
       int mw = maximum_width.get(*state);
-      if (text_size.x > mw && mw > 0) { text_size.x = mw; }
+      if (text_size.x() > mw && mw > 0) { text_size.set_x(mw); }
     }
 
     /* if position isn't what expected, set fixed pos
@@ -859,9 +854,9 @@ void display_output_x11::cleanup() {
   if (window_created == 1) {
     int border_total = get_border_total();
 
-    XClearArea(display, window.window, text_start.x - border_total,
-               text_start.y - border_total, text_size.x + 2 * border_total,
-               text_size.y + 2 * border_total, 0);
+    XClearArea(display, window.window, text_start.x() - border_total,
+               text_start.y() - border_total, text_size.x() + 2 * border_total,
+               text_size.y() + 2 * border_total, 0);
   }
   destroy_window();
   free_fonts(utf8_mode.get(*state));
@@ -963,7 +958,7 @@ void display_output_x11::draw_arc(int x, int y, int w, int h, int a1, int a2) {
 
 void display_output_x11::move_win(int x, int y) {
 #ifdef OWN_WINDOW
-  window.geometry.pos = vec2i(x, y);
+  window.geometry.set_pos(x, y);
   XMoveWindow(display, window.window, x, y);
 #endif /* OWN_WINDOW */
 }
@@ -1000,9 +995,9 @@ void display_output_x11::clear_text(int exposures) {
     /* there is some extra space for borders and outlines */
     int border_total = get_border_total();
 
-    XClearArea(display, window.window, text_start.x - border_total,
-               text_start.y - border_total, text_size.x + 2 * border_total,
-               text_size.y + 2 * border_total, exposures != 0 ? True : 0);
+    XClearArea(display, window.window, text_start.x() - border_total,
+               text_start.y() - border_total, text_size.x() + 2 * border_total,
+               text_size.y() + 2 * border_total, exposures != 0 ? True : 0);
   }
 }
 
