@@ -187,61 +187,61 @@ target_include_directories(Vc
    $<INSTALL_INTERFACE:include>
    )
 
-option(Vc_ENABLE_INSTALL "Whether to install the library." OFF)
-if (Vc_ENABLE_INSTALL)
-   install(TARGETS Vc EXPORT VcTargets DESTINATION lib${LIB_SUFFIX})
-   install(DIRECTORY Vc/ DESTINATION include/Vc FILES_MATCHING REGEX "/*.(h|tcc|def)$")
-   install(FILES
-      Vc/Allocator
-      Vc/IO
-      Vc/Memory
-      Vc/SimdArray
-      Vc/Utils
-      Vc/Vc
-      Vc/algorithm
-      Vc/array
-      Vc/iterators
-      Vc/limits
-      Vc/simdize
-      Vc/span
-      Vc/type_traits
-      Vc/vector
-      DESTINATION include/Vc)
+# option(Vc_ENABLE_INSTALL "Whether to install the library." OFF)
+# if (Vc_ENABLE_INSTALL)
+#    install(TARGETS Vc EXPORT VcTargets DESTINATION lib${LIB_SUFFIX})
+#    install(DIRECTORY Vc/ DESTINATION include/Vc FILES_MATCHING REGEX "/*.(h|tcc|def)$")
+#    install(FILES
+#       Vc/Allocator
+#       Vc/IO
+#       Vc/Memory
+#       Vc/SimdArray
+#       Vc/Utils
+#       Vc/Vc
+#       Vc/algorithm
+#       Vc/array
+#       Vc/iterators
+#       Vc/limits
+#       Vc/simdize
+#       Vc/span
+#       Vc/type_traits
+#       Vc/vector
+#       DESTINATION include/Vc)
 
-   # Generate and install CMake package and modules
-   include(CMakePackageConfigHelpers)
-   set(PACKAGE_INSTALL_DESTINATION
-      lib${LIB_SUFFIX}/cmake/${PROJECT_NAME}
-      )
-   install(EXPORT ${PROJECT_NAME}Targets
-      NAMESPACE ${PROJECT_NAME}::
-      DESTINATION ${PACKAGE_INSTALL_DESTINATION}
-      EXPORT_LINK_INTERFACE_LIBRARIES
-      )
-   write_basic_package_version_file(
-      ${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake
-      VERSION ${PROJECT_VERSION}
-      COMPATIBILITY AnyNewerVersion
-      )
-   configure_package_config_file(
-      ${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}Config.cmake.in
-      ${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake
-      INSTALL_DESTINATION ${PACKAGE_INSTALL_DESTINATION}
-      PATH_VARS CMAKE_INSTALL_PREFIX
-      )
-   install(FILES
-      cmake/UserWarning.cmake
-      cmake/VcMacros.cmake
-      cmake/AddCompilerFlag.cmake
-      cmake/CheckCCompilerFlag.cmake
-      cmake/CheckCXXCompilerFlag.cmake
-      cmake/OptimizeForArchitecture.cmake
-      cmake/FindVc.cmake
-      ${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake
-      ${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake
-      DESTINATION ${PACKAGE_INSTALL_DESTINATION}
-      )
-endif()
+#    # Generate and install CMake package and modules
+#    include(CMakePackageConfigHelpers)
+#    set(PACKAGE_INSTALL_DESTINATION
+#       lib${LIB_SUFFIX}/cmake/${PROJECT_NAME}
+#       )
+#    install(EXPORT ${PROJECT_NAME}Targets
+#       NAMESPACE ${PROJECT_NAME}::
+#       DESTINATION ${PACKAGE_INSTALL_DESTINATION}
+#       EXPORT_LINK_INTERFACE_LIBRARIES
+#       )
+#    write_basic_package_version_file(
+#       ${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake
+#       VERSION ${PROJECT_VERSION}
+#       COMPATIBILITY AnyNewerVersion
+#       )
+#    configure_package_config_file(
+#       ${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}Config.cmake.in
+#       ${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake
+#       INSTALL_DESTINATION ${PACKAGE_INSTALL_DESTINATION}
+#       PATH_VARS CMAKE_INSTALL_PREFIX
+#       )
+#    install(FILES
+#       cmake/UserWarning.cmake
+#       cmake/VcMacros.cmake
+#       cmake/AddCompilerFlag.cmake
+#       cmake/CheckCCompilerFlag.cmake
+#       cmake/CheckCXXCompilerFlag.cmake
+#       cmake/OptimizeForArchitecture.cmake
+#       cmake/FindVc.cmake
+#       ${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake
+#       ${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake
+#       DESTINATION ${PACKAGE_INSTALL_DESTINATION}
+#       )
+# endif()
 
 # option(BUILD_TESTING "Build the testing tree." OFF)
 # include (CTest)
