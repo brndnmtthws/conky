@@ -187,7 +187,7 @@ target_include_directories(Vc
    $<INSTALL_INTERFACE:include>
    )
 
-option(Vc_ENABLE_INSTALL "Whether to install the library." ON)
+option(Vc_ENABLE_INSTALL "Whether to install the library." OFF)
 if (Vc_ENABLE_INSTALL)
    install(TARGETS Vc EXPORT VcTargets DESTINATION lib${LIB_SUFFIX})
    install(DIRECTORY Vc/ DESTINATION include/Vc FILES_MATCHING REGEX "/*.(h|tcc|def)$")
