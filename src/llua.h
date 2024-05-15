@@ -31,6 +31,7 @@ extern "C" {
 }
 
 #include <config.h>
+#include "geometry.h"
 
 #ifdef BUILD_MOUSE_EVENTS
 #include "mouse-events.h"
