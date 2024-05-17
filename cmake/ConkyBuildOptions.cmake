@@ -197,7 +197,7 @@ dependent_option(BUILD_IMLIB2 "Enable Imlib2 support" true
 dependent_option(BUILD_XSHAPE "Enable Xshape support" true
   "BUILD_X11" false
   "Xshape support requires X11")
-dependent_option(BUILD_XINPUT "Build Xinput 2 support" true
+dependent_option(BUILD_XINPUT "Build Xinput 2 support (slow)" false
   "BUILD_X11" false
   "Xinput 2 support requires X11")
 
