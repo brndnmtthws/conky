@@ -572,14 +572,14 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
       if (ev.xbutton.button >= 4 &&
           ev.xbutton.button <= 7) {  // scroll "buttons"
         scroll_direction_t direction = x11_scroll_direction(ev.xbutton.button);
-        *consumed = llua_mouse_hook(
-            mouse_scroll_event(ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root,
-                               ev.xbutton.y_root, direction, mods));
+        *consumed = llua_mouse_hook(mouse_scroll_event(
+            vec2i(ev.xbutton.x, ev.xbutton.y),
+            vec2i(ev.xbutton.x_root, ev.xbutton.y_root), direction, mods));
       } else {
         mouse_button_t button = x11_mouse_button_code(ev.xbutton.button);
         *consumed = llua_mouse_hook(mouse_button_event(
-            mouse_event_t::PRESS, ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root,
-            ev.xbutton.y_root, button, mods));
+            mouse_event_t::PRESS, vec2i(ev.xbutton.x, ev.xbutton.y),
+            vec2i(ev.xbutton.x_root, ev.xbutton.y_root), button, mods));
       }
       break;
     }
@@ -590,15 +590,15 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
       modifier_state_t mods = x11_modifier_state(ev.xbutton.state);
       mouse_button_t button = x11_mouse_button_code(ev.xbutton.button);
       *consumed = llua_mouse_hook(mouse_button_event(
-          mouse_event_t::RELEASE, ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root,
-          ev.xbutton.y_root, button, mods));
+          mouse_event_t::RELEASE, vec2i(ev.xbutton.x, ev.xbutton.y),
+          vec2i(ev.xbutton.x_root, ev.xbutton.y_root), button, mods));
       break;
     }
     case MotionNotify: {
       modifier_state_t mods = x11_modifier_state(ev.xmotion.state);
-      *consumed = llua_mouse_hook(mouse_move_event(ev.xmotion.x, ev.xmotion.y,
-                                                   ev.xmotion.x_root,
-                                                   ev.xmotion.y_root, mods));
+      *consumed = llua_mouse_hook(
+          mouse_move_event(vec2i(ev.xmotion.x, ev.xmotion.y),
+                           vec2i(ev.xmotion.x_root, ev.xmotion.y_root), mods));
       break;
     }
   }
