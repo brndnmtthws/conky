@@ -666,7 +666,7 @@ bool handle_event<x_event_handler::CONFIGURE>(
 
       // don't apply dpi scaling to max pixel size
       int mw = maximum_width.get(*state);
-      if (text_size.x() > mw && mw > 0) { text_size.set_x(mw); }
+      if (mw > 0) { text_size.set_x(std::min(mw, text_size.x())); }
     }
 
     /* if position isn't what expected, set fixed pos

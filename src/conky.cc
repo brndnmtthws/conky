@@ -858,7 +858,7 @@ void update_text_area() {
   if (fixed_size == 0)
 #endif
   {
-    text_size = conky::vec2i(dpi_scale(minimum_width.get(*state)), 0);
+    text_size = conky::vec2i(minimum_width.get(*state), 0);
     last_font_height = font_height();
     for_each_line(text_buffer, text_size_updater);
     text_size += conky::vec2i::UnitX();
@@ -984,7 +984,7 @@ static int text_size_updater(char *s, int special_index) {
 
   if (w > text_size.x()) { text_size.set_x(w); }
   int mw = maximum_width.get(*state);
-  if (text_size.x() > mw && mw > 0) { text_size.set_x(mw); }
+  if (mw > 0) { text_size.set_x(std::min(mw, text_size.x())); }
 
   text_size += conky::vec2i(0, last_font_height);
   last_font_height = font_height();
