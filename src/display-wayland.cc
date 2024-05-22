@@ -661,8 +661,8 @@ bool display_output_wayland::main_loop_wait(double t) {
          text_size.y() + 2 * border_total != height || scale_changed)) {
       /* clamp text_width to configured maximum */
       if (maximum_width.get(*state)) {
-        int mw = global_window->scale * maximum_width.get(*state);
-        if (text_size.x() > mw && mw > 0) { text_size.set_x(mw); }
+        int mw = maximum_width.get(*state);
+        if (mw > 0) { text_size.set_x(std::min(mw, text_size.x())); }
       }
 
       /* pending scale will be applied by resizing the window */
