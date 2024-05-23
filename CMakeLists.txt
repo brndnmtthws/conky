@@ -28,6 +28,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 # 'core' CMake stuff
 include(Conky)
 
+# Set project version, languages
+project(conky VERSION ${RELEASE_VERSION} LANGUAGES C CXX)
+
 # Handle build options
 include(ConkyBuildOptions)
 
@@ -76,7 +79,7 @@ if(BUILD_TESTS)
 endif()
 
 if(NOT DEFINED DOC_PATH)
-  set(DOC_PATH "share/doc/${CPACK_PACKAGE_NAME}-${VERSION}")
+  set(DOC_PATH "share/doc/${CPACK_PACKAGE_NAME}-${RELEASE_VERSION}")
 endif(NOT DEFINED DOC_PATH)
 
 set(DOC_FILES extras/convert.lua data/conky_no_x11.conf data/conky.conf)
