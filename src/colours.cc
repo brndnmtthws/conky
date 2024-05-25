@@ -31,7 +31,6 @@
 
 #include "logging.h"
 
-#include <cstdarg>
 #include <cstdio>
 #include <optional>
 
@@ -57,20 +56,24 @@ Colour Colour::from_argb32(uint32_t argb) {
 #endif /* BUILD_COLOUR_NAME_MAP */
 
 std::optional<Colour> inline no_colour() { return std::nullopt; }
+template <typename... Args>
 std::optional<Colour> parse_error(const std::string &color_str,
-                                  const char *format...) {
-  va_list args;
-  va_start(args, format);
-  size_t len = snprintf(nullptr, 0, format, args);
+                                  const char *format, Args... args) {
+  size_t len = snprintf(nullptr, 0, format, args...);
 
   char *reason = new char[len + 1];
-  snprintf(reason, len + 1, format, args);
-  va_end(args);
+  snprintf(reason, len + 1, format, args...);
 
   CRIT_ERR("can't parse color '%s' (len: %d): %s", color_str.c_str(),
            color_str.length(), reason);
   delete[] reason;
 
+  return ERROR_COLOUR;
+}
+std::optional<Colour> parse_error(const std::string &color_str,
+                                  const char *reason) {
+  CRIT_ERR("can't parse color '%s' (len: %d): %s", color_str.c_str(),
+           color_str.length(), reason);
   return ERROR_COLOUR;
 }
 
