@@ -184,21 +184,13 @@ static inline conky::display_output_base *display_output() {
 }
 
 template <typename T>
-inline std::enable_if_t<std::is_arithmetic<T>::value, T> dpi_scale(T value) {
+inline T dpi_scale(T value) {
+  static_assert(std::is_arithmetic_v<T>,
+                "dpi_scale value type must be a number");
 #ifdef BUILD_GUI
   auto output = display_output();
   if (output) {
-    if constexpr (std::is_integral_v<T>) {
-      if (value > 0) {
-        return static_cast<T>(
-            std::ceil(static_cast<float>(value) * output->get_dpi_scale()));
-      } else {
-        return static_cast<T>(
-            std::floor(static_cast<float>(value) * output->get_dpi_scale()));
-      }
-    } else {
-      return value * output->get_dpi_scale();
-    }
+    return T(std::round(static_cast<double>(value) * output->get_dpi_scale()));
   }
 #endif /* BUILD_GUI */
 
