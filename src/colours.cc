@@ -62,11 +62,9 @@ std::optional<Colour> parse_error(const std::string &color_str,
   va_list args;
   va_start(args, format);
   size_t len = snprintf(nullptr, 0, format, args);
-  va_end(args);
 
   char *reason = new char[len + 1];
-  va_start(args, format);
-  snprintf(reason, len, format, args);
+  snprintf(reason, len + 1, format, args);
   va_end(args);
 
   CRIT_ERR("can't parse color '%s' (len: %d): %s", color_str.c_str(),
@@ -78,10 +76,10 @@ std::optional<Colour> parse_error(const std::string &color_str,
 
 std::optional<Colour> parse_color_name(const std::string &name) {
   const rgb *value = color_name_hash::in_word_set(name.c_str(), name.length());
-  if (value != nullptr) {
-    return Colour{value->red, value->green, value->blue};
-  } else {
+  if (value == nullptr) {
     return no_colour();
+  } else {
+    return Colour{value->red, value->green, value->blue};
   }
 }
 
