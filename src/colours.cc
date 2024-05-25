@@ -34,8 +34,6 @@
 #include <cstdarg>
 #include <cstdio>
 #include <optional>
-#include <type_traits>
-#include <variant>
 
 Colour Colour::from_argb32(uint32_t argb) {
   Colour out;
@@ -58,63 +56,36 @@ Colour Colour::from_argb32(uint32_t argb) {
 #include "colour-names-stub.hh"
 #endif /* BUILD_COLOUR_NAME_MAP */
 
-/// Parsing result can be either a `Colour`, a none variant, or an error
-/// message.
-class parse_result {
-  std::variant<Colour, std::monostate, std::string> value;
+std::optional<Colour> inline no_colour() { return std::nullopt; }
+std::optional<Colour> parse_error(const std::string &color_str,
+                                  const char *format...) {
+  va_list args;
+  va_start(args, format);
+  size_t len = snprintf(nullptr, 0, format, args);
+  va_end(args);
 
- public:
-  parse_result(Colour c) : value(c) {}
-  parse_result() : value(std::monostate{}) {}
-  parse_result(std::string msg) : value(std::move(msg)) {}
+  char *reason = new char[len + 1];
+  va_start(args, format);
+  snprintf(reason, len, format, args);
+  va_end(args);
 
-  static parse_result error(const char *format...) {
-    va_list args;
-    va_start(args, format);
-    size_t len = snprintf(nullptr, 0, format, args);
-    va_end(args);
+  CRIT_ERR("can't parse color '%s' (len: %d): %s", color_str.c_str(),
+           color_str.length(), reason);
+  delete[] reason;
 
-    char *buffer = new char[len + 1];
-    va_start(args, format);
-    snprintf(buffer, len, format, args);
-    va_end(args);
+  return ERROR_COLOUR;
+}
 
-    auto value = std::string(buffer);
-    delete[] buffer;
-    return parse_result(value);
-  }
-
-  const bool has_colour() const {
-    return std::holds_alternative<Colour>(value);
-  }
-  const std::optional<Colour> get_colour() const {
-    if (std::holds_alternative<Colour>(value)) {
-      return std::get<Colour>(std::move(value));
-    } else {
-      return std::nullopt;
-    }
-  }
-  const std::optional<std::string> get_error() const {
-    if (std::holds_alternative<std::string>(value)) {
-      return std::get<std::string>(std::move(value));
-    } else {
-      return std::nullopt;
-    }
-  }
-};
-
-parse_result none() { return parse_result(); }
-
-parse_result parse_color_name(const std::string &name) {
+std::optional<Colour> parse_color_name(const std::string &name) {
   const rgb *value = color_name_hash::in_word_set(name.c_str(), name.length());
   if (value != nullptr) {
     return Colour{value->red, value->green, value->blue};
   } else {
-    return none();
+    return no_colour();
   }
 }
 
-parse_result parse_hex_color(const std::string &color) {
+std::optional<Colour> parse_hex_color(const std::string &color) {
   const char *name = color.c_str();
   size_t len = color.length();
   // Skip a leading '#' if present.
@@ -139,9 +110,7 @@ parse_result parse_hex_color(const std::string &color) {
     bool skip_alpha = (len == 3);
     for (size_t i = 0; i < len; i++) {
       int nib = hex_nibble_value(name[i]);
-      if (nib < 0)
-        return parse_result::error("invalid hex color: '%s' (%d)",
-                                   color.c_str(), color.length());
+      if (nib < 0) return parse_error(color, "invalid hex value");
       // Duplicate the nibble, so "#abc" -> 0xaa, 0xbb, 0xcc
       int val = (nib << 4) + nib;
 
@@ -152,15 +121,13 @@ parse_result parse_hex_color(const std::string &color) {
     for (size_t i = 0; i + 1 < len; i += 2) {
       int nib1 = hex_nibble_value(name[i]);
       int nib2 = hex_nibble_value(name[i + 1]);
-      if (nib1 < 0 || nib2 < 0)
-        return parse_result::error("invalid hex color: '%s' (%d)",
-                                   color.c_str(), color.length());
+      if (nib1 < 0 || nib2 < 0) return parse_error(color, "invalid hex value");
       int val = (nib1 << 4) + nib2;
 
       argb[skip_alpha + i / 2] = val;
     }
   } else {
-    return none();
+    return no_colour();
   }
 
   return Colour(argb[1], argb[2], argb[3], argb[0]);
@@ -169,17 +136,9 @@ parse_result parse_hex_color(const std::string &color) {
 Colour parse_color(const std::string &color) {
   std::optional<Colour> result;
 
-#define TRY_PARSER(name)                      \
-  parse_result value_##name = name(color);    \
-  if (value_##name.has_colour()) {            \
-    return value_##name.get_colour().value(); \
-  } else {                                    \
-    auto err = value_##name.get_error();      \
-    if (err.has_value()) {                    \
-      NORM_ERR(err.value().c_str());          \
-      return ERROR_COLOUR;                    \
-    }                                         \
-  }
+#define TRY_PARSER(name)                            \
+  std::optional<Colour> value_##name = name(color); \
+  if (value_##name.has_value()) { return value_##name.value(); }
 
   TRY_PARSER(parse_color_name)
   TRY_PARSER(parse_hex_color)
