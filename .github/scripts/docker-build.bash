@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -ex
 
-DOCKERHUB_IMAGE_ID=$DOCKERHUB_ACCOUNT/$IMAGE_NAME
+DOCKERHUB_IMAGE_ID=$DOCKERHUB_USERNAME/$IMAGE_NAME
 
 # Change all uppercase to lowercase
 DOCKERHUB_IMAGE_ID=$(echo $DOCKERHUB_IMAGE_ID | tr '[A-Z]' '[a-z]')
@@ -39,7 +39,7 @@ fi
 docker buildx build \
     ${push_image} \
     ${image_platforms} \
-    --cache-from=type=registry,ref=$DOCKERHUB_ACCOUNT/$IMAGE_NAME:$cache_tag \
-    --cache-to=type=registry,ref=$DOCKERHUB_ACCOUNT/$IMAGE_NAME:$cache_tag,mode=max \
+    --cache-from=type=registry,ref=$DOCKERHUB_USERNAME/$IMAGE_NAME:$cache_tag \
+    --cache-to=type=registry,ref=$DOCKERHUB_USERNAME/$IMAGE_NAME:$cache_tag,mode=max \
     "${image_tags[@]}" \
     .
