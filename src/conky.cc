@@ -1684,7 +1684,7 @@ void log_system_details() {
   char *session = getenv("GDMSESSION");
   char *desktop = getenv("XDG_CURRENT_DESKTOP");
   if (desktop != nullptr || session != nullptr) {
-    NORM_ERR("'%s' %s session running '%s' destop", session, session_ty,
+    NORM_ERR("'%s' %s session running '%s' desktop", session, session_ty,
              desktop);
   }
 }
