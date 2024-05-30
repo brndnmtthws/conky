@@ -665,7 +665,7 @@ bool handle_event<x_event_handler::CONFIGURE>(
       text_size = window.geometry.size() - border_total;
 
       // don't apply dpi scaling to max pixel size
-      int mw = maximum_width.get(*state);
+      int mw = dpi_scale(maximum_width.get(*state));
       if (mw > 0) { text_size.set_x(std::min(mw, text_size.x())); }
     }
 
