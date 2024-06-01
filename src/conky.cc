@@ -863,9 +863,9 @@ void update_text_area() {
     for_each_line(text_buffer, text_size_updater);
     text_size += conky::vec2i::UnitX();
 
-    text_size.max(conky::vec2i(text_size.x(), minimum_height.get(*state)));
+    text_size = text_size.max(conky::vec2i(text_size.x(), minimum_height.get(*state)));
     int mw = maximum_width.get(*state);
-    if (mw > 0) text_size.min(conky::vec2i(mw, text_size.y()));
+    if (mw > 0) text_size = text_size.min(conky::vec2i(mw, text_size.y()));
   }
 
   alignment align = text_alignment.get(*state);
