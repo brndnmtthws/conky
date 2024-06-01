@@ -861,11 +861,10 @@ void update_text_area() {
     text_size = conky::vec2i(dpi_scale(minimum_width.get(*state)), 0);
     last_font_height = font_height();
     for_each_line(text_buffer, text_size_updater);
-    text_size += conky::vec2i::UnitX();
 
-    text_size.max(conky::vec2i(text_size.x(), minimum_height.get(*state)));
+    text_size = text_size.max(conky::vec2i(text_size.x() + 1, minimum_height.get(*state)));
     int mw = dpi_scale(maximum_width.get(*state));
-    if (mw > 0) text_size.min(conky::vec2i(mw, text_size.y()));
+    if (mw > 0) text_size = text_size.min(conky::vec2i(mw, text_size.y()));
   }
 
   alignment align = text_alignment.get(*state);
