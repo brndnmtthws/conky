@@ -284,7 +284,7 @@ void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
   }
   pwithcolors[strend + j] = 0;
   strncpy(p, pwithcolors, p_max_size);
-  free(pwithcolors);
+  delete[] pwithcolors;
 
   // scroll
   if (sd->direction == SCROLL_LEFT) {
