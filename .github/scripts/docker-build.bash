@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -ex
 
+DOCKERHUB_USERNAME="${DOCKERHUB_USERNAME:-conky}"
 DOCKERHUB_IMAGE_ID=$DOCKERHUB_USERNAME/$IMAGE_NAME
 
 # Change all uppercase to lowercase
