@@ -858,13 +858,12 @@ void update_text_area() {
   if (fixed_size == 0)
 #endif
   {
-    text_size = conky::vec2i(minimum_width.get(*state), 0);
+    text_size = conky::vec2i(dpi_scale(minimum_width.get(*state)), 0);
     last_font_height = font_height();
     for_each_line(text_buffer, text_size_updater);
-    text_size += conky::vec2i::UnitX();
 
-    text_size = text_size.max(conky::vec2i(text_size.x(), minimum_height.get(*state)));
-    int mw = maximum_width.get(*state);
+    text_size = text_size.max(conky::vec2i(text_size.x() + 1, minimum_height.get(*state)));
+    int mw = dpi_scale(maximum_width.get(*state));
     if (mw > 0) text_size = text_size.min(conky::vec2i(mw, text_size.y()));
   }
 
@@ -983,7 +982,7 @@ static int text_size_updater(char *s, int special_index) {
   w += get_string_width(s);
 
   if (w > text_size.x()) { text_size.set_x(w); }
-  int mw = maximum_width.get(*state);
+  int mw = dpi_scale(maximum_width.get(*state));
   if (mw > 0) { text_size.set_x(std::min(mw, text_size.x())); }
 
   text_size += conky::vec2i(0, last_font_height);
@@ -1047,7 +1046,7 @@ static void draw_string(const char *s) {
   }
 #ifdef BUILD_GUI
   if (display_output() && display_output()->graphical()) {
-    int mw = maximum_width.get(*state);
+    int mw = dpi_scale(maximum_width.get(*state));
     if (text_size.x() == mw) {
       /* this means the text is probably pushing the limit,
        * so we'll chop it */
@@ -1106,7 +1105,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 #ifdef BUILD_GUI
   int font_h = 0;
   int cur_y_add = 0;
-  int mw = maximum_width.get(*state);
+  int mw = dpi_scale(maximum_width.get(*state));
 #endif /* BUILD_GUI */
   char *p = s;
   int orig_special_index = special_index;
