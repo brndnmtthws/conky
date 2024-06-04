@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -ex
+set -e
 
 DH_USERNAME="${DOCKERHUB_USERNAME:-conky}"
 DOCKERHUB_IMAGE_ID=$DH_USERNAME/$IMAGE_NAME
@@ -37,7 +37,7 @@ if [[ "$GITHUB_REF" == refs/heads/main ]]; then
 fi
 
 # Only write to cache if credentials are available
-if [[ -z "$DOCKERHUB_USERNAME" ]]; then
+if [[ -z "$DOCKERHUB_TOKEN" ]]; then
     write_cache=""
 else
     write_cache="--cache-to=type=registry,ref=$DOCKERHUB_IMAGE_ID:$cache_tag,mode=max"
