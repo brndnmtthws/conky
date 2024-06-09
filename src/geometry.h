@@ -430,21 +430,13 @@ struct rect {
   /// @brief Rectangle width.
   /// @return width of this rectangle.
   inline T width() const {
-    if constexpr (Kind == rect_kind::SIZED) {
-      return this->m_other.x();
-    } else {
-      return this->m_other.x() + this->m_pos.x();
-    }
+    return size().x();
   }
 
   /// @brief Rectangle height.
   /// @return height of this rectangle.
   inline T height() const {
-    if constexpr (Kind == rect_kind::SIZED) {
-      return this->m_other.y();
-    } else {
-      return this->m_other.y() + this->m_pos.y();
-    }
+    return size().y();
   }
 
   /// @brief Returns rectangle component at `index`.

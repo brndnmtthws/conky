@@ -1144,50 +1144,33 @@ void set_struts(alignment align) {
     int display_width = workarea.width();
     int display_height = workarea.height();
 
-    switch (horizontal_alignment(align)) {
-      case axis_align::START:
-        sizes[*x11_strut::LEFT] = std::clamp(
-            window.geometry.x() + window.geometry.end_x(), 0, display_width);
-        sizes[*x11_strut::LEFT_START_Y] =
-            std::clamp(window.geometry.y(), 0, display_height);
-        sizes[*x11_strut::LEFT_END_Y] = std::clamp(
-            window.geometry.y() + window.geometry.height(), 0, display_height);
+    switch (align) {
+      case alignment::TOP_LEFT:
+      case alignment::TOP_RIGHT:
+      case alignment::TOP_MIDDLE:
+        sizes[*x11_strut::TOP] = std::clamp(window.geometry.end_y(), 0, display_height);
+        sizes[*x11_strut::TOP_START_X] = std::clamp(window.geometry.x(), 0, display_width);
+        sizes[*x11_strut::TOP_END_X] = std::clamp(window.geometry.end_x(), 0, display_width);
         break;
-      case axis_align::END:
-        sizes[*x11_strut::RIGHT] =
-            std::clamp(display_width - window.geometry.x(), 0, display_width);
-        sizes[*x11_strut::RIGHT_START_Y] =
-            std::clamp(window.geometry.y(), 0, display_height);
-        sizes[*x11_strut::RIGHT_END_Y] = std::clamp(
-            window.geometry.y() + window.geometry.height(), 0, display_height);
+      case alignment::BOTTOM_LEFT:
+      case alignment::BOTTOM_RIGHT:
+      case alignment::BOTTOM_MIDDLE:
+        sizes[*x11_strut::BOTTOM] = display_height - std::clamp(window.geometry.y(), 0, display_height);
+        sizes[*x11_strut::BOTTOM_START_X] = std::clamp(window.geometry.x(), 0, display_width);
+        sizes[*x11_strut::BOTTOM_END_X] = std::clamp(window.geometry.end_x(), 0, display_width);
         break;
-      case axis_align::MIDDLE:
-        switch (vertical_alignment(align)) {
-          case axis_align::START:
-            sizes[*x11_strut::TOP] =
-                std::clamp(window.geometry.y() + window.geometry.height(), 0,
-                           display_height);
-            sizes[*x11_strut::TOP_START_X] =
-                std::clamp(window.geometry.x(), 0, display_width);
-            sizes[*x11_strut::TOP_END_X] =
-                std::clamp(window.geometry.x() + window.geometry.width(), 0,
-                           display_width);
-            break;
-          case axis_align::END:
-            sizes[*x11_strut::BOTTOM] = std::clamp(
-                display_height - window.geometry.y(), 0, display_height);
-            sizes[*x11_strut::BOTTOM_START_X] =
-                std::clamp(window.geometry.x(), 0, display_width);
-            sizes[*x11_strut::BOTTOM_END_X] =
-                std::clamp(window.geometry.x() + window.geometry.width(), 0,
-                           display_width);
-            break;
-          case axis_align::MIDDLE:
-            // can't reserve space in middle of the screen
-          default:
-            break;
-        }
+      case alignment::MIDDLE_LEFT:
+        sizes[*x11_strut::LEFT] = std::clamp(window.geometry.end_x(), 0, display_width);
+        sizes[*x11_strut::LEFT_START_Y] = std::clamp(window.geometry.y(), 0, display_height);
+        sizes[*x11_strut::LEFT_END_Y] = std::clamp(window.geometry.end_y(), 0, display_height);
+        break;
+      case alignment::MIDDLE_RIGHT:
+        sizes[*x11_strut::RIGHT] = display_width - std::clamp(window.geometry.x(), 0, display_width);
+        sizes[*x11_strut::RIGHT_START_Y] = std::clamp(window.geometry.y(), 0, display_height);
+        sizes[*x11_strut::RIGHT_END_Y] = std::clamp(window.geometry.end_y(), 0, display_height);
+        break;
       default:
+        // can't reserve space in middle of the screen
         break;
     }
 
