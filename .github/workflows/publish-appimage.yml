@@ -25,6 +25,7 @@ jobs:
         os:
           - ubuntu-20.04
           - ubuntu-22.04
+          - ubuntu-24.04
         arch:
           - x86_64
     permissions:
@@ -69,14 +70,17 @@ jobs:
             ncurses-dev \
             ninja-build \
             pandoc \
-            python3 \
-            wayland-protocols \
-            &&
-            pip3 install --upgrade pyyaml
+            wayland-protocols
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip' # caching pip dependencies
+          cache-dependency-path: 'requirements-dev.txt'
+      - run: pip install -r requirements-dev.txt
       - name: Import GPG Deploy Key
         # only run on main branch
         if: github.ref == 'refs/heads/main'
@@ -91,6 +95,10 @@ jobs:
         if: matrix.os == 'ubuntu-22.04'
         run: |
           echo "CLANG_VERSION=15" | tee -a $GITHUB_ENV
+      - name: Set clang version to 18 for ubuntu-24.04
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          echo "CLANG_VERSION=18" | tee -a $GITHUB_ENV
       - name: Install libc++, set CC and CXX env vars
         run: |
           sudo apt-get install -yqq --no-install-recommends \
