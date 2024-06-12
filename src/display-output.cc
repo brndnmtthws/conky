@@ -36,7 +36,7 @@
 namespace conky {
 
 inline void log_missing(const char *name, const char *flag) {
-  DBGP(
+  LOG_INFO(
       "%s display output disabled. Enable by recompiling with '%s' "
       "flag enabled.",
       name, flag);
@@ -87,7 +87,9 @@ bool initialize_display_outputs() {
   register_output<output_t::X11>(outputs);
   register_output<output_t::WAYLAND>(outputs);
 
-  for (auto out : outputs) { NORM_ERR("FOUND: %s", out->name.c_str()); }
+  for (auto out : outputs) {
+    LOG_TRACE("%s output display found.", out->name.c_str());
+  }
 
   // Sort display outputs by descending priority, to try graphical ones first.
   sort(outputs.begin(), outputs.end(), &display_output_base::priority_compare);

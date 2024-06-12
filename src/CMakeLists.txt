@@ -64,6 +64,7 @@ execute_process(
 
 set(conky_sources
   ${conky_sources}
+  logging.cc
   c++wrap.cc
   c++wrap.hh
   colour-settings.cc

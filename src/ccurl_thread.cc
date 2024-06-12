@@ -29,7 +29,7 @@
 #include "logging.h"
 #include "text_object.h"
 
-#ifdef DEBUG
+#ifndef NDEBUG
 #include <assert.h>
 #endif /* DEBUG */
 

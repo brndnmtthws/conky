@@ -172,9 +172,6 @@ const char builtin_config_magic[] = "==builtin==";
 // #define SIGNAL_BLOCKING
 #undef SIGNAL_BLOCKING
 
-/* debugging level, used by logging.h */
-int global_debug_level = 0;
-
 /* disable inotify auto reload feature if desired */
 static conky::simple_config_setting<bool> disable_auto_reload(
     "disable_auto_reload", false, false);
@@ -1914,6 +1911,11 @@ void clean_up(void) {
   state.reset();
 }
 
+void handle_terminate() {
+  clean_up();
+  std::abort();
+}
+
 static void set_default_configurations() {
   update_uname();
   info.memmax = 0;
@@ -2013,12 +2015,7 @@ void load_config_file() {
     l.pushstring(current_config.c_str());
     l.call(1, 1);
 #else
-    char *syntaxerr;
-    if (asprintf(&syntaxerr, _(SYNTAX_ERR_READ_CONF), e.what())) {
-      std::string syntaxerrobj(syntaxerr);
-      free(syntaxerr);
-      throw conky::error(syntaxerrobj);
-    }
+    throw conky::error(SYNTAX_ERR_READ_CONF, e.what());
 #endif
   }
   l.call(0, 0);
@@ -2027,7 +2024,7 @@ void load_config_file() {
   l.getfield(-1, "text");
   l.replace(-2);
   if (l.type(-1) != lua::TSTRING) {
-    throw conky::error(_("missing text block in configuration"));
+    throw conky::error("missing text block in configuration");
   }
 
   /* Remove \\-\n. */
@@ -2084,7 +2081,7 @@ void set_current_config() {
 
 /* : means that character before that takes an argument */
 const char *getopt_string =
-    "vVqdDSs:t:u:i:hc:p:"
+    "vVqdDLSs:t:u:i:hc:p:"
 #ifdef BUILD_X11
     "x:y:w:a:X:m:f:"
 #ifdef OWN_WINDOW
@@ -2100,7 +2097,8 @@ const char *getopt_string =
 const struct option longopts[] = {
     {"help", 0, nullptr, 'h'},          {"version", 0, nullptr, 'v'},
     {"short-version", 0, nullptr, 'V'}, {"quiet", 0, nullptr, 'q'},
-    {"debug", 0, nullptr, 'D'},         {"config", 1, nullptr, 'c'},
+    {"debug", 0, nullptr, 'D'},         {"log-less", 0, nullptr, 'L'},
+    {"config", 1, nullptr, 'c'},
 #ifdef BUILD_BUILTIN_CONFIG
     {"print-config", 0, nullptr, 'C'},
 #endif
@@ -2208,7 +2206,7 @@ void initialisation(int argc, char **argv) {
       case 'u':
         state->pushnumber(strtod(optarg, &conv_end));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is an invalid update interval", optarg);
+          USER_ERR("'%s' is an invalid update interval", optarg);
         }
         update_interval.lua_set(*state);
         break;
@@ -2216,7 +2214,7 @@ void initialisation(int argc, char **argv) {
       case 'i':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is an invalid number of update times", optarg);
+          USER_ERR("'%s' is an invalid number of update times", optarg);
         }
         total_run_times.lua_set(*state);
         break;
@@ -2224,7 +2222,7 @@ void initialisation(int argc, char **argv) {
       case 'x':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is an invalid value for the X-position", optarg);
+          USER_ERR("'%s' is an invalid value for the X-position", optarg);
         }
         gap_x.lua_set(*state);
         break;
@@ -2232,7 +2230,7 @@ void initialisation(int argc, char **argv) {
       case 'y':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is a wrong value for the Y-position", optarg);
+          USER_ERR("'%s' is a wrong value for the Y-position", optarg);
         }
         gap_y.lua_set(*state);
         break;

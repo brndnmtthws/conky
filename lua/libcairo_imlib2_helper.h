@@ -28,10 +28,22 @@
 #include <Imlib2.h>
 #include <cairo.h>
 
-#include "logging.h"
+#include "config.h"
 
-void cairo_place_image(const char *file, cairo_t *cr, int x, int y,
-                       int width, int height, double alpha) {
+#ifdef BUILD_I18N
+#include <libintl.h>
+#else
+#define gettext
+#endif
+
+// TODO: inject reference to conky logger
+// Lua allows modifying .so loading, so for each loaded library check if it has
+// some hardcoded set_logger function symbol, and call it to set per-library
+// reference to the global logger.
+#define NORM_ERR(Format, ...) fprintf(stderr, gettext(Format), ##__VA_ARGS__);
+
+void cairo_place_image(const char *file, cairo_t *cr, int x, int y, int width,
+                       int height, double alpha) {
   int w, h, stride;
   Imlib_Image alpha_image, image, premul;
   cairo_surface_t *result;
@@ -83,12 +95,12 @@ void cairo_place_image(const char *file, cairo_t *cr, int x, int y,
   /* and use the alpha channel of the source image */
   imlib_image_copy_alpha_to_image(alpha_image, 0, 0);
 
-  stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32, width);
+  stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
 
   /* now pass the result to cairo */
   result = cairo_image_surface_create_for_data(
-      (unsigned char  *)imlib_image_get_data_for_reading_only(), CAIRO_FORMAT_ARGB32,
-      width, height, stride);
+      (unsigned char *)imlib_image_get_data_for_reading_only(),
+      CAIRO_FORMAT_ARGB32, width, height, stride);
 
   cairo_set_source_surface(cr, result, x, y);
   cairo_paint_with_alpha(cr, alpha);
@@ -101,7 +113,6 @@ void cairo_place_image(const char *file, cairo_t *cr, int x, int y,
   imlib_free_image();
 
   cairo_surface_destroy(result);
-
 }
 
 void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
