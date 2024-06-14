@@ -455,17 +455,17 @@ static void get_battery_stats(int *battime, int *batcapacity, int *batstate,
 
   if (battery_present) {
     if (battime && GETSYSCTL("hw.acpi.battery.time", *battime)) {
-      fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.time\"\n");
+      NORM_ERR("Cannot read sysctl \"hw.acpi.battery.time\"");
     }
     if (batcapacity && GETSYSCTL("hw.acpi.battery.life", *batcapacity)) {
-      fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.life\"\n");
+      NORM_ERR("Cannot read sysctl \"hw.acpi.battery.life\"");
     }
     if (batstate && GETSYSCTL("hw.acpi.battery.state", *batstate)) {
-      fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.state\"\n");
+      NORM_ERR("Cannot read sysctl \"hw.acpi.battery.state\"");
     }
   }
   if (ac_present && ac && GETSYSCTL("hw.acpi.acline", *ac)) {
-    fprintf(stderr, "Cannot read sysctl \"hw.acpi.acline\"\n");
+    NORM_ERR("Cannot read sysctl \"hw.acpi.acline\"");
   }
 }
 
