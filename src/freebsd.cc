@@ -427,6 +427,10 @@ double get_acpi_temperature(int fd) {
   return 0.0;
 }
 
+// If a leaf MIB in the sysctl tree returns ENOENT, that means the entry does
+// not exist. On the contrary, if a non-leaf entry *does exist*, then EISDIR
+// errno is returned, meaning it exists, but it is an array/directory with
+// more elements hanging from it.
 static int sysctl_mib_exists(const char *mib)
 {
   size_t len;
@@ -437,10 +441,6 @@ static int sysctl_mib_exists(const char *mib)
 
 static void get_battery_stats(int *battime, int *batcapacity, int *batstate,
                               int *ac) {
-  // If a leaf MIB in the sysctl tree returns ENOENT, that means the entry does
-  // not exist. On the contrary, if a non-leaf entry *does exist*, then EISDIR
-  // errno is returned, meaning it exists, but it is an array/directory with
-  // more elements hanging from it.
   int battery_present = sysctl_mib_exists("hw.acpi.battery");
   int ac_present = sysctl_mib_exists("hw.acpi.acline");
 
