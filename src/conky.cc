@@ -862,7 +862,7 @@ void update_text_area() {
     last_font_height = font_height();
     for_each_line(text_buffer, text_size_updater);
 
-    text_size = text_size.max(conky::vec2i(text_size.x() + 1, minimum_height.get(*state)));
+    text_size = text_size.max(conky::vec2i(text_size.x() + 1, dpi_scale(minimum_height.get(*state))));
     int mw = dpi_scale(maximum_width.get(*state));
     if (mw > 0) text_size = text_size.min(conky::vec2i(mw, text_size.y()));
   }
