@@ -133,7 +133,7 @@ endif(OS_HAIKU)
 # Do version stuff
 set(VERSION_MAJOR "1")
 set(VERSION_MINOR "21")
-set(VERSION_PATCH "4")
+set(VERSION_PATCH "5")
 
 find_program(APP_AWK awk)
 
