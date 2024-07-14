@@ -124,8 +124,10 @@ struct vec {
 
   vec(vec<T, Length> &&other) { this->value = other->value; }
 
-  static inline vec<T, Length> uniform(T x) {
-    return vec<T, Length>(std::array<T, Length>{x});
+  static inline vec<T, Length> uniform(T v) {
+    std::array<T, Length> data;
+    data.fill(v);
+    return vec<T, Length>(data);
   }
 
   /// @brief Returns vec component at `index`.
