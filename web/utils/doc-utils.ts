@@ -66,8 +66,8 @@ function processMarkdown(input: string): string {
   return unified()
     .use(remarkParse)
     .use(remarkGfm)
-    .use(remarkRehype)
-    .use(rehypeStringify)
+    .use(remarkRehype, {allowDangerousHtml: true})
+    .use(rehypeStringify, {allowDangerousHtml: true})
     .processSync(input)
     .toString()
 }

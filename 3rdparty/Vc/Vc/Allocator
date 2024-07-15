@@ -1,0 +1,284 @@
+/*  This file is part of the Vc library. {{{
+Copyright © 2014 Matthias Kretz <kretz@kde.org>
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the names of contributing organizations nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+}}}*/
+
+#ifndef VC_ALLOCATOR_H_
+#define VC_ALLOCATOR_H_
+
+#include <new>
+#include <cstddef>
+#include <cstdlib>
+#include <utility>
+
+#include "global.h"
+#include "common/macros.h"
+
+/**
+ * \ingroup Utilities
+ *
+ * Convenience macro to set the default allocator for a given \p Type to
+ * Vc::Allocator.
+ *
+ * \param Type Your type that you want to use with STL containers.
+ *
+ * \note You have to use this macro in the global namespace.
+ */
+#ifdef Vc_MSVC
+#define Vc_DECLARE_ALLOCATOR(Type)                                                   \
+namespace std                                                                        \
+{                                                                                    \
+template <> class allocator<Type> : public ::Vc::Allocator<Type>                     \
+{                                                                                    \
+public:                                                                              \
+    template <typename U> struct rebind {                                            \
+        typedef ::std::allocator<U> other;                                           \
+    };                                                                               \
+    /* MSVC brokenness: the following function is optional - just doesn't compile    \
+     * without it */                                                                 \
+    const allocator &select_on_container_copy_construction() const { return *this; } \
+};                                                                                   \
+}
+#else
+#define Vc_DECLARE_ALLOCATOR(Type)                                                   \
+namespace std                                                                        \
+{                                                                                    \
+template <> class allocator<Type> : public ::Vc::Allocator<Type>                     \
+{                                                                                    \
+public:                                                                              \
+    template <typename U> struct rebind {                                            \
+        typedef ::std::allocator<U> other;                                           \
+    };                                                                               \
+};                                                                                   \
+}
+#endif
+
+namespace Vc_VERSIONED_NAMESPACE
+{
+    using std::size_t;
+    using std::ptrdiff_t;
+
+    /**
+     * \headerfile Allocator <Vc/Allocator>
+     * An allocator that uses global new and supports over-aligned types, as per [C++11 20.6.9].
+     *
+     * Meant as a simple replacement for the allocator defined in the C++ Standard.
+     * Allocation is done using the global new/delete operators. But if the alignment property of \p
+     * T is larger than the size of a pointer, the allocate function allocates slightly more memory
+     * to adjust the pointer for correct alignment.
+     *
+     * If the \p T does not require over-alignment no additional memory will be allocated.
+     *
+     * \tparam T The type of objects to allocate.
+     *
+     * Example:
+     * \code
+     * struct Data {
+     *   Vc::float_v x, y, z;
+     * };
+     *
+     * void fun()
+     * {
+     *   std::vector<Data> dat0; // this will use std::allocator<Data>, which probably ignores the
+     *                           // alignment requirements for Data. Thus any access to dat0 may
+     *                           // crash your program.
+     *
+     *   std::vector<Data, Vc::Allocator<Data> > dat1; // now std::vector will get correctly aligned
+     *                           // memory. Accesses to dat1 are safe.
+     *   ...
+     * \endcode
+     *
+     * %Vc ships a macro to conveniently tell STL to use Vc::Allocator per default for a given type:
+     * \code
+     * struct Data {
+     *   Vc::float_v x, y, z;
+     * };
+     * Vc_DECLARE_ALLOCATOR(Data)
+     *
+     * void fun()
+     * {
+     *   std::vector<Data> dat0; // good now
+     *   ...
+     * \endcode
+     *
+     * \ingroup Utilities
+     */
+    template<typename T> class Allocator
+    {
+    private:
+        enum Constants {
+#ifdef Vc_HAVE_STD_MAX_ALIGN_T
+            NaturalAlignment = alignof(std::max_align_t),
+#elif defined(Vc_HAVE_MAX_ALIGN_T)
+            NaturalAlignment = alignof(::max_align_t),
+#else
+            NaturalAlignment = sizeof(void *) > alignof(long double) ? sizeof(void *) :
+                (alignof(long double) > alignof(long long) ? alignof(long double) : alignof(long long)),
+#endif
+#if defined Vc_IMPL_AVX
+            SimdAlignment = 32,
+#elif defined Vc_IMPL_SSE
+            SimdAlignment = 16,
+#else
+            SimdAlignment = 1,
+#endif
+            Alignment = alignof(T) > SimdAlignment ? alignof(T) : SimdAlignment,
+            /* The number of extra bytes allocated must be large enough to put a pointer right
+             * before the adjusted address. This pointer stores the original address, which is
+             * required to call ::operator delete in deallocate.
+             *
+             * The address we get from ::operator new is a multiple of NaturalAlignment:
+             *   p = N * NaturalAlignment
+             *
+             * Since all alignments are powers of two, Alignment is a multiple of NaturalAlignment:
+             *   Alignment = k * NaturalAlignment
+             *
+             * two cases:
+             * 1. If p is already aligned to Alignment then allocate will return p + Alignment. In
+             *    this case there are Alignment Bytes available to store a pointer.
+             * 2. If p is not aligned then p + (k - (N modulo k)) * NaturalAlignment will be
+             *    returned. Since NaturalAlignment >= sizeof(void*) the pointer fits.
+             */
+            ExtraBytes = Alignment > NaturalAlignment ? Alignment : 0,
+            AlignmentMask = Alignment - 1
+        };
+    public:
+        typedef size_t    size_type;
+        typedef ptrdiff_t difference_type;
+        typedef T*        pointer;
+        typedef const T*  const_pointer;
+        typedef T&        reference;
+        typedef const T&  const_reference;
+        typedef T         value_type;
+
+        template<typename U> struct rebind { typedef Allocator<U> other; };
+
+        Allocator() throw() { }
+        Allocator(const Allocator&) throw() { }
+        template<typename U> Allocator(const Allocator<U>&) throw() { }
+
+        pointer address(reference x) const { return &x; }
+        const_pointer address(const_reference x) const { return &x; }
+
+        pointer allocate(size_type n, const void* = 0)
+        {
+            if (n > this->max_size()) {
+                throw std::bad_alloc();
+            }
+
+            char *p = static_cast<char *>(::operator new(n * sizeof(T) + ExtraBytes));
+            if (ExtraBytes > 0) {
+                char *const pp = p;
+                p += ExtraBytes;
+                const char *null = 0;
+                p -= ((p - null) & AlignmentMask); // equivalent to p &= ~AlignmentMask;
+                reinterpret_cast<char **>(p)[-1] = pp;
+            }
+            return reinterpret_cast<pointer>(p);
+        }
+
+        void deallocate(pointer p, size_type)
+        {
+            if (ExtraBytes > 0) {
+                p = reinterpret_cast<pointer *>(p)[-1];
+            }
+            ::operator delete(p);
+        }
+
+        size_type max_size() const throw() { return size_t(-1) / sizeof(T); }
+
+#ifdef Vc_MSVC
+        // MSVC brokenness: the following function is optional - just doesn't compile without it
+        const Allocator &select_on_container_copy_construction() const { return *this; }
+
+        // MSVC also requires a function that neither C++98 nor C++11 mention
+        // but it doesn't support variadic templates... otherwise the Vc_CXX11 clause would be nice
+        void construct(pointer p) { ::new(p) T(); }
+
+        // we still need the C++98 version:
+        void construct(pointer p, const T& val) { ::new(p) T(val); }
+        void destroy(pointer p) { p->~T(); }
+#else
+        template<typename U, typename... Args> void construct(U* p, Args&&... args)
+        {
+            ::new(p) U(std::forward<Args>(args)...);
+        }
+        template<typename U> void destroy(U* p) { p->~U(); }
+#endif
+    };
+
+    template<typename T> inline bool operator==(const Allocator<T>&, const Allocator<T>&) { return true;  }
+    template<typename T> inline bool operator!=(const Allocator<T>&, const Allocator<T>&) { return false; }
+
+}
+
+#include "vector.h"
+namespace std
+{
+    template<typename T, typename Abi>
+    class allocator<Vc::Vector<T, Abi> > : public ::Vc::Allocator<Vc::Vector<T, Abi> >
+    {
+    public:
+        template<typename U> struct rebind { typedef ::std::allocator<U> other; };
+#ifdef Vc_MSVC
+        // MSVC brokenness: the following function is optional - just doesn't compile without it
+        const allocator &select_on_container_copy_construction() const { return *this; }
+#endif
+    };
+    template <typename T, typename Abi>
+    class allocator<Vc::Mask<T, Abi>> : public ::Vc::Allocator<Vc::Mask<T, Abi>>
+    {
+    public:
+        template<typename U> struct rebind { typedef ::std::allocator<U> other; };
+#ifdef Vc_MSVC
+        // MSVC brokenness: the following function is optional - just doesn't compile without it
+        const allocator &select_on_container_copy_construction() const { return *this; }
+#endif
+    };
+    template <typename T, std::size_t N, typename V, std::size_t M>
+    class allocator<Vc::SimdArray<T, N, V, M>> : public ::Vc::Allocator<Vc::SimdArray<T, N, V, M>>
+    {
+    public:
+        template<typename U> struct rebind { typedef ::std::allocator<U> other; };
+#ifdef Vc_MSVC
+        // MSVC brokenness: the following function is optional - just doesn't compile without it
+        const allocator &select_on_container_copy_construction() const { return *this; }
+#endif
+    };
+    template <typename T, std::size_t N, typename V, std::size_t M>
+    class allocator<Vc::SimdMaskArray<T, N, V, M>> : public ::Vc::Allocator<Vc::SimdMaskArray<T, N, V, M>>
+    {
+    public:
+        template<typename U> struct rebind { typedef ::std::allocator<U> other; };
+#ifdef Vc_MSVC
+        // MSVC brokenness: the following function is optional - just doesn't compile without it
+        const allocator &select_on_container_copy_construction() const { return *this; }
+#endif
+    };
+}
+
+#endif // VC_ALLOCATOR_H_
+
+// vim: ft=cpp et sw=4 sts=4

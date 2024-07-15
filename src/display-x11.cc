@@ -26,6 +26,8 @@
 
 #include "config.h"
 
+#include "display-x11.hh"
+
 #include <X11/X.h>
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
@@ -61,21 +63,22 @@
 
 #include "colours.h"
 #include "conky.h"
-#include "display-x11.hh"
+#include "geometry.h"
 #include "gui.h"
 #include "llua.h"
-
 #include "logging.h"
+
+#include "x11-settings.h"
 #include "x11.h"
 
 // TODO: cleanup externs (move to conky.h ?)
 #ifdef OWN_WINDOW
 extern int fixed_size, fixed_pos;
-#endif                                   /* OWN_WINDOW */
-extern int text_start_x, text_start_y;   /* text start position in window */
-extern int text_offset_x, text_offset_y; /* offset for start position */
-extern int text_width,
-    text_height; /* initially 1 so no zero-sized window is created */
+#endif                           /* OWN_WINDOW */
+extern conky::vec2i text_start;  /* text start position in window */
+extern conky::vec2i text_offset; /* offset for start position */
+extern conky::vec2i
+    text_size; /* initially 1 so no zero-sized window is created */
 extern double current_update_time, next_update_time, last_update_time;
 void update_text();
 extern int need_to_update;
@@ -181,7 +184,8 @@ static void X11_create_window() {
 #ifdef OWN_WINDOW
   if (own_window.get(*state)) {
     if (fixed_pos == 0) {
-      XMoveWindow(display, window.window, window.x, window.y);
+      XMoveWindow(display, window.window, window.geometry.x(),
+                  window.geometry.y());
     }
 
     set_transparent_background(window.window);
@@ -276,9 +280,10 @@ bool display_output_x11::main_loop_wait(double t) {
     }
   }
 
+  vec2i border_total = vec2i::uniform(get_border_total());
   if (need_to_update != 0) {
 #ifdef OWN_WINDOW
-    int wx = window.x, wy = window.y;
+    auto old_pos = window.geometry.pos();
 #endif
 
     need_to_update = 0;
@@ -288,17 +293,15 @@ bool display_output_x11::main_loop_wait(double t) {
 #ifdef OWN_WINDOW
     if (own_window.get(*state)) {
       int changed = 0;
-      int border_total = get_border_total();
 
       /* resize window if it isn't right size */
+      vec2<long> border_size = border_total * 2;
       if ((fixed_size == 0) &&
-          (text_width + 2 * border_total != window.width ||
-           text_height + 2 * border_total != window.height)) {
-        window.width = text_width + 2 * border_total;
-        window.height = text_height + 2 * border_total;
+          (text_size + border_size != window.geometry.size())) {
+        window.geometry.set_size(text_size + border_size);
         draw_stuff(); /* redraw everything in our newly sized window */
-        XResizeWindow(display, window.window, window.width,
-                      window.height); /* resize window */
+        XResizeWindow(display, window.window, window.geometry.width(),
+                      window.geometry.height()); /* resize window */
         set_transparent_background(window.window);
 #ifdef BUILD_XDBE
         /* swap buffers */
@@ -306,9 +309,9 @@ bool display_output_x11::main_loop_wait(double t) {
 #else
         if (use_xpmdb.get(*state)) {
           XFreePixmap(display, window.back_buffer);
-          window.back_buffer =
-              XCreatePixmap(display, window.window, window.width, window.height,
-                            DefaultDepth(display, screen));
+          window.back_buffer = XCreatePixmap(
+              display, window.window, window.geometry.width(),
+              window.geometry.height(), DefaultDepth(display, screen));
 
           if (window.back_buffer != None) {
             window.drawable = window.back_buffer;
@@ -318,19 +321,19 @@ bool display_output_x11::main_loop_wait(double t) {
           }
           XSetForeground(display, window.gc, 0);
           XFillRectangle(display, window.drawable, window.gc, 0, 0,
-                         window.width, window.height);
+                         window.geometry.width(), window.geometry.height());
         }
 #endif
 
         changed++;
         /* update lua window globals */
-        llua_update_window_table(text_start_x, text_start_y, text_width,
-                                 text_height);
+        llua_update_window_table(rect<int>(text_start, text_size));
       }
 
       /* move window if it isn't in right position */
-      if ((fixed_pos == 0) && (window.x != wx || window.y != wy)) {
-        XMoveWindow(display, window.window, window.x, window.y);
+      if ((fixed_pos == 0) && old_pos != window.geometry.pos()) {
+        XMoveWindow(display, window.window, window.geometry.x(),
+                    window.geometry.y());
         changed++;
       }
 
@@ -349,14 +352,10 @@ bool display_output_x11::main_loop_wait(double t) {
 #else
     if (use_xpmdb.get(*state)) {
 #endif
-      XRectangle r;
-      int border_total = get_border_total();
-
-      r.x = text_start_x - border_total;
-      r.y = text_start_y - border_total;
-      r.width = text_width + 2 * border_total;
-      r.height = text_height + 2 * border_total;
-      XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
+      XRectangle rect = conky::rect<int>(text_start - border_total,
+                                         text_size + border_total * 2)
+                            .to_xrectangle();
+      XUnionRectWithRegion(&rect, x11_stuff.region, x11_stuff.region);
     }
   }
 
@@ -382,14 +381,10 @@ bool display_output_x11::main_loop_wait(double t) {
 #else
     if (use_xpmdb.get(*state)) {
 #endif
-      XRectangle r;
-      int border_total = get_border_total();
-
-      r.x = text_start_x - border_total;
-      r.y = text_start_y - border_total;
-      r.width = text_width + 2 * border_total;
-      r.height = text_height + 2 * border_total;
-      XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
+      XRectangle rect = conky::rect<int>(text_start - border_total,
+                                         text_size + border_total * 2)
+                            .to_xrectangle();
+      XUnionRectWithRegion(&rect, x11_stuff.region, x11_stuff.region);
     }
     XSetRegion(display, window.gc, x11_stuff.region);
 #ifdef BUILD_XFT
@@ -463,15 +458,12 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   }
   *cookie = data;
 
-  Window event_window =
-      query_x11_window_at_pos(display, data->root_x, data->root_y);
+  Window event_window = query_x11_window_at_pos(display, data->pos_absolute);
 
   bool same_window = query_x11_top_parent(display, event_window) ==
                      query_x11_top_parent(display, window.window);
-  bool cursor_over_conky = same_window && data->root_x >= window.x &&
-                           data->root_x < (window.x + window.width) &&
-                           data->root_y >= window.y &&
-                           data->root_y < (window.y + window.height);
+  bool cursor_over_conky =
+      same_window && window.geometry.contains(data->pos_absolute);
 
   // XInput reports events twice on some hardware (even by 'xinput --test-xi2')
   auto hash = std::make_tuple(data->serial, data->evtype, data->event);
@@ -515,21 +507,21 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
       if (cursor_over_conky) {
         if (!cursor_inside) {
           *consumed = llua_mouse_hook(mouse_crossing_event(
-              mouse_event_t::AREA_ENTER, data->root_x - window.x,
-              data->root_y - window.x, data->root_x, data->root_y));
+              mouse_event_t::AREA_ENTER,
+              data->pos_absolute - window.geometry.pos(), data->pos_absolute));
         }
         cursor_inside = true;
       } else if (cursor_inside) {
         *consumed = llua_mouse_hook(mouse_crossing_event(
-            mouse_event_t::AREA_LEAVE, data->root_x - window.x,
-            data->root_y - window.x, data->root_x, data->root_y));
+            mouse_event_t::AREA_LEAVE,
+            data->pos_absolute - window.geometry.pos(), data->pos_absolute));
         cursor_inside = false;
       }
 
       // generate movement events
       if (cursor_over_conky) {
-        *consumed = llua_mouse_hook(mouse_move_event(
-            data->event_x, data->event_y, data->root_x, data->root_y, mods));
+        *consumed = llua_mouse_hook(
+            mouse_move_event(data->pos, data->pos_absolute, mods));
       }
     }
     if (is_scroll && cursor_over_conky) {
@@ -550,9 +542,8 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
       }
 
       if (scroll_direction != scroll_direction_t::UNKNOWN) {
-        *consumed = llua_mouse_hook(
-            mouse_scroll_event(data->event_x, data->event_y, data->root_x,
-                               data->root_y, scroll_direction, mods));
+        *consumed = llua_mouse_hook(mouse_scroll_event(
+            data->pos, data->pos_absolute, scroll_direction, mods));
       }
     }
   } else if (cursor_over_conky && (data->evtype == XI_ButtonPress ||
@@ -567,9 +558,8 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
     if (data->evtype == XI_ButtonRelease) { type = mouse_event_t::RELEASE; }
 
     mouse_button_t button = x11_mouse_button_code(data->detail);
-    *consumed = llua_mouse_hook(mouse_button_event(type, data->event_x,
-                                                   data->event_y, data->root_x,
-                                                   data->root_y, button, mods));
+    *consumed = llua_mouse_hook(
+        mouse_button_event(type, data->pos, data->pos_absolute, button, mods));
   }
 #endif /* BUILD_MOUSE_EVENTS */
 
@@ -586,14 +576,14 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
       if (ev.xbutton.button >= 4 &&
           ev.xbutton.button <= 7) {  // scroll "buttons"
         scroll_direction_t direction = x11_scroll_direction(ev.xbutton.button);
-        *consumed = llua_mouse_hook(
-            mouse_scroll_event(ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root,
-                               ev.xbutton.y_root, direction, mods));
+        *consumed = llua_mouse_hook(mouse_scroll_event(
+            vec2i(ev.xbutton.x, ev.xbutton.y),
+            vec2i(ev.xbutton.x_root, ev.xbutton.y_root), direction, mods));
       } else {
         mouse_button_t button = x11_mouse_button_code(ev.xbutton.button);
         *consumed = llua_mouse_hook(mouse_button_event(
-            mouse_event_t::PRESS, ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root,
-            ev.xbutton.y_root, button, mods));
+            mouse_event_t::PRESS, vec2i(ev.xbutton.x, ev.xbutton.y),
+            vec2i(ev.xbutton.x_root, ev.xbutton.y_root), button, mods));
       }
       break;
     }
@@ -604,15 +594,15 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
       modifier_state_t mods = x11_modifier_state(ev.xbutton.state);
       mouse_button_t button = x11_mouse_button_code(ev.xbutton.button);
       *consumed = llua_mouse_hook(mouse_button_event(
-          mouse_event_t::RELEASE, ev.xbutton.x, ev.xbutton.y, ev.xbutton.x_root,
-          ev.xbutton.y_root, button, mods));
+          mouse_event_t::RELEASE, vec2i(ev.xbutton.x, ev.xbutton.y),
+          vec2i(ev.xbutton.x_root, ev.xbutton.y_root), button, mods));
       break;
     }
     case MotionNotify: {
       modifier_state_t mods = x11_modifier_state(ev.xmotion.state);
-      *consumed = llua_mouse_hook(mouse_move_event(ev.xmotion.x, ev.xmotion.y,
-                                                   ev.xmotion.x_root,
-                                                   ev.xmotion.y_root, mods));
+      *consumed = llua_mouse_hook(
+          mouse_move_event(vec2i(ev.xmotion.x, ev.xmotion.y),
+                           vec2i(ev.xmotion.x_root, ev.xmotion.y_root), mods));
       break;
     }
   }
@@ -659,10 +649,10 @@ bool handle_event<x_event_handler::CONFIGURE>(
   if (ev.type != ConfigureNotify) return false;
 
   if (own_window.get(*state)) {
-    /* if window size isn't what expected, set fixed size */
-    if (ev.xconfigure.width != window.width ||
-        ev.xconfigure.height != window.height) {
-      if (window.width != 0 && window.height != 0) { fixed_size = 1; }
+    auto configure_size = vec2i(ev.xconfigure.width, ev.xconfigure.height);
+    /* if window size isn't what's expected, set fixed size */
+    if (configure_size != window.geometry.size()) {
+      if (window.geometry.size().surface() != 0) { fixed_size = 1; }
 
       /* clear old stuff before screwing up
        * size and pos */
@@ -671,17 +661,16 @@ bool handle_event<x_event_handler::CONFIGURE>(
       {
         XWindowAttributes attrs;
         if (XGetWindowAttributes(display, window.window, &attrs) != 0) {
-          window.width = attrs.width;
-          window.height = attrs.height;
+          window.geometry.set_size(attrs.width, attrs.height);
         }
       }
 
-      int border_total = get_border_total();
+      auto border_total = vec2i::uniform(get_border_total() * 2);
+      text_size = window.geometry.size() - border_total;
 
-      text_width = window.width - 2 * border_total;
-      text_height = window.height - 2 * border_total;
-      int mw = maximum_width.get(*state);
-      if (text_width > mw && mw > 0) { text_width = mw; }
+      // don't apply dpi scaling to max pixel size
+      int mw = dpi_scale(maximum_width.get(*state));
+      if (mw > 0) { text_size.set_x(std::min(mw, text_size.x())); }
     }
 
     /* if position isn't what expected, set fixed pos
@@ -689,8 +678,8 @@ bool handle_event<x_event_handler::CONFIGURE>(
      * is set to weird locations when started */
     /* // this is broken
     if (total_updates >= 2 && !fixed_pos
-        && (window.x != ev.xconfigure.x
-        || window.y != ev.xconfigure.y)
+        && (window.geometry.x != ev.xconfigure.x
+        || window.geometry.y != ev.xconfigure.y)
         && (ev.xconfigure.x != 0
         || ev.xconfigure.y != 0)) {
       fixed_pos = 1;
@@ -708,18 +697,16 @@ bool handle_event<x_event_handler::BORDER_CROSSING>(
   if (ev.type != EnterNotify && ev.type != LeaveNotify) return false;
   if (window.xi_opcode != 0) return true;  // handled by mouse_input already
 
-  bool not_over_conky = ev.xcrossing.x_root <= window.x ||
-                        ev.xcrossing.y_root <= window.y ||
-                        ev.xcrossing.x_root >= window.x + window.width ||
-                        ev.xcrossing.y_root >= window.y + window.height;
+  auto crossing_pos = vec2i(ev.xcrossing.x_root, ev.xcrossing.y_root);
+  bool over_conky = window.geometry.contains(crossing_pos);
 
-  if ((not_over_conky && ev.xcrossing.type == LeaveNotify) ||
-      (!not_over_conky && ev.xcrossing.type == EnterNotify)) {
+  if ((!over_conky && ev.xcrossing.type == LeaveNotify) ||
+      (over_conky && ev.xcrossing.type == EnterNotify)) {
     llua_mouse_hook(mouse_crossing_event(
         ev.xcrossing.type == EnterNotify ? mouse_event_t::AREA_ENTER
                                          : mouse_event_t::AREA_LEAVE,
-        ev.xcrossing.x, ev.xcrossing.y, ev.xcrossing.x_root,
-        ev.xcrossing.y_root));
+        vec2i(ev.xcrossing.x, ev.xcrossing.y),
+        vec2i(ev.xcrossing.x_root, ev.xcrossing.y_root)));
   }
   return true;
 }
@@ -769,11 +756,12 @@ bool handle_event<x_event_handler::EXPOSE>(conky::display_output_x11 *surface,
                                            bool *consumed, void **cookie) {
   if (ev.type != Expose) return false;
 
-  XRectangle r;
-  r.x = ev.xexpose.x;
-  r.y = ev.xexpose.y;
-  r.width = ev.xexpose.width;
-  r.height = ev.xexpose.height;
+  XRectangle r{
+      .x = static_cast<short>(ev.xexpose.x),
+      .y = static_cast<short>(ev.xexpose.y),
+      .width = static_cast<unsigned short>(ev.xexpose.width),
+      .height = static_cast<unsigned short>(ev.xexpose.height),
+  };
   XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
   XSync(display, False);
   return true;
@@ -870,9 +858,9 @@ void display_output_x11::cleanup() {
   if (window_created == 1) {
     int border_total = get_border_total();
 
-    XClearArea(display, window.window, text_start_x - border_total,
-               text_start_y - border_total, text_width + 2 * border_total,
-               text_height + 2 * border_total, 0);
+    XClearArea(display, window.window, text_start.x() - border_total,
+               text_start.y() - border_total, text_size.x() + 2 * border_total,
+               text_size.y() + 2 * border_total, 0);
   }
   destroy_window();
   free_fonts(utf8_mode.get(*state));
@@ -974,8 +962,7 @@ void display_output_x11::draw_arc(int x, int y, int w, int h, int a1, int a2) {
 
 void display_output_x11::move_win(int x, int y) {
 #ifdef OWN_WINDOW
-  window.x = x;
-  window.y = y;
+  window.geometry.set_pos(x, y);
   XMoveWindow(display, window.window, x, y);
 #endif /* OWN_WINDOW */
 }
@@ -1012,9 +999,9 @@ void display_output_x11::clear_text(int exposures) {
     /* there is some extra space for borders and outlines */
     int border_total = get_border_total();
 
-    XClearArea(display, window.window, text_start_x - border_total,
-               text_start_y - border_total, text_width + 2 * border_total,
-               text_height + 2 * border_total, exposures != 0 ? True : 0);
+    XClearArea(display, window.window, text_start.x() - border_total,
+               text_start.y() - border_total, text_size.x() + 2 * border_total,
+               text_size.y() + 2 * border_total, exposures != 0 ? True : 0);
   }
 }
 

@@ -35,6 +35,7 @@
 #include <cstring>
 #include <ctime>
 
+#include "x11-settings.h"
 #include "x11.h"
 
 struct image_list_s {
