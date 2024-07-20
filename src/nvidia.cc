@@ -458,7 +458,7 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
       break;
     case text_node_t::GRAPH: {
       auto [buf, skip] = scan_command(arg);
-      scan_graph(obj, arg + skip, 100);
+      scan_graph(obj, arg + skip, 100, FALSE);
       arg = buf;
     } break;
     case text_node_t::GAUGE:

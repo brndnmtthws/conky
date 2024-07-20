@@ -80,6 +80,7 @@ struct special_node {
   Colour last_colour;
   short font_added;
   char tempgrad;
+  char speedgraph;
   struct special_node *next;
 };
 
@@ -97,7 +98,7 @@ const char *scan_gauge(struct text_object *, const char *, double);
 #ifdef BUILD_GUI
 void scan_font(struct text_object *, const char *);
 std::pair<char *, size_t> scan_command(const char *);
-bool scan_graph(struct text_object *, const char *, double);
+bool scan_graph(struct text_object *, const char *, double, char);
 void scan_tab(struct text_object *, const char *);
 void scan_stippled_hr(struct text_object *, const char *);
 

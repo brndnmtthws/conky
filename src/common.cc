@@ -352,7 +352,7 @@ void print_no_update(struct text_object *obj, char *p,
 
 #ifdef BUILD_GUI
 void scan_loadgraph_arg(struct text_object *obj, const char *arg) {
-  scan_graph(obj, arg, 0);
+  scan_graph(obj, arg, 0, FALSE);
 }
 
 double loadgraphval(struct text_object *obj) {
