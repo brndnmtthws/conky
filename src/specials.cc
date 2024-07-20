@@ -50,6 +50,7 @@ struct special_node *specials = nullptr;
 
 int special_count;
 int graph_count = 0;
+double maxspeedval = 1e-47; /* The maximum value among the speed graphs */
 
 std::map<int, double *> graphs;
 
@@ -106,6 +107,7 @@ struct graph {
   Colour first_colour, last_colour;
   double scale;
   char tempgrad;
+  char speedgraph;  /* If the current graph is a speed graph */
 };
 
 struct stippled_hr {
@@ -249,7 +251,7 @@ std::pair<char *, size_t> scan_command(const char *s) {
  * @param[in]  defscale default scale if no scale argument given
  * @return whether parsing was successful
  **/
-bool scan_graph(struct text_object *obj, const char *argstr, double defscale) {
+bool scan_graph(struct text_object *obj, const char *argstr, double defscale, char speedGraph) {
   char first_colour_name[1024] = {'\0'};
   char last_colour_name[1024] = {'\0'};
 
@@ -266,6 +268,10 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale) {
   g->last_colour = Colour();
   g->scale = defscale;
   g->tempgrad = FALSE;
+
+  if (speedGraph) {
+    g->speedgraph = TRUE;
+  }
 
   if (argstr == nullptr) return false;
 
@@ -486,6 +492,10 @@ static void graph_append(struct special_node *graph, double f, char showaslog) {
   if (graph->scaled != 0) {
     graph->scale =
         *std::max_element(graph->graph + 0, graph->graph + graph->graph_width);
+    if (graph->speedgraph) {
+        maxspeedval = graph->scale < maxspeedval ? maxspeedval : graph->scale;
+        graph->scale = maxspeedval;
+    }
     if (graph->scale < 1e-47) {
       /* avoid NaN's when the graph is all-zero (e.g. before the first update)
        * there is nothing magical about 1e-47 here */
@@ -609,6 +619,10 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
     s->scale = log10(s->scale + 1);
   }
 #endif
+
+  if (g->speedgraph) {
+    s->speedgraph = TRUE;
+  }
 
   if (store_graph_data_explicitly.get(*state)) {
     if (s->graph) { s->graph = retrieve_graph(g->id, s->graph_width); }
