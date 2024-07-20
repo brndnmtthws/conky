@@ -54,7 +54,7 @@ struct graph {
 
 static std::pair<struct graph, bool> test_parse(const char *s) {
   struct text_object obj;
-  bool result = scan_graph(&obj, s, default_scale);
+  bool result = scan_graph(&obj, s, default_scale,FALSE);
   auto g = static_cast<struct graph *>(obj.special_data);
   struct graph graph = *g;
   free(g);
