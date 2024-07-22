@@ -249,6 +249,7 @@ std::pair<char *, size_t> scan_command(const char *s) {
  * @param[out] obj  struct in which to save width, height and other options
  * @param[in]  args argument string to parse
  * @param[in]  defscale default scale if no scale argument given
+ * @param[in]  speedGraph if graph is network speed graph or not
  * @return whether parsing was successful
  **/
 bool scan_graph(struct text_object *obj, const char *argstr, double defscale, char speedGraph) {
@@ -306,15 +307,20 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale, ch
   last_colour_name[0] = '\0';
   g->scale = defscale;
 
-  /* [height],[width] [color1] [color2] */
+  /* [height],[width] [color1] [color2] 
+   * This could match as [height],[width] [scale] [-l | -t], 
+   * therfore we ensure last_colour_name is not TEMPGRAD or LOGGRAPH */
   if (sscanf(argstr, "%d,%d %s %s", &g->height, &g->width, first_colour_name,
-             last_colour_name) == 4) {
+             last_colour_name) == 4 && 
+             strcmp(last_colour_name, TEMPGRAD) != 0 &&
+             strcmp(last_colour_name, LOGGRAPH) != 0) {
     apply_graph_colours(g, first_colour_name, last_colour_name);
     return true;
   }
   g->height = default_graph_height.get(*state);
   g->width = default_graph_width.get(*state);
   first_colour_name[0] = '\0';
+  last_colour_name[0] = '\0';
 
   /* [height],[width] [scale] */
   if (sscanf(argstr, "%d,%d %lf", &g->height, &g->width, &g->scale) == 3) {
@@ -322,6 +328,7 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale, ch
   }
   g->height = default_graph_height.get(*state);
   g->width = default_graph_width.get(*state);
+  g->scale = defscale;
 
   /* [height],[width] */
   if (sscanf(argstr, "%d,%d", &g->height, &g->width) == 2) { return true; }
@@ -343,11 +350,17 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale, ch
   last_colour_name[0] = '\0';
   g->scale = defscale;
 
-  /* [color1] [color2] */
-  if (sscanf(argstr, "%s %s", first_colour_name, last_colour_name) == 2) {
+  /* [color1] [color2] 
+   * This could match as [scale] [-l | -t], 
+   * therfore we ensure last_colour_name is not TEMPGRAD or LOGGRAPH */
+  if (sscanf(argstr, "%s %s", first_colour_name, last_colour_name) == 2 &&
+             strcmp(last_colour_name, TEMPGRAD) != 0 &&
+             strcmp(last_colour_name, LOGGRAPH) != 0) { 
     apply_graph_colours(g, first_colour_name, last_colour_name);
     return true;
   }
+  first_colour_name[0] = '\0';
+  last_colour_name[0] = '\0';
 
   /* [scale] */
   if (sscanf(argstr, "%lf", &g->scale) == 1) { return true; }
