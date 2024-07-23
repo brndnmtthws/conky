@@ -83,6 +83,9 @@ conky::simple_config_setting<std::string> console_graph_ticks(
 #define SF_SCALED (1 << 0)
 #define SF_SHOWLOG (1 << 1)
 
+/* special flag for inverting axis */
+#define SF_INVERTX (1 << 0)
+
 /*
  * Special data typedefs
  */
@@ -108,6 +111,7 @@ struct graph {
   double scale;
   char tempgrad;
   char speedgraph;  /* If the current graph is a speed graph */
+  char invertflag;  /* If the axis needs to be inverted */
 };
 
 struct stippled_hr {
@@ -245,6 +249,7 @@ std::pair<char *, size_t> scan_command(const char *s) {
  *
  * -l will set the showlog flag, enabling logarithmic graph scales
  * -t will set the tempgrad member to true, enabling temperature gradient colors
+ * -x will set the invertx flag to true, inverting the x axis
  *
  * @param[out] obj  struct in which to save width, height and other options
  * @param[in]  args argument string to parse
@@ -269,11 +274,10 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale, ch
   g->last_colour = Colour();
   g->scale = defscale;
   g->tempgrad = FALSE;
-
+  g->invertflag = FALSE;
   if (speedGraph) {
     g->speedgraph = TRUE;
   }
-
   if (argstr == nullptr) return false;
 
   /* set tempgrad to true if '-t' specified.
@@ -287,6 +291,12 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale, ch
   if ((strstr(argstr, " " LOGGRAPH) != nullptr) ||
       strncmp(argstr, LOGGRAPH, strlen(LOGGRAPH)) == 0) {
     g->flags |= SF_SHOWLOG;
+  }
+  /* set invertx to true if '-x' specified.
+   * It doesn't matter where the argument is exactly. */
+  if ((strstr(argstr, " " INVERTX) != nullptr) ||
+      strncmp(argstr, INVERTX, strlen(INVERTX)) == 0) {
+    g->invertflag |= SF_INVERTX;
   }
 
   /* all the following functions try to interpret the beginning of a
@@ -313,7 +323,8 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale, ch
   if (sscanf(argstr, "%d,%d %s %s", &g->height, &g->width, first_colour_name,
              last_colour_name) == 4 && 
              strcmp(last_colour_name, TEMPGRAD) != 0 &&
-             strcmp(last_colour_name, LOGGRAPH) != 0) {
+             strcmp(last_colour_name, LOGGRAPH) != 0 &&
+             strcmp(last_colour_name, INVERTX) != 0) {
     apply_graph_colours(g, first_colour_name, last_colour_name);
     return true;
   }
@@ -355,7 +366,8 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale, ch
    * therfore we ensure last_colour_name is not TEMPGRAD or LOGGRAPH */
   if (sscanf(argstr, "%s %s", first_colour_name, last_colour_name) == 2 &&
              strcmp(last_colour_name, TEMPGRAD) != 0 &&
-             strcmp(last_colour_name, LOGGRAPH) != 0) { 
+             strcmp(last_colour_name, LOGGRAPH) != 0 &&
+             strcmp(last_colour_name, INVERTX) != 0) { 
     apply_graph_colours(g, first_colour_name, last_colour_name);
     return true;
   }
@@ -632,7 +644,9 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
     s->scale = log10(s->scale + 1);
   }
 #endif
-
+  if ((g->invertflag & SF_INVERTX) != 0){
+    s->invertx = 1;
+  }
   if (g->speedgraph) {
     s->speedgraph = TRUE;
   }
