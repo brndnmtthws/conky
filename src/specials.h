@@ -39,6 +39,7 @@
 // don't use spaces in LOGGRAPH or NORMGRAPH if you change them
 #define LOGGRAPH "-l"
 #define TEMPGRAD "-t"
+#define INVERTX "-x"
 
 enum class text_node_t : uint32_t {
   NONSPECIAL = 0,
@@ -81,6 +82,7 @@ struct special_node {
   short font_added;
   char tempgrad;
   char speedgraph;
+  char invertx;
   struct special_node *next;
 };
 

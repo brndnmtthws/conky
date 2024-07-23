@@ -995,6 +995,33 @@ static inline void set_foreground_color(Colour c) {
   for (auto output : display_outputs()) output->set_foreground_color(c);
 }
 
+static inline void draw_graph_bars(special_node *current, std::unique_ptr<Colour[]>& tmpcolour, 
+                            conky::vec2i& text_offset, int i, int &j, int w, 
+                            int colour_idx, int cur_x, int by, int h) {
+  if (current->colours_set) {
+    if (current->tempgrad != 0) {
+      set_foreground_color(tmpcolour[static_cast<int>(
+          static_cast<float>(w - 2) -
+          current->graph[j] * (w - 2) /
+              std::max(static_cast<float>(current->scale),
+                        1.0F))]);
+    } else {
+      set_foreground_color(tmpcolour[colour_idx++]);
+    }
+  }
+  /* this is mugfugly, but it works */
+  if (display_output()) {
+    display_output()->draw_line(
+        text_offset.x() + cur_x + i + 1, text_offset.y() + by + h,
+        text_offset.x() + cur_x + i + 1,
+        text_offset.y() +
+            round_to_positive_int(static_cast<double>(by) + h -
+                                  current->graph[j] * (h - 1) /
+                                      current->scale));
+  }
+  ++j;
+}
+
 static void draw_string(const char *s) {
   int i;
   int i2;
@@ -1293,29 +1320,17 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
                 delete factory;
               }
               colour_idx = 0;
-              for (i = w - 2; i > -1; i--) {
-                if (current->colours_set) {
-                  if (current->tempgrad != 0) {
-                    set_foreground_color(tmpcolour[static_cast<int>(
-                        static_cast<float>(w - 2) -
-                        current->graph[j] * (w - 2) /
-                            std::max(static_cast<float>(current->scale),
-                                     1.0F))]);
-                  } else {
-                    set_foreground_color(tmpcolour[colour_idx++]);
-                  }
+              if(current->invertx){
+                for (i = 0; i <= w- 2; i++) {
+                  draw_graph_bars(current, tmpcolour, text_offset, 
+                  i, j, w, colour_idx, cur_x, by, h);
                 }
-                /* this is mugfugly, but it works */
-                if (display_output()) {
-                  display_output()->draw_line(
-                      text_offset.x() + cur_x + i + 1, text_offset.y() + by + h,
-                      text_offset.x() + cur_x + i + 1,
-                      text_offset.y() +
-                          round_to_positive_int(static_cast<double>(by) + h -
-                                                current->graph[j] * (h - 1) /
-                                                    current->scale));
+              }
+              else{
+                for (i = w - 2; i > -1; i--) {
+                  draw_graph_bars(current, tmpcolour, text_offset, 
+                  i, j, w, colour_idx, cur_x, by, h);
                 }
-                ++j;
               }
             }
             if (h > cur_y_add && h > font_h) { cur_y_add = h; }
