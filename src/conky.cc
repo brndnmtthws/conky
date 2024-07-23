@@ -1009,15 +1009,17 @@ static inline void draw_graph_bars(special_node *current, std::unique_ptr<Colour
       set_foreground_color(tmpcolour[colour_idx++]);
     }
   }
+  /* Handle the case where y axis is to be inverted */
+  int offsety1 = current->inverty ? by : by + h;
+  int offsety2 = current->inverty ? by +  current->graph[j] * (h - 1) / current->scale
+                          : round_to_positive_int(static_cast<double>(by) + h -
+                          current->graph[j] * (h - 1) /
+                          current->scale);
   /* this is mugfugly, but it works */
   if (display_output()) {
     display_output()->draw_line(
-        text_offset.x() + cur_x + i + 1, text_offset.y() + by + h,
-        text_offset.x() + cur_x + i + 1,
-        text_offset.y() +
-            round_to_positive_int(static_cast<double>(by) + h -
-                                  current->graph[j] * (h - 1) /
-                                      current->scale));
+        text_offset.x() + cur_x + i + 1, text_offset.y() + offsety1,
+        text_offset.x() + cur_x + i + 1, text_offset.y() + offsety2);
   }
   ++j;
 }
@@ -1321,7 +1323,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
               }
               colour_idx = 0;
               if(current->invertx){
-                for (i = 0; i <= w- 2; i++) {
+                for (i = 0; i <= w - 2; i++) {
                   draw_graph_bars(current, tmpcolour, text_offset, 
                   i, j, w, colour_idx, cur_x, by, h);
                 }

@@ -40,6 +40,7 @@
 #define LOGGRAPH "-l"
 #define TEMPGRAD "-t"
 #define INVERTX "-x"
+#define INVERTY "-y"
 
 enum class text_node_t : uint32_t {
   NONSPECIAL = 0,
@@ -83,6 +84,7 @@ struct special_node {
   char tempgrad;
   char speedgraph;
   char invertx;
+  char inverty;
   struct special_node *next;
 };
 
