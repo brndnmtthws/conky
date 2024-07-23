@@ -486,9 +486,9 @@ struct rect {
 
   inline void set_width(T value) {
     if constexpr (Kind == rect_kind::SIZED) {
-      this->other.set_x(value);
+      this->m_other.set_x(value);
     } else {
-      this->other.set_x(this->m_pos.get_x() + value);
+      this->m_other.set_x(this->m_pos.get_x() + value);
     }
   }
   inline void set_height(T value) {
@@ -532,9 +532,9 @@ struct rect {
   std::array<vec2<T>, 4> corners() const {
     return std::array<vec2<T>, 4>{
         this->m_pos,
-        this->m_pos + vec2<T>(this->get_width(), 0),
-        this->get_end_pos(),
-        this->m_pos + vec2<T>(0, this->get_height()),
+        this->m_pos + vec2<T>(this->width(), 0),
+        this->end_pos(),
+        this->m_pos + vec2<T>(0, this->height()),
     };
   }
 
