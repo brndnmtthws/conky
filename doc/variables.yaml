@@ -97,6 +97,7 @@ values:
       - (scale)
       - (-t)
       - (-l)
+      - (-x)
   - name: apcupsd_model
     desc: Prints the model of the UPS.
   - name: apcupsd_name
@@ -328,7 +329,8 @@ values:
       See $cpu for more info on SMP. Uses a logarithmic scale (to see small
       numbers) when you use the -l switch. Takes the switch '-t' to use a
       temperature gradient, which makes the gradient values change depending
-      on the amplitude of a particular graph value (try it and see).
+      on the amplitude of a particular graph value (try it and see). The flag
+      '-x' inverts the x axis of the graph.
     args:
       - (cpuN)
       - (height),(width)
@@ -337,6 +339,7 @@ values:
       - (scale)
       - (-t)
       - (-l)
+      - (-x)
   - name: curl
     desc: |-
       Download data from URI using Curl at the specified interval.
@@ -389,7 +392,7 @@ values:
       scale (to see small numbers) when you use -l switch. Takes the switch
       '-t' to use a temperature gradient, which makes the gradient values
       change depending on the amplitude of a particular graph value (try it
-      and see).
+      and see). The flag '-x' inverts the x axis of the graph.
     args:
       - (device)
       - (height),(width)
@@ -398,6 +401,7 @@ values:
       - (scale)
       - (-t)
       - (-l)
+      - (-x)
   - name: diskiograph_read
     desc: |-
       Disk IO graph for reads, colours defined in hex, minus the
@@ -405,7 +409,8 @@ values:
       in diskio. Uses a logarithmic scale (to see small numbers) when you
       use -l switch. Takes the switch '-t' to use a temperature gradient,
       which makes the gradient values change depending on the amplitude of a
-      particular graph value (try it and see).
+      particular graph value (try it and see). The flag '-x' inverts the x 
+      axis of the graph.
     args:
       - (device)
       - (height),(width)
@@ -414,6 +419,7 @@ values:
       - (scale)
       - (-t)
       - (-l)
+      - (-x)
   - name: diskiograph_write
     desc: |-
       Disk IO graph for writes, colours defined in hex, minus the
@@ -421,7 +427,8 @@ values:
       in diskio. Uses a logarithmic scale (to see small numbers) when you
       use -l switch. Takes the switch '-t' to use a temperature gradient,
       which makes the gradient values change depending on the amplitude of a
-      particular graph value (try it and see).
+      particular graph value (try it and see). The flag '-x' inverts the x 
+      axis of the graph.
     args:
       - (device)
       - (height),(width)
@@ -430,6 +437,7 @@ values:
       - (scale)
       - (-t)
       - (-l)
+      - (-x)
   - name: distribution
     desc: |-
       The name of the distribution. It could be that some of the
@@ -456,7 +464,7 @@ values:
       per second). Uses a logarithmic scale (to see small numbers) when you use
       -l switch. Takes the switch '-t' to use a temperature gradient, which makes
       the gradient values change depending on the amplitude of a particular
-      graph value (try it and see).
+      graph value (try it and see). The flag '-x' inverts the x axis of the graph.
     args:
       - (netdev)
       - (height),(width)
@@ -465,6 +473,7 @@ values:
       - (scale)
       - (-t)
       - (-l)
+      - (-x)
   - name: draft_mails
     desc: |-
       Number of mails marked as draft in the specified mailbox or
@@ -535,7 +544,8 @@ values:
       graph. The scale parameter defines the maximum value of the graph.  Use the
       -l switch to enable a logarithmic scale, which helps to see small values.
       The default size for graphs can be controlled via the default_graph_height
-      and default_graph_width config settings.
+      and default_graph_width config settings. The flag '-x' inverts the x axis 
+      of the graph.
 
       If you need to execute a command with spaces, you have a
       couple options:
@@ -562,6 +572,7 @@ values:
       - (scale)
       - (-t)
       - (-l)
+      - (-x)
   - name: execi
     desc: |-
       Same as exec, but with a specific interval in seconds. The
@@ -593,6 +604,7 @@ values:
       - (scale)
       - (-t)
       - (-l)
+      - (-x)
   - name: execp
     desc: |-
       Executes a shell command and displays the output in conky.
@@ -1111,7 +1123,8 @@ values:
       in hex, minus the #. Uses a logarithmic scale (to see small numbers)
       when you use the -l switch. Takes the switch '-t' to use a temperature
       gradient, which makes the gradient values change depending on the
-      amplitude of a particular graph value (try it and see).
+      amplitude of a particular graph value (try it and see). The flag
+      '-x' inverts the x axis of the graph.
     args:
       - (height),(width)
       - (gradient colour 1)
@@ -1119,6 +1132,7 @@ values:
       - (scale)
       - (-t)
       - (-l)
+      - (-x)
   - name: lowercase
     desc: Converts all letters into lowercase.
     args:
@@ -1173,6 +1187,7 @@ values:
       - (scale)
       - (-t)
       - (-l)
+      - (-x)
   - name: lua_parse
     desc: |-
       Executes a Lua function with given parameters as per $lua,
@@ -1232,7 +1247,8 @@ values:
       Memory usage graph. Uses a logarithmic scale (to see small
       numbers) when you use the -l switch. Takes the switch '-t' to use a
       temperature gradient, which makes the gradient values change depending
-      on the amplitude of a particular graph value (try it and see).
+      on the amplitude of a particular graph value (try it and see). The flag
+      '-x' inverts the x axis of the graph.
     args:
       - (height),(width)
       - (gradient colour 1)
@@ -1240,6 +1256,7 @@ values:
       - (scale)
       - (-t)
       - (-l)
+      - (-x)
   - name: meminactive
     desc: Amount of inactive memory. FreeBSD only.
   - name: memlaundry
@@ -1266,7 +1283,8 @@ values:
       and cache. Uses a logarithmic scale (to see small numbers) when you
       use the -l switch. Takes the switch '-t' to use a temperature
       gradient, which makes the gradient values change depending on the
-      amplitude of a particular graph value (try it and see).
+      amplitude of a particular graph value (try it and see). The flag
+      '-x' inverts the x axis of the graph.
     args:
       - (height),(width)
       - (gradient colour 1)
@@ -1274,6 +1292,7 @@ values:
       - (scale)
       - (-t)
       - (-l)
+      - (-x)
   - name: mixer
     desc: |-
       Prints the mixer value as reported by the OS. On Linux, this
@@ -1529,7 +1548,7 @@ values:
       used as 0,1,2,3,..
 
       For possible arguments see nvidia and nvidiabar. To learn more about the
-      -t -l and gradient color options, see execgraph.
+      -t -l -x and gradient color options, see execgraph.
     args:
       - argument
       - (height),(width)
@@ -1538,6 +1557,7 @@ values:
       - (scale)
       - (-t)
       - (-l)
+      - (-x)
       - GPU_ID
   - name: offset
     desc: Move text over by N pixels. See also $voffset.
@@ -2328,7 +2348,7 @@ values:
       numbers) when you use the -l switch. Takes the switch '-t' to
       use a temperature gradient, which makes the gradient values
       change depending on the amplitude of a particular graph value
-      (try it and see).
+      (try it and see). The flag '-x' inverts the x axis of the graph.
     args:
       - (netdev)
       - (height),(width)
@@ -2337,6 +2357,7 @@ values:
       - (scale)
       - (-t)
       - (-l)
+      - (-x)
   - name: uptime
     desc: Uptime.
   - name: uptime_short
