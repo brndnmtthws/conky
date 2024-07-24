@@ -252,7 +252,7 @@ void init_x11() {
       std::string err =
           std::string("can't open display: ") + XDisplayName(disp);
 #ifdef BUILD_WAYLAND
-      NORM_ERR(err.c_str());
+      LOG_ERROR(err.c_str());
       return;
 #else  /* BUILD_WAYLAND */
       throw std::runtime_error(err);
@@ -343,15 +343,13 @@ void update_x11_workarea() {
   int heads = 0;
   XineramaScreenInfo *si = XineramaQueryScreens(display, &heads);
   if (si == nullptr) {
-    NORM_ERR(
-        "warning: XineramaQueryScreen returned nullptr, ignoring head "
-        "settings");
+    LOG_WARNING("XineramaQueryScreen returned nullptr, ignoring head settings");
     return; /* queryscreens failed? */
   }
 
   int i = head_index.get(*state);
   if (i < 0 || i >= heads) {
-    NORM_ERR("warning: invalid head index, ignoring head settings");
+    LOG_WARNING("invalid head index, ignoring head settings");
     return;
   }
 
@@ -455,7 +453,7 @@ static int get_argb_visual(Visual **visual, int *depth) {
                                        visual_list[i].blue_mask == 0x0000ff)) {
       *visual = visual_list[i].visual;
       *depth = visual_list[i].depth;
-      DBGP("Found ARGB Visual");
+      LOG_TRACE("Found ARGB Visual");
       XFree(visual_list);
       return 1;
     }
@@ -621,7 +619,7 @@ void x11_init_window(lua::state &l, bool own) {
         int major_version;
         int minor_version;
         if (XShapeQueryVersion(display, &major_version, &minor_version) == 0) {
-          NORM_ERR("Input shapes are not supported");
+          LOG_WARNING("Input shapes are not supported");
         } else {
           if (own_window.get(*state) &&
               (own_window_type.get(*state) != window_type::NORMAL ||
@@ -823,14 +821,14 @@ void x11_init_window(lua::state &l, bool own) {
     if (!XQueryExtension(display, "XInputExtension", &window.xi_opcode,
                          &_ignored, &_ignored)) {
       // events will still ~work but let the user know why they're buggy
-      NORM_ERR("XInput extension is not supported by X11!");
+      LOG_WARNING("XInput extension is not supported by X11!");
       break;
     }
 
     int major = 2, minor = 0;
     int retval = XIQueryVersion(display, &major, &minor);
     if (retval != 0) {
-      NORM_ERR("Error: XInput 2.0 is not supported!");
+      LOG_ERROR("XInput 2.0 is not supported!");
       break;
     }
 
@@ -1148,26 +1146,38 @@ void set_struts(alignment align) {
       case alignment::TOP_LEFT:
       case alignment::TOP_RIGHT:
       case alignment::TOP_MIDDLE:
-        sizes[*x11_strut::TOP] = std::clamp(window.geometry.end_y(), 0, display_height);
-        sizes[*x11_strut::TOP_START_X] = std::clamp(window.geometry.x(), 0, display_width);
-        sizes[*x11_strut::TOP_END_X] = std::clamp(window.geometry.end_x(), 0, display_width);
+        sizes[*x11_strut::TOP] =
+            std::clamp(window.geometry.end_y(), 0, display_height);
+        sizes[*x11_strut::TOP_START_X] =
+            std::clamp(window.geometry.x(), 0, display_width);
+        sizes[*x11_strut::TOP_END_X] =
+            std::clamp(window.geometry.end_x(), 0, display_width);
         break;
       case alignment::BOTTOM_LEFT:
       case alignment::BOTTOM_RIGHT:
       case alignment::BOTTOM_MIDDLE:
-        sizes[*x11_strut::BOTTOM] = display_height - std::clamp(window.geometry.y(), 0, display_height);
-        sizes[*x11_strut::BOTTOM_START_X] = std::clamp(window.geometry.x(), 0, display_width);
-        sizes[*x11_strut::BOTTOM_END_X] = std::clamp(window.geometry.end_x(), 0, display_width);
+        sizes[*x11_strut::BOTTOM] =
+            display_height - std::clamp(window.geometry.y(), 0, display_height);
+        sizes[*x11_strut::BOTTOM_START_X] =
+            std::clamp(window.geometry.x(), 0, display_width);
+        sizes[*x11_strut::BOTTOM_END_X] =
+            std::clamp(window.geometry.end_x(), 0, display_width);
         break;
       case alignment::MIDDLE_LEFT:
-        sizes[*x11_strut::LEFT] = std::clamp(window.geometry.end_x(), 0, display_width);
-        sizes[*x11_strut::LEFT_START_Y] = std::clamp(window.geometry.y(), 0, display_height);
-        sizes[*x11_strut::LEFT_END_Y] = std::clamp(window.geometry.end_y(), 0, display_height);
+        sizes[*x11_strut::LEFT] =
+            std::clamp(window.geometry.end_x(), 0, display_width);
+        sizes[*x11_strut::LEFT_START_Y] =
+            std::clamp(window.geometry.y(), 0, display_height);
+        sizes[*x11_strut::LEFT_END_Y] =
+            std::clamp(window.geometry.end_y(), 0, display_height);
         break;
       case alignment::MIDDLE_RIGHT:
-        sizes[*x11_strut::RIGHT] = display_width - std::clamp(window.geometry.x(), 0, display_width);
-        sizes[*x11_strut::RIGHT_START_Y] = std::clamp(window.geometry.y(), 0, display_height);
-        sizes[*x11_strut::RIGHT_END_Y] = std::clamp(window.geometry.end_y(), 0, display_height);
+        sizes[*x11_strut::RIGHT] =
+            display_width - std::clamp(window.geometry.x(), 0, display_width);
+        sizes[*x11_strut::RIGHT_START_Y] =
+            std::clamp(window.geometry.y(), 0, display_height);
+        sizes[*x11_strut::RIGHT_END_Y] =
+            std::clamp(window.geometry.end_y(), 0, display_height);
         break;
       default:
         // can't reserve space in middle of the screen
@@ -1204,8 +1214,8 @@ void xpmdb_swap_buffers(void) {
     XCopyArea(display, window.back_buffer, window.window, window.gc, 0, 0,
               window.geometry.width(), window.geometry.height(), 0, 0);
     XSetForeground(display, window.gc, 0);
-    XFillRectangle(display, window.drawable, window.gc, 0, 0, window.geometry.width(),
-                   window.geometry.height());
+    XFillRectangle(display, window.drawable, window.gc, 0, 0,
+                   window.geometry.width(), window.geometry.height());
     XFlush(display);
   }
 }

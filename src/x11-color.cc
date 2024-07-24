@@ -23,7 +23,7 @@ unsigned long Colour::to_x11_color(Display *display, int screen,
     xcolor.green = this->green * 257;
     xcolor.blue = this->blue * 257;
     if (XAllocColor(display, DefaultColormap(display, screen), &xcolor) == 0) {
-      // NORM_ERR("can't allocate X color");
+      // LOG_WARNING("can't allocate X color");
       return 0;
     }
 

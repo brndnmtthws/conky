@@ -82,13 +82,13 @@ void display_output_file::begin_draw_stuff() {
   if (static_cast<unsigned int>(!overwrite_file.get(*state).empty()) != 0u) {
     overwrite_fpointer = fopen(overwrite_file.get(*state).c_str(), "we");
     if (overwrite_fpointer == nullptr) {
-      NORM_ERR("Cannot overwrite '%s'", overwrite_file.get(*state).c_str());
+      LOG_WARNING("cannot overwrite '%s'", overwrite_file.get(*state).c_str());
     }
   }
   if (static_cast<unsigned int>(!append_file.get(*state).empty()) != 0u) {
     append_fpointer = fopen(append_file.get(*state).c_str(), "ae");
     if (append_fpointer == nullptr) {
-      NORM_ERR("Cannot append to '%s'", append_file.get(*state).c_str());
+      LOG_WARNING("cannot append to '%s'", append_file.get(*state).c_str());
     }
   }
 }

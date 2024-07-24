@@ -230,7 +230,7 @@ char *find_and_replace_templates(const char *inbuf) {
       free(tmpl_out);
       o = outbuf + strlen(outbuf);
     } else {
-      NORM_ERR("failed to handle template '%s' with args '%s'", templ, args);
+      LOG_WARNING("failed to handle template '%s' with args '%s'", templ, args);
     }
   }
   *o = '\0';

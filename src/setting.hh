@@ -132,7 +132,7 @@ struct lua_traits<T, false, false, true> {
       msg += "'" + i->first + "'";
     }
     msg += ".";
-    NORM_ERR("%s", msg.c_str());
+    LOG_WARNING("%s", msg.c_str());
 
     return {T(), false};
   }
@@ -280,7 +280,7 @@ simple_config_setting<T, Traits>::do_convert(lua::state &l, int index) {
   if (l.isnil(index)) return {default_value, true};
 
   if (l.type(index) != Traits::type) {
-    NORM_ERR(
+    LOG_WARNING(
         "Invalid value of type '%s' for setting '%s'. "
         "Expected value of type '%s'.",
         l.type_name(l.type(index)), Base::name.c_str(),
@@ -297,7 +297,7 @@ void simple_config_setting<T, Traits>::lua_setter(lua::state &l, bool init) {
 
   bool ok = true;
   if (!init && !modifiable) {
-    NORM_ERR("Setting '%s' is not modifiable", Base::name.c_str());
+    LOG_WARNING("Setting '%s' is not modifiable", Base::name.c_str());
     ok = false;
   }
 
@@ -350,7 +350,7 @@ class range_config_setting : public simple_config_setting<T, Traits> {
                                                             int index) {
     auto ret = Base::do_convert(l, index);
     if (ret.second && !between(ret.first, min, max)) {
-      NORM_ERR("Value is out of range for setting '%s'", Base::name.c_str());
+      LOG_WARNING("Value is out of range for setting '%s'", Base::name.c_str());
       // we ignore out-of-range values. an alternative would be to clamp them.
       // do we want to do that?
       ret.second = false;

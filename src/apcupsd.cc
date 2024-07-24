@@ -202,7 +202,7 @@ int update_apcupsd() {
     snprintf(portbuf, 8, "%d", apcupsd.port);
     res = getaddrinfo(apcupsd.host, portbuf, &hints, &ai);
     if (res != 0) {
-      NORM_ERR("APCUPSD getaddrinfo: %s", gai_strerror(res));
+      LOG_ERROR("unable to get APCUPSD address info: %s", gai_strerror(res));
       break;
     }
     for (rp = ai; rp != nullptr; rp = rp->ai_next) {

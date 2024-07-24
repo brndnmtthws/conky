@@ -563,7 +563,7 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj) {
   int n;
 
   if (arg == nullptr) {
-    NORM_ERR("top needs arguments");
+    LOG_WARNING("top needs arguments");
     return 0;
   }
 
@@ -587,9 +587,9 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj) {
 #endif /* BUILD_IOSTATS */
   } else {
 #ifdef BUILD_IOSTATS
-    NORM_ERR("Must be top, top_mem, top_time or top_io");
+    LOG_WARNING("Must be top, top_mem, top_time or top_io");
 #else  /* BUILD_IOSTATS */
-    NORM_ERR("Must be top, top_mem or top_time");
+    LOG_WARNING("Must be top, top_mem or top_time");
 #endif /* BUILD_IOSTATS */
     free_and_zero(obj->data.opaque);
     return 0;
@@ -625,20 +625,21 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj) {
       obj->callbacks.print = &print_top_io_perc;
 #endif /* BUILD_IOSTATS */
     } else {
-      NORM_ERR("invalid type arg for top");
+      LOG_WARNING("invalid type arg for top");
 #ifdef BUILD_IOSTATS
-      NORM_ERR(
+      LOG_WARNING(
           "must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize, "
           "io_read, io_write, io_perc");
 #else  /* BUILD_IOSTATS */
-      NORM_ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize");
+      LOG_WARNING(
+          "must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize");
 #endif /* BUILD_IOSTATS */
       free_and_zero(td->s);
       free_and_zero(obj->data.opaque);
       return 0;
     }
     if (n < 1 || n > MAX_SP) {
-      NORM_ERR("invalid num arg for top. Must be between 1 and %d.", MAX_SP);
+      LOG_WARNING("invalid num arg for top. Must be between 1 and %d.", MAX_SP);
       free_and_zero(td->s);
       free_and_zero(obj->data.opaque);
       return 0;
@@ -646,7 +647,7 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj) {
     td->num = n - 1;
 
   } else {
-    NORM_ERR("invalid argument count for top");
+    LOG_WARNING("invalid argument count for top");
     free_and_zero(td->s);
     free_and_zero(obj->data.opaque);
     return 0;

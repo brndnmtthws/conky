@@ -52,14 +52,14 @@ settings_map *settings;
 priv::config_setting_base *get_setting(lua::state &l, int index) {
   lua::Type type = l.type(index);
   if (type != lua::TSTRING) {
-    NORM_ERR("invalid setting of type '%s'", l.type_name(type));
+    LOG_WARNING("invalid setting of type '%s'", l.type_name(type));
     return nullptr;
   }
 
   const std::string &name = l.tostring(index);
   auto iter = settings->find(name);
   if (iter == settings->end()) {
-    NORM_ERR("Unknown setting '%s'", name.c_str());
+    LOG_WARNING("Unknown setting '%s'", name.c_str());
     return nullptr;
   }
 

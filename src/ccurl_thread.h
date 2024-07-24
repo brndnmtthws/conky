@@ -33,6 +33,7 @@
 namespace priv {
 // factored out stuff that does not depend on the template parameters
 class curl_internal {
+  std::string url;
  public:
   std::string last_modified;
   std::string etag;

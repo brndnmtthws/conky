@@ -36,7 +36,7 @@ bool use_xdbe_setting::set_up(lua::state &l) {
   int major, minor;
 
   if (XdbeQueryExtension(display, &major, &minor) == 0) {
-    NORM_ERR("No compatible double buffer extension found");
+    LOG_WARNING("No compatible double buffer extension found");
     return false;
   }
 
@@ -45,7 +45,7 @@ bool use_xdbe_setting::set_up(lua::state &l) {
   if (window.back_buffer != None) {
     window.drawable = window.back_buffer;
   } else {
-    NORM_ERR("Failed to allocate back buffer");
+    LOG_WARNING("Failed to allocate back buffer");
     return false;
   }
 
@@ -64,7 +64,7 @@ void use_xdbe_setting::lua_setter(lua::state &l, bool init) {
       l.pushboolean(false);
     }
 
-    NORM_ERR("drawing to %s buffer",
+    LOG_INFO("drawing to %s buffer",
              do_convert(l, -1).first ? "double" : "single");
   }
 
@@ -82,7 +82,7 @@ bool use_xpmdb_setting::set_up(lua::state &l) {
   if (window.back_buffer != None) {
     window.drawable = window.back_buffer;
   } else {
-    NORM_ERR("Failed to allocate back buffer");
+    LOG_WARNING("Failed to allocate back buffer");
     return false;
   }
 
@@ -101,7 +101,7 @@ void use_xpmdb_setting::lua_setter(lua::state &l, bool init) {
       l.pushboolean(false);
     }
 
-    NORM_ERR("drawing to %s buffer",
+    LOG_INFO("drawing to %s buffer",
              do_convert(l, -1).first ? "double" : "single");
   }
 
