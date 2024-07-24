@@ -148,6 +148,7 @@ enum class output_t : uint32_t {
   HTTP,
   X11,
   WAYLAND,
+  SDL,
   OUTPUT_COUNT
 };
 template <output_t Output>

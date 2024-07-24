@@ -53,6 +53,12 @@ void register_output<output_t::NCURSES>(display_outputs_t &outputs) {
   log_missing("ncurses", "BUILD_NCURSES");
 }
 #endif
+#ifndef BUILD_SDL
+template <>
+void register_output<output_t::SDL>(display_outputs_t &outputs) {
+  log_missing("SDL", "BUILD_SDL");
+}
+#endif
 #ifndef BUILD_WAYLAND
 template <>
 void register_output<output_t::WAYLAND>(display_outputs_t &outputs) {
@@ -86,6 +92,7 @@ bool initialize_display_outputs() {
   register_output<output_t::HTTP>(outputs);
   register_output<output_t::X11>(outputs);
   register_output<output_t::WAYLAND>(outputs);
+  register_output<output_t::SDL>(outputs);
 
   for (auto out : outputs) { NORM_ERR("FOUND: %s", out->name.c_str()); }
 
