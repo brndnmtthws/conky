@@ -99,6 +99,7 @@ values:
       - (-l)
       - (-x)
       - (-y)
+      - (-m value)
   - name: apcupsd_model
     desc: Prints the model of the UPS.
   - name: apcupsd_name
@@ -331,7 +332,8 @@ values:
       numbers) when you use the -l switch. Takes the switch '-t' to use a
       temperature gradient, which makes the gradient values change depending
       on the amplitude of a particular graph value (try it and see). The flag
-      '-x' inverts the x axis and '-y' inverts the y axis of the graph.
+      '-x' inverts the x axis and '-y' inverts the y axis of the graph. The flag
+      '-m' clamps values below the specified value to the value (excluding 0) */
     args:
       - (cpuN)
       - (height),(width)
@@ -342,6 +344,7 @@ values:
       - (-l)
       - (-x)
       - (-y)
+      - (-m value)
   - name: curl
     desc: |-
       Download data from URI using Curl at the specified interval.
@@ -395,7 +398,8 @@ values:
       '-t' to use a temperature gradient, which makes the gradient values
       change depending on the amplitude of a particular graph value (try it
       and see). The flag '-x' inverts the x axis and '-y' inverts the y axis 
-      of the graph.
+      of the graph. The flag '-m' clamps values below the specified value 
+      to the value (excluding 0).
     args:
       - (device)
       - (height),(width)
@@ -406,6 +410,7 @@ values:
       - (-l)
       - (-x)
       - (-y)
+      - (-m value)
   - name: diskiograph_read
     desc: |-
       Disk IO graph for reads, colours defined in hex, minus the
@@ -414,7 +419,8 @@ values:
       use -l switch. Takes the switch '-t' to use a temperature gradient,
       which makes the gradient values change depending on the amplitude of a
       particular graph value (try it and see). The flag '-x' inverts the x 
-      axis and '-y' inverts the y axis of the graph.
+      axis and '-y' inverts the y axis of the graph. The flag '-m' clamps 
+      values below the specified value to the value (excluding 0).
     args:
       - (device)
       - (height),(width)
@@ -425,6 +431,7 @@ values:
       - (-l)
       - (-x)
       - (-y)
+      - (-m value)
   - name: diskiograph_write
     desc: |-
       Disk IO graph for writes, colours defined in hex, minus the
@@ -433,7 +440,8 @@ values:
       use -l switch. Takes the switch '-t' to use a temperature gradient,
       which makes the gradient values change depending on the amplitude of a
       particular graph value (try it and see). The flag '-x' inverts the x 
-      axis and '-y' inverts the y axis of the graph.
+      axis and '-y' inverts the y axis of the graph. The flag '-m' clamps 
+      values below the specified value to the value (excluding 0).
     args:
       - (device)
       - (height),(width)
@@ -444,6 +452,7 @@ values:
       - (-l)
       - (-x)
       - (-y)
+      - (-m value)
   - name: distribution
     desc: |-
       The name of the distribution. It could be that some of the
@@ -471,7 +480,8 @@ values:
       -l switch. Takes the switch '-t' to use a temperature gradient, which makes
       the gradient values change depending on the amplitude of a particular
       graph value (try it and see). The flag '-x' inverts the x axis and '-y' 
-      inverts the y axis of the graph.
+      inverts the y axis of the graph. The flag '-m' clamps values below the 
+      specified value to the value (excluding 0).
     args:
       - (netdev)
       - (height),(width)
@@ -482,6 +492,7 @@ values:
       - (-l)
       - (-x)
       - (-y)
+      - (-m)
   - name: draft_mails
     desc: |-
       Number of mails marked as draft in the specified mailbox or
@@ -553,7 +564,8 @@ values:
       -l switch to enable a logarithmic scale, which helps to see small values.
       The default size for graphs can be controlled via the default_graph_height
       and default_graph_width config settings. The flag '-x' inverts the x axis 
-      and '-y' inverts the y axis of the graph.
+      and '-y' inverts the y axis of the graph. The flag '-m' clamps values below 
+      the specified value to the value (excluding 0).
 
       If you need to execute a command with spaces, you have a
       couple options:
@@ -582,6 +594,7 @@ values:
       - (-l)
       - (-x)
       - (-y)
+      - (-m value)
   - name: execi
     desc: |-
       Same as exec, but with a specific interval in seconds. The
@@ -615,6 +628,7 @@ values:
       - (-l)
       - (-x)
       - (-y)
+      - (-m value)
   - name: execp
     desc: |-
       Executes a shell command and displays the output in conky.
@@ -1135,6 +1149,8 @@ values:
       gradient, which makes the gradient values change depending on the
       amplitude of a particular graph value (try it and see). The flag
       '-x' inverts the x axis and '-y' inverts the y axis of the graph.
+      The flag '-m' clamps values below the specified value to the value 
+      (excluding 0).
     args:
       - (height),(width)
       - (gradient colour 1)
@@ -1144,6 +1160,7 @@ values:
       - (-l)
       - (-x)
       - (-y)
+      - (-m value)
   - name: lowercase
     desc: Converts all letters into lowercase.
     args:
@@ -1190,7 +1207,8 @@ values:
       (try it and see). Conky puts 'conky_' in front of function_name to
       prevent accidental calls to the wrong function unless you put you
       place 'conky_' in front of it yourself.  The flag '-x' inverts the 
-      x axis and '-y' inverts the y axis of the graph. 
+      x axis and '-y' inverts the y axis of the graph. The flag '-m' clamps 
+      values below the specified value to the value (excluding 0).
     args:
       - function_name
       - (height),(width)
@@ -1201,6 +1219,7 @@ values:
       - (-l)
       - (-x)
       - (-y)
+      - (-m value)
   - name: lua_parse
     desc: |-
       Executes a Lua function with given parameters as per $lua,
@@ -1261,7 +1280,8 @@ values:
       numbers) when you use the -l switch. Takes the switch '-t' to use a
       temperature gradient, which makes the gradient values change depending
       on the amplitude of a particular graph value (try it and see). The flag
-      '-x' inverts the x axis and '-y' inverts the y axis of the graph.
+      '-x' inverts the x axis and '-y' inverts the y axis of the graph. The 
+      flag '-m' clamps values below the specified value to the value (excluding 0).
     args:
       - (height),(width)
       - (gradient colour 1)
@@ -1271,6 +1291,7 @@ values:
       - (-l)
       - (-x)
       - (-y)
+      - (-m value)
   - name: meminactive
     desc: Amount of inactive memory. FreeBSD only.
   - name: memlaundry
@@ -1299,6 +1320,8 @@ values:
       gradient, which makes the gradient values change depending on the
       amplitude of a particular graph value (try it and see). The flag
       '-x' inverts the x axis and '-y' inverts the y axis of the graph.
+      The flag '-m' clamps values below the specified value to the value 
+      (excluding 0).
     args:
       - (height),(width)
       - (gradient colour 1)
@@ -1308,6 +1331,7 @@ values:
       - (-l)
       - (-x)
       - (-y)
+      - (-m value)
   - name: mixer
     desc: |-
       Prints the mixer value as reported by the OS. On Linux, this
@@ -1574,6 +1598,7 @@ values:
       - (-l)
       - (-x)
       - (-y)
+      - (-m)
       - GPU_ID
   - name: offset
     desc: Move text over by N pixels. See also $voffset.
@@ -2365,7 +2390,8 @@ values:
       use a temperature gradient, which makes the gradient values
       change depending on the amplitude of a particular graph value
       (try it and see). The flag '-x' inverts the x axis and '-y' 
-      inverts the y axis of the graph.
+      inverts the y axis of the graph. The flag '-m' clamps values
+      below the specified value to the value (excluding 0).
     args:
       - (netdev)
       - (height),(width)
@@ -2376,6 +2402,7 @@ values:
       - (-l)
       - (-x)
       - (-y)
+      - (-m)
   - name: uptime
     desc: Uptime.
   - name: uptime_short
