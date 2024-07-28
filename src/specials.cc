@@ -519,11 +519,21 @@ static void graph_append(struct special_node *graph, double f, char showaslog) {
   graph->graph[0] = f; /* add new data */
 
   if (graph->scaled != 0) {
-    graph->scale =
-        *std::max_element(graph->graph + 0, graph->graph + graph->graph_width);
+    /* Get the location of the currentmax in the graph */
+    double* currentmax =
+        std::max_element(graph->graph + 0, graph->graph + graph->graph_width);
+    graph->scale = *currentmax;
     if (graph->speedgraph) {
-        maxspeedval = graph->scale < maxspeedval ? maxspeedval : graph->scale;
+        if(maxspeedval < graph->scale){
+          maxspeedval = graph->scale;
+        }
         graph->scale = maxspeedval;
+        /* If the currentmax is the maxspeedval and 
+         * currentmax location is at the last position
+         * Then we reset our maxspeedval */
+        if(*currentmax == maxspeedval && currentmax == (graph->graph + graph->width - 1)){
+          maxspeedval = 1e-47;
+        }
     }
     if (graph->scale < 1e-47) {
       /* avoid NaN's when the graph is all-zero (e.g. before the first update)
