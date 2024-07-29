@@ -38,6 +38,7 @@
 #include <cerrno>
 #include <ctime>
 #include <vector>
+#include <wordexp.h>
 #include "config.h"
 #include "conky.h"
 #include "core.h"
@@ -130,13 +131,19 @@ double get_time() {
 }
 
 /* Converts '~/...' paths to '/home/blah/...'.  It's similar to
- * variable_substitute, except only cheques for $HOME and ~/ in
- * path. If HOME is unset it uses an empty string for substitution */
+ * variable_substitute, works for any enviroment variable */
 std::string to_real_path(const std::string &source) {
-  const char *homedir = getenv("HOME") != nullptr ? getenv("HOME") : "";
-  if (source.find("~/") == 0) { return homedir + source.substr(1); }
-  if (source.find("$HOME/") == 0) { return homedir + source.substr(5); }
-  return source;
+    wordexp_t p;
+    char **w;
+    int i;
+    const char *csource = source.c_str();
+    if (wordexp(csource, &p, 0) != 0) {
+        return nullptr;
+    }
+    w = p.we_wordv;
+    const char *resolved_path = strdup(w[0]);
+    wordfree(&p);
+    return std::string(resolved_path);
 }
 
 int open_fifo(const char *file, int *reported) {
