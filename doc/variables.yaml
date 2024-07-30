@@ -2397,8 +2397,9 @@ values:
       use a temperature gradient, which makes the gradient values
       change depending on the amplitude of a particular graph value
       (try it and see). The flag '-x' inverts the x axis and '-y' 
-      inverts the y axis of the graph. The flag '-m' clamps values
-      below the specified value to the value (excluding 0).
+      inverts the y axis of the graph. The flag '-m' sets a nonzero 
+      minimum/lowerbound, ensuring that all values are at least the 
+      specified minimum (excluding zero).
     args:
       - (netdev)
       - (height),(width)
