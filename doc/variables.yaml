@@ -333,7 +333,8 @@ values:
       temperature gradient, which makes the gradient values change depending
       on the amplitude of a particular graph value (try it and see). The flag
       '-x' inverts the x axis and '-y' inverts the y axis of the graph. The flag
-      '-m' clamps values below the specified value to the value (excluding 0) */
+      '-m' sets a nonzero minimum/lowerbound, ensuring that all values are at 
+      least the specified minimum (excluding zero).
     args:
       - (cpuN)
       - (height),(width)
@@ -398,8 +399,8 @@ values:
       '-t' to use a temperature gradient, which makes the gradient values
       change depending on the amplitude of a particular graph value (try it
       and see). The flag '-x' inverts the x axis and '-y' inverts the y axis 
-      of the graph. The flag '-m' clamps values below the specified value 
-      to the value (excluding 0).
+      of the graph. The flag '-m' sets a nonzero minimum/lowerbound, ensuring 
+      that all values are at least the specified minimum (excluding zero).
     args:
       - (device)
       - (height),(width)
@@ -419,8 +420,9 @@ values:
       use -l switch. Takes the switch '-t' to use a temperature gradient,
       which makes the gradient values change depending on the amplitude of a
       particular graph value (try it and see). The flag '-x' inverts the x 
-      axis and '-y' inverts the y axis of the graph. The flag '-m' clamps 
-      values below the specified value to the value (excluding 0).
+      axis and '-y' inverts the y axis of the graph. The flag '-m' sets a nonzero 
+      minimum/lowerbound, ensuring that all values are at least the specified 
+      minimum (excluding zero).
     args:
       - (device)
       - (height),(width)
@@ -440,8 +442,9 @@ values:
       use -l switch. Takes the switch '-t' to use a temperature gradient,
       which makes the gradient values change depending on the amplitude of a
       particular graph value (try it and see). The flag '-x' inverts the x 
-      axis and '-y' inverts the y axis of the graph. The flag '-m' clamps 
-      values below the specified value to the value (excluding 0).
+      axis and '-y' inverts the y axis of the graph. The flag '-m' sets a 
+      nonzero minimum/lowerbound, ensuring that all values are at 
+      least the specified minimum (excluding zero).
     args:
       - (device)
       - (height),(width)
@@ -480,8 +483,9 @@ values:
       -l switch. Takes the switch '-t' to use a temperature gradient, which makes
       the gradient values change depending on the amplitude of a particular
       graph value (try it and see). The flag '-x' inverts the x axis and '-y' 
-      inverts the y axis of the graph. The flag '-m' clamps values below the 
-      specified value to the value (excluding 0).
+      inverts the y axis of the graph. The flag '-m' sets a nonzero 
+      minimum/lowerbound, ensuring that all values are at least the specified 
+      minimum (excluding zero).
     args:
       - (netdev)
       - (height),(width)
@@ -564,8 +568,9 @@ values:
       -l switch to enable a logarithmic scale, which helps to see small values.
       The default size for graphs can be controlled via the default_graph_height
       and default_graph_width config settings. The flag '-x' inverts the x axis 
-      and '-y' inverts the y axis of the graph. The flag '-m' clamps values below 
-      the specified value to the value (excluding 0).
+      and '-y' inverts the y axis of the graph. The flag '-m' sets a nonzero 
+      minimum/lowerbound, ensuring that all values are at least the specified 
+      minimum (excluding zero).
 
       If you need to execute a command with spaces, you have a
       couple options:
@@ -1149,8 +1154,8 @@ values:
       gradient, which makes the gradient values change depending on the
       amplitude of a particular graph value (try it and see). The flag
       '-x' inverts the x axis and '-y' inverts the y axis of the graph.
-      The flag '-m' clamps values below the specified value to the value 
-      (excluding 0).
+      The flag '-m' sets a nonzero minimum/lowerbound, ensuring that all 
+      values are at least the specified minimum (excluding zero).
     args:
       - (height),(width)
       - (gradient colour 1)
@@ -1207,8 +1212,9 @@ values:
       (try it and see). Conky puts 'conky_' in front of function_name to
       prevent accidental calls to the wrong function unless you put you
       place 'conky_' in front of it yourself.  The flag '-x' inverts the 
-      x axis and '-y' inverts the y axis of the graph. The flag '-m' clamps 
-      values below the specified value to the value (excluding 0).
+      x axis and '-y' inverts the y axis of the graph. The flag '-m' sets 
+      a nonzero minimum/lowerbound, ensuring that all values are at least 
+      the specified minimum (excluding zero).
     args:
       - function_name
       - (height),(width)
@@ -1280,8 +1286,9 @@ values:
       numbers) when you use the -l switch. Takes the switch '-t' to use a
       temperature gradient, which makes the gradient values change depending
       on the amplitude of a particular graph value (try it and see). The flag
-      '-x' inverts the x axis and '-y' inverts the y axis of the graph. The 
-      flag '-m' clamps values below the specified value to the value (excluding 0).
+      '-x' inverts the x axis and '-y' inverts the y axis of the graph. The flag 
+      '-m' sets a nonzero minimum/lowerbound, ensuring that all values are at 
+      least the specified minimum (excluding zero).
     args:
       - (height),(width)
       - (gradient colour 1)
@@ -1320,8 +1327,8 @@ values:
       gradient, which makes the gradient values change depending on the
       amplitude of a particular graph value (try it and see). The flag
       '-x' inverts the x axis and '-y' inverts the y axis of the graph.
-      The flag '-m' clamps values below the specified value to the value 
-      (excluding 0).
+      The flag '-m' sets a nonzero minimum/lowerbound, ensuring that all 
+      values are at least the specified minimum (excluding zero).
     args:
       - (height),(width)
       - (gradient colour 1)
