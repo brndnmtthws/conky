@@ -113,6 +113,7 @@ struct graph {
   char tempgrad;
   char speedgraph;  /* If the current graph is a speed graph */
   char invertflag;  /* If the axis needs to be inverted */
+  int minheight;    /* Clamp values below this threshold to this threshold */
 };
 
 struct stippled_hr {
@@ -246,12 +247,13 @@ std::pair<char *, size_t> scan_command(const char *s) {
 }
 
 /**
- * parses for [height,width] [color1 color2] [scale] [-t] [-l]
+ * parses for [height,width] [color1 color2] [scale] [-t] [-l] [-m value]
  *
  * -l will set the showlog flag, enabling logarithmic graph scales
  * -t will set the tempgrad member to true, enabling temperature gradient colors
  * -x will set the invertx flag to true, inverting the x axis
  * -y will set the invertx flag to true, inverting the y axis
+ * -m will set the minheight to value, this will clamp values below the threshold to the threshold
  *
  * @param[out] obj  struct in which to save width, height and other options
  * @param[in]  args argument string to parse
@@ -277,6 +279,7 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale, ch
   g->scale = defscale;
   g->tempgrad = FALSE;
   g->invertflag = FALSE;
+  g->minheight = 0;
   if (speedGraph) {
     g->speedgraph = TRUE;
   }
@@ -305,6 +308,34 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale, ch
   if ((strstr(argstr, " " INVERTY) != nullptr) ||
       strncmp(argstr, INVERTY, strlen(INVERTY)) == 0) {
     g->invertflag |= SF_INVERTY;
+  }
+
+  /* set MINHEIGHT to specified value if '-m' specified.
+   * It doesn't matter where the argument is exactly. 
+   * Accepted values are from [0-5] */
+  const char *position = strstr(argstr, " " MINHEIGHT);
+  if ((position != nullptr) ||
+      strncmp(argstr, MINHEIGHT, strlen(MINHEIGHT)) == 0) {
+      int minheight = 0;
+      position += strlen(MINHEIGHT) + 1;
+      int size = strlen(argstr);
+      // Avoid whitespaces
+      while(*position == ' ' && position < argstr + size) {
+        position++;
+      }
+      // Get the numeric value start and end position
+      const char* numStart = position;
+      while (isdigit(*position)) {
+          position++;
+      }
+      // Convert the numeric value to an integer
+      std::string numStr(numStart, position);
+      if (!numStr.empty()) {
+          minheight = atoi(numStr.c_str());
+      }
+      // If specified value is greater than the max threshold
+      minheight = minheight > 5 ? 5 : minheight;
+      g->minheight = minheight;
   }
 
   /* all the following functions try to interpret the beginning of a
@@ -652,6 +683,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
     s->show_scale = 1;
   }
   s->tempgrad = g->tempgrad;
+  s->minheight = g->minheight;
 #ifdef BUILD_MATH
   if ((g->flags & SF_SHOWLOG) != 0) {
     s->scale_log = 1;

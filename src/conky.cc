@@ -998,6 +998,11 @@ static inline void set_foreground_color(Colour c) {
 static inline void draw_graph_bars(special_node *current, std::unique_ptr<Colour[]>& tmpcolour, 
                             conky::vec2i& text_offset, int i, int &j, int w, 
                             int colour_idx, int cur_x, int by, int h) {
+  double graphheight = current->graph[j] * (h - 1) / current->scale;
+  /* Check if graphheight is less than the minheight threshold, if so we must change it to the threshold */
+  if(graphheight > 0 && current->minheight - graphheight > 0) {
+    current->graph[j] = current->minheight * current->scale / (h - 1);
+  }
   if (current->colours_set) {
     if (current->tempgrad != 0) {
       set_foreground_color(tmpcolour[static_cast<int>(
