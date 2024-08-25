@@ -1164,7 +1164,7 @@ double get_nvidia_barval(struct text_object *obj) {
         temp2 = get_nvidia_string_value(nvs->target, ATTR_PERFMODES_STRING,
                                         (char *)"memTransferRatemax",
                                         SEARCH_MAX, nvs->target_id, nvs->arg);
-        if (temp2 > temp1) temp1 = temp2;  // extra safe here
+        if (temp1 > temp2) temp1 = temp2;  // extra safe here
         value = ((float)temp1 * 100 / (float)temp2) + 0.5;
         break;
       case ATTR_IMAGE_QUALITY:  // imagequality
