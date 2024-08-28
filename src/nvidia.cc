@@ -829,13 +829,13 @@ void cache_nvidia_string_value_update(nvidia_c_string *ac_string, char *token,
              ac_string[gid].memTransferRatemax < 0) {
     ac_string[gid].memTransferRatemax = *value;
 
-  } else if (strcmp(token, (char *)"perf") == 0 &&
-             ac_string[gid].memTransferRatemax < 0) {
-    if (search == SEARCH_MIN) {
+  } else if (strcmp(token, (char *)"perf") == 0) {
+    if (search == SEARCH_MIN &&
+        ac_string[gid].perfmin < 0) {
       ac_string[gid].perfmin = *value;
-    } else if (search == SEARCH_MAX) {
+    } else if (search == SEARCH_MAX &&
+               ac_string[gid].perfmax < 0) {
       ac_string[gid].perfmax = *value;
-    }
   }
 }
 
