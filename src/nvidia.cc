@@ -836,6 +836,7 @@ void cache_nvidia_string_value_update(nvidia_c_string *ac_string, char *token,
     } else if (search == SEARCH_MAX &&
                ac_string[gid].perfmax < 0) {
       ac_string[gid].perfmax = *value;
+    }
   }
 }
 
