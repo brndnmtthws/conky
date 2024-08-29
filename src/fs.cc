@@ -79,7 +79,7 @@ int update_fs_stats() {
   if (current_update_time - last_fs_update < 13) { return 0; }
 
   for (i = 0; i < MAX_FS_STATS; ++i) {
-    if (fs_stats[i].set != 0) { update_fs_stat(&fs_stats[i]); }
+    fs_stats[i].set = 0;
   }
   last_fs_update = current_update_time;
   return 0;
