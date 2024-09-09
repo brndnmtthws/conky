@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v13
+        uses: DeterminateSystems/nix-installer-action@v14
       - name: Setup Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v7
       - run: nix build
