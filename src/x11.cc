@@ -33,6 +33,9 @@
 #include "x11.h"
 
 #include <X11/X.h>
+#include <X11/Xlibint.h>
+#undef min
+#undef max
 #include <sys/types.h>
 
 #include "common.h"
@@ -314,6 +317,8 @@ void update_x11_resource_db(bool first_run) {
       XrmDestroyDatabase(db);
     }
 
+    // https://github.com/dunst-project/dunst/blob/master/src/x11/x.c#L499
+    display->db = NULL; // should be new or deleted
     db = XrmGetStringDatabase((const char *)prop.value);
     XrmSetDatabase(display, db);
   }
