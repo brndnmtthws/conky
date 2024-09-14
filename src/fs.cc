@@ -147,10 +147,10 @@ static void update_fs_stat(struct fs_stat *fs) {
     get_fs_type(fs->path, fs->type);
 #endif
   } else {
-  if (fs->errored == 0) {
-    NORM_ERR("statfs '%s': %s", fs->path, strerror(errno));
-    fs->errored = 1;
-  }
+    if (fs->errored == 0) {
+      NORM_ERR("statfs '%s': %s", fs->path, strerror(errno));
+      fs->errored = 1;
+    }
     fs->size = 0;
     fs->avail = 0;
     fs->free = 0;
