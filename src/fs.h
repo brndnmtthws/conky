@@ -40,6 +40,7 @@ struct fs_stat {
   long long avail;
   long long free;
   char set;
+  char errored;
 };
 
 /* forward declare to make gcc happy (fs.h <-> text_object.h include) */

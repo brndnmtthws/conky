@@ -79,7 +79,7 @@ int update_fs_stats() {
   if (current_update_time - last_fs_update < 13) { return 0; }
 
   for (i = 0; i < MAX_FS_STATS; ++i) {
-    fs_stats[i].set = 0;
+    if (fs_stats[i].set != 0) { update_fs_stat(&fs_stats[i]); }
   }
   last_fs_update = current_update_time;
   return 0;
@@ -113,6 +113,7 @@ struct fs_stat *prepare_fs_stat(const char *s) {
   }
   strncpy(next->path, s, DEFAULT_TEXT_BUFFER_SIZE);
   next->set = 1;
+  next->errored = 0;
   update_fs_stat(next);
   return next;
 }
@@ -142,10 +143,14 @@ static void update_fs_stat(struct fs_stat *fs) {
     /* bfree (root) or bavail (non-roots) ? */
     fs->avail = static_cast<long long>(s.f_bavail) * s.f_bsize;
     fs->free = static_cast<long long>(s.f_bfree) * s.f_bsize;
+    fs->errored = 0;
     get_fs_type(fs->path, fs->type);
 #endif
   } else {
+  if (fs->errored == 0) {
     NORM_ERR("statfs '%s': %s", fs->path, strerror(errno));
+    fs->errored = 1;
+  }
     fs->size = 0;
     fs->avail = 0;
     fs->free = 0;
