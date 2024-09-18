@@ -5,7 +5,7 @@ import { SearchIndex, SearchItem } from '../utils/search'
 import { Dialog, Transition, Combobox } from '@headlessui/react'
 import { useRouter } from 'next/router'
 
-export interface SearchProps {}
+export type SearchProps = object
 
 interface SearchResultProps {
   result: FuseResult<SearchItem>
@@ -38,7 +38,7 @@ const SearchResult: React.FunctionComponent<SearchResultProps> = (props) => {
 
   return (
     <div className={`m-1 rounded flex flex-col p-2 ${selection}`}>
-      <hr className="border-black/10 dark:border-white/10 mb-2"/>
+      <hr className="border-black/10 dark:border-white/10 mb-2" />
       <div className="flex justify-between">
         <div>
           <code className="text-lg p-1 mx-1 bg-fuchsia-200 dark:bg-fuchsia-900 font-bold">
