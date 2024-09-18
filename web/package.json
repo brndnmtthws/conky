@@ -11,15 +11,15 @@
     "url": "https://github.com/brndnmtthws/conky/issues"
   },
   "scripts": {
-    "dev": "npm run write-search-index && next dev",
-    "dev:watch": "npm run write-search-index && next-remote-watch ./documents",
-    "build": "npm run write-search-index && next build",
-    "start": "npm run write-search-index && next start",
-    "export": "npm run write-search-index && next build && next export",
-    "lint": "next lint",
-    "e2e": "start-server-and-test dev http://localhost:3000 \"cypress open --e2e\"",
-    "e2e:headless": "start-server-and-test dev http://localhost:3000 \"cypress run --e2e\"",
-    "write-search-index": "tsx ./scripts/write-search-index.ts"
+    "dev": "export NEXT_TELEMETRY_DISABLED=1 && npm run write-search-index && next dev",
+    "dev:watch": "export NEXT_TELEMETRY_DISABLED=1 && npm run write-search-index && next-remote-watch ./documents",
+    "build": "export NEXT_TELEMETRY_DISABLED=1 && npm run write-search-index && next build",
+    "start": "export NEXT_TELEMETRY_DISABLED=1 && npm run write-search-index && next start",
+    "export": "export NEXT_TELEMETRY_DISABLED=1 && npm run write-search-index && next build && next export",
+    "lint": "export NEXT_TELEMETRY_DISABLED=1 && next lint",
+    "e2e": "export NEXT_TELEMETRY_DISABLED=1 && start-server-and-test dev http://localhost:3000 \"cypress open --e2e\"",
+    "e2e:headless": "export NEXT_TELEMETRY_DISABLED=1 && start-server-and-test dev http://localhost:3000 \"cypress run --e2e\"",
+    "write-search-index": "export NEXT_TELEMETRY_DISABLED=1 && tsx ./scripts/write-search-index.ts"
   },
   "dependencies": {
     "@fontsource-variable/fira-code": "^5.1.0",
