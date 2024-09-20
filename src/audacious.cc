@@ -206,7 +206,7 @@ void print_audacious_title(struct text_object *obj, char *p,
 
 void print_audacious_filename(struct text_object *obj, char *p,
                               unsigned int p_max_size) {
-  snprintf(p, std::min((unsigned int)obj->data.i, p_max_size), "%s",
+  snprintf(p, p_max_size, "%s",
            get_res().filename.c_str());
 }
 
