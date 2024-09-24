@@ -133,10 +133,12 @@ void print_tcp_ping(struct text_object *obj, char *p, unsigned int p_max_size) {
     if (errno == EINPROGRESS) {  // but EINPROGRESS is only a "false fail"
       gettimeofday(&tv1, nullptr);
       if (select(sock + 1, nullptr, &writefds, nullptr, &timeout) != -1) {
+        int ret = 0;
+        socklen_t len = sizeof(ret);
         gettimeofday(&tv2, nullptr);
         usecdiff =
             ((tv2.tv_sec - tv1.tv_sec) * 1000000) + tv2.tv_usec - tv1.tv_usec;
-        if (usecdiff <= TCP_PING_TIMEOUT * 1000000) {
+        if (getsockopt(sock, SOL_SOCKET, SO_ERROR, &ret, &len) == 0 && ret == 0) {
           snprintf(p, p_max_size, "%llu", (usecdiff / 1000U));
         } else {
 #define TCP_PING_FAILED "down"
