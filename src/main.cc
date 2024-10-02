@@ -36,6 +36,8 @@
 #include "display-output.hh"
 #include "lua-config.hh"
 
+#include <dirent.h>
+
 #ifdef BUILD_X11
 #include "x11.h"
 #endif /* BUILD_X11 */
@@ -268,8 +270,52 @@ static void print_help(const char *prog_name) {
          "   -i COUNT                  number of times to update " PACKAGE_NAME
          " (and quit)\n"
          "   -p, --pause=SECS          pause for SECS seconds at startup "
-         "before doing anything\n",
+         "before doing anything\n"
+         "   -U, --unique              only one conky process can be created\n",
          prog_name);
+}
+
+static bool is_conky_already_running() {
+  DIR* dir;
+  struct dirent* ent;
+  char* endptr;
+  char buf[512];
+
+  const size_t len_conky = 5; // "conky"
+  int instances = 0;
+
+  if (!(dir = opendir("/proc"))) {
+      NORM_ERR("can't open /proc: %s\n", strerror(errno));
+      return false;
+  }
+
+  while ((ent = readdir(dir)) != NULL) {
+    long lpid = strtol(ent->d_name, &endptr, 10);
+    if (*endptr != '\0') {
+        continue;
+    }
+
+    snprintf(buf, sizeof(buf), "/proc/%ld/cmdline", lpid);
+    FILE* fp = fopen(buf, "r");
+    if (fp) {
+      if (fgets(buf, sizeof(buf), fp) != NULL) {
+        const char* name = strtok(buf, " ");
+        const size_t len = strlen(name);
+
+        if (len >= len_conky) {
+          name = name + len - len_conky;
+        }
+
+        if (!strcmp(name, "conky")) {
+          instances++;
+        }
+      }
+      fclose(fp);
+    }
+  }
+
+  closedir(dir);
+  return instances > 1;
 }
 
 inline void reset_optind() {
@@ -292,6 +338,8 @@ int main(int argc, char **argv) {
   g_sigterm_pending = 0;
   g_sighup_pending = 0;
   g_sigusr2_pending = 0;
+
+  bool unique_process = false;
 
 #ifdef BUILD_CURL
   struct curl_global_initializer {
@@ -349,10 +397,18 @@ int main(int argc, char **argv) {
         window.window = strtol(optarg, nullptr, 0);
         break;
 #endif /* BUILD_X11 */
+      case 'U':
+        unique_process = true;
+        break;
 
       case '?':
         return EXIT_FAILURE;
     }
+  }
+
+  if (unique_process && is_conky_already_running()) {
+    NORM_ERR("already running");
+    return 0;
   }
 
   try {
