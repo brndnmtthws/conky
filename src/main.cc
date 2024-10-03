@@ -284,7 +284,7 @@ static bool is_conky_already_running() {
   }
 
   while (fgets(line, sizeof(line), fp)) {
-    if (!strncmp(line, "conky", 5)) {
+    if (!strncmp(line, "conky\n", 6)) {
       instances++;
     }
   }
