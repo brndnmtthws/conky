@@ -36,8 +36,6 @@
 #include "display-output.hh"
 #include "lua-config.hh"
 
-#include <dirent.h>
-
 #ifdef BUILD_X11
 #include "x11.h"
 #endif /* BUILD_X11 */
@@ -276,45 +274,23 @@ static void print_help(const char *prog_name) {
 }
 
 static bool is_conky_already_running() {
-  DIR* dir;
-  struct dirent* ent;
-  char* endptr;
-  char buf[512];
-
-  const size_t len_conky = 5; // "conky"
+  char line[512];
   int instances = 0;
 
-  if (!(dir = opendir("/proc"))) {
-      NORM_ERR("can't open /proc: %s\n", strerror(errno));
-      return false;
+  FILE *fp = popen("ps xo comm", "r");
+  if (!fp) {
+    NORM_ERR("unable to open ps");
+    return false;
   }
 
-  while ((ent = readdir(dir)) != NULL) {
-    long lpid = strtol(ent->d_name, &endptr, 10);
-    if (*endptr != '\0') {
-        continue;
-    }
-
-    snprintf(buf, sizeof(buf), "/proc/%ld/cmdline", lpid);
-    FILE* fp = fopen(buf, "r");
-    if (fp) {
-      if (fgets(buf, sizeof(buf), fp) != NULL) {
-        const char* name = strtok(buf, " ");
-        const size_t len = strlen(name);
-
-        if (len >= len_conky) {
-          name = name + len - len_conky;
-        }
-
-        if (!strcmp(name, "conky")) {
-          instances++;
-        }
-      }
-      fclose(fp);
+  while (fgets(line, sizeof(line), fp)) {
+    if (!strncmp(line, "conky", 5)) {
+      instances++;
     }
   }
 
-  closedir(dir);
+  pclose(fp);
+
   return instances > 1;
 }
 
