@@ -62,9 +62,9 @@ export const getDocumentBySlug = async (slug: string) => {
   const result = await unified()
     .use(remarkParse)
     .use(remarkGfm)
-    .use(remarkRehype)
+    .use(remarkRehype, {allowDangerousHtml: true})
     // .use(rehypePrism)
-    .use(rehypeStringify)
+    .use(rehypeStringify, {allowDangerousHtml: true})
     .process(content)
 
   return { source: result.value, data, documentFilePath }

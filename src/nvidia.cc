@@ -458,7 +458,7 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
       break;
     case text_node_t::GRAPH: {
       auto [buf, skip] = scan_command(arg);
-      scan_graph(obj, arg + skip, 100);
+      scan_graph(obj, arg + skip, 100, FALSE);
       arg = buf;
     } break;
     case text_node_t::GAUGE:
@@ -829,11 +829,12 @@ void cache_nvidia_string_value_update(nvidia_c_string *ac_string, char *token,
              ac_string[gid].memTransferRatemax < 0) {
     ac_string[gid].memTransferRatemax = *value;
 
-  } else if (strcmp(token, (char *)"perf") == 0 &&
-             ac_string[gid].memTransferRatemax < 0) {
-    if (search == SEARCH_MIN) {
+  } else if (strcmp(token, (char *)"perf") == 0) {
+    if (search == SEARCH_MIN &&
+        ac_string[gid].perfmin < 0) {
       ac_string[gid].perfmin = *value;
-    } else if (search == SEARCH_MAX) {
+    } else if (search == SEARCH_MAX &&
+               ac_string[gid].perfmax < 0) {
       ac_string[gid].perfmax = *value;
     }
   }
@@ -1164,7 +1165,7 @@ double get_nvidia_barval(struct text_object *obj) {
         temp2 = get_nvidia_string_value(nvs->target, ATTR_PERFMODES_STRING,
                                         (char *)"memTransferRatemax",
                                         SEARCH_MAX, nvs->target_id, nvs->arg);
-        if (temp2 > temp1) temp1 = temp2;  // extra safe here
+        if (temp1 > temp2) temp1 = temp2;  // extra safe here
         value = ((float)temp1 * 100 / (float)temp2) + 0.5;
         break;
       case ATTR_IMAGE_QUALITY:  // imagequality

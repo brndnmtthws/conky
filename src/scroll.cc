@@ -271,11 +271,11 @@ void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
   }
 
   int pwithcolors_len = strlen(p) + 4 + colorchanges - visibcolorchanges;
-  char *pwithcolors = static_cast<char *>(malloc(pwithcolors_len));
+  char *pwithcolors = new char[pwithcolors_len];
 
   for (j = 0; j < frontcolorchanges; j++) { pwithcolors[j] = SPECIAL_CHAR; }
   pwithcolors[j] = 0;
-  strncat(pwithcolors, p, pwithcolors_len);
+  strcat(pwithcolors, p);
   unsigned int strend = strlen(pwithcolors);
   // and place the colorchanges not in front or in the visible part behind the
   // visible part
@@ -284,7 +284,7 @@ void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
   }
   pwithcolors[strend + j] = 0;
   strncpy(p, pwithcolors, p_max_size);
-  free(pwithcolors);
+  delete[] pwithcolors;
 
   // scroll
   if (sd->direction == SCROLL_LEFT) {

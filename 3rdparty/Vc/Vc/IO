@@ -1,0 +1,268 @@
+/*  This file is part of the Vc library. {{{
+Copyright © 2009-2015 Matthias Kretz <kretz@kde.org>
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the names of contributing organizations nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+}}}*/
+
+#ifndef VC_IO_
+#define VC_IO_
+
+#include "common/types.h"
+#include "common/simdarrayfwd.h"
+#include "common/memoryfwd.h"
+#include <iostream>
+
+#if defined(__GNUC__) && !defined(_WIN32) && defined(_GLIBCXX_OSTREAM)
+#define Vc_HACK_OSTREAM_FOR_TTY 1
+#endif
+
+#ifdef Vc_HACK_OSTREAM_FOR_TTY
+#include <unistd.h>
+#include <ext/stdio_sync_filebuf.h>
+#endif
+
+namespace Vc_VERSIONED_NAMESPACE
+{
+namespace
+{
+#ifdef Vc_HACK_OSTREAM_FOR_TTY
+class hacked_ostream : public std::ostream
+{
+public:
+    using std::ostream::_M_streambuf;
+};
+bool mayUseColor(const std::ostream &os) __attribute__((__const__));
+bool mayUseColor(const std::ostream &os)
+{
+    std::basic_streambuf<char> *hack1 =
+        const_cast<std::basic_streambuf<char> *>(os.*(&hacked_ostream::_M_streambuf));
+    __gnu_cxx::stdio_sync_filebuf<char> *hack =
+        dynamic_cast<__gnu_cxx::stdio_sync_filebuf<char> *>(hack1);
+    if (!hack) {
+        return false;
+    }
+    FILE *file = hack->file();
+    return 1 == isatty(fileno(file));
+}
+#else
+bool mayUseColor(const std::ostream &) { return false; }
+#endif
+}  // anonymous namespace
+
+namespace AnsiColor
+{
+struct Type
+{
+    const char *data;
+};
+static const Type green = {"\033[1;40;32m"};
+static const Type yellow = {"\033[1;40;33m"};
+static const Type blue = {"\033[1;40;34m"};
+static const Type normal = {"\033[0m"};
+
+inline std::ostream &operator<<(std::ostream &out, const Type &c)
+{
+    if (mayUseColor(out)) {
+        out << c.data;
+    }
+    return out;
+}
+}  // namespace AnsiColor
+
+/**
+ * \ingroup Vectors
+ * \headerfile IO <Vc/IO>
+ *
+ * Prints the contents of a vector into a stream object.
+ *
+ * \code
+ * const Vc::int_v v(Vc::IndexesFromZero);
+ * std::cout << v << std::endl;
+ * \endcode
+ * will output (with SSE):
+\verbatim
+[0, 1, 2, 3]
+\endverbatim
+ *
+ * \param out Any standard C++ ostream object. For example std::cout or a
+ *            std::stringstream object.
+ * \param v Any Vc::Vector object.
+ * \return  The ostream object: to chain multiple stream operations.
+ *
+ * \note With the GNU standard library this function will check whether the
+ *       output stream is a tty in which case it colorizes the output.
+ */
+template <typename T, typename Abi>
+inline std::ostream &operator<<(std::ostream &out, const Vc::Vector<T, Abi> &v)
+{
+    using TT = typename std::conditional<std::is_same<T, char>::value ||
+                                             std::is_same<T, unsigned char>::value ||
+                                             std::is_same<T, signed char>::value,
+                                         int,
+                                         T>::type;
+    out << AnsiColor::green << '[';
+    out << TT(v[0]);
+    for (size_t i = 1; i < v.Size; ++i) {
+        out << ", " << TT(v[i]);
+    }
+    out << ']' << AnsiColor::normal;
+    return out;
+}
+
+/**
+ * \ingroup Masks
+ * \headerfile IO <Vc/IO>
+ *
+ * Prints the contents of a mask into a stream object.
+ *
+ * \code
+ * const Vc::short_m m = Vc::short_v::IndexesFromZero() < 3;
+ * std::cout << m << std::endl;
+ * \endcode
+ * will output (with SSE):
+\verbatim
+m[1110 0000]
+\endverbatim
+ *
+ * \param out Any standard C++ ostream object. For example std::cout or a
+ *            std::stringstream object.
+ * \param m Any Vc::Mask object.
+ * \return  The ostream object: to chain multiple stream operations.
+ *
+ * \note With the GNU standard library this function will check whether the
+ *       output stream is a tty in which case it colorizes the output.
+ */
+template <typename T, typename Abi>
+inline std::ostream &operator<<(std::ostream &out, const Vc::Mask<T, Abi> &m)
+{
+    out << AnsiColor::blue << "m[";
+    for (unsigned int i = 0; i < m.Size; ++i) {
+        if (i > 0 && (i % 4) == 0) {
+            out << ' ';
+        }
+        if (m[i]) {
+            out << AnsiColor::yellow << '1';
+        } else {
+            out << AnsiColor::blue << '0';
+        }
+    }
+    out << AnsiColor::blue << ']' << AnsiColor::normal;
+    return out;
+}
+
+namespace Common
+{
+#ifdef DOXYGEN
+/**
+ * \ingroup Utilities
+ * \headerfile dox.h <Vc/IO>
+ *
+ * Prints the contents of a Memory object into a stream object.
+ *
+ * \code
+ * Vc::Memory<int_v, 10> m;
+ * for (int i = 0; i < m.entriesCount(); ++i) {
+ *   m[i] = i;
+ * }
+ * std::cout << m << std::endl;
+ * \endcode
+ * will output (with SSE):
+\verbatim
+{[0, 1, 2, 3] [4, 5, 6, 7] [8, 9, 0, 0]}
+\endverbatim
+ *
+ * \param s Any standard C++ ostream object. For example std::cout or a std::stringstream object.
+ * \param m Any Vc::Memory object.
+ * \return  The ostream object: to chain multiple stream operations.
+ *
+ * \note With the GNU standard library this function will check whether the
+ *       output stream is a tty in which case it colorizes the output.
+ *
+ * \warning Please do not forget that printing a large memory object can take a long time.
+ */
+template<typename V, typename Parent, typename Dimension, typename RM>
+inline std::ostream &operator<<(std::ostream &s, const Vc::MemoryBase<V, Parent, Dimension, RM> &m);
+#endif
+
+template<typename V, typename Parent, typename RM>
+inline std::ostream &operator<<(std::ostream &out, const MemoryBase<V, Parent, 1, RM> &m )
+{
+    out << AnsiColor::blue << '{' << AnsiColor::normal;
+    for (unsigned int i = 0; i < m.vectorsCount(); ++i) {
+        out << V(m.vector(i));
+    }
+    out << AnsiColor::blue << '}' << AnsiColor::normal;
+    return out;
+}
+
+template<typename V, typename Parent, typename RM>
+inline std::ostream &operator<<(std::ostream &out, const MemoryBase<V, Parent, 2, RM> &m )
+{
+    out << AnsiColor::blue << '{' << AnsiColor::normal;
+    for (size_t i = 0; i < m.rowsCount(); ++i) {
+        if (i > 0) {
+            out << "\n ";
+        }
+        const size_t vcount = m[i].vectorsCount();
+        for (size_t j = 0; j < vcount; ++j) {
+            out << V(m[i].vector(j));
+        }
+    }
+    out << AnsiColor::blue << '}' << AnsiColor::normal;
+    return out;
+}
+}  // namespace Common
+
+template<typename T, std::size_t N>
+inline std::ostream &operator<<(std::ostream &out, const SimdArray<T, N> &v)
+{
+    out << AnsiColor::green << '<' << v[0];
+    for (size_t i = 1; i < N; ++i) {
+        if (i % 4 == 0) out << " |";
+        out << ' ' << v[i];
+    }
+    return out << '>' << AnsiColor::normal;
+}
+
+template<typename T, std::size_t N>
+inline std::ostream &operator<<(std::ostream &out, const SimdMaskArray<T, N> &m)
+{
+    out << AnsiColor::blue << "«";
+    for (size_t i = 0; i < N; ++i) {
+        if (i > 0 && (i % 4) == 0) {
+            out << ' ';
+        }
+        if ( m[i] ) {
+          out << AnsiColor::yellow << '1';
+        } else {
+          out << AnsiColor::blue << '0';
+        }
+    }
+    return out << AnsiColor::blue << "»" << AnsiColor::normal;
+}
+}
+
+#endif // VC_IO_
+
+// vim: ft=cpp foldmethod=marker

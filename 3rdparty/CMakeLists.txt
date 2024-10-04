@@ -1,3 +1,8 @@
+# Vc version 1.4.4
+add_subdirectory(Vc)
+
+add_subdirectory(toluapp)
+
 if(BUILD_WLAN AND OS_LINUX)
   set(linux_net_libs_INCLUDE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/linux")
 

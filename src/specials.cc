@@ -50,6 +50,7 @@ struct special_node *specials = nullptr;
 
 int special_count;
 int graph_count = 0;
+double maxspeedval = 1e-47; /* The maximum value among the speed graphs */
 
 std::map<int, double *> graphs;
 
@@ -82,6 +83,10 @@ conky::simple_config_setting<std::string> console_graph_ticks(
 #define SF_SCALED (1 << 0)
 #define SF_SHOWLOG (1 << 1)
 
+/* special flag for inverting axis */
+#define SF_INVERTX (1 << 0)
+#define SF_INVERTY (1 << 1)
+
 /*
  * Special data typedefs
  */
@@ -106,6 +111,9 @@ struct graph {
   Colour first_colour, last_colour;
   double scale;
   char tempgrad;
+  char speedgraph;  /* If the current graph is a speed graph */
+  char invertflag;  /* If the axis needs to be inverted */
+  int minheight;    /* Clamp values below this threshold to this threshold */
 };
 
 struct stippled_hr {
@@ -239,17 +247,21 @@ std::pair<char *, size_t> scan_command(const char *s) {
 }
 
 /**
- * parses for [height,width] [color1 color2] [scale] [-t] [-l]
+ * parses for [height,width] [color1 color2] [scale] [-t] [-l] [-m value]
  *
  * -l will set the showlog flag, enabling logarithmic graph scales
  * -t will set the tempgrad member to true, enabling temperature gradient colors
+ * -x will set the invertx flag to true, inverting the x axis
+ * -y will set the invertx flag to true, inverting the y axis
+ * -m will set the minheight to value, this will clamp values below the threshold to the threshold
  *
  * @param[out] obj  struct in which to save width, height and other options
  * @param[in]  args argument string to parse
  * @param[in]  defscale default scale if no scale argument given
+ * @param[in]  speedGraph if graph is network speed graph or not
  * @return whether parsing was successful
  **/
-bool scan_graph(struct text_object *obj, const char *argstr, double defscale) {
+bool scan_graph(struct text_object *obj, const char *argstr, double defscale, char speedGraph) {
   char first_colour_name[1024] = {'\0'};
   char last_colour_name[1024] = {'\0'};
 
@@ -266,7 +278,11 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale) {
   g->last_colour = Colour();
   g->scale = defscale;
   g->tempgrad = FALSE;
-
+  g->invertflag = FALSE;
+  g->minheight = 0;
+  if (speedGraph) {
+    g->speedgraph = TRUE;
+  }
   if (argstr == nullptr) return false;
 
   /* set tempgrad to true if '-t' specified.
@@ -280,6 +296,46 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale) {
   if ((strstr(argstr, " " LOGGRAPH) != nullptr) ||
       strncmp(argstr, LOGGRAPH, strlen(LOGGRAPH)) == 0) {
     g->flags |= SF_SHOWLOG;
+  }
+  /* set invertx to true if '-x' specified.
+   * It doesn't matter where the argument is exactly. */
+  if ((strstr(argstr, " " INVERTX) != nullptr) ||
+      strncmp(argstr, INVERTX, strlen(INVERTX)) == 0) {
+    g->invertflag |= SF_INVERTX;
+  }
+  /* set inverty to true if '-y' specified.
+   * It doesn't matter where the argument is exactly. */
+  if ((strstr(argstr, " " INVERTY) != nullptr) ||
+      strncmp(argstr, INVERTY, strlen(INVERTY)) == 0) {
+    g->invertflag |= SF_INVERTY;
+  }
+
+  /* set MINHEIGHT to specified value if '-m' specified.
+   * It doesn't matter where the argument is exactly. 
+   * Accepted values are from [0-5] */
+  const char *position = strstr(argstr, " " MINHEIGHT);
+  if ((position != nullptr) ||
+      strncmp(argstr, MINHEIGHT, strlen(MINHEIGHT)) == 0) {
+      int minheight = 0;
+      position += strlen(MINHEIGHT) + 1;
+      int size = strlen(argstr);
+      // Avoid whitespaces
+      while(*position == ' ' && position < argstr + size) {
+        position++;
+      }
+      // Get the numeric value start and end position
+      const char* numStart = position;
+      while (isdigit(*position)) {
+          position++;
+      }
+      // Convert the numeric value to an integer
+      std::string numStr(numStart, position);
+      if (!numStr.empty()) {
+          minheight = atoi(numStr.c_str());
+      }
+      // If specified value is greater than the max threshold
+      minheight = minheight > 5 ? 5 : minheight;
+      g->minheight = minheight;
   }
 
   /* all the following functions try to interpret the beginning of a
@@ -300,15 +356,19 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale) {
   last_colour_name[0] = '\0';
   g->scale = defscale;
 
-  /* [height],[width] [color1] [color2] */
+  /* [height],[width] [color1] [color2] 
+   * This could match as [height],[width] [scale] [-l | -t], 
+   * therfore we ensure last_colour_name is not TEMPGRAD or LOGGRAPH */
   if (sscanf(argstr, "%d,%d %s %s", &g->height, &g->width, first_colour_name,
-             last_colour_name) == 4) {
+             last_colour_name) == 4 && 
+             strchr(last_colour_name,'-') == NULL) {
     apply_graph_colours(g, first_colour_name, last_colour_name);
     return true;
   }
   g->height = default_graph_height.get(*state);
   g->width = default_graph_width.get(*state);
   first_colour_name[0] = '\0';
+  last_colour_name[0] = '\0';
 
   /* [height],[width] [scale] */
   if (sscanf(argstr, "%d,%d %lf", &g->height, &g->width, &g->scale) == 3) {
@@ -316,6 +376,7 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale) {
   }
   g->height = default_graph_height.get(*state);
   g->width = default_graph_width.get(*state);
+  g->scale = defscale;
 
   /* [height],[width] */
   if (sscanf(argstr, "%d,%d", &g->height, &g->width) == 2) { return true; }
@@ -337,11 +398,16 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale) {
   last_colour_name[0] = '\0';
   g->scale = defscale;
 
-  /* [color1] [color2] */
-  if (sscanf(argstr, "%s %s", first_colour_name, last_colour_name) == 2) {
+  /* [color1] [color2] 
+   * This could match as [scale] [-l | -t], 
+   * therfore we ensure last_colour_name is not TEMPGRAD or LOGGRAPH */
+  if (sscanf(argstr, "%s %s", first_colour_name, last_colour_name) == 2 &&
+             strchr(last_colour_name,'-') == NULL) { 
     apply_graph_colours(g, first_colour_name, last_colour_name);
     return true;
   }
+  first_colour_name[0] = '\0';
+  last_colour_name[0] = '\0';
 
   /* [scale] */
   if (sscanf(argstr, "%lf", &g->scale) == 1) { return true; }
@@ -484,8 +550,22 @@ static void graph_append(struct special_node *graph, double f, char showaslog) {
   graph->graph[0] = f; /* add new data */
 
   if (graph->scaled != 0) {
-    graph->scale =
-        *std::max_element(graph->graph + 0, graph->graph + graph->graph_width);
+    /* Get the location of the currentmax in the graph */
+    double* currentmax =
+        std::max_element(graph->graph + 0, graph->graph + graph->graph_width);
+    graph->scale = *currentmax;
+    if (graph->speedgraph) {
+        if(maxspeedval < graph->scale){
+          maxspeedval = graph->scale;
+        }
+        graph->scale = maxspeedval;
+        /* If the currentmax is the maxspeedval and 
+         * currentmax location is at the last position
+         * Then we reset our maxspeedval */
+        if(*currentmax == maxspeedval && currentmax == (graph->graph + graph->width - 1)){
+          maxspeedval = 1e-47;
+        }
+    }
     if (graph->scale < 1e-47) {
       /* avoid NaN's when the graph is all-zero (e.g. before the first update)
        * there is nothing magical about 1e-47 here */
@@ -603,12 +683,22 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
     s->show_scale = 1;
   }
   s->tempgrad = g->tempgrad;
+  s->minheight = g->minheight;
 #ifdef BUILD_MATH
   if ((g->flags & SF_SHOWLOG) != 0) {
     s->scale_log = 1;
     s->scale = log10(s->scale + 1);
   }
 #endif
+  if ((g->invertflag & SF_INVERTX) != 0){
+    s->invertx = 1;
+  }
+  if ((g->invertflag & SF_INVERTY) != 0){
+    s->inverty = 1;
+  }
+  if (g->speedgraph) {
+    s->speedgraph = TRUE;
+  }
 
   if (store_graph_data_explicitly.get(*state)) {
     if (s->graph) { s->graph = retrieve_graph(g->id, s->graph_width); }

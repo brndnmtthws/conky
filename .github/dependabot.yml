@@ -7,6 +7,10 @@ updates:
     directory: '/'
     schedule:
       interval: 'weekly'
+    groups:
+      actions:
+        patterns:
+          - '*'
 
   # Maintain dependencies for web docs/npm
   - package-ecosystem: 'npm'

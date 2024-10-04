@@ -1,0 +1,15 @@
+get_filename_component(_currentDir "${CMAKE_CURRENT_LIST_FILE}" PATH)
+include("${_currentDir}/cmake/OptimizeForArchitecture.cmake")
+
+if(arch STREQUAL "linux")
+   set(CMAKE_SYSTEM_NAME "Linux")
+elseif(arch STREQUAL "darwin")
+   set(CMAKE_SYSTEM_NAME "Darwin")
+elseif(arch MATCHES "mingw" OR arch MATCHES "[Ww]indows" OR arch MATCHES "win7" OR arch MATCHES "msys")
+   set(CMAKE_SYSTEM_NAME "Windows")
+else()
+   message(FATAL_ERROR "unhandled system")
+endif()
+
+AutodetectHostArchitecture()
+message(STATUS "${TARGET_ARCHITECTURE}")

@@ -1,0 +1,30 @@
+@PACKAGE_INIT@
+
+### General variables for project discovery/inspection
+set_and_check(@PROJECT_NAME@_INSTALL_DIR @PACKAGE_CMAKE_INSTALL_PREFIX@)
+set_and_check(@PROJECT_NAME@_INCLUDE_DIR @PACKAGE_CMAKE_INSTALL_PREFIX@/include)
+set_and_check(@PROJECT_NAME@_LIB_DIR @PACKAGE_CMAKE_INSTALL_PREFIX@/lib@LIB_SUFFIX@)
+set_and_check(@PROJECT_NAME@_CMAKE_MODULES_DIR ${@PROJECT_NAME@_LIB_DIR}/cmake/Vc)
+set(@PROJECT_NAME@_VERSION_STRING "@PROJECT_VERSION@")
+
+### Setup @PROJECT_NAME@ defaults
+list(APPEND CMAKE_MODULE_PATH "${@PROJECT_NAME@_CMAKE_MODULES_DIR}")
+include("${@PROJECT_NAME@_CMAKE_MODULES_DIR}/VcMacros.cmake")
+
+set(@PROJECT_NAME@_DEFINITIONS)
+set(@PROJECT_NAME@_COMPILE_FLAGS)
+set(@PROJECT_NAME@_ARCHITECTURE_FLAGS)
+vc_set_preferred_compiler_flags()
+separate_arguments(@PROJECT_NAME@_ALL_FLAGS UNIX_COMMAND "${@PROJECT_NAME@_DEFINITIONS}")
+list(APPEND @PROJECT_NAME@_ALL_FLAGS ${@PROJECT_NAME@_COMPILE_FLAGS})
+list(APPEND @PROJECT_NAME@_ALL_FLAGS ${@PROJECT_NAME@_ARCHITECTURE_FLAGS})
+
+### Import targets
+include("@PACKAGE_CMAKE_INSTALL_PREFIX@/@PACKAGE_INSTALL_DESTINATION@/@PROJECT_NAME@Targets.cmake")
+
+### Define @PROJECT_NAME@_LIBRARIES for backwards compatibility
+get_target_property(vc_lib_location @PROJECT_NAME@::Vc INTERFACE_LOCATION)
+set_and_check(@PROJECT_NAME@_LIBRARIES ${vc_lib_location})
+
+### Handle required components - not used
+check_required_components(@PROJECT_NAME@)
