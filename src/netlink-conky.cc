@@ -17,6 +17,8 @@ void nle_err_format(const char *desc, int error) {
     NORM_ERR("%s; error %d (%s)", desc, index, NLE_ERROR_MSG[index]);
   }
 }
+
+// Has to be a macro because we want to return from outer scope
 #define CHECK_RESPONSE(response, msg)               \
   (response < 0) { nle_err_format(msg, response); } \
   if (response < 0)
@@ -69,12 +71,10 @@ template <typename T, typename Tuple>
 auto push_front(const T &t, const Tuple &tuple) {
   return std::tuple_cat(std::make_tuple(t), tuple);
 }
-
 template <typename Tuple, std::size_t... Is>
 auto copy_tail_impl(const Tuple &tuple, std::index_sequence<Is...>) {
   return std::make_tuple(std::get<1 + Is>(tuple)...);
 }
-
 template <typename Tuple>
 auto copy_tail(const Tuple &tuple) {
   return copy_tail_impl(
@@ -90,9 +90,10 @@ int nl_task<R, Args...>::valid_handler(struct nl_msg *msg, void *arg) {
     NORM_ERR("no arguments provided to callback");
     return NL_STOP;
   }
-  std::promise<R> promise = std::move(std::get<0>(args));
+  std::promise<R> promise = std::move(std::get<0>(*args));
   callback_result<R> result = std::apply(
-      task->processor, std::tuple_cat(std::make_tuple(msg), copy_tail(args)));
+      task->processor, std::tuple_cat(std::make_tuple(msg), copy_tail(*args)));
+  DBGP2("SETTING P %lx", &promise);
   promise.set_value(result.value);
   return result.action;
 }
@@ -145,9 +146,9 @@ std::optional<R> nl_task<R, Args...>::send_message(struct nl_sock *sock,
   std::promise<R> result_promise;
   auto result_future = result_promise.get_future();
 
-  this->arguments.store(
-      std::make_tuple(std::move(result_promise), Args(args)...),
-      std::memory_order_release);
+  auto value = std::make_tuple(std::move(result_promise),
+                               Args(args)...);  // FIXME: leaked
+  this->arguments.store(&value, std::memory_order_release);
 
   struct nl_msg *msg = nlmsg_alloc();
   if (!msg) {
@@ -234,9 +235,9 @@ callback_result<interface_result> interface_callback(struct nl_msg *msg,
       static_cast<struct genlmsghdr *>(nlmsg_data(nlmsg_hdr(msg)));
   struct nlattr *tb_msg[NL80211_ATTR_MAX + 1];
   const char *indent = "";
-  DBGP2("INTERFACE %d", nla_get_u32(tb_msg[NL80211_ATTR_WIPHY]));
   nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
             genlmsg_attrlen(gnlh, 0), NULL);
+  DBGP2("INTERFACE %d", nla_get_u32(tb_msg[NL80211_ATTR_WIPHY]));
   DBGP2("B");
   if (tb_msg[NL80211_ATTR_MAC]) {
     DBGP2("By");
@@ -246,12 +247,11 @@ callback_result<interface_result> interface_callback(struct nl_msg *msg,
   DBGP2("C");
 
   if (tb_msg[NL80211_ATTR_SSID]) {
-    DBGP2("Cy, %lx", &ns->essid);
     ns->essid = "temp";
     ns->essid = ssid_to_utf8(
         nla_len(tb_msg[NL80211_ATTR_SSID]),
         static_cast<uint8_t *>(nla_data(tb_msg[NL80211_ATTR_SSID])));
-    DBGP2("Cd");
+    DBGP2("Cd %s", ns->essid.c_str());
   }
 
   DBGP2("D");
