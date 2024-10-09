@@ -640,7 +640,7 @@ void x11_init_window(lua::state &l, bool own) {
 #endif /* BUILD_XSHAPE */
       if (own_window_type.get(l) == window_type::DOCK ||
           own_window_type.get(l) == window_type::PANEL) {
-        // wmHint.initial_state = WithdrawnState;
+        wmHint.initial_state = WithdrawnState;
       } else {
         wmHint.initial_state = NormalState;
       }
