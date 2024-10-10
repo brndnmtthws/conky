@@ -1,4 +1,6 @@
 version: 1
+issues: True
+appendOnly: true
 
 labels:
   - label: 'documentation'
@@ -7,6 +9,9 @@ labels:
       - doc/*
       - doc/**/*
       - data/conky*.conf
+  - label: 'documentation'
+    type: 'issue'
+    title: "[Dd]ocument(ation)?"
 
   - label: 'extras'
     type: 'pull_request'
@@ -38,6 +43,10 @@ labels:
       - appimage/*
       - appimage/**/*
 
+  - label: 'appimage'
+    type: 'issue'
+    body: "(appimage|AppImage|Appimage)"
+  
   - label: '3rdparty'
     type: 'pull_request'
     files:
@@ -78,6 +87,10 @@ labels:
       - src/pulseaudio.cc
       - src/pulseaudio.h
 
+  - label: 'audio'
+    type: 'issue'
+    body: "([Aa]udacious|CMUS|cmus|MPD|mpd|[Mm]ixer|xmms2|XMMS2|[Pp]ulse[Aa]udio)"
+  
   - label: 'power'
     type: 'pull_request'
     files:
@@ -118,6 +131,10 @@ labels:
       - src/wlr-layer-shell-unstable-v1.xml
       - src/display-wayland.cc
       - src/display-wayland.hh
+  - label: 'display: wayland'
+    type: 'issue'
+    title: "[Ww]ayland"
+  
   - label: 'display: x11'
     type: 'pull_request'
     files:
@@ -127,6 +144,9 @@ labels:
       - src/x11.h
       - src/display-x11.cc
       - src/display-x11.hh
+  - label: 'display: x11'
+    type: 'issue'
+    title: "[Xx]11"
 
   - label: 'build system'
     type: 'pull_request'
@@ -138,6 +158,9 @@ labels:
     type: 'pull_request'
     files:
       - 'lua/*cairo*'
+  - label: 'cairo'
+    type: 'issue'
+    title: "([Cc]airo)" # can be in config
 
   - label: 'disk io'
     type: 'pull_request'
@@ -154,6 +177,9 @@ labels:
       - src/proc.h
       - src/top.cc
       - src/top.h
+  - label: 'cpu'
+    type: 'issue'
+    title: "(CPU|cpu)"
 
   - label: 'lua'
     type: 'pull_request'
@@ -166,42 +192,66 @@ labels:
       - src/luamm.h
       - src/lua-config.cc
       - src/lua-config.hh
+  - label: 'lua'
+    type: 'issue'
+    title: "[Ll](ua|UA)"
 
   - label: 'os: linux'
     type: 'pull_request'
     files:
       - src/linux.cc
       - src/linux.h
+  - label: 'os: linux'
+    type: 'issue'
+    title: "[Ll]inux"
   - label: 'os: dragonfly'
     type: 'pull_request'
     files:
       - src/dragonfly.cc
       - src/dragonfly.h
+  - label: 'os: dragonfly'
+    type: 'issue'
+    body: "[Dd]ragon[Ff]ly"
   - label: 'os: freebsd'
     type: 'pull_request'
     files:
       - src/freebsd.cc
       - src/freebsd.h
+  - label: 'os: dragonfly'
+    type: 'issue'
+    body: "[Ff]ree\\s?(BSD|bsd)"
   - label: 'os: netbsd'
     type: 'pull_request'
     files:
       - src/netbsd.cc
       - src/netbsd.h
+  - label: 'os: netbsd'
+    type: 'issue'
+    body: "[Nn]et\\s?(BSD|bsd)"
   - label: 'os: openbsd'
     type: 'pull_request'
     files:
       - src/openbsd.cc
       - src/openbsd.h
+  - label: 'os: openbsd'
+    type: 'issue'
+    body: "[Oo]pen\\s?(BSD|bsd)"
   - label: 'os: solaris'
     type: 'pull_request'
     files:
       - src/solaris.cc
       - src/solaris.h
+  - label: 'os: solaris'
+    type: 'issue'
+    body: "[Ss](olaris|OLARIS)"
   - label: 'os: haiku'
     type: 'pull_request'
     files:
       - src/haiku.cc
       - src/haiku.h
+  - label: 'os: haiku'
+    type: 'issue'
+    body: "[Hh](aiku|AIKU)"
 
   - label: 'mouse events'
     type: 'pull_request'
@@ -210,6 +260,9 @@ labels:
       - src/scroll.h
       - src/mouse-events.cc
       - src/mouse-events.h
+  - label: 'mouse events'
+    type: 'issue'
+    body: "(mouse|cursor|pointer) (events?|enters?|leaves?|clicks?|press(es)?))"
 
   - label: 'networking'
     type: 'pull_request'
@@ -220,12 +273,18 @@ labels:
       - src/tcp-portmon.h
       - src/read_tcpip.cc
       - src/read_tcpip.h
+  - label: 'networking'
+    type: 'issue'
+    body: "(network|IP address|download|upload)"
 
   - label: 'nvidia'
     type: 'pull_request'
     files:
       - src/nvidia.cc
       - src/nvidia.h
+  - label: 'nvidia'
+    type: 'issue'
+    body: "[Nn](vidia|VIDIA)"
 
   - label: 'rendering'
     type: 'pull_request'
@@ -246,3 +305,6 @@ labels:
       - src/tailhead.h
       - src/specials.cc
       - src/specials.h
+  - label: 'text'
+    type: 'issue'
+    body: "\\$\\w+ variable"
