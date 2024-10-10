@@ -1,5 +1,4 @@
 version: 1
-issues: True
 appendOnly: true
 
 labels:
@@ -262,7 +261,7 @@ labels:
       - src/mouse-events.h
   - label: 'mouse events'
     type: 'issue'
-    body: "(mouse|cursor|pointer) (events?|enters?|leaves?|clicks?|press(es)?))"
+    body: "(mouse|cursor|pointer) (buttons?|events?|enters?|leaves?|clicks?|press(es)?))"
 
   - label: 'networking'
     type: 'pull_request'
