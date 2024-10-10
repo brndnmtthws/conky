@@ -1,6 +1,7 @@
 name: 'Pull Request Labeler'
 on:
   - pull_request_target
+  - issues
 
 jobs:
   triage:
@@ -12,7 +13,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Run labeler
-        uses: actions/labeler@v5
-        with:
-          sync-labels: true
-          repo-token: '${{ secrets.GITHUB_TOKEN }}'
+        uses: srvaroa/labeler@v1
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
