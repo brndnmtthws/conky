@@ -164,12 +164,53 @@ lua:
           - src/lua-config.cc
           - src/lua-config.hh
 
-macos:
+'os: linux':
   - changed-files:
       - any-glob-to-any-file:
-          - src/darwin_sip.h
-          - src/darwin.h
-          - src/darwin.mm
+          - src/linux.cc
+          - src/linux.h
+
+'os: linux':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/linux.cc
+          - src/linux.h
+
+'os: dragonfly':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/dragonfly.cc
+          - src/dragonfly.h
+
+'os: freebsd':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/freebsd.cc
+          - src/freebsd.h
+
+'os: netbsd':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/netbsd.cc
+          - src/netbsd.h
+  
+'os: openbsd':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/openbsd.cc
+          - src/openbsd.h
+
+'os: solaris':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/solaris.cc
+          - src/solaris.h
+
+'os: haiku':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/haiku.cc
+          - src/haiku.h
 
 'mouse events':
   - changed-files:
