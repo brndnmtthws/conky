@@ -1,375 +1,216 @@
-version: 1
-appendOnly: true
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - doc/*
+          - doc/**/*
+          - data/conky*.conf
 
-labels:
-  - label: 'enhancement'
-    type: 'issue'
-    body: "([Ee]nhance(d|ment)|[Ii]mprove(ment|d))"
-  - label: 'enhancement'
-    type: 'issue'
-    title: "([Ee]nhance(d|ment)|[Ii]mprove(ment|d))"
-  - label: 'feature'
-    type: 'issue'
-    title: "([Ff]eature|[Ss]uggestion)"
-  - label: 'packaging'
-    type: 'issue'
-    body: "([Pp]ackage|AUR)"
-  - label: 'question'
-    type: 'issue'
-    body: "([Ww](ondering|ant(ed)? to ask|ould like to (know|understand)))"
+extras:
+  - changed-files:
+      - any-glob-to-any-file:
+          - extras/*
+          - extras/**/*
 
-  - label: 'priority: low'
-    type: 'issue'
-    body: "low priority"
+sources:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/*
+          - src/**/*
 
-  - label: 'display: console'
-    type: 'pull_request'
-    files:
-      - src/display-console.cc
-      - src/display-console.hh
-  - label: 'display: file'
-    type: 'pull_request'
-    files:
-      - src/display-file.cc
-      - src/display-file.hh
-  - label: 'display: http'
-    type: 'pull_request'
-    files:
-      - src/display-http.cc
-      - src/display-http.hh
-  - label: 'display: ncurses'
-    type: 'pull_request'
-    files:
-      - src/nc.cc
-      - src/nc.h
-      - src/display-ncurses.cc
-      - src/display-ncurses.hh
-  - label: 'display: wayland'
-    type: 'pull_request'
-    files:
-      - src/wl.cc
-      - src/wl.h
-      - src/wlr-layer-shell-unstable-v1.xml
-      - src/display-wayland.cc
-      - src/display-wayland.hh
-  - label: 'display: wayland'
-    type: 'issue'
-    title: "[Ww]ayland"
-  
-  - label: 'display: x11'
-    type: 'pull_request'
-    files:
-      - src/x11-color.cc
-      - src/x11-color.h
-      - src/x11.cc
-      - src/x11.h
-      - src/display-x11.cc
-      - src/display-x11.hh
-  - label: 'display: x11'
-    type: 'issue'
-    title: "[Xx]11"
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - tests/**/*
+          - tests/*
 
-  - label: 'os: linux'
-    type: 'pull_request'
-    files:
-      - src/linux.cc
-      - src/linux.h
-  - label: 'os: linux'
-    type: 'issue'
-    title: "[Ll]inux"
-  - label: 'os: dragonfly'
-    type: 'pull_request'
-    files:
-      - src/dragonfly.cc
-      - src/dragonfly.h
-  - label: 'os: dragonfly'
-    type: 'issue'
-    body: "[Dd]ragon[Ff]ly"
-  - label: 'os: freebsd'
-    type: 'pull_request'
-    files:
-      - src/freebsd.cc
-      - src/freebsd.h
-  - label: 'os: dragonfly'
-    type: 'issue'
-    body: "[Ff]ree\\s?(BSD|bsd)"
-  - label: 'os: netbsd'
-    type: 'pull_request'
-    files:
-      - src/netbsd.cc
-      - src/netbsd.h
-  - label: 'os: netbsd'
-    type: 'issue'
-    body: "[Nn]et\\s?(BSD|bsd)"
-  - label: 'os: openbsd'
-    type: 'pull_request'
-    files:
-      - src/openbsd.cc
-      - src/openbsd.h
-  - label: 'os: openbsd'
-    type: 'issue'
-    body: "[Oo]pen\\s?(BSD|bsd)"
-  - label: 'os: solaris'
-    type: 'pull_request'
-    files:
-      - src/solaris.cc
-      - src/solaris.h
-  - label: 'os: solaris'
-    type: 'issue'
-    body: "[Ss](olaris|OLARIS)"
-  - label: 'os: haiku'
-    type: 'pull_request'
-    files:
-      - src/haiku.cc
-      - src/haiku.h
-  - label: 'os: haiku'
-    type: 'issue'
-    body: "[Hh](aiku|AIKU)"
+web:
+  - changed-files:
+      - any-glob-to-any-file:
+          - web/*
+          - web/**/*
 
-  - label: 'documentation'
-    type: 'pull_request'
-    files:
-      - doc/*
-      - doc/**/*
-      - data/conky*.conf
-  - label: 'documentation'
-    type: 'issue'
-    title: "[Dd]ocument(ation)?" # can be mentioned but unrelated
+appimage:
+  - changed-files:
+      - any-glob-to-any-file:
+          - appimage/*
+          - appimage/**/*
 
-  - label: 'extras'
-    type: 'pull_request'
-    files:
-      - extras/*
-      - extras/**/*
+3rdparty:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 3rdparty/*
+          - 3rdparty/**/*
 
-  - label: 'sources'
-    type: 'pull_request'
-    files:
-      - src/*
-      - src/**/*
+gh-actions:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/workflows/*
+          - .github/workflows/**/*
+          - .github/labeler.yml
+          - .github/pull_request_template.md
 
-  - label: 'tests'
-    type: 'pull_request'
-    files:
-      - tests/**/*
-      - tests/*
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - web/package-lock.json
+          - cmake/ConkyPlatformChecks.cmake
 
-  - label: 'web'
-    type: 'pull_request'
-    files:
-      - web/*
-      - web/**/*
+audio:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/audacious.cc
+          - src/audacious.h
+          - src/cmus.cc
+          - src/cmus.h
+          - src/libmpdclient.cc
+          - src/libmpdclient.h
+          - src/mpd.cc
+          - src/mpd.h
+          - src/moc.cc
+          - src/moc.h
+          - src/mixer.cc
+          - src/mixer.h
+          - src/xmms2.cc
+          - src/xmms2.h
+          - src/pulseaudio.cc
+          - src/pulseaudio.h
 
-  - label: 'appimage'
-    type: 'issue'
-    body: "(appimage|AppImage|Appimage)"
-  
-  - label: '3rdparty'
-    type: 'pull_request'
-    files:
-      - 3rdparty/*
-      - 3rdparty/**/*
+power:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/apcupsd.cc
+          - src/apcupsd.h
+          - src/bsdapm.cc
+          - src/bsdapm.h
+          - src/smapi.cc
+          - src/smapi.h
 
-  - label: 'gh-actions'
-    type: 'pull_request'
-    files:
-      - .github/workflows/*
-      - .github/workflows/**/*
-      - .github/labeler.yml
-      - .github/pull_request_template.md
+'display: console':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/display-console.cc
+          - src/display-console.hh
+'display: file':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/display-file.cc
+          - src/display-file.hh
+'display: http':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/display-http.cc
+          - src/display-http.hh
+'display: ncurses':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/nc.cc
+          - src/nc.h
+          - src/display-ncurses.cc
+          - src/display-ncurses.hh
+'display: wayland':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/wl.cc
+          - src/wl.h
+          - src/wlr-layer-shell-unstable-v1.xml
+          - src/display-wayland.cc
+          - src/display-wayland.hh
+'display: x11':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/x11-color.cc
+          - src/x11-color.h
+          - src/x11.cc
+          - src/x11.h
+          - src/display-x11.cc
+          - src/display-x11.hh
 
-  - label: 'dependencies'
-    type: 'pull_request'
-    files:
-      - web/package-lock.json
-      - cmake/ConkyPlatformChecks.cmake
+'build system':
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/CMakeLists.txt'
+          - '*.cmake'
 
-  - label: 'appimage'
-    type: 'pull_request'
-    files:
-      - appimage/*
-      - appimage/**/*
+cairo:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lua/*cairo*'
 
-  - label: 'audio'
-    type: 'pull_request'
-    files:
-      - src/audacious.cc
-      - src/audacious.h
-      - src/cmus.cc
-      - src/cmus.h
-      - src/libmpdclient.cc
-      - src/libmpdclient.h
-      - src/mpd.cc
-      - src/mpd.h
-      - src/moc.cc
-      - src/moc.h
-      - src/mixer.cc
-      - src/mixer.h
-      - src/xmms2.cc
-      - src/xmms2.h
-      - src/pulseaudio.cc
-      - src/pulseaudio.h
-  - label: 'audio'
-    type: 'issue'
-    title: "([Aa]udio|[Aa]udacious|CMUS|cmus|MPD|libmpd|[Mm]ixer|xmms2|XMMS2|[Pp]ulse[Aa]udio|[Mm]usic|[Ss]ong)" # can be in config
-  
-  - label: 'power'
-    type: 'pull_request'
-    files:
-      - src/apcupsd.cc
-      - src/apcupsd.h
-      - src/bsdapm.cc
-      - src/bsdapm.h
-      - src/smapi.cc
-      - src/smapi.h
-  - label: 'power'
-    type: 'issue'
-    title: "([Bb]attery|[Cc]harged)" # can be in config
+'disk io':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/diskio.cc
+          - src/diskio.h
 
-  - label: 'build system'
-    type: 'pull_request'
-    files:
-      - '**/CMakeLists.txt'
-      - '*.cmake'
+cpu:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/cpu.cc
+          - src/cpu.h
+          - src/proc.cc
+          - src/proc.h
+          - src/top.cc
+          - src/top.h
 
-  - label: 'cairo'
-    type: 'pull_request'
-    files:
-      - 'lua/*cairo*'
-  - label: 'cairo'
-    type: 'issue'
-    title: "([Cc]airo)" # can be in config
+lua:
+  - changed-files:
+      - any-glob-to-any-file:
+          - lua/*
+          - lua/**/*
+          - src/llua.cc
+          - src/llua.h
+          - src/luamm.cc
+          - src/luamm.h
+          - src/lua-config.cc
+          - src/lua-config.hh
 
-  - label: 'sensors'
-    type: 'pull_request'
-    files:
-      - src/hddtemp.cc
-      - src/hddtemp.h
-  - label: 'disk io'
-    type: 'issue'
-    title: "(temperature|temp)" # can be in config
+macos:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/darwin_sip.h
+          - src/darwin.h
+          - src/darwin.mm
 
-  - label: 'disk io'
-    type: 'pull_request'
-    files:
-      - src/diskio.cc
-      - src/diskio.h
-  - label: 'disk io'
-    type: 'issue'
-    title: "(HDD|hdd|SSD|ssd|[Dd](isk|rive) space|filesystem)" # can be in config
+'mouse events':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/scroll.cc
+          - src/scroll.h
+          - src/mouse-events.cc
+          - src/mouse-events.h
 
-  - label: 'cpu'
-    type: 'pull_request'
-    files:
-      - src/cpu.cc
-      - src/cpu.h
-      - src/proc.cc
-      - src/proc.h
-      - src/top.cc
-      - src/top.h
-  - label: 'cpu'
-    type: 'issue'
-    title: "(CPU|cpu)" # can be in config
+networking:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/net_stat.cc
+          - src/net_stat.h
+          - src/tcp-portmon.cc
+          - src/tcp-portmon.h
+          - src/read_tcpip.cc
+          - src/read_tcpip.h
 
-  - label: 'lua'
-    type: 'pull_request'
-    files:
-      - lua/*
-      - lua/**/*
-      - src/llua.cc
-      - src/llua.h
-      - src/luamm.cc
-      - src/luamm.h
-      - src/lua-config.cc
-      - src/lua-config.hh
-  - label: 'lua'
-    type: 'issue'
-    title: "[Ll](ua|UA)" # can be in config
+nvidia:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/nvidia.cc
+          - src/nvidia.h
 
-  - label: 'mail'
-    type: 'pull_request'
-    files:
-      - src/mail.cc
-      - src/mail.h
-      - src/mboxscan.cc
-      - src/mboxscan.h
-  - label: 'mail'
-    type: 'issue'
-    title: "(e?mail|[Mm][Bb](ox|OX))" # can be in config
+rendering:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/text_object.cc
+          - src/text_object.h
+          - src/specials.cc
+          - src/specials.h
 
-  - label: 'mouse events'
-    type: 'pull_request'
-    files:
-      - src/scroll.cc
-      - src/scroll.h
-      - src/mouse-events.cc
-      - src/mouse-events.h
-  - label: 'mouse events'
-    type: 'issue'
-    body: "(mouse|cursor|pointer) (buttons?|events?|enters?|leaves?|clicks?|press(es)?))"
-
-  - label: 'networking'
-    type: 'pull_request'
-    files:
-      - src/net_stat.cc
-      - src/net_stat.h
-      - src/tcp-portmon.cc
-      - src/tcp-portmon.h
-      - src/read_tcpip.cc
-      - src/read_tcpip.h
-  - label: 'networking'
-    type: 'issue'
-    title: "(network( (interface|id|ID))|(IP|machine|gateway)('?s)? address|download|upload|gateway)" # can be in config
-
-  - label: 'nvidia'
-    type: 'pull_request'
-    files:
-      - src/nvidia.cc
-      - src/nvidia.h
-  - label: 'nvidia'
-    type: 'issue'
-    title: "[Nn](vidia|VIDIA)" # can be in config
-
-  - label: 'rendering'
-    type: 'pull_request'
-    files:
-      - src/text_object.cc
-      - src/text_object.h
-      - src/specials.cc
-      - src/specials.h
-  - label: 'rendering'
-    type: 'issue'
-    title: "([Xx](ft|FT))"
-  - label: 'rendering'
-    type: 'issue'
-    body: "(incorrect|bad|wrong)(ly)? (size|align|position)(ed|ment)"
-  - label: 'rendering'
-    type: 'issue'
-    body: "(flicker(ing)?|font icons?|[Xx](ft|FT))"
-
-  - label: 'text'
-    type: 'pull_request'
-    files:
-      - src/core.cc
-      - src/core.h
-      - src/text_object.cc
-      - src/text_object.h
-      - src/template.cc
-      - src/template.h
-      - src/tailhead.cc
-      - src/tailhead.h
-      - src/specials.cc
-      - src/specials.h
-  - label: 'text'
-    type: 'issue'
-    body: "exec(i(bar))"
-  - label: 'text'
-    type: 'issue'
-    body: "\\$\\w+ variable"
-
-  - label: 'build system'
-    type: 'issue'
-    title: "([Cc]?[Cc][Mm]ake|([Mm]ake|[Bb]uild) error|compil(e|ation))"
-  - label: 'build system'
-    type: 'issue'
-    body: "([Cc]?[Cc][Mm]ake|([Mm]ake|[Bb]uild) error|compil(e|ation))"
+text:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/text_object.cc
+          - src/text_object.h
+          - src/template.cc
+          - src/template.h
+          - src/tailhead.cc
+          - src/tailhead.h
+          - src/specials.cc
+          - src/specials.h
