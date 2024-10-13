@@ -268,8 +268,30 @@ static void print_help(const char *prog_name) {
          "   -i COUNT                  number of times to update " PACKAGE_NAME
          " (and quit)\n"
          "   -p, --pause=SECS          pause for SECS seconds at startup "
-         "before doing anything\n",
+         "before doing anything\n"
+         "   -U, --unique              only one conky process can be created\n",
          prog_name);
+}
+
+static bool is_conky_already_running() {
+  char line[512];
+  int instances = 0;
+
+  FILE *fp = popen("ps xo comm", "r");
+  if (!fp) {
+    NORM_ERR("unable to open ps");
+    return false;
+  }
+
+  while (fgets(line, sizeof(line), fp)) {
+    if (!strncmp(line, "conky\n", 6)) {
+      instances++;
+    }
+  }
+
+  pclose(fp);
+
+  return instances > 1;
 }
 
 inline void reset_optind() {
@@ -292,6 +314,8 @@ int main(int argc, char **argv) {
   g_sigterm_pending = 0;
   g_sighup_pending = 0;
   g_sigusr2_pending = 0;
+
+  bool unique_process = false;
 
 #ifdef BUILD_CURL
   struct curl_global_initializer {
@@ -349,10 +373,18 @@ int main(int argc, char **argv) {
         window.window = strtol(optarg, nullptr, 0);
         break;
 #endif /* BUILD_X11 */
+      case 'U':
+        unique_process = true;
+        break;
 
       case '?':
         return EXIT_FAILURE;
     }
+  }
+
+  if (unique_process && is_conky_already_running()) {
+    NORM_ERR("already running");
+    return 0;
   }
 
   try {
