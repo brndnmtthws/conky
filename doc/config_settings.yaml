@@ -27,10 +27,26 @@ desc: |-
 values:
   - name: alignment
     desc: |-
-      Aligned position on screen, may be top_left, top_right,
-      top_middle, bottom_left, bottom_right, bottom_middle, middle_left,
-      middle_middle, middle_right, or none (also can be abbreviated as tl,
-      tr, tm, bl, br, bm, ml, mm, mr). See also gap_x and gap_y.
+      Aligned position on screen, may be `none` or one of:
+
+      |                       |                         |                        |
+      |:----------------------|:-----------------------:|-----------------------:|
+      |`top_left` (or `tl`)   | `top_middle` (or `tm`)  |   `top_right` (or `tr`)|
+      |`middle_left` (or `ml`)|`middle_middle` (or `mm`)|`middle_right` (or `mr`)|
+      |`bottom_left` (or `bl`)|`bottom_middle` (or `bm`)|`bottom_right` (or `br`)|
+
+      In case of `panel` and `dock` windows, it might make more sense to use one
+      of the following aliases:
+
+      | Alias  |     Value     |
+      |:------:|:-------------:|
+      | `top`  | `top_middle`  |
+      | `left` | `middle_left` |
+      |`right` |`middle_right` |
+      |`bottom`|`bottom_middle`|
+      |`center`|`middle_middle`|
+
+      See also `gap_x` and `gap_y` settings.
   - name: append_file
     desc: Append the file given as argument.
   - name: background
@@ -172,6 +188,13 @@ values:
 
       Create an API token at
       https://github.com/settings/tokens/new?scopes=notifications&description=conky.
+  - name: graph_gradient_mode
+    desc: |-
+      Changes the color space used for interpolation. Arguments are hcl, hsv,
+      and rgb (default).
+    args:
+      - (rgb|hcl|hsv)
+    default: rgb
   - name: hddtemp_host
     desc: |-
       Hostname to connect to for hddtemp objects.
@@ -218,15 +241,6 @@ values:
       Imlib2 image cache size, in bytes.  Increase this value if you use $image
       lots. Set to 0 to disable the image cache.
     default: 4194304
-  - name: lua_mouse_hook
-    desc: |-
-      This function, if defined, will be called by Conky upon receiving mouse
-      events from X or Wayland. A table containing event information will be
-      passed to this function as the first argument. Use this hook for detecting
-      mouse input and acting on it. Conky requires that the function declaration
-      has a 'conky_' prefix to prevent accidental calls to the wrong function.
-    args:
-      - function_name
   - name: lowercase
     desc: Boolean value, if true, text is rendered in lower case.
   - name: lua_draw_hook_post
@@ -253,6 +267,15 @@ values:
       - [function arguments]
   - name: lua_load
     desc: Loads the Lua scripts separated by spaces.
+  - name: lua_mouse_hook
+    desc: |-
+      This function, if defined, will be called by Conky upon receiving mouse
+      events from X or Wayland. A table containing event information will be
+      passed to this function as the first argument. Use this hook for detecting
+      mouse input and acting on it. Conky requires that the function declaration
+      has a 'conky_' prefix to prevent accidental calls to the wrong function.
+    args:
+      - function_name
   - name: lua_shutdown_hook
     desc: |-
       This function, if defined, will be called by Conky at
@@ -398,36 +421,69 @@ values:
       - color
   - name: own_window_hints
     desc: |-
-      If own_window is yes, you may specify comma separated window manager hints
-      to affect the way Conky displays. Notes: Use own_window_type desktop
-      as another way to implement many of these hints implicitly. If you use
-      own_window_type override, window manager hints have no meaning and are
-      ignored.
+      If `own_window` is set, on X11 you may specify comma separated window
+      manager hints to affect the way Conky displays.
+
+      Following hints are some of the standard WM specification ones:
+      - `above` indicates that conky should be on top of most windows.
+      - `below` indicates that conky should be below most windows.
+      - `skip_pager` indicates that conky should not be included on a
+        Pager. **Implied if** `own_window_type` is 'dock' or 'panel'.
+      - `skip_taskbar` indicates that conky should not be included on a
+        taskbar. **Implied if** `own_window_type` is 'dock' or 'panel'.
+      - `sticky` indicates that the Window Manager SHOULD keep conky's
+        position fixed on the screen, even when the virtual desktop scrolls.
+      - `undecorated` indicates that conky shouldn't have any window
+        decorations (e.g. title bar). **Implied if** `own_window_type` is
+        'dock' or 'panel'.
+
+      Notes:
+      - Use `own_window_type='desktop'` setting as another way to implement many of these hints implicitly.
+      - If you use `own_window_type='override'`, window manager hints have no meaning and are ignored.
     args:
       - hint(,hint)*
   - name: own_window_title
     desc: |-
-      Manually set the window name.
+      Allows overriding conky window name.
     default: 'conky (<hostname>)'
   - name: own_window_transparent
     desc: |-
-      Boolean, set transparency? If ARGB visual is enabled, sets
-      background opacity to 0%.
+      Make conky window transparent. If `own_window_argb_visual` is enabled,
+      sets background opacity to 0%.
+    default: false
   - name: own_window_type
     desc: |-
-      if own_window is yes, you may specify type normal, desktop,
-      dock, panel, utility or override. Desktop windows are special
-      windows that have no window decorations; are always visible on your
-      desktop; do not appear in your pager or taskbar; and are sticky across
-      all workspaces. Utility windows are like desktop windows, 
-      except they appear above everything else rather than below.
-      Panel windows reserve space along a desktop edge, just
-      like panels and taskbars, preventing maximized windows from
-      overlapping them. The edge is chosen based on the alignment option.
-      Override windows are not under the control of the window manager.
-      Hints are ignored. This type of window can be useful for certain
-      situations.
+      If `own_window` is set, under X11 you can specify type of window conky
+      displayed as:
+
+      - `normal` mode makes conky show as normal window. This mode can be
+        configured with use of `own_window_hints` setting.
+      - `desktop` windows are special windows that have no window decorations,
+        are always visible on the desktop, do not appear in pager or taskbar,
+        and are sticky across all workspaces. Many DEs include `desktop` windows
+        for background, icons and desktop menu, in those cases it might be
+        better to use `normal` or one of the below options, as those will cover
+        conky when they're clicked on.
+      - `dock` windows reserve space on the desktop, i.e. WMs will try their
+        best to not place windows on top of them. They're the same as `desktop`
+        in other respects, but render on top of `desktop` windows.
+      - `panel` windows are similar to `dock` windows, but they also reserve
+        space _along a desktop edge_ (like taskbars), preventing maximized
+        windows from overlapping them. The edge is chosen based on the
+        `alignment` setting.
+      - `utility` windows are persistent utility windows (e.g. a palette or
+        toolbox). They appear on top of other windows (in the same group), but
+        otherwise behave much like `normal` windows.
+      - `override` windows are drawn directly on root window (desktop
+        background) and are not under the control of the window manager. These
+        will not work with DEs which draw desktop icons via custom
+        panels/windows as those will cover conky.
+        `own_window_hints` are ignored for `override` windows.
+
+      To make conky mount on root window, set `own_window` to `false`.
     default: normal
+    args:
+      - (normal|desktop|dock|panel|utility|override)
   - name: pad_percents
     desc: Pad percentages to this many decimals (0 = no padding).
   - name: pop3
@@ -454,13 +510,6 @@ values:
     desc: Shows the time range covered by a graph.
   - name: show_graph_scale
     desc: Shows the maximum value in scaled graphs.
-  - name: graph_gradient_mode
-    desc: |-
-      Changes the color space used for interpolation. Arguments are hcl, hsv,
-      and rgb (default).
-    args:
-      - (rgb|hcl|hsv)
-    default: rgb
   - name: stippled_borders
     desc: Border stippling (dashing) in pixels.
   - name: store_graph_data_explicitly

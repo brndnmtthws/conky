@@ -8,7 +8,7 @@
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -56,9 +56,10 @@
 #endif /* BUILD_OLD_CONFIG */
 #endif /* BUILD_BUILTIN_CONFIG */
 
+static void print_short_version() { std::cout << VERSION << std::endl; }
+
 static void print_version() {
-  std::cout << _(PACKAGE_NAME " " VERSION " compiled " BUILD_DATE
-                              " for " BUILD_ARCH
+  std::cout << _(PACKAGE_NAME " " VERSION " compiled for " BUILD_ARCH
                               "\n"
                               "\nCompiled in features:\n\n"
                               "System config file: " SYSTEM_CONFIG_FILE
@@ -236,7 +237,8 @@ static void print_help(const char *prog_name) {
          "window. Command line options will override configurations defined in "
          "config\n"
          "file.\n"
-         "   -v, --version             version\n"
+         "   -v, --version             version with build details\n"
+         "   -V, --short-version       short version\n"
          "   -q, --quiet               quiet mode\n"
          "   -D, --debug               increase debugging output, ie. -DD for "
          "more debugging\n"
@@ -324,8 +326,10 @@ int main(int argc, char **argv) {
         global_debug_level++;
         break;
       case 'v':
-      case 'V':
         print_version();
+        return EXIT_SUCCESS;
+      case 'V':
+        print_short_version();
         return EXIT_SUCCESS;
       case 'c':
         current_config = optarg;

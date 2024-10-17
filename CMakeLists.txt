@@ -3,7 +3,7 @@
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2021 Brenden Matthews, et. al. (see AUTHORS) All rights
+# Copyright (c) 2005-2024 Brenden Matthews, et. al. (see AUTHORS) All rights
 # reserved.
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -28,6 +28,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 # 'core' CMake stuff
 include(Conky)
 
+# Set project version, languages
+project(conky VERSION ${RELEASE_VERSION} LANGUAGES C CXX)
+
 # Handle build options
 include(ConkyBuildOptions)
 
@@ -43,17 +46,20 @@ configure_file(${CMAKE_MODULE_PATH}/build.h.in ${CMAKE_BINARY_DIR}/build.h)
 
 set(conky_sources ${CMAKE_BINARY_DIR}/config.h ${CMAKE_BINARY_DIR}/build.h)
 
+# Include 3rdparty code
+add_subdirectory(3rdparty)
+set(conky_libs ${conky_libs} toluapp_lib_static)
+set(conky_libs ${conky_libs} Vc)
+set(conky_includes ${conky_includes} "${CMAKE_SOURCE_DIR}/3rdparty/Vc")
+
 # Finally, add some code
 add_subdirectory(lua)
 add_subdirectory(data)
 add_subdirectory(doc)
+
 if(BUILD_EXTRAS)
   add_subdirectory(extras)
 endif(BUILD_EXTRAS)
-
-# Include 3rdparty toluapp
-add_subdirectory(3rdparty/toluapp)
-set(conky_libs ${conky_libs} toluapp_lib_static)
 
 if(BUILD_TESTS)
   if(CODE_COVERAGE)
@@ -61,6 +67,7 @@ if(BUILD_TESTS)
     include(CodeCoverage)
     append_coverage_compiler_flags()
   endif()
+
   include(Catch)
 endif()
 
@@ -72,8 +79,9 @@ if(BUILD_TESTS)
 endif()
 
 if(NOT DEFINED DOC_PATH)
-  set(DOC_PATH "share/doc/${CPACK_PACKAGE_NAME}-${VERSION}")
+  set(DOC_PATH "share/doc/${CPACK_PACKAGE_NAME}-${RELEASE_VERSION}")
 endif(NOT DEFINED DOC_PATH)
+
 set(DOC_FILES extras/convert.lua data/conky_no_x11.conf data/conky.conf)
 
 install(FILES ${DOC_FILES} DESTINATION ${DOC_PATH})
@@ -86,7 +94,7 @@ endif(CHECK_CODE_QUALITY)
 # uninstall target
 if(NOT TARGET uninstall)
   configure_file(
-      "${CMAKE_MODULE_PATH}/UninstallConky.cmake.in"
+    "${CMAKE_MODULE_PATH}/UninstallConky.cmake.in"
     "${CMAKE_BINARY_DIR}/cmake_uninstall.cmake"
     IMMEDIATE @ONLY)
 

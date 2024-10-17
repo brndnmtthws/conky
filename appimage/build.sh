@@ -25,6 +25,13 @@ trap cleanup EXIT
 REPO_ROOT=$(readlink -f $(dirname $(dirname $0)))
 OLD_CWD=$(readlink -f .)
 
+# check if we have a recent enough version of librsvg
+if pkg-config --atleast-version 2.60 librsvg-2.0; then
+  ENABLE_RSVG=ON
+else
+  ENABLE_RSVG=OFF
+fi
+
 # switch to build dir
 pushd "$BUILD_DIR"
 
@@ -32,7 +39,7 @@ pushd "$BUILD_DIR"
 # we need to explicitly set the install prefix, as CMake's default is /usr/local for some reason...
 cmake -G Ninja                         \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo    \
-  -DRELEASE=ON                         \
+  -DRELEASE=$RELEASE                   \
   -DBUILD_AUDACIOUS=ON                 \
   -DBUILD_DOCS=ON                      \
   -DBUILD_HTTP=ON                      \
@@ -43,13 +50,14 @@ cmake -G Ninja                         \
   -DBUILD_JOURNAL=ON                   \
   -DBUILD_LUA_CAIRO=ON                 \
   -DBUILD_LUA_IMLIB2=ON                \
-  -DBUILD_LUA_RSVG=ON                  \
+  -DBUILD_LUA_RSVG=${ENABLE_RSVG}      \
   -DBUILD_LUA_TEXT=ON                  \
   -DBUILD_MYSQL=ON                     \
   -DBUILD_NVIDIA=ON                    \
   -DBUILD_PULSEAUDIO=ON                \
   -DBUILD_RSS=ON                       \
-  -DBUILD_WAYLAND=OFF                  \
+  -DBUILD_CURL=ON                      \
+  -DBUILD_WAYLAND=ON                   \
   -DBUILD_WLAN=ON                      \
   -DBUILD_X11=ON                       \
   -DBUILD_XMMS2=ON                     \
@@ -75,7 +83,12 @@ wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appima
 
 chmod +x appimagetool-x86_64.AppImage
 
-./appimagetool-x86_64.AppImage AppDir --sign --sign-key E3034071
+GPG_KEY=C793F1BA
+if gpg --list-keys ${GPG_KEY}; then
+  ./appimagetool-x86_64.AppImage AppDir --sign --sign-key ${GPG_KEY}
+else
+  ./appimagetool-x86_64.AppImage AppDir
+fi
 
 for f in conky*.AppImage
 do

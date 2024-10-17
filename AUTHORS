@@ -179,6 +179,7 @@ K. Eugene Carlson <kvngncrlsn at gmail dot com>
   Additional Linux memory reporting variables
   Linux CPU frequency governor reporting
   Additional FreeBSD memory reporting variables
+  fs_stat patch
 
 Kapil Hari Paranjape <kapil@imsc.res.in>
   ibm_volume patch

@@ -4,7 +4,7 @@
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *  (see AUTHORS)
  * All rights reserved.
  *
@@ -22,9 +22,14 @@
  *
  */
 
-#pragma once
+#ifndef CONKY_X11_H
+#define CONKY_X11_H
 
-#include "setting.hh"
+#include "config.h"
+
+#ifndef BUILD_X11
+#error x11.h included when BUILD_X11 is disabled
+#endif
 
 #include <X11/Xatom.h>
 #pragma GCC diagnostic push
@@ -40,41 +45,32 @@
 #endif
 
 #include <cstdint>
+#include <functional>
+#include <vector>
 
-#ifdef BUILD_ARGB
+// TODO: remove lua requirement from x11_init_window
+#include "llua.h"
+
+#include "geometry.h"
+#include "gui.h"
+
 /* true if use_argb_visual=true and argb visual was found*/
 extern bool have_argb_visual;
-#endif /* BUILD_ARGB */
 
 #define ATOM(a) XInternAtom(display, #a, False)
 
-#ifdef OWN_WINDOW
-enum window_type {
-  TYPE_NORMAL = 0,
-  TYPE_DOCK,
-  TYPE_PANEL,
-  TYPE_DESKTOP,
-  TYPE_OVERRIDE,
-  TYPE_UTILITY
-};
-
-enum window_hints {
-  HINT_UNDECORATED = 0,
-  HINT_BELOW,
-  HINT_ABOVE,
-  HINT_STICKY,
-  HINT_SKIP_TASKBAR,
-  HINT_SKIP_PAGER
-};
-
-#define SET_HINT(mask, hint) (mask |= (1 << (hint)))
-#define TEST_HINT(mask, hint) (mask & (1 << (hint)))
-#endif
-
+/// @brief Display where conky is placed
 extern Display *display;
+/// @brief Screen with conky
+extern int screen;
 
 struct conky_x11_window {
-  Window root, window, desktop;
+  /// XID of x11 root window
+  Window root;
+  /// XID of Conky window
+  Window window;
+  /// XID of DE desktop window (or root if none)
+  Window desktop;
   Drawable drawable;
   Visual *visual;
   Colormap colourmap;
@@ -91,70 +87,95 @@ struct conky_x11_window {
 #ifdef BUILD_XFT
   XftDraw *xftdraw;
 #endif /*BUILD_XFT*/
-#ifdef BUILD_MOUSE_EVENTS
+#if defined(BUILD_MOUSE_EVENTS) || defined(BUILD_XINPUT)
   // Don't feature gate with BUILD_XINPUT; controls fallback.
   std::int32_t xi_opcode;
-#endif /* BUILD_MOUSE_EVENTS */
+#endif /* BUILD_MOUSE_EVENTS || BUILD_XINPUT */
 
-  int width;
-  int height;
-#ifdef OWN_WINDOW
-  int x;
-  int y;
-#endif
+  /// @brief Window geometry in screen coordinate space
+  conky::rect<int> geometry;
 };
 
 extern struct conky_x11_window window;
-extern conky::simple_config_setting<std::string> display_name;
 
+void update_x11_resource_db(bool first_run = false);
+void update_x11_workarea();
+void init_x11();
 void destroy_window(void);
 void create_gc(void);
 void set_transparent_background(Window win);
 void get_x11_desktop_info(Display *current_display, Atom atom);
-void set_struts(int);
+void set_struts(alignment alignment);
 void x11_init_window(lua::state &l, bool own);
 void deinit_x11();
 
-// Fields common to all X11 input events
-struct InputEventCommon {
-  int type;               /* event type */
-  uint64_t serial;        /* # of last request processed by server */
-  Bool send_event;        /* true if this came from a SendEvent request */
-  Display *display;       /* Display the event was read from */
-  Window window;          /* "event" window reported relative to */
-  Window root;            /* root window that the event occurred on */
-  Window subwindow;       /* child window */
-  Time time;              /* milliseconds */
-  int32_t x, y;           /* pointer x, y coordinates in event window */
-  int32_t x_root, y_root; /* coordinates relative to root */
-  uint32_t state;         /* key or button mask */
-};
+/// @brief Forwards argument event to the top-most window at event positon that
+/// isn't conky.
+///
+/// Calling this function is time sensitive as it will query window at event
+/// position **at invocation time**.
+/// @param event event to forward
+/// @param cookie optional cookie data
+void propagate_x11_event(XEvent &event, const void *cookie = nullptr);
 
-union InputEvent {
-  int type;  // event type
+/// @brief Returns a list of window values for the given atom.
+/// @param display display with which the atom is associated
+/// @param window window to query for the atom value
+/// @param atom atom to query for
+/// @return a list of window values for the given atom
+std::vector<Window> x11_atom_window_list(Display *display, Window window,
+                                         Atom atom);
 
-  InputEventCommon common;
+/// @brief Tries getting a list of windows ordered from bottom to top.
+///
+/// Whether the list is correctly ordered depends on WM/DE providing the
+/// `_NET_CLIENT_LIST_STACKING` atom. If only `_NET_CLIENT_LIST` is defined,
+/// this function assumes the WM/DE is a tiling one without stacking order.
+///
+/// If neither of the atoms are provided, this function tries traversing the
+/// window graph in order to collect windows. In this case, map state of windows
+/// is ignored.
+///
+/// @param display which display to query for windows
+/// @param eager fallback to very slow tree traversal to ensure a list of
+/// windows is returned even if window list atoms aren't defined
+/// @return a (likely) ordered list of windows
+std::vector<Window> query_x11_windows(Display *display, bool eager = false);
 
-  // Discrete interfaces
-  XAnyEvent xany;            // common event interface
-  XKeyEvent xkey;            // KeyPress & KeyRelease events
-  XButtonEvent xbutton;      // ButtonPress & ButtonRelease events
-  XMotionEvent xmotion;      // MotionNotify event
-  XCrossingEvent xcrossing;  // EnterNotify & LeaveNotify events
+/// @brief Finds the last ascendant of a window (trunk) before root.
+///
+/// If provided `child` is root or has no windows between root and itself, the
+/// `child` is returned.
+///
+/// @param display display of parent
+/// @param child window whose parents to query
+/// @return the top level ascendant window
+Window query_x11_top_parent(Display *display, Window child);
 
-  // Ensures InputEvent matches memory layout of XEvent.
-  // Accessing base variant is as code smell.
-  XEvent base;
-};
+/// @brief Returns the top-most window overlapping provided screen coordinates.
+///
+/// @param display display of parent
+/// @param x screen X position contained by window
+/// @param y screen Y position contained by window
+/// @return a top-most window at provided screen coordinates, or root
+Window query_x11_window_at_pos(Display *display, conky::vec2i pos);
 
-// Returns InputEvent pointer to provided XEvent is an input event; nullptr
-// otherwise.
-InputEvent *xev_as_input_event(XEvent &ev);
-void propagate_x11_event(XEvent &ev);
-
-#ifdef BUILD_MOUSE_EVENTS
-Window query_x11_window_at_pos(Display *display, int x, int y);
-#endif /* BUILD_MOUSE_EVENTS */
+/// @brief Returns a list of windows overlapping provided screen coordinates.
+///
+/// Vector returned by this function will never contain root because it's
+/// assumed to always cover the entire display.
+///
+/// @param display display of parent
+/// @param x screen X position contained by window
+/// @param y screen Y position contained by window
+/// @param predicate any additional predicates to apply for XWindowAttributes
+/// (besides bounds testing).
+/// @return a vector of windows at provided screen coordinates
+std::vector<Window> query_x11_windows_at_pos(
+    Display *display, conky::vec2i pos,
+    std::function<bool(XWindowAttributes &)> predicate =
+        [](XWindowAttributes &a) { return true; },
+    bool eager = false);
 
 #ifdef BUILD_XDBE
 void xdbe_swap_buffers(void);
@@ -162,54 +183,4 @@ void xdbe_swap_buffers(void);
 void xpmdb_swap_buffers(void);
 #endif /* BUILD_XDBE */
 
-namespace priv {
-class out_to_x_setting : public conky::simple_config_setting<bool> {
-  typedef conky::simple_config_setting<bool> Base;
-
- protected:
-  virtual void lua_setter(lua::state &l, bool init);
-  virtual void cleanup(lua::state &l);
-
- public:
-  out_to_x_setting() : Base("out_to_x", true, false) {}
-};
-
-#ifdef BUILD_XDBE
-class use_xdbe_setting : public conky::simple_config_setting<bool> {
-  typedef conky::simple_config_setting<bool> Base;
-
-  bool set_up(lua::state &l);
-
- protected:
-  virtual void lua_setter(lua::state &l, bool init);
-
- public:
-  use_xdbe_setting() : Base("double_buffer", false, false) {}
-};
-
-#else
-class use_xpmdb_setting : public conky::simple_config_setting<bool> {
-  typedef conky::simple_config_setting<bool> Base;
-
-  bool set_up(lua::state &l);
-
- protected:
-  virtual void lua_setter(lua::state &l, bool init);
-
- public:
-  use_xpmdb_setting() : Base("double_buffer", false, false) {}
-};
-#endif
-} /* namespace priv */
-
-extern priv::out_to_x_setting out_to_x;
-
-#ifdef BUILD_XFT
-extern conky::simple_config_setting<bool> use_xft;
-#endif
-
-#ifdef BUILD_XDBE
-extern priv::use_xdbe_setting use_xdbe;
-#else
-extern priv::use_xpmdb_setting use_xpmdb;
-#endif
+#endif /* CONKY_X11_H */

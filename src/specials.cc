@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -46,10 +46,11 @@
 #include "conky.h"
 #include "display-output.hh"
 
-struct special_t *specials = nullptr;
+struct special_node *specials = nullptr;
 
 int special_count;
 int graph_count = 0;
+double maxspeedval = 1e-47; /* The maximum value among the speed graphs */
 
 std::map<int, double *> graphs;
 
@@ -82,6 +83,10 @@ conky::simple_config_setting<std::string> console_graph_ticks(
 #define SF_SCALED (1 << 0)
 #define SF_SHOWLOG (1 << 1)
 
+/* special flag for inverting axis */
+#define SF_INVERTX (1 << 0)
+#define SF_INVERTY (1 << 1)
+
 /*
  * Special data typedefs
  */
@@ -106,6 +111,9 @@ struct graph {
   Colour first_colour, last_colour;
   double scale;
   char tempgrad;
+  char speedgraph;  /* If the current graph is a speed graph */
+  char invertflag;  /* If the axis needs to be inverted */
+  int minheight;    /* Clamp values below this threshold to this threshold */
 };
 
 struct stippled_hr {
@@ -239,17 +247,21 @@ std::pair<char *, size_t> scan_command(const char *s) {
 }
 
 /**
- * parses for [height,width] [color1 color2] [scale] [-t] [-l]
+ * parses for [height,width] [color1 color2] [scale] [-t] [-l] [-m value]
  *
  * -l will set the showlog flag, enabling logarithmic graph scales
  * -t will set the tempgrad member to true, enabling temperature gradient colors
+ * -x will set the invertx flag to true, inverting the x axis
+ * -y will set the invertx flag to true, inverting the y axis
+ * -m will set the minheight to value, this will clamp values below the threshold to the threshold
  *
  * @param[out] obj  struct in which to save width, height and other options
  * @param[in]  args argument string to parse
  * @param[in]  defscale default scale if no scale argument given
+ * @param[in]  speedGraph if graph is network speed graph or not
  * @return whether parsing was successful
  **/
-bool scan_graph(struct text_object *obj, const char *argstr, double defscale) {
+bool scan_graph(struct text_object *obj, const char *argstr, double defscale, char speedGraph) {
   char first_colour_name[1024] = {'\0'};
   char last_colour_name[1024] = {'\0'};
 
@@ -266,7 +278,11 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale) {
   g->last_colour = Colour();
   g->scale = defscale;
   g->tempgrad = FALSE;
-
+  g->invertflag = FALSE;
+  g->minheight = 0;
+  if (speedGraph) {
+    g->speedgraph = TRUE;
+  }
   if (argstr == nullptr) return false;
 
   /* set tempgrad to true if '-t' specified.
@@ -280,6 +296,46 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale) {
   if ((strstr(argstr, " " LOGGRAPH) != nullptr) ||
       strncmp(argstr, LOGGRAPH, strlen(LOGGRAPH)) == 0) {
     g->flags |= SF_SHOWLOG;
+  }
+  /* set invertx to true if '-x' specified.
+   * It doesn't matter where the argument is exactly. */
+  if ((strstr(argstr, " " INVERTX) != nullptr) ||
+      strncmp(argstr, INVERTX, strlen(INVERTX)) == 0) {
+    g->invertflag |= SF_INVERTX;
+  }
+  /* set inverty to true if '-y' specified.
+   * It doesn't matter where the argument is exactly. */
+  if ((strstr(argstr, " " INVERTY) != nullptr) ||
+      strncmp(argstr, INVERTY, strlen(INVERTY)) == 0) {
+    g->invertflag |= SF_INVERTY;
+  }
+
+  /* set MINHEIGHT to specified value if '-m' specified.
+   * It doesn't matter where the argument is exactly. 
+   * Accepted values are from [0-5] */
+  const char *position = strstr(argstr, " " MINHEIGHT);
+  if ((position != nullptr) ||
+      strncmp(argstr, MINHEIGHT, strlen(MINHEIGHT)) == 0) {
+      int minheight = 0;
+      position += strlen(MINHEIGHT) + 1;
+      int size = strlen(argstr);
+      // Avoid whitespaces
+      while(*position == ' ' && position < argstr + size) {
+        position++;
+      }
+      // Get the numeric value start and end position
+      const char* numStart = position;
+      while (isdigit(*position)) {
+          position++;
+      }
+      // Convert the numeric value to an integer
+      std::string numStr(numStart, position);
+      if (!numStr.empty()) {
+          minheight = atoi(numStr.c_str());
+      }
+      // If specified value is greater than the max threshold
+      minheight = minheight > 5 ? 5 : minheight;
+      g->minheight = minheight;
   }
 
   /* all the following functions try to interpret the beginning of a
@@ -300,15 +356,19 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale) {
   last_colour_name[0] = '\0';
   g->scale = defscale;
 
-  /* [height],[width] [color1] [color2] */
+  /* [height],[width] [color1] [color2] 
+   * This could match as [height],[width] [scale] [-l | -t], 
+   * therfore we ensure last_colour_name is not TEMPGRAD or LOGGRAPH */
   if (sscanf(argstr, "%d,%d %s %s", &g->height, &g->width, first_colour_name,
-             last_colour_name) == 4) {
+             last_colour_name) == 4 && 
+             strchr(last_colour_name,'-') == NULL) {
     apply_graph_colours(g, first_colour_name, last_colour_name);
     return true;
   }
   g->height = default_graph_height.get(*state);
   g->width = default_graph_width.get(*state);
   first_colour_name[0] = '\0';
+  last_colour_name[0] = '\0';
 
   /* [height],[width] [scale] */
   if (sscanf(argstr, "%d,%d %lf", &g->height, &g->width, &g->scale) == 3) {
@@ -316,6 +376,7 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale) {
   }
   g->height = default_graph_height.get(*state);
   g->width = default_graph_width.get(*state);
+  g->scale = defscale;
 
   /* [height],[width] */
   if (sscanf(argstr, "%d,%d", &g->height, &g->width) == 2) { return true; }
@@ -337,11 +398,16 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale) {
   last_colour_name[0] = '\0';
   g->scale = defscale;
 
-  /* [color1] [color2] */
-  if (sscanf(argstr, "%s %s", first_colour_name, last_colour_name) == 2) {
+  /* [color1] [color2] 
+   * This could match as [scale] [-l | -t], 
+   * therfore we ensure last_colour_name is not TEMPGRAD or LOGGRAPH */
+  if (sscanf(argstr, "%s %s", first_colour_name, last_colour_name) == 2 &&
+             strchr(last_colour_name,'-') == NULL) { 
     apply_graph_colours(g, first_colour_name, last_colour_name);
     return true;
   }
+  first_colour_name[0] = '\0';
+  last_colour_name[0] = '\0';
 
   /* [scale] */
   if (sscanf(argstr, "%lf", &g->scale) == 1) { return true; }
@@ -354,8 +420,8 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale) {
  * Printing various special text objects
  */
 
-struct special_t *new_special_t_node() {
-  auto *newnode = new special_t;
+struct special_node *new_special_t_node() {
+  auto *newnode = new special_node;
 
   memset(newnode, 0, sizeof *newnode);
   return newnode;
@@ -369,8 +435,8 @@ struct special_t *new_special_t_node() {
  * @param[in]  t   special type enum, e.g. alignc, alignr, fg, bg, ...
  * @return pointer to the newly inserted special of type t
  **/
-struct special_t *new_special(char *buf, enum special_types t) {
-  special_t *current;
+struct special_node *new_special(char *buf, text_node_t t) {
+  special_node *current;
 
   buf[0] = SPECIAL_CHAR;
   buf[1] = '\0';
@@ -397,14 +463,14 @@ void new_gauge_in_shell(struct text_object *obj, char *p,
 
 #ifdef BUILD_GUI
 void new_gauge_in_gui(struct text_object *obj, char *buf, double usage) {
-  struct special_t *s = nullptr;
+  struct special_node *s = nullptr;
   auto *g = static_cast<struct gauge *>(obj->special_data);
 
   if (display_output() == nullptr || !display_output()->graphical()) { return; }
 
   if (g == nullptr) { return; }
 
-  s = new_special(buf, GAUGE);
+  s = new_special(buf, text_node_t::GAUGE);
 
   s->arg = usage;
   s->width = dpi_scale(g->width);
@@ -439,14 +505,14 @@ void new_gauge(struct text_object *obj, char *p, unsigned int p_max_size,
 
 #ifdef BUILD_GUI
 void new_font(struct text_object *obj, char *p, unsigned int p_max_size) {
-  struct special_t *s;
+  struct special_node *s;
   unsigned int tmp = selected_font;
 
   if (display_output() == nullptr || !display_output()->graphical()) { return; }
 
   if (p_max_size == 0) { return; }
 
-  s = new_special(p, FONT);
+  s = new_special(p, text_node_t::FONT);
 
   if (obj->data.s != nullptr) {
     if (s->font_added >= static_cast<int>(fonts.size()) ||
@@ -463,7 +529,7 @@ void new_font(struct text_object *obj, char *p, unsigned int p_max_size) {
 /**
  * Adds value f to graph possibly truncating and scaling the graph
  **/
-static void graph_append(struct special_t *graph, double f, char showaslog) {
+static void graph_append(struct special_node *graph, double f, char showaslog) {
   int i;
 
   /* do nothing if we don't even have a graph yet */
@@ -484,8 +550,22 @@ static void graph_append(struct special_t *graph, double f, char showaslog) {
   graph->graph[0] = f; /* add new data */
 
   if (graph->scaled != 0) {
-    graph->scale =
-        *std::max_element(graph->graph + 0, graph->graph + graph->graph_width);
+    /* Get the location of the currentmax in the graph */
+    double* currentmax =
+        std::max_element(graph->graph + 0, graph->graph + graph->graph_width);
+    graph->scale = *currentmax;
+    if (graph->speedgraph) {
+        if(maxspeedval < graph->scale){
+          maxspeedval = graph->scale;
+        }
+        graph->scale = maxspeedval;
+        /* If the currentmax is the maxspeedval and 
+         * currentmax location is at the last position
+         * Then we reset our maxspeedval */
+        if(*currentmax == maxspeedval && currentmax == (graph->graph + graph->width - 1)){
+          maxspeedval = 1e-47;
+        }
+    }
     if (graph->scale < 1e-47) {
       /* avoid NaN's when the graph is all-zero (e.g. before the first update)
        * there is nothing magical about 1e-47 here */
@@ -494,7 +574,7 @@ static void graph_append(struct special_t *graph, double f, char showaslog) {
   }
 }
 
-void new_graph_in_shell(struct special_t *s, char *buf, int buf_max_size) {
+void new_graph_in_shell(struct special_node *s, char *buf, int buf_max_size) {
   // Split config string on comma to avoid the hassle of dealing with the
   // idiosyncrasies of multi-byte unicode on different platforms.
   // TODO(brenden): Parse config string once and cache result.
@@ -537,7 +617,7 @@ double *retrieve_graph(int graph_id, int graph_width) {
   }
 }
 
-void store_graph(int graph_id, struct special_t *s) {
+void store_graph(int graph_id, struct special_node *s) {
   if (s->graph == nullptr) {
     graphs[graph_id] = nullptr;
   } else {
@@ -556,12 +636,12 @@ void store_graph(int graph_id, struct special_t *s) {
  **/
 void new_graph(struct text_object *obj, char *buf, int buf_max_size,
                double val) {
-  struct special_t *s = nullptr;
+  struct special_node *s = nullptr;
   auto *g = static_cast<struct graph *>(obj->special_data);
 
   if ((g == nullptr) || (buf_max_size == 0)) { return; }
 
-  s = new_special(buf, GRAPH);
+  s = new_special(buf, text_node_t::GRAPH);
 
   /* set graph (special) width to width in obj */
   s->width = dpi_scale(g->width);
@@ -603,12 +683,22 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
     s->show_scale = 1;
   }
   s->tempgrad = g->tempgrad;
+  s->minheight = g->minheight;
 #ifdef BUILD_MATH
   if ((g->flags & SF_SHOWLOG) != 0) {
     s->scale_log = 1;
     s->scale = log10(s->scale + 1);
   }
 #endif
+  if ((g->invertflag & SF_INVERTX) != 0){
+    s->invertx = 1;
+  }
+  if ((g->invertflag & SF_INVERTY) != 0){
+    s->inverty = 1;
+  }
+  if (g->speedgraph) {
+    s->speedgraph = TRUE;
+  }
 
   if (store_graph_data_explicitly.get(*state)) {
     if (s->graph) { s->graph = retrieve_graph(g->id, s->graph_width); }
@@ -628,7 +718,7 @@ void new_hr(struct text_object *obj, char *p, unsigned int p_max_size) {
 
   if (p_max_size == 0) { return; }
 
-  new_special(p, HORIZONTAL_LINE)->height = dpi_scale(obj->data.l);
+  new_special(p, text_node_t::HORIZONTAL_LINE)->height = dpi_scale(obj->data.l);
 }
 
 void scan_stippled_hr(struct text_object *obj, const char *arg) {
@@ -651,14 +741,14 @@ void scan_stippled_hr(struct text_object *obj, const char *arg) {
 
 void new_stippled_hr(struct text_object *obj, char *p,
                      unsigned int p_max_size) {
-  struct special_t *s = nullptr;
+  struct special_node *s = nullptr;
   auto *sh = static_cast<struct stippled_hr *>(obj->special_data);
 
   if (display_output() == nullptr || !display_output()->graphical()) { return; }
 
   if ((sh == nullptr) || (p_max_size == 0)) { return; }
 
-  s = new_special(p, STIPPLED_HR);
+  s = new_special(p, text_node_t::STIPPLED_HR);
 
   s->height = dpi_scale(sh->height);
   s->arg = dpi_scale(sh->arg);
@@ -668,13 +758,13 @@ void new_stippled_hr(struct text_object *obj, char *p,
 void new_fg(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (false
 #ifdef BUILD_GUI
-  || (display_output() && display_output()->graphical())
+      || (display_output() && display_output()->graphical())
 #endif /* BUILD_GUI */
 #ifdef BUILD_NCURSES
-  || out_to_ncurses.get(*state)
+      || out_to_ncurses.get(*state)
 #endif /* BUILD_NCURSES */
   ) {
-    new_special(p, FG)->arg = obj->data.l;
+    new_special(p, text_node_t::FG)->arg = obj->data.l;
   }
   UNUSED(obj);
   UNUSED(p);
@@ -687,7 +777,7 @@ void new_bg(struct text_object *obj, char *p, unsigned int p_max_size) {
 
   if (p_max_size == 0) { return; }
 
-  new_special(p, BG)->arg = obj->data.l;
+  new_special(p, text_node_t::BG)->arg = obj->data.l;
 }
 #endif /* BUILD_GUI */
 
@@ -716,14 +806,14 @@ static void new_bar_in_shell(struct text_object *obj, char *buffer,
 
 #ifdef BUILD_GUI
 static void new_bar_in_gui(struct text_object *obj, char *buf, double usage) {
-  struct special_t *s = nullptr;
+  struct special_node *s = nullptr;
   auto *b = static_cast<struct bar *>(obj->special_data);
 
   if (display_output() == nullptr || !display_output()->graphical()) { return; }
 
   if (b == nullptr) { return; }
 
-  s = new_special(buf, BAR);
+  s = new_special(buf, text_node_t::BAR);
 
   s->arg = usage;
   s->width = dpi_scale(b->width);
@@ -759,39 +849,39 @@ void new_bar(struct text_object *obj, char *p, unsigned int p_max_size,
 
 void new_outline(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, OUTLINE)->arg = obj->data.l;
+  new_special(p, text_node_t::OUTLINE)->arg = obj->data.l;
 }
 
 void new_offset(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, OFFSET)->arg = dpi_scale(obj->data.l);
+  new_special(p, text_node_t::OFFSET)->arg = dpi_scale(obj->data.l);
 }
 
 void new_voffset(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, VOFFSET)->arg = dpi_scale(obj->data.l);
+  new_special(p, text_node_t::VOFFSET)->arg = dpi_scale(obj->data.l);
 }
 
 void new_save_coordinates(struct text_object *obj, char *p,
                           unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, SAVE_COORDINATES)->arg = obj->data.l;
+  new_special(p, text_node_t::SAVE_COORDINATES)->arg = obj->data.l;
 }
 
 void new_alignr(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, ALIGNR)->arg = dpi_scale(obj->data.l);
+  new_special(p, text_node_t::ALIGNR)->arg = dpi_scale(obj->data.l);
 }
 
 // A positive offset pushes the text further left
 void new_alignc(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, ALIGNC)->arg = dpi_scale(obj->data.l);
+  new_special(p, text_node_t::ALIGNC)->arg = dpi_scale(obj->data.l);
 }
 
 void new_goto(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
-  new_special(p, GOTO)->arg = dpi_scale(obj->data.l);
+  new_special(p, text_node_t::GOTO)->arg = dpi_scale(obj->data.l);
 }
 
 void scan_tab(struct text_object *obj, const char *arg) {
@@ -813,12 +903,12 @@ void scan_tab(struct text_object *obj, const char *arg) {
 }
 
 void new_tab(struct text_object *obj, char *p, unsigned int p_max_size) {
-  struct special_t *s = nullptr;
+  struct special_node *s = nullptr;
   auto *t = static_cast<struct tab *>(obj->special_data);
 
   if ((t == nullptr) || (p_max_size == 0)) { return; }
 
-  s = new_special(p, TAB);
+  s = new_special(p, text_node_t::TAB);
   s->width = dpi_scale(t->width);
   s->arg = dpi_scale(t->arg);
 }

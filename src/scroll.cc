@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -271,11 +271,11 @@ void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
   }
 
   int pwithcolors_len = strlen(p) + 4 + colorchanges - visibcolorchanges;
-  char *pwithcolors = static_cast<char *>(malloc(pwithcolors_len));
+  char *pwithcolors = new char[pwithcolors_len];
 
   for (j = 0; j < frontcolorchanges; j++) { pwithcolors[j] = SPECIAL_CHAR; }
   pwithcolors[j] = 0;
-  strncat(pwithcolors, p, pwithcolors_len);
+  strcat(pwithcolors, p);
   unsigned int strend = strlen(pwithcolors);
   // and place the colorchanges not in front or in the visible part behind the
   // visible part
@@ -284,7 +284,7 @@ void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
   }
   pwithcolors[strend + j] = 0;
   strncpy(p, pwithcolors, p_max_size);
-  free(pwithcolors);
+  delete[] pwithcolors;
 
   // scroll
   if (sd->direction == SCROLL_LEFT) {
@@ -323,7 +323,8 @@ void print_scroll(struct text_object *obj, char *p, unsigned int p_max_size) {
 #ifdef BUILD_GUI
   // reset color when scroll is finished
   if (display_output() && display_output()->graphical()) {
-    new_special(p + strlen(p), FG)->arg = sd->resetcolor.to_argb32();
+    new_special(p + strlen(p), text_node_t::FG)->arg =
+        sd->resetcolor.to_argb32();
   }
 #endif
 }

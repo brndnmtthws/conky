@@ -1,12 +1,10 @@
 $#include <cairo-features.h>
 $#include <cairo-deprecated.h>
 $#include <cairo.h>
-$#include <cairo-xlib.h>
-$#include <X11/Xlib.h>
 $#include <libcairo-helper.h>
 /*
- * This code was mostly copied from cairo.h and cairo-xlib.h with comments
- * removed.  The licence noticed below is present for the sake of clarity.
+ * This code was mostly copied from cairo.h with comments removed.  The
+ * license notice below is present for the sake of clarity.
  */
 
 /* cairo - a vector graphics library with display and print output
@@ -190,33 +188,6 @@ typedef enum _cairo_filter {
 	CAIRO_FILTER_BILINEAR,
 	CAIRO_FILTER_GAUSSIAN
 } cairo_filter_t;
-
-cairo_surface_t *cairo_xlib_surface_create(Display * dpy,
-		Drawable drawable,
-		Visual * visual, int width, int height);
-
-cairo_surface_t *cairo_xlib_surface_create_for_bitmap(Display * dpy,
-		Pixmap bitmap,
-		Screen * screen, int width, int height);
-
-void cairo_xlib_surface_set_size(cairo_surface_t * surface, int width, int height);
-
-void cairo_xlib_surface_set_drawable(cairo_surface_t * surface, Drawable
-		drawable, int width, int height);
-
-Display *cairo_xlib_surface_get_display(cairo_surface_t * surface);
-
-Drawable cairo_xlib_surface_get_drawable(cairo_surface_t * surface);
-
-Screen *cairo_xlib_surface_get_screen(cairo_surface_t * surface);
-
-Visual *cairo_xlib_surface_get_visual(cairo_surface_t * surface);
-
-int cairo_xlib_surface_get_depth(cairo_surface_t * surface);
-
-int cairo_xlib_surface_get_width(cairo_surface_t * surface);
-
-int cairo_xlib_surface_get_height(cairo_surface_t * surface);
 
 int cairo_version(void);
 

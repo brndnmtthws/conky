@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -26,30 +26,50 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#pragma once
 
-#include <config.h>
+#ifndef _COLOURS_H_
+#define _COLOURS_H_
+
+#include "config.h"
+
 #include <cassert>
 #include <climits>
 #include <memory>
 #include <string>
 #include <unordered_map>
+
 #ifdef BUILD_X11
-#include "x11.h"
+#include <X11/Xlib.h>
 #endif /* BUILD_X11 */
 
 struct Colour {
   uint8_t red;
   uint8_t green;
   uint8_t blue;
-  uint8_t alpha;
+  uint8_t alpha = 0xff;
 
  public:
+  Colour() = default;
+  Colour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = UINT8_MAX)
+      : red(r), green(g), blue(b), alpha(a) {}
+  explicit Colour(const std::string &name);
+  Colour(const Colour &) = default;
+  Colour(Colour &&) = default;
+
+  void operator=(const Colour &c) {
+    red = c.red;
+    green = c.green;
+    blue = c.blue;
+    alpha = c.alpha;
+  }
+
   // Compare two instances.
   bool operator==(const Colour &c) const {
     return c.red == red && c.green == green && c.blue == blue &&
            c.alpha == alpha;
   }
+
+  uint8_t *data() { return reinterpret_cast<uint8_t *>(this); }
 
   // Express the color as a 32-bit ARGB integer (alpha in MSB).
   uint32_t to_argb32(void) const {
@@ -61,58 +81,20 @@ struct Colour {
   // Construct from a 32-bit ARGB integer (alpha in MSB).
   static Colour from_argb32(uint32_t argb);
 
-#ifdef BUILD_X11
   class Hash {
    public:
     size_t operator()(const Colour &c) const { return c.to_argb32(); }
   };
 
-  static std::unordered_map<Colour, unsigned long, Hash> x11_pixels;
+#ifdef BUILD_X11
   unsigned long to_x11_color(Display *display, int screen,
-                             bool premultiply = false) {
-    if (display == nullptr) {
-      /* cannot work if display is not open */
-      return 0;
-    }
-
-    unsigned long pixel;
-
-    /* Either get a cached X11 pixel or allocate one */
-    if (auto pixel_iter = x11_pixels.find(*this);
-        pixel_iter != x11_pixels.end()) {
-      pixel = pixel_iter->second;
-    } else {
-      XColor xcolor{};
-      xcolor.red = red * 257;
-      xcolor.green = green * 257;
-      xcolor.blue = blue * 257;
-      if (XAllocColor(display, DefaultColormap(display, screen), &xcolor) ==
-          0) {
-        // NORM_ERR("can't allocate X color");
-        return 0;
-      }
-
-      /* Save pixel value in the cache to avoid reallocating it */
-      x11_pixels[*this] = xcolor.pixel;
-      pixel = static_cast<unsigned long>(xcolor.pixel);
-    }
-
-    pixel &= 0xffffff;
-#ifdef BUILD_ARGB
-    if (have_argb_visual) {
-      if (premultiply)
-        pixel = (red * alpha / 255) << 16 | (green * alpha / 255) << 8 |
-                (blue * alpha / 255);
-      pixel |= ((unsigned long)alpha << 24);
-    }
-#endif /* BUILD_ARGB */
-    return pixel;
-  }
+                             bool transparency = false,
+                             bool premultiply = false);
 #endif /* BUILD_X11 */
 };
 
-extern Colour error_colour;
+const Colour ERROR_COLOUR = Colour{UINT8_MAX, 0, 0, UINT8_MAX};
 
-Colour parse_color(const std::string &colour);
-// XXX: when everyone uses C++ strings, remove this C version
-Colour parse_color(const char *);
+Colour parse_color(const std::string &color);
+
+#endif /* _COLOURS_H_ */

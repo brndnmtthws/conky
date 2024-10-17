@@ -3,7 +3,7 @@
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2021 Brenden Matthews, et. al. (see AUTHORS) All rights
+# Copyright (c) 2005-2024 Brenden Matthews, et. al. (see AUTHORS) All rights
 # reserved.
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -54,36 +54,36 @@ if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
 if(NOT OS_LINUX
-   AND NOT OS_FREEBSD
-   AND NOT OS_OPENBSD
-   AND NOT OS_DRAGONFLY
-   AND NOT OS_SOLARIS
-   AND NOT OS_HAIKU
-   AND NOT OS_DARWIN)
+  AND NOT OS_FREEBSD
+  AND NOT OS_OPENBSD
+  AND NOT OS_DRAGONFLY
+  AND NOT OS_SOLARIS
+  AND NOT OS_HAIKU
+  AND NOT OS_DARWIN)
   message(
     FATAL_ERROR
-      "Your platform, '${CMAKE_SYSTEM_NAME}', is not currently supported.  Patches are welcome."
-    )
+    "Your platform, '${CMAKE_SYSTEM_NAME}', is not currently supported.  Patches are welcome."
+  )
 endif(NOT
-      OS_LINUX
-      AND
-      NOT
-      OS_FREEBSD
-      AND
-      NOT
-      OS_OPENBSD
-      AND
-      NOT
-      OS_DRAGONFLY
-      AND
-      NOT
-      OS_SOLARIS
-      AND
-      NOT
-      OS_HAIKU
-      AND
-      NOT
-      OS_DARWIN)
+  OS_LINUX
+  AND
+  NOT
+  OS_FREEBSD
+  AND
+  NOT
+  OS_OPENBSD
+  AND
+  NOT
+  OS_DRAGONFLY
+  AND
+  NOT
+  OS_SOLARIS
+  AND
+  NOT
+  OS_HAIKU
+  AND
+  NOT
+  OS_DARWIN)
 
 include(FindThreads)
 find_package(Threads)
@@ -97,12 +97,11 @@ set(conky_includes ${CMAKE_BINARY_DIR})
 # used on macOS.
 #
 if(NOT OS_DARWIN)
-  add_definitions(-D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L) # Standard
-                                                                   # definitions
+  add_definitions(-D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L) # Standard definitions
   set(
     CMAKE_REQUIRED_DEFINITIONS
     "${CMAKE_REQUIRED_DEFINITIONS} -D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L"
-    )
+  )
 endif(NOT OS_DARWIN)
 
 if(OS_FREEBSD)
@@ -110,7 +109,7 @@ if(OS_FREEBSD)
   set(
     CMAKE_REQUIRED_DEFINITIONS
     "${CMAKE_REQUIRED_DEFINITIONS} -D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L -D__BSD_VISIBLE=1 -D_XOPEN_SOURCE=700"
-    )
+  )
 endif(OS_FREEBSD)
 
 if(OS_DRAGONFLY)
@@ -128,66 +127,71 @@ if(OS_HAIKU)
   set(
     CMAKE_REQUIRED_DEFINITIONS
     "${CMAKE_REQUIRED_DEFINITIONS} -D_GNU_SOURCE"
-    )
+  )
 endif(OS_HAIKU)
 
 # Do version stuff
 set(VERSION_MAJOR "1")
-set(VERSION_MINOR "19")
-set(VERSION_PATCH "7")
+set(VERSION_MINOR "21")
+set(VERSION_PATCH "8")
 
 find_program(APP_AWK awk)
+
 if(NOT APP_AWK)
   message(FATAL_ERROR "Unable to find program 'awk'")
 endif(NOT APP_AWK)
 
 find_program(APP_WC wc)
+
 if(NOT APP_WC)
   message(FATAL_ERROR "Unable to find program 'wc'")
 endif(NOT APP_WC)
 
-find_program(APP_DATE date)
-if(NOT APP_DATE)
-  message(FATAL_ERROR "Unable to find program 'date'")
-endif(NOT APP_DATE)
-
 find_program(APP_UNAME uname)
+
 if(NOT APP_UNAME)
   message(FATAL_ERROR "Unable to find program 'uname'")
 endif(NOT APP_UNAME)
 
 if(NOT RELEASE)
   find_program(APP_GIT git)
+
   if(NOT APP_GIT)
     message(FATAL_ERROR "Unable to find program 'git'")
   endif(NOT APP_GIT)
+
   mark_as_advanced(APP_GIT)
 endif(NOT RELEASE)
 
-mark_as_advanced(APP_AWK APP_WC APP_DATE APP_UNAME)
+mark_as_advanced(APP_AWK APP_WC APP_UNAME)
 
-# BUILD_DATE=$(LANG=en_US LC_ALL=en_US LOCALE=en_US date --utc
-# --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y-%m-%d)
-# BUILD_ARCH="$(uname -sm)"
-STRING(TIMESTAMP BUILD_DATE "%Y-%m-%d" UTC)
 execute_process(COMMAND ${APP_UNAME} -sm
-                RESULT_VARIABLE RETVAL
-                OUTPUT_VARIABLE BUILD_ARCH
-                OUTPUT_STRIP_TRAILING_WHITESPACE)
+  RESULT_VARIABLE RETVAL
+  OUTPUT_VARIABLE BUILD_ARCH
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+execute_process(COMMAND ${APP_GIT} rev-parse --short HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  RESULT_VARIABLE RETVAL
+  OUTPUT_VARIABLE GIT_SHORT_SHA
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+set(RELEASE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 if(RELEASE)
-  set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+  set(VERSION ${RELEASE_VERSION})
 else(RELEASE)
   set(VERSION
-      "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}_pre${COMMIT_COUNT}")
+    "${RELEASE_VERSION}-pre-${GIT_SHORT_SHA}")
 endif(RELEASE)
 
-set(COPYRIGHT "Copyright Brenden Matthews, et al, 2005-2021")
+set(COPYRIGHT "Copyright Brenden Matthews, et al, 2005-2024")
 
 macro(AC_SEARCH_LIBS FUNCTION_NAME INCLUDES TARGET_VAR)
   if("${TARGET_VAR}" MATCHES "^${TARGET_VAR}$")
     unset(AC_SEARCH_LIBS_TMP CACHE)
     check_symbol_exists(${FUNCTION_NAME} ${INCLUDES} AC_SEARCH_LIBS_TMP)
+
     if(${AC_SEARCH_LIBS_TMP})
       set(${TARGET_VAR} "" CACHE INTERNAL "Library containing ${FUNCTION_NAME}")
     else(${AC_SEARCH_LIBS_TMP})
@@ -196,12 +200,13 @@ macro(AC_SEARCH_LIBS FUNCTION_NAME INCLUDES TARGET_VAR)
         unset(AC_SEARCH_LIBS_FOUND CACHE)
         find_library(AC_SEARCH_LIBS_TMP ${LIB})
         check_library_exists(${LIB}
-                             ${FUNCTION_NAME}
-                             ${AC_SEARCH_LIBS_TMP}
-                             AC_SEARCH_LIBS_FOUND)
+          ${FUNCTION_NAME}
+          ${AC_SEARCH_LIBS_TMP}
+          AC_SEARCH_LIBS_FOUND)
+
         if(${AC_SEARCH_LIBS_FOUND})
           set(${TARGET_VAR} ${AC_SEARCH_LIBS_TMP}
-              CACHE INTERNAL "Library containing ${FUNCTION_NAME}")
+            CACHE INTERNAL "Library containing ${FUNCTION_NAME}")
           break()
         endif(${AC_SEARCH_LIBS_FOUND})
       endforeach(LIB)
@@ -218,21 +223,21 @@ function(print_target_properties tgt)
 
   # this list of properties can be extended as needed
   set(CMAKE_PROPERTY_LIST
-      SOURCE_DIR
-      BINARY_DIR
-      COMPILE_DEFINITIONS
-      COMPILE_OPTIONS
-      INCLUDE_DIRECTORIES
-      LINK_LIBRARIES)
+    SOURCE_DIR
+    BINARY_DIR
+    COMPILE_DEFINITIONS
+    COMPILE_OPTIONS
+    INCLUDE_DIRECTORIES
+    LINK_LIBRARIES)
 
   message("Configuration for target ${tgt}")
 
   foreach(prop ${CMAKE_PROPERTY_LIST})
     get_property(propval TARGET ${tgt} PROPERTY ${prop} SET)
+
     if(propval)
       get_target_property(propval ${tgt} ${prop})
       message(STATUS "${prop} = ${propval}")
     endif()
   endforeach(prop)
-
 endfunction(print_target_properties)

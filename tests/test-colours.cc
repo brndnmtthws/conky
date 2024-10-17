@@ -76,6 +76,7 @@ TEST_CASE("parse_color correctly parses colours", "[colours][parse_color]") {
     REQUIRE(colour.blue == 0x44);
   }
 
+#ifdef BUILD_COLOUR_NAME_MAP
   SECTION("it parses the colour 'red'") {
     auto colour = parse_color("red");
     REQUIRE(colour.alpha == 255);
@@ -99,6 +100,7 @@ TEST_CASE("parse_color correctly parses colours", "[colours][parse_color]") {
     REQUIRE(colour.green == 0);
     REQUIRE(colour.blue == 255);
   }
+#endif /* BUILD_COLOUR_NAME_MAP */
 
   SECTION("two identical colours should be equal") {
     auto c = GENERATE(take(100, random((uint32_t)0, (uint32_t)0xffffffff)));

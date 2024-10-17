@@ -1,1 +1,4 @@
 build/
+
+# ignore generated Makefile; keep stub
+Makefile

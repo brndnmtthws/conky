@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -40,6 +40,7 @@ struct fs_stat {
   long long avail;
   long long free;
   char set;
+  char errored;
 };
 
 /* forward declare to make gcc happy (fs.h <-> text_object.h include) */

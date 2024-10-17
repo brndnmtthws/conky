@@ -3,7 +3,6 @@ import { getDocuments, Document } from '../utils/mdx-utils'
 import Layout from '../components/Layout'
 import ArrowIcon from '../components/ArrowIcon'
 import SEO from '../components/SEO'
-import { getSearchIndex, SearchIndex } from '../utils/search'
 
 const pages = [
   {
@@ -48,12 +47,11 @@ const IndexItem: React.FunctionComponent<IndexItemProps> = (props) => {
 
 interface IndexProps {
   documents: Document[]
-  searchIndex: SearchIndex
 }
 
-export default function Index({ documents, searchIndex }: IndexProps) {
+export default function Index({ documents }: IndexProps) {
   return (
-    <Layout searchIndex={searchIndex}>
+    <Layout>
       <SEO title="Conky" description="Conky documentation" />
       <main className="w-full">
         <div className="w-full">
@@ -70,7 +68,7 @@ export default function Index({ documents, searchIndex }: IndexProps) {
               key={document.filePath}
               as={`/documents/${document.filePath.replace(/\.mdx?$/, '')}`}
               href={`/documents/[slug]`}
-              title={document.data.title}
+              title={document.data.title ?? 'Untitled'}
               desc={document.data.description}
             />
           ))}
@@ -87,7 +85,6 @@ export default function Index({ documents, searchIndex }: IndexProps) {
 
 export function getStaticProps() {
   const documents = getDocuments()
-  const searchIndex = getSearchIndex()
 
-  return { props: { documents, searchIndex } }
+  return { props: { documents } }
 }

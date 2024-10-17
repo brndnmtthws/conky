@@ -3,16 +3,13 @@ import { useRouter } from 'next/router'
 import GitHub from './GitHub'
 import ThemeSwitcher from './ThemeSwitcher'
 
+import * as React from 'react'
+import Search from './Search'
+
 type HeaderProps = {
   name: string
   setDarkMode: (state: boolean) => void
-  searchIndex: SearchIndex
 }
-
-import * as React from 'react'
-import Search from './Search'
-import { SearchIndex, SearchItem } from '../utils/search'
-import Fuse, { IFuseOptions } from 'fuse.js'
 
 interface NavLinkProps {
   href: string
@@ -34,49 +31,44 @@ const NavLink: React.FunctionComponent<NavLinkProps> = (props) => {
   )
 }
 
-export default function Header({
-  name,
-  setDarkMode,
-  searchIndex,
-}: HeaderProps) {
+export default function Header({ name, setDarkMode }: HeaderProps) {
   const router = useRouter()
-  const fuse = React.useMemo(() => {
-    const options: IFuseOptions<SearchItem> = {}
-    return new Fuse(
-      searchIndex.list,
-      options,
-      Fuse.parseIndex(searchIndex.index)
-    )
-  }, [searchIndex])
 
   return (
     <div className="border-b-1 backdrop-blur-lg bg-white dark:bg-black bg-opacity-20 dark:bg-opacity-20 transition">
-      <header className="max-w-3xl mx-auto m-0 p-1 grow flex w-full">
-        <h1 className="px-2 text-3xl dark:text-white self-end">
+      <header className="max-w-3xl mx-auto m-0 py-1 px-2 lg:px-4 grow flex w-full">
+        <h1 className="text-3xl dark:text-white self-end mr-1">
           <Link href="/" className="font-bold" data-cy="top-link">
             {name}
           </Link>
         </h1>
         {router.asPath != '/' && (
-          <div className="flex text-md items-stretch self-stretch mx-1">
+          <div className="hidden sm:flex text-md items-stretch self-stretch mr-1">
             <NavLink href="/variables" name="Vars" />
             <NavLink href="/config_settings" name="Config" />
             <NavLink href="/lua" name="Lua" />
           </div>
         )}
         <div className="flex-grow" />
-        <Search fuse={fuse} />
+        <Search />
         <div className="flex">
-          <div className="border-r mx-1 px-1 border-slate-700">
+          <div className="flex items-center border-r mx-1 px-1 border-slate-700">
             <a href="https://github.com/brndnmtthws/conky">
               <GitHub />
             </a>
           </div>
-          <div className="mx-1 px-1 flex place-content-center place-items-center">
+          <div className="ml-1 pl-1 flex place-content-center place-items-center">
             <ThemeSwitcher setDarkMode={setDarkMode} />
           </div>
         </div>
       </header>
+      {router.asPath != '/' && (
+        <div className="flex sm:hidden text-md items-stretch self-stretch px-1 pb-1">
+          <NavLink href="/variables" name="Vars" />
+          <NavLink href="/config_settings" name="Config" />
+          <NavLink href="/lua" name="Lua" />
+        </div>
+      )}
     </div>
   )
 }

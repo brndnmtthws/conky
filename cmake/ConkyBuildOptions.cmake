@@ -3,7 +3,7 @@
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2021 Brenden Matthews, et. al. (see AUTHORS) All rights
+# Copyright (c) 2005-2024 Brenden Matthews, et. al. (see AUTHORS) All rights
 # reserved.
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -51,7 +51,10 @@ if(MAINTAINER_MODE)
 endif(MAINTAINER_MODE)
 
 # Always use libc++ when compiling w/ clang
-add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>)
+add_compile_options(
+  $<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>
+  $<$<COMPILE_LANG_AND_ID:CXX,Clang>:-Wno-unknown-warning-option>
+  $<$<COMPILE_LANG_AND_ID:CXX,GCC>:-Wno-unknown-warning>)
 add_link_options($<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>)
 
 option(CHECK_CODE_QUALITY "Check code formatting/quality with clang" false)
@@ -66,6 +69,9 @@ option(BUILD_DOCS "Build documentation" false)
 option(BUILD_EXTRAS "Build extras (includes syntax files for editors)" false)
 
 option(BUILD_I18N "Enable if you want internationalization support" true)
+
+option(BUILD_COLOUR_NAME_MAP "Include mappings of colour name -> RGB (i.e., red -> ff0000)" true)
+
 if(BUILD_I18N)
   set(LOCALE_DIR "${CMAKE_INSTALL_PREFIX}/share/locale"
       CACHE STRING "Directory containing the locales")
@@ -74,11 +80,13 @@ endif(BUILD_I18N)
 # Some standard options
 set(SYSTEM_CONFIG_FILE "/etc/conky/conky.conf"
     CACHE STRING "Default system-wide Conky configuration file")
+
 # use FORCE below to make sure this changes when CMAKE_INSTALL_PREFIX is
 # modified
 if(NOT LIB_INSTALL_DIR)
   set(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
 endif(NOT LIB_INSTALL_DIR)
+
 set(PACKAGE_LIBRARY_DIR "${LIB_INSTALL_DIR}/conky"
     CACHE STRING "Package library path (where Lua bindings are installed"
     FORCE)
@@ -127,7 +135,6 @@ cmake_dependent_option(
   "OS_DARWIN" false)
 
 # Optional features etc
-
 option(BUILD_WLAN "Enable wireless support" false)
 
 option(BUILD_BUILTIN_CONFIG "Enable builtin default configuration" true)
@@ -190,29 +197,39 @@ dependent_option(BUILD_IMLIB2 "Enable Imlib2 support" true
 dependent_option(BUILD_XSHAPE "Enable Xshape support" true
   "BUILD_X11" false
   "Xshape support requires X11")
-dependent_option(BUILD_XINPUT "Build Xinput 2 support" true
-  "BUILD_X11;BUILD_MOUSE_EVENTS" false
-  "Xinput 2 support requires X11 and BUILD_MOUSE_EVENTS enabled")
+dependent_option(BUILD_XINPUT "Build Xinput 2 support (slow)" false
+  "BUILD_X11" false
+  "Xinput 2 support requires X11")
 
 # if we build with any GUI support
 if(BUILD_X11)
   set(BUILD_GUI true)
 endif(BUILD_X11)
+
 if(BUILD_WAYLAND)
   set(BUILD_GUI true)
 endif(BUILD_WAYLAND)
 
 dependent_option(BUILD_MOUSE_EVENTS "Enable mouse event support" true
-  "BUILD_WAYLAND OR OWN_WINDOW" false
-  "Mouse event support requires Wayland or OWN_WINDOW enabled")
+  "BUILD_WAYLAND OR BUILD_X11" false
+  "Mouse event support requires Wayland or X11 enabled")
 
 # Lua library options
-option(BUILD_LUA_CAIRO "Build cairo bindings for Lua" false)
+dependent_option(BUILD_LUA_CAIRO "Build Cairo bindings for Lua" false
+  "BUILD_GUI" false
+  "Cairo Lua bindings depend on BUILD_GUI")
+dependent_option(BUILD_LUA_CAIRO_XLIB "Build Cairo & Xlib interoperability for Lua" true
+  "BUILD_X11;BUILD_LUA_CAIRO" false
+  "Cairo Xlib Lua bindings require Cairo and X11")
 dependent_option(BUILD_LUA_IMLIB2 "Build Imlib2 bindings for Lua" false
   "BUILD_X11;BUILD_IMLIB2" false
   "Imlib2 Lua bindings require X11 and Imlib2")
-option(BUILD_LUA_RSVG "Build rsvg bindings for Lua" false)
-option(BUILD_LUA_TEXT "Build Fontconfig Freetype and Harfbuzz bindings for Lua" false)
+dependent_option(BUILD_LUA_RSVG "Build rsvg bindings for Lua" false
+  "BUILD_GUI" false
+  "RSVG Lua bindings depend on BUILD_GUI")
+dependent_option(BUILD_LUA_TEXT "Build Fontconfig Freetype and Harfbuzz for Lua" false
+  "BUILD_GUI" false
+  "Text Lua bindings depend on BUILD_GUI")
 
 option(BUILD_AUDACIOUS "Build audacious (music player) support" false)
 
@@ -237,9 +254,12 @@ option(BUILD_ICAL "Enable if you want iCalendar (RFC 5545) support" false)
 option(BUILD_IRC "Enable if you want IRC support" false)
 
 option(BUILD_HTTP "Enable if you want HTTP support" false)
-if(BUILD_HTTP)
+
+if(NOT BUILD_HTTP)
   set(HTTPPORT "10080" CACHE STRING "Port to use for out_to_http")
-endif(BUILD_HTTP)
+else(NOT BUILD_HTTP)
+  set(HTTPPORT "10080")
+endif(NOT BUILD_HTTP)
 
 option(BUILD_ICONV "Enable iconv support" false)
 

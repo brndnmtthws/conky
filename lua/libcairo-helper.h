@@ -4,7 +4,7 @@
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -26,17 +26,18 @@
 #define _LIBCAIRO_HELPER_H_
 
 #include <cairo.h>
+#include <cstdlib>
 
 cairo_text_extents_t *create_cairo_text_extents_t(void) {
-  return calloc(1, sizeof(cairo_text_extents_t));
+  return (cairo_text_extents_t *)calloc(1, sizeof(cairo_text_extents_t));
 }
 
 cairo_font_extents_t *create_cairo_font_extents_t(void) {
-  return calloc(1, sizeof(cairo_font_extents_t));
+  return (cairo_font_extents_t *)calloc(1, sizeof(cairo_font_extents_t));
 }
 
 cairo_matrix_t *create_cairo_matrix_t(void) {
-  return calloc(1, sizeof(cairo_matrix_t));
+  return (cairo_matrix_t *)calloc(1, sizeof(cairo_matrix_t));
 }
 
 void destroy_cairo_text_extents_t(cairo_text_extents_t *pointer) {

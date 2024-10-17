@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -27,8 +27,14 @@
  *
  */
 
-#if defined(BUILD_WAYLAND) && !defined(CONKY_WL_H)
+#ifndef CONKY_WL_H
 #define CONKY_WL_H
+
+#include "config.h"
+
+#ifndef BUILD_WAYLAND
+#error wl.h included when BUILD_WAYLAND is disabled
+#endif
 
 #include <wayland-client.h>
 

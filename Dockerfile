@@ -6,9 +6,11 @@ RUN apt-get update \
   audacious-dev \
   ca-certificates \
   clang \
+  cmake \
   curl \
   gfortran \
   git \
+  gperf \
   libarchive-dev \
   libaudclient-dev \
   libc++-dev \
@@ -77,6 +79,7 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   -DBUILD_IRC=ON \
   -DBUILD_JOURNAL=ON \
   -DBUILD_LUA_CAIRO=ON \
+  -DBUILD_LUA_CAIRO_XLIB=ON \
   -DBUILD_LUA_IMLIB2=ON \
   -DBUILD_LUA_RSVG=ON \
   -DBUILD_LUA_TEXT=ON \
@@ -115,7 +118,7 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   && cmake --build . \
   && cmake --install .
 
-FROM ubuntu:jammy
+FROM ubuntu:noble
 
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
@@ -124,17 +127,17 @@ RUN apt-get update \
   libc++1 \
   libc++abi1 \
   libcairo2 \
-  libcurl4 \
+  libcurl4t64 \
   libdbus-glib-1-2 \
   libfontconfig1 \
   libfreetype6 \
   libharfbuzz-gobject0 \
-  libical3 \
-  libimlib2 \
+  libical3t64 \
+  libimlib2t64 \
   libircclient1 \
-  libiw30 \
+  libiw30t64 \
   liblua5.3-0 \
-  libmicrohttpd12 \
+  libmicrohttpd12t64 \
   libmysqlclient21 \
   libncurses6 \
   libpulse0 \
@@ -146,6 +149,7 @@ RUN apt-get update \
   libxext6 \
   libxfixes3 \
   libxft2 \
+  libxi6 \
   libxinerama1 \
   libxml2 \
   libxmmsclient6 \

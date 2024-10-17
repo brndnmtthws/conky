@@ -4,7 +4,7 @@
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -58,9 +58,8 @@ struct process *get_first_process(void);
 void get_cpu_count(void);
 double get_time(void);
 
-/* Converts '~/...' paths to '/home/blah/...'
- * It's similar to variable_substitute, except only cheques for $HOME and ~/ in
- * path */
+/* Converts '~/...' paths to '/home/blah/...'.  It's similar to
+ * variable_substitute, works for any enviroment variable */
 std::string to_real_path(const std::string &source);
 FILE *open_file(const char *file, int *reported);
 int open_fifo(const char *file, int *reported);

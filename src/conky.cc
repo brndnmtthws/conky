@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -28,6 +28,9 @@
  */
 
 #include "conky.h"
+
+#include "config.h"
+
 #include <algorithm>
 #include <cerrno>
 #include <climits>
@@ -35,29 +38,44 @@
 #include <cmath>
 #include <cstdarg>
 #include <ctime>
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
-#include "common.h"
-#include "config.h"
-#include "text_object.h"
-#ifdef HAVE_DIRENT_H
-#include <dirent.h>
-#endif /* HAVE_DIRENT_H */
+
+#include <fcntl.h>
+#include <getopt.h>
+#include <netdb.h>
+#include <netinet/in.h>
 #include <sys/param.h>
+#include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/types.h>
+
 #ifdef HAVE_SYS_INOTIFY_H
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wc99-extensions"
 #include <sys/inotify.h>
 #pragma clang diagnostic pop
 #endif /* HAVE_SYS_INOTIFY_H */
+
+#ifdef HAVE_DIRENT_H
+#include <dirent.h>
+#endif /* HAVE_DIRENT_H */
+
+#include "common.h"
+#include "text_object.h"
+
 #ifdef BUILD_WAYLAND
 #include "wl.h"
 #endif /* BUILD_WAYLAND */
+
 #ifdef BUILD_X11
+#include "x11-settings.h"
+#include "x11.h"
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
 #include <X11/Xutil.h>
@@ -66,24 +84,21 @@
 #include <X11/extensions/Xdamage.h>
 #endif
 #ifdef BUILD_IMLIB2
-#include "imlib2.h"
+#include "conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
 #endif /* BUILD_X11 */
+
 #ifdef BUILD_NCURSES
 #include <ncurses.h>
-#endif
-#include <fcntl.h>
-#include <getopt.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#if defined BUILD_RSS
-#include <libxml/parser.h>
-#endif
+#endif /* BUILD_NCURSES */
+
 #ifdef BUILD_CURL
 #include <curl/curl.h>
-#endif
+#endif /* BUILD_CURL */
+
+#ifdef BUILD_RSS
+#include <libxml/parser.h>
+#endif /* BUILD_RSS */
 
 /* local headers */
 #include "colours.h"
@@ -97,7 +112,7 @@
 #include "fs.h"
 #ifdef BUILD_ICONV
 #include "iconv_tools.h"
-#endif
+#endif /* BUILD_ICONV */
 #include "llua.h"
 #include "logging.h"
 #include "mail.h"
@@ -108,12 +123,13 @@
 #include "template.h"
 #include "timeinfo.h"
 #include "top.h"
+
 #ifdef BUILD_MYSQL
 #include "mysql.h"
 #endif /* BUILD_MYSQL */
 #ifdef BUILD_NVIDIA
 #include "nvidia.h"
-#endif
+#endif /* BUILD_NVIDIA */
 #ifdef BUILD_CURL
 #include "ccurl_thread.h"
 #endif /* BUILD_CURL */
@@ -249,10 +265,10 @@ static const char *suffixes[] = {_nop("B"),   _nop("KiB"), _nop("MiB"),
 
 /* text size */
 
-int text_start_x, text_start_y;   /* text start position in window */
-int text_offset_x, text_offset_y; /* offset for start position */
-int text_width = 1,
-    text_height = 1; /* initially 1 so no zero-sized window is created */
+conky::vec2i text_start;  /* text start position in window */
+conky::vec2i text_offset; /* offset for start position */
+conky::vec2i text_size =
+    conky::vec2i::One(); /* initially 1 so no zero-sized window is created */
 
 #endif /* BUILD_GUI */
 
@@ -261,7 +277,7 @@ int text_width = 1,
 struct information info;
 
 /* path to config file */
-std::string current_config;
+std::filesystem::path current_config;
 
 /* set to 1 if you want all text to be in uppercase */
 static conky::simple_config_setting<bool> stuff_in_uppercase("uppercase", false,
@@ -392,18 +408,6 @@ int calc_text_width(const char *s) {
 
   size_t slen = strlen(s);
   return slen;
-}
-
-int dpi_scale(int value) {
-#ifdef BUILD_GUI
-  if (display_output()) {
-    return display_output()->dpi_scale(value);
-  } else {
-    return value;
-  }
-#else  /* BUILD_GUI */
-  return value;
-#endif /* BUILD_GUI */
 }
 
 #ifdef BUILD_GUI
@@ -766,7 +770,7 @@ void remove_first_char(char *s) { memmove(s, s + 1, strlen(s)); }
 
 static int get_string_width_special(char *s, int special_index) {
   char *p, *final;
-  special_t *current = specials;
+  special_node *current = specials;
   int width = 0;
   long i;
 
@@ -789,22 +793,23 @@ static int get_string_width_special(char *s, int special_index) {
       /*for (i = 0; i < static_cast<long>(strlen(p)); i++) {
         *(p + i) = *(p + i + 1);
       }*/
-      if (current->type == GRAPH || current->type == GAUGE ||
-          current->type == BAR) {
+      if (current->type == text_node_t::GRAPH ||
+          current->type == text_node_t::GAUGE ||
+          current->type == text_node_t::BAR) {
         width += current->width;
       }
-      if (current->type == FONT) {
+      if (current->type == text_node_t::FONT) {
         // put all following text until the next fontchange/stringend in
         // influenced_by_font but do not include specials
         char *influenced_by_font = strdup(p);
-        special_t *current_after_font = current;
+        special_node *current_after_font = current;
         // influenced_by_font gets special chars removed, so after this loop i
         // counts the number of letters (not special chars) influenced by font
         for (i = 0; influenced_by_font[i] != 0; i++) {
           if (influenced_by_font[i] == SPECIAL_CHAR) {
             // remove specials and stop at fontchange
             current_after_font = current_after_font->next;
-            if (current_after_font->type == FONT) {
+            if (current_after_font->type == text_node_t::FONT) {
               influenced_by_font[i] = 0;
               break;
             }
@@ -844,7 +849,7 @@ static int text_size_updater(char *s, int special_index);
 
 int last_font_height;
 void update_text_area() {
-  int x = 0, y = 0;
+  conky::vec2i xy;
 
   if (display_output() == nullptr || !display_output()->graphical()) { return; }
 
@@ -853,67 +858,46 @@ void update_text_area() {
   if (fixed_size == 0)
 #endif
   {
-    text_width = dpi_scale(minimum_width.get(*state));
-    text_height = 0;
+    text_size = conky::vec2i(dpi_scale(minimum_width.get(*state)), 0);
     last_font_height = font_height();
     for_each_line(text_buffer, text_size_updater);
-    text_width += 1;
-    if (text_height < dpi_scale(minimum_height.get(*state))) {
-      text_height = dpi_scale(minimum_height.get(*state));
-    }
+
+    text_size = text_size.max(conky::vec2i(text_size.x() + 1, dpi_scale(minimum_height.get(*state))));
     int mw = dpi_scale(maximum_width.get(*state));
-    if (text_width > mw && mw > 0) { text_width = mw; }
+    if (mw > 0) text_size = text_size.min(conky::vec2i(mw, text_size.y()));
   }
 
   alignment align = text_alignment.get(*state);
   /* get text position on workarea */
-  switch (align) {
-    case TOP_LEFT:
-    case TOP_RIGHT:
-    case TOP_MIDDLE:
-      y = workarea[1] + dpi_scale(gap_y.get(*state));
+  switch (vertical_alignment(align)) {
+    case axis_align::START:
+      xy.set_y(workarea.y() + dpi_scale(gap_y.get(*state)));
       break;
-
-    case BOTTOM_LEFT:
-    case BOTTOM_RIGHT:
-    case BOTTOM_MIDDLE:
+    case axis_align::END:
     default:
-      y = workarea[3] - text_height - dpi_scale(gap_y.get(*state));
+      xy.set_y(workarea.end_y() - text_size.y() - dpi_scale(gap_y.get(*state)));
       break;
-
-    case MIDDLE_LEFT:
-    case MIDDLE_RIGHT:
-    case MIDDLE_MIDDLE:
-      y = workarea[1] + (workarea[3] - workarea[1]) / 2 - text_height / 2 -
-          dpi_scale(gap_y.get(*state));
+    case axis_align::MIDDLE:
+      xy.set_y(workarea.y() + workarea.height() / 2 - text_size.y() / 2 -
+               dpi_scale(gap_y.get(*state)));
       break;
   }
-  switch (align) {
-    case TOP_LEFT:
-    case BOTTOM_LEFT:
-    case MIDDLE_LEFT:
+  switch (horizontal_alignment(align)) {
+    case axis_align::START:
     default:
-      x = workarea[0] + dpi_scale(gap_x.get(*state));
+      xy.set_x(workarea.x() + dpi_scale(gap_x.get(*state)));
       break;
-
-    case TOP_RIGHT:
-    case BOTTOM_RIGHT:
-    case MIDDLE_RIGHT:
-      x = workarea[2] - text_width - dpi_scale(gap_x.get(*state));
+    case axis_align::END:
+      xy.set_x(workarea.end_x() - text_size.x() - dpi_scale(gap_x.get(*state)));
       break;
-
-    case TOP_MIDDLE:
-    case BOTTOM_MIDDLE:
-    case MIDDLE_MIDDLE:
-      x = workarea[0] + (workarea[2] - workarea[0]) / 2 - text_width / 2 -
-          dpi_scale(gap_x.get(*state));
+    case axis_align::MIDDLE:
+      xy.set_x(workarea.x() + workarea.width() / 2 - text_size.x() / 2 -
+               dpi_scale(gap_x.get(*state)));
       break;
   }
 #ifdef OWN_WINDOW
-  if (align == NONE) {  // Let the WM manage the window
-    x = window.x;
-    y = window.y;
-
+  if (align == alignment::NONE) {  // Let the WM manage the window
+    xy = window.geometry.pos();
     fixed_pos = 1;
     fixed_size = 1;
   }
@@ -922,17 +906,15 @@ void update_text_area() {
 
   if (own_window.get(*state) && (fixed_pos == 0)) {
     int border_total = get_border_total();
-    text_start_x = text_start_y = border_total;
-    window.x = x - border_total;
-    window.y = y - border_total;
+    text_start = conky::vec2i::uniform(border_total);
+    window.geometry.set_pos(xy - text_start);
   } else
 #endif
   {
-    text_start_x = x;
-    text_start_y = y;
+    text_start = xy;
   }
   /* update lua window globals */
-  llua_update_window_table(text_start_x, text_start_y, text_width, text_height);
+  llua_update_window_table(conky::rect<int>(text_start, text_size));
 }
 
 /* drawing stuff */
@@ -941,20 +923,14 @@ static int cur_x, cur_y; /* current x and y for drawing */
 #endif
 // draw_mode also without BUILD_GUI because we only need to print to stdout with
 // FG
-static int draw_mode; /* FG, BG or OUTLINE */
+static draw_mode_t draw_mode; /* FG, BG or OUTLINE */
 #ifdef BUILD_GUI
 /*static*/ Colour current_color;
-
-static int saved_coordinates_x[100];
-static int saved_coordinates_y[100];
-
-int get_saved_coordinates_x(int i) { return saved_coordinates_x[i]; }
-int get_saved_coordinates_y(int i) { return saved_coordinates_y[i]; }
 
 static int text_size_updater(char *s, int special_index) {
   int w = 0;
   char *p;
-  special_t *current = specials;
+  special_node *current = specials;
 
   for (int i = 0; i < special_index; i++) { current = current->next; }
 
@@ -969,26 +945,27 @@ static int text_size_updater(char *s, int special_index) {
       w += get_string_width(s);
       *p = SPECIAL_CHAR;
 
-      if (current->type == BAR || current->type == GAUGE ||
-          current->type == GRAPH) {
+      if (current->type == text_node_t::BAR ||
+          current->type == text_node_t::GAUGE ||
+          current->type == text_node_t::GRAPH) {
         w += current->width;
         if (current->height > last_font_height) {
           last_font_height = current->height;
           last_font_height += font_height();
         }
-      } else if (current->type == OFFSET) {
+      } else if (current->type == text_node_t::OFFSET) {
         if (current->arg > 0) { w += current->arg; }
-      } else if (current->type == VOFFSET) {
+      } else if (current->type == text_node_t::VOFFSET) {
         last_font_height += current->arg;
-      } else if (current->type == GOTO) {
+      } else if (current->type == text_node_t::GOTO) {
         if (current->arg > cur_x) { w = static_cast<int>(current->arg); }
-      } else if (current->type == TAB) {
+      } else if (current->type == text_node_t::TAB) {
         int start = current->arg;
         int step = current->width;
 
         if ((step == 0) || step < 0) { step = 10; }
-        w += step - (cur_x - text_start_x - start) % step;
-      } else if (current->type == FONT) {
+        w += step - (cur_x - text_start.x() - start) % step;
+      } else if (current->type == text_node_t::FONT) {
         selected_font = current->font_added;
         if (font_height() > last_font_height) {
           last_font_height = font_height();
@@ -1004,11 +981,11 @@ static int text_size_updater(char *s, int special_index) {
 
   w += get_string_width(s);
 
-  if (w > text_width) { text_width = w; }
+  if (w > text_size.x()) { text_size.set_x(w); }
   int mw = dpi_scale(maximum_width.get(*state));
-  if (text_width > mw && mw > 0) { text_width = mw; }
+  if (mw > 0) { text_size.set_x(std::min(mw, text_size.x())); }
 
-  text_height += last_font_height;
+  text_size += conky::vec2i(0, last_font_height);
   last_font_height = font_height();
   return special_index;
 }
@@ -1016,6 +993,40 @@ static int text_size_updater(char *s, int special_index) {
 
 static inline void set_foreground_color(Colour c) {
   for (auto output : display_outputs()) output->set_foreground_color(c);
+}
+
+static inline void draw_graph_bars(special_node *current, std::unique_ptr<Colour[]>& tmpcolour, 
+                            conky::vec2i& text_offset, int i, int &j, int w, 
+                            int colour_idx, int cur_x, int by, int h) {
+  double graphheight = current->graph[j] * (h - 1) / current->scale;
+  /* Check if graphheight is less than the minheight threshold, if so we must change it to the threshold */
+  if(graphheight > 0 && current->minheight - graphheight > 0) {
+    current->graph[j] = current->minheight * current->scale / (h - 1);
+  }
+  if (current->colours_set) {
+    if (current->tempgrad != 0) {
+      set_foreground_color(tmpcolour[static_cast<int>(
+          static_cast<float>(w - 2) -
+          current->graph[j] * (w - 2) /
+              std::max(static_cast<float>(current->scale),
+                        1.0F))]);
+    } else {
+      set_foreground_color(tmpcolour[colour_idx++]);
+    }
+  }
+  /* Handle the case where y axis is to be inverted */
+  int offsety1 = current->inverty ? by : by + h;
+  int offsety2 = current->inverty ? by +  current->graph[j] * (h - 1) / current->scale
+                          : round_to_positive_int(static_cast<double>(by) + h -
+                          current->graph[j] * (h - 1) /
+                          current->scale);
+  /* this is mugfugly, but it works */
+  if (display_output()) {
+    display_output()->draw_line(
+        text_offset.x() + cur_x + i + 1, text_offset.y() + offsety1,
+        text_offset.x() + cur_x + i + 1, text_offset.y() + offsety2);
+  }
+  ++j;
 }
 
 static void draw_string(const char *s) {
@@ -1033,7 +1044,7 @@ static void draw_string(const char *s) {
 #ifdef BUILD_GUI
   width_of_s = get_string_width(s);
 #endif /* BUILD_GUI */
-  if (draw_mode == FG) {
+  if (draw_mode == draw_mode_t::FG) {
     for (auto output : display_outputs())
       if (!output->graphical()) output->draw_string(s, 0);
   }
@@ -1046,7 +1057,7 @@ static void draw_string(const char *s) {
 
 #ifdef BUILD_GUI
   if (display_output() && display_output()->graphical()) {
-    max = ((text_width - width_of_s) / std::max(1, get_string_width(" ")));
+    max = ((text_size.x() - width_of_s) / std::max(1, get_string_width(" ")));
   }
 #endif /* BUILD_GUI */
   /* This code looks for tabs in the text and coverts them to spaces.
@@ -1069,22 +1080,18 @@ static void draw_string(const char *s) {
   }
 #ifdef BUILD_GUI
   if (display_output() && display_output()->graphical()) {
-    int mw = display_output()->dpi_scale(maximum_width.get(*state));
-    if (text_width == mw) {
+    int mw = dpi_scale(maximum_width.get(*state));
+    if (text_size.x() == mw) {
       /* this means the text is probably pushing the limit,
        * so we'll chop it */
-      while (cur_x + get_string_width(tmpstring2) - text_start_x > mw &&
-             strlen(tmpstring2) > 0) {
-        tmpstring2[strlen(tmpstring2) - 1] = '\0';
-      }
     }
   }
 #endif /* BUILD_GUI */
   s = tmpstring2;
 #ifdef BUILD_GUI
   if (display_output() && display_output()->graphical()) {
-    display_output()->draw_string_at(text_offset_x + cur_x,
-                                     text_offset_y + cur_y, s, strlen(s));
+    display_output()->draw_string_at(text_offset.x() + cur_x,
+                                     text_offset.y() + cur_y, s, strlen(s));
 
     cur_x += width_of_s;
   }
@@ -1093,8 +1100,8 @@ static void draw_string(const char *s) {
 }
 
 #if defined(BUILD_MATH) && defined(BUILD_GUI)
-/// Format \a size as a real followed by closest SI unit, with \a prec number
-/// of digits after the decimal point.
+/// Format \a size as a real followed by closest SI unit, with \a prec
+/// number of digits after the decimal point.
 static std::string formatSizeWithUnits(double size, int prec = 1) {
   int div = 0;
   double rem = 0;
@@ -1132,18 +1139,17 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 #ifdef BUILD_GUI
   int font_h = 0;
   int cur_y_add = 0;
-  int mw = maximum_width.get(*state);
+  int mw = dpi_scale(maximum_width.get(*state));
 #endif /* BUILD_GUI */
   char *p = s;
   int orig_special_index = special_index;
 
 #ifdef BUILD_GUI
   if (display_output() && display_output()->graphical()) {
-    mw = display_output()->dpi_scale(maximum_width.get(*state));
     font_h = font_height();
     cur_y += font_ascent();
   }
-  cur_x = text_start_x;
+  cur_x = text_start.x();
 #endif /* BUILD_GUI */
 
   while (*p != 0) {
@@ -1163,49 +1169,51 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
         s = p + 1;
       }
       /* draw special */
-      special_t *current = specials;
+      special_node *current = specials;
       for (int i = 0; i < special_index; i++) { current = current->next; }
       switch (current->type) {
 #ifdef BUILD_GUI
-        case HORIZONTAL_LINE:
+        case text_node_t::HORIZONTAL_LINE:
           if (display_output() && display_output()->graphical()) {
             int h = current->height;
             int mid = font_ascent() / 2;
 
-            w = text_start_x + text_width - cur_x;
+            w = text_start.x() + text_size.x() - cur_x;
 
             if (display_output()) {
               display_output()->set_line_style(h, true);
-              display_output()->draw_line(
-                  text_offset_x + cur_x, text_offset_y + cur_y - mid / 2,
-                  text_offset_x + cur_x + w, text_offset_y + cur_y - mid / 2);
+              display_output()->draw_line(text_offset.x() + cur_x,
+                                          text_offset.y() + cur_y - mid / 2,
+                                          text_offset.x() + cur_x + w,
+                                          text_offset.y() + cur_y - mid / 2);
             }
           }
           break;
 
-        case STIPPLED_HR:
+        case text_node_t::STIPPLED_HR:
           if (display_output() && display_output()->graphical()) {
             int h = current->height;
             char tmp_s = current->arg;
             int mid = font_ascent() / 2;
             char ss[2] = {tmp_s, tmp_s};
 
-            w = text_start_x + text_width - cur_x - 1;
+            w = text_start.x() + text_size.x() - cur_x - 1;
             if (display_output()) {
               display_output()->set_line_style(h, false);
               display_output()->set_dashes(ss);
-              display_output()->draw_line(
-                  text_offset_x + cur_x, text_offset_y + cur_y - mid / 2,
-                  text_offset_x + cur_x + w, text_offset_x + cur_y - mid / 2);
+              display_output()->draw_line(text_offset.x() + cur_x,
+                                          text_offset.y() + cur_y - mid / 2,
+                                          text_offset.x() + cur_x + w,
+                                          text_offset.x() + cur_y - mid / 2);
             }
           }
           break;
 
-        case BAR:
+        case text_node_t::BAR:
           if (display_output() && display_output()->graphical()) {
             int h, by;
             double bar_usage, scale;
-            if (cur_x - text_start_x > mw && mw > 0) { break; }
+            if (cur_x - text_start.x() > mw && mw > 0) { break; }
             h = current->height;
             bar_usage = current->arg;
             scale = current->scale;
@@ -1213,23 +1221,23 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 
             if (h < font_h) { by -= h / 2 - 1; }
             w = current->width;
-            if (w == 0) { w = text_start_x + text_width - cur_x - 1; }
+            if (w == 0) { w = text_start.x() + text_size.x() - cur_x - 1; }
             if (w < 0) { w = 0; }
 
             if (display_output()) {
               display_output()->set_line_style(dpi_scale(1), true);
 
-              display_output()->draw_rect(text_offset_x + cur_x,
-                                          text_offset_y + by, w, h);
-              display_output()->fill_rect(text_offset_x + cur_x,
-                                          text_offset_y + by,
+              display_output()->draw_rect(text_offset.x() + cur_x,
+                                          text_offset.y() + by, w, h);
+              display_output()->fill_rect(text_offset.x() + cur_x,
+                                          text_offset.y() + by,
                                           w * bar_usage / scale, h);
             }
             if (h > cur_y_add && h > font_h) { cur_y_add = h; }
           }
           break;
 
-        case GAUGE: /* new GAUGE  */
+        case text_node_t::GAUGE: /* new GAUGE  */
           if (display_output() && display_output()->graphical()) {
             int h, by = 0;
             Colour last_colour = current_color;
@@ -1238,20 +1246,20 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             double usage, scale;
 #endif /* BUILD_MATH */
 
-            if (cur_x - text_start_x > mw && mw > 0) { break; }
+            if (cur_x - text_start.x() > mw && mw > 0) { break; }
 
             h = current->height;
             by = cur_y - (font_ascent() / 2) - 1;
 
             if (h < font_h) { by -= h / 2 - 1; }
             w = current->width;
-            if (w == 0) { w = text_start_x + text_width - cur_x - 1; }
+            if (w == 0) { w = text_start.x() + text_size.x() - cur_x - 1; }
             if (w < 0) { w = 0; }
 
             if (display_output()) {
               display_output()->set_line_style(1, true);
-              display_output()->draw_arc(text_offset_x + cur_x,
-                                         text_offset_y + by, w, h * 2, 0,
+              display_output()->draw_arc(text_offset.x() + cur_x,
+                                         text_offset.y() + by, w, h * 2, 0,
                                          180 * 64);
             }
 
@@ -1265,10 +1273,11 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
                  static_cast<float>(h) * sin(angle);
 
             if (display_output()) {
-              display_output()->draw_line(text_offset_x + cur_x + (w / 2.),
-                                          text_offset_y + by + (h),
-                                          text_offset_x + static_cast<int>(px),
-                                          text_offset_y + static_cast<int>(py));
+              display_output()->draw_line(
+                  text_offset.x() + cur_x + (w / 2.),
+                  text_offset.y() + by + (h),
+                  text_offset.x() + static_cast<int>(px),
+                  text_offset.y() + static_cast<int>(py));
             }
 
 #endif /* BUILD_MATH */
@@ -1279,19 +1288,19 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           }
           break;
 
-        case GRAPH:
+        case text_node_t::GRAPH:
           if (display_output() && display_output()->graphical()) {
             int h, by, i = 0, j = 0;
             int colour_idx = 0;
             Colour last_colour = current_color;
-            if (cur_x - text_start_x > mw && mw > 0) { break; }
+            if (cur_x - text_start.x() > mw && mw > 0) { break; }
             h = current->height;
             by = cur_y - (font_ascent() / 2) - 1;
 
             if (h < font_h) { by -= h / 2 - 1; }
             w = current->width;
             if (w == 0) {
-              w = text_start_x + text_width - cur_x - 1;
+              w = text_start.x() + text_size.x() - cur_x - 1;
               current->graph_width = std::max(w - 1, 0);
               if (current->graph_width != current->graph_allocated) {
                 w = current->graph_allocated + 1;
@@ -1301,8 +1310,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             if (draw_graph_borders.get(*state)) {
               if (display_output()) {
                 display_output()->set_line_style(dpi_scale(1), true);
-                display_output()->draw_rect(text_offset_x + cur_x,
-                                            text_offset_y + by, w, h);
+                display_output()->draw_rect(text_offset.x() + cur_x,
+                                            text_offset.y() + by, w, h);
               }
             }
             if (display_output()) display_output()->set_line_style(1, true);
@@ -1318,29 +1327,17 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
                 delete factory;
               }
               colour_idx = 0;
-              for (i = w - 2; i > -1; i--) {
-                if (current->colours_set) {
-                  if (current->tempgrad != 0) {
-                    set_foreground_color(tmpcolour[static_cast<int>(
-                        static_cast<float>(w - 2) -
-                        current->graph[j] * (w - 2) /
-                            std::max(static_cast<float>(current->scale),
-                                     1.0F))]);
-                  } else {
-                    set_foreground_color(tmpcolour[colour_idx++]);
-                  }
+              if(current->invertx){
+                for (i = 0; i <= w - 2; i++) {
+                  draw_graph_bars(current, tmpcolour, text_offset, 
+                  i, j, w, colour_idx, cur_x, by, h);
                 }
-                /* this is mugfugly, but it works */
-                if (display_output()) {
-                  display_output()->draw_line(
-                      text_offset_x + cur_x + i + 1, text_offset_y + by + h,
-                      text_offset_x + cur_x + i + 1,
-                      text_offset_y +
-                          round_to_positive_int(static_cast<double>(by) + h -
-                                                current->graph[j] * (h - 1) /
-                                                    current->scale));
+              }
+              else{
+                for (i = w - 2; i > -1; i--) {
+                  draw_graph_bars(current, tmpcolour, text_offset, 
+                  i, j, w, colour_idx, cur_x, by, h);
                 }
-                ++j;
               }
             }
             if (h > cur_y_add && h > font_h) { cur_y_add = h; }
@@ -1399,6 +1396,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             }
 #ifdef BUILD_MATH
             if (show_graph_scale.get(*state) && (current->show_scale == 1)) {
+              // Set the foreground colour to the first colour, ensures the scale text is always drawn in the same colour
+              set_foreground_color(current->first_colour);
               int tmp_x = cur_x;
               int tmp_y = cur_y;
               cur_x += font_ascent() / 2;
@@ -1415,7 +1414,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           }
           break;
 
-        case FONT:
+        case text_node_t::FONT:
           if (display_output() && display_output()->graphical()) {
             int old = font_ascent();
 
@@ -1431,59 +1430,60 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           }
           break;
 #endif /* BUILD_GUI */
-        case FG:
-          if (draw_mode == FG) {
+        case text_node_t::FG:
+          if (draw_mode == draw_mode_t::FG) {
             set_foreground_color(Colour::from_argb32(current->arg));
           }
           break;
 
 #ifdef BUILD_GUI
-        case BG:
-          if (draw_mode == BG) {
+        case text_node_t::BG:
+          if (draw_mode == draw_mode_t::BG) {
             set_foreground_color(Colour::from_argb32(current->arg));
           }
           break;
 
-        case OUTLINE:
-          if (draw_mode == OUTLINE) {
+        case text_node_t::OUTLINE:
+          if (draw_mode == draw_mode_t::OUTLINE) {
             set_foreground_color(Colour::from_argb32(current->arg));
           }
           break;
 
-        case OFFSET:
+        case text_node_t::OFFSET:
           w += current->arg;
           break;
 
-        case VOFFSET:
+        case text_node_t::VOFFSET:
           cur_y += current->arg;
           break;
 
-        case SAVE_COORDINATES:
-          saved_coordinates_x[static_cast<int>(current->arg)] =
-              cur_x - text_start_x;
-          saved_coordinates_y[static_cast<int>(current->arg)] =
-              cur_y - text_start_y - last_font_height;
+        case text_node_t::SAVE_COORDINATES:
+#ifdef BUILD_IMLIB2
+          saved_coordinates[static_cast<int>(current->arg)] =
+              std::array<int, 2>{cur_x - text_start.x(),
+                                 cur_y - text_start.y() - last_font_height};
+#endif /* BUILD_IMLIB2 */
           break;
 
-        case TAB: {
+        case text_node_t::TAB: {
           int start = current->arg;
           int step = current->width;
 
           if ((step == 0) || step < 0) { step = 10; }
-          w = step - (cur_x - text_start_x - start) % step;
+          w = step - (cur_x - text_start.x() - start) % step;
           break;
         }
 
-        case ALIGNR: {
+        case text_node_t::ALIGNR: {
           /* TODO: add back in "+ window.border_inner_margin" to the end of
            * this line? */
-          int pos_x = text_start_x + text_width -
+          int pos_x = text_start.x() + text_size.x() -
                       get_string_width_special(s, special_index);
 
-          /* printf("pos_x %i text_start_x %i text_width %i cur_x %i "
+          /* printf("pos_x %i text_start.x %i text_size.x %i cur_x %i "
             "get_string_width(p) %i gap_x %i "
             "current->arg %i window.border_inner_margin %i "
-            "window.border_width %i\n", pos_x, text_start_x, text_width,
+            "window.border_width %i\n", pos_x, text_start.x, text_size.x,
             cur_x, get_string_width_special(s), gap_x,
             current->arg, window.border_inner_margin,
             window.border_width); */
@@ -1491,32 +1491,35 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
           break;
         }
 
-        case ALIGNC: {
-          int pos_x = (text_width) / 2 -
+        case text_node_t::ALIGNC: {
+          int pos_x = text_size.x() / 2 -
                       get_string_width_special(s, special_index) / 2 -
-                      (cur_x - text_start_x);
-          /* int pos_x = text_start_x + text_width / 2 -
+                      (cur_x - text_start.x());
+          /* int pos_x = text_start_x + text_size.x / 2 -
             get_string_width_special(s) / 2; */
 
-          /* printf("pos_x %i text_start_x %i text_width %i cur_x %i "
+          /* printf("pos_x %i text_start.x %i text_size.x %i cur_x %i "
             "get_string_width(p) %i gap_x %i "
-            "current->arg %i\n", pos_x, text_start_x,
-            text_width, cur_x, get_string_width(s), gap_x,
+            "current->arg %i\n", pos_x, text_start.x,
+            text_size.x, cur_x, get_string_width(s), gap_x,
             current->arg); */
           if (pos_x > current->arg) { w = pos_x - current->arg; }
           break;
         }
 #endif /* BUILD_GUI */
-        case GOTO:
+        case text_node_t::GOTO:
           if (current->arg >= 0) {
 #ifdef BUILD_GUI
             cur_x = static_cast<int>(current->arg);
             // make sure shades are 1 pixel to the right of the text
-            if (draw_mode == BG) { cur_x++; }
+            if (draw_mode == draw_mode_t::BG) { cur_x++; }
 #endif /* BUILD_GUI */
             cur_x = static_cast<int>(current->arg);
             for (auto output : display_outputs()) output->gotox(cur_x);
           }
+          break;
+        default:
+          // do nothing; not a special node or support not enabled
           break;
       }
 
@@ -1562,7 +1565,7 @@ static void draw_text() {
   // XXX:only works if inside set_display_output()
   for (auto output : display_outputs()) {
     if (output && output->graphical()) {
-      cur_y = text_start_y;
+      cur_y = text_start.y();
       int bw = dpi_scale(border_width.get(*state));
 
       /* draw borders */
@@ -1577,9 +1580,10 @@ static void draw_text() {
         }
 
         int offset = dpi_scale(border_inner_margin.get(*state)) + bw;
-        output->draw_rect(text_offset_x + text_start_x - offset,
-                          text_offset_y + text_start_y - offset,
-                          text_width + 2 * offset, text_height + 2 * offset);
+        output->draw_rect(text_offset.x() + text_start.x() - offset,
+                          text_offset.y() + text_start.y() - offset,
+                          text_size.x() + 2 * offset,
+                          text_size.y() + 2 * offset);
       }
 
       /* draw text */
@@ -1592,15 +1596,19 @@ static void draw_text() {
 }
 
 void draw_stuff() {
-#ifdef BUILD_GUI
-  text_offset_x = text_offset_y = 0;
-#ifdef BUILD_IMLIB2
-  cimlib_render(text_start_x, text_start_y, window.width, window.height);
-#endif /* BUILD_IMLIB2 */
-#endif /* BUILD_GUI */
   for (auto output : display_outputs()) output->begin_draw_stuff();
+
 #ifdef BUILD_GUI
   llua_draw_pre_hook();
+
+#ifdef BUILD_IMLIB2
+  text_offset = conky::vec2i::Zero();
+  cimlib_render(text_start.x(), text_start.y(), window.geometry.width(),
+                window.geometry.height(),
+                imlib_cache_flush_interval.get(*state),
+                imlib_draw_blended.get(*state));
+#endif /* BUILD_IMLIB2 */
+
   for (auto output : display_outputs()) {
     if (!output->graphical()) continue;
     // XXX: we assume a single graphical display
@@ -1608,37 +1616,42 @@ void draw_stuff() {
 
     selected_font = 0;
     if (draw_shades.get(*state) && !draw_outline.get(*state)) {
-      text_offset_x = text_offset_y = 1;
+      text_offset = conky::vec2i::One();
       set_foreground_color(default_shade_color.get(*state));
-      draw_mode = BG;
+      draw_mode = draw_mode_t::BG;
       draw_text();
-      text_offset_x = text_offset_y = 0;
+      text_offset = conky::vec2i::Zero();
     }
 
     if (draw_outline.get(*state)) {
       selected_font = 0;
 
-      for (text_offset_x = -1; text_offset_x < 2; text_offset_x++) {
-        for (text_offset_y = -1; text_offset_y < 2; text_offset_y++) {
-          if (text_offset_x == 0 && text_offset_y == 0) { continue; }
+      for (int ix = -1; ix < 2; ix++) {
+        for (int iy = -1; iy < 2; iy++) {
+          if (ix == 0 && iy == 0) { continue; }
+          text_offset = conky::vec2i(ix, iy);
           set_foreground_color(default_outline_color.get(*state));
-          draw_mode = OUTLINE;
+          draw_mode = draw_mode_t::OUTLINE;
           draw_text();
         }
       }
-      text_offset_x = text_offset_y = 0;
+      text_offset = conky::vec2i::Zero();
     }
 
     selected_font = 0;
     set_foreground_color(default_color.get(*state));
     unset_display_output();
   }
+
 #endif /* BUILD_GUI */
-  draw_mode = FG;
+  // always draw text
+  draw_mode = draw_mode_t::FG;
   draw_text();
-#if defined(BUILD_GUI)
+#ifdef BUILD_GUI
+
   llua_draw_post_hook();
 #endif /* BUILD_GUI */
+
   for (auto output : display_outputs()) output->end_draw_stuff();
 }
 
@@ -1689,6 +1702,16 @@ bool is_on_battery() {  // checks if at least one battery specified in
 
 volatile sig_atomic_t g_sigterm_pending, g_sighup_pending, g_sigusr2_pending;
 
+void log_system_details() {
+  char *session_ty = getenv("XDG_SESSION_TYPE");
+  char *session = getenv("GDMSESSION");
+  char *desktop = getenv("XDG_CURRENT_DESKTOP");
+  if (desktop != nullptr || session != nullptr) {
+    NORM_ERR("'%s' %s session running '%s' desktop", session, session_ty,
+             desktop);
+  }
+}
+
 void main_loop() {
   int terminate = 0;
 #ifdef SIGNAL_BLOCKING
@@ -1710,6 +1733,8 @@ void main_loop() {
   sigaddset(&newmask, SIGTERM);
   sigaddset(&newmask, SIGUSR1);
 #endif
+
+  log_system_details();
 
   last_update_time = 0.0;
   next_update_time = get_time() - fmod(get_time(), active_update_interval());
@@ -1857,10 +1882,10 @@ static void reload_config() {
   initialisation(argc_copy, argv_copy);
 }
 
-void free_specials(special_t *&current) {
+void free_specials(special_node *&current) {
   if (current != nullptr) {
     free_specials(current->next);
-    if (current->type == GRAPH) { free(current->graph); }
+    if (current->type == text_node_t::GRAPH) { free(current->graph); }
     delete current;
     current = nullptr;
   }
@@ -1955,6 +1980,40 @@ void load_config_file() {
   lua::state &l = *state;
   lua::stack_sentry s(l);
   l.checkstack(2);
+
+  // Extend lua package.path so scripts can use relative paths
+  {
+    struct stat file_stat {};
+
+    std::string path_ext;
+
+    // add XDG directory to lua path
+    auto xdg_path =
+        std::filesystem::path(to_real_path(XDG_CONFIG_FILE)).parent_path();
+    if (stat(xdg_path.c_str(), &file_stat) == 0) {
+      path_ext.push_back(';');
+      path_ext.append(xdg_path);
+      path_ext.append("/?.lua");
+    }
+
+    auto parent_path = current_config.parent_path();
+    if (xdg_path != parent_path && stat(path_ext.c_str(), &file_stat) == 0) {
+      path_ext.push_back(';');
+      path_ext.append(parent_path);
+      path_ext.append("/?.lua");
+    }
+
+    l.getglobal("package");
+    l.getfield(-1, "path");
+
+    auto path = l.tostring(-1);
+    path.append(path_ext);
+    l.pop();
+    l.pushstring(path.c_str());
+
+    l.setfield(-2, "path");
+    l.pop();
+  }
 
   try {
 #ifdef BUILD_BUILTIN_CONFIG
@@ -2061,9 +2120,9 @@ const char *getopt_string =
     ;
 
 const struct option longopts[] = {
-    {"help", 0, nullptr, 'h'},          {"version", 0, nullptr, 'V'},
-    {"quiet", 0, nullptr, 'q'},         {"debug", 0, nullptr, 'D'},
-    {"config", 1, nullptr, 'c'},
+    {"help", 0, nullptr, 'h'},          {"version", 0, nullptr, 'v'},
+    {"short-version", 0, nullptr, 'V'}, {"quiet", 0, nullptr, 'q'},
+    {"debug", 0, nullptr, 'D'},         {"config", 1, nullptr, 'c'},
 #ifdef BUILD_BUILTIN_CONFIG
     {"print-config", 0, nullptr, 'C'},
 #endif
@@ -2169,9 +2228,9 @@ void initialisation(int argc, char **argv) {
         break;
 
       case 'u':
-        state->pushinteger(dpi_scale(strtol(optarg, &conv_end, 10)));
+        state->pushnumber(strtod(optarg, &conv_end));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is a wrong update-interval", optarg);
+          CRIT_ERR("'%s' is an invalid update interval", optarg);
         }
         update_interval.lua_set(*state);
         break;
@@ -2179,7 +2238,7 @@ void initialisation(int argc, char **argv) {
       case 'i':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is a wrong number of update-times", optarg);
+          CRIT_ERR("'%s' is an invalid number of update times", optarg);
         }
         total_run_times.lua_set(*state);
         break;
@@ -2187,7 +2246,7 @@ void initialisation(int argc, char **argv) {
       case 'x':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is a wrong value for the X-position", optarg);
+          CRIT_ERR("'%s' is an invalid value for the X-position", optarg);
         }
         gap_x.lua_set(*state);
         break;
@@ -2261,7 +2320,7 @@ void initialisation(int argc, char **argv) {
   }
 #ifdef BUILD_GUI
   /* setup lua window globals */
-  llua_setup_window_table(text_start_x, text_start_y, text_width, text_height);
+  llua_setup_window_table(conky::rect<int>(text_start, text_size));
 #endif /* BUILD_GUI */
 
   llua_setup_info(&info, active_update_interval());

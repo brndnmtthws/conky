@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -29,10 +29,18 @@
 #ifndef _TEXT_OBJECT_H
 #define _TEXT_OBJECT_H
 
-#include <stdint.h> /* uint8_t */
-#include "config.h" /* for the defines */
+#include "config.h"
+
 #include "exec.h"
 #include "specials.h" /* enum special_types */
+
+#include <cstdint> /* uint8_t */
+
+enum class draw_mode_t : uint32_t {
+  BG = static_cast<uint32_t>(text_node_t::BG),
+  FG = static_cast<uint32_t>(text_node_t::FG),
+  OUTLINE = static_cast<uint32_t>(text_node_t::OUTLINE),
+};
 
 /* text object callbacks */
 struct obj_cb {
@@ -109,7 +117,7 @@ struct text_object {
     void *opaque; /* new style generic per object data */
     char *s;      /* some string */
     int i;        /* some integer */
-    long l;       /* some long integer */
+    int64_t l;    /* some long integer */
   } data;
 
   void *special_data;

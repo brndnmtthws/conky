@@ -3,7 +3,7 @@
  * Conky, a system monitor, based on torsmo
  *
  * Copyright (c) 2009 Toni Spets
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -31,13 +31,11 @@ extern "C" {
 }
 
 #include <config.h>
+#include "geometry.h"
 
-#ifdef BUILD_X11
-#include "x11.h"
 #ifdef BUILD_MOUSE_EVENTS
 #include "mouse-events.h"
 #endif /* BUILD_MOUSE_EVENTS */
-#endif /* BUILD_X11 */
 
 #define LUAPREFIX "conky_"
 
@@ -62,10 +60,8 @@ template <typename EventT>
 bool llua_mouse_hook(const EventT &ev);
 #endif /* BUILD_MOUSE_EVENTS */
 
-void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
-                             int text_height);
-void llua_update_window_table(int text_start_x, int text_start_y,
-                              int text_width, int text_height);
+void llua_setup_window_table(conky::rect<int> text_rect);
+void llua_update_window_table(conky::rect<int> text_rect);
 #endif /* BUILD_GUI */
 
 void llua_setup_info(struct information *i, double u_interval);

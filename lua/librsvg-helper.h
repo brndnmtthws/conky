@@ -4,7 +4,7 @@
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -93,7 +93,7 @@ int rsvg_destroy_handle(RsvgHandle *handle) {
 }
 
 RsvgRectangle *rsvg_rectangle_create(void) {
-  return calloc(1, sizeof(RsvgRectangle));
+  return (RsvgRectangle *)calloc(1, sizeof(RsvgRectangle));
 }
 
 void rsvg_rectangle_destroy(RsvgRectangle *rect) { free(rect); }

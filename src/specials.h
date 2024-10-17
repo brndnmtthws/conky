@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -39,8 +39,11 @@
 // don't use spaces in LOGGRAPH or NORMGRAPH if you change them
 #define LOGGRAPH "-l"
 #define TEMPGRAD "-t"
+#define INVERTX "-x"
+#define INVERTY "-y"
+#define MINHEIGHT "-m"
 
-enum special_types {
+enum class text_node_t : uint32_t {
   NONSPECIAL = 0,
   HORIZONTAL_LINE = 1,
   STIPPLED_HR,
@@ -59,9 +62,12 @@ enum special_types {
   GOTO,
   TAB
 };
+constexpr uint32_t operator*(text_node_t index) {
+  return static_cast<uint32_t>(index);
+}
 
-struct special_t {
-  int type;
+struct special_node {
+  text_node_t type;
   short height;
   short width;
   double arg;
@@ -77,11 +83,15 @@ struct special_t {
   Colour last_colour;
   short font_added;
   char tempgrad;
-  struct special_t *next;
+  char speedgraph;
+  char invertx;
+  char inverty;
+  int minheight;
+  struct special_node *next;
 };
 
 /* direct access to the registered specials (FIXME: bad encapsulation) */
-extern struct special_t *specials;
+extern struct special_node *specials;
 extern int special_count;
 
 /* forward declare to avoid mutual inclusion between specials.h and
@@ -94,7 +104,7 @@ const char *scan_gauge(struct text_object *, const char *, double);
 #ifdef BUILD_GUI
 void scan_font(struct text_object *, const char *);
 std::pair<char *, size_t> scan_command(const char *);
-bool scan_graph(struct text_object *, const char *, double);
+bool scan_graph(struct text_object *, const char *, double, char);
 void scan_tab(struct text_object *, const char *);
 void scan_stippled_hr(struct text_object *, const char *);
 
@@ -119,6 +129,6 @@ void new_tab(struct text_object *, char *, unsigned int);
 
 void clear_stored_graphs();
 
-struct special_t *new_special(char *buf, enum special_types t);
+struct special_node *new_special(char *buf, enum text_node_t t);
 
 #endif /* _SPECIALS_H */

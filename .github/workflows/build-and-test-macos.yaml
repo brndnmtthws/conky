@@ -18,29 +18,37 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build:
+    env:
+      HOMEBREW_NO_INSTALL_UPGRADE: 1
+      HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
     strategy:
       matrix:
         os:
-          - macos-11
           - macos-12
+          - macos-13
+          - macos-14
     runs-on: ${{ matrix.os }}
     steps:
       - name: Install dependencies
         run: |
-          brew install \
-            cmake \
-            freetype \
-            gettext \
-            imlib2 \
-            lcov \
-            librsvg \
-            libxft \
-            libxinerama \
-            libxfixes \
-            libxi \
-            lua \
-            ninja \
-            pkg-config
+          brew install --force \
+            cmake              \
+            curl               \
+            freetype           \
+            gettext            \
+            gperf              \
+            imlib2             \
+            lcov               \
+            librsvg            \
+            libxfixes          \
+            libxft             \
+            libxi              \
+            libxinerama        \
+            libxml2            \
+            lua                \
+            ninja              \
+            pkg-config         \
+            || true # Ignore errors
       - name: Checkout
         uses: actions/checkout@v4
       - run: mkdir build
@@ -50,6 +58,8 @@ jobs:
           cmake .. -G Ninja                    \
           -DMAINTAINER_MODE=ON                 \
           -DBUILD_WAYLAND=OFF                  \
+          -DBUILD_RSS=ON                       \
+          -DBUILD_CURL=ON                      \
           -DBUILD_TESTS=ON
       - name: Compile
         run: cmake --build build

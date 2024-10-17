@@ -2,20 +2,18 @@ import Layout from '../components/Layout'
 import SEO from '../components/SEO'
 import { getLua, Documentation, filterDesc } from '../utils/doc-utils'
 import Docs from '../components/Docs'
-import { getSearchIndex, SearchIndex } from '../utils/search'
 
 export interface LuaProps {
   lua: Documentation
-  searchIndex: SearchIndex
 }
 
 export default function Lua(props: LuaProps) {
   return (
-    <Layout searchIndex={props.searchIndex}>
+    <Layout>
       <SEO title="Conky – Lua API" description="Conky Lua API documentation" />
-      <main className="w-full">
+      <main className="w-full pt-4">
         <div>
-          <h1 className="text-2xl" data-cy="page-heading">
+          <h1 className="text-2xl px-2 lg:px-4" data-cy="page-heading">
             Lua API
           </h1>
         </div>
@@ -27,7 +25,6 @@ export default function Lua(props: LuaProps) {
 
 export async function getStaticProps() {
   const lua = filterDesc(getLua())
-  const searchIndex = getSearchIndex()
 
-  return { props: { lua, searchIndex } }
+  return { props: { lua } }
 }

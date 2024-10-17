@@ -3,7 +3,7 @@
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2021 Brenden Matthews, et. al. (see AUTHORS) All rights
+# Copyright (c) 2005-2024 Brenden Matthews, et. al. (see AUTHORS) All rights
 # reserved.
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -19,6 +19,9 @@
 #
 
 include_directories(${conky_includes})
+
+# always include the binary dir
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 if(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
   # include config output dir
@@ -46,6 +49,18 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h)
     "You must remove the autotools generated file '${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h' in order to build with CMake."
   )
 endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h)
+
+# Generate colour-names.hh with gperf
+execute_process(
+  INPUT_FILE "${CMAKE_SOURCE_DIR}/data/color-names.yml"
+  OUTPUT_FILE "${CMAKE_BINARY_DIR}/data/color-names.gperf"
+  COMMAND sh "${CMAKE_SOURCE_DIR}/bin/format-colors.sh"
+)
+execute_process(
+  INPUT_FILE "${CMAKE_BINARY_DIR}/data/color-names.gperf"
+  OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/colour-names.hh"
+  COMMAND ${APP_GPERF} --ignore-case -LC++ -Zcolor_name_hash -t -7 -m1 -C -E
+)
 
 set(conky_sources
   ${conky_sources}
@@ -119,14 +134,6 @@ set(conky_sources
   display-console.hh
   display-file.cc
   display-file.hh
-  display-ncurses.cc
-  display-ncurses.hh
-  display-http.cc
-  display-http.hh
-  display-x11.cc
-  display-x11.hh
-  display-wayland.cc
-  display-wayland.hh
   lua-config.cc
   lua-config.hh
   setting.cc
@@ -137,8 +144,6 @@ set(conky_sources
   update-cb.hh
   logging.h
   semaphore.hh
-  x11-color.cc
-  x11-color.h
 )
 
 # Platform specific sources
@@ -236,23 +241,46 @@ if(BUILD_PORT_MONITORS)
   set(optional_sources ${optional_sources} ${port_monitors})
 endif(BUILD_PORT_MONITORS)
 
+if(BUILD_HTTP)
+  set(http
+    display-http.cc
+    display-http.hh
+  )
+  set(optional_sources ${optional_sources} ${http})
+endif(BUILD_HTTP)
+
 if(BUILD_X11)
-  set(x11 x11.cc x11.h)
+  set(x11
+    display-x11.cc
+    display-x11.hh
+    x11-settings.cc
+    x11-settings.h
+    x11-color.cc
+    x11.cc
+    x11.h
+  )
   set(optional_sources ${optional_sources} ${x11})
 endif(BUILD_X11)
 
 if(BUILD_GUI)
   set(gui fonts.cc fonts.h gui.cc gui.h)
   set(optional_sources ${optional_sources} ${gui})
-  
-  if(BUILD_MOUSE_EVENTS)
+
+  if(BUILD_MOUSE_EVENTS OR BUILD_XINPUT)
     set(mouse_events mouse-events.cc mouse-events.h)
     set(optional_sources ${optional_sources} ${mouse_events})
-  endif(BUILD_MOUSE_EVENTS)
+  endif(BUILD_MOUSE_EVENTS OR BUILD_XINPUT)
 endif(BUILD_GUI)
 
 if(BUILD_WAYLAND)
-  set(wl_srcs wl.cc wl.h xdg-shell-protocol.c wlr-layer-shell-protocol.c)
+  set(wl_srcs
+    wl.cc
+    wl.h
+    display-wayland.cc
+    display-wayland.hh
+    xdg-shell-protocol.c
+    wlr-layer-shell-protocol.c
+  )
   set(optional_sources ${optional_sources} ${wl_srcs})
 
   # generate protocol implementations
@@ -273,9 +301,6 @@ if(BUILD_WAYLAND)
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-protocol.c
     COMMAND ${Wayland_SCANNER} private-code ${WLR_LAYER_SHELL_PROT_DEF} wlr-layer-shell-protocol.c
     DEPENDS wlr-layer-shell-client-protocol.h)
-
-  # include output dir in include path
-  include_directories(${CMAKE_CURRENT_BINARY_DIR})
 endif(BUILD_WAYLAND)
 
 if(BUILD_HDDTEMP)
@@ -299,7 +324,7 @@ if(BUILD_NVIDIA)
 endif(BUILD_NVIDIA)
 
 if(BUILD_IMLIB2)
-  set(imlib2 imlib2.cc imlib2.h)
+  set(imlib2 conky-imlib2.cc conky-imlib2.h)
   set(optional_sources ${optional_sources} ${imlib2})
 endif(BUILD_IMLIB2)
 
@@ -324,7 +349,12 @@ if(BUILD_ICONV)
 endif(BUILD_ICONV)
 
 if(BUILD_NCURSES)
-  set(ncurses_srcs nc.cc nc.h)
+  set(ncurses_srcs
+    nc.cc
+    nc.h
+    display-ncurses.cc
+    display-ncurses.hh
+  )
   set(optional_sources ${optional_sources} ${ncurses_srcs})
 endif(BUILD_NCURSES)
 

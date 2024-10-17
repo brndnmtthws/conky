@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -31,11 +31,11 @@
 
 #include "timeinfo.h"
 
+#include <stdio.h>
 #include <cerrno>
 #include <clocale>
 #include <cstring>
 #include <ctime>
-#include <stdio.h>
 #include "conky.h"
 #include "logging.h"
 #include "text_object.h"

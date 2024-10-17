@@ -8,7 +8,7 @@
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -427,24 +427,50 @@ double get_acpi_temperature(int fd) {
   return 0.0;
 }
 
+// If a leaf MIB in the sysctl tree returns ENOENT, that means the entry does
+// not exist. On the contrary, if a non-leaf entry *does exist*, then EISDIR
+// errno is returned, meaning it exists, but it is an array/directory with
+// more elements hanging from it.
+static int sysctl_mib_exists(const char *mib)
+{
+  size_t len;
+  void *p = NULL;
+  sysctlbyname(mib, p, &len, NULL, 0);
+  return !(errno == ENOENT);
+}
+
 static void get_battery_stats(int *battime, int *batcapacity, int *batstate,
                               int *ac) {
-  if (battime && GETSYSCTL("hw.acpi.battery.time", *battime)) {
-    fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.time\"\n");
+  int battery_present = sysctl_mib_exists("hw.acpi.battery");
+  int ac_present = sysctl_mib_exists("hw.acpi.acline");
+
+  if (!battery_present && !ac_present) {
+	  // According to acpi(4), hw.acpi.acline is optional and only present
+	  // if supported by the hardware. If no battery and acline is detected,
+	  // for sure we are running on an AC line.
+	  *ac = 1;
+	  *batstate = 7;
+	  return;
   }
-  if (batcapacity && GETSYSCTL("hw.acpi.battery.life", *batcapacity)) {
-    fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.life\"\n");
+
+  if (battery_present) {
+    if (battime && GETSYSCTL("hw.acpi.battery.time", *battime)) {
+      NORM_ERR("Cannot read sysctl \"hw.acpi.battery.time\"");
+    }
+    if (batcapacity && GETSYSCTL("hw.acpi.battery.life", *batcapacity)) {
+      NORM_ERR("Cannot read sysctl \"hw.acpi.battery.life\"");
+    }
+    if (batstate && GETSYSCTL("hw.acpi.battery.state", *batstate)) {
+      NORM_ERR("Cannot read sysctl \"hw.acpi.battery.state\"");
+    }
   }
-  if (batstate && GETSYSCTL("hw.acpi.battery.state", *batstate)) {
-    fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.state\"\n");
-  }
-  if (ac && GETSYSCTL("hw.acpi.acline", *ac)) {
-    fprintf(stderr, "Cannot read sysctl \"hw.acpi.acline\"\n");
+  if (ac_present && ac && GETSYSCTL("hw.acpi.acline", *ac)) {
+    NORM_ERR("Cannot read sysctl \"hw.acpi.acline\"");
   }
 }
 
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item) {
-  int battime, batcapacity, batstate, ac;
+  int battime = 0, batcapacity = 0, batstate = 0, ac = 0;
   (void)bat;
 
   get_battery_stats(&battime, &batcapacity, &batstate, &ac);

@@ -8,7 +8,7 @@
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -54,7 +54,7 @@ struct graph {
 
 static std::pair<struct graph, bool> test_parse(const char *s) {
   struct text_object obj;
-  bool result = scan_graph(&obj, s, default_scale);
+  bool result = scan_graph(&obj, s, default_scale,FALSE);
   auto g = static_cast<struct graph *>(obj.special_data);
   struct graph graph = *g;
   free(g);

@@ -20,65 +20,82 @@
       system: let
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [self.overlay];
+          overlays = [self.overlays.default];
         };
       in
         with pkgs; rec
         {
           packages = flake-utils.lib.flattenTree {
             conky = conky;
+            default = conky;
           };
 
-          defaultPackage = packages.conky;
-          apps.conky = flake-utils.lib.mkApp {drv = packages.conky;};
-          defaultApp = apps.conky;
-          devShells.default = mkShell {
-            buildInputs =
-              packages.conky.buildInputs
-              ++ packages.conky.nativeBuildInputs
-              ++ [
-                alejandra # for beautifying flake
-                lefthook # for git hooks
-                nodejs # for web/ stuff
-                # for docs
-                (python3.withPackages (ps: with ps; [jinja2]))
-              ];
+          apps.conky = flake-utils.lib.mkApp {
+            drv = packages.conky;
           };
+          apps.default = apps.conky;
+          devShells.default =
+            mkShell.override {
+              stdenv = llvmPackages_18.libcxxStdenv;
+            } rec {
+              buildInputs =
+                packages.conky.buildInputs
+                ++ packages.conky.nativeBuildInputs
+                ++ [
+                  alejandra # for beautifying flake
+                  lefthook # for git hooks
+                  nodejs # for web/ stuff
+                  # for docs
+                  (python3.withPackages (ps: with ps; [jinja2]))
+                ];
+            };
         }
     )
     // {
-      overlay = final: prev: {
+      overlays.default = final: prev: {
         conky = with final;
           stdenv.mkDerivation rec {
             name = "conky";
             src = ./.;
+            cmakeFlags = [
+              "-DBUILD_CURL=ON"
+              "-DBUILD_LUA_CAIRO_XLIB=ON"
+              "-DBUILD_LUA_CAIRO=ON"
+              "-DBUILD_LUA_IMLIB2=ON"
+              "-DBUILD_LUA_RSVG=ON"
+              "-DBUILD_RSS=ON"
+            ];
             nativeBuildInputs = [
-              clang_16
+              clang_18
               cmake
               git
-              llvmPackages_16.clang-unwrapped
+              gperf
+              llvmPackages_18.clang-unwrapped
               ninja
               pkg-config
             ];
             buildInputs =
               [
+                cairo
+                curl
                 freetype
                 gettext
                 imlib2
-                llvmPackages_16.libcxx
-                llvmPackages_16.libcxxabi
+                librsvg
+                libxml2
+                llvmPackages_18.libcxx
                 lua5_4
                 ncurses
                 xorg.libICE
                 xorg.libSM
                 xorg.libX11
+                xorg.libxcb
                 xorg.libXdamage
                 xorg.libXext
                 xorg.libXfixes
                 xorg.libXft
-                xorg.libXinerama
                 xorg.libXi
-                xorg.libxcb
+                xorg.libXinerama
                 xorg.xcbutilerrors
               ]
               ++ lib.optional stdenv.isDarwin darwin.libobjc;

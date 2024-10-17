@@ -6,7 +6,7 @@
  *
  * Copyright (C) 2018 François Revol et al.
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -27,7 +27,6 @@
 #include <config.h>
 
 #include "display-output.hh"
-#include "logging.h"
 
 #include <algorithm>
 #include <iostream>
@@ -35,28 +34,37 @@
 #include <unordered_map>
 
 namespace conky {
-namespace {
 
-typedef std::unordered_map<std::string, display_output_base *>
-    display_outputs_t;
-
-/*
- * We cannot construct this object statically, because order of object
- * construction in different modules is not defined, so register_source could be
- * called before this object is constructed. Therefore, we create it on the
- * first call to register_source.
- */
-display_outputs_t *display_outputs;
-
-}  // namespace
-
-// HACK: force the linker to link all the objects in with test enabled
-extern void init_console_output();
-extern void init_ncurses_output();
-extern void init_file_output();
-extern void init_http_output();
-extern void init_x11_output();
-extern void init_wayland_output();
+inline void log_missing(const char *name, const char *flag) {
+  DBGP(
+      "%s display output disabled. Enable by recompiling with '%s' "
+      "flag enabled.",
+      name, flag);
+}
+#ifndef BUILD_HTTP
+template <>
+void register_output<output_t::HTTP>(display_outputs_t &outputs) {
+  log_missing("HTTP", "BUILD_HTTP");
+}
+#endif
+#ifndef BUILD_NCURSES
+template <>
+void register_output<output_t::NCURSES>(display_outputs_t &outputs) {
+  log_missing("ncurses", "BUILD_NCURSES");
+}
+#endif
+#ifndef BUILD_WAYLAND
+template <>
+void register_output<output_t::WAYLAND>(display_outputs_t &outputs) {
+  log_missing("Wayland", "BUILD_WAYLAND");
+}
+#endif
+#ifndef BUILD_X11
+template <>
+void register_output<output_t::X11>(display_outputs_t &outputs) {
+  log_missing("X11", "BUILD_X11");
+}
+#endif
 
 /*
  * The selected and active display output.
@@ -69,55 +77,18 @@ std::vector<display_output_base *> active_display_outputs;
  */
 std::vector<conky::display_output_base *> current_display_outputs;
 
-namespace priv {
-void do_register_display_output(const std::string &name,
-                                display_output_base *output) {
-  struct display_output_constructor {
-    display_output_constructor() { display_outputs = new display_outputs_t(); }
-    ~display_output_constructor() {
-      delete display_outputs;
-      display_outputs = nullptr;
-    }
-  };
-  static display_output_constructor constructor;
-
-  bool inserted = display_outputs->insert({name, output}).second;
-  if (!inserted) {
-    throw std::logic_error("Display output with name '" + name +
-                           "' already registered");
-  }
-}
-
-}  // namespace priv
-
-display_output_base::display_output_base(const std::string &name_)
-    : name(name_), is_active(false), is_graphical(false), priority(-1) {
-  priv::do_register_display_output(name, this);
-}
-
-disabled_display_output::disabled_display_output(const std::string &name,
-                                                 const std::string &define)
-    : display_output_base(name) {
-  priority = -2;
-  // XXX some generic way of reporting errors? NORM_ERR?
-  DBGP(
-      "Support for display output '%s' has been disabled during compilation. "
-      "Please recompile with '%s'",
-      name.c_str(), define.c_str());
-}
-
 bool initialize_display_outputs() {
-  init_console_output();
-  init_ncurses_output();
-  init_file_output();
-  init_http_output();
-  init_x11_output();
-  init_wayland_output();
-
   std::vector<display_output_base *> outputs;
-  outputs.reserve(display_outputs->size());
+  outputs.reserve(static_cast<size_t>(output_t::OUTPUT_COUNT));
+  register_output<output_t::CONSOLE>(outputs);
+  register_output<output_t::NCURSES>(outputs);
+  register_output<output_t::FILE>(outputs);
+  register_output<output_t::HTTP>(outputs);
+  register_output<output_t::X11>(outputs);
+  register_output<output_t::WAYLAND>(outputs);
 
-  for (auto &output : *display_outputs) { outputs.push_back(output.second); }
+  for (auto out : outputs) { NORM_ERR("FOUND: %s", out->name.c_str()); }
+
   // Sort display outputs by descending priority, to try graphical ones first.
   sort(outputs.begin(), outputs.end(), &display_output_base::priority_compare);
 

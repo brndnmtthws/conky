@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -27,9 +27,12 @@
  *
  */
 
+#include "config.h"
+
 /* local headers */
-#include "core.h"
 #include "algebra.h"
+#include "core.h"
+
 #include "bsdapm.h"
 #include "build.h"
 #include "colour-settings.h"
@@ -40,11 +43,11 @@
 #include "exec.h"
 #include "i8k.h"
 #include "misc.h"
+#include "proc.h"
 #include "text_object.h"
 #ifdef BUILD_IMLIB2
-#include "imlib2.h"
+#include "conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
-#include "proc.h"
 #ifdef BUILD_MYSQL
 #include "mysql.h"
 #endif /* BUILD_MYSQL */
@@ -726,7 +729,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #ifdef BUILD_GUI
   END OBJ(cpugraph, &update_cpu_usage) get_cpu_count();
   SCAN_CPU(arg, obj->data.i);
-  scan_graph(obj, arg, 1);
+  scan_graph(obj, arg, 1, FALSE);
   DBGP2("Adding $cpugraph for CPU %d", obj->data.i);
   obj->callbacks.graphval = &cpu_barval;
   obj->callbacks.free = &free_cpu;
@@ -836,7 +839,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &gen_free_opaque;
 #endif /* BUILD_GUI */
   END OBJ(conky_version, nullptr) obj_be_plain_text(obj, VERSION);
-  END OBJ(conky_build_date, nullptr) obj_be_plain_text(obj, BUILD_DATE);
   END OBJ(conky_build_arch, nullptr) obj_be_plain_text(obj, BUILD_ARCH);
   END OBJ(downspeed, &update_net_stats)
       parse_net_stat_arg(obj, arg, free_at_crash);
@@ -1239,9 +1241,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(memwithbuffersbar, &update_meminfo) scan_bar(obj, arg, 1);
   obj->callbacks.barval = &mem_with_buffers_barval;
 #ifdef BUILD_GUI
-  END OBJ(memgraph, &update_meminfo) scan_graph(obj, arg, 1);
+  END OBJ(memgraph, &update_meminfo) scan_graph(obj, arg, 1, FALSE);
   obj->callbacks.graphval = &mem_barval;
-  END OBJ(memwithbuffersgraph, &update_meminfo) scan_graph(obj, arg, 1);
+  END OBJ(memwithbuffersgraph, &update_meminfo) scan_graph(obj, arg, 1, FALSE);
   obj->callbacks.graphval = &mem_with_buffers_barval;
 #endif /* BUILD_GUI*/
 #ifdef HAVE_SOME_SOUNDCARD_H
@@ -1823,7 +1825,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       "lua_graph needs arguments: <function name> [height],[width] [gradient "
       "colour 1] [gradient colour 2] [scale] [-t] [-l]") auto [buf, skip] =
       scan_command(arg);
-  scan_graph(obj, arg + skip, 100);
+  scan_graph(obj, arg + skip, 100, FALSE);
   if (buf != nullptr) {
     obj->data.s = buf;
   } else {
@@ -1894,9 +1896,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_combine;
   obj->callbacks.free = &free_combine;
 #ifdef BUILD_NVIDIA
-  END OBJ_ARG(
-      nvidia, 0,
-      "nvidia needs an argument") if (set_nvidia_query(obj, arg, NONSPECIAL)) {
+  END OBJ_ARG(nvidia, 0, "nvidia needs an argument") if (set_nvidia_query(
+                                                             obj, arg,
+                                                             text_node_t::
+                                                                 NONSPECIAL)) {
     CRIT_ERR_FREE(obj, free_at_crash,
                   "nvidia: invalid argument"
                   " specified: '%s'",
@@ -1906,7 +1909,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &free_nvidia;
   END OBJ_ARG(
       nvidiabar, 0,
-      "nvidiabar needs an argument") if (set_nvidia_query(obj, arg, BAR)) {
+      "nvidiabar needs an argument") if (set_nvidia_query(obj, arg,
+                                                          text_node_t::BAR)) {
     CRIT_ERR_FREE(obj, free_at_crash,
                   "nvidiabar: invalid argument"
                   " specified: '%s'",
@@ -1916,7 +1920,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &free_nvidia;
   END OBJ_ARG(
       nvidiagraph, 0,
-      "nvidiagraph needs an argument") if (set_nvidia_query(obj, arg, GRAPH)) {
+      "nvidiagraph needs an argument") if (set_nvidia_query(obj, arg,
+                                                            text_node_t::
+                                                                GRAPH)) {
     CRIT_ERR_FREE(obj, free_at_crash,
                   "nvidiagraph: invalid argument"
                   " specified: '%s'",
@@ -1926,7 +1932,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &free_nvidia;
   END OBJ_ARG(
       nvidiagauge, 0,
-      "nvidiagauge needs an argument") if (set_nvidia_query(obj, arg, GAUGE)) {
+      "nvidiagauge needs an argument") if (set_nvidia_query(obj, arg,
+                                                            text_node_t::
+                                                                GAUGE)) {
     CRIT_ERR_FREE(obj, free_at_crash,
                   "nvidiagauge: invalid argument"
                   " specified: '%s'",
@@ -1960,7 +1968,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(apcupsd_loadbar, &update_apcupsd) scan_bar(obj, arg, 100);
   obj->callbacks.barval = &apcupsd_loadbarval;
 #ifdef BUILD_GUI
-  END OBJ(apcupsd_loadgraph, &update_apcupsd) scan_graph(obj, arg, 100);
+  END OBJ(apcupsd_loadgraph, &update_apcupsd) scan_graph(obj, arg, 100, FALSE);
   obj->callbacks.graphval = &apcupsd_loadbarval;
   END OBJ(apcupsd_loadgauge, &update_apcupsd) scan_gauge(obj, arg, 100);
   obj->callbacks.gaugeval = &apcupsd_loadbarval;
@@ -2008,6 +2016,13 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &free_pulseaudio;
   init_pulseaudio(obj);
   END OBJ(pa_card_name, 0) obj->callbacks.print = &print_puau_card_name;
+  obj->callbacks.free = &free_pulseaudio;
+  init_pulseaudio(obj);
+  END OBJ_IF(if_pa_source_running, 0) obj->callbacks.iftest =
+      &puau_source_running;
+  obj->callbacks.free = &free_pulseaudio;
+  init_pulseaudio(obj);
+  END OBJ_IF(if_pa_source_muted, 0) obj->callbacks.iftest = &puau_source_muted;
   obj->callbacks.free = &free_pulseaudio;
   init_pulseaudio(obj);
 #endif /* BUILD_PULSEAUDIO */

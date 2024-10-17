@@ -9,9 +9,6 @@ on:
   pull_request:
     branches:
       - main
-    paths-ignore:
-      - web/**
-      - doc/**
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -24,8 +21,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v9
+        uses: DeterminateSystems/nix-installer-action@v14
       - name: Setup Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v3
+        uses: DeterminateSystems/magic-nix-cache-action@v8
       - run: nix build
       - run: nix flake check

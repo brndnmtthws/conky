@@ -11,7 +11,7 @@ pre-commit:
       run: |
         clang-format -i {staged_files} \
           && git add {staged_files}
-      glob: '*.{c,cc,cxx,h,cpp}'
+      glob: '*.{c,cc,cxx,h,hh,cpp}'
     misc-linter:
       run: |
         npx -y prettier --write {staged_files} \

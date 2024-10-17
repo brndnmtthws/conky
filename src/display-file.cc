@@ -6,7 +6,7 @@
  *
  * Copyright (C) 2018 François Revol et al.
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -49,9 +49,10 @@ namespace {
 conky::display_output_file file_output("file");
 
 }  // namespace
-extern void init_file_output() {}
-
-namespace priv {}  // namespace priv
+template <>
+void register_output<output_t::FILE>(display_outputs_t &outputs) {
+  outputs.push_back(&file_output);
+}
 
 display_output_file::display_output_file(const std::string &name_)
     : display_output_base(name_) {

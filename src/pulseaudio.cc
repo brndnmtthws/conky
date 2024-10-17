@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *     (see AUTHORS)
  * All rights reserved.
  *
@@ -40,17 +40,21 @@
 
 struct pulseaudio_default_results get_result_copy();
 
-const struct pulseaudio_default_results pulseaudio_result0 = {std::string(),
-                                                              std::string(),
-                                                              std::string(),
-                                                              std::string(),
-                                                              0,
-                                                              0,
-                                                              0,
-                                                              0,
-                                                              std::string(),
-                                                              std::string(),
-                                                              0};
+const struct pulseaudio_default_results pulseaudio_result0 = {
+    std::string(),
+    std::string(),
+    std::string(),
+    std::string(),
+    0,
+    0,
+    0,
+    0,
+    std::string(),
+    PA_SOURCE_SUSPENDED,
+    0,
+    std::string(),
+    std::string(),
+    0};
 pulseaudio_c *pulseaudio = nullptr;
 
 void pa_sink_info_callback(pa_context *c, const pa_sink_info *i, int eol,
@@ -77,12 +81,26 @@ void pa_sink_info_callback(pa_context *c, const pa_sink_info *i, int eol,
   ++eol;
 }
 
+void pa_source_info_callback(pa_context *c, const pa_source_info *i, int eol,
+                             void *data) {
+  if (i != nullptr && data) {
+    struct pulseaudio_default_results *pdr =
+        (struct pulseaudio_default_results *)data;
+    pdr->source_state = i->state;
+    pdr->source_mute = i->mute;
+    pa_threaded_mainloop_signal(pulseaudio->mainloop, 0);
+  }
+  (void)c;
+  ++eol;
+}
+
 void pa_server_info_callback(pa_context *c, const pa_server_info *i,
                              void *userdata) {
   if (i != nullptr) {
     struct pulseaudio_default_results *pdr =
         (struct pulseaudio_default_results *)userdata;
     pdr->sink_name.assign(i->default_sink_name);
+    pdr->source_name.assign(i->default_source_name);
     pa_threaded_mainloop_signal(pulseaudio->mainloop, 0);
   }
   (void)c;
@@ -163,6 +181,15 @@ void subscribe_cb(pa_context *c, pa_subscription_event_type_t t, uint32_t index,
       PULSEAUDIO_OP(pa_context_get_sink_info_by_name(
                         c, res->sink_name.c_str(), pa_sink_info_callback, res),
                     "pa_context_get_sink_info_by_name failed");
+    } break;
+
+    case PA_SUBSCRIPTION_EVENT_SOURCE: {
+      if (res->source_name.empty()) return;
+      pa_operation *op;
+      PULSEAUDIO_OP(
+          pa_context_get_source_info_by_name(c, res->source_name.c_str(),
+                                             pa_source_info_callback, res),
+          "pa_context_get_source_info_by_name failed");
     } break;
 
     case PA_SUBSCRIPTION_EVENT_CARD:
@@ -252,6 +279,16 @@ void init_pulseaudio(struct text_object *obj) {
     return;
   }
 
+  if (pulseaudio->result.source_name.empty()) return;
+
+  PULSEAUDIO_WAIT(pa_context_get_source_info_by_name(
+      pulseaudio->context, pulseaudio->result.source_name.c_str(),
+      pa_source_info_callback, &pulseaudio->result));
+
+  if (pulseaudio->result.source_name.empty()) {
+    NORM_ERR("Incorrect pulseaudio source information.");
+    return;
+  }
   if (pulseaudio->result.sink_card != (uint32_t)-1)
     PULSEAUDIO_WAIT(pa_context_get_card_info_by_index(
         pulseaudio->context, pulseaudio->result.sink_card,
@@ -264,6 +301,7 @@ void init_pulseaudio(struct text_object *obj) {
   if (!(op = pa_context_subscribe(
             pulseaudio->context,
             (pa_subscription_mask_t)(PA_SUBSCRIPTION_MASK_SINK |
+                                     PA_SUBSCRIPTION_MASK_SOURCE |
                                      PA_SUBSCRIPTION_MASK_SERVER |
                                      PA_SUBSCRIPTION_MASK_CARD),
             nullptr, NULL))) {
@@ -311,6 +349,14 @@ uint8_t puau_vol(struct text_object *obj) {
 
 int puau_muted(struct text_object *obj) {
   return get_pulseaudio(obj).sink_mute;
+}
+
+int puau_source_running(struct text_object *obj) {
+  return get_pulseaudio(obj).source_state == PA_SOURCE_RUNNING;
+}
+
+int puau_source_muted(struct text_object *obj) {
+  return get_pulseaudio(obj).source_mute;
 }
 
 void print_puau_sink_description(struct text_object *obj, char *p,

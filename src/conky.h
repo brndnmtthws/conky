@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -32,11 +32,15 @@
 
 #define __STDC_FORMAT_MACROS
 
+#include "config.h"
+
 #include <arpa/inet.h>
 #include <config.h>      /* defines */
 #include <sys/utsname.h> /* struct uname_s */
 #include <csignal>
+#include <filesystem>
 #include <memory>
+
 #include "colours.h"
 #include "common.h" /* at least for struct dns_data */
 #include "luamm.hh"
@@ -311,11 +315,6 @@ void set_updatereset(int);
 int get_updatereset(void);
 int get_total_updates(void);
 
-int dpi_scale(int value);
-
-int get_saved_coordinates_x(int);
-int get_saved_coordinates_y(int);
-
 /* defined in conky.c */
 int spaced_print(char *, int, const char *, int, ...)
     __attribute__((format(printf, 3, 5)));
@@ -348,7 +347,7 @@ extern conky::simple_config_setting<bool> utf8_mode;
 extern conky::range_config_setting<unsigned int> max_user_text;
 
 /* path to config file */
-extern std::string current_config;
+extern std::filesystem::path current_config;
 
 #define DEFAULT_TEXT_BUFFER_SIZE_S "##DEFAULT_TEXT_BUFFER_SIZE"
 

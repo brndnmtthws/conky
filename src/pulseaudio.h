@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -31,6 +31,7 @@
 #define _PULSEAUDIO_H
 
 #include <pulse/pulseaudio.h>
+#include <string>
 #include "text_object.h"
 
 void init_pulseaudio(struct text_object *obj);
@@ -48,6 +49,8 @@ void print_puau_card_active_profile(struct text_object *obj, char *p,
                                     unsigned int p_max_size);
 double puau_volumebarval(struct text_object *obj);
 int puau_muted(struct text_object *obj);
+int puau_source_running(struct text_object *obj);
+int puau_source_muted(struct text_object *obj);
 
 struct pulseaudio_default_results {
   // default sink
@@ -59,6 +62,11 @@ struct pulseaudio_default_results {
   int sink_mute;
   uint32_t sink_index;
   unsigned int sink_volume;  // percentage
+
+  // default source
+  std::string source_name;
+  pa_source_state source_state;
+  int source_mute;
 
   // default card
   std::string card_active_profile_description;
@@ -87,7 +95,8 @@ class pulseaudio_c {
         cstate(PULSE_CONTEXT_INITIALIZING),
         ninits(0),
         result({std::string(), std::string(), std::string(), std::string(), 0,
-                0, 0, 0, std::string(), std::string(), 0}){};
+                0, 0, 0, std::string(), PA_SOURCE_SUSPENDED, 0, std::string(),
+                std::string(), 0}){};
 };
 
 #endif /* _PULSEAUDIO_H */

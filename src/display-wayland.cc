@@ -6,7 +6,7 @@
  *
  * Copyright (C) 2018-2021 François Revol et al.
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -24,9 +24,8 @@
  *
  */
 
-#include <config.h>
+#include "display-wayland.hh"
 
-#ifdef BUILD_WAYLAND
 #include <wayland-client.h>
 // #include "wayland.h"
 #include <cairo.h>
@@ -44,23 +43,19 @@
 #include <wlr-layer-shell-client-protocol.h>
 #include <xdg-shell-client-protocol.h>
 
-#endif /* BUILD_WAYLAND */
-
 #include <cstdint>
 #include <iostream>
 #include <sstream>
 
 #include "conky.h"
-#include "display-wayland.hh"
+#include "display-output.hh"
+#include "geometry.h"
 #include "gui.h"
 #include "llua.h"
 #include "logging.h"
-#ifdef BUILD_X11
-#include "x11.h"
-#endif
-#ifdef BUILD_WAYLAND
+
 #include "fonts.h"
-#endif
+
 #ifdef BUILD_MOUSE_EVENTS
 #include <array>
 #include <map>
@@ -68,9 +63,6 @@
 #endif
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-
-/* TODO: cleanup global namespace */
-#ifdef BUILD_WAYLAND
 
 static int set_cloexec_or_close(int fd) {
   long flags;
@@ -164,10 +156,10 @@ static int os_create_anonymous_file(off_t size) {
 #ifdef OWN_WINDOW
 extern int fixed_size, fixed_pos;
 #endif
-extern int text_start_x, text_start_y;   /* text start position in window */
-extern int text_offset_x, text_offset_y; /* offset for start position */
-extern int text_width,
-    text_height; /* initially 1 so no zero-sized window is created */
+extern conky::vec2i text_start;  /* text start position in window */
+extern conky::vec2i text_offset; /* offset for start position */
+extern conky::vec2i
+    text_size; /* initially 1 so no zero-sized window is created */
 extern double current_update_time, next_update_time, last_update_time;
 void update_text();
 extern int need_to_update;
@@ -238,24 +230,15 @@ static void wayland_create_window() {
   update_text_area(); /* to get initial size of the window */
 }
 
-#endif /* BUILD_WAYLAND */
-
 namespace conky {
 namespace {
-
-#ifdef BUILD_WAYLAND
 conky::display_output_wayland wayland_output;
-#else
-conky::disabled_display_output wayland_output_disabled("wayland",
-                                                       "BUILD_WAYLAND");
-#endif
-
 }  // namespace
-extern void init_wayland_output() {}
 
-namespace priv {}  // namespace priv
-
-#ifdef BUILD_WAYLAND
+template <>
+void register_output<output_t::WAYLAND>(display_outputs_t &outputs) {
+  outputs.push_back(&wayland_output);
+}
 
 display_output_wayland::display_output_wayland()
     : display_output_base("wayland") {
@@ -277,12 +260,8 @@ static struct epoll_event ep[1];
 static struct window *global_window;
 static wl_display *global_display;
 
-struct rectangle {
-  size_t x, y, width, height;
-};
-
 struct window {
-  struct rectangle rectangle;
+  struct rect<size_t> rectangle;
   struct wl_shm *shm;
   struct wl_surface *surface;
   struct zwlr_layer_surface_v1 *layer_surface;
@@ -318,7 +297,17 @@ static void output_geometry(void *data, struct wl_output *wl_output, int32_t x,
                             int32_t y, int32_t physical_width,
                             int32_t physical_height, int32_t subpixel,
                             const char *make, const char *model,
-                            int32_t transform) {}
+                            int32_t transform) {
+  // TODO: Add support for proper output management through:
+  // - xdg-output-unstable-v1
+  // Maybe also support (if XDG protocol not reported):
+  // - kde-output-management(-v2)
+  // - wlr-output-management-unstable-v1
+  workarea = absolute_rect<int>(
+      vec2i(x, y),
+      vec2i(x + physical_width,
+            y + physical_height));  // TODO: use xdg_output.logical_position
+}
 
 static void output_mode(void *data, struct wl_output *wl_output, uint32_t flags,
                         int32_t width, int32_t height, int32_t refresh) {}
@@ -424,26 +413,24 @@ void window_get_width_height(struct window *window, int *w, int *h);
 
 void window_layer_surface_set_size(struct window *window) {
   zwlr_layer_surface_v1_set_size(global_window->layer_surface,
-                                 global_window->rectangle.width,
-                                 global_window->rectangle.height);
+                                 global_window->rectangle.width(),
+                                 global_window->rectangle.height());
 }
 
 #ifdef BUILD_MOUSE_EVENTS
-static std::map<wl_pointer *, std::array<size_t, 2>> last_known_positions{};
+static std::map<wl_pointer *, vec2<size_t>> last_known_positions{};
 
 static void on_pointer_enter(void *data, wl_pointer *pointer,
                              std::uint32_t serial, wl_surface *surface,
                              wl_fixed_t surface_x, wl_fixed_t surface_y) {
   auto w = reinterpret_cast<struct window *>(data);
 
-  size_t x = static_cast<size_t>(wl_fixed_to_double(surface_x));
-  size_t y = static_cast<size_t>(wl_fixed_to_double(surface_y));
-  last_known_positions[pointer] = std::array<size_t, 2>{x, y};
+  auto pos =
+      vec2d(wl_fixed_to_double(surface_x), wl_fixed_to_double(surface_y));
+  last_known_positions[pointer] = pos;
+  auto pos_abs = w->rectangle.pos() + pos;
 
-  size_t abs_x = w->rectangle.x + x;
-  size_t abs_y = w->rectangle.y + y;
-
-  mouse_crossing_event event{mouse_event_t::AREA_ENTER, x, y, abs_x, abs_y};
+  mouse_crossing_event event{mouse_event_t::AREA_ENTER, pos, pos_abs};
   llua_mouse_hook(event);
 }
 
@@ -451,13 +438,10 @@ static void on_pointer_leave(void *data, struct wl_pointer *pointer,
                              std::uint32_t serial, struct wl_surface *surface) {
   auto w = reinterpret_cast<struct window *>(data);
 
-  std::array<size_t, 2> last = last_known_positions[pointer];
-  size_t x = last[0];
-  size_t y = last[1];
-  size_t abs_x = w->rectangle.x + x;
-  size_t abs_y = w->rectangle.y + y;
+  auto pos = last_known_positions[pointer];
+  auto pos_abs = w->rectangle.pos() + pos;
 
-  mouse_crossing_event event{mouse_event_t::AREA_LEAVE, x, y, abs_x, abs_y};
+  mouse_crossing_event event{mouse_event_t::AREA_LEAVE, pos, pos_abs};
   llua_mouse_hook(event);
 }
 
@@ -466,14 +450,12 @@ static void on_pointer_motion(void *data, struct wl_pointer *pointer,
                               wl_fixed_t surface_y) {
   auto w = reinterpret_cast<struct window *>(data);
 
-  size_t x = static_cast<size_t>(wl_fixed_to_double(surface_x));
-  size_t y = static_cast<size_t>(wl_fixed_to_double(surface_y));
-  last_known_positions[pointer] = std::array<size_t, 2>{x, y};
+  auto pos =
+      vec2d(wl_fixed_to_double(surface_x), wl_fixed_to_double(surface_y));
+  last_known_positions[pointer] = pos;
+  auto pos_abs = w->rectangle.pos() + pos;
 
-  size_t abs_x = w->rectangle.x + x;
-  size_t abs_y = w->rectangle.y + y;
-
-  mouse_move_event event{x, y, abs_x, abs_y};
+  mouse_move_event event{pos, pos_abs};
   llua_mouse_hook(event);
 }
 
@@ -482,14 +464,13 @@ static void on_pointer_button(void *data, struct wl_pointer *pointer,
                               std::uint32_t button, std::uint32_t state) {
   auto w = reinterpret_cast<struct window *>(data);
 
-  std::array<size_t, 2> last = last_known_positions[pointer];
-  size_t x = last[0];
-  size_t y = last[1];
-  size_t abs_x = w->rectangle.x + x;
-  size_t abs_y = w->rectangle.y + y;
+  auto pos = last_known_positions[pointer];
+  auto pos_abs = w->rectangle.pos() + pos;
 
   mouse_button_event event{
-      mouse_event_t::MOUSE_RELEASE,        x, y, abs_x, abs_y,
+      mouse_event_t::RELEASE,
+      pos,
+      pos_abs,
       static_cast<mouse_button_t>(button),
   };
 
@@ -498,7 +479,7 @@ static void on_pointer_button(void *data, struct wl_pointer *pointer,
       // pass; default is MOUSE_RELEASE
       break;
     case WL_POINTER_BUTTON_STATE_PRESSED:
-      event.type = mouse_event_t::MOUSE_PRESS;
+      event.type = mouse_event_t::PRESS;
       break;
     default:
       return;
@@ -512,24 +493,23 @@ void on_pointer_axis(void *data, struct wl_pointer *pointer, std::uint32_t time,
 
   auto w = reinterpret_cast<struct window *>(data);
 
-  std::array<size_t, 2> last = last_known_positions[pointer];
-  size_t x = last[0];
-  size_t y = last[1];
-  size_t abs_x = w->rectangle.x + x;
-  size_t abs_y = w->rectangle.y + y;
+  auto pos = last_known_positions[pointer];
+  auto pos_abs = w->rectangle.pos() + pos;
 
   mouse_scroll_event event{
-      x, y, abs_x, abs_y, scroll_direction_t::SCROLL_UP,
+      pos,
+      pos_abs,
+      scroll_direction_t::UP,
   };
 
   switch (static_cast<wl_pointer_axis>(axis)) {
     case WL_POINTER_AXIS_VERTICAL_SCROLL:
-      event.direction = value > 0 ? scroll_direction_t::SCROLL_DOWN
-                                  : scroll_direction_t::SCROLL_UP;
+      event.direction =
+          value > 0 ? scroll_direction_t::DOWN : scroll_direction_t::UP;
       break;
     case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
-      event.direction = value > 0 ? scroll_direction_t::SCROLL_RIGHT
-                                  : scroll_direction_t::SCROLL_LEFT;
+      event.direction =
+          value > 0 ? scroll_direction_t::RIGHT : scroll_direction_t::LEFT;
       break;
     default:
       return;
@@ -576,6 +556,12 @@ bool display_output_wayland::initialize() {
   wl_registry_add_listener(wl_globals.registry, &registry_listener, NULL);
 
   wl_display_roundtrip(global_display);
+  if (wl_globals.layer_shell == nullptr) {
+    // TODO: Implement OWN_WINDOW and XDG Shell support
+    CRIT_ERR(
+        "Compositor doesn't support wlr-layer-shell-unstable-v1. Can't run "
+        "conky.");
+  }
 
   struct wl_surface *surface =
       wl_compositor_create_surface(wl_globals.compositor);
@@ -671,25 +657,24 @@ bool display_output_wayland::main_loop_wait(double t) {
 
     /* resize window if it isn't right size */
     if ((fixed_size == 0) &&
-        (text_width + 2 * border_total != width ||
-         text_height + 2 * border_total != height || scale_changed)) {
+        (text_size.x() + 2 * border_total != width ||
+         text_size.y() + 2 * border_total != height || scale_changed)) {
       /* clamp text_width to configured maximum */
       if (maximum_width.get(*state)) {
         int mw = global_window->scale * maximum_width.get(*state);
-        if (text_width > mw && mw > 0) { text_width = mw; }
+        if (mw > 0) { text_size.set_x(std::min(mw, text_size.x())); }
       }
 
       /* pending scale will be applied by resizing the window */
       global_window->scale = global_window->pending_scale;
 
-      width = text_width + 2 * border_total;
-      height = text_height + 2 * border_total;
+      width = text_size.x() + 2 * border_total;
+      height = text_size.y() + 2 * border_total;
       window_resize(global_window, width, height); /* resize window */
 
       changed++;
       /* update lua window globals */
-      llua_update_window_table(text_start_x, text_start_y, text_width,
-                               text_height);
+      llua_update_window_table(conky::rect<int>(text_start, text_size));
     }
 
 /* move window if it isn't in right position */
@@ -702,48 +687,34 @@ bool display_output_wayland::main_loop_wait(double t) {
 
     /* update struts */
     if (changed != 0) {
-      int anchor = -1;
+      int anchor = 0;
 
       DBGP("%s", _(PACKAGE_NAME ": defining struts\n"));
       fflush(stderr);
 
-      switch (text_alignment.get(*state)) {
-        case TOP_LEFT:
-          anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP |
-                   ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT;
+      alignment text_align = text_alignment.get(*state);
+      switch (vertical_alignment(text_align)) {
+        case axis_align::START:
+          anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP;
           break;
-        case TOP_RIGHT:
-          anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP |
-                   ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
+        case axis_align::END:
+          anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
           break;
-        case TOP_MIDDLE: {
-          anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP;
+        default:
           break;
-        }
-        case BOTTOM_LEFT:
-          anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM |
-                   ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT;
-          break;
-        case BOTTOM_RIGHT:
-          anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM |
-                   ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
-          break;
-        case BOTTOM_MIDDLE: {
-          anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
-          break;
-        }
-        case MIDDLE_LEFT: {
-          anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT;
-          break;
-        }
-        case MIDDLE_RIGHT: {
-          anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
-          break;
-        }
-
-        case NONE:
-        case MIDDLE_MIDDLE: /* XXX What about these? */;
       }
+      switch (horizontal_alignment(text_align)) {
+        case axis_align::START:
+          anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT;
+          break;
+        case axis_align::END:
+          anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
+          break;
+        default:
+          break;
+      }
+      // middle anchor alignment is the default and requires no special
+      // handling.
 
       if (anchor != -1) {
         zwlr_layer_surface_v1_set_anchor(global_window->layer_surface, anchor);
@@ -837,8 +808,8 @@ int display_output_wayland::calc_text_width(const char *s) {
 }
 
 static void adjust_coords(int &x, int &y) {
-  x -= text_start_x;
-  y -= text_start_y;
+  x -= text_start.x();
+  y -= text_start.y();
   int border = get_border_total();
   x += border;
   y += border;
@@ -936,8 +907,7 @@ void display_output_wayland::move_win(int x, int y) {
   // window.y = y;
   // TODO
 }
-
-int display_output_wayland::dpi_scale(int value) { return value; }
+float display_output_wayland::get_dpi_scale() { return 1.0; }
 
 void display_output_wayland::end_draw_stuff() {
   window_commit_buffer(global_window);
@@ -1086,7 +1056,7 @@ static struct wl_shm_pool *make_shm_pool(struct wl_shm *shm, int size,
     return NULL;
   }
 
-  *data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  *data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
   if (*data == MAP_FAILED) {
     fprintf(stderr, "mmap failed: %m\n");
     close(fd);
@@ -1134,20 +1104,22 @@ static void shm_pool_destroy(struct shm_pool *pool) {
   delete pool;
 }
 
-static int stride_for_shm_surface(struct rectangle *rect, int scale) {
+static int stride_for_shm_surface(rect<size_t> *rect, int scale) {
   return cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32,
-                                       rect->width * scale);
+                                       rect->width() * scale);
 }
 
-static int data_length_for_shm_surface(struct rectangle *rect, int scale) {
+static int data_length_for_shm_surface(rect<size_t> *rect, int scale) {
   int stride;
 
   stride = stride_for_shm_surface(rect, scale);
-  return stride * rect->height * scale;
+  return stride * rect->height() * scale;
 }
 
-static cairo_surface_t *create_shm_surface_from_pool(
-    void *none, struct rectangle *rectangle, struct shm_pool *pool, int scale) {
+static cairo_surface_t *create_shm_surface_from_pool(void *none,
+                                                     rect<size_t> *rectangle,
+                                                     struct shm_pool *pool,
+                                                     int scale) {
   struct shm_surface_data *data;
   uint32_t format;
   cairo_surface_t *surface;
@@ -1170,18 +1142,18 @@ static cairo_surface_t *create_shm_surface_from_pool(
     return NULL;
   }
 
+  auto scaled = rectangle->size() * scale;
   surface = cairo_image_surface_create_for_data(
-      static_cast<unsigned char *>(map), cairo_format, rectangle->width * scale,
-      rectangle->height * scale, stride);
+      static_cast<unsigned char *>(map), cairo_format, scaled.x(), scaled.y(),
+      stride);
 
   cairo_surface_set_user_data(surface, &shm_surface_data_key, data,
                               shm_surface_data_destroy);
 
   format = WL_SHM_FORMAT_ARGB8888; /*or WL_SHM_FORMAT_RGB565*/
 
-  data->buffer =
-      wl_shm_pool_create_buffer(pool->pool, offset, rectangle->width * scale,
-                                rectangle->height * scale, stride, format);
+  data->buffer = wl_shm_pool_create_buffer(pool->pool, offset, scaled.x(),
+                                           scaled.y(), stride, format);
 
   return surface;
 }
@@ -1223,10 +1195,8 @@ struct window *window_create(struct wl_surface *surface, struct wl_shm *shm,
   struct window *window;
   window = new struct window;
 
-  window->rectangle.x = 0;
-  window->rectangle.y = 0;
-  window->rectangle.width = width;
-  window->rectangle.height = height;
+  window->rectangle.set_pos(vec2<size_t>::Zero());
+  window->rectangle.set_size(width, height);
   window->scale = 0;
   window->pending_scale = 1;
 
@@ -1265,8 +1235,7 @@ void window_destroy(struct window *window) {
 
 void window_resize(struct window *window, int width, int height) {
   window_free_buffer(window);
-  window->rectangle.width = width;
-  window->rectangle.height = height;
+  window->rectangle.set_size(width, height);
   window_allocate_buffer(window);
   window_layer_surface_set_size(window);
 }
@@ -1279,16 +1248,15 @@ void window_commit_buffer(struct window *window) {
                     get_buffer_from_cairo_surface(window->cairo_surface), 0, 0);
   /* repaint all the pixels in the surface, change size to only repaint changed
    * area*/
-  wl_surface_damage(window->surface, window->rectangle.x, window->rectangle.y,
-                    window->rectangle.width, window->rectangle.height);
+  wl_surface_damage(window->surface, window->rectangle.x(),
+                    window->rectangle.y(), window->rectangle.width(),
+                    window->rectangle.height());
   wl_surface_commit(window->surface);
 }
 
 void window_get_width_height(struct window *window, int *w, int *h) {
-  *w = window->rectangle.width;
-  *h = window->rectangle.height;
+  *w = window->rectangle.width();
+  *h = window->rectangle.height();
 }
-
-#endif /* BUILD_WAYLAND */
 
 }  // namespace conky

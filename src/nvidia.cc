@@ -9,7 +9,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2008 Markus Meissner
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -99,6 +99,8 @@
 #include "conky.h"
 #include "logging.h"
 #include "temphelper.h"
+
+// Current implementation uses X11 specific system utils
 #include "x11.h"
 
 #include <memory>
@@ -422,7 +424,7 @@ nvidia_display_setting nvidia_display;
 
 // Evaluate module parameters and prepare query
 int set_nvidia_query(struct text_object *obj, const char *arg,
-                     unsigned int special_type) {
+                     text_node_t special_type) {
   nvidia_s *nvs;
   int aid;
   int ilen;
@@ -451,15 +453,15 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
 
   // Extract arguments for nvidiabar, etc, and run set_nvidia_query
   switch (special_type) {
-    case BAR:
+    case text_node_t::BAR:
       arg = scan_bar(obj, arg, 100);
       break;
-    case GRAPH: {
+    case text_node_t::GRAPH: {
       auto [buf, skip] = scan_command(arg);
-      scan_graph(obj, arg + skip, 100);
+      scan_graph(obj, arg + skip, 100, FALSE);
       arg = buf;
     } break;
-    case GAUGE:
+    case text_node_t::GAUGE:
       arg = scan_gauge(obj, arg, 100);
       break;
     default:
@@ -483,7 +485,7 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
 
   // Save pointers to the arg and command strings for debugging and printing
   nvs->arg = translate_module_argument[aid];
-  nvs->command = translate_nvidia_special_type[special_type];
+  nvs->command = translate_nvidia_special_type[*special_type];
 
   // Evaluate parameter
   switch (aid) {
@@ -827,11 +829,12 @@ void cache_nvidia_string_value_update(nvidia_c_string *ac_string, char *token,
              ac_string[gid].memTransferRatemax < 0) {
     ac_string[gid].memTransferRatemax = *value;
 
-  } else if (strcmp(token, (char *)"perf") == 0 &&
-             ac_string[gid].memTransferRatemax < 0) {
-    if (search == SEARCH_MIN) {
+  } else if (strcmp(token, (char *)"perf") == 0) {
+    if (search == SEARCH_MIN &&
+        ac_string[gid].perfmin < 0) {
       ac_string[gid].perfmin = *value;
-    } else if (search == SEARCH_MAX) {
+    } else if (search == SEARCH_MAX &&
+               ac_string[gid].perfmax < 0) {
       ac_string[gid].perfmax = *value;
     }
   }
@@ -1162,7 +1165,7 @@ double get_nvidia_barval(struct text_object *obj) {
         temp2 = get_nvidia_string_value(nvs->target, ATTR_PERFMODES_STRING,
                                         (char *)"memTransferRatemax",
                                         SEARCH_MAX, nvs->target_id, nvs->arg);
-        if (temp2 > temp1) temp1 = temp2;  // extra safe here
+        if (temp1 > temp2) temp1 = temp2;  // extra safe here
         value = ((float)temp1 * 100 / (float)temp2) + 0.5;
         break;
       case ATTR_IMAGE_QUALITY:  // imagequality
