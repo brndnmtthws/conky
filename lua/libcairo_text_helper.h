@@ -323,7 +323,9 @@ void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, const char 
 
   cairo_set_font_face(cr, font_data->cairo_ft_face);
   cairo_set_font_size(cr, font_data->font_size);
-  cairo_show_glyphs(cr, cairo_glyphs, glyph_count);
+  // Use glyph path and fill_preserve so its possible to add borders etc from lua after
+  cairo_glyph_path(cr, cairo_glyphs, glyph_count);
+  cairo_fill_preserve(cr);
 
   free(cairo_glyphs);
   hb_buffer_destroy(buf);
