@@ -36,6 +36,8 @@
 #include "display-output.hh"
 #include "lua-config.hh"
 
+#include <dirent.h>
+
 #ifdef BUILD_X11
 #include "x11.h"
 #endif /* BUILD_X11 */
@@ -273,24 +275,41 @@ static void print_help(const char *prog_name) {
          prog_name);
 }
 
+// NOTE: Only works on systems where there is a /proc/[pid]/stat file.
 static bool is_conky_already_running() {
-  char line[512];
+  DIR *dir;
+  struct dirent *ent;
+  char buf[512];
   int instances = 0;
 
-  FILE *fp = popen("ps xo comm", "r");
-  if (!fp) {
-    NORM_ERR("unable to open ps");
+  if (!(dir = opendir("/proc"))) {
+    NORM_ERR("can't open /proc: %s\n", strerror(errno));
     return false;
   }
 
-  while (fgets(line, sizeof(line), fp)) {
-    if (!strncmp(line, "conky\n", 6)) {
-      instances++;
+  while ((ent = readdir(dir)) != NULL) {
+    char *endptr = ent->d_name;
+    long lpid = strtol(ent->d_name, &endptr, 10);
+    if (*endptr != '\0') {
+      continue;
     }
+
+    snprintf(buf, sizeof(buf), "/proc/%ld/stat", lpid);
+    FILE *fp = fopen(buf, "r");
+    if (!fp) {
+      continue;
+    }
+
+    if (fgets(buf, sizeof(buf), fp) != NULL) {
+      char *conky = strstr(buf, "(conky)");
+      if (conky) {
+        instances++;
+      }
+    }
+    fclose(fp);
   }
 
-  pclose(fp);
-
+  closedir(dir);
   return instances > 1;
 }
 
