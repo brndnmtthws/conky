@@ -20,6 +20,7 @@ set(test_srcs ${test_srcs} test-fs.cc)
 set(test_srcs ${test_srcs} test-gradient.cc)
 set(test_srcs ${test_srcs} test-graph.cc)
 set(test_srcs ${test_srcs} test-colours.cc)
+set(test_srcs ${test_srcs} test-algebra.cc)
 
 add_executable(test-conky test-common.cc ${test_srcs})
 target_link_libraries(test-conky conky_core)
@@ -27,29 +28,29 @@ catch_discover_tests(test-conky)
 
 if(CODE_COVERAGE)
   set(COVERAGE_LCOV_EXCLUDES
-      "*/include/c++/v1/*"
-      "/usr/include/*"
-      "/usr/lib/*"
-      "/usr/local/Cellar/*"
-      "/usr/local/include/*"
-      "/usr/local/lib/*"
-      "/usr/include/libkern/i386/*"
-      "/usr/include/sys/_types/*"
-      "/usr/local/opt/gettext/include/*"
-      "${CMAKE_CURRENT_SOURCE_DIR}/*"
-      "${CMAKE_CURRENT_SOURCE_DIR}/catch2/*"
-      "${CMAKE_SOURCE_DIR}/3rdparty/*")
+    "*/include/c++/v1/*"
+    "/usr/include/*"
+    "/usr/lib/*"
+    "/usr/local/Cellar/*"
+    "/usr/local/include/*"
+    "/usr/local/lib/*"
+    "/usr/include/libkern/i386/*"
+    "/usr/include/sys/_types/*"
+    "/usr/local/opt/gettext/include/*"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*"
+    "${CMAKE_CURRENT_SOURCE_DIR}/catch2/*"
+    "${CMAKE_SOURCE_DIR}/3rdparty/*")
 
   setup_target_for_coverage_lcov_html(NAME
-                                      test-conky-coverage-html
-                                      EXECUTABLE
-                                      test-conky
-                                      DEPENDENCIES
-                                      test-conky)
+    test-conky-coverage-html
+    EXECUTABLE
+    test-conky
+    DEPENDENCIES
+    test-conky)
   setup_target_for_coverage_lcov_txt(NAME
-                                     test-conky-coverage-txt
-                                     EXECUTABLE
-                                     test-conky
-                                     DEPENDENCIES
-                                     test-conky)
+    test-conky-coverage-txt
+    EXECUTABLE
+    test-conky
+    DEPENDENCIES
+    test-conky)
 endif()

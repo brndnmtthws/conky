@@ -176,6 +176,7 @@ long arg_to_long(const char *arg) {
   }
   return l;
 }
+
 int compare(const char *expr) {
   char *expr_dup;
   int idx, mtype;

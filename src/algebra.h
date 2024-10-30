@@ -47,5 +47,7 @@ enum arg_type {
 
 int compare(const char *);
 int check_if_match(struct text_object *);
+int get_match_type(const char *expr);
+int find_match_op(const char *expr);
 
 #endif /* _ALGEBRA_H */
