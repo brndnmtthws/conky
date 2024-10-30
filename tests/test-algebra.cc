@@ -57,23 +57,23 @@ TEST_CASE("find_match_op identifies operators correctly", "[find_match_op]") {
 }
 
 TEST_CASE("GetMatchTypeTest - More test cases") {
-  REQUIRE(get_match_type("\"a!b\" == \"ab\"") == -1);     // "a!b" == "ab"
-  REQUIRE(get_match_type("\"a!/b\" == \"a!/b\"") == -1);  // "a!/b" == "a!/b"
+  REQUIRE(get_match_type("\"a!b\" == \"ab\"") == OP_EQ);     // "a!b" == "ab"
+  REQUIRE(get_match_type("\"a!/b\" == \"a!/b\"") == OP_EQ);  // "a!/b" == "a!/b"
   REQUIRE(get_match_type("\"a!=/a==b\" == \"a!=/a==b\"") ==
-          6);  // "a!=/a==b" == "a!=/a==b"
+          OP_EQ);  // "a!=/a==b" == "a!=/a==b"
   REQUIRE(get_match_type("\"a!=/b==b\" == \"a!==/a==b\"") ==
-          6);  // "a!=/b==b" == "a!==/a==b"
+          OP_EQ);  // "a!=/b==b" == "a!==/a==b"
   REQUIRE(get_match_type("\"a!======b\" == \"!==/==\"") ==
-          6);  // "a!======b" == "!==/=="
+          OP_EQ);  // "a!======b" == "!==/=="
   REQUIRE(get_match_type("\" !=<>==\" == \" !=<>==\"") ==
-          6);  // " !=<>==" == " !=<>=="
+          OP_EQ);  // " !=<>==" == " !=<>=="
   REQUIRE(get_match_type("\"a!=><==\" < \"b!=><==\"") ==
-          6);  // "a!=><==" < "b!=><=="
+          OP_LT);  // "a!=><==" < "b!=><=="
   REQUIRE(get_match_type("\"!=<>==\" == \"!=<>==\"") ==
-          6);                                       // "!=<>==" == "!=<>=="
-  REQUIRE(get_match_type("\"=\" == \"=\"") == -1);  // "=" == "="
+          OP_EQ);                                      // "!=<>==" == "!=<>=="
+  REQUIRE(get_match_type("\"=\" == \"=\"") == OP_EQ);  // "=" == "="
   REQUIRE(get_match_type("\"FRITZ!Box 7520 HI\" == \"off/any\"") ==
-          -1);  // "FRITZ!Box 7520 HI" == "off/any"
+          OP_EQ);  // "FRITZ!Box 7520 HI" == "off/any"
 }
 
 TEST_CASE("CompareTest - ValidOperators") {
@@ -115,19 +115,19 @@ TEST_CASE("CompareTest - NoOperators") {
 }
 
 TEST_CASE("CompareTest - More test cases") {
-  REQUIRE(compare("\"a!b\" == \"ab\"") == -2);     // "a!b" == "ab"
-  REQUIRE(compare("\"a!/b\" == \"a!/b\"") == -2);  // "a!/b" == "a!/b"
+  REQUIRE(compare("\"a!b\" == \"ab\"") == 0);     // "a!b" == "ab"
+  REQUIRE(compare("\"a!/b\" == \"a!/b\"") == 1);  // "a!/b" == "a!/b"
   REQUIRE(compare("\"a!=/a==b\" == \"a!=/a==b\"") ==
-          -2);  // "a!=/a==b" == "a!=/a==b"
+          1);  // "a!=/a==b" == "a!=/a==b"
   REQUIRE(compare("\"a!=/b==b\" == \"a!==/a==b\"") ==
-          -2);  // "a!=/b==b" == "a!==/a==b"
+          0);  // "a!=/b==b" == "a!==/a==b"
   REQUIRE(compare("\"a!======b\" == \"!==/==\"") ==
-          -2);  // "a!======b" == "!==/=="
+          0);  // "a!======b" == "!==/=="
   REQUIRE(compare("\" !=<>==\" == \" !=<>==\"") ==
-          -2);  // " !=<>==" == " !=<>=="
-  REQUIRE(compare("\"a!=><==\" < \"b!=><==\"") == -2);  // "a!=><==" < "b!=><=="
-  REQUIRE(compare("\"!=<>==\" == \"!=<>==\"") == -2);   // "!=<>==" == "!=<>=="
-  REQUIRE(compare("\"=\" == \"=\"") == -2);             // "=" == "="
+          1);                                          // " !=<>==" == " !=<>=="
+  REQUIRE(compare("\"a!=><==\" < \"b!=><==\"") == 1);  // "a!=><==" < "b!=><=="
+  REQUIRE(compare("\"!=<>==\" == \"!=<>==\"") == 1);   // "!=<>==" == "!=<>=="
+  REQUIRE(compare("\"=\" == \"=\"") == 1);             // "=" == "="
   REQUIRE(compare("\"FRITZ!Box 7520 HI\" == \"off/any\"") ==
-          -2);  // "FRITZ!Box 7520 HI" == "off/any"
+          0);  // "FRITZ!Box 7520 HI" == "off/any"
 }
