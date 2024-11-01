@@ -275,6 +275,7 @@ static void print_help(const char *prog_name) {
          prog_name);
 }
 
+#if defined(__linux__)
 // NOTE: Only works on systems where there is a /proc/[pid]/stat file.
 static bool is_conky_already_running() {
   DIR *dir;
@@ -312,6 +313,7 @@ static bool is_conky_already_running() {
   closedir(dir);
   return instances > 1;
 }
+#endif /* Linux */
 
 inline void reset_optind() {
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
@@ -392,19 +394,22 @@ int main(int argc, char **argv) {
         window.window = strtol(optarg, nullptr, 0);
         break;
 #endif /* BUILD_X11 */
+#if defined(__linux__)
       case 'U':
         unique_process = true;
         break;
-
+#endif /* Linux */
       case '?':
         return EXIT_FAILURE;
     }
   }
 
+#if defined(__linux__)
   if (unique_process && is_conky_already_running()) {
     NORM_ERR("already running");
     return 0;
   }
+#endif /* Linux */
 
   try {
     set_current_config();
