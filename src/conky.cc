@@ -2106,7 +2106,10 @@ void set_current_config() {
 
 /* : means that character before that takes an argument */
 const char *getopt_string =
-    "vVqdDSs:t:u:i:hc:p:U"
+    "vVqdDSs:t:u:i:hc:p:"
+#if defined(__linux__)
+    "U"
+#endif
 #ifdef BUILD_X11
     "x:y:w:a:X:m:f:"
 #ifdef OWN_WINDOW
@@ -2136,8 +2139,12 @@ const struct option longopts[] = {
     {"double-buffer", 0, nullptr, 'b'}, {"window-id", 1, nullptr, 'w'},
 #endif /* BUILD_X11 */
     {"text", 1, nullptr, 't'},          {"interval", 1, nullptr, 'u'},
-    {"pause", 1, nullptr, 'p'},         {"unique", 0, nullptr, 'U'},
-    {nullptr, 0, nullptr, 0}};
+    {"pause", 1, nullptr, 'p'},
+#if defined(__linux__)
+    {"unique", 0, nullptr, 'U'},
+#endif /* Linux */
+    {nullptr, 0, nullptr, 0}
+};
 
 void setup_inotify() {
 #ifdef HAVE_SYS_INOTIFY_H
