@@ -3147,3 +3147,45 @@ void get_top_info(void) {
   calc_io_each(); /* percentage of I/O for each task */
 #endif            /* BUILD_IOSTATS */
 }
+
+/******************************************
+ * Check if more than one conky process   *
+ * is running                             *
+ ******************************************/
+
+bool is_conky_already_running(void) {
+  DIR *dir;
+  struct dirent *ent;
+  char buf[512];
+  int instances = 0;
+
+  if (!(dir = opendir("/proc"))) {
+    NORM_ERR("can't open /proc: %s\n", strerror(errno));
+    return false;
+  }
+
+  while ((ent = readdir(dir)) != NULL) {
+    char *endptr = ent->d_name;
+    long lpid = strtol(ent->d_name, &endptr, 10);
+    if (*endptr != '\0') {
+      continue;
+    }
+
+    snprintf(buf, sizeof(buf), "/proc/%ld/stat", lpid);
+    FILE *fp = fopen(buf, "r");
+    if (!fp) {
+      continue;
+    }
+
+    if (fgets(buf, sizeof(buf), fp) != NULL) {
+      char *conky = strstr(buf, "(conky)");
+      if (conky) {
+        instances++;
+      }
+    }
+    fclose(fp);
+  }
+
+  closedir(dir);
+  return instances > 1;
+}
