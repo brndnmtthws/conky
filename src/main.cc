@@ -36,8 +36,6 @@
 #include "display-output.hh"
 #include "lua-config.hh"
 
-#include <dirent.h>
-
 #ifdef BUILD_X11
 #include "x11.h"
 #endif /* BUILD_X11 */
@@ -45,6 +43,10 @@
 #ifdef BUILD_CURL
 #include "ccurl_thread.h"
 #endif /* BUILD_CURL */
+
+#if defined(__linux__)
+#include "linux.h"
+#endif /* Linux */
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 #include "freebsd.h"
@@ -271,49 +273,11 @@ static void print_help(const char *prog_name) {
          " (and quit)\n"
          "   -p, --pause=SECS          pause for SECS seconds at startup "
          "before doing anything\n"
-         "   -U, --unique              only one conky process can be created\n",
-         prog_name);
-}
-
 #if defined(__linux__)
-// NOTE: Only works on systems where there is a /proc/[pid]/stat file.
-static bool is_conky_already_running() {
-  DIR *dir;
-  struct dirent *ent;
-  char buf[512];
-  int instances = 0;
-
-  if (!(dir = opendir("/proc"))) {
-    NORM_ERR("can't open /proc: %s\n", strerror(errno));
-    return false;
-  }
-
-  while ((ent = readdir(dir)) != NULL) {
-    char *endptr = ent->d_name;
-    long lpid = strtol(ent->d_name, &endptr, 10);
-    if (*endptr != '\0') {
-      continue;
-    }
-
-    snprintf(buf, sizeof(buf), "/proc/%ld/stat", lpid);
-    FILE *fp = fopen(buf, "r");
-    if (!fp) {
-      continue;
-    }
-
-    if (fgets(buf, sizeof(buf), fp) != NULL) {
-      char *conky = strstr(buf, "(conky)");
-      if (conky) {
-        instances++;
-      }
-    }
-    fclose(fp);
-  }
-
-  closedir(dir);
-  return instances > 1;
-}
+         "   -U, --unique              only one conky process can be created\n"
 #endif /* Linux */
+         , prog_name);
+}
 
 inline void reset_optind() {
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
