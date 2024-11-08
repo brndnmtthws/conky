@@ -31,6 +31,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cstdlib>
 #include "macros.h"
 
+// PATCH(Caellian): Fix OpenBSD build
+#ifdef __unix__
+#include <cmath>
+#endif
+
 namespace Vc_VERSIONED_NAMESPACE
 {
 // copysign {{{1
