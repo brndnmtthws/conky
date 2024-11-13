@@ -2107,9 +2107,9 @@ void set_current_config() {
 /* : means that character before that takes an argument */
 const char *getopt_string =
     "vVqdDSs:t:u:i:hc:p:"
-#if defined(__linux__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
     "U"
-#endif
+#endif /* Linux || FreeBSD */
 #ifdef BUILD_X11
     "x:y:w:a:X:m:f:"
 #ifdef OWN_WINDOW
@@ -2140,9 +2140,9 @@ const struct option longopts[] = {
 #endif /* BUILD_X11 */
     {"text", 1, nullptr, 't'},          {"interval", 1, nullptr, 'u'},
     {"pause", 1, nullptr, 'p'},
-#if defined(__linux__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
     {"unique", 0, nullptr, 'U'},
-#endif /* Linux */
+#endif /* Linux || FreeBSD */
     {nullptr, 0, nullptr, 0}
 };
 

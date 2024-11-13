@@ -46,6 +46,7 @@
 #include <devstat.h>
 #include <ifaddrs.h>
 #include <limits.h>
+#include <paths.h>
 #include <unistd.h>
 
 #include <dev/acpica/acpiio.h>
@@ -777,4 +778,39 @@ void print_sysctlbyname(struct text_object *obj, char *p,
   } else {
     snprintf(p, p_max_size, "%lu", (unsigned long)val[0]);
   }
+}
+
+/******************************************
+ * Check if more than one conky process   *
+ * is running                             *
+ ******************************************/
+
+bool is_conky_already_running(void) {
+  kvm_t *kd;
+  struct kinfo_proc *kp;
+  char errbuf[_POSIX2_LINE_MAX];
+  int entries = -1;
+  int instances = 0;
+
+  kd = kvm_openfiles(NULL, _PATH_DEVNULL, NULL, O_RDONLY, errbuf);
+  if (kd == NULL) {
+    NORM_ERR("%s\n", errbuf);
+    return false;
+  }
+
+  kp = kvm_getprocs(kd, KERN_PROC_ALL, 0, &entries);
+  if ((kp == NULL && errno != ESRCH) || (kp != NULL && entries < 0)) {
+    NORM_ERR("%s\n", kvm_geterr(kd));
+    goto cleanup;
+  }
+
+  for (int i = 0; i < entries && instances < 2; ++i) {
+    if (!strcmp("conky", kp[i].ki_comm)) {
+        ++instances;
+    }
+  }
+
+cleanup:
+  kvm_close(kd);
+  return instances > 1;
 }
