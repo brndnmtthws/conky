@@ -52,6 +52,10 @@
 #include "freebsd.h"
 #endif /* FreeBSD */
 
+#if defined(__HAIKU__)
+#include "haiku.h"
+#endif /* Haiku */
+
 #ifdef BUILD_BUILTIN_CONFIG
 #include "defconfig.h"
 
@@ -273,9 +277,10 @@ static void print_help(const char *prog_name) {
          " (and quit)\n"
          "   -p, --pause=SECS          pause for SECS seconds at startup "
          "before doing anything\n"
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
+    defined(__HAIKU__)
          "   -U, --unique              only one conky process can be created\n"
-#endif /* Linux || FreeBSD */
+#endif /* Linux || FreeBSD || Haiku */
          , prog_name);
 }
 
@@ -358,22 +363,24 @@ int main(int argc, char **argv) {
         window.window = strtol(optarg, nullptr, 0);
         break;
 #endif /* BUILD_X11 */
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
+    defined(__HAIKU__)
       case 'U':
         unique_process = true;
         break;
-#endif /* Linux || FreeBSD */
+#endif /* Linux || FreeBSD || Haiku */
       case '?':
         return EXIT_FAILURE;
     }
   }
 
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
+    defined(__HAIKU__)
   if (unique_process && is_conky_already_running()) {
     NORM_ERR("already running");
     return 0;
   }
-#endif /* Linux || FreeBSD */
+#endif /* Linux || FreeBSD || Haiku */
 
   try {
     set_current_config();
