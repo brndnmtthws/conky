@@ -1,0 +1,141 @@
+name: Build and test on OpenBSD
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - web/**
+      - doc/**
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - web/**
+      - doc/**
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        x11: [ON, OFF]
+        wayland: [OFF] # support not complete
+        os:
+          - name: openbsd
+            architecture: x86-64
+            version: 7.6
+        compiler:
+          - clang
+          - gcc
+    runs-on: ubuntu-latest # using VM for actual build
+    steps:
+      - name: Configure dependencies
+        run: |
+          require_pkg()
+          {
+            echo 'PKG_LIST="$PKG_LIST $@"' >> $GITHUB_ENV
+          }
+          
+          require_pkg audacious
+          #? require_pkg cmake
+          #? require_pkg gawk
+          #? require_pkg gperf
+          #? require_pkg lcov
+          require_pkg ossaudio
+          #? require_pkg libcairo2-dev
+          #? require_pkg libpango1.0-dev
+          require_pkg curl
+          require_pkg glib-2.0
+          #? require_pkg libical-dev
+          #? require_pkg libimlib2-dev
+          #? require_pkg libircclient-dev
+          require_pkg nghttp2 nghttp3 ngtcp2 ngtcp2_crypto_quictls
+          #? require_pkg liblua5.3-dev
+          #? require_pkg libmicrohttpd-dev
+          #? require_pkg libmysqlclient-dev
+          #? require_pkg libpulse-dev
+          #? require_pkg librsvg2-dev
+          #? require_pkg libsystemd-dev
+          require_pkg X11-xcb
+          require_pkg xcb-shm
+          #? require_pkg libxdamage-dev
+          #? require_pkg libxext-dev
+          #? require_pkg libxft-dev
+          # require_pkg xinerama       # (default)
+          require_pkg xml2             # (?)
+          require_pkg xmms2
+          # require_pkg xnvctrl          (?)
+          # require_pkg ncurses          (default)
+          require_pkg ninja
+
+      - name: Use clang and libc++
+        if: matrix.compiler == 'clang'
+        run: |
+          echo 'PKG_LIST="$PKG_LIST clang"' >> $GITHUB_ENV
+          echo 'CONTAINER_ENV="$CONTAINER_ENV CXX=clang++"' >> $GITHUB_ENV
+          echo 'CXX=clang++' >> $GITHUB_ENV
+          echo 'CONTAINER_ENV="$CONTAINER_ENV CC=clang"' >> $GITHUB_ENV
+          echo 'CC=clang' >> $GITHUB_ENV
+      - name: Use gcc
+        if: matrix.compiler == 'gcc'
+        run: |
+          echo 'PKG_LIST="$PKG_LIST gcc"' >> $GITHUB_ENV
+          echo 'CONTAINER_ENV="$CONTAINER_ENV CXX=eg++"' >> $GITHUB_ENV
+          echo 'CXX=eg++' >> $GITHUB_ENV
+          echo 'CONTAINER_ENV="$CONTAINER_ENV CC=egcc"' >> $GITHUB_ENV
+          echo 'CC=egcc' >> $GITHUB_ENV
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure with CMake
+        run: |
+          set -x # show the commands we're running
+
+          set_option()
+          {
+            echo 'CMAKE_OPTIONS="$CMAKE_OPTIONS -D$1=$2"' >> $GITHUB_ENV
+          }
+          
+          set_option BUILD_AUDACIOUS ON
+          set_option BUILD_HTTP ON
+          set_option BUILD_ICAL ON
+          set_option BUILD_ICONV ON
+          set_option BUILD_IRC ON
+          set_option BUILD_IRC ON
+          set_option BUILD_JOURNAL ON
+          set_option BUILD_LUA_CAIRO ON
+          set_option BUILD_LUA_CAIRO_XLIB ON
+          set_option BUILD_LUA_IMLIB2 ON
+          set_option BUILD_LUA_RSVG ${RSVG_ENABLED}
+          set_option BUILD_MYSQL ON
+          set_option BUILD_NVIDIA ON
+          set_option BUILD_PULSEAUDIO ON
+          set_option BUILD_CURL ON
+          set_option BUILD_RSS ON
+          set_option BUILD_TESTS ON
+          set_option BUILD_WLAN ON
+          set_option BUILD_WAYLAND ${{ matrix.wayland }}
+          set_option BUILD_X11 ${{ matrix.x11 }}
+          set_option BUILD_XMMS2 ON
+          set_option CMAKE_C_COMPILER $CC
+          set_option CMAKE_CXX_COMPILER $CXX
+          set_option MAINTAINER_MODE ON
+    
+      - name: Compile & Test
+        uses: cross-platform-actions/action@master
+        with:
+          environment_variables: ${{env.CONTAINER_ENV}}
+          operating_system: ${{ matrix.os.name }} 
+          architecture: ${{ matrix.os.architecture }}
+          version: ${{ matrix.os.version }}
+          shell: bash
+          run: |
+            pkg_add ${{env.PKG_LIST}}
+            set -x
+            mkdir build
+            cd build
+            cmake .. -G Ninja ${{env.CMAKE_OPTIONS}}
+            cmake --build
+            ctest
