@@ -49,6 +49,8 @@
 
 #if defined(__FreeBSD__)
 #include "freebsd.h"
+#elif defined(__OpenBSD__)
+#include "openbsd.h"
 #elif defined(__DragonFly__)
 #include "dragonfly.h"
 #elif defined(__HAIKU__)

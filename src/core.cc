@@ -433,7 +433,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_acpiacadapter;
   obj->callbacks.free = &gen_free_opaque;
 #endif /* !__OpenBSD__ */
-  END OBJ(freq, nullptr) get_cpu_count();
+  OBJ(freq, nullptr) get_cpu_count();
   if ((arg == nullptr) || strlen(arg) >= 3 ||
       strtol(&arg[0], nullptr, 10) == 0 ||
       static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) >

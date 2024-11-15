@@ -27,12 +27,17 @@
  *
  */
 #include <fcntl.h>
-#include <machine/apm_bios.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include "config.h"
 #include "conky.h"
 #include "text_object.h"
+
+#if !defined(__OpenBSD__)
+#include <machine/apm_bios.h>
+#else
+#include <i386/apmvar.h>
+#endif
 
 #define APMDEV "/dev/apm"
 #define APM_UNKNOWN 255

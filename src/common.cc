@@ -38,7 +38,6 @@
 #include <cerrno>
 #include <ctime>
 #include <vector>
-#include <wordexp.h>
 #include "config.h"
 #include "conky.h"
 #include "core.h"
@@ -63,6 +62,10 @@
 #elif defined(__APPLE__) && defined(__MACH__)
 #include "darwin.h"  // strings.h
 #endif
+
+#if !defined(__HAIKU__) && !defined(__OpenBSD__)
+#include <wordexp.h>
+#endif /* !Haiku && !OpenBSD */
 
 #include "update-cb.hh"
 
@@ -133,6 +136,7 @@ double get_time() {
 /* Converts '~/...' paths to '/home/blah/...'.  It's similar to
  * variable_substitute, works for any enviroment variable */
 std::string to_real_path(const std::string &source) {
+#if !defined(__HAIKU__) && !defined(__OpenBSD__)
     wordexp_t p;
     char **w;
     int i;
@@ -144,6 +148,10 @@ std::string to_real_path(const std::string &source) {
     const char *resolved_path = strdup(w[0]);
     wordfree(&p);
     return std::string(resolved_path);
+#else /* !Haiku && !OpenBSD */
+    // TODO(gmb): Implement a proper replacement of wordexp().
+    return source;
+#endif /* !Haiku && !OpenBSD */
 }
 
 int open_fifo(const char *file, int *reported) {
