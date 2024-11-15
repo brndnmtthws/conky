@@ -25,6 +25,8 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
+#include <filesystem>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -60,7 +62,7 @@ double get_time(void);
 
 /* Converts '~/...' paths to '/home/blah/...'.  It's similar to
  * variable_substitute, works for any enviroment variable */
-std::string to_real_path(const std::string &source);
+std::filesystem::path to_real_path(const std::filesystem::path &source);
 FILE *open_file(const char *file, int *reported);
 int open_fifo(const char *file, int *reported);
 std::string variable_substitute(std::string s);

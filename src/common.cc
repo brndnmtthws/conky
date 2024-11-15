@@ -27,6 +27,7 @@
  *
  */
 
+#include "common.h"
 #include <fcntl.h>
 #include <net/if.h>
 #include <netinet/in.h>
@@ -37,7 +38,9 @@
 #include <cctype>
 #include <cerrno>
 #include <ctime>
+#include <string>
 #include <vector>
+
 #include "config.h"
 #include "conky.h"
 #include "core.h"
@@ -62,10 +65,6 @@
 #elif defined(__APPLE__) && defined(__MACH__)
 #include "darwin.h"  // strings.h
 #endif
-
-#if !defined(__HAIKU__) && !defined(__OpenBSD__)
-#include <wordexp.h>
-#endif /* !Haiku && !OpenBSD */
 
 #include "update-cb.hh"
 
@@ -133,25 +132,21 @@ double get_time() {
   return tv.tv_sec + (tv.tv_nsec * 1e-9);
 }
 
-/* Converts '~/...' paths to '/home/blah/...'.  It's similar to
- * variable_substitute, works for any enviroment variable */
-std::string to_real_path(const std::string &source) {
-#if !defined(__HAIKU__) && !defined(__OpenBSD__)
-    wordexp_t p;
-    char **w;
-    int i;
-    const char *csource = source.c_str();
-    if (wordexp(csource, &p, 0) != 0) {
-        return nullptr;
-    }
-    w = p.we_wordv;
-    const char *resolved_path = strdup(w[0]);
-    wordfree(&p);
-    return std::string(resolved_path);
-#else /* !Haiku && !OpenBSD */
-    // TODO(gmb): Implement a proper replacement of wordexp().
+/// @brief Handles environment variable expansion in paths and canonicalization.
+///
+/// Examples:
+/// - `~/conky` -> `/home/conky_user/conky`
+/// - `$HOME/conky` -> `/home/conky_user/conky`
+/// - `$HOME/a/b/../c/../../conky` -> `/home/conky_user/conky`
+std::filesystem::path to_real_path(const std::filesystem::path &source) {
+  try {
+    std::string expanded = variable_substitute(source.string());
+    return std::filesystem::canonical(expanded);
+  } catch (const std::filesystem::filesystem_error &e) {
+    // file not found or permission issues
+    NORM_ERR("can't canonicalize path: %s", source.c_str());
     return source;
-#endif /* !Haiku && !OpenBSD */
+  }
 }
 
 int open_fifo(const char *file, int *reported) {
