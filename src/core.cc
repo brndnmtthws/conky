@@ -432,6 +432,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   }
   obj->callbacks.print = &print_acpiacadapter;
   obj->callbacks.free = &gen_free_opaque;
+  END
 #endif /* !__OpenBSD__ */
   OBJ(freq, nullptr) get_cpu_count();
   if ((arg == nullptr) || strlen(arg) >= 3 ||
