@@ -88,7 +88,7 @@ size_t len = 0;
 int init_kvm = 0;
 int init_sensors = 0;
 
-static int kvm_init(void) {
+static int kvm_init() {
   if (init_kvm) { return 1; }
 
   kd = kvm_open(nullptr, NULL, NULL, KVM_NO_FILES, NULL);
@@ -140,7 +140,7 @@ int check_mount(struct text_object *obj) {
   return 0;
 }
 
-int update_uptime(void) {
+int update_uptime() {
   int mib[2] = {CTL_KERN, KERN_BOOTTIME};
   struct timeval boottime;
   time_t now;
@@ -158,7 +158,7 @@ int update_uptime(void) {
   return 0;
 }
 
-int update_meminfo(void) {
+int update_meminfo() {
   static int mib[2] = {CTL_VM, VM_METER};
   struct vmtotal vmtotal;
   size_t size;
@@ -199,7 +199,7 @@ int update_meminfo(void) {
   return 0;
 }
 
-int update_net_stats(void) {
+int update_net_stats() {
   struct net_stat *ns;
   double delta;
   long long r, t, last_recv, last_trans;
@@ -265,7 +265,7 @@ int update_net_stats(void) {
   return 0;
 }
 
-int update_total_processes(void) {
+int update_total_processes() {
   int n_processes;
 
   kvm_init();
@@ -276,7 +276,7 @@ int update_total_processes(void) {
   return 0;
 }
 
-int update_running_processes(void) {
+int update_running_processes() {
   struct kinfo_proc *p;
   int n_processes;
   int i, cnt = 0;
@@ -312,7 +312,7 @@ int64_t *fresh = nullptr;
 int64_t oldtotal[8], oldused[8];
 #endif
 
-void get_cpu_count(void) {
+void get_cpu_count() {
   int cpu_count = 1; /* default to 1 cpu */
 #ifndef OLDCPU
   int mib[2] = {CTL_HW, HW_NCPU};
@@ -336,7 +336,7 @@ void get_cpu_count(void) {
 #endif
 }
 
-int update_cpu_usage(void) {
+int update_cpu_usage() {
 #ifdef OLDCPU
   int mib[2] = {CTL_KERN, KERN_CPTIME};
   long used, total;
@@ -423,7 +423,7 @@ int update_cpu_usage(void) {
 void free_cpu(struct text_object *) { /* no-op */
 }
 
-int update_load_average(void) {
+int update_load_average() {
   double v[3];
 
   getloadavg(v, 3);
@@ -448,7 +448,7 @@ static conky::simple_config_setting<int> sensor_device("sensor_device", 0,
                                                        false);
 
 /* read sensors from sysctl */
-int update_obsd_sensors(void) {
+int update_obsd_sensors() {
   int sensor_cnt, dev, numt, mib[5] = {CTL_HW, HW_SENSORS, 0, 0, 0};
   struct sensor sensor;
   struct sensordev sensordev;
@@ -654,9 +654,9 @@ cleanup:
 }
 #endif
 
-void clear_diskio_stats(void) {}
+void clear_diskio_stats() {}
 
-int update_diskio(void) { return 0; /* XXX: implement? hifi: not sure how */ }
+int update_diskio() { return 0; /* XXX: implement? hifi: not sure how */ }
 
 /* While topless is obviously better, top is also not bad. */
 
@@ -685,7 +685,7 @@ void get_top_info(void) {
 }
 
 /* empty stubs so conky links */
-void prepare_update(void) {}
+void prepare_update() {}
 
 int get_entropy_avail(unsigned int *val) { return 1; }
 
