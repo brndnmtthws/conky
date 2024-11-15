@@ -38,6 +38,7 @@
 #include <cctype>
 #include <cerrno>
 #include <ctime>
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -140,8 +141,20 @@ double get_time() {
 /// - `$HOME/a/b/../c/../../conky` -> `/home/conky_user/conky`
 std::filesystem::path to_real_path(const std::filesystem::path &source) {
   try {
-    std::string expanded = variable_substitute(source.string());
-    return std::filesystem::canonical(expanded);
+    std::string input;
+    if (source.string().compare(0, 1, "~") == 0) {
+      const char *home = std::getenv("HOME");
+      if (home) {
+        input = std::string(home) + source.string().substr(1);
+      } else {
+        input = source.string();  // Fallback if HOME is not set
+      }
+    } else {
+      input = source.string();
+    }
+    std::string expanded = variable_substitute(input);
+    std::filesystem::path absolute = std::filesystem::absolute(expanded);
+    return std::filesystem::weakly_canonical(absolute);
   } catch (const std::filesystem::filesystem_error &e) {
     // file not found or permission issues
     NORM_ERR("can't canonicalize path: %s", source.c_str());

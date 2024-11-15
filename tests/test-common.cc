@@ -65,7 +65,13 @@ std::string get_invalid_environment_variable_name() {
   return variable_name;
 }
 
-TEST_CASE("to_real_path becomes homedir", "[to_real_path]") {
+TEST_CASE("to_real_path simplifies complex paths", "[to_real_path]") {
+  REQUIRE(to_real_path("/a/b/c/../d/../../e") == "/a/e");
+}
+TEST_CASE("to_real_path resolves variables", "[to_real_path]") {
+  REQUIRE(to_real_path("$HOME/test") == std::string(getenv("HOME")) + "/test");
+}
+TEST_CASE("to_real_path resolves `~` symbol", "[to_real_path]") {
   REQUIRE(to_real_path("~/test") == std::string(getenv("HOME")) + "/test");
 }
 
