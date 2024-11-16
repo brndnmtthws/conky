@@ -654,8 +654,6 @@ cleanup:
 }
 #endif
 
-void clear_diskio_stats() {}
-
 int update_diskio() { return 0; /* XXX: implement? hifi: not sure how */ }
 
 /* While topless is obviously better, top is also not bad. */
