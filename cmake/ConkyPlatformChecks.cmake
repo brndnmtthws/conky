@@ -515,14 +515,6 @@ if(BUILD_LUA_CAIRO)
     set(luacairo_includes ${CAIROXLIB_INCLUDE_DIRS} ${luacairo_includes})
   endif(BUILD_LUA_CAIRO_XLIB)
 
-  # Required because X11 isn't in default linker search path on some platforms
-  # (OpenBSD), so absolute paths provided by X11_LIBRARIES must be used.
-  list(REMOVE_DUPLICATES luacairo_libs)
-  if("X11" IN_LIST luacairo_libs)
-    list(REMOVE_ITEM luacairo_libs "X11" "Xext")
-    set(luacairo_libs ${X11_LIBRARIES} ${luacairo_libs})
-  endif("X11" IN_LIST luacairo_libs)
-
   find_program(APP_PATCH patch)
 
   if(NOT APP_PATCH)
