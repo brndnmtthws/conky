@@ -33,10 +33,10 @@
 #include "conky.h"
 #include "text_object.h"
 
-#if !defined(__OpenBSD__)
-#include <machine/apm_bios.h>
+#if defined(__OpenBSD__)
+#include <machine/apmvar.h>
 #else
-#include <i386/apmvar.h>
+#include <machine/apm_bios.h>
 #endif
 
 #define APMDEV "/dev/apm"
