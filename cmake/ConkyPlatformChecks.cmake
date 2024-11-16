@@ -65,7 +65,7 @@ endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
 
 if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
   set(OS_FREEBSD true)
-  set(conky_libs ${conky_libs} -lkvm -ldevstat -lintl -linotify)
+  set(conky_libs ${conky_libs} -lkvm -ldevstat -linotify)
 
   if(BUILD_IRC)
     set(conky_libs ${conky_libs} -lssl -lcrypto)
@@ -83,6 +83,8 @@ endif(CMAKE_SYSTEM_NAME MATCHES "DragonFly")
 
 if(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
   set(OS_OPENBSD true)
+  link_directories("/usr/local/lib")
+  set(conky_libs ${conky_libs} -lkvm)
 else(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
   set(OS_OPENBSD false)
 endif(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
@@ -102,7 +104,7 @@ endif(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 
 if(CMAKE_SYSTEM_NAME MATCHES "Haiku")
   set(OS_HAIKU true)
-  set(conky_libs ${conky_libs} -lnetwork -lintl)
+  set(conky_libs ${conky_libs} -lnetwork)
 else(CMAKE_SYSTEM_NAME MATCHES "Haiku")
   set(OS_HAIKU false)
 endif(CMAKE_SYSTEM_NAME MATCHES "Haiku")
@@ -156,31 +158,21 @@ else(OS_LINUX)
   check_include_files("sys/soundcard.h" HAVE_SOME_SOUNDCARD_H)
 endif(OS_LINUX)
 
-if(BUILD_I18N AND OS_DRAGONFLY)
-  set(conky_libs ${conky_libs} -lintl)
-endif(BUILD_I18N AND OS_DRAGONFLY)
+if(BUILD_I18N)
+  include(FindIntl)
+  find_package(Intl)
 
-if(BUILD_I18N AND OS_DARWIN)
-  find_path(LIBINTL_H_N libintl.h
-    PATHS /usr/local/opt/gettext/include
-    /usr/include
-    /usr/local/include
-    /usr/local/opt/include)
+  if(NOT Intl_FOUND)
+    if(OS_DARWIN)
+      message(WARNING "Try running `brew install gettext` for I18N support")
+      # Should be present by default everywhere else
+    endif(OS_DARWIN)
+    message(FATAL_ERROR "Unable to find libintl")
+  endif(NOT Intl_FOUND)
 
-  if(LIBINTL_H_N)
-    include_directories(${LIBINTL_H_N})
-  else(LIBINTL_H_N)
-    message(FATAL_ERROR "Unable to find libintl.h (try `brew install gettext`)")
-  endif(LIBINTL_H_N)
-
-  find_library(INTL_LIB
-    NAMES intl
-    PATHS /usr/local/opt/gettext/lib
-    /usr/lib
-    /usr/local/lib
-    /usr/local/opt/lib)
-  set(conky_libs ${conky_libs} ${INTL_LIB})
-endif(BUILD_I18N AND OS_DARWIN)
+  include_directories(${Intl_INCLUDE_DIRS})
+  set(conky_libs ${conky_libs} ${Intl_LIBRARIES})
+endif(BUILD_I18N)
 
 if(BUILD_NCURSES AND OS_DARWIN)
   set(conky_libs ${conky_libs} -lncurses)
