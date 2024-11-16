@@ -682,6 +682,12 @@ void get_top_info(void) {
   }
 }
 
+void get_battery_short_status(char *buffer, unsigned int n, const char *bat) {
+  /* Not implemented */
+  (void)bat;
+  if (buffer && n > 0) memset(buffer, 0, n);
+}
+
 /* empty stubs so conky links */
 void prepare_update() {}
 
