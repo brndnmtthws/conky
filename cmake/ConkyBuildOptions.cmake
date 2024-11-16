@@ -228,6 +228,8 @@ dependent_option(BUILD_LUA_RSVG "Build rsvg bindings for Lua" false
   "BUILD_GUI" false
   "RSVG Lua bindings depend on BUILD_GUI")
 
+option(BUILD_OPENSOUNDSYS "Build with Open Sound System support" true)
+
 option(BUILD_AUDACIOUS "Build audacious (music player) support" false)
 
 option(BUILD_MPD "Enable if you want MPD (music player) support" true)

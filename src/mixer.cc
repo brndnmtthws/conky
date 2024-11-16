@@ -36,15 +36,15 @@
 #include "specials.h"
 #include "text_object.h"
 
-#ifdef HAVE_LINUX_SOUNDCARD_H
+#ifdef HAVE_SOUNDCARD_H
+#if defined(__linux__)
 #include <linux/soundcard.h>
-#else
-#ifdef __OpenBSD__
+#elif defined(__OpenBSD__)
 #include <soundcard.h>
 #else
 #include <sys/soundcard.h>
-#endif /* __OpenBSD__ */
-#endif /* HAVE_LINUX_SOUNDCARD_H */
+#endif
+#endif /* HAVE_SOUNDCARD_H */
 
 #if defined(__sun)
 #include <stropts.h>
