@@ -83,7 +83,6 @@ endif(CMAKE_SYSTEM_NAME MATCHES "DragonFly")
 
 if(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
   set(OS_OPENBSD true)
-  link_directories("/usr/local/lib")
   set(conky_libs ${conky_libs} -lkvm)
 else(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
   set(OS_OPENBSD false)

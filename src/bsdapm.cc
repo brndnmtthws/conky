@@ -46,9 +46,11 @@ const u_int APM_UNKNOWN = 255;
 #ifndef APM_AC_OFF
 #define APM_AC_OFF 0
 #endif
+
 #ifndef APM_AC_ON
 #define APM_AC_ON 1
 #endif
+
 #ifndef APM_BATT_CHARGING
 #define APM_BATT_CHARGING 3
 #endif
@@ -74,7 +76,7 @@ void print_apm_adapter(struct text_object *obj, char *p,
   int fd;
   apm_info info;
 
-  (void)obj;  // ignore & avoid warnings
+  (void)obj;
 
   fd = open(APMDEV, O_RDONLY);
   if (fd < 0) {
@@ -113,7 +115,7 @@ void print_apm_battery_life(struct text_object *obj, char *p,
   int fd;
   apm_info info;
 
-  (void)obj;  // ignore & avoid warnings
+  (void)obj;
 
   fd = open(APMDEV, O_RDONLY);
   if (fd < 0) {
@@ -139,15 +141,17 @@ void print_apm_battery_life(struct text_object *obj, char *p,
   } else {
     out = "ERR";
   }
+  
   snprintf(p, p_max_size, "%s", out);
 }
 
 void print_apm_battery_time(struct text_object *obj, char *p,
                             unsigned int p_max_size) {
   int fd;
+  int h, m, s;
   apm_info info;
 
-  (void)obj;  // ignore & avoid warnings
+  (void)obj;
 
   fd = open(APMDEV, O_RDONLY);
   if (fd < 0) {
@@ -166,10 +170,10 @@ void print_apm_battery_time(struct text_object *obj, char *p,
   if (batt_time == -1) {
     snprintf(p, p_max_size, "%s", "unknown");
   } else {
-    int h = batt_time;
-    int s = h % 60;
+    h = batt_time;
+    s = h % 60;
     h /= 60;
-    int m = h % 60;
+    m = h % 60;
     h /= 60;
     snprintf(p, p_max_size, "%2d:%02d:%02d", h, m, s);
   }

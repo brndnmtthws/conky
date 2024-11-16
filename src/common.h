@@ -25,13 +25,13 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
-#include <filesystem>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <filesystem>
 #include <string>
+
 #include "setting.hh"
 #include "text_object.h"
 
