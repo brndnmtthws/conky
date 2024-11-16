@@ -515,6 +515,14 @@ if(BUILD_LUA_CAIRO)
     set(luacairo_includes ${CAIROXLIB_INCLUDE_DIRS} ${luacairo_includes})
   endif(BUILD_LUA_CAIRO_XLIB)
 
+  # This is required because OpenBSD requires X11_LIBRARIES instead of -lX11
+  # because X11 isn't in default linker search path
+  list(REMOVE_DUPLICATES luacairo_libs)
+  if("X11" IN_LIST luacairo_libs)
+    list(REMOVE_ITEM luacairo_libs "X11" "Xext")
+    set(luacairo_libs ${X11_LIBRARIES} ${luacairo_libs})
+  endif("X11" IN_LIST luacairo_libs)
+
   find_program(APP_PATCH patch)
 
   if(NOT APP_PATCH)
