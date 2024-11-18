@@ -204,8 +204,7 @@ values:
       | cs                  | The `cairo_surface_t` to render to.                                                  |
       | x,y                 | Position to render the image.                                                        |
       | scale_x, scale_y    | The amount to scale the image, 1.0 provides no scaling, 2.0 for twice the size and   |
-      |                     | 0.5 for half size etc.                                                               |
-      |                     | Default value: No Scaling (1.0,1.0)                                                  |
+      |                     | 0.5 for half size etc. <br/>Default value: No Scaling (1.0,1.0)                      |
 
       require('cairo_imlib2_helper') in your lua file.
 
@@ -221,14 +220,10 @@ values:
       | text                | The text to render.                                                                  |
       | font                | The name of the font to be used, `Fontconfig` is used to search for the font.        |
       | font_size           | The font size.                                                                       |
-      | alignment           | One of `CAIRO_TEXT_ALIGN_LEFT`, `CAIRO_TEXT_ALIGN_RIGHT`, `CAIRO_TEXT_ALIGN_CENTER`. |
-      |                     | Default value: `CAIRO_TEXT_ALIGN_LEFT`                                               |
-      | language            | A string containing a BCP 47 language tag.                                           |
-      |                     | Default value: `en`                                                                  |
-      | script              | A string containing a ISO 15924 script tag.                                          |
-      |                     | Default value: auto-detect from text                                                 |
-      | direction           | A string representing text direction eg `LTR`, `RTL` or `TTB`                        |
-      |                     | Default value: auto-detect from text otherwise `LTR`                                 |                                                               |
+      | alignment           | One of `CAIRO_TEXT_ALIGN_LEFT`, `CAIRO_TEXT_ALIGN_RIGHT`, `CAIRO_TEXT_ALIGN_CENTER`.<br/>Default value: `CAIRO_TEXT_ALIGN_LEFT` |
+      | language            | A string containing a BCP 47 language tag.<br/>Default value: `en`                   |
+      | script              | A string containing a ISO 15924 script tag.<br/>Default value: auto-detect from text |
+      | direction           | A string representing text direction eg `LTR`, `RTL` or `TTB`<br/>Default value: auto-detect from text otherwise `LTR` |
   - name: width,height:cairo_text_hp_text_size(text, font, font_size, language, script, direction)
     desc: |-
       Used to calculate how many pixels will be required to render a string with
@@ -240,12 +235,9 @@ values:
       | text                | The text to render.                                                                  |
       | font                | The name of the font to be used, `Fontconfig` is used to search for the font.        |
       | font_size           | The font size.                                                                       |
-      | language            | A string containing a BCP 47 language tag.                                           |
-      |                     | Default value: `en`                                                                  |
-      | script              | A string containing a ISO 15924 script tag.                                          |
-      |                     | Default value: auto-detect from text                                                 |
-      | direction           | A string representing text direction eg `LTR`, `RTL` or `TTB`                        |
-      |                     | Default value: auto-detect from text otherwise `LTR`                                 |
+      | language            | A string containing a BCP 47 language tag.<br/>Default value: `en`                   |
+      | script              | A string containing a ISO 15924 script tag.<br/>Default value: auto-detect from text |
+      | direction           | A string representing text direction eg `LTR`, `RTL` or `TTB`<br/> Default value: auto-detect from text otherwise `LTR` |
   - name: cairo_text_hp_delete_fonts()
     desc: |-
       `cairo_text_hp_show` and `cairo_text_hp_text_size` both cache internal font details,
