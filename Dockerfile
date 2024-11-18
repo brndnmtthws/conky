@@ -49,19 +49,6 @@ RUN apt-get update \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# Compile CMake, we need the latest because the bug here (for armv7 builds):
-# https://gitlab.kitware.com/cmake/cmake/-/issues/20568
-WORKDIR /cmake
-ENV CMAKE_VERSION 3.25.1
-RUN curl -Lq https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz -o cmake-${CMAKE_VERSION}.tar.gz \
-  && tar xf cmake-${CMAKE_VERSION}.tar.gz \
-  && cd cmake-${CMAKE_VERSION} \
-  && CC=clang CXX=clang++ CFLAGS="-D_FILE_OFFSET_BITS=64" CXXFLAGS="-D_FILE_OFFSET_BITS=64" ./bootstrap --system-libs --parallel=5 \
-  && make -j5 \
-  && make -j5 install \
-  && cd \
-  && rm -rf /cmake
-
 COPY . /conky
 WORKDIR /conky/build
 
