@@ -44,6 +44,10 @@
 #include "ccurl_thread.h"
 #endif /* BUILD_CURL */
 
+#if defined(__linux__)
+#include "linux.h"
+#endif /* Linux */
+
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 #include "freebsd.h"
 #endif /* FreeBSD */
@@ -271,8 +275,11 @@ static void print_help(const char *prog_name) {
          "   -i COUNT                  number of times to update " PACKAGE_NAME
          " (and quit)\n"
          "   -p, --pause=SECS          pause for SECS seconds at startup "
-         "before doing anything\n",
-         prog_name);
+         "before doing anything\n"
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+         "   -U, --unique              only one conky process can be created\n"
+#endif /* Linux || FreeBSD */
+         , prog_name);
 }
 
 inline void reset_optind() {
@@ -295,6 +302,8 @@ int main(int argc, char **argv) {
   g_sigterm_pending = 0;
   g_sighup_pending = 0;
   g_sigusr2_pending = 0;
+
+  bool unique_process = false;
 
 #ifdef BUILD_CURL
   struct curl_global_initializer {
@@ -352,11 +361,22 @@ int main(int argc, char **argv) {
         window.window = strtol(optarg, nullptr, 0);
         break;
 #endif /* BUILD_X11 */
-
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+      case 'U':
+        unique_process = true;
+        break;
+#endif /* Linux || FreeBSD */
       case '?':
         return EXIT_FAILURE;
     }
   }
+
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+  if (unique_process && is_conky_already_running()) {
+    NORM_ERR("already running");
+    return 0;
+  }
+#endif /* Linux || FreeBSD */
 
   try {
     set_current_config();

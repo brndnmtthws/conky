@@ -40,9 +40,15 @@
  * returns the index of the first op character or -1 on error
  */
 int find_match_op(const char *expr) {
-  unsigned int idx;
+  unsigned int idx = 0;
 
-  for (idx = 0; idx < strlen(expr); idx++) {
+  /* if first operand is a string, skip it */
+  if (expr[idx] == '"') {
+    for (idx=1; expr[idx] && expr[idx] != '"'; idx++);
+    idx++;
+  }
+
+  for (; idx < strlen(expr); idx++) {
     switch (expr[idx]) {
       case '=':
       case '!':
@@ -170,6 +176,7 @@ long arg_to_long(const char *arg) {
   }
   return l;
 }
+
 int compare(const char *expr) {
   char *expr_dup;
   int idx, mtype;

@@ -58,6 +58,8 @@ int update_stat(void);
 
 void print_distribution(struct text_object *, char *, unsigned int);
 
+bool is_conky_already_running(void);
+
 extern char e_iface[64];
 extern char interfaces_arr[MAX_NET_INTERFACES][64];
 
