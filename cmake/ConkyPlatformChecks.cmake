@@ -375,12 +375,7 @@ if(BUILD_X11)
 
     # check for Xft
     if(BUILD_XFT)
-      if(FREETYPE_INCLUDE_DIR_freetype2)
-        set(FREETYPE_FOUND true)
-        set(conky_includes ${conky_includes} ${FREETYPE_INCLUDE_DIR_freetype2})
-      else(FREETYPE_INCLUDE_DIR_freetype2)
-        message(FATAL_ERROR "Unable to find freetype library")
-      endif(FREETYPE_INCLUDE_DIR_freetype2)
+      find_package(Freetype REQUIRED)
 
       if(NOT X11_Xft_FOUND)
         message(FATAL_ERROR "Unable to find Xft library")
@@ -499,11 +494,11 @@ set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
 set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIR})
 include_directories(3rdparty/toluapp/include)
 
-# Check for libraries used by Lua bindings
-if(BUILD_LUA_CAIRO)
+  # Check for libraries used by Lua bindings
+  if(BUILD_LUA_CAIRO)
   pkg_check_modules(CAIRO REQUIRED cairo>=1.14)
-  set(luacairo_libs ${CAIRO_LIBRARIES} ${LUA_LIBRARIES})
-  set(luacairo_includes ${CAIRO_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
+    set(luacairo_libs ${CAIRO_LIBRARIES} ${LUA_LIBRARIES})
+    set(luacairo_includes ${CAIRO_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
 
   if(BUILD_LUA_CAIRO_XLIB)
     pkg_check_modules(CAIROXLIB REQUIRED cairo-xlib)
@@ -511,20 +506,20 @@ if(BUILD_LUA_CAIRO)
     set(luacairo_includes ${CAIROXLIB_INCLUDE_DIRS} ${luacairo_includes})
   endif(BUILD_LUA_CAIRO_XLIB)
 
-  find_program(APP_PATCH patch)
+    find_program(APP_PATCH patch)
 
-  if(NOT APP_PATCH)
-    message(FATAL_ERROR "Unable to find program 'patch'")
-  endif(NOT APP_PATCH)
-endif(BUILD_LUA_CAIRO)
+    if(NOT APP_PATCH)
+      message(FATAL_ERROR "Unable to find program 'patch'")
+    endif(NOT APP_PATCH)
+  endif(BUILD_LUA_CAIRO)
 
 if(BUILD_LUA_IMLIB2)
-  pkg_search_module(IMLIB2 REQUIRED imlib2 Imlib2)
-  set(luaimlib2_libs ${IMLIB2_LIBS} ${IMLIB2_LDFLAGS} ${LUA_LIBRARIES})
-  set(luaimlib2_includes
-    ${IMLIB2_INCLUDE_DIRS}
-    ${LUA_INCLUDE_DIR}
-    ${X11_INCLUDE_DIR})
+    pkg_search_module(IMLIB2 REQUIRED imlib2 Imlib2)
+    set(luaimlib2_libs ${IMLIB2_LIBS} ${IMLIB2_LDFLAGS} ${LUA_LIBRARIES})
+    set(luaimlib2_includes
+      ${IMLIB2_INCLUDE_DIRS}
+      ${LUA_INCLUDE_DIR}
+      ${X11_INCLUDE_DIR})
 endif(BUILD_LUA_IMLIB2)
 
 if(BUILD_LUA_RSVG)
@@ -532,6 +527,14 @@ if(BUILD_LUA_RSVG)
   set(luarsvg_libs ${RSVG_LIBRARIES} ${LUA_LIBRARIES})
   set(luarsvg_includes ${RSVG_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
 endif(BUILD_LUA_RSVG)
+
+if(BUILD_LUA_TEXT)
+  find_package(Freetype REQUIRED)
+  PKG_CHECK_MODULES(FONTCONFIG REQUIRED fontconfig)
+  PKG_CHECK_MODULES(HARFBUZZ REQUIRED harfbuzz)
+  set(luatext_libs ${FREETYPE_LIBRARIES} ${FONTCONFIG_LIBRARIES} ${HARFBUZZ_LIBRARIES} ${LUA_LIBRARIES})
+  set(luatext_includes ${FREETYPE_INCLUDE_DIR_freetype2} ${FONTCONFIG_INCLUDE_DIRS} ${HARFBUZZ_INCLUDE_DIRS} ${LUA_INCLUDE_DIRS})
+endif(BUILD_LUA_TEXT)
 
 if(BUILD_AUDACIOUS)
   set(WANT_GLIB true)

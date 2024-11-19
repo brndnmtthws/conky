@@ -1,4 +1,4 @@
-FROM ubuntu:noble AS builder
+FROM ubuntu:jammy AS builder
 
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
@@ -18,6 +18,9 @@ RUN apt-get update \
   libcairo2-dev \
   libcurl4-openssl-dev \
   libdbus-glib-1-dev \
+  libfontconfig-dev \
+  libfreetype-dev \
+  libharfbuzz-dev \
   libical-dev \
   libimlib2-dev \
   libircclient-dev \
@@ -40,10 +43,24 @@ RUN apt-get update \
   libxml2-dev \
   libxmmsclient-dev \
   libxnvctrl-dev \
+  make \
   ninja-build \
   patch \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
+
+# Compile CMake, we need the latest because the bug here (for armv7 builds):
+# https://gitlab.kitware.com/cmake/cmake/-/issues/20568
+WORKDIR /cmake
+ENV CMAKE_VERSION 3.25.1
+RUN curl -Lq https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz -o cmake-${CMAKE_VERSION}.tar.gz \
+  && tar xf cmake-${CMAKE_VERSION}.tar.gz \
+  && cd cmake-${CMAKE_VERSION} \
+  && CC=clang CXX=clang++ CFLAGS="-D_FILE_OFFSET_BITS=64" CXXFLAGS="-D_FILE_OFFSET_BITS=64" ./bootstrap --system-libs --parallel=5 \
+  && make -j5 \
+  && make -j5 install \
+  && cd \
+  && rm -rf /cmake
 
 COPY . /conky
 WORKDIR /conky/build
@@ -65,6 +82,7 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   -DBUILD_LUA_CAIRO_XLIB=ON \
   -DBUILD_LUA_IMLIB2=ON \
   -DBUILD_LUA_RSVG=ON \
+  -DBUILD_LUA_TEXT=ON \
   -DBUILD_MYSQL=ON \
   -DBUILD_NVIDIA=ON \
   -DBUILD_PULSEAUDIO=ON \
@@ -87,6 +105,7 @@ RUN sh -c 'if [ "$X11" = "yes" ] ; then \
   -DBUILD_LUA_CAIRO=ON \
   -DBUILD_LUA_IMLIB2=ON \
   -DBUILD_LUA_RSVG=ON \
+  -DBUILD_LUA_TEXT=ON \
   -DBUILD_MYSQL=ON \
   -DBUILD_PULSEAUDIO=ON \
   -DBUILD_RSS=ON \
@@ -110,6 +129,9 @@ RUN apt-get update \
   libcairo2 \
   libcurl4t64 \
   libdbus-glib-1-2 \
+  libfontconfig1 \
+  libfreetype6 \
+  libharfbuzz-gobject0 \
   libical3t64 \
   libimlib2t64 \
   libircclient1 \

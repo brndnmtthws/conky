@@ -148,7 +148,7 @@ static void print_version() {
 #ifdef DEBUG
             << _("  * Debugging extensions\n")
 #endif
-#if defined BUILD_LUA_CAIRO || defined BUILD_LUA_IMLIB2 || BUILD_LUA_RSVG
+#if defined BUILD_LUA_CAIRO || defined BUILD_LUA_IMLIB2 || BUILD_LUA_RSVG || BUILD_LUA_TEXT
             << _("\n Lua bindings:\n")
 #endif
 #ifdef BUILD_LUA_CAIRO
@@ -159,6 +159,9 @@ static void print_version() {
 #endif /* BUILD_LUA_IMLIB2 */
 #ifdef BUILD_LUA_RSVG
             << _("  * RSVG\n")
+#endif /* BUILD_LUA_RSVG */
+#ifdef BUILD_LUA_TEXT
+            << _("  * TEXT\n")
 #endif /* BUILD_LUA_RSVG */
 #ifdef BUILD_X11
             << _(" X11:\n")
