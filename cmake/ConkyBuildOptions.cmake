@@ -50,12 +50,17 @@ if(MAINTAINER_MODE)
   set(BUILD_TESTS true)
 endif(MAINTAINER_MODE)
 
-# Always use libc++ when compiling w/ clang
+if(NOT OS_OPENBSD)
+  # Always use libc++ when compiling w/ clang
+  # Not on OpenBSD because that's the default for its vendored Clang
+  add_compile_options(
+    $<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>)
+  add_link_options($<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>)
+endif(NOT OS_OPENBSD)
+
 add_compile_options(
-  $<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>
   $<$<COMPILE_LANG_AND_ID:CXX,Clang>:-Wno-unknown-warning-option>
   $<$<COMPILE_LANG_AND_ID:CXX,GCC>:-Wno-unknown-warning>)
-add_link_options($<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>)
 
 option(CHECK_CODE_QUALITY "Check code formatting/quality with clang" false)
 
@@ -227,6 +232,8 @@ dependent_option(BUILD_LUA_IMLIB2 "Build Imlib2 bindings for Lua" false
 dependent_option(BUILD_LUA_RSVG "Build rsvg bindings for Lua" false
   "BUILD_GUI" false
   "RSVG Lua bindings depend on BUILD_GUI")
+
+option(BUILD_OPENSOUNDSYS "Build with Open Sound System support" true)
 
 option(BUILD_AUDACIOUS "Build audacious (music player) support" false)
 
