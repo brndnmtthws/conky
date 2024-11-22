@@ -97,6 +97,7 @@ endif(CMAKE_SYSTEM_NAME MATCHES "SunOS")
 
 if(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
   set(OS_NETBSD true)
+  set(conky_libs ${conky_libs} -lkvm -lintl -lossaudio)
 else(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
   set(OS_NETBSD false)
 endif(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
@@ -117,6 +118,7 @@ endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 if(NOT OS_LINUX
   AND NOT OS_FREEBSD
   AND NOT OS_OPENBSD
+  AND NOT OS_NETBSD
   AND NOT OS_DRAGONFLY
   AND NOT OS_SOLARIS
   AND NOT OS_HAIKU
@@ -133,6 +135,9 @@ endif(NOT
   AND
   NOT
   OS_OPENBSD
+  AND
+  NOT
+  OS_NETBSD
   AND
   NOT
   OS_DRAGONFLY
@@ -256,7 +261,12 @@ if(BUILD_NCURSES)
   endif(NOT CURSES_FOUND)
 
   set(conky_libs ${conky_libs} ${CURSES_LIBRARIES})
-  set(conky_includes ${conky_includes} ${CURSES_INCLUDE_DIR})
+  if(OS_NETBSD)
+    set(conky_includes ${conky_includes} /usr/pkg/include)
+    set(conky_includes ${conky_includes} /usr/pkg/include/ncurses)
+  else(OS_NETBSD)
+    set(conky_includes ${conky_includes} ${CURSES_INCLUDE_DIR})
+  endif(OS_NETBSD)
 endif(BUILD_NCURSES)
 
 if(BUILD_MYSQL)
