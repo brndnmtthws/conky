@@ -254,37 +254,37 @@ endif(BUILD_HTTP)
 if(BUILD_NCURSES)
   set(CURSES_NEED_NCURSES TRUE)
 
-  find_path(NCURSES_INCLUDE_PATH
-    NAMES ncurses.h curses.h
+  find_path(CURSES_INCLUDE_PATH
+    NAMES curses.h
     PATH_SUFFIXES ncurses
     PATHS /usr/include /usr/local/include /usr/pkg/include
   )
 
-  find_library(NCURSES_LIBRARY
-    NAMES ncurses
+  find_library(CURSES_LIBRARY
+    NAMES curses
     PATHS /lib /usr/lib /usr/local/lib /usr/pkg/lib
   )
 
   find_package(PkgConfig QUIET)
   if(PKG_CONFIG_FOUND)
     pkg_search_module(NCURSES ncurses)
-    set(NCURSES_LIBRARY ${NCURSES_LDFLAGS})
+    set(CURSES_LIBRARY ${NCURSES_LDFLAGS})
   endif()
 
-  if(NOT NCURSES_LIBRARY OR NOT NCURSES_INCLUDE_PATH)
-    message(FATAL_ERROR "Unable to find ncurses library")
-  else(NOT NCURSES_LIBRARY OR NOT NCURSES_INCLUDE_PATH)
-    message(STATUS "ncurses found.")
-    message(STATUS "  include: ${NCURSES_INCLUDE_PATH}")
-    message(STATUS "  lib: ${NCURSES_LIBRARY}")
-  endif(NOT NCURSES_LIBRARY OR NOT NCURSES_INCLUDE_PATH)
+  if(NOT CURSES_LIBRARY OR NOT CURSES_INCLUDE_PATH)
+    message(FATAL_ERROR "Unable to find curses library")
+  else(NOT CURSES_LIBRARY OR NOT CURSES_INCLUDE_PATH)
+    message(STATUS "curses found.")
+    message(STATUS "  include: ${CURSES_INCLUDE_PATH}")
+    message(STATUS "  lib: ${CURSES_LIBRARY}")
+  endif(NOT CURSES_LIBRARY OR NOT CURSES_INCLUDE_PATH)
 
-  set(conky_libs ${conky_libs} ${NCURSES_LIBRARY})
-  set(conky_includes ${conky_includes} ${NCURSES_INCLUDE_PATH})
+  set(conky_libs ${conky_libs} ${CURSES_LIBRARY})
+  set(conky_includes ${conky_includes} ${CURSES_INCLUDE_PATH})
 
   if(OS_NETBSD)
-    cmake_path(GET NCURSES_INCLUDE_PATH PARENT_PATH NCURSES_PARENT)
-    set(conky_includes ${conky_includes} ${NCURSES_PARENT})
+    cmake_path(GET CURSES_INCLUDE_PATH PARENT_PATH CURSES_PARENT)
+    set(conky_includes ${conky_includes} ${CURSES_PARENT})
   endif(OS_NETBSD)
 endif(BUILD_NCURSES)
 
