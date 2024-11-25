@@ -30,17 +30,40 @@
 #include "netbsd.h"
 #include "net_stat.h"
 
+#include <err.h>
+#include <fcntl.h>
+#include <kvm.h>
+#include <limits.h>
+#include <nlist.h>
+#include <paths.h>
+#include <time.h>
+#include <unistd.h>
+
+#include <sys/envsys.h>
+#include <sys/param.h>
+#include <sys/sched.h>
+#include <sys/socket.h>
+#include <sys/swap.h>
+#include <sys/sysctl.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <uvm/uvm_param.h>
+#include <uvm/uvm_extern.h>
+
+#include <net/if.h>
+#include <net/if_types.h>
+
 static kvm_t *kd = nullptr;
-int kd_init = 0, nkd_init = 0;
-u_int32_t sensvalue;
-char errbuf[_POSIX2_LINE_MAX];
+static int kd_init = 0, nkd_init = 0, cpu_setup = 0;
+static u_int32_t sensvalue;
+static char errbuf[_POSIX2_LINE_MAX];
 
 static int init_kvm(void) {
   if (kd_init) { return 0; }
 
   kd = kvm_openfiles(nullptr, NULL, NULL, KVM_NO_FILES, errbuf);
   if (kd == nullptr) {
-    warnx("cannot kvm_openfiles: %s", errbuf);
+    NORM_ERR("cannot kvm_openfiles: %s", errbuf);
     return -1;
   }
   kd_init = 1;
@@ -57,19 +80,19 @@ static int swapmode(int *retavail, int *retfree) {
   n = swapctl(SWAP_NSWAP, 0, 0);
 
   if (n < 1) {
-    warn("could not get swap information");
+    NORM_ERR("could not get swap information");
     return 0;
   }
 
   sep = (struct swapent *)malloc(n * (sizeof(*sep)));
 
   if (sep == nullptr) {
-    warn("memory allocation failed");
+    NORM_ERR("memory allocation failed");
     return 0;
   }
 
   if (swapctl(SWAP_STATS, (void *)sep, n) < n) {
-    warn("could not get swap stats");
+    NORM_ERR("could not get swap stats");
     return 0;
   }
   for (; n > 0; n--) {
@@ -84,20 +107,22 @@ static int swapmode(int *retavail, int *retfree) {
 
 void prepare_update() {}
 
-void update_uptime() {
+int update_uptime() {
   int mib[2] = {CTL_KERN, KERN_BOOTTIME};
   struct timeval boottime;
   time_t now;
-  int size = sizeof(boottime);
+  size_t size = sizeof(boottime);
 
   if ((sysctl(mib, 2, &boottime, &size, nullptr, 0) != -1) &&
       (boottime.tv_sec != 0)) {
     time(&now);
     info.uptime = now - boottime.tv_sec;
   } else {
-    warn("could not get uptime");
+    NORM_ERR("could not get uptime");
     info.uptime = 0;
   }
+
+  return 1;
 }
 
 int check_mount(struct text_object *obj) {
@@ -106,7 +131,7 @@ int check_mount(struct text_object *obj) {
   return 0;
 }
 
-void update_meminfo() {
+int update_meminfo() {
   int mib[] = {CTL_VM, VM_UVMEXP2};
   int total_pages, inactive_pages, free_pages;
   int swap_avail, swap_free;
@@ -115,8 +140,8 @@ void update_meminfo() {
   size_t size = sizeof(uvmexp);
 
   if (sysctl(mib, 2, &uvmexp, &size, nullptr, 0) < 0) {
-    warn("could not get memory info");
-    return;
+    NORM_ERR("could not get memory info");
+    return 1;
   }
 
   total_pages = uvmexp.npages;
@@ -134,9 +159,11 @@ void update_meminfo() {
     info.swap = (swap_avail - swap_free);
     info.swapfree = swap_free;
   }
+
+  return 1;
 }
 
-void update_net_stats() {
+int update_net_stats() {
   int i;
   double delta;
   struct ifnet ifnet;
@@ -148,12 +175,12 @@ void update_net_stats() {
   if (!nkd_init) {
     nkd = kvm_openfiles(nullptr, NULL, NULL, O_RDONLY, errbuf);
     if (nkd == nullptr) {
-      warnx("cannot kvm_openfiles: %s", errbuf);
-      warnx("maybe you need to setgid kmem this program?");
-      return;
+      NORM_ERR("cannot kvm_openfiles: %s", errbuf);
+      NORM_ERR("maybe you need to setgid kmem this program?");
+      return 1;
     } else if (kvm_nlist(nkd, namelist) != 0) {
-      warn("cannot kvm_nlist");
-      return;
+      NORM_ERR("cannot kvm_nlist");
+      return 1;
     } else {
       nkd_init = 1;
     }
@@ -161,14 +188,16 @@ void update_net_stats() {
 
   if (kvm_read(nkd, (u_long)namelist[0].n_value, (void *)&ifhead,
                sizeof(ifhead)) < 0) {
-    warn("cannot kvm_read");
-    return;
+    NORM_ERR("cannot kvm_read");
+    return 1;
   }
 
   /* get delta */
   delta = current_update_time - last_update_time;
-  if (delta <= 0.0001) { return; }
+  if (delta <= 0.0001) { return 1; }
 
+  // TODO(gmb)
+  /*
   for (i = 0, ifnetaddr = (u_long)ifhead.tqh_first;
        ifnet.if_list.tqe_next && i < 16;
        ifnetaddr = (u_long)ifnet.if_list.tqe_next, i++) {
@@ -206,7 +235,9 @@ void update_net_stats() {
 
     ns->recv_speed = (ns->recv - last_recv) / delta;
     ns->trans_speed = (ns->trans - last_trans) / delta;
-  }
+  }*/
+
+  return 1;
 }
 
 int update_total_processes() {
@@ -217,18 +248,17 @@ int update_total_processes() {
   info.procs = 0;
 
   if (init_kvm() < 0) {
-    return;
+    return 1;
   } else {
     kvm_getproc2(kd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc2),
                  &n_processes);
   }
 
   info.procs = n_processes;
-
-  return 0;
+  return 1;
 }
 
-void update_running_processes() {
+int update_running_processes() {
   struct kinfo_proc2 *p;
   int n_processes;
   int i, cnt = 0;
@@ -236,7 +266,7 @@ void update_running_processes() {
   info.run_procs = 0;
 
   if (init_kvm() < 0) {
-    return;
+    return 1;
   } else {
     p = kvm_getproc2(kd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc2),
                      &n_processes);
@@ -249,6 +279,8 @@ void update_running_processes() {
   }
 
   info.run_procs = cnt;
+
+  return 1;
 }
 
 struct cpu_load_struct {
@@ -259,15 +291,25 @@ struct cpu_load_struct fresh = {{0, 0, 0, 0, 0}};
 
 long cpu_used, oldtotal, oldused;
 
-void update_cpu_usage() {
+// TODO(gmb): Implement support for multiple processors.
+void get_cpu_count(void) {
+  int cpu_count = 1;
+  info.cpu_count = cpu_count;
+  info.cpu_usage = (float *)malloc((info.cpu_count + 1) * sizeof(float));
+  if (info.cpu_usage == nullptr) { CRIT_ERR("malloc"); }
+}
+
+// TODO(gmb): Implement support for multiple processors.
+int update_cpu_usage() {
   long used, total;
   static u_int64_t cp_time[CPUSTATES];
   size_t len = sizeof(cp_time);
 
-  info.cpu_usage = 0;
+  info.cpu_usage[0] = 0;
 
   if (sysctlbyname("kern.cp_time", &cp_time, &len, nullptr, 0) < 0) {
-    warn("cannot get kern.cp_time");
+    NORM_ERR("cannot get kern.cp_time");
+    return 1;
   }
 
   fresh.load[0] = cp_time[CP_USER];
@@ -280,19 +322,20 @@ void update_cpu_usage() {
   total = fresh.load[0] + fresh.load[1] + fresh.load[2] + fresh.load[3];
 
   if ((total - oldtotal) != 0) {
-    info.cpu_usage = ((double)(used - oldused)) / (double)(total - oldtotal);
+    info.cpu_usage[0] = ((float)(used - oldused)) / (float)(total - oldtotal);
   } else {
-    info.cpu_usage = 0;
+    info.cpu_usage[0] = 0;
   }
 
   oldused = used;
   oldtotal = total;
+  return 1;
 }
 
 void free_cpu(struct text_object *) { /* no-op */
 }
 
-void update_load_average() {
+int update_load_average() {
   double v[3];
 
   getloadavg(v, 3);
@@ -300,6 +343,8 @@ void update_load_average() {
   info.loadavg[0] = (float)v[0];
   info.loadavg[1] = (float)v[1];
   info.loadavg[2] = (float)v[2];
+
+  return 1;
 }
 
 double get_acpi_temperature(int fd) { return -1; }
@@ -327,5 +372,37 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
 }
 
 int get_entropy_avail(unsigned int *val) { return 1; }
-
 int get_entropy_poolsize(unsigned int *val) { return 1; }
+
+char get_freq(char *p_client_buffer, size_t client_buffer_size,
+              const char *p_format, int divisor, unsigned int cpu) {
+  //TODO(gmb)
+  return 1;
+}
+
+int get_battery_perct(const char *) {
+  // TODO(gmb)
+  return 0;
+}
+
+void get_battery_power_draw(char *buffer, unsigned int n, const char *bat) {
+  // TODO(gmb)
+}
+
+void get_battery_short_status(char *buffer, unsigned int n, const char *bat) {
+  // TODO(gmb)
+}
+
+double get_battery_perct_bar(struct text_object *obj) {
+  int batperct = get_battery_perct(obj->data.s);
+  return batperct;
+}
+
+int update_diskio(void) {
+  // TODO(gmb)
+  return 1;
+}
+
+void get_top_info(void) {
+  // TODO(gmb)
+}
