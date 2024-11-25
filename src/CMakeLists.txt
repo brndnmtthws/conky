@@ -189,10 +189,10 @@ if(OS_DARWIN)
 endif(OS_DARWIN)
 
 # Optional sources
-if(HAVE_SOME_SOUNDCARD_H)
+if(HAVE_SOUNDCARD_H)
   set(mixer mixer.cc mixer.h)
   set(optional_sources ${optional_sources} ${mixer})
-endif(HAVE_SOME_SOUNDCARD_H)
+endif(HAVE_SOUNDCARD_H)
 
 if(BUILD_AUDACIOUS)
   set(audacious audacious.cc audacious.h)

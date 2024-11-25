@@ -28,11 +28,11 @@
  */
 
 #include <kvm.h>
-#include <sys/dkstat.h>
 #include <sys/ioctl.h>
 #include <sys/malloc.h>
 #include <sys/param.h>
 #include <sys/resource.h>
+#include <sys/proc.h>
 #include <sys/sensors.h>
 #include <sys/socket.h>
 #include <sys/swap.h>
@@ -62,12 +62,20 @@
 #include "logging.h"
 #include "net_stat.h"
 #include "openbsd.h"
+#include "temphelper.h"
 #include "top.h"
 
 #define MAXSHOWDEVS 16
 
 #define LOG1024 10
 #define pagetok(size) ((size) << pageshift)
+
+#define CP_USER   0
+#define CP_NICE   1
+#define CP_SYS    2
+#define CP_INTR   3
+#define CP_IDLE   4
+#define CPUSTATES 5
 
 inline void proc_find_top(struct process **cpu, struct process **mem);
 
@@ -103,7 +111,7 @@ static int swapmode(int *used, int *total) {
   nswap = swapctl(SWAP_NSWAP, 0, 0);
   if (nswap == 0) { return 0; }
 
-  swdev = malloc(nswap * sizeof(*swdev));
+  swdev = (struct swapent *)malloc(nswap * sizeof(*swdev));
   if (swdev == nullptr) { return 0; }
 
   rnswap = swapctl(SWAP_STATS, swdev, nswap);
@@ -132,7 +140,7 @@ int check_mount(struct text_object *obj) {
   return 0;
 }
 
-void update_uptime() {
+int update_uptime() {
   int mib[2] = {CTL_KERN, KERN_BOOTTIME};
   struct timeval boottime;
   time_t now;
@@ -146,9 +154,11 @@ void update_uptime() {
     NORM_ERR("Could not get uptime");
     info.uptime = 0;
   }
+
+  return 0;
 }
 
-void update_meminfo() {
+int update_meminfo() {
   static int mib[2] = {CTL_VM, VM_METER};
   struct vmtotal vmtotal;
   size_t size;
@@ -185,9 +195,11 @@ void update_meminfo() {
     info.swap = 0;
     info.swapfree = 0;
   }
+
+  return 0;
 }
 
-void update_net_stats() {
+int update_net_stats() {
   struct net_stat *ns;
   double delta;
   long long r, t, last_recv, last_trans;
@@ -196,9 +208,9 @@ void update_net_stats() {
 
   /* get delta */
   delta = current_update_time - last_update_time;
-  if (delta <= 0.0001) { return; }
+  if (delta <= 0.0001) { return 0; }
 
-  if (getifaddrs(&ifap) < 0) { return; }
+  if (getifaddrs(&ifap) < 0) { return 0; }
 
   for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
     ns = get_net_stat((const char *)ifa->ifa_name, nullptr, NULL);
@@ -249,33 +261,36 @@ void update_net_stats() {
   }
 
   freeifaddrs(ifap);
+
+  return 0;
 }
 
 int update_total_processes() {
   int n_processes;
 
   kvm_init();
-  kvm_getprocs(kd, KERN_PROC_ALL, 0, &n_processes);
+  kvm_getprocs(kd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc),  &n_processes);
 
   info.procs = n_processes;
 
   return 0;
 }
 
-void update_running_processes() {
-  struct kinfo_proc2 *p;
+int update_running_processes() {
+  struct kinfo_proc *p;
   int n_processes;
   int i, cnt = 0;
 
   kvm_init();
-  int max_size = sizeof(struct kinfo_proc2);
+  int max_size = sizeof(struct kinfo_proc);
 
-  p = kvm_getproc2(kd, KERN_PROC_ALL, 0, max_size, &n_processes);
+  p = kvm_getprocs(kd, KERN_PROC_ALL, 0, max_size, &n_processes);
   for (i = 0; i < n_processes; i++) {
     if (p[i].p_stat == SRUN) { cnt++; }
   }
 
   info.run_procs = cnt;
+  return 0;
 }
 
 /* new SMP code can be enabled by commenting the following line */
@@ -309,7 +324,7 @@ void get_cpu_count() {
 #endif
   info.cpu_count = cpu_count;
 
-  info.cpu_usage = malloc(info.cpu_count * sizeof(float));
+  info.cpu_usage = (float *)malloc(info.cpu_count * sizeof(float));
   if (info.cpu_usage == nullptr) { CRIT_ERR("malloc"); }
 
 #ifndef OLDCPU
@@ -321,7 +336,7 @@ void get_cpu_count() {
 #endif
 }
 
-void update_cpu_usage() {
+int update_cpu_usage() {
 #ifdef OLDCPU
   int mib[2] = {CTL_KERN, KERN_CPTIME};
   long used, total;
@@ -401,12 +416,14 @@ void update_cpu_usage() {
     oldtotal[i] = total;
   }
 #endif
+
+  return 0;
 }
 
 void free_cpu(struct text_object *) { /* no-op */
 }
 
-void update_load_average() {
+int update_load_average() {
   double v[3];
 
   getloadavg(v, 3);
@@ -414,8 +431,11 @@ void update_load_average() {
   info.loadavg[0] = (float)v[0];
   info.loadavg[1] = (float)v[1];
   info.loadavg[2] = (float)v[2];
+
+  return 0;
 }
 
+#define MAXSENSORDEVICES 128
 #define OBSD_MAX_SENSORS 256
 static struct obsd_sensors_struct {
   int device;
@@ -428,7 +448,7 @@ static conky::simple_config_setting<int> sensor_device("sensor_device", 0,
                                                        false);
 
 /* read sensors from sysctl */
-void update_obsd_sensors() {
+int update_obsd_sensors() {
   int sensor_cnt, dev, numt, mib[5] = {CTL_HW, HW_SENSORS, 0, 0, 0};
   struct sensor sensor;
   struct sensordev sensordev;
@@ -446,10 +466,11 @@ void update_obsd_sensors() {
   mib[2] = dev;
   if (sysctl(mib, 3, &sensordev, &sdlen, nullptr, 0) == -1) {
     if (errno != ENOENT) { warn("sysctl"); }
-    return;
+    return 0;
     // continue;
   }
-  for (type = 0; type < SENSOR_MAX_TYPES; type++) {
+  for (int t = 0; t < SENSOR_MAX_TYPES; t++) {
+    type = (enum sensor_type) t;
     mib[3] = type;
     for (numt = 0; numt < sensordev.maxnumt[type]; numt++) {
       mib[4] = numt;
@@ -480,6 +501,8 @@ void update_obsd_sensors() {
   /* } */
 
   init_sensors = 1;
+
+  return 0;
 }
 
 void parse_obsd_sensor(struct text_object *obj, const char *arg) {
@@ -491,21 +514,24 @@ void parse_obsd_sensor(struct text_object *obj, const char *arg) {
     obj->data.l = atoi(&arg[0]);
 }
 
-void print_obsd_sensors_temp(struct text_object *obj, char *p, int p_max_size) {
+void print_obsd_sensors_temp(struct text_object *obj, char *p,
+                             unsigned int p_max_size) {
   obsd_sensors.device = sensor_device.get(*state);
   update_obsd_sensors();
   temp_print(p, p_max_size, obsd_sensors.temp[obsd_sensors.device][obj->data.l],
              TEMP_CELSIUS, 1);
 }
 
-void print_obsd_sensors_fan(struct text_object *obj, char *p, int p_max_size) {
+void print_obsd_sensors_fan(struct text_object *obj, char *p,
+                            unsigned int p_max_size) {
   obsd_sensors.device = sensor_device.get(*state);
   update_obsd_sensors();
   snprintf(p, p_max_size, "%d",
            obsd_sensors.fan[obsd_sensors.device][obj->data.l]);
 }
 
-void print_obsd_sensors_volt(struct text_object *obj, char *p, int p_max_size) {
+void print_obsd_sensors_volt(struct text_object *obj, char *p,
+                             unsigned int p_max_size) {
   obsd_sensors.device = sensor_device.get(*state);
   update_obsd_sensors();
   snprintf(p, p_max_size, "%.2f",
@@ -514,7 +540,7 @@ void print_obsd_sensors_volt(struct text_object *obj, char *p, int p_max_size) {
 
 /* chipset vendor */
 void get_obsd_vendor(struct text_object *obj, char *buf,
-                     size_t client_buffer_size) {
+                     unsigned int client_buffer_size) {
   int mib[2];
   char vendor[64];
   size_t size = sizeof(vendor);
@@ -534,7 +560,7 @@ void get_obsd_vendor(struct text_object *obj, char *buf,
 
 /* chipset name */
 void get_obsd_product(struct text_object *obj, char *buf,
-                      size_t client_buffer_size) {
+                      unsigned int client_buffer_size) {
   int mib[2];
   char product[64];
   size_t size = sizeof(product);
@@ -628,36 +654,38 @@ cleanup:
 }
 #endif
 
-void clear_diskio_stats() {}
-
-struct diskio_stat *prepare_diskio_stat(const char *s) {}
-
-void update_diskio() { return; /* XXX: implement? hifi: not sure how */ }
+int update_diskio() { return 0; /* XXX: implement? hifi: not sure how */ }
 
 /* While topless is obviously better, top is also not bad. */
 
 void get_top_info(void) {
-  struct kinfo_proc2 *p;
+  struct kinfo_proc *p;
   struct process *proc;
   int n_processes;
   int i;
 
   kvm_init();
 
-  p = kvm_getproc2(kd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc2),
+  p = kvm_getprocs(kd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc),
                    &n_processes);
 
   for (i = 0; i < n_processes; i++) {
-    if (!((p[i].p_flag & P_SYSTEM)) && p[i].p_comm != nullptr) {
-      proc = find_process(p[i].p_pid);
-      if (!proc) proc = new_process(p[i].p_pid);
+    if (!((p[i].p_flag & P_SYSTEM)) && p[i].p_comm[0] != 0) {
+      proc = get_process(p[i].p_pid);
+      if (!proc) continue;
 
       proc->time_stamp = g_time;
-      proc->name = strndup(p[i].p_comm, text_buffer_size);
+      proc->name = strndup(p[i].p_comm, DEFAULT_TEXT_BUFFER_SIZE);
       proc->amount = 100.0 * p[i].p_pctcpu / FSCALE;
       /* TODO: vsize, rss, total_cpu_time */
     }
   }
+}
+
+void get_battery_short_status(char *buffer, unsigned int n, const char *bat) {
+  /* Not implemented */
+  (void)bat;
+  if (buffer && n > 0) memset(buffer, 0, n);
 }
 
 /* empty stubs so conky links */

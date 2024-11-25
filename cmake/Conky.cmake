@@ -96,13 +96,13 @@ set(conky_includes ${CMAKE_BINARY_DIR})
 # enabled! Thus disable this and _LARGEFILE64_SOURCE isnt needed, it is already
 # used on macOS.
 #
-if(NOT OS_DARWIN)
+if(NOT OS_DARWIN AND NOT OS_OPENBSD)
   add_definitions(-D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L) # Standard definitions
   set(
     CMAKE_REQUIRED_DEFINITIONS
     "${CMAKE_REQUIRED_DEFINITIONS} -D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L"
   )
-endif(NOT OS_DARWIN)
+endif(NOT OS_DARWIN AND NOT OS_OPENBSD)
 
 if(OS_FREEBSD)
   add_definitions(-D__BSD_VISIBLE=1 -D_XOPEN_SOURCE=700)
@@ -116,6 +116,15 @@ if(OS_DRAGONFLY)
   set(conky_libs ${conky_libs} -L/usr/pkg/lib)
   set(conky_includes ${conky_includes} -I/usr/pkg/include)
 endif(OS_DRAGONFLY)
+
+if(OS_OPENBSD)
+  # For asprintf
+  add_definitions(-D_GNU_SOURCE) # Standard definitions
+  set(
+    CMAKE_REQUIRED_DEFINITIONS
+    "${CMAKE_REQUIRED_DEFINITIONS} -D_GNU_SOURCE"
+  )
+endif(OS_OPENBSD)
 
 if(OS_SOLARIS)
   set(conky_libs ${conky_libs} -L/usr/local/lib)

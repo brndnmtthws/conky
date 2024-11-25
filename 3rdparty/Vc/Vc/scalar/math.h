@@ -115,7 +115,12 @@ template<> Vc_ALWAYS_INLINE void sincos(const Scalar::Vector<double> &x, Scalar:
 #elif Vc_HAS_BUILTIN(__builtin_sincos) || defined Vc_GCC
     __builtin_sincos(x.data(), &sin->data(), &cos->data());
 #else
-    ::sincos(x.data(), &sin->data(), &cos->data());
+    #if defined(__OpenBSD__)
+        sin->data() = ::sin(x.data());
+        cos->data() = ::cos(x.data());
+    #else /* OpenBSD */
+        ::sincos(x.data(), &sin->data(), &cos->data());
+    #endif /* OpenBSD */
 #endif
 }
 

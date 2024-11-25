@@ -432,8 +432,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   }
   obj->callbacks.print = &print_acpiacadapter;
   obj->callbacks.free = &gen_free_opaque;
+  END
 #endif /* !__OpenBSD__ */
-  END OBJ(freq, nullptr) get_cpu_count();
+  OBJ(freq, nullptr) get_cpu_count();
   if ((arg == nullptr) || strlen(arg) >= 3 ||
       strtol(&arg[0], nullptr, 10) == 0 ||
       static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) >
@@ -1246,7 +1247,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(memwithbuffersgraph, &update_meminfo) scan_graph(obj, arg, 1, FALSE);
   obj->callbacks.graphval = &mem_with_buffers_barval;
 #endif /* BUILD_GUI*/
-#ifdef HAVE_SOME_SOUNDCARD_H
+#ifdef HAVE_SOUNDCARD_H
   END OBJ(mixer, 0) parse_mixer_arg(obj, arg);
   obj->callbacks.percentage = &mixer_percentage;
   END OBJ(mixerl, 0) parse_mixer_arg(obj, arg);
@@ -1261,7 +1262,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.barval = &mixerr_barval;
   END OBJ_IF(if_mixer_mute, 0) parse_mixer_arg(obj, arg);
   obj->callbacks.iftest = &check_mixer_muted;
-#endif /* HAVE_SOME_SOUNDCARD_H */
+#endif /* HAVE_SOUNDCARD_H */
 #ifdef BUILD_GUI
   END OBJ(monitor, nullptr) obj->callbacks.print = &print_monitor;
   END OBJ(monitor_number, nullptr) obj->callbacks.print = &print_monitor_number;
