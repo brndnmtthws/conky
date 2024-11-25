@@ -56,7 +56,7 @@
 #include "timeinfo.h"
 #include "top.h"
 
-#if defined(_POSIX_C_SOURCE) && !defined(__OpenBSD__)
+#if defined(_POSIX_C_SOURCE) && !defined(__OpenBSD__) && !defined(__HAIKU__)
 #include <wordexp.h>
 #endif
 
@@ -139,7 +139,7 @@ double get_time() {
   return tv.tv_sec + (tv.tv_nsec * 1e-9);
 }
 
-#if defined(_POSIX_C_SOURCE) && !defined(__OpenBSD__)
+#if defined(_POSIX_C_SOURCE) && !defined(__OpenBSD__) && !defined(__HAIKU__)
 std::filesystem::path to_real_path(const std::string &source) {
   wordexp_t p;
   char **w;
