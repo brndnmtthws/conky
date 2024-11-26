@@ -147,7 +147,9 @@
 #include "dragonfly.h"
 #elif defined(__OpenBSD__)
 #include "openbsd.h"
-#endif /* __OpenBSD__ */
+#elif defined(__NetBSD__)
+#include "netbsd.h"
+#endif
 
 #include "gradient.h"
 
@@ -2061,7 +2063,7 @@ void load_config_file() {
 
 inline void reset_optind() {
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
-    defined(__OpenBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
+    defined(__OpenBSD__) || defined(__DragonFly__)
   optind = optreset = 1;
 #else
   optind = 0;

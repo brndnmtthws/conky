@@ -53,6 +53,8 @@
 #include "openbsd.h"
 #elif defined(__DragonFly__)
 #include "dragonfly.h"
+#elif defined(__NetBSD__)
+#include "netbsd.h"
 #elif defined(__HAIKU__)
 #include "haiku.h"
 #elif defined(__APPLE__) && defined(__MACH__)
@@ -61,7 +63,8 @@
 
 #if !defined(HAVE_STRUCT_STATFS_F_FSTYPENAME) && !defined(__OpenBSD__) &&  \
     !defined(__FreeBSD__) && !defined(__DragonFly__) && !defined(__sun) && \
-    !defined(__HAIKU__) && !(defined(__APPLE__) && defined(__MACH__))
+    !defined(__HAIKU__) && !(defined(__APPLE__) && defined(__MACH__)) && \
+    !defined(__NetBSD__)
 #include <mntent.h>
 #endif
 
@@ -121,11 +124,14 @@ struct fs_stat *prepare_fs_stat(const char *s) {
 }
 
 #if defined(__APPLE__)
-#define statfs_func statfs
-#define statfs_struct statfs
+  #define statfs_func statfs
+  #define statfs_struct statfs
+#elif defined(__NetBSD__)
+  #define statfs_func statvfs
+  #define statfs_struct statvfs
 #else
-#define statfs_func statfs64
-#define statfs_struct statfs64
+  #define statfs_func statfs64
+  #define statfs_struct statfs64
 #endif /* defined(__APPLE__) */
 
 static void update_fs_stat(struct fs_stat *fs) {
@@ -163,7 +169,7 @@ static void update_fs_stat(struct fs_stat *fs) {
 void get_fs_type(const char *path, char *result) {
 #if defined(HAVE_STRUCT_STATFS_F_FSTYPENAME) || defined(__FreeBSD__) ||     \
     defined(__OpenBSD__) || defined(__DragonFly__) || defined(__HAIKU__) || \
-    (defined(__APPLE__) && defined(__MACH__))
+    (defined(__APPLE__) && defined(__MACH__)) || defined(__NetBSD__)
 
   struct statfs_struct s {};
   if (statfs_func(path, &s) == 0) {

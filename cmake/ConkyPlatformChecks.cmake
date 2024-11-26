@@ -97,6 +97,7 @@ endif(CMAKE_SYSTEM_NAME MATCHES "SunOS")
 
 if(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
   set(OS_NETBSD true)
+  set(conky_libs ${conky_libs} -lkvm)
 else(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
   set(OS_NETBSD false)
 endif(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
@@ -117,6 +118,7 @@ endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 if(NOT OS_LINUX
   AND NOT OS_FREEBSD
   AND NOT OS_OPENBSD
+  AND NOT OS_NETBSD
   AND NOT OS_DRAGONFLY
   AND NOT OS_SOLARIS
   AND NOT OS_HAIKU
@@ -133,6 +135,9 @@ endif(NOT
   AND
   NOT
   OS_OPENBSD
+  AND
+  NOT
+  OS_NETBSD
   AND
   NOT
   OS_DRAGONFLY
@@ -154,7 +159,7 @@ endif(OS_LINUX)
 if(BUILD_OPENSOUNDSYS)
   if(OS_LINUX)
     check_include_files("linux/soundcard.h" HAVE_SOUNDCARD_H)
-  elseif(OS_OPENBSD)
+  elseif(OS_OPENBSD OR OS_NETBSD)
     check_include_files("soundcard.h" HAVE_SOUNDCARD_H)
     # OpenBSD (and FreeBSD?) provide emulation layer on top of sndio.
     if(HAVE_SOUNDCARD_H)
@@ -168,7 +173,6 @@ if(BUILD_OPENSOUNDSYS)
     check_include_files("sys/soundcard.h" HAVE_SOUNDCARD_H)
   endif(OS_LINUX)
 endif(BUILD_OPENSOUNDSYS)
-
 
 if(BUILD_I18N)
   include(FindIntl)
@@ -249,14 +253,39 @@ endif(BUILD_HTTP)
 
 if(BUILD_NCURSES)
   set(CURSES_NEED_NCURSES TRUE)
-  include(FindCurses)
 
-  if(NOT CURSES_FOUND)
-    message(FATAL_ERROR "Unable to find ncurses library")
-  endif(NOT CURSES_FOUND)
+  find_path(CURSES_INCLUDE_PATH
+    NAMES curses.h
+    PATH_SUFFIXES ncurses
+    PATHS /usr/include /usr/local/include /usr/pkg/include
+  )
 
-  set(conky_libs ${conky_libs} ${CURSES_LIBRARIES})
-  set(conky_includes ${conky_includes} ${CURSES_INCLUDE_DIR})
+  find_library(CURSES_LIBRARY
+    NAMES curses
+    PATHS /lib /usr/lib /usr/local/lib /usr/pkg/lib
+  )
+
+  find_package(PkgConfig QUIET)
+  if(PKG_CONFIG_FOUND)
+    pkg_search_module(NCURSES ncurses)
+    set(CURSES_LIBRARY ${NCURSES_LDFLAGS})
+  endif()
+
+  if(NOT CURSES_LIBRARY OR NOT CURSES_INCLUDE_PATH)
+    message(FATAL_ERROR "Unable to find curses library")
+  else(NOT CURSES_LIBRARY OR NOT CURSES_INCLUDE_PATH)
+    message(STATUS "curses found.")
+    message(STATUS "  include: ${CURSES_INCLUDE_PATH}")
+    message(STATUS "  lib: ${CURSES_LIBRARY}")
+  endif(NOT CURSES_LIBRARY OR NOT CURSES_INCLUDE_PATH)
+
+  set(conky_libs ${conky_libs} ${CURSES_LIBRARY})
+  set(conky_includes ${conky_includes} ${CURSES_INCLUDE_PATH})
+
+  if(OS_NETBSD)
+    cmake_path(GET CURSES_INCLUDE_PATH PARENT_PATH CURSES_PARENT)
+    set(conky_includes ${conky_includes} ${CURSES_PARENT})
+  endif(OS_NETBSD)
 endif(BUILD_NCURSES)
 
 if(BUILD_MYSQL)
