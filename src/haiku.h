@@ -40,8 +40,6 @@ inline int statfs(const char *path, struct statfs *buf) {
 #define f_bfree free_blocks
 #define f_fstypename fsh_name
 
-#define HAIKU_HOME_DIR "/boot/home"
-
 bool is_conky_already_running(void);
 
 #endif /*HAIKU_H_*/
