@@ -34,6 +34,7 @@
 #include <sys/resource.h>
 #include <sys/proc.h>
 #include <sys/sensors.h>
+#include <sys/sched.h>
 #include <sys/socket.h>
 #include <sys/swap.h>
 #include <sys/sysctl.h>
@@ -70,23 +71,23 @@
 #define LOG1024 10
 #define pagetok(size) ((size) << pageshift)
 
-#define CP_USER   0
-#define CP_NICE   1
-#define CP_SYS    2
-#define CP_INTR   3
-#define CP_IDLE   4
-#define CPUSTATES 5
-
 inline void proc_find_top(struct process **cpu, struct process **mem);
 
-static short cpu_setup = 0;
 static kvm_t *kd = 0;
 
 struct ifmibdata *data = nullptr;
 size_t len = 0;
 
-int init_kvm = 0;
-int init_sensors = 0;
+static int init_cpu = 0;
+static int init_kvm = 0;
+static int init_sensors = 0;
+
+struct cpu_load {
+  u_int64_t old_used;
+  u_int64_t old_total;
+};
+
+static struct cpu_load *cpu_loads = nullptr;
 
 static int kvm_init() {
   if (init_kvm) { return 1; }
@@ -293,129 +294,91 @@ int update_running_processes() {
   return 0;
 }
 
-/* new SMP code can be enabled by commenting the following line */
-#define OLDCPU
-
-#ifdef OLDCPU
-struct cpu_load_struct {
-  unsigned long load[5];
-};
-
-struct cpu_load_struct fresh = {{0, 0, 0, 0, 0}};
-long cpu_used, oldtotal, oldused;
-#else
-#include <assert.h>
-int64_t *fresh = nullptr;
-
-/* XXX is 8 enough? - What's the constant for MAXCPU? */
-/* allocate this with malloc would be better */
-int64_t oldtotal[8], oldused[8];
-#endif
-
 void get_cpu_count() {
-  int cpu_count = 1; /* default to 1 cpu */
-#ifndef OLDCPU
+  int cpu_count = 0;
   int mib[2] = {CTL_HW, HW_NCPU};
-  size_t len = sizeof(cpu_count);
+  size_t size = sizeof(cpu_count);
 
-  if (sysctl(mib, 2, &cpu_count, &len, nullptr, 0) != 0) {
-    NORM_ERR("error getting cpu count, defaulting to 1");
+  if (sysctl(mib, 2, &cpu_count, &size, nullptr, 0) != 0) {
+    NORM_ERR("unable to get hw.ncpu, defaulting to 1");
+    info.cpu_count = 1;
+  } else {
+    info.cpu_count = cpu_count;
   }
-#endif
-  info.cpu_count = cpu_count;
 
-  info.cpu_usage = (float *)malloc(info.cpu_count * sizeof(float));
-  if (info.cpu_usage == nullptr) { CRIT_ERR("malloc"); }
-
-#ifndef OLDCPU
-  assert(fresh == nullptr); /* XXX Is this leaking memory? */
-  /* XXX Where shall I free this? */
-  if (nullptr == (fresh = calloc(cpu_count, sizeof(int64_t) * CPUSTATES))) {
+  // [1, 2, ..., N] - CPU0, CPU1, ..., CPUN-1
+  info.cpu_usage = (float *)calloc(info.cpu_count + 1, sizeof(float));
+  if (info.cpu_usage == nullptr) {
     CRIT_ERR("calloc");
   }
-#endif
+
+  cpu_loads = (struct cpu_load*)calloc(info.cpu_count + 1, sizeof(struct cpu_load));
+  if (cpu_loads == nullptr) {
+    CRIT_ERR("calloc");
+  }
 }
 
 int update_cpu_usage() {
-#ifdef OLDCPU
-  int mib[2] = {CTL_KERN, KERN_CPTIME};
-  long used, total;
   long cp_time[CPUSTATES];
-  size_t len = sizeof(cp_time);
-#else
+  int mib_cp_time[2] = {CTL_KERN, KERN_CPTIME};
+  u_int64_t cp_time2[CPUSTATES];
+  int mib_cp_time2[3] = {CTL_KERN, KERN_CPTIME2, 0};
   size_t size;
-  unsigned int i;
-#endif
+  u_int64_t used = 0, total = 0;
 
-  /* add check for !info.cpu_usage since that mem is freed on a SIGUSR1 */
-  if ((cpu_setup == 0) || (!info.cpu_usage)) {
+  if (init_cpu == 0){
     get_cpu_count();
-    cpu_setup = 1;
+    init_cpu = 1;
   }
 
-#ifdef OLDCPU
-  if (sysctl(mib, 2, &cp_time, &len, nullptr, 0) < 0) {
-    NORM_ERR("Cannot get kern.cp_time");
+  size = sizeof(cp_time);
+  if (sysctl(mib_cp_time, 2, &cp_time, &size, nullptr, 0) != 0) {
+      NORM_ERR("unable to get kern.cp_time");
+      return 1;
   }
 
-  fresh.load[0] = cp_time[CP_USER];
-  fresh.load[1] = cp_time[CP_NICE];
-  fresh.load[2] = cp_time[CP_SYS];
-  fresh.load[3] = cp_time[CP_IDLE];
-  fresh.load[4] = cp_time[CP_IDLE];
+  for (int j = 0; j < CPUSTATES; ++j) {
+    total += cp_time[j];
+  }
+  used = total - cp_time[CP_IDLE];
 
-  used = fresh.load[0] + fresh.load[1] + fresh.load[2];
-  total = fresh.load[0] + fresh.load[1] + fresh.load[2] + fresh.load[3];
-
-  if ((total - oldtotal) != 0) {
-    info.cpu_usage[0] = ((double)(used - oldused)) / (double)(total - oldtotal);
+  if ((total - cpu_loads[0].old_total) != 0) {
+    const float diff_used = (float)(used - cpu_loads[0].old_used);
+    const float diff_total = (float)(total - cpu_loads[0].old_total);
+    info.cpu_usage[0] = diff_used / diff_total;
   } else {
     info.cpu_usage[0] = 0;
   }
+  cpu_loads[0].old_used = used;
+  cpu_loads[0].old_total = total;
 
-  oldused = used;
-  oldtotal = total;
-#else
-  if (info.cpu_count > 1) {
-    size = CPUSTATES * sizeof(int64_t);
-    for (i = 0; i < info.cpu_count; i++) {
-      int cp_time_mib[] = {CTL_KERN, KERN_CPTIME2, i};
-      if (sysctl(cp_time_mib, 3, &(fresh[i * CPUSTATES]), &size, nullptr, 0) <
-          0) {
-        NORM_ERR("sysctl kern.cp_time2 failed");
-      }
-    }
-  } else {
-    int cp_time_mib[] = {CTL_KERN, KERN_CPTIME};
-    long cp_time_tmp[CPUSTATES];
-
-    size = sizeof(cp_time_tmp);
-    if (sysctl(cp_time_mib, 2, cp_time_tmp, &size, nullptr, 0) < 0) {
-      NORM_ERR("sysctl kern.cp_time failed");
+  for (int i = 0; i < info.cpu_count; ++i) {
+    mib_cp_time2[2] = i;
+    size = sizeof(cp_time2);
+    if (sysctl(mib_cp_time2, 3, &cp_time2, &size, nullptr, 0) != 0) {
+      NORM_ERR("unable to get kern.cp_time2 for cpu%d", i);
+      return 1;
     }
 
-    for (i = 0; i < CPUSTATES; i++) { fresh[i] = (int64_t)cp_time_tmp[i]; }
-  }
+    total = 0;
+    used = 0;
+    for (int j = 0; j < CPUSTATES; ++j) {
+      total += cp_time2[j];
+    }
+    used = total - cp_time2[CP_IDLE];
 
-  /* XXX Do sg with this int64_t => long => double ? float hell. */
-  for (i = 0; i < info.cpu_count; i++) {
-    int64_t used, total;
-    int at = i * CPUSTATES;
-
-    used = fresh[at + CP_USER] + fresh[at + CP_NICE] + fresh[at + CP_SYS];
-    total = used + fresh[at + CP_IDLE];
-
-    if ((total - oldtotal[i]) != 0) {
-      info.cpu_usage[i] =
-          ((double)(used - oldused[i])) / (double)(total - oldtotal[i]);
+    const int n = i + 1; // [0] is the total CPU, must shift by 1
+    if ((total - cpu_loads[n].old_total) != 0) {
+      const float diff_used = (float)(used - cpu_loads[n].old_used);
+      const float diff_total = (float)(total - cpu_loads[n].old_total);
+      info.cpu_usage[n] = diff_used / diff_total;
     } else {
-      info.cpu_usage[i] = 0;
+      info.cpu_usage[n] = 0;
     }
 
-    oldused[i] = used;
-    oldtotal[i] = total;
+    cpu_loads[n].old_used = used;
+    cpu_loads[n].old_total = total;
   }
-#endif
 
   return 0;
 }
