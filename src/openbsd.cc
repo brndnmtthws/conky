@@ -619,7 +619,10 @@ cleanup:
 
 int update_diskio() { return 0; /* XXX: implement? hifi: not sure how */ }
 
-/* While topless is obviously better, top is also not bad. */
+// conky uses time in hundredths of seconds (centiseconds)
+static unsigned long to_conky_time(u_int32_t sec, u_int32_t usec) {
+  return sec * 100 + (unsigned long)(usec * 0.0001);
+}
 
 void get_top_info(void) {
   struct kinfo_proc *p;
@@ -632,15 +635,23 @@ void get_top_info(void) {
   p = kvm_getprocs(kd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc),
                    &n_processes);
 
+  // NOTE(gmb): https://github.com/openbsd/src/blob/master/sys/sys/sysctl.h
   for (i = 0; i < n_processes; i++) {
     if (!((p[i].p_flag & P_SYSTEM)) && p[i].p_comm[0] != 0) {
       proc = get_process(p[i].p_pid);
       if (!proc) continue;
 
       proc->time_stamp = g_time;
-      proc->name = strndup(p[i].p_comm, DEFAULT_TEXT_BUFFER_SIZE);
+      proc->user_time = to_conky_time(p[i].p_uutime_sec, p[i].p_uutime_usec);
+      proc->kernel_time = to_conky_time(p[i].p_ustime_sec, p[i].p_ustime_usec);
+      proc->total = proc->user_time + proc->kernel_time;
+      proc->uid = p[i].p_uid;
+      proc->name = strndup(p[i].p_comm, text_buffer_size.get(*state));
+      proc->basename = strndup(p[i].p_comm, text_buffer_size.get(*state));
       proc->amount = 100.0 * p[i].p_pctcpu / FSCALE;
-      /* TODO: vsize, rss, total_cpu_time */
+      proc->vsize = p[i].p_vm_map_size;
+      proc->rss = (p[i].p_vm_rssize * getpagesize());
+      proc->total_cpu_time = to_conky_time(p[i].p_rtime_sec, p[i].p_rtime_usec);
     }
   }
 }
