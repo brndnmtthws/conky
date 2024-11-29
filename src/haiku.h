@@ -18,6 +18,8 @@
 
 #include <kernel/fs_info.h>
 
+#include <OS.h>
+
 #include "common.h"
 #include "conky.h"
 
@@ -37,5 +39,7 @@ inline int statfs(const char *path, struct statfs *buf) {
 #define f_bavail free_blocks
 #define f_bfree free_blocks
 #define f_fstypename fsh_name
+
+bool is_conky_already_running(void);
 
 #endif /*HAIKU_H_*/

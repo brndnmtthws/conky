@@ -247,3 +247,25 @@ void get_battery_short_status(char *buffer, unsigned int n, const char *bat) {
 int get_entropy_avail(unsigned int *val) { return 1; }
 
 int get_entropy_poolsize(unsigned int *val) { return 1; }
+
+/******************************************
+ * Check if more than one conky process   *
+ * is running                             *
+ ******************************************/
+
+bool is_conky_already_running(void) {
+  int32 team_cookie = 0;
+  team_info team_info;
+  int32 thread_cookie = 0;
+  thread_info thread_info;
+  int32 instances = 0;
+
+  while (get_next_team_info(&team_cookie, &team_info) >= B_OK) {
+    while (get_next_thread_info(team_info.team, &thread_cookie, &thread_info) >= B_OK) {
+      if (!strcmp("conky", thread_info.name)) {
+        ++instances;
+      }
+    }
+  }
+  return instances > 1;
+}
