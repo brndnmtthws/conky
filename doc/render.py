@@ -2,6 +2,7 @@
 
 import sys
 import os
+import time
 import yaml
 import datetime
 
@@ -16,12 +17,16 @@ with open(os.path.join(base_path, "variables.yaml")) as file:
 with open(os.path.join(base_path, "lua.yaml")) as file:
     lua = yaml.safe_load(file)
 
+build_date = datetime.datetime.fromtimestamp(
+    int(os.environ.get('SOURCE_DATE_EPOCH', time.time())),
+    tz=datetime.timezone.utc,
+)
 data = {
     "config_settings": config_settings,
     "variables": variables,
     "lua": lua,
-    "date": datetime.date.today().isoformat(),
-    "copyright_year": datetime.date.today().year,
+    "date": build_date.date().isoformat(),
+    "copyright_year": build_date.year,
 }
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
