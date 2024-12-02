@@ -2383,7 +2383,7 @@ void get_battery_power_draw(char *buffer, unsigned int n, const char *bat) {
       current_now = strtol(current_now_val, &ptr, 10);
       voltage_now = strtol(voltage_now_val, &ptr, 10);
 
-      result = (double)(current_now * voltage_now) / (double)1000000000000;
+      result = current_now * (voltage_now / 1e12);
       snprintf(buffer, n, "%.1f", result);
     }
     fclose(current_now_file);
