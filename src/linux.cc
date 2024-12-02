@@ -2360,35 +2360,48 @@ void get_battery_short_status(char *buffer, unsigned int n, const char *bat) {
 }
 
 void get_battery_power_draw(char *buffer, unsigned int n, const char *bat) {
-  static int reported = 0;
-  char current_now_path[256], voltage_now_path[256], current_now_val[256],
-      voltage_now_val[256];
-  char *ptr;
-  long current_now, voltage_now;
-  FILE *current_now_file;
-  FILE *voltage_now_file;
-  double result;
+  static int reported_power = 0;
+  static int reported_other = 0;
+  char path[256];
+  char value[256];
+  FILE *fp;
+  char *ret;
 
-  snprintf(current_now_path, 255, SYSFS_BATTERY_BASE_PATH "/%s/current_now",
-           bat);
-  snprintf(voltage_now_path, 255, SYSFS_BATTERY_BASE_PATH "/%s/voltage_now",
-           bat);
+  snprintf(path, 255, SYSFS_BATTERY_BASE_PATH "/%s/power_now", bat);
+  fp = open_file(path, &reported_power);
+  if (fp != nullptr) {
+    ret = fgets(value, 256, fp);
+    fclose(fp);
 
-  current_now_file = open_file(current_now_path, &reported);
-  voltage_now_file = open_file(voltage_now_path, &reported);
-
-  if (current_now_file != nullptr && voltage_now_file != nullptr) {
-    if (fgets(current_now_val, 256, current_now_file) &&
-        fgets(voltage_now_val, 256, voltage_now_file)) {
-      current_now = strtol(current_now_val, &ptr, 10);
-      voltage_now = strtol(voltage_now_val, &ptr, 10);
-
-      result = current_now * (voltage_now / 1e12);
+    if (ret != nullptr) {
+      double result = strtol(value, NULL, 10) * 1e-6;
       snprintf(buffer, n, "%.1f", result);
+      return;
     }
-    fclose(current_now_file);
-    fclose(voltage_now_file);
   }
+
+  snprintf(path, 255, SYSFS_BATTERY_BASE_PATH "/%s/current_now", bat);
+  fp = open_file(path, &reported_other);
+  if (fp == nullptr)
+    return;
+  ret = fgets(value, 256, fp);
+  fclose(fp);
+
+  if (ret == nullptr)
+    return;
+  double result = strtol(value, NULL, 10) * 1e-6;
+
+  snprintf(path, 255, SYSFS_BATTERY_BASE_PATH "/%s/voltage_now", bat);
+  fp = open_file(path, &reported_other);
+  if (fp == nullptr)
+    return;
+  ret = fgets(value, 256, fp);
+  fclose(fp);
+
+  if (fp == nullptr)
+    return;
+  result *= strtol(value, NULL, 10) * 1e-6;
+  snprintf(buffer, n, "%.1f", result);
 }
 
 int _get_battery_perct(const char *bat) {
