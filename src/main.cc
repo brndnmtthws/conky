@@ -52,6 +52,10 @@
 #include "freebsd.h"
 #endif /* FreeBSD */
 
+#if defined(__NetBSD__)
+#include "netbsd.h"
+#endif /* NetBSD */
+
 #if defined(__HAIKU__)
 #include "haiku.h"
 #endif /* Haiku */
@@ -411,6 +415,11 @@ int main(int argc, char **argv) {
 
   conky::shutdown_display_outputs();
 
+#ifdef BSD_COMMON
+  bsdcommon::deinit_kvm();
+#endif
+
+//TODO(gmb): Move this to bsdcommon and remove external kd.
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   kvm_close(kd);
 #endif

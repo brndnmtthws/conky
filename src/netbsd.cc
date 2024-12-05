@@ -29,6 +29,7 @@
 
 #include "netbsd.h"
 #include "net_stat.h"
+#include "bsdcommon.h"
 
 #include <err.h>
 #include <fcntl.h>
@@ -53,22 +54,9 @@
 #include <net/if.h>
 #include <net/if_types.h>
 
-static kvm_t *kd = nullptr;
-static int kd_init = 0, nkd_init = 0, cpu_setup = 0;
+static int nkd_init = 0;
 static u_int32_t sensvalue;
 static char errbuf[_POSIX2_LINE_MAX];
-
-static int init_kvm(void) {
-  if (kd_init) { return 0; }
-
-  kd = kvm_openfiles(nullptr, NULL, NULL, KVM_NO_FILES, errbuf);
-  if (kd == nullptr) {
-    NORM_ERR("cannot kvm_openfiles: %s", errbuf);
-    return -1;
-  }
-  kd_init = 1;
-  return 0;
-}
 
 static int swapmode(int *retavail, int *retfree) {
   int n;
@@ -243,6 +231,8 @@ int update_net_stats() {
 int update_total_processes() {
   /* It's easier to use kvm here than sysctl */
 
+// TODO(gmb): Use bsdcommon.
+/*
   int n_processes;
 
   info.procs = 0;
@@ -255,10 +245,14 @@ int update_total_processes() {
   }
 
   info.procs = n_processes;
+*/
   return 1;
 }
 
 int update_running_processes() {
+
+// TODO(gmb): Use bsdcommon.
+/*
   struct kinfo_proc2 *p;
   int n_processes;
   int i, cnt = 0;
@@ -279,56 +273,16 @@ int update_running_processes() {
   }
 
   info.run_procs = cnt;
-
+*/
   return 1;
 }
 
-struct cpu_load_struct {
-  unsigned long load[5];
-};
-
-struct cpu_load_struct fresh = {{0, 0, 0, 0, 0}};
-
-long cpu_used, oldtotal, oldused;
-
-// TODO(gmb): Implement support for multiple processors.
 void get_cpu_count(void) {
-  int cpu_count = 1;
-  info.cpu_count = cpu_count;
-  info.cpu_usage = (float *)malloc((info.cpu_count + 1) * sizeof(float));
-  if (info.cpu_usage == nullptr) { CRIT_ERR("malloc"); }
+  bsdcommon::get_cpu_count(&info.cpu_usage, &info.cpu_count);
 }
 
-// TODO(gmb): Implement support for multiple processors.
 int update_cpu_usage() {
-  long used, total;
-  static u_int64_t cp_time[CPUSTATES];
-  size_t len = sizeof(cp_time);
-
-  info.cpu_usage[0] = 0;
-
-  if (sysctlbyname("kern.cp_time", &cp_time, &len, nullptr, 0) < 0) {
-    NORM_ERR("cannot get kern.cp_time");
-    return 1;
-  }
-
-  fresh.load[0] = cp_time[CP_USER];
-  fresh.load[1] = cp_time[CP_NICE];
-  fresh.load[2] = cp_time[CP_SYS];
-  fresh.load[3] = cp_time[CP_IDLE];
-  fresh.load[4] = cp_time[CP_IDLE];
-
-  used = fresh.load[0] + fresh.load[1] + fresh.load[2];
-  total = fresh.load[0] + fresh.load[1] + fresh.load[2] + fresh.load[3];
-
-  if ((total - oldtotal) != 0) {
-    info.cpu_usage[0] = ((float)(used - oldused)) / (float)(total - oldtotal);
-  } else {
-    info.cpu_usage[0] = 0;
-  }
-
-  oldused = used;
-  oldtotal = total;
+  bsdcommon::update_cpu_usage(&info.cpu_usage, &info.cpu_count);
   return 1;
 }
 
