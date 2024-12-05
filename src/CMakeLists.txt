@@ -174,7 +174,7 @@ if(OS_SOLARIS)
 endif(OS_SOLARIS)
 
 if(OS_NETBSD)
-  set(netbsd netbsd.cc netbsd.h)
+  set(netbsd netbsd.cc netbsd.h bsdcommon.cc bsdcommon.h)
   set(optional_sources ${optional_sources} ${netbsd})
 endif(OS_NETBSD)
 

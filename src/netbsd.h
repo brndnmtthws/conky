@@ -15,6 +15,8 @@
 #include "common.h"
 #include "conky.h"
 
+#include "bsdcommon.h"
+
 int get_entropy_avail(unsigned int *);
 int get_entropy_poolsize(unsigned int *);
 
