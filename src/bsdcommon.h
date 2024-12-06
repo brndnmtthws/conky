@@ -53,6 +53,8 @@ namespace bsdcommon {
   void update_cpu_usage(float **cpu_usage, unsigned int *cpu_count);
 
   BSD_COMMON_PROC_STRUCT* get_processes(short unsigned int *procs);
+
+  void get_number_of_running_processes(short unsigned int *run_procs);
 };
 
 #endif /*BSDCOMMON_H_*/
