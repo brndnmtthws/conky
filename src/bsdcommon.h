@@ -35,7 +35,7 @@
   #include "sys/sysctl.h"
   #define BSD_COMMON_PROC_STRUCT struct kinfo_proc2
 #else
-  #error "Not supported BSD system"
+  #error Not supported BSD system
 #endif
 
 #include <stdint.h>
@@ -55,6 +55,7 @@ namespace bsdcommon {
   BSD_COMMON_PROC_STRUCT* get_processes(short unsigned int *procs);
 
   void get_number_of_running_processes(short unsigned int *run_procs);
+  void update_top_info();
 };
 
 #endif /*BSDCOMMON_H_*/
