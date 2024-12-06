@@ -35,20 +35,20 @@
 #include "top.h"
 
 static kvm_t *kd = nullptr;
+static char kvm_errbuf[_POSIX2_LINE_MAX];
 static bool kvm_initialised = false;
 static bool cpu_initialised = false;
 
 static struct bsdcommon::cpu_load *cpu_loads = nullptr;
 
-bool bsdcommon::init_kvm()
-{
+bool bsdcommon::init_kvm() {
   if (kvm_initialised) {
       return true;
   }
 
-  kd = kvm_open(nullptr, nullptr, nullptr, KVM_NO_FILES, nullptr);
+  kd = kvm_open(nullptr, nullptr, nullptr, KVM_NO_FILES, kvm_errbuf);
   if (kd == nullptr) {
-    NORM_ERR("opening kvm");
+    NORM_ERR("opening kvm :%s", kvm_errbuf);
     return false;
   }
 
@@ -64,8 +64,7 @@ void bsdcommon::deinit_kvm() {
   kvm_close(kd);
 }
 
-void bsdcommon::get_cpu_count(float **cpu_usage, unsigned int *cpu_count)
-{
+void bsdcommon::get_cpu_count(float **cpu_usage, unsigned int *cpu_count) {
   int ncpu = 1;
   int mib[2] = {CTL_HW, HW_NCPU};
   size_t len = sizeof(ncpu);
@@ -106,8 +105,7 @@ void bsdcommon::get_cpu_count(float **cpu_usage, unsigned int *cpu_count)
   }
 }
 
-void bsdcommon::update_cpu_usage(float **cpu_usage, unsigned int *cpu_count)
-{
+void bsdcommon::update_cpu_usage(float **cpu_usage, unsigned int *cpu_count) {
   uint64_t cp_time0[CPUSTATES];
   int mib_cpu0[2] = {CTL_KERN, KERN_CP_TIME};
   uint64_t cp_timen[CPUSTATES];
@@ -170,8 +168,7 @@ void bsdcommon::update_cpu_usage(float **cpu_usage, unsigned int *cpu_count)
   }
 }
 
-BSD_COMMON_PROC_STRUCT *bsdcommon::get_processes(short unsigned int *procs)
-{
+BSD_COMMON_PROC_STRUCT *bsdcommon::get_processes(short unsigned int *procs) {
   if (!init_kvm()) {
     return nullptr;
   }
@@ -189,8 +186,7 @@ BSD_COMMON_PROC_STRUCT *bsdcommon::get_processes(short unsigned int *procs)
   return ki;
 }
 
-static bool is_process_running(BSD_COMMON_PROC_STRUCT *p)
-{
+static bool is_process_running(BSD_COMMON_PROC_STRUCT *p) {
 #if defined(__NetBSD__)
   return p->p_stat == LSRUN || p->p_stat == LSIDL || p->p_stat == LSONPROC;
 #else
@@ -198,8 +194,7 @@ static bool is_process_running(BSD_COMMON_PROC_STRUCT *p)
 #endif
 }
 
-void bsdcommon::get_number_of_running_processes(short unsigned int *run_procs)
-{
+void bsdcommon::get_number_of_running_processes(short unsigned int *run_procs) {
   if (!init_kvm()) {
     return;
   }
@@ -220,8 +215,7 @@ void bsdcommon::get_number_of_running_processes(short unsigned int *run_procs)
   *run_procs = ctr;
 }
 
-static bool is_top_process(BSD_COMMON_PROC_STRUCT *p)
-{
+static bool is_top_process(BSD_COMMON_PROC_STRUCT *p) {
 #if defined(__NetBSD__)
   return !((p->p_flag & P_SYSTEM)) && p->p_comm[0] != 0;
 #else
@@ -229,8 +223,7 @@ static bool is_top_process(BSD_COMMON_PROC_STRUCT *p)
 #endif
 }
 
-static int32_t get_pd(BSD_COMMON_PROC_STRUCT *p)
-{
+static int32_t get_pd(BSD_COMMON_PROC_STRUCT *p) {
 #if defined(__NetBSD__)
   return p->p_pid;
 #else
@@ -243,8 +236,7 @@ static unsigned long to_conky_time(u_int32_t sec, u_int32_t usec) {
   return sec * 100 + (unsigned long)(usec * 0.0001);
 }
 
-static void proc_from_bsdproc(struct process *proc, BSD_COMMON_PROC_STRUCT *p)
-{
+static void proc_from_bsdproc(struct process *proc, BSD_COMMON_PROC_STRUCT *p) {
   free_and_zero(proc->name);
   free_and_zero(proc->basename);
 
@@ -298,8 +290,7 @@ static void proc_from_bsdproc(struct process *proc, BSD_COMMON_PROC_STRUCT *p)
   proc->kernel_time = kernel_time;
 }
 
-void bsdcommon::update_top_info()
-{
+void bsdcommon::update_top_info() {
   if (!init_kvm()) {
     return;
   }
