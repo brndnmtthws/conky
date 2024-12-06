@@ -234,30 +234,7 @@ int update_total_processes() {
 }
 
 int update_running_processes() {
-
-// TODO(gmb): Use bsdcommon.
-/*
-  struct kinfo_proc2 *p;
-  int n_processes;
-  int i, cnt = 0;
-
-  info.run_procs = 0;
-
-  if (init_kvm() < 0) {
-    return 1;
-  } else {
-    p = kvm_getproc2(kd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc2),
-                     &n_processes);
-    for (i = 0; i < n_processes; i++) {
-      if (p[i].p_stat == LSRUN || p[i].p_stat == LSIDL ||
-          p[i].p_stat == LSONPROC) {
-        cnt++;
-      }
-    }
-  }
-
-  info.run_procs = cnt;
-*/
+  bsdcommon::get_number_of_running_processes(&info.run_procs);
   return 1;
 }
 

@@ -184,3 +184,30 @@ BSD_COMMON_PROC_STRUCT* bsdcommon::get_processes(short unsigned int *procs)
   *procs = n_processes;
   return ki;
 }
+
+static bool is_process_running(BSD_COMMON_PROC_STRUCT *p)
+{
+  return p->p_stat == LSRUN || p->p_stat == LSIDL || p->p_stat == LSONPROC;
+}
+
+void bsdcommon::get_number_of_running_processes(short unsigned int *run_procs)
+{
+  if (!init_kvm()) {
+    return;
+  }
+
+  short unsigned int nprocs = 0;
+  BSD_COMMON_PROC_STRUCT* ps = get_processes(&nprocs);
+  if (ps == nullptr) {
+    return;
+  }
+
+  short unsigned int ctr = 0;
+  for (int i = 0; i < nprocs; ++i) {
+    if (is_process_running(&ps[i])) {
+      ++ctr;
+    }
+  }
+
+  *run_procs = ctr;
+}
