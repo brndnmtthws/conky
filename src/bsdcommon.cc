@@ -27,6 +27,7 @@
 
 #include <kvm.h>
 
+#include <sys/param.h>
 #include <sys/sysctl.h>
 
 static kvm_t *kd = nullptr;
@@ -35,7 +36,8 @@ static bool cpu_initialised = false;
 
 static struct bsdcommon::cpu_load *cpu_loads = nullptr;
 
-bool bsdcommon::init_kvm() {
+bool bsdcommon::init_kvm()
+{
   if (kvm_initialised) {
       return true;
   }
@@ -58,7 +60,8 @@ void bsdcommon::deinit_kvm() {
   kvm_close(kd);
 }
 
-void bsdcommon::get_cpu_count(float **cpu_usage, unsigned int *cpu_count) {
+void bsdcommon::get_cpu_count(float **cpu_usage, unsigned int *cpu_count)
+{
   int ncpu = 1;
   int mib[2] = {CTL_HW, HW_NCPU};
   size_t len = sizeof(ncpu);
@@ -84,7 +87,7 @@ void bsdcommon::get_cpu_count(float **cpu_usage, unsigned int *cpu_count) {
 
   if (*cpu_usage == nullptr) {
     // [0] - Total CPU
-    // [1, 2, ... ] - CPU1, CPU2, ...
+    // [1, 2, ... ] - CPU0, CPU1, ...
     *cpu_usage = (float*)calloc(ncpu + 1, sizeof(float));
     if (*cpu_usage == nullptr) {
       CRIT_ERR("calloc of cpu_usage");
@@ -99,7 +102,8 @@ void bsdcommon::get_cpu_count(float **cpu_usage, unsigned int *cpu_count) {
   }
 }
 
-void bsdcommon::update_cpu_usage(float **cpu_usage, unsigned int *cpu_count) {
+void bsdcommon::update_cpu_usage(float **cpu_usage, unsigned int *cpu_count)
+{
   uint64_t cp_time0[CPUSTATES];
   int mib_cpu0[2] = {CTL_KERN, KERN_CP_TIME};
   uint64_t cp_timen[CPUSTATES];
@@ -160,4 +164,23 @@ void bsdcommon::update_cpu_usage(float **cpu_usage, unsigned int *cpu_count) {
     cpu_loads[n].old_used = used;
     cpu_loads[n].old_total = total;
   }
+}
+
+BSD_COMMON_PROC_STRUCT* bsdcommon::get_processes(short unsigned int *procs)
+{
+  if (!init_kvm()) {
+    return nullptr;
+  }
+
+  int n_processes = 0;
+  BSD_COMMON_PROC_STRUCT *ki = kvm_getproc2(kd, KERN_PROC_ALL, 0,
+                                            sizeof(BSD_COMMON_PROC_STRUCT),
+                                            &n_processes);
+  if (ki == nullptr) {
+    NORM_ERR("kvm_getproc2() failed");
+    return nullptr;
+  }
+
+  *procs = n_processes;
+  return ki;
 }
