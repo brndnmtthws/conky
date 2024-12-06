@@ -247,6 +247,10 @@ int update_cpu_usage() {
   return 1;
 }
 
+void get_top_info(void) {
+  bsdcommon::update_top_info();
+}
+
 void free_cpu(struct text_object *) { /* no-op */
 }
 
@@ -318,6 +322,3 @@ int update_diskio(void) {
   return 1;
 }
 
-void get_top_info(void) {
-  bsdcommon::update_top_info();
-}
