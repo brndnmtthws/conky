@@ -259,7 +259,6 @@ static void proc_from_bsdproc(struct process *proc, BSD_COMMON_PROC_STRUCT *p) {
   #error Not supported BSD system 
 #endif
 
-  proc->total_cpu_time = proc->user_time + proc->kernel_time;
   if (proc->previous_user_time == ULONG_MAX) {
     proc->previous_user_time = proc->user_time;
   }
