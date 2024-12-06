@@ -30,6 +30,10 @@
 #include <sys/param.h>
 #include <sys/sysctl.h>
 
+#include <string.h>
+
+#include "top.h"
+
 static kvm_t *kd = nullptr;
 static bool kvm_initialised = false;
 static bool cpu_initialised = false;
@@ -166,7 +170,7 @@ void bsdcommon::update_cpu_usage(float **cpu_usage, unsigned int *cpu_count)
   }
 }
 
-BSD_COMMON_PROC_STRUCT* bsdcommon::get_processes(short unsigned int *procs)
+BSD_COMMON_PROC_STRUCT *bsdcommon::get_processes(short unsigned int *procs)
 {
   if (!init_kvm()) {
     return nullptr;
@@ -187,7 +191,11 @@ BSD_COMMON_PROC_STRUCT* bsdcommon::get_processes(short unsigned int *procs)
 
 static bool is_process_running(BSD_COMMON_PROC_STRUCT *p)
 {
+#if defined(__NetBSD__)
   return p->p_stat == LSRUN || p->p_stat == LSIDL || p->p_stat == LSONPROC;
+#else
+  #error Not supported BSD system 
+#endif
 }
 
 void bsdcommon::get_number_of_running_processes(short unsigned int *run_procs)
@@ -210,4 +218,112 @@ void bsdcommon::get_number_of_running_processes(short unsigned int *run_procs)
   }
 
   *run_procs = ctr;
+}
+
+static bool is_top_process(BSD_COMMON_PROC_STRUCT *p)
+{
+#if defined(__NetBSD__)
+  return !((p->p_flag & P_SYSTEM)) && p->p_comm[0] != 0;
+#else
+  #error Not supported BSD system 
+#endif
+}
+
+static int32_t get_pd(BSD_COMMON_PROC_STRUCT *p)
+{
+#if defined(__NetBSD__)
+  return p->p_pid;
+#else
+  #error Not supported BSD system 
+#endif
+}
+
+// conky uses time in hundredths of seconds (centiseconds)
+static unsigned long to_conky_time(u_int32_t sec, u_int32_t usec) {
+  return sec * 100 + (unsigned long)(usec * 0.0001);
+}
+
+static void proc_from_bsdproc(struct process *proc, BSD_COMMON_PROC_STRUCT *p)
+{
+  free_and_zero(proc->name);
+  free_and_zero(proc->basename);
+
+  unsigned long user_time = 0;
+  unsigned long kernel_time = 0;
+
+#if defined(__NetBSD__)
+  // https://github.com/netbsd/src/blob/trunk/sys/sys/sysctl.h
+  proc->time_stamp = g_time;
+  proc->user_time = to_conky_time(p->p_uutime_sec, p->p_uutime_usec);
+  proc->kernel_time = to_conky_time(p->p_ustime_sec, p->p_ustime_usec);
+  proc->uid = p->p_uid;
+  proc->name = strndup(p->p_comm, text_buffer_size.get(*::state));
+  proc->basename = strndup(p->p_comm, text_buffer_size.get(*::state));
+  proc->amount = 100.0 * p->p_pctcpu / FSCALE;
+  proc->vsize = p->p_vm_vsize * getpagesize();
+  proc->rss = p->p_vm_rssize * getpagesize();
+  proc->total_cpu_time = to_conky_time(p->p_rtime_sec, p->p_rtime_usec);
+#else
+  #error Not supported BSD system 
+#endif
+
+  proc->total_cpu_time = proc->user_time + proc->kernel_time;
+  if (proc->previous_user_time == ULONG_MAX) {
+    proc->previous_user_time = proc->user_time;
+  }
+
+  if (proc->previous_kernel_time == ULONG_MAX) {
+    proc->previous_kernel_time = proc->kernel_time;
+  }
+
+  /* strangely, the values aren't monotonous (from Linux) */
+  if (proc->previous_user_time > proc->user_time) {
+    proc->previous_user_time = proc->user_time;
+  }
+
+  if (proc->previous_kernel_time > proc->kernel_time) {
+    proc->previous_kernel_time = proc->kernel_time;
+  }
+
+  /* store the difference of the user_time */
+  user_time = proc->user_time - proc->previous_user_time;
+  kernel_time = proc->kernel_time - proc->previous_kernel_time;
+
+  /* backup the process->user_time for next time around */
+  proc->previous_user_time = proc->user_time;
+  proc->previous_kernel_time = proc->kernel_time;
+
+  /* store only the difference of the user_time here... */
+  proc->user_time = user_time;
+  proc->kernel_time = kernel_time;
+}
+
+void bsdcommon::update_top_info()
+{
+  if (!init_kvm()) {
+    return;
+  }
+
+  struct process *proc = nullptr;
+  short unsigned int nprocs = 0;
+
+  BSD_COMMON_PROC_STRUCT *ps = get_processes(&nprocs);
+  if (ps == nullptr) {
+    return;
+  }
+
+  for (int i = 0; i < nprocs; ++i) {
+    BSD_COMMON_PROC_STRUCT *p = &ps[i];
+
+    if (!is_top_process(p)) {
+      continue;
+    }
+
+    proc = get_process(get_pd(p));
+    if (!proc) {
+      continue;
+    }
+
+    proc_from_bsdproc(proc, p);
+  }
 }

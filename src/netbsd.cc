@@ -319,5 +319,5 @@ int update_diskio(void) {
 }
 
 void get_top_info(void) {
-  // TODO(gmb)
+  bsdcommon::update_top_info();
 }
