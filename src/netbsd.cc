@@ -229,23 +229,7 @@ int update_net_stats() {
 }
 
 int update_total_processes() {
-  /* It's easier to use kvm here than sysctl */
-
-// TODO(gmb): Use bsdcommon.
-/*
-  int n_processes;
-
-  info.procs = 0;
-
-  if (init_kvm() < 0) {
-    return 1;
-  } else {
-    kvm_getproc2(kd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc2),
-                 &n_processes);
-  }
-
-  info.procs = n_processes;
-*/
+  bsdcommon::get_processes(&info.procs);
   return 1;
 }
 

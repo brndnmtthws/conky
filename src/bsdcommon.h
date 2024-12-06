@@ -31,6 +31,13 @@
 
 #define BSD_COMMON
 
+#if defined(__NetBSD__)
+  #include "sys/sysctl.h"
+  #define BSD_COMMON_PROC_STRUCT struct kinfo_proc2
+#else
+  #error "Not supported BSD system"
+#endif
+
 #include <stdint.h>
 
 namespace bsdcommon {
@@ -44,6 +51,8 @@ namespace bsdcommon {
 
   void get_cpu_count(float **cpu_usage, unsigned int *cpu_count);
   void update_cpu_usage(float **cpu_usage, unsigned int *cpu_count);
+
+  BSD_COMMON_PROC_STRUCT* get_processes(short unsigned int *procs);
 };
 
 #endif /*BSDCOMMON_H_*/
