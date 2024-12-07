@@ -61,16 +61,10 @@ class display_output_base {
   const std::string name;
   bool is_active = false;
   bool is_graphical = false;
-  int priority = -1;
 
   explicit display_output_base(const std::string &name) : name(name){};
 
   virtual ~display_output_base() {}
-
-  static bool priority_compare(const display_output_base *a,
-                               const display_output_base *b) {
-    return a->priority > b->priority;
-  }
 
   // check if available and enabled in settings
   virtual bool detect() { return false; }

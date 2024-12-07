@@ -80,22 +80,24 @@ std::vector<conky::display_output_base *> current_display_outputs;
 bool initialize_display_outputs() {
   std::vector<display_output_base *> outputs;
   outputs.reserve(static_cast<size_t>(output_t::OUTPUT_COUNT));
-  register_output<output_t::CONSOLE>(outputs);
-  register_output<output_t::NCURSES>(outputs);
-  register_output<output_t::FILE>(outputs);
-  register_output<output_t::HTTP>(outputs);
-  register_output<output_t::X11>(outputs);
+
+  // Order of registration is important!
+  // - Graphical outputs go before textual (e.g. X11 before NCurses).
+  // - Optional outputs go before non-optional (e.g. Wayland before X11).
+  // - Newer outputs go before older (e.g. NCurses before (hypothetical) Curses).
+  // - Fallbacks go last (in group)
   register_output<output_t::WAYLAND>(outputs);
+  register_output<output_t::X11>(outputs);
+  register_output<output_t::HTTP>(outputs);
+  register_output<output_t::FILE>(outputs);
+  register_output<output_t::NCURSES>(outputs);
+  register_output<output_t::CONSOLE>(outputs);  // global fallback - always works
 
   for (auto out : outputs) { NORM_ERR("FOUND: %s", out->name.c_str()); }
-
-  // Sort display outputs by descending priority, to try graphical ones first.
-  sort(outputs.begin(), outputs.end(), &display_output_base::priority_compare);
 
   int graphical_count = 0;
 
   for (auto output : outputs) {
-    if (output->priority < 0) continue;
     DBGP2("Testing display output '%s'... ", output->name.c_str());
     if (output->detect()) {
       DBGP2("Detected display output '%s'... ", output->name.c_str());
