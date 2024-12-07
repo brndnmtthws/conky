@@ -1055,7 +1055,7 @@ static struct wl_shm_pool *make_shm_pool(struct wl_shm *shm, int size,
     return NULL;
   }
 
-  *data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+  *data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   if (*data == MAP_FAILED) {
     fprintf(stderr, "mmap failed: %m\n");
     close(fd);
