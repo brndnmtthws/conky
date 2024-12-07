@@ -91,9 +91,7 @@ Colour from_ncurses(int nccolor) {
 }
 
 display_output_ncurses::display_output_ncurses()
-    : display_output_console("ncurses") {
-  priority = 1;
-}
+    : display_output_console("ncurses") {}
 
 bool display_output_ncurses::detect() {
   if (out_to_ncurses.get(*state)) {

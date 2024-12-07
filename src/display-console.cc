@@ -50,10 +50,7 @@ void register_output<output_t::CONSOLE>(display_outputs_t &outputs) {
 }
 
 display_output_console::display_output_console(const std::string &name_)
-    : display_output_base(name_) {
-  // lowest priority, it's a fallback
-  priority = 0;
-}
+    : display_output_base(name_) {}
 
 bool display_output_console::detect() {
   if ((out_to_stdout.get(*state) || out_to_stderr.get(*state))

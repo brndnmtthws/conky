@@ -226,7 +226,6 @@ void register_output<output_t::X11>(display_outputs_t &outputs) {
 
 display_output_x11::display_output_x11() : display_output_base("x11") {
   is_graphical = true;
-  priority = 2;
 }
 
 bool display_output_x11::detect() {

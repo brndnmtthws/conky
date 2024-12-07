@@ -127,7 +127,6 @@ std::string string_replace_all(std::string original, const std::string &oldpart,
 //}  // namespace priv
 
 display_output_http::display_output_http() : display_output_base("http") {
-  priority = 0;
   httpd = NULL;
 }
 
