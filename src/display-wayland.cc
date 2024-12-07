@@ -243,7 +243,7 @@ void register_output<output_t::WAYLAND>(display_outputs_t &outputs) {
 display_output_wayland::display_output_wayland()
     : display_output_base("wayland") {
   is_graphical = true;
-  priority = 2;
+  priority = 3;
 }
 
 bool display_output_wayland::detect() {
