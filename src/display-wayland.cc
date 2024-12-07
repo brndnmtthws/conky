@@ -784,9 +784,6 @@ void display_output_wayland::cleanup() {
 
 void display_output_wayland::set_foreground_color(Colour c) {
   current_color = c;
-#ifdef BUILD_ARGB
-  current_color.alpha = own_window_argb_value.get(*state);
-#endif /* BUILD_ARGB */
   if (global_window->cr) {
     cairo_set_source_rgba(global_window->cr, current_color.red / 255.0,
                           current_color.green / 255.0,
@@ -926,8 +923,9 @@ void display_output_wayland::clear_text(int exposures) {
 
   cairo_set_source_rgba(window->cr, color.red / 255.0, color.green / 255.0,
                         color.blue / 255.0, color.alpha / 255.0);
-  cairo_set_operator(window->cr, CAIRO_OPERATOR_SOURCE);
-  cairo_paint(window->cr);
+  cairo_set_operator(window->cr, CAIRO_OPERATOR_CLEAR);
+  cairo_rectangle(window->cr, 0, 0, window->rectangle.width(),
+                  window->rectangle.height());
   cairo_restore(window->cr);
 }
 
