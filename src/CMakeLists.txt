@@ -273,7 +273,7 @@ if(BUILD_GUI)
 endif(BUILD_GUI)
 
 if(BUILD_WAYLAND)
-  set(wl_srcs
+  set(wl_sources
     wl.cc
     wl.h
     display-wayland.cc
@@ -281,26 +281,62 @@ if(BUILD_WAYLAND)
     xdg-shell-protocol.c
     wlr-layer-shell-protocol.c
   )
-  set(optional_sources ${optional_sources} ${wl_srcs})
 
-  # generate protocol implementations
-  set(XDG_PROT_DEF "${Wayland_PROTOCOLS_DIR}/stable/xdg-shell/xdg-shell.xml")
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/xdg-shell-client-protocol.h
-    COMMAND ${Wayland_SCANNER} client-header ${XDG_PROT_DEF} xdg-shell-client-protocol.h)
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/xdg-shell-protocol.c
-    COMMAND ${Wayland_SCANNER} private-code ${XDG_PROT_DEF} xdg-shell-protocol.c
-    DEPENDS xdg-shell-client-protocol.h)
+  # Looks up wayland protocol files, build respective headers/sources, and adds
+  # them to the build.
+  #
+  # Use: add_protocol(name [v<version>])
+  macro(ADD_PROTOCOL name)
+    set(WL_PROTOCOL_PATHS
+      "${CMAKE_CURRENT_SOURCE_DIR}/wl_protocols" # first for reproducibility
+      "${Wayland_PROTOCOLS_DIR}/stable/${name}"
+      "${Wayland_PROTOCOLS_DIR}/stable"
+      "${Wayland_PROTOCOLS_DIR}/unstable/${name}"
+      "${Wayland_PROTOCOLS_DIR}/unstable"
+    )
+    if(${ARGC} GREATER 1)
+      set(VERSION ${ARGV1})
+      find_file(PROTOCOL_FILE
+        NAMES
+          "${name}-${VERSION}.xml"
+          "${name}-unstable-${VERSION}.xml"
+        PATHS ${WL_PROTOCOL_PATHS}
+        NO_CACHE
+        REQUIRED
+        NO_DEFAULT_PATH
+      )
+      message(STATUS "PROTOCOL '${name}' ${VERSION} file: ${PROTOCOL_FILE}")
+      unset(VERSION)
+    else()
+      find_file(PROTOCOL_FILE
+        NAMES
+          "${name}.xml"
+          "${name}-unstable.xml"
+        PATHS ${WL_PROTOCOL_PATHS}
+        NO_CACHE
+        REQUIRED
+        NO_DEFAULT_PATH
+      )
+      message(STATUS "PROTOCOL '${name}' file: ${PROTOCOL_FILE}")
+    endif()
+    
+    
+    add_custom_command(
+      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${name}-client-protocol.h"
+      COMMAND ${Wayland_SCANNER} client-header "${PROTOCOL_FILE}" "${name}-client-protocol.h")
+    add_custom_command(
+      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${name}-protocol.c
+      COMMAND ${Wayland_SCANNER} private-code "${PROTOCOL_FILE}" "${name}-protocol.c"
+      DEPENDS "${name}-client-protocol.h")
+    list(APPEND wl_sources "${name}-protocol.c")
+    unset(PROTOCOL_FILE)
+    unset(WL_PROTOCOL_PATHS)
+  endmacro()
+  
+  add_protocol(xdg-shell)
+  add_protocol(wlr-layer-shell v1)
 
-  set(WLR_LAYER_SHELL_PROT_DEF "${CMAKE_CURRENT_SOURCE_DIR}/wlr-layer-shell-unstable-v1.xml")
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-client-protocol.h
-    COMMAND ${Wayland_SCANNER} client-header ${WLR_LAYER_SHELL_PROT_DEF} wlr-layer-shell-client-protocol.h)
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/wlr-layer-shell-protocol.c
-    COMMAND ${Wayland_SCANNER} private-code ${WLR_LAYER_SHELL_PROT_DEF} wlr-layer-shell-protocol.c
-    DEPENDS wlr-layer-shell-client-protocol.h)
+  set(optional_sources ${optional_sources} ${wl_sources})
 endif(BUILD_WAYLAND)
 
 if(BUILD_HDDTEMP)
