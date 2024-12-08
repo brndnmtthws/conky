@@ -48,6 +48,9 @@ c6ad28074af3ec1bb4b3cc052df58062ce2a7c9b
 ### Fix issues building without BUILD_ARGB flag
 # Changes a lot of indentations in x11.cc
 f6d42c5a69fed134a8b4ed0602c892f6f7b6e242
+### Fix DependentOptions splitting arguments on spaces
+# Again, indentation changes in x11.cc
+cbebe447078e28c50957d568303f42d6b8aae126
 
 ### Cleanup build flags, global namespace and includes (#1841)
 # Large refactor of global namespace
