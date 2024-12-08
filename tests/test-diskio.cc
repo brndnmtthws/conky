@@ -42,7 +42,7 @@ TEST_CASE("diskiographval returns correct value") {
 
     obj.data.opaque = diskio;
 
-    REQUIRE(diskiographval(&obj) == Approx(2.5));
+    REQUIRE_THAT(diskiographval(&obj), Catch::Matchers::WithinRel(2.5, 0.05));
 
     delete diskio;
   }

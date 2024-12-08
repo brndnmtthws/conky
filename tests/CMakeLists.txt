@@ -14,8 +14,13 @@ if(NOT OS_DARWIN)
   list(FILTER test_srcs EXCLUDE REGEX ".*darwin.*\.cc?")
 endif()
 
+add_library(Catch2 STATIC catch2/catch_amalgamated.cpp)
+
 add_executable(test-conky test-common.cc ${test_srcs})
-target_link_libraries(test-conky conky_core)
+target_link_libraries(test-conky
+  PRIVATE Catch2
+  PUBLIC conky_core
+)
 catch_discover_tests(test-conky)
 
 if(CODE_COVERAGE)
