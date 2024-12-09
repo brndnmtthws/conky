@@ -131,4 +131,4 @@ jobs:
         run: cmake --build build
       - name: Test
         working-directory: build
-        run: ctest
+        run: ctest --output-on-failure
