@@ -1,4 +1,5 @@
 #include <array>
+#include <cstdint>
 #include <cstring>
 #include <memory>
 #include <string>
@@ -89,6 +90,7 @@ static auto MOCK_ATOMS = std::vector{
     "_NET_WM_STRUT_PARTIAL",
 };
 
+namespace mock {
 Atom name_to_atom(const char *name) {
   for (size_t i = 0; i < PREDEFINED_ATOMS.size(); i++) {
     if (std::strcmp(name, PREDEFINED_ATOMS[i]) == 0) { return i; }
@@ -100,20 +102,21 @@ Atom name_to_atom(const char *name) {
   }
   return 0;
 }
-std::string atom_to_name(Atom atom) {
+const std::string_view atom_to_name(Atom atom) {
   if (atom > XA_LAST_PREDEFINED &&
       atom - XA_LAST_PREDEFINED < MOCK_ATOMS.size()) {
-    return std::string(MOCK_ATOMS[atom - XA_LAST_PREDEFINED]);
+    return std::string_view(MOCK_ATOMS[atom - XA_LAST_PREDEFINED]);
   } else if (atom <= XA_LAST_PREDEFINED) {
-    return std::string(PREDEFINED_ATOMS[atom]);
+    return std::string_view(PREDEFINED_ATOMS[atom]);
   }
   return "UNKNOWN";
 }
+}  // namespace mock
 
 extern "C" {
 Atom XInternAtom(Display *display, const char *atom_name, int only_if_exists) {
-  if (only_if_exists) { return name_to_atom(atom_name); }
-  const auto value = name_to_atom(atom_name);
+  if (only_if_exists) { return mock::name_to_atom(atom_name); }
+  const auto value = mock::name_to_atom(atom_name);
   if (value != 0) {
     return value;
   } else {
@@ -128,7 +131,7 @@ int XChangeProperty(Display *display, Window w, Atom property, Atom type,
                     int format, int mode, const unsigned char *data,
                     int nelements) {
   mock::push_state_change(std::make_unique<mock::x11_change_property>(
-      atom_to_name(property), atom_to_name(type), format, mode, data,
+      property, type, format, static_cast<mock::set_property_mode>(mode), data,
       nelements));
   return Success;
 }

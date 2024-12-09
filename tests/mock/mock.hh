@@ -33,8 +33,10 @@ std::string debug_format(const std::string& format, Args... args) {
 /// This is intended for cases where some library function is internally invoked
 /// but would fail if conditions only present at runtime aren't met.
 struct state_change {
- public:
   virtual ~state_change() = default;
+
+  static std::string change_name() { return "state_change"; }
+
   /// Returns a string representation of this state change with information
   /// necessary to differentiate it from other variants of the same type.
   virtual std::string debug() = 0;
@@ -70,7 +72,7 @@ std::optional<T> next_state_change_t() {
 }  // namespace mock
 
 /// A variant of `mock::next_state_change_t` that integrates into Catch2.
-/// It's a macro because using `FAIL` outside of a test doesn't work.
+/// It's a macro because using `FAIL` outside of a test doesn't compile.
 #define EXPECT_NEXT_CHANGE(T)                                  \
   []() {                                                       \
     static_assert(std::is_base_of_v<mock::state_change, T>,    \
