@@ -28,23 +28,37 @@
 
 #include "catch2/catch.hpp"
 
-#include <config.h>
+#include <X11/Xlib.h>
 #include <conky.h>
-#include <data/hardware/diskio.h>
+#include <diskio.h>
+#include <cstdio>
+#include "catch2/catch_amalgamated.hpp"
+#include "config.h"
+#include "geometry.h"
+#include "gui.h"
+#include "mock/mock.hh"
+#include "mock/x11-mock.hh"
+#include "x11.h"
 
-#if BUILD_X11
-TEST_CASE("diskiographval returns correct value") {
-  struct text_object obj;
+using namespace conky;
 
-  SECTION("for valid data") {
-    diskio_stat *diskio = new diskio_stat;
-    diskio->current = 2.5;
+TEST_CASE("x11 set_struts sets correct struts") {
+  // Temporarily initialize used globals
+  workarea = absolute_rect<int>{vec2i(0, 0), vec2i(600, 800)};
+  window.geometry = rect<int>{vec2i(0, 0), vec2i(200, 400)};
 
-    obj.data.opaque = diskio;
+  SECTION("for TOP_LEFT alignment") {
+    set_struts(alignment::TOP_LEFT);
+    mock::x11_change_property full =
+        EXPECT_NEXT_CHANGE(mock::x11_change_property);
+    REQUIRE(full.property == "_NET_WM_STRUT");
 
-    REQUIRE_THAT(diskiographval(&obj), Catch::Matchers::WithinRel(2.5, 0.05));
-
-    delete diskio;
+    mock::x11_change_property partial =
+        EXPECT_NEXT_CHANGE(mock::x11_change_property);
+    REQUIRE(partial.property == "_NET_WM_STRUT_PARTIAL");
   }
+
+  // Reset globals
+  window.geometry = rect<int>{};
+  workarea = conky::absolute_rect<int>{};
 }
-#endif
