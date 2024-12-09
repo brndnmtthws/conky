@@ -82,14 +82,14 @@ x11_strut_partial expect_strut_partial(mock::x11_change_property &change) {
 TEST_CASE("x11 set_struts sets correct struts") {
   // Temporarily initialize used globals
   workarea = absolute_rect<int>{vec2i(0, 0), vec2i(600, 800)};
-  window.geometry = rect<int>{vec2i(0, 0), vec2i(200, 400)};
+  window.geometry = rect<int>{vec2i(0, 0), vec2i(200, 600)};
 
   SECTION("for TOP_LEFT alignment") {
     set_struts(alignment::TOP_LEFT);
     mock::x11_change_property full =
         EXPECT_NEXT_CHANGE(mock::x11_change_property);
     REQUIRE(full.property_name() == "_NET_WM_STRUT");
-    REQUIRE(full.type() == mock::CARDINAL);
+    REQUIRE(full.type() == mock::x11_property_type::CARDINAL);
 
     auto strut_bounds = expect_strut(full);
     // CHECK(strut_bounds.left == 0);
@@ -100,12 +100,14 @@ TEST_CASE("x11 set_struts sets correct struts") {
     mock::x11_change_property partial =
         EXPECT_NEXT_CHANGE(mock::x11_change_property);
     REQUIRE(partial.property_name() == "_NET_WM_STRUT_PARTIAL");
-    REQUIRE(partial.type_name() == "CARDINAL");
+    REQUIRE(partial.type() == mock::x11_property_type::CARDINAL);
     auto strut_partial_bounds = expect_strut_partial(partial);
     // CHECK(strut_partial_bounds.left == 0);
-    // CHECK(strut_partial_bounds.right == workarea.width() - window.geometry.width());
+    // CHECK(strut_partial_bounds.right ==
+    //       workarea.width() - window.geometry.width());
     // CHECK(strut_partial_bounds.top == 0);
-    // CHECK(strut_partial_bounds.bottom == workarea.height() - window.geometry.height());
+    // CHECK(strut_partial_bounds.bottom ==
+    //       workarea.height() - window.geometry.height());
   }
 
   // Reset globals

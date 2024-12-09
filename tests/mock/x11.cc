@@ -1,5 +1,6 @@
 #include <array>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <memory>
 #include <string>
@@ -111,6 +112,33 @@ const std::string_view atom_to_name(Atom atom) {
   }
   return "UNKNOWN";
 }
+
+size_t format_size(std::size_t format) {
+  if (format == 32) {
+    return sizeof(long);
+  } else if (format == 16) {
+    return sizeof(short);
+  } else if (format == 8) {
+    return sizeof(char);
+  } else {
+    throw "invalid format";
+  }
+}
+void dump_x11_blob(const std::byte *data, std::size_t format,
+                   std::size_t length) {
+  size_t entry_len = format_size(format);
+  for (size_t i = 0; i < length * entry_len; i++) {
+    if (((i + 1) % entry_len) == 1) { printf("%p: ", data + i); }
+    // Print bytes in order:
+    // printf("%02x ", data[i]);
+    // Reorder bytes:
+    printf("%02x ", (unsigned char)data[((i / entry_len - 1) * entry_len) +
+                                        (2 * entry_len - 1 - (i % entry_len))]);
+    if (i > 0 && ((i + 1) % entry_len) == 0) { puts(""); }
+  }
+  printf("Total bytes: %d\n", (int)(length * entry_len));
+  puts("");
+}
 }  // namespace mock
 
 extern "C" {
@@ -130,9 +158,11 @@ Atom XInternAtom(Display *display, const char *atom_name, int only_if_exists) {
 int XChangeProperty(Display *display, Window w, Atom property, Atom type,
                     int format, int mode, const unsigned char *data,
                     int nelements) {
+  // printf("Setting %s property data:\n", mock::atom_to_name(property).data());
+  // dump_x11_blob((const std::byte *)data, format, nelements);
   mock::push_state_change(std::make_unique<mock::x11_change_property>(
-      property, type, format, static_cast<mock::set_property_mode>(mode), data,
-      nelements));
+      property, type, format, static_cast<mock::set_property_mode>(mode),
+      (const std::byte *)data, nelements));
   return Success;
 }
 }

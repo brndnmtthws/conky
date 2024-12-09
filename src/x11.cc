@@ -1146,7 +1146,7 @@ void set_struts(alignment align) {
 
   Atom strut = ATOM(_NET_WM_STRUT);
   if (strut != None) {
-    long sizes[STRUT_COUNT] = {0};
+    long sizes[STRUT_COUNT] = {};
 
     int display_width = workarea.width();
     int display_height = workarea.height();
