@@ -1,13 +1,87 @@
+#include <array>
 #include <cstring>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include <X11/X.h>
+#include <X11/Xatom.h>
 #include <X11/Xlib.h>
 
 #include "mock.hh"
 #include "x11-mock.hh"
+
+static const auto PREDEFINED_ATOMS = std::array{
+    "NONE",
+    "PRIMARY",
+    "SECONDARY",
+    "ARC",
+    "ATOM",
+    "BITMAP",
+    "CARDINAL",
+    "COLORMAP",
+    "CURSOR",
+    "CUT_BUFFER0",
+    "CUT_BUFFER1",
+    "CUT_BUFFER2",
+    "CUT_BUFFER3",
+    "CUT_BUFFER4",
+    "CUT_BUFFER5",
+    "CUT_BUFFER6",
+    "CUT_BUFFER7",
+    "DRAWABLE",
+    "FONT",
+    "INTEGER",
+    "PIXMAP",
+    "POINT",
+    "RECTANGLE",
+    "RESOURCE_MANAGER",
+    "RGB_COLOR_MAP",
+    "RGB_BEST_MAP",
+    "RGB_BLUE_MAP",
+    "RGB_DEFAULT_MAP",
+    "RGB_GRAY_MAP",
+    "RGB_GREEN_MAP",
+    "RGB_RED_MAP",
+    "STRING",
+    "VISUALID",
+    "WINDOW",
+    "WM_COMMAND",
+    "WM_HINTS",
+    "WM_CLIENT_MACHINE",
+    "WM_ICON_NAME",
+    "WM_ICON_SIZE",
+    "WM_NAME",
+    "WM_NORMAL_HINTS",
+    "WM_SIZE_HINTS",
+    "WM_ZOOM_HINTS",
+    "MIN_SPACE",
+    "NORM_SPACE",
+    "MAX_SPACE",
+    "END_SPACE",
+    "SUPERSCRIPT_X",
+    "SUPERSCRIPT_Y",
+    "SUBSCRIPT_X",
+    "SUBSCRIPT_Y",
+    "UNDERLINE_POSITION",
+    "UNDERLINE_THICKNESS",
+    "STRIKEOUT_ASCENT",
+    "STRIKEOUT_DESCENT",
+    "ITALIC_ANGLE",
+    "X_HEIGHT",
+    "QUAD_WIDTH",
+    "WEIGHT",
+    "POINT_SIZE",
+    "RESOLUTION",
+    "COPYRIGHT",
+    "NOTICE",
+    "FONT_NAME",
+    "FAMILY_NAME",
+    "FULL_NAME",
+    "CAP_HEIGHT",
+    "WM_CLASS",
+    "WM_TRANSIENT_FOR",
+};
 
 static auto MOCK_ATOMS = std::vector{
     "UNKNOWN",
@@ -16,13 +90,23 @@ static auto MOCK_ATOMS = std::vector{
 };
 
 Atom name_to_atom(const char *name) {
-  for (size_t i = 0; i < MOCK_ATOMS.size(); i++) {
-    if (std::strcmp(name, MOCK_ATOMS[i]) == 0) { return i; }
+  for (size_t i = 0; i < PREDEFINED_ATOMS.size(); i++) {
+    if (std::strcmp(name, PREDEFINED_ATOMS[i]) == 0) { return i; }
+  }
+  for (size_t i = 1; i < MOCK_ATOMS.size(); i++) {
+    if (std::strcmp(name, MOCK_ATOMS[i]) == 0) {
+      return XA_LAST_PREDEFINED + i;
+    }
   }
   return 0;
 }
 std::string atom_to_name(Atom atom) {
-  if (atom < MOCK_ATOMS.size()) { return std::string(MOCK_ATOMS[atom]); }
+  if (atom > XA_LAST_PREDEFINED &&
+      atom - XA_LAST_PREDEFINED < MOCK_ATOMS.size()) {
+    return std::string(MOCK_ATOMS[atom - XA_LAST_PREDEFINED]);
+  } else if (atom <= XA_LAST_PREDEFINED) {
+    return std::string(PREDEFINED_ATOMS[atom]);
+  }
   return "UNKNOWN";
 }
 
