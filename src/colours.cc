@@ -64,7 +64,7 @@ std::optional<Colour> parse_error(const std::string &color_str,
   char *reason = new char[len + 1];
   snprintf(reason, len + 1, format, args...);
 
-  CRIT_ERR("can't parse color '%s' (len: %d): %s", color_str.c_str(),
+  NORM_ERR("can't parse color '%s' (len: %d): %s", color_str.c_str(),
            color_str.length(), reason);
   delete[] reason;
 
@@ -72,7 +72,7 @@ std::optional<Colour> parse_error(const std::string &color_str,
 }
 std::optional<Colour> parse_error(const std::string &color_str,
                                   const char *reason) {
-  CRIT_ERR("can't parse color '%s' (len: %d): %s", color_str.c_str(),
+  NORM_ERR("can't parse color '%s' (len: %d): %s", color_str.c_str(),
            color_str.length(), reason);
   return ERROR_COLOUR;
 }
