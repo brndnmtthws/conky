@@ -32,7 +32,6 @@
 #include <conky.h>
 #include <diskio.h>
 
-#if BUILD_X11
 TEST_CASE("diskiographval returns correct value") {
   struct text_object obj;
 
@@ -47,4 +46,3 @@ TEST_CASE("diskiographval returns correct value") {
     delete diskio;
   }
 }
-#endif

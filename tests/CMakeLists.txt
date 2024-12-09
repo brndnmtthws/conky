@@ -1,24 +1,40 @@
 include(CTest)
 
-include_directories(${CMAKE_SOURCE_DIR}/src)
-include_directories(${CMAKE_BINARY_DIR})
-include_directories(${conky_includes})
+file(GLOB test_sources test-*.cc)
 
-file(GLOB test_srcs test-*.cc)
+list(APPEND test_sources ${CMAKE_BINARY_DIR}/config.h)
 
 if(NOT OS_LINUX)
-  list(FILTER test_srcs EXCLUDE REGEX ".*linux.*\.cc?")
+  list(FILTER test_sources EXCLUDE REGEX ".*linux.*\.cc?")
 endif()
 
 if(NOT OS_DARWIN)
-  list(FILTER test_srcs EXCLUDE REGEX ".*darwin.*\.cc?")
+  list(FILTER test_sources EXCLUDE REGEX ".*darwin.*\.cc?")
 endif()
+
+if(NOT BUILD_X11)
+  list(FILTER test_sources EXCLUDE REGEX ".*x11.*\.cc?")
+endif()
+
+if(NOT BUILD_WAYLAND)
+  list(FILTER test_sources EXCLUDE REGEX ".*wayland.*\.cc?")
+endif()
+
+# Mocking works because it's linked before conky_core, so the linker uses mock
+# implementations instead of those that are linked later.
+file(GLOB mock_sources mock/*.cc)
 
 add_library(Catch2 STATIC catch2/catch_amalgamated.cpp)
 
-add_executable(test-conky test-common.cc ${test_srcs})
+add_executable(test-conky test-common.cc ${test_sources})
+target_include_directories(test-conky
+  PUBLIC
+  ${CMAKE_SOURCE_DIR}/src
+  ${CMAKE_BINARY_DIR}
+  ${conky_includes}
+)
 target_link_libraries(test-conky
-  PRIVATE Catch2
+  PRIVATE Catch2 ${mock_sources}
   PUBLIC conky_core
 )
 catch_discover_tests(test-conky)
