@@ -1,29 +1,31 @@
 include(CTest)
 
 file(GLOB test_sources test-*.cc)
+file(GLOB mock_sources mock/*.cc)
 
-list(APPEND test_sources ${CMAKE_BINARY_DIR}/config.h)
+macro(EXCLUDING_ANY excluded)
+  set(__condition "${ARGN}")
+  string(REGEX MATCH "^IF" __match "${__condition}")
+  if(__match STREQUAL "")
+    message(FATAL_ERROR "EXCLUDING_ANY call missing IF keyword")
+  endif()
+  unset(__match)
+  string(REGEX REPLACE "^IF" "" __condition "${__condition}")
+  if(${__condition})
+    list(FILTER test_sources EXCLUDE REGEX ".*${excluded}.*\.(cc|hh)")
+    list(FILTER mock_sources EXCLUDE REGEX ".*${excluded}.*\.(cc|hh)")
+  endif()
+  unset(__condition)
+endmacro()
 
-if(NOT OS_LINUX)
-  list(FILTER test_sources EXCLUDE REGEX ".*linux.*\.cc?")
-endif()
-
-if(NOT OS_DARWIN)
-  list(FILTER test_sources EXCLUDE REGEX ".*darwin.*\.cc?")
-endif()
-
-if(NOT BUILD_X11)
-  list(FILTER test_sources EXCLUDE REGEX ".*x11.*\.cc?")
-endif()
-
-if(NOT BUILD_WAYLAND)
-  list(FILTER test_sources EXCLUDE REGEX ".*wayland.*\.cc?")
-endif()
+excluding_any("linux"   IF NOT OS_LINUX)
+excluding_any("darwin"  IF NOT OS_DARWIN)
+excluding_any("x11"     IF (NOT BUILD_X11) OR OS_DARWIN)
+excluding_any("wayland" IF NOT BUILD_WAYLAND)
 
 # Mocking works because it's linked before conky_core, so the linker uses mock
 # implementations instead of those that are linked later.
-file(GLOB mock_sources mock/*.cc)
-
+add_library(conky-mock OBJECT ${mock_sources})
 add_library(Catch2 STATIC catch2/catch_amalgamated.cpp)
 
 add_executable(test-conky test-common.cc ${test_sources})
@@ -33,10 +35,7 @@ target_include_directories(test-conky
   ${CMAKE_BINARY_DIR}
   ${conky_includes}
 )
-target_link_libraries(test-conky
-  PRIVATE Catch2 ${mock_sources}
-  PUBLIC conky_core
-)
+target_link_libraries(test-conky Catch2 conky-mock conky_core)
 catch_discover_tests(test-conky)
 
 if(CODE_COVERAGE)
