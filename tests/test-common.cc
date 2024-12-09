@@ -196,6 +196,7 @@ TEST_CASE("cpu_percentage and cpu_barval return correct values") {
     REQUIRE(cpu_barval(&obj1) == Approx(0.507));
 
     delete[] info.cpu_usage;
+    info.cpu_usage = nullptr;
   }
 }
 
