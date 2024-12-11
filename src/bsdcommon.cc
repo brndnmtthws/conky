@@ -53,7 +53,7 @@ bool bsdcommon::init_kvm() {
   }
 
   kvm_initialised = true;
-  return false;
+  return true;
 }
 
 void bsdcommon::deinit_kvm() {
@@ -223,7 +223,7 @@ static bool is_top_process(BSD_COMMON_PROC_STRUCT *p) {
 #endif
 }
 
-static int32_t get_pd(BSD_COMMON_PROC_STRUCT *p) {
+static int32_t get_pid(BSD_COMMON_PROC_STRUCT *p) {
 #if defined(__NetBSD__)
   return p->p_pid;
 #else
@@ -309,11 +309,44 @@ void bsdcommon::update_top_info() {
       continue;
     }
 
-    proc = get_process(get_pd(p));
+    proc = get_process(get_pid(p));
     if (!proc) {
       continue;
     }
 
     proc_from_bsdproc(proc, p);
   }
+}
+
+static bool is_process(BSD_COMMON_PROC_STRUCT *p, const char *name) {
+#if defined(__NetBSD__)
+  return p->p_comm[0] != 0 && strcmp(p->p_comm, name) == 0;
+#else
+  #error Not supported BSD system 
+#endif
+}
+
+bool bsdcommon::is_conky_already_running() {
+  if (!init_kvm()) {
+    return false;
+  }
+
+  struct process *proc = nullptr;
+  short unsigned int nprocs = 0;
+  int instances = 0;
+
+  BSD_COMMON_PROC_STRUCT *ps = get_processes(&nprocs);
+  if (ps == nullptr) {
+    return false;
+  }
+
+  for (int i = 0; i < nprocs && instances < 2; ++i) {
+    BSD_COMMON_PROC_STRUCT *p = &ps[i];
+
+    if (is_process(p, "conky")) {
+      ++instances;
+    }
+  }
+
+  return instances > 1;
 }

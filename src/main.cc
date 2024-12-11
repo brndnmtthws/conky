@@ -282,9 +282,9 @@ static void print_help(const char *prog_name) {
          "   -p, --pause=SECS          pause for SECS seconds at startup "
          "before doing anything\n"
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
-    defined(__HAIKU__)
+    defined(__HAIKU__) || defined(__NetBSD__)
          "   -U, --unique              only one conky process can be created\n"
-#endif /* Linux || FreeBSD || Haiku */
+#endif /* Linux || FreeBSD || Haiku || NetBSD */
          , prog_name);
 }
 
@@ -368,18 +368,18 @@ int main(int argc, char **argv) {
         break;
 #endif /* BUILD_X11 */
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
-    defined(__HAIKU__)
+    defined(__HAIKU__) || defined(__NetBSD__)
       case 'U':
         unique_process = true;
         break;
-#endif /* Linux || FreeBSD || Haiku */
+#endif /* Linux || FreeBSD || Haiku || NetBSD */
       case '?':
         return EXIT_FAILURE;
     }
   }
 
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
-    defined(__HAIKU__)
+    defined(__HAIKU__) || defined(__NetBSD__)
   if (unique_process && is_conky_already_running()) {
     NORM_ERR("already running");
     return 0;
