@@ -56,6 +56,7 @@ namespace bsdcommon {
 
   void get_number_of_running_processes(short unsigned int *run_procs);
   void update_top_info();
-};
+  bool is_conky_already_running();
+}
 
 #endif /*BSDCOMMON_H_*/

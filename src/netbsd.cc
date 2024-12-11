@@ -322,3 +322,6 @@ int update_diskio(void) {
   return 1;
 }
 
+bool is_conky_already_running() {
+  return bsdcommon::is_conky_already_running();
+}
