@@ -6,7 +6,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <cstddef>
-#include <cstdint>
 #include <string>
 #include <string_view>
 #include <vector>

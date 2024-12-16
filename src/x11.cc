@@ -1138,7 +1138,28 @@ constexpr size_t operator*(x11_strut index) {
   return static_cast<size_t>(index);
 }
 
-/* reserve window manager space */
+/// Reserve window manager space
+///
+/// Both `_NET_WM_STRUT` and `_NET_WM_STRUT_PARTIAL` work in coordinates
+/// relative to root window (or sometimes Xinerama/Screen).
+///
+/// Values tell the WM which regions of the screen are invalidated. So, a
+/// `bottom` value of `30` means that the window reserves bottom 30px of the
+/// screen.
+///
+/// Because struts aren't handled the best by all WMs when multiple screens are
+/// used, horizontal struts (top, bottom) should be preferred because that
+/// works well for most multi-screen (horizontal monitor stacking) setups.
+/// See: https://gitlab.gnome.org/GNOME/mutter/-/issues/452
+///
+/// Different WMs handle this differently, some adhere to the spec, some don't.
+/// Spec compliant (relative to root window edges):
+/// - mutter, metacity, openbox, marco, xfwm
+/// Non-compliant (relative to edges of xinerama/single monitor):
+/// - compiz, kwin, i3, fluxbox
+///
+/// Article why KWin doesn't follow the spec:
+/// https://blog.martin-graesslin.com/blog/2016/08/panels-on-shared-screen-edges/
 void set_struts(alignment align) {
   // Middle and none align don't have least significant bit set.
   // Ensures either vertical or horizontal axis are start/end

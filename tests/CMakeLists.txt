@@ -26,9 +26,15 @@ excluding_any("wayland" IF NOT BUILD_WAYLAND)
 # Mocking works because it's linked before conky_core, so the linker uses mock
 # implementations instead of those that are linked later.
 add_library(conky-mock OBJECT ${mock_sources})
+target_include_directories(conky-mock
+  PUBLIC
+  ${CMAKE_SOURCE_DIR}/src
+  ${CMAKE_BINARY_DIR}
+  ${conky_includes}
+)
 add_library(Catch2 STATIC catch2/catch_amalgamated.cpp)
 
-add_executable(test-conky test-common.cc ${test_sources})
+add_executable(test-conky test-common.cc events.cc ${test_sources})
 target_include_directories(test-conky
   PUBLIC
   ${CMAKE_SOURCE_DIR}/src

@@ -42,8 +42,9 @@ struct state_change {
   virtual std::string debug() = 0;
 };
 
-/// Implementation detail; shouldn't be used directly.
-extern std::deque<std::unique_ptr<state_change>> _state_changes;
+namespace __internal {
+extern std::deque<std::unique_ptr<state_change>> state_changes;
+}
 
 /// Removes all `state_change`s from the queue (clearing it) and returns them.
 std::deque<std::unique_ptr<state_change>> take_state_changes();
@@ -64,7 +65,7 @@ std::optional<T> next_state_change_t() {
   if (!result.has_value()) { return std::nullopt; }
   auto cast_result = dynamic_cast<T*>(result.value().get());
   if (!cast_result) {
-    _state_changes.push_front(std::move(result.value()));
+    __internal::state_changes.push_front(std::move(result.value()));
     return std::nullopt;
   }
   return *dynamic_cast<T*>(result.value().release());
@@ -93,5 +94,13 @@ std::optional<T> next_state_change_t() {
   }();
 // garbage reinterpretation after FAIL doesn't get returned because FAIL stops
 // the test. Should be UNREACHABLE, but I have trouble including it.
+
+#define EXPECT_NO_MORE_CHANGES()                                 \
+  []() {                                                         \
+    auto length = mock::__internal::state_changes.size();        \
+    if (length > 0) {                                            \
+      FAIL("expected no more state changes; found: " << length); \
+    }                                                            \
+  }();
 
 #endif /* MOCK_HH */

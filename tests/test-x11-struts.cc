@@ -48,7 +48,10 @@ struct x11_strut {
   std::uint32_t top;
   std::uint32_t bottom;
 };
-x11_strut expect_strut(mock::x11_change_property &change) {
+x11_strut expect_strut() {
+  mock::x11_change_property change =
+      EXPECT_NEXT_CHANGE(mock::x11_change_property);
+  REQUIRE(change.property_name() == "_NET_WM_STRUT");
   REQUIRE(change.element_count() == 4);
   auto result = EXPECT_X11_ARRAY(change.data(), change.type(), change.format(),
                                  change.element_count(), std::uint32_t, 4);
@@ -69,7 +72,10 @@ struct x11_strut_partial {
   std::uint32_t bottom_start_x;
   std::uint32_t bottom_end_x;
 };
-x11_strut_partial expect_strut_partial(mock::x11_change_property &change) {
+x11_strut_partial expect_strut_partial() {
+  mock::x11_change_property change =
+      EXPECT_NEXT_CHANGE(mock::x11_change_property);
+  REQUIRE(change.property_name() == "_NET_WM_STRUT_PARTIAL");
   REQUIRE(change.element_count() == 12);
   auto result = EXPECT_X11_ARRAY(change.data(), change.type(), change.format(),
                                  change.element_count(), std::uint32_t, 12);
@@ -79,35 +85,66 @@ x11_strut_partial expect_strut_partial(mock::x11_change_property &change) {
   };
 }
 
+// from conky.cc
+extern conky::vec2i text_size;
+extern void apply_window_alignment(conky::vec2i &xy, alignment align);
+
 TEST_CASE("x11 set_struts sets correct struts") {
   // Temporarily initialize used globals
   workarea = absolute_rect<int>{vec2i(0, 0), vec2i(600, 800)};
+  const auto half_width = workarea.width() / 2;
+  const auto half_height = workarea.height() / 2;
   window.geometry = rect<int>{vec2i(0, 0), vec2i(200, 600)};
+  auto &xy = *reinterpret_cast<vec2i *>(&window.geometry);
 
   SECTION("for TOP_LEFT alignment") {
     set_struts(alignment::TOP_LEFT);
-    mock::x11_change_property full =
-        EXPECT_NEXT_CHANGE(mock::x11_change_property);
-    REQUIRE(full.property_name() == "_NET_WM_STRUT");
-    REQUIRE(full.type() == mock::x11_property_type::CARDINAL);
+    apply_window_alignment(xy, alignment::TOP_LEFT);
+    auto strut = expect_strut();
+    CHECK(strut.left == 0);
+    CHECK(strut.right == 0);
+    CHECK(strut.top == window.geometry.end_y());
+    CHECK(strut.bottom == 0);
 
-    auto strut_bounds = expect_strut(full);
-    // CHECK(strut_bounds.left == 0);
-    // CHECK(strut_bounds.right == workarea.width() - window.geometry.width());
-    // CHECK(strut_bounds.top == 0);
-    // CHECK(strut_bounds.bottom == workarea.height() - window.geometry.height());
+    auto strut_partial = expect_strut_partial();
+    CHECK(strut_partial.left == 0);
+    CHECK(strut_partial.right == 0);
+    CHECK(strut_partial.top == window.geometry.end_y());
+    CHECK(strut_partial.bottom == 0);
+    CHECK(strut_partial.left_start_y == 0);
+    CHECK(strut_partial.left_end_y == 0);
+    CHECK(strut_partial.right_start_y == 0);
+    CHECK(strut_partial.right_end_y == 0);
+    CHECK(strut_partial.top_start_x == window.geometry.x());
+    CHECK(strut_partial.top_end_x == window.geometry.end_x());
+    CHECK(strut_partial.bottom_start_x == 0);
+    CHECK(strut_partial.bottom_end_x == 0);
+    EXPECT_NO_MORE_CHANGES();
+  }
 
-    mock::x11_change_property partial =
-        EXPECT_NEXT_CHANGE(mock::x11_change_property);
-    REQUIRE(partial.property_name() == "_NET_WM_STRUT_PARTIAL");
-    REQUIRE(partial.type() == mock::x11_property_type::CARDINAL);
-    auto strut_partial_bounds = expect_strut_partial(partial);
-    // CHECK(strut_partial_bounds.left == 0);
-    // CHECK(strut_partial_bounds.right ==
-    //       workarea.width() - window.geometry.width());
-    // CHECK(strut_partial_bounds.top == 0);
-    // CHECK(strut_partial_bounds.bottom ==
-    //       workarea.height() - window.geometry.height());
+  SECTION("for TOP_MIDDLE alignment") {
+    set_struts(alignment::TOP_MIDDLE);
+    apply_window_alignment(xy, alignment::TOP_MIDDLE);
+    auto strut = expect_strut();
+    CHECK(strut.left == 0);
+    CHECK(strut.right == 0);
+    CHECK(strut.top == window.geometry.end_y());
+    CHECK(strut.bottom == 0);
+
+    auto strut_partial = expect_strut_partial();
+    CHECK(strut_partial.left == 0);
+    CHECK(strut_partial.right == 0);
+    CHECK(strut_partial.top == window.geometry.end_y());
+    CHECK(strut_partial.bottom == 0);
+    CHECK(strut_partial.left_start_y == 0);
+    CHECK(strut_partial.left_end_y == 0);
+    CHECK(strut_partial.right_start_y == 0);
+    CHECK(strut_partial.right_end_y == 0);
+    CHECK(strut_partial.top_start_x == window.geometry.x());
+    CHECK(strut_partial.top_end_x == window.geometry.end_x());
+    CHECK(strut_partial.bottom_start_x == 0);
+    CHECK(strut_partial.bottom_end_x == 0);
+    EXPECT_NO_MORE_CHANGES();
   }
 
   // Reset globals
