@@ -849,27 +849,7 @@ static int get_string_width_special(char *s, int special_index) {
 
 static int text_size_updater(char *s, int special_index);
 
-int last_font_height;
-void update_text_area() {
-  conky::vec2i xy;
-
-  if (display_output() == nullptr || !display_output()->graphical()) { return; }
-
-  /* update text size if it isn't fixed */
-#ifdef OWN_WINDOW
-  if (fixed_size == 0)
-#endif
-  {
-    text_size = conky::vec2i(dpi_scale(minimum_width.get(*state)), 0);
-    last_font_height = font_height();
-    for_each_line(text_buffer, text_size_updater);
-
-    text_size = text_size.max(conky::vec2i(text_size.x() + 1, dpi_scale(minimum_height.get(*state))));
-    int mw = dpi_scale(maximum_width.get(*state));
-    if (mw > 0) text_size = text_size.min(conky::vec2i(mw, text_size.y()));
-  }
-
-  alignment align = text_alignment.get(*state);
+void apply_window_alignment(conky::vec2i &xy, alignment align) {
   /* get text position on workarea */
   switch (vertical_alignment(align)) {
     case axis_align::START:
@@ -897,6 +877,31 @@ void update_text_area() {
                dpi_scale(gap_x.get(*state)));
       break;
   }
+}
+
+int last_font_height;
+void update_text_area() {
+  conky::vec2i xy;
+
+  if (display_output() == nullptr || !display_output()->graphical()) { return; }
+
+  /* update text size if it isn't fixed */
+#ifdef OWN_WINDOW
+  if (fixed_size == 0)
+#endif
+  {
+    text_size = conky::vec2i(dpi_scale(minimum_width.get(*state)), 0);
+    last_font_height = font_height();
+    for_each_line(text_buffer, text_size_updater);
+
+    text_size = text_size.max(
+        conky::vec2i(text_size.x() + 1, dpi_scale(minimum_height.get(*state))));
+    int mw = dpi_scale(maximum_width.get(*state));
+    if (mw > 0) text_size = text_size.min(conky::vec2i(mw, text_size.y()));
+  }
+
+  alignment align = text_alignment.get(*state);
+  apply_window_alignment(xy, align);
 #ifdef OWN_WINDOW
   if (align == alignment::NONE) {  // Let the WM manage the window
     xy = window.geometry.pos();
