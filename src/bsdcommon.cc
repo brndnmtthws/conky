@@ -32,6 +32,11 @@
 
 #include <string.h>
 
+#if defined(__NetBSD__)
+  #include <uvm/uvm_param.h>
+  #include <uvm/uvm_extern.h>
+#endif
+
 #include "top.h"
 
 static kvm_t *kd = nullptr;
@@ -349,4 +354,39 @@ bool bsdcommon::is_conky_already_running() {
   }
 
   return instances > 1;
+}
+
+// conyk uses kilobytes
+static unsigned long long to_conky_size(uint64_t size, uint64_t pagesize) {
+  return (size >> 10) * pagesize;
+}
+
+void bsdcommon::update_meminfo(struct information &info) {
+  size_t len;
+#if defined(__NetBSD__)
+  int mib[2] = {CTL_VM, VM_UVMEXP2};
+  // NOTE(gmb): https://github.com/NetBSD/src/blob/trunk/sys/uvm/uvm_extern.h
+  struct uvmexp_sysctl meminfo;
+#else
+  #error Not supported BSD system.
+#endif
+
+  len = sizeof(meminfo);
+  if (sysctl(mib, 2, &meminfo, &len, NULL, 0) == -1 ) {
+    NORM_ERR("sysctl() failed");
+    return;
+  }
+
+#if defined(__NetBSD__)
+  // TODO(gmb): Try to fill all memory related fields.
+  info.memmax = to_conky_size(meminfo.npages, meminfo.pagesize);
+  info.memfree = info.memeasyfree = to_conky_size(meminfo.free, meminfo.pagesize);
+  info.mem = info.memmax - info.memfree;
+
+  info.swapmax = to_conky_size(meminfo.swpages, meminfo.pagesize);
+  info.swap = to_conky_size(meminfo.swpginuse, meminfo.pagesize);
+  info.swapfree = info.swapmax - info.swap;
+#else
+  #error Not supported BSD system.
+#endif
 }
