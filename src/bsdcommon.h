@@ -40,6 +40,8 @@
 
 #include <stdint.h>
 
+#include "conky.h"
+
 namespace bsdcommon {
   struct cpu_load {
     uint64_t old_used;
@@ -57,6 +59,8 @@ namespace bsdcommon {
   void get_number_of_running_processes(short unsigned int *run_procs);
   void update_top_info();
   bool is_conky_already_running();
+
+  void update_meminfo(struct information &info);
 }
 
 #endif /*BSDCOMMON_H_*/

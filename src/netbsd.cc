@@ -58,41 +58,6 @@ static int nkd_init = 0;
 static u_int32_t sensvalue;
 static char errbuf[_POSIX2_LINE_MAX];
 
-static int swapmode(int *retavail, int *retfree) {
-  int n;
-  struct swapent *sep;
-
-  *retavail = 0;
-  *retfree = 0;
-
-  n = swapctl(SWAP_NSWAP, 0, 0);
-
-  if (n < 1) {
-    NORM_ERR("could not get swap information");
-    return 0;
-  }
-
-  sep = (struct swapent *)malloc(n * (sizeof(*sep)));
-
-  if (sep == nullptr) {
-    NORM_ERR("memory allocation failed");
-    return 0;
-  }
-
-  if (swapctl(SWAP_STATS, (void *)sep, n) < n) {
-    NORM_ERR("could not get swap stats");
-    return 0;
-  }
-  for (; n > 0; n--) {
-    *retavail += (int)dbtob(sep[n - 1].se_nblks);
-    *retfree += (int)dbtob(sep[n - 1].se_nblks - sep[n - 1].se_inuse);
-  }
-  *retavail = (int)(*retavail / 1024);
-  *retfree = (int)(*retfree / 1024);
-
-  return 1;
-}
-
 void prepare_update() {}
 
 int update_uptime() {
@@ -120,34 +85,7 @@ int check_mount(struct text_object *obj) {
 }
 
 int update_meminfo() {
-  int mib[] = {CTL_VM, VM_UVMEXP2};
-  int total_pages, inactive_pages, free_pages;
-  int swap_avail, swap_free;
-  const int pagesize = getpagesize();
-  struct uvmexp_sysctl uvmexp;
-  size_t size = sizeof(uvmexp);
-
-  if (sysctl(mib, 2, &uvmexp, &size, nullptr, 0) < 0) {
-    NORM_ERR("could not get memory info");
-    return 1;
-  }
-
-  total_pages = uvmexp.npages;
-  free_pages = uvmexp.free;
-  inactive_pages = uvmexp.inactive;
-
-  info.memmax = (total_pages * pagesize) >> 10;
-  info.mem = ((total_pages - free_pages - inactive_pages) * pagesize) >> 10;
-  info.memwithbuffers = info.mem;
-  info.memeasyfree = info.memfree = info.memmax - info.mem;
-  info.legacymem = info.mem;
-
-  if (swapmode(&swap_avail, &swap_free) >= 0) {
-    info.swapmax = swap_avail;
-    info.swap = (swap_avail - swap_free);
-    info.swapfree = swap_free;
-  }
-
+  bsdcommon::update_meminfo(info);
   return 1;
 }
 
