@@ -356,7 +356,7 @@ bool bsdcommon::is_conky_already_running() {
   return instances > 1;
 }
 
-// conyk uses kilobytes
+// conky uses kilobytes
 static unsigned long long to_conky_size(uint64_t size, uint64_t pagesize) {
   return (size >> 10) * pagesize;
 }
