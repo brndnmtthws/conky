@@ -926,6 +926,7 @@ void display_output_wayland::clear_text(int exposures) {
   cairo_set_operator(window->cr, CAIRO_OPERATOR_CLEAR);
   cairo_rectangle(window->cr, 0, 0, window->rectangle.width(),
                   window->rectangle.height());
+  cairo_fill(window->cr);
   cairo_restore(window->cr);
 }
 
