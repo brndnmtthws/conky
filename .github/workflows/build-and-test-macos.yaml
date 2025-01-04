@@ -47,6 +47,7 @@ jobs:
             lua                \
             ninja              \
             pkg-config         \
+            sccache            \
             || true # Ignore errors
       - name: Checkout
         uses: actions/checkout@v4
