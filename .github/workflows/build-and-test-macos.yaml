@@ -58,8 +58,7 @@ jobs:
           -DMAINTAINER_MODE=ON                 \
           -DBUILD_WAYLAND=OFF                  \
           -DBUILD_RSS=ON                       \
-          -DBUILD_CURL=ON                      \
-          -DBUILD_TESTS=ON
+          -DBUILD_CURL=ON
       - name: Compile
         run: cmake --build build
       - name: Test

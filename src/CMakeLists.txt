@@ -404,7 +404,7 @@ if(BUILD_INTEL_BACKLIGHT)
   set(optional_sources ${optional_sources} ${intel_backlight})
 endif(BUILD_INTEL_BACKLIGHT)
 
-if(BUILD_TESTS)
+if(BUILD_TESTING)
   # Create a library strictly for testing
   add_library(conky_core ${conky_sources} ${optional_sources})
   add_dependencies(conky_core generated_hdr_files)

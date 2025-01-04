@@ -70,7 +70,10 @@ macro(AutodetectHostArchitecture)
       string(REGEX REPLACE ".*model[ \t]*:[ \t]+([a-zA-Z0-9_-]+).*" "\\1" _cpu_model "${_cpuinfo}")
       string(REGEX REPLACE ".*flags[ \t]*:[ \t]+([^\n]+).*" "\\1" _cpu_flags "${_cpuinfo}")
    elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-      exec_program("/usr/sbin/sysctl -n machdep.cpu.vendor machdep.cpu.model machdep.cpu.family machdep.cpu.features" OUTPUT_VARIABLE _sysctl_output_string)
+      execute_process(COMMAND "/usr/sbin/sysctl" -n machdep.cpu.vendor machdep.cpu.model machdep.cpu.family machdep.cpu.features
+         OUTPUT_STRIP_TRAILING_WHITESPACE
+         OUTPUT_VARIABLE _sysctl_output_string)
+      mark_as_advanced(_sysctl_output_string)
       string(REPLACE "\n" ";" _sysctl_output ${_sysctl_output_string})
       list(GET _sysctl_output 0 _vendor_id)
       list(GET _sysctl_output 1 _cpu_model)

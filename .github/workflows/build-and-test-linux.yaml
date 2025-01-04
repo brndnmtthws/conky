@@ -119,7 +119,6 @@ jobs:
             -DBUILD_PULSEAUDIO=ON                \
             -DBUILD_CURL=ON                      \
             -DBUILD_RSS=ON                       \
-            -DBUILD_TESTS=ON                     \
             -DBUILD_WLAN=ON                      \
             -DBUILD_WAYLAND=${{ matrix.wayland }}\
             -DBUILD_X11=${{ matrix.x11 }}        \
