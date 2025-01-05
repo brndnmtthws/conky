@@ -57,3 +57,9 @@ cbebe447078e28c50957d568303f42d6b8aae126
 # Includes changes to functionality so it can't be ignored:
 # color parsing, text alignment, output registration
 # 6adf6b9dd4d368640bf7ef57f3e6199d83154d78
+
+### Move sources into appropriate subdirectories (#2119)
+# Performed no changes to the source files, only moved them. Child commit
+# addressed the bugs caused by the move, to separate renames from changes.
+342f07b8ca101e0c4ef5c75346033c4df241d16d
+ae8f1fa8472d6c3a31b4a09be4d19568a3f3f23e
