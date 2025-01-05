@@ -23,6 +23,12 @@ target_link_libraries(test-conky
 )
 catch_discover_tests(test-conky)
 
+if(RUN_TESTS)
+  add_custom_command(TARGET test-conky
+    POST_BUILD
+    COMMAND ctest -C $<CONFIGURATION> --output-on-failure)
+endif()
+
 if(CODE_COVERAGE)
   set(COVERAGE_LCOV_EXCLUDES
     "*/include/c++/v1/*"

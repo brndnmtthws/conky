@@ -21,8 +21,18 @@
 include(CMakeDependentOption)
 include(DependentOption)
 
+# This flag is for developers of conky and automated tests in conky repository.
+# It should not be enabled by package maintainers as produced binary is -O0.
+option(MAINTAINER_MODE "Use defaults for development environment (debug, testing, etc.)" false)
+option(BUILD_TESTING "Build test binary" ${MAINTAINER_MODE})
+cmake_dependent_option(RUN_TESTS "Run tests once the build is complete" false
+  "BUILD_TESTING" false)
+# Use gcov (requires LLVM compiler) to generate code coverage
+option(CODE_COVERAGE "Enable code coverage report generation" false)
+
 if(NOT CMAKE_BUILD_TYPE)
   if(MAINTAINER_MODE)
+    message(WARNING "Default build type: Debug (because MAINTAINER_MODE is set)")
     set(
       CMAKE_BUILD_TYPE Debug
       CACHE
@@ -30,6 +40,7 @@ if(NOT CMAKE_BUILD_TYPE)
       "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
       FORCE)
   else(MAINTAINER_MODE)
+    message(STATUS "Default build type: RelWithDebInfo")
     set(
       CMAKE_BUILD_TYPE RelWithDebInfo
       CACHE
@@ -44,11 +55,7 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-if(MAINTAINER_MODE)
-  set(CMAKE_COMPILE_WARNING_AS_ERROR true)
-  set(BUILD_TESTS true)
-endif(MAINTAINER_MODE)
+set(CMAKE_COMPILE_WARNING_AS_ERROR ${MAINTAINER_MODE})
 
 if(NOT OS_OPENBSD)
   # Always use libc++ when compiling w/ clang
@@ -62,20 +69,32 @@ add_compile_options(
   $<$<COMPILE_LANG_AND_ID:CXX,Clang>:-Wno-unknown-warning-option>
   $<$<COMPILE_LANG_AND_ID:CXX,GCC>:-Wno-unknown-warning>)
 
-option(CHECK_CODE_QUALITY "Check code formatting/quality with clang" false)
+# Makes builds fully reproducible for environments (such as NixOS) that prefer
+# building the binary from a clean slate. This makes build defaults and process
+# avoid optimizations like compiler caching and reusing already built files.
+option(REPRODUCIBLE_BUILD "Makes builds fully reproducible" OFF)
+
+if(REPRODUCIBLE_BUILD)
+  set(USE_CCACHE_DEFAULT OFF)
+else()
+  set(USE_CCACHE_DEFAULT ON)
+endif()
+mark_as_advanced(USE_CCACHE_DEFAULT)
+# Instead of rebuilding objects from scratch, the compiler will reuse cached
+# parts of compilation in order to speed up compilation.
+option(USE_CCACHE "Sccache/ccache will be used (if installed) to speed up compilation" ${USE_CCACHE_DEFAULT})
+
+option(CHECK_CODE_QUALITY "Check code formatting/quality with clang" ${MAINTAINER_MODE})
 
 option(RELEASE "Build release package" false)
 mark_as_advanced(RELEASE)
-
-option(MAINTAINER_MODE "Enable maintainer mode" false)
-option(CODE_COVERAGE "Enable code coverage report generation" false)
 
 option(BUILD_DOCS "Build documentation" false)
 option(BUILD_EXTRAS "Build extras (includes syntax files for editors)" false)
 
 option(BUILD_I18N "Enable if you want internationalization support" true)
 
-option(BUILD_COLOUR_NAME_MAP "Include mappings of colour name -> RGB (i.e., red -> ff0000)" true)
+option(BUILD_COLOUR_NAME_MAP "Include mappings of colour name -> RGB (e.g. red -> ff0000)" true)
 
 if(BUILD_I18N)
   set(LOCALE_DIR "${CMAKE_INSTALL_PREFIX}/share/locale"

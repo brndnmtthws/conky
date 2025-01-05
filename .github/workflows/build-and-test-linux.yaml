@@ -17,6 +17,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  SCCACHE_VERSION: "0.9.0"
+
 jobs:
   build:
     strategy:
@@ -85,6 +88,16 @@ jobs:
             g++
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Install sccache
+        run: .github/scripts/setup-sccache.sh
+      - name: Load cached compilation artifacts
+        id: compiler-cache
+        uses: actions/cache@v4
+        with:
+          path: "${{ env.SCCACHE_DIR }}"
+          key: sccache-${{ matrix.os }}-${{ matrix.x11 }}-${{ matrix.wayland }}-${{ matrix.compiler }}-${{ github.ref }}-${{ github.run_id }}
+          restore-keys: |
+            sccache-${{ matrix.os }}-${{ matrix.x11 }}-${{ matrix.wayland }}-${{ matrix.compiler }}-${{ github.ref }}
       - name: Configure with CMake
         run: |
           set -x # show the commands we're running
@@ -100,9 +113,10 @@ jobs:
           RSVG_ENABLED=ON
           [[ "${{ matrix.os }}" == "ubuntu-20.04"* ]] && RSVG_ENABLED=OFF
 
-          mkdir build
-          cd build
-          cmake .. -G Ninja                      \
+          # Reset sccache statistics
+          sccache --zero-stats
+
+          cmake . -B build -G Ninja              \
             -DBUILD_AUDACIOUS=ON                 \
             -DBUILD_HTTP=ON                      \
             -DBUILD_ICAL=ON                      \
@@ -119,7 +133,6 @@ jobs:
             -DBUILD_PULSEAUDIO=ON                \
             -DBUILD_CURL=ON                      \
             -DBUILD_RSS=ON                       \
-            -DBUILD_TESTS=ON                     \
             -DBUILD_WLAN=ON                      \
             -DBUILD_WAYLAND=${{ matrix.wayland }}\
             -DBUILD_X11=${{ matrix.x11 }}        \
@@ -129,6 +142,8 @@ jobs:
             -DMAINTAINER_MODE=ON
       - name: Compile
         run: cmake --build build
+      - name: Show sccache stats
+        run: sccache --show-stats
       - name: Test
         working-directory: build
         run: ctest --output-on-failure

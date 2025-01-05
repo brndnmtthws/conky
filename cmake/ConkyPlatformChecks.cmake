@@ -56,6 +56,13 @@ set(conky_libs ${conky_libs} ${CLOCK_GETTIME_LIB})
 # standard path to search for includes
 set(INCLUDE_SEARCH_PATH /usr/include /usr/local/include)
 
+# Detect CI
+if(DEFINED ENV{CI})
+  # For GitHub actions CI=true is set
+  set(ENV_IS_CI true)
+  mark_as_advanced(ENV_IS_CI)
+endif()
+
 # Set system vars
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
   set(OS_LINUX true)
