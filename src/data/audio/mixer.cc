@@ -31,10 +31,10 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-#include "conky.h"
-#include "logging.h"
-#include "specials.h"
-#include "text_object.h"
+#include "../../conky.h"
+#include "../../logging.h"
+#include "../../content/specials.h"
+#include "../../content/text_object.h"
 
 #ifdef HAVE_SOUNDCARD_H
 #if defined(__linux__)

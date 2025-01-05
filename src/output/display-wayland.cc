@@ -47,19 +47,19 @@
 #include <iostream>
 #include <sstream>
 
-#include "conky.h"
+#include "../conky.h"
 #include "display-output.hh"
-#include "geometry.h"
+#include "../geometry.h"
 #include "gui.h"
-#include "llua.h"
-#include "logging.h"
+#include "../lua/llua.h"
+#include "../logging.h"
 
-#include "fonts.h"
+#include "../lua/fonts.h"
 
 #ifdef BUILD_MOUSE_EVENTS
 #include <array>
 #include <map>
-#include "mouse-events.h"
+#include "../mouse-events.h"
 #endif
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"

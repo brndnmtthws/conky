@@ -30,13 +30,13 @@
 #include "pulseaudio.h"
 #include <math.h>
 #include <unistd.h>
-#include "common.h"
+#include "../../common.h"
 #include "config.h"
-#include "conky.h"
-#include "core.h"
-#include "logging.h"
-#include "specials.h"
-#include "text_object.h"
+#include "../../conky.h"
+#include "../../core.h"
+#include "../../logging.h"
+#include "../../content/specials.h"
+#include "../../content/text_object.h"
 
 struct pulseaudio_default_results get_result_copy();
 

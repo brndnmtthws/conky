@@ -32,7 +32,7 @@
 
 #include <pulse/pulseaudio.h>
 #include <string>
-#include "text_object.h"
+#include "../../content/text_object.h"
 
 void init_pulseaudio(struct text_object *obj);
 void free_pulseaudio(struct text_object *obj);

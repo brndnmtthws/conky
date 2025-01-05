@@ -1,6 +1,6 @@
 #include "catch2/catch.hpp"
 
-#include <algebra.h>
+#include <content/algebra.h>
 #include <config.h>
 
 TEST_CASE("GetMatchTypeTest - ValidOperators") {

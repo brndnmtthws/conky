@@ -34,7 +34,7 @@
  */
 
 #include "libmpdclient.h"
-#include "conky.h"
+#include "../../conky.h"
 
 #include <fcntl.h>
 #include <sys/param.h>

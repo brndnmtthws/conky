@@ -29,8 +29,8 @@
 #include <cctype>
 #include <cstdlib>
 #include <string>
-#include "conky.h"
-#include "logging.h"
+#include "../conky.h"
+#include "../logging.h"
 
 namespace {
 conky::simple_config_setting<std::string> _template[10] = {

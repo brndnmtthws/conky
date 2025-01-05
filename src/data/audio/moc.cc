@@ -20,9 +20,9 @@
  *
  */
 
-#include "conky.h"
-#include "logging.h"
-#include "text_object.h"
+#include "../../conky.h"
+#include "../../logging.h"
+#include "../../content/text_object.h"
 
 #include <cmath>
 #include <cstdio>
@@ -30,7 +30,7 @@
 #include <cstring>
 #include <mutex>
 
-#include "update-cb.hh"
+#include "../../update-cb.hh"
 
 namespace {
 struct moc_result {

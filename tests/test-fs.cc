@@ -28,7 +28,7 @@
 
 #include "catch2/catch.hpp"
 
-#include <fs.h>
+#include <data/fs.h>
 
 TEST_CASE("fs_free_percentage returns correct value") {
   struct text_object obj;

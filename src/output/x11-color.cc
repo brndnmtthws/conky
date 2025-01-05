@@ -1,4 +1,4 @@
-#include "colours.h"
+#include "../content/colours.hh"
 
 #include <X11/Xlib.h>
 

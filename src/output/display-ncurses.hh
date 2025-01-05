@@ -29,9 +29,9 @@
 #include <string>
 #include <type_traits>
 
-#include "colours.h"
+#include "../content/colours.hh"
+#include "../lua/luamm.hh"
 #include "display-console.hh"
-#include "luamm.hh"
 
 namespace conky {
 

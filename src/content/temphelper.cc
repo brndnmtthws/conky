@@ -27,7 +27,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "config.h"
-#include "conky.h"
+#include "../conky.h"
 
 template <>
 conky::lua_traits<TEMP_UNIT>::Map conky::lua_traits<TEMP_UNIT>::map = {

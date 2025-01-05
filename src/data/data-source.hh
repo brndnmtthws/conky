@@ -27,7 +27,7 @@
 #include <string>
 #include <type_traits>
 
-#include "luamm.hh"
+#include "../lua/luamm.hh"
 
 namespace conky {
 

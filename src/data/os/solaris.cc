@@ -40,14 +40,14 @@
 #include <sys/sysinfo.h>
 #include <sys/task.h>
 #include <unistd.h>
-#include "common.h"
-#include "conky.h"
-#include "diskio.h"
-#include "top.h"
+#include "../../common.h"
+#include "../../conky.h"
+#include "../hardware/diskio.h"
+#include "../top.h"
 
 #include <assert.h>
 
-#include "net_stat.h"
+#include "../network/net_stat.h"
 #include "solaris.h"
 
 static kstat_ctl_t *kstat;

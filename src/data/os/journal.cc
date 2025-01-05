@@ -33,11 +33,11 @@
 #include <time.h>
 #include <unistd.h>
 #include <memory>
-#include "common.h"
+#include "../../common.h"
 #include "config.h"
-#include "conky.h"
-#include "logging.h"
-#include "text_object.h"
+#include "../../conky.h"
+#include "../../logging.h"
+#include "../../content/text_object.h"
 
 #define MAX_JOURNAL_LINES 200
 

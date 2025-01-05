@@ -27,8 +27,8 @@
 
 #include <curl/curl.h>
 
-#include "logging.h"
-#include "update-cb.hh"
+#include "../../logging.h"
+#include "../../update-cb.hh"
 
 namespace priv {
 // factored out stuff that does not depend on the template parameters

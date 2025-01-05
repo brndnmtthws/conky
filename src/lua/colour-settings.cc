@@ -24,7 +24,7 @@
 
 #include <config.h>
 
-#include "colour-settings.h"
+#include "colour-settings.hh"
 
 namespace priv {
 void colour_setting::lua_setter(lua::state &l, bool init) {

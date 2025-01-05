@@ -39,12 +39,12 @@
 #ifdef BUILD_XDAMAGE
 #include <X11/extensions/Xdamage.h>
 #endif /* BUILD_XDAMAGE */
-#include "fonts.h"
+#include "../lua/fonts.h"
 #ifdef BUILD_IMLIB2
-#include "conky-imlib2.h"
+#include "../conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
 #if defined(BUILD_MOUSE_EVENTS) || defined(BUILD_XINPUT)
-#include "mouse-events.h"
+#include "../mouse-events.h"
 #endif /* BUILD_MOUSE_EVENTS || BUILD_XINPUT */
 #ifdef BUILD_XINPUT
 #include <X11/extensions/XI2.h>
@@ -61,14 +61,14 @@
 #include <unordered_map>
 #include <vector>
 
-#include "colours.h"
-#include "conky.h"
-#include "geometry.h"
+#include "../conky.h"
+#include "../content/colours.hh"
+#include "../geometry.h"
+#include "../logging.h"
+#include "../lua/llua.h"
 #include "gui.h"
-#include "llua.h"
-#include "logging.h"
 
-#include "x11-settings.h"
+#include "../lua/x11-settings.h"
 #include "x11.h"
 
 // TODO: cleanup externs (move to conky.h ?)

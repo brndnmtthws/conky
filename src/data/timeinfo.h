@@ -29,7 +29,7 @@
 #ifndef _TIMEINFO_H
 #define _TIMEINFO_H
 
-#include "setting.hh"
+#include "../lua/setting.hh"
 
 extern conky::simple_config_setting<bool> times_in_seconds;
 

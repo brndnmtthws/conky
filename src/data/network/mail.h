@@ -25,7 +25,7 @@
 #ifndef _MAIL_H
 #define _MAIL_H
 
-#include "setting.hh"
+#include "../../lua/setting.hh"
 
 void parse_local_mail_args(struct text_object *, const char *);
 

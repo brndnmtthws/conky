@@ -29,10 +29,10 @@
 
 #include <OS.h>
 
-#include "conky.h"
+#include "../../conky.h"
 #include "haiku.h"
-#include "net_stat.h"
-#include "top.h"
+#include "../network/net_stat.h"
+#include "../top.h"
 
 static short cpu_setup = 0;
 

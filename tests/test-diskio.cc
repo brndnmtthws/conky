@@ -30,7 +30,7 @@
 
 #include <config.h>
 #include <conky.h>
-#include <diskio.h>
+#include <data/hardware/diskio.h>
 
 #if BUILD_X11
 TEST_CASE("diskiographval returns correct value") {

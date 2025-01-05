@@ -23,8 +23,8 @@
  */
 
 #include <libical/ical.h>
-#include "conky.h"
-#include "logging.h"
+#include "../conky.h"
+#include "../logging.h"
 
 struct ical_event {
   icaltimetype start;

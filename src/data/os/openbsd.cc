@@ -58,13 +58,13 @@
 #include <net80211/ieee80211.h>
 #include <net80211/ieee80211_ioctl.h>
 
-#include "conky.h"
-#include "diskio.h"
-#include "logging.h"
-#include "net_stat.h"
+#include "../../conky.h"
+#include "../hardware/diskio.h"
+#include "../../logging.h"
+#include "../network/net_stat.h"
 #include "openbsd.h"
-#include "temphelper.h"
-#include "top.h"
+#include "../../content/temphelper.h"
+#include "../top.h"
 
 #define MAXSHOWDEVS 16
 

@@ -33,11 +33,11 @@
 #include <cctype>
 #include <cstring>
 #include <memory>
-#include "common.h"
+#include "../common.h"
 #include "config.h"
-#include "conky.h"
-#include "logging.h"
-#include "text_object.h"
+#include "../conky.h"
+#include "../logging.h"
+#include "../content/text_object.h"
 
 #define MAX_HEADTAIL_LINES 30
 #define DEFAULT_MAX_HEADTAIL_USES 2

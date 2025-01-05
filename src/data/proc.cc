@@ -33,9 +33,9 @@
 #include <cctype>
 #include <memory>
 #include <sstream>
-#include "conky.h"
-#include "core.h"
-#include "logging.h"
+#include "../conky.h"
+#include "../core.h"
+#include "../logging.h"
 
 char *readfile(const char *filename, int *total_read, char showerror) {
   FILE *file;

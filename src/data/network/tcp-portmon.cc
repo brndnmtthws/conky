@@ -18,10 +18,10 @@
  *
  */
 #include "tcp-portmon.h"
-#include "conky.h"
+#include "../../conky.h"
 #include "libtcp-portmon.h"
-#include "logging.h"
-#include "text_object.h"
+#include "../../logging.h"
+#include "../../content/text_object.h"
 
 static tcp_port_monitor_collection_t *pmc = nullptr;
 

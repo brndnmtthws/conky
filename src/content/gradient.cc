@@ -26,10 +26,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include "gradient.h"
-#include "colours.h"
-#include "conky.h"
-#include "logging.h"
+#include "gradient.hh"
+#include "../conky.h"
+#include "../logging.h"
+#include "colours.hh"
 
 namespace conky {
 gradient_factory::gradient_factory(int width, Colour first_colour,

@@ -42,6 +42,7 @@
  *is available. patched the _csr_check function to return the bool bit instead.
  */
 
+#include "../../conky.h"  // for struct info
 #include "darwin.h"
 
 #include <AvailabilityMacros.h>
@@ -60,8 +61,10 @@
 
 #include <dispatch/dispatch.h>  // get_top_info
 #include <libproc.h>            // get_top_info
+#include "../top.h"                // get_top_info
 
 #include <ifaddrs.h>   // update_net_stats
+#include "../network/net_stat.h"  // update_net_stats
 
 #include "darwin_sip.h"  // sip status
 

@@ -29,8 +29,8 @@
 
 #include <vector>
 
-#include "core.h"
-#include "logging.h"
+#include "../core.h"
+#include "../logging.h"
 #include "text_object.h"
 
 struct combine_data {

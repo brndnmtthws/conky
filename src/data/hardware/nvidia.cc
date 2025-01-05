@@ -96,12 +96,12 @@
 #include <X11/Xlib.h>
 #include "NVCtrl/NVCtrl.h"
 #include "NVCtrl/NVCtrlLib.h"
-#include "conky.h"
-#include "logging.h"
-#include "temphelper.h"
+#include "../../conky.h"
+#include "../../logging.h"
+#include "../../content/temphelper.h"
 
 // Current implementation uses X11 specific system utils
-#include "x11.h"
+#include "../../output/x11.h"
 
 #include <memory>
 

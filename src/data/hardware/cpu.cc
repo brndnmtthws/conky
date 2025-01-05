@@ -34,8 +34,8 @@
 #include <time.h>
 #include <unistd.h>
 #include "config.h"
-#include "conky.h"
-#include "text_object.h"
+#include "../../conky.h"
+#include "../../content/text_object.h"
 
 #ifdef __x86_64__
 #define CPU_FEATURE(x, z) __asm__ __volatile__("cpuid" : "=a"(z) : "a"(x))

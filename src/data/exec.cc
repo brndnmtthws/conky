@@ -35,12 +35,12 @@
 #include <cmath>
 #include <cstdio>
 #include <mutex>
-#include "conky.h"
-#include "core.h"
-#include "logging.h"
-#include "specials.h"
-#include "text_object.h"
-#include "update-cb.hh"
+#include "../conky.h"
+#include "../core.h"
+#include "../logging.h"
+#include "../content/specials.h"
+#include "../content/text_object.h"
+#include "../update-cb.hh"
 
 struct execi_data {
   float interval{0};

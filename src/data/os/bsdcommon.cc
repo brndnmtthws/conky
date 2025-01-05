@@ -23,7 +23,7 @@
  */
 
 #include "bsdcommon.h"
-#include "logging.h"
+#include "../../logging.h"
 
 #include <kvm.h>
 
@@ -37,7 +37,7 @@
   #include <uvm/uvm_extern.h>
 #endif
 
-#include "top.h"
+#include "../top.h"
 
 static kvm_t *kd = nullptr;
 static char kvm_errbuf[_POSIX2_LINE_MAX];

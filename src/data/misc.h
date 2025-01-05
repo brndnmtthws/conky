@@ -31,7 +31,7 @@
 #ifndef _MISC_H
 #define _MISC_H
 
-#include "text_object.h"
+#include "../content/text_object.h"
 
 void print_cat(struct text_object *, char *, unsigned int);
 void print_catp(struct text_object *, char *, unsigned int);

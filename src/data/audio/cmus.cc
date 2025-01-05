@@ -20,9 +20,9 @@
  *
  */
 
-#include "conky.h"
-#include "logging.h"
-#include "text_object.h"
+#include "../../conky.h"
+#include "../../logging.h"
+#include "../../content/text_object.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -31,7 +31,7 @@
 #include <cmath>
 #include <mutex>
 
-#include "update-cb.hh"
+#include "../../update-cb.hh"
 
 namespace {
 struct cmus_result {

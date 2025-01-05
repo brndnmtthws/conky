@@ -49,9 +49,9 @@
 #include <vector>
 
 // TODO: remove lua requirement from x11_init_window
-#include "llua.h"
+#include "../lua/llua.h"
 
-#include "geometry.h"
+#include "../geometry.h"
 #include "gui.h"
 
 /* true if use_argb_visual=true and argb visual was found*/

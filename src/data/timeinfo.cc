@@ -36,9 +36,9 @@
 #include <clocale>
 #include <cstring>
 #include <ctime>
-#include "conky.h"
-#include "logging.h"
-#include "text_object.h"
+#include "../conky.h"
+#include "../logging.h"
+#include "../content/text_object.h"
 
 #include <memory>
 

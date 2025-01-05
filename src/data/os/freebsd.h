@@ -36,7 +36,7 @@
 #include <sys/mount.h>
 #include <sys/param.h>
 #include <sys/ucred.h>
-#include "common.h"
+#include "../../common.h"
 #if (defined(i386) || defined(__i386__))
 #include <machine/apm_bios.h>
 #endif /* i386 || __i386__ */

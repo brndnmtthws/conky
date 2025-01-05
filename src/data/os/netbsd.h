@@ -12,8 +12,8 @@
 #include <sys/mount.h>
 #include <sys/statvfs.h>
 
-#include "common.h"
-#include "conky.h"
+#include "../../common.h"
+#include "../../conky.h"
 
 #include "bsdcommon.h"
 
