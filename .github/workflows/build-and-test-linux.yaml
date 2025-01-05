@@ -73,22 +73,6 @@ jobs:
             ncurses-dev \
             ninja-build \
             wayland-protocols
-      - name: Install sccache
-        working-directory: /home/runner
-        run: |
-          curl -s -L "https://github.com/mozilla/sccache/releases/download/v${{ env.SCCACHE_VERSION }}/sccache-v${{ env.SCCACHE_VERSION }}-x86_64-unknown-linux-musl.tar.gz" \
-          | tar xz -C .
-          chmod +x "sccache-v${{ env.SCCACHE_VERSION }}-x86_64-unknown-linux-musl/sccache"
-          sudo cp "sccache-v${{ env.SCCACHE_VERSION }}-x86_64-unknown-linux-musl/sccache" "/bin/sccache"
-          rm -rf "sccache-v${{ env.SCCACHE_VERSION }}-x86_64-unknown-linux-musl"
-          mkdir .sccache
-          echo "SCCACHE_DIR=$PWD/.sccache" >> $GITHUB_ENV
-          echo "SCCACHE_COMPRESS=true" >> $GITHUB_ENV
-          echo "SCCACHE_COMPRESSLEVEL=7" >> $GITHUB_ENV
-          if [ "$RUNNER_DEBUG" = "1" ]; then
-            echo "Running with debug output; cached binary artifacts will be ignored to produce a cleaner build"
-            echo "SCCACHE_RECACHE=true" >> $GITHUB_ENV
-          fi
       - name: Install clang and libc++
         if: matrix.compiler == 'clang'
         run: |
@@ -104,6 +88,8 @@ jobs:
             g++
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Install sccache
+        run: .github/scripts/setup-sccache.sh
       - name: Load cached compilation artifacts
         id: compiler-cache
         uses: actions/cache@v4
@@ -130,9 +116,7 @@ jobs:
           # Reset sccache statistics
           sccache --zero-stats
 
-          mkdir build
-          cd build
-          cmake .. -G Ninja                      \
+          cmake . -B build -G Ninja              \
             -DBUILD_AUDACIOUS=ON                 \
             -DBUILD_HTTP=ON                      \
             -DBUILD_ICAL=ON                      \
