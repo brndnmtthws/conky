@@ -24,9 +24,9 @@
 #include "conky-imlib2.h"
 
 #include "common.h"
-#include "display-output.hh"
+#include "output/display-output.hh"
 #include "logging.h"
-#include "text_object.h"
+#include "content/text_object.h"
 
 #include <Imlib2.h>
 #include <climits>
@@ -35,8 +35,8 @@
 #include <cstring>
 #include <ctime>
 
-#include "x11-settings.h"
-#include "x11.h"
+#include "lua/x11-settings.h"
+#include "output/x11.h"
 
 struct image_list_s {
   char name[1024];

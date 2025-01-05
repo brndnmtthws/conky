@@ -34,11 +34,11 @@
 #include <unistd.h>
 #include <cerrno>
 #include <cstring>
-#include "conky.h"
-#include "logging.h"
+#include "../../conky.h"
+#include "../../logging.h"
 #include "net/if.h"
-#include "specials.h"
-#include "text_object.h"
+#include "../../content/specials.h"
+#include "../../content/text_object.h"
 #if defined(__sun)
 #include <sys/sockio.h>
 #endif
@@ -51,7 +51,7 @@
 #endif /* SOCK_CLOEXEC */
 
 #if defined(__linux__)
-#include "linux.h"
+#include "../os/linux.h"
 #else
 static char e_iface[50] = "empty";
 static char interfaces_arr[MAX_NET_INTERFACES][64] = {""};

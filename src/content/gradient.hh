@@ -31,7 +31,7 @@
 #define _GRADIENT_H
 
 #include <memory>
-#include "colours.h"
+#include "colours.hh"
 
 namespace conky {
 class gradient_factory {

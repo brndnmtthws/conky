@@ -1,8 +1,8 @@
 #include "x11-settings.h"
 
-#include "x11.h"
+#include "../output/x11.h"
 
-#include "conky-imlib2.h"
+#include "../conky-imlib2.h"
 
 #include <X11/Xlib.h>
 

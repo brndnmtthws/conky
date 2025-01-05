@@ -30,9 +30,9 @@
 #include <type_traits>
 #include <vector>
 
-#include "colours.h"
-#include "logging.h"
-#include "luamm.hh"
+#include "../content/colours.hh"
+#include "../logging.h"
+#include "../lua/luamm.hh"
 
 namespace conky {
 

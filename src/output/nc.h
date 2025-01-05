@@ -32,7 +32,7 @@
 
 #include <ncurses.h>
 
-#include "setting.hh"
+#include "../lua/setting.hh"
 
 #ifdef LEAKFREE_NCURSES
 extern "C" {

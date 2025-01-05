@@ -28,8 +28,8 @@
 #ifndef _INTEL_BACKLIGHT_H
 #define _INTEL_BACKLIGHT_H
 
-#include "conky.h"
-#include "text_object.h"
+#include "../../conky.h"
+#include "../../content/text_object.h"
 
 void init_intel_backlight(struct text_object *obj);
 void free_intel_backlight(struct text_object *obj);

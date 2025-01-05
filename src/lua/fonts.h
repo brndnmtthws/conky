@@ -31,7 +31,7 @@
 
 #include <vector>
 
-#include "conky.h"
+#include "../conky.h"
 
 /* for fonts */
 struct font_list {

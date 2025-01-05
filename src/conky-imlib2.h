@@ -24,8 +24,8 @@
 #ifndef _CONKY_IMBLI2_H_
 #define _CONKY_IMBLI2_H_
 
-#include "setting.hh"
-#include "text_object.h"
+#include "lua/setting.hh"
+#include "content/text_object.h"
 
 #include <array>
 

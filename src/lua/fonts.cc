@@ -28,9 +28,9 @@
  */
 
 #include "fonts.h"
-#include "display-output.hh"
-#include "gui.h"
-#include "logging.h"
+#include "../output/display-output.hh"
+#include "../output/gui.h"
+#include "../logging.h"
 
 unsigned int selected_font = 0;
 std::vector<font_list> fonts;

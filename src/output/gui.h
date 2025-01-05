@@ -26,10 +26,10 @@
 
 #include "config.h"
 
-#include "geometry.h"
-#include "setting.hh"
+#include "../geometry.h"
+#include "../lua/setting.hh"
 
-#include "colour-settings.h"
+#include "../lua/colour-settings.hh"
 
 /// @brief Represents alignment on a single axis.
 enum class axis_align : uint8_t {

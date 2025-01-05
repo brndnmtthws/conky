@@ -33,13 +33,13 @@
 #include <sys/sysinfo.h>
 #include <sys/types.h>
 #include <clocale>
-#include "common.h"
-#include "conky.h"
-#include "diskio.h"
-#include "logging.h"
-#include "net_stat.h"
-#include "proc.h"
-#include "temphelper.h"
+#include "../../common.h"
+#include "../../conky.h"
+#include "../hardware/diskio.h"
+#include "../../logging.h"
+#include "../network/net_stat.h"
+#include "../proc.h"
+#include "../../content/temphelper.h"
 #ifndef HAVE_CLOCK_GETTIME
 #include <sys/time.h>
 #endif
@@ -48,8 +48,8 @@
 // #include <assert.h>
 #include <time.h>
 #include <unordered_map>
-#include "setting.hh"
-#include "top.h"
+#include "../../lua/setting.hh"
+#include "../top.h"
 
 #include <arpa/inet.h>
 #include <linux/sockios.h>

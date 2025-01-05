@@ -33,10 +33,10 @@
 #include <unistd.h>
 #include <cctype>
 #include <cerrno>
-#include "conky.h"
-#include "logging.h"
-#include "specials.h"
-#include "text_object.h"
+#include "../conky.h"
+#include "../logging.h"
+#include "../content/specials.h"
+#include "../content/text_object.h"
 
 #ifdef HAVE_SYS_STATFS_H
 #include <sys/statfs.h>
@@ -48,17 +48,17 @@
 #endif
 
 #if defined(__FreeBSD__)
-#include "freebsd.h"
+#include "os/freebsd.h"
 #elif defined(__OpenBSD__)
-#include "openbsd.h"
+#include "os/openbsd.h"
 #elif defined(__DragonFly__)
-#include "dragonfly.h"
+#include "os/dragonfly.h"
 #elif defined(__NetBSD__)
-#include "netbsd.h"
+#include "os/netbsd.h"
 #elif defined(__HAIKU__)
-#include "haiku.h"
+#include "os/haiku.h"
 #elif defined(__APPLE__) && defined(__MACH__)
-#include "darwin.h"
+#include "os/darwin.h"
 #endif
 
 #if !defined(HAVE_STRUCT_STATFS_F_FSTYPENAME) && !defined(__OpenBSD__) &&  \

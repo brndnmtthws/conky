@@ -27,12 +27,12 @@
  */
 
 #include "mysql.h"
-#include "conky.h"
-#include "logging.h"
+#include "../conky.h"
+#include "../logging.h"
 
 #include <mysql.h>
 
-#include "setting.hh"
+#include "../lua/setting.hh"
 
 namespace {
 conky::simple_config_setting<std::string> host("mysql_host", "localhost",

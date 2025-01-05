@@ -36,9 +36,9 @@
 #include <cinttypes>
 #include <cstdlib>
 #include <string>
-#include "conky.h"
-#include "logging.h"
-#include "text_object.h"
+#include "../../conky.h"
+#include "../../logging.h"
+#include "../../content/text_object.h"
 
 #ifndef SOCK_CLOEXEC
 #define SOCK_CLOEXEC O_CLOEXEC

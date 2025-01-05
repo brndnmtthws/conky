@@ -38,7 +38,7 @@
 
 #include <wayland-client.h>
 
-#include "setting.hh"
+#include "../lua/setting.hh"
 
 namespace priv {
 class out_to_wayland_setting : public conky::simple_config_setting<bool> {

@@ -8,7 +8,7 @@
 
 #include <cstdint>
 
-#include "logging.h"
+#include "../logging.h"
 
 struct rgb {
   const char *name;

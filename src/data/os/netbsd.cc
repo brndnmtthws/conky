@@ -28,7 +28,7 @@
  */
 
 #include "netbsd.h"
-#include "net_stat.h"
+#include "../network/net_stat.h"
 #include "bsdcommon.h"
 
 #include <err.h>

@@ -27,11 +27,11 @@
  *
  */
 #include <vector>
-#include "colours.h"
-#include "conky.h"
-#include "core.h"
-#include "display-output.hh"
-#include "logging.h"
+#include "../conky.h"
+#include "../core.h"
+#include "../logging.h"
+#include "../output/display-output.hh"
+#include "colours.hh"
 #include "specials.h"
 #include "text_object.h"
 

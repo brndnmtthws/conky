@@ -29,7 +29,7 @@
 
 #include "config.h"
 
-#include "x11-settings.h"
+#include "../lua/x11-settings.h"
 #include "x11.h"
 
 #include <X11/X.h>
@@ -38,14 +38,14 @@
 #undef max
 #include <sys/types.h>
 
-#include "common.h"
-#include "conky.h"
-#include "geometry.h"
+#include "../common.h"
+#include "../conky.h"
+#include "../geometry.h"
 #include "gui.h"
-#include "logging.h"
+#include "../logging.h"
 
 #ifdef BUILD_XINPUT
-#include "mouse-events.h"
+#include "../mouse-events.h"
 
 #include <vector>
 #endif
@@ -75,7 +75,7 @@ extern "C" {
 #include <X11/Xutil.h>
 
 #ifdef BUILD_IMLIB2
-#include "conky-imlib2.h"
+#include "../conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
 #ifdef BUILD_XFT
 #include <X11/Xft/Xft.h>

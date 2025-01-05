@@ -20,8 +20,8 @@
 #include "prss.h"
 #include <libxml/parser.h>
 #include <libxml/tree.h>
-#include "conky.h"
-#include "logging.h"
+#include "../../conky.h"
+#include "../../logging.h"
 
 #ifndef PARSE_OPTIONS
 #define PARSE_OPTIONS 0

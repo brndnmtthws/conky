@@ -10,7 +10,7 @@
 #include <sys/types.h>
 #include <sys/mount.h>
 
-#include "common.h"
+#include "../../common.h"
 
 void parse_obsd_sensor(struct text_object *, const char *);
 void print_obsd_sensors_temp(struct text_object *, char *, unsigned int);

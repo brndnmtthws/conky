@@ -40,7 +40,7 @@
 
 #include <stdint.h>
 
-#include "conky.h"
+#include "../../conky.h"
 
 namespace bsdcommon {
   struct cpu_load {

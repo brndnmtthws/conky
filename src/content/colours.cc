@@ -27,9 +27,9 @@
  *
  */
 
-#include "colours.h"
+#include "colours.hh"
 
-#include "logging.h"
+#include "../logging.h"
 
 #include <cstdio>
 #include <optional>

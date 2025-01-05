@@ -31,7 +31,7 @@
 
 #include "config.h"
 
-#include "exec.h"
+#include "../data/exec.h"
 #include "specials.h" /* enum special_types */
 
 #include <cstdint> /* uint8_t */

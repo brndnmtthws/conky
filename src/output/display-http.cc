@@ -26,7 +26,7 @@
 
 #include <config.h>
 
-#include "conky.h"
+#include "../conky.h"
 #include "display-http.hh"
 
 #include <iostream>

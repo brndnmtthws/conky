@@ -30,8 +30,8 @@
 #include <cstdlib>
 #include <cstring>
 #include "config.h"
-#include "conky.h"
-#include "logging.h"
+#include "../conky.h"
+#include "../logging.h"
 
 void gen_free_opaque(struct text_object *obj) {
   free_and_zero(obj->data.opaque);

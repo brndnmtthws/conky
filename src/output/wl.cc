@@ -30,7 +30,7 @@
 #include <config.h>
 #include <cstring>
 
-#include "conky.h"
+#include "../conky.h"
 #include "wl.h"
 
 #ifdef BUILD_WAYLAND

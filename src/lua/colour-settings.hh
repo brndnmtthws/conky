@@ -23,7 +23,7 @@
  */
 #pragma once
 
-#include "colours.h"
+#include "../content/colours.hh"
 #include "config.h"
 #include "setting.hh"
 

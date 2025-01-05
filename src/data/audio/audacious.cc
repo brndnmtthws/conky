@@ -27,9 +27,9 @@
 
 #include <mutex>
 #include "audacious.h"
-#include "conky.h"
-#include "logging.h"
-#include "update-cb.hh"
+#include "../../conky.h"
+#include "../../logging.h"
+#include "../../update-cb.hh"
 
 #include <glib.h>
 #ifdef NEW_AUDACIOUS_FOUND

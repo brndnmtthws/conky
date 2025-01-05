@@ -33,8 +33,8 @@
 #include <optional>
 #include <string>
 
-#include "setting.hh"
-#include "text_object.h"
+#include "lua/setting.hh"
+#include "content/text_object.h"
 
 char *readfile(const char *filename, int *total_read, char showerror);
 

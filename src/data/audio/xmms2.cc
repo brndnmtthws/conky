@@ -26,7 +26,7 @@
  *
  */
 
-#include "conky.h"
+#include "../../conky.h"
 
 xmmsc_connection_t *xmms2_conn;
 

@@ -30,7 +30,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <utmp.h>
-#include "conky.h"
+#include "../conky.h"
 
 #define BUFLEN 512
 

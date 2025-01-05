@@ -27,7 +27,7 @@
 #include <string>
 #include <type_traits>
 
-#include "logging.h"
+#include "../logging.h"
 #include "luamm.hh"
 
 namespace conky {

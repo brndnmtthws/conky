@@ -25,7 +25,7 @@
 #ifndef _LINUX_H
 #define _LINUX_H
 
-#include "common.h"
+#include "../../common.h"
 
 void print_disk_protect_queue(struct text_object *, char *, unsigned int);
 

@@ -29,11 +29,11 @@
 #include "mpd.h"
 #include <cmath>
 #include <mutex>
-#include "conky.h"
+#include "../../conky.h"
 #include "libmpdclient.h"
-#include "logging.h"
-#include "timeinfo.h"
-#include "update-cb.hh"
+#include "../../logging.h"
+#include "../timeinfo.h"
+#include "../../update-cb.hh"
 
 namespace {
 

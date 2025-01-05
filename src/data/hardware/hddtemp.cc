@@ -34,10 +34,10 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include "conky.h"
-#include "logging.h"
-#include "temphelper.h"
-#include "text_object.h"
+#include "../../conky.h"
+#include "../../logging.h"
+#include "../../content/temphelper.h"
+#include "../../content/text_object.h"
 
 #define BUFLEN 512
 

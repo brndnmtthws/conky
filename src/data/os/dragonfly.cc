@@ -51,12 +51,12 @@
 
 #include <dev/acpica/acpiio.h>
 
-#include "conky.h"
-#include "diskio.h"
+#include "../../conky.h"
+#include "../hardware/diskio.h"
 #include "dragonfly.h"
-#include "logging.h"
-#include "net_stat.h"
-#include "top.h"
+#include "../../logging.h"
+#include "../network/net_stat.h"
+#include "../top.h"
 
 #define GETSYSCTL(name, var) getsysctl(name, &(var), sizeof(var))
 #define KELVTOC(x) ((x - 2732) / 10.0)

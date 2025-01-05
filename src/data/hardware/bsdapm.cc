@@ -31,8 +31,8 @@
 #include <unistd.h>
 
 #include "config.h"
-#include "conky.h"
-#include "text_object.h"
+#include "../../conky.h"
+#include "../../content/text_object.h"
 
 #if defined(__OpenBSD__)
 #include <machine/apmvar.h>

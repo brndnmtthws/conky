@@ -27,14 +27,13 @@
  *
  */
 #include "gui.h"
-#include "colour-settings.h"
-#include "common.h"
+#include "../common.h"
 #include "config.h"
-#include "conky.h"
-#include "logging.h"
+#include "../conky.h"
+#include "../logging.h"
 
 #ifdef BUILD_X11
-#include "x11-settings.h"
+#include "../lua/x11-settings.h"
 #endif /* BUILD_X11 */
 
 #ifdef BUILD_WAYLAND
@@ -42,7 +41,7 @@
 #endif /* BUILD_WAYLAND */
 
 // #ifdef BUILD_IMLIB2
-// #include "conky-imlib2.h"
+// #include "../conky-imlib2.h"
 // #endif /* BUILD_IMLIB2 */
 #ifndef OWN_WINDOW
 #include <iostream>

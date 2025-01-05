@@ -30,7 +30,7 @@
 #define _SPECIALS_H
 
 #include <tuple>
-#include "colours.h"
+#include "colours.hh"
 
 /* special stuff in text_buffer */
 

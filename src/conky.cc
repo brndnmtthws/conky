@@ -66,15 +66,15 @@
 #endif /* HAVE_DIRENT_H */
 
 #include "common.h"
-#include "text_object.h"
+#include "content/text_object.h"
 
 #ifdef BUILD_WAYLAND
-#include "wl.h"
+#include "output/wl.h"
 #endif /* BUILD_WAYLAND */
 
 #ifdef BUILD_X11
-#include "x11-settings.h"
-#include "x11.h"
+#include "lua/x11-settings.h"
+#include "output/x11.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
@@ -101,57 +101,57 @@
 #endif /* BUILD_RSS */
 
 /* local headers */
-#include "colours.h"
+#include "content/colours.hh"
 #include "core.h"
-#include "diskio.h"
-#include "exec.h"
+#include "data/exec.h"
+#include "data/hardware/diskio.h"
 #ifdef BUILD_GUI
-#include "fonts.h"
-#include "gui.h"
+#include "lua/fonts.h"
+#include "output/gui.h"
 #endif /* BUILD_GUI */
-#include "fs.h"
+#include "data/fs.h"
 #ifdef BUILD_ICONV
-#include "iconv_tools.h"
+#include "data/iconv_tools.h"
 #endif /* BUILD_ICONV */
-#include "llua.h"
+#include "content/specials.h"
+#include "content/temphelper.h"
+#include "content/template.h"
+#include "data/network/mail.h"
+#include "data/network/net_stat.h"
+#include "data/timeinfo.h"
+#include "data/top.h"
 #include "logging.h"
-#include "mail.h"
-#include "nc.h"
-#include "net_stat.h"
-#include "specials.h"
-#include "temphelper.h"
-#include "template.h"
-#include "timeinfo.h"
-#include "top.h"
+#include "lua/llua.h"
+#include "output/nc.h"
 
 #ifdef BUILD_MYSQL
-#include "mysql.h"
+#include "data/mysql.h"
 #endif /* BUILD_MYSQL */
 #ifdef BUILD_NVIDIA
-#include "nvidia.h"
+#include "data/hardware/nvidia.h"
 #endif /* BUILD_NVIDIA */
 #ifdef BUILD_CURL
-#include "ccurl_thread.h"
+#include "data/network/ccurl_thread.h"
 #endif /* BUILD_CURL */
 
-#include "display-output.hh"
-#include "lua-config.hh"
-#include "setting.hh"
+#include "lua/lua-config.hh"
+#include "lua/setting.hh"
+#include "output/display-output.hh"
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
-#include "linux.h"
+#include "data/os/linux.h"
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-#include "freebsd.h"
+#include "data/os/freebsd.h"
 #elif defined(__DragonFly__)
-#include "dragonfly.h"
+#include "data/os/dragonfly.h"
 #elif defined(__OpenBSD__)
-#include "openbsd.h"
+#include "data/os/openbsd.h"
 #elif defined(__NetBSD__)
-#include "netbsd.h"
+#include "data/os/netbsd.h"
 #endif
 
-#include "gradient.h"
+#include "content/gradient.hh"
 
 #ifdef BUILD_OLD_CONFIG
 #include "convertconf.h"

@@ -40,8 +40,8 @@
  * Includes								  *
  ******************************************/
 
-#include "conky.h"
-#include "text_object.h"
+#include "../conky.h"
+#include "../content/text_object.h"
 #define CPU_THRESHHOLD 0 /* threshold for the cpu diff to appear */
 #include <assert.h>
 #include <ctype.h>

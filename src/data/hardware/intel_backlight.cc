@@ -26,7 +26,7 @@
  */
 
 #include "intel_backlight.h"
-#include "logging.h"
+#include "../../logging.h"
 
 #define FS_BRIGHTNESS_MAX "/sys/class/backlight/intel_backlight/max_brightness"
 #define FS_BRIGHTNESS_CURRENT "/sys/class/backlight/intel_backlight/brightness"

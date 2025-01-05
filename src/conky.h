@@ -41,9 +41,9 @@
 #include <filesystem>
 #include <memory>
 
-#include "colours.h"
+#include "content/colours.hh"
 #include "common.h" /* at least for struct dns_data */
-#include "luamm.hh"
+#include "lua/luamm.hh"
 
 #if defined(HAS_MCHECK_H)
 #include <mcheck.h>
@@ -76,35 +76,35 @@ char *strndup(const char *s, size_t n);
 struct text_object;
 
 #ifdef BUILD_HDDTEMP
-#include "hddtemp.h"
+#include "data/hardware/hddtemp.h"
 #endif /* BUILD_HDDTEMP */
 
 #ifdef BUILD_MOC
-#include "moc.h"
+#include "data/audio/moc.h"
 #endif /* BUILD_MOC */
 
 #ifdef BUILD_MPD
-#include "mpd.h"
+#include "data/audio/mpd.h"
 #endif /* BUILD_MPD */
 
 #ifdef BUILD_MYSQL
-#include "mysql.h"
+#include "data/mysql.h"
 #endif /* BUILD_MYSQL */
 
 #ifdef BUILD_PORT_MONITORS
-#include "tcp-portmon.h"
+#include "data/network/tcp-portmon.h"
 #endif
 
 #ifdef BUILD_XMMS2
-#include "xmms2.h"
+#include "data/audio/xmms2.h"
 #endif /* BUILD_XMMS2 */
 
 #ifdef BUILD_APCUPSD
-#include "apcupsd.h"
+#include "data/hardware/apcupsd.h"
 #endif /* BUILD_APCUPSD */
 
 /* sony support */
-#include "sony.h"
+#include "data/hardware/sony.h"
 
 /* A size for temporary, static buffers to use when
  * one doesn't know what to choose. Defaults to 256.  */

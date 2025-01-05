@@ -28,9 +28,10 @@
 
 #include <tuple>
 #include "catch2/catch.hpp"
-#include "conky.h"
-#include "lua-config.hh"
-#include "specials.h"
+
+#include <conky.h>
+#include <content/specials.h>
+#include <lua/lua-config.hh>
 
 #ifdef BUILD_GUI
 

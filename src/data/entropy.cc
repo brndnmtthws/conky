@@ -30,26 +30,26 @@
 #include <inttypes.h>
 #include <time.h>
 #include "config.h"
-#include "conky.h"
-#include "text_object.h"
+#include "../conky.h"
+#include "../content/text_object.h"
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
-#include "linux.h"
+#include "os/linux.h"
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-#include "freebsd.h"
+#include "os/freebsd.h"
 #elif defined(__DragonFly__)
-#include "dragonfly.h"
+#include "os/dragonfly.h"
 #elif defined(__OpenBSD__)
-#include "openbsd.h"
+#include "os/openbsd.h"
 #elif defined(__NetBSD__)
-#include "netbsd.h"
+#include "os/netbsd.h"
 #elif defined(__sun)
-#include "solaris.h"
+#include "os/solaris.h"
 #elif defined(__HAIKU__)
-#include "haiku.h"
+#include "os/haiku.h"
 #elif defined(__APPLE__) && defined(__MACH__)
-#include "darwin.h"
+#include "os/darwin.h"
 #endif
 
 struct _entropy {

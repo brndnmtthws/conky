@@ -26,14 +26,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include "conky.h"
+#include "../conky.h"
 #ifdef BUILD_GUI
-#include "fonts.h"
-#include "gui.h"
+#include "../lua/fonts.h"
+#include "../output/gui.h"
 #endif /* BUILD_GUI */
 #include <cmath>
-#include "logging.h"
-#include "nc.h"
+#include "../logging.h"
+#include "../output/nc.h"
 #include "specials.h"
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
@@ -41,10 +41,10 @@
 #include <algorithm>
 #include <map>
 #include <sstream>
-#include "colours.h"
-#include "common.h"
-#include "conky.h"
-#include "display-output.hh"
+#include "../common.h"
+#include "../conky.h"
+#include "../output/display-output.hh"
+#include "colours.hh"
 
 struct special_node *specials = nullptr;
 

@@ -31,10 +31,10 @@
 #include <sys/time.h>
 #include <cerrno>
 #include <memory>
-#include "conky.h"
-#include "logging.h"
+#include "../../conky.h"
+#include "../../logging.h"
 #include "mail.h"
-#include "text_object.h"
+#include "../../content/text_object.h"
 
 #define FROM_WIDTH 10
 #define SUBJECT_WIDTH 22

@@ -47,14 +47,14 @@
 #include "config.h"
 #include "conky.h"
 #include "core.h"
-#include "fs.h"
+#include "data/fs.h"
 #include "logging.h"
-#include "misc.h"
-#include "net_stat.h"
-#include "specials.h"
-#include "temphelper.h"
-#include "timeinfo.h"
-#include "top.h"
+#include "data/misc.h"
+#include "data/network/net_stat.h"
+#include "content/specials.h"
+#include "content/temphelper.h"
+#include "data/timeinfo.h"
+#include "data/top.h"
 
 #if defined(_POSIX_C_SOURCE) && !defined(__OpenBSD__) && !defined(__HAIKU__)
 #include <wordexp.h>
@@ -62,23 +62,23 @@
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
-#include "linux.h"
+#include "data/os/linux.h"
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-#include "freebsd.h"
+#include "data/os/freebsd.h"
 #elif defined(__DragonFly__)
-#include "dragonfly.h"
+#include "data/os/dragonfly.h"
 #elif defined(__OpenBSD__)
-#include "openbsd.h"
+#include "data/os/openbsd.h"
 #elif defined(__NetBSD__)
-#include "netbsd.h"
+#include "data/os/netbsd.h"
 #elif defined(__APPLE__) && defined(__MACH__)
-#include "darwin.h"  // strings.h
+#include "data/os/darwin.h"  // strings.h
 #endif
 
 #include "update-cb.hh"
 
 #ifdef BUILD_CURL
-#include "ccurl_thread.h"
+#include "data/network/ccurl_thread.h"
 #endif /* BUILD_CURL */
 
 /* folds a string over top of itself, like so:

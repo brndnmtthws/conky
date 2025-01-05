@@ -26,9 +26,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include "conky.h" /* text_buffer_size, PACKAGE_NAME, maybe more */
-#include "logging.h"
-#include "temphelper.h"
+#include "../../conky.h" /* text_buffer_size, PACKAGE_NAME, maybe more */
+#include "../../logging.h"
+#include "../../content/temphelper.h"
 
 #define SYS_SMAPI_PATH "/sys/devices/platform/smapi"
 

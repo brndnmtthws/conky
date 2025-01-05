@@ -23,21 +23,21 @@
 #include "config.h"
 
 #include "build.h"
-#include "conky.h"
-#include "geometry.h"
+#include "../conky.h"
+#include "../geometry.h"
 #include "llua.h"
-#include "logging.h"
+#include "../logging.h"
 
 #ifdef BUILD_GUI
-#include "gui.h"
+#include "../output/gui.h"
 
 #ifdef BUILD_X11
 #include "x11-settings.h"
-#include "x11.h"
+#include "../output/x11.h"
 #endif /* BUILD_X11 */
 
 #ifdef BUILD_MOUSE_EVENTS
-#include "mouse-events.h"
+#include "../mouse-events.h"
 #endif /* BUILD_MOUSE_EVENTS */
 #endif /* BUILD_GUI */
 

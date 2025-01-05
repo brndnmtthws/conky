@@ -33,8 +33,8 @@
 #include <pwd.h>
 #include <cerrno>
 #include <memory>
-#include "conky.h"
-#include "logging.h"
+#include "../conky.h"
+#include "../logging.h"
 
 void print_uid_name(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct passwd *pw;

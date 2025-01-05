@@ -33,31 +33,31 @@
 #include "build.h"
 #include "config.h"
 #include "conky.h"
-#include "display-output.hh"
-#include "lua-config.hh"
+#include "output/display-output.hh"
+#include "lua/lua-config.hh"
 
 #ifdef BUILD_X11
-#include "x11.h"
+#include "output/x11.h"
 #endif /* BUILD_X11 */
 
 #ifdef BUILD_CURL
-#include "ccurl_thread.h"
+#include "data/network/ccurl_thread.h"
 #endif /* BUILD_CURL */
 
 #if defined(__linux__)
-#include "linux.h"
+#include "data/os/linux.h"
 #endif /* Linux */
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-#include "freebsd.h"
+#include "data/os/freebsd.h"
 #endif /* FreeBSD */
 
 #if defined(__NetBSD__)
-#include "netbsd.h"
+#include "data/os/netbsd.h"
 #endif /* NetBSD */
 
 #if defined(__HAIKU__)
-#include "haiku.h"
+#include "data/os/haiku.h"
 #endif /* Haiku */
 
 #ifdef BUILD_BUILTIN_CONFIG

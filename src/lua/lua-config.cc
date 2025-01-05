@@ -24,7 +24,7 @@
 
 #include "lua-config.hh"
 
-#include "data-source.hh"
+#include "../data/data-source.hh"
 #include "setting.hh"
 
 namespace conky {

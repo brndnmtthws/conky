@@ -28,10 +28,10 @@
 #include <cmath>
 #include <mutex>
 #include "ccurl_thread.h"
-#include "conky.h"
-#include "logging.h"
+#include "../../conky.h"
+#include "../../logging.h"
 #include "prss.h"
-#include "text_object.h"
+#include "../../content/text_object.h"
 
 struct rss_data {
   char uri[128];

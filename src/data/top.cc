@@ -29,8 +29,8 @@
  */
 
 #include "top.h"
-#include "logging.h"
-#include "prioqueue.h"
+#include "../logging.h"
+#include "../prioqueue.h"
 
 /* hash table size - always a power of 2 */
 #define HTABSIZE 256

@@ -26,8 +26,8 @@
 
 #include <config.h>
 
-#include "colours.h"
-#include "conky.h"
+#include "../conky.h"
+#include "../content/colours.hh"
 #include "display-ncurses.hh"
 #include "gui.h"
 #include "nc.h"

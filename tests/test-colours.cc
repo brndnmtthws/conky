@@ -1,6 +1,6 @@
 #include "catch2/catch.hpp"
 
-#include <colours.h>
+#include <content/colours.hh>
 #include <config.h>
 
 TEST_CASE("parse_color correctly parses colours", "[colours][parse_color]") {

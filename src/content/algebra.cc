@@ -33,8 +33,8 @@
 #include <cstring>
 #include <memory>
 #include "config.h"
-#include "conky.h"
-#include "logging.h"
+#include "../conky.h"
+#include "../logging.h"
 
 /* find the operand in the given expression
  * returns the index of the first op character or -1 on error
