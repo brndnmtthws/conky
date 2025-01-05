@@ -83,6 +83,8 @@ jobs:
           rm -rf "sccache-v${{ env.SCCACHE_VERSION }}-x86_64-unknown-linux-musl"
           mkdir .sccache
           echo "SCCACHE_DIR=$PWD/.sccache" >> $GITHUB_ENV
+          echo "SCCACHE_COMPRESS=true" >> $GITHUB_ENV
+          echo "SCCACHE_COMPRESSLEVEL=7" >> $GITHUB_ENV
           if [ "$RUNNER_DEBUG" = "1" ]; then
             echo "Running with debug output; cached binary artifacts will be ignored to produce a cleaner build"
             echo "SCCACHE_RECACHE=true" >> $GITHUB_ENV
