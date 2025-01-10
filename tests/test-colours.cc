@@ -1,8 +1,6 @@
 #include "catch2/catch.hpp"
 
 #include <content/colours.hh>
-#include <config.h>
-
 TEST_CASE("parse_color correctly parses colours", "[colours][parse_color]") {
   SECTION("parsing abbreviated hex color") {
     auto colour = parse_color("#abc");

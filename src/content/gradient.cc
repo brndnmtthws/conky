@@ -27,7 +27,6 @@
  *
  */
 #include "gradient.hh"
-#include "../conky.h"
 #include "../logging.h"
 #include "colours.hh"
 

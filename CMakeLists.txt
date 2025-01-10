@@ -18,45 +18,43 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-cmake_minimum_required(VERSION 3.17)
-
-project(conky)
+cmake_minimum_required(VERSION 3.25.3) # From Mar 8, 2023
 
 # This is the directory for our custom CMake modules.
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-# 'core' CMake stuff
+# Core build settings and options.
 include(Conky)
 
 # Set project version, languages
-project(conky VERSION ${RELEASE_VERSION} LANGUAGES C CXX)
+project(${PACKAGE_NAME} VERSION ${RELEASE_VERSION} LANGUAGES C CXX)
 
-# Handle build options
+# Handle build options.
+# Detect OS that's running the build
+include(OSDetection)
+# If you're a package maintainer, this file has all the information you need.
 include(ConkyBuildOptions)
-
 # Do platform checks
 include(ConkyPlatformChecks)
 
 # CPack module for installation tasks
 include(ConkyCPackSetup)
-
 # Use compilation cache (if enabled)
 include(CCache)
 
-# setup our configuration headers
-configure_file(${CMAKE_MODULE_PATH}/config.h.in ${CMAKE_BINARY_DIR}/config.h)
-configure_file(${CMAKE_MODULE_PATH}/build.h.in ${CMAKE_BINARY_DIR}/build.h)
+# Configure headers
+# configure_file("${CMAKE_MODULE_PATH}/config.h.in" "${CMAKE_BINARY_DIR}/include/config.h")
 
-set(conky_sources ${CMAKE_BINARY_DIR}/config.h ${CMAKE_BINARY_DIR}/build.h)
+add_subdirectory(src)
 
 # Include 3rdparty code
 add_subdirectory(3rdparty)
-set(conky_libs ${conky_libs} toluapp_lib_static)
-set(conky_libs ${conky_libs} Vc)
-set(conky_includes ${conky_includes} "${CMAKE_SOURCE_DIR}/3rdparty/Vc")
+target_link_libraries(conky-dependencies INTERFACE toluapp_lib_static)
+target_link_libraries(conky-dependencies INTERFACE Vc)
+target_include_directories(conky-dependencies INTERFACE "${CMAKE_SOURCE_DIR}/3rdparty/Vc")
 
 # Finally, add some code
-add_subdirectory(lua)
+add_subdirectory(lua_modules)
 add_subdirectory(data)
 add_subdirectory(doc)
 
@@ -74,7 +72,7 @@ if(BUILD_TESTING)
   include(Catch)
 endif()
 
-add_subdirectory(src)
+add_subdirectory(src/main)
 
 if(BUILD_TESTING)
   add_subdirectory(tests)
@@ -102,5 +100,5 @@ if(NOT TARGET uninstall)
     IMMEDIATE @ONLY)
 
   add_custom_target(uninstall
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/cmake_uninstall.cmake)
+    COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/cmake_uninstall.cmake")
 endif()

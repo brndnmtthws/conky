@@ -25,8 +25,6 @@
  *
  */
 
-#include "config.h"
-
 #include <kinfo_pcpu.h>
 #include <sys/ioctl.h>
 #include <sys/param.h>

@@ -34,10 +34,9 @@
 #include <cstring>
 #include <memory>
 #include "../common.h"
-#include "config.h"
 #include "../conky.h"
-#include "../logging.h"
 #include "../content/text_object.h"
+#include "../logging.h"
 
 #define MAX_HEADTAIL_LINES 30
 #define DEFAULT_MAX_HEADTAIL_USES 2

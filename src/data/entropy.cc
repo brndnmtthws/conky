@@ -29,7 +29,6 @@
 
 #include <inttypes.h>
 #include <time.h>
-#include "config.h"
 #include "../conky.h"
 #include "../content/text_object.h"
 

@@ -24,8 +24,6 @@
 #ifndef _CONKY_GUI_H_
 #define _CONKY_GUI_H_
 
-#include "config.h"
-
 #include "../geometry.h"
 #include "../lua/setting.hh"
 

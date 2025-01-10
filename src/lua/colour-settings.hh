@@ -24,7 +24,6 @@
 #pragma once
 
 #include "../content/colours.hh"
-#include "config.h"
 #include "setting.hh"
 
 namespace priv {

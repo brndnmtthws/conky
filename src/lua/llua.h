@@ -30,7 +30,6 @@ extern "C" {
 #include <lualib.h>
 }
 
-#include <config.h>
 #include "../geometry.h"
 
 #ifdef BUILD_MOUSE_EVENTS

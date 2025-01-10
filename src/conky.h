@@ -32,10 +32,7 @@
 
 #define __STDC_FORMAT_MACROS
 
-#include "config.h"
-
 #include <arpa/inet.h>
-#include <config.h>      /* defines */
 #include <sys/utsname.h> /* struct uname_s */
 #include <csignal>
 #include <filesystem>

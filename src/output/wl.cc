@@ -27,7 +27,6 @@
  *
  */
 
-#include <config.h>
 #include <cstring>
 
 #include "../conky.h"

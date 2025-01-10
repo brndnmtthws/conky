@@ -18,8 +18,6 @@
  *
  */
 
-#include <config.h>
-
 #include "luamm.hh"
 
 namespace lua {

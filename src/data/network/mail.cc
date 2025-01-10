@@ -27,8 +27,6 @@
  *
  */
 
-#include "config.h"
-
 #include "mail.h"
 
 #include "../../common.h"

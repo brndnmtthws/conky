@@ -22,8 +22,6 @@
  *
  */
 
-#include <config.h>
-
 #include "colour-settings.hh"
 
 namespace priv {

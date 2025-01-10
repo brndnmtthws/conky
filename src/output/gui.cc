@@ -28,7 +28,6 @@
  */
 #include "gui.h"
 #include "../common.h"
-#include "config.h"
 #include "../conky.h"
 #include "../logging.h"
 

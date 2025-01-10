@@ -15,14 +15,13 @@ cmake_install.cmake
 cmake_uninstall.cmake
 CPackConfig.cmake
 CPackSourceConfig.cmake
+CMakeUserPresets.json
 
 # Generated files
 data/convertconf.h
 data/defconfig.h
 *.so
 *.a
-/config.h
-/build.h
 src/colour-names.hh
 
 # Compiler cache

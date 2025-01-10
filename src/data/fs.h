@@ -30,7 +30,7 @@
 #ifndef _FS_H
 #define _FS_H
 
-#include "../conky.h" /* DEFAULT_TEXT_BUFFER_SIZE */
+#include <cstdint>
 
 /* needed here and by fs.c */
 struct fs_stat {

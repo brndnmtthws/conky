@@ -27,8 +27,6 @@
  *
  */
 
-#include "config.h"
-
 #include "../lua/x11-settings.h"
 #include "x11.h"
 

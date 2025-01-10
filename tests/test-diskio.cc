@@ -28,7 +28,6 @@
 
 #include "catch2/catch.hpp"
 
-#include <config.h>
 #include <conky.h>
 #include <data/hardware/diskio.h>
 

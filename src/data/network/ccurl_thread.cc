@@ -29,9 +29,9 @@
 #include "../../logging.h"
 #include "../../content/text_object.h"
 
-#ifdef DEBUG
+#ifndef NDEBUG
 #include <assert.h>
-#endif /* DEBUG */
+#endif /* NDEBUG */
 
 #include <curl/easy.h>
 

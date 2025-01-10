@@ -32,7 +32,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <memory>
-#include "config.h"
 #include "../conky.h"
 #include "../logging.h"
 

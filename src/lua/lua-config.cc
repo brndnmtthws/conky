@@ -20,8 +20,6 @@
  *
  */
 
-#include <config.h>
-
 #include "lua-config.hh"
 
 #include "../data/data-source.hh"

@@ -32,8 +32,6 @@
 
 #include <netinet/in.h> /* struct in6_addr */
 #include <sys/socket.h> /* struct sockaddr */
-#include "config.h"
-
 #ifdef BUILD_IPV6
 struct v6addr {
   struct in6_addr addr;

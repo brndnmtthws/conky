@@ -25,8 +25,6 @@
 #include <cstdint>
 #include <string>
 
-#include "config.h"
-
 #include "geometry.h"
 #include "logging.h"
 

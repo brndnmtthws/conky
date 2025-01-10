@@ -27,8 +27,6 @@
  *
  */
 
-#include "config.h"
-
 #include "timeinfo.h"
 
 #include <stdio.h>

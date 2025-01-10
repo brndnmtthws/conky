@@ -27,8 +27,6 @@
  *
  */
 
-#include <config.h>
-
 #include "nc.h"
 
 #ifdef BUILD_NCURSES
