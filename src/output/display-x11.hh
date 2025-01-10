@@ -23,8 +23,6 @@
 #ifndef DISPLAY_X11_HH
 #define DISPLAY_X11_HH
 
-#include "config.h"
-
 #include <limits>
 #include <string>
 #include <type_traits>

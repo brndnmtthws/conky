@@ -33,10 +33,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "config.h"
 #include "../../conky.h"
-#include "../../logging.h"
 #include "../../content/text_object.h"
+#include "../../logging.h"
 
 #define SONY_LAPTOP_DIR "/sys/devices/platform/sony-laptop"
 

@@ -24,8 +24,6 @@
  *
  */
 
-#include <config.h>
-
 #include "../conky.h"
 #include "display-console.hh"
 #include "nc.h"

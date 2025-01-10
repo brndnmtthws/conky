@@ -233,8 +233,7 @@ device_info *device_info::from_xi_id(xi_device_id device_id, Display *display) {
   XIDeviceInfo *device = XIQueryDevice(display, device_id, &num_devices);
   if (num_devices == 0) return nullptr;
 
-  device_info info =
-      device_info{.id = device_id, .name = std::string(device->name)};
+  device_info info = device_info{device_id, std::string(device->name)};
 
   size_t id = last_device_id++;
   info.init_xi_device(display, device);
@@ -396,12 +395,11 @@ void device_info::init_xi_device(
     if (valuator == valuator_t::UNKNOWN) { continue; }
 
     auto info = conky_valuator_info{
-        .index = static_cast<size_t>(class_info->number),
-        .min = class_info->min,
-        .max = class_info->max,
-        .value = class_info->value,
-        .relative =
-            fixed_valuator_relative(display, device, valuator, class_info),
+        static_cast<size_t>(class_info->number),
+        class_info->min,
+        class_info->max,
+        class_info->value,
+        fixed_valuator_relative(display, device, valuator, class_info),
     };
 
     this->valuators[*valuator] = info;
@@ -438,26 +436,26 @@ xi_event_data *xi_event_data::read_cookie(Display *display, const void *data) {
   if (device == nullptr) return nullptr;  // shouldn't happen
 
   auto result = new xi_event_data{
-      .evtype = static_cast<xi_event_type>(source->evtype),
-      .serial = source->serial,
-      .send_event = source->send_event,
-      .display = source->display,
-      .extension = source->extension,
-      .time = source->time,
-      .device = device,
-      .sourceid = source->sourceid,
-      .detail = source->detail,
-      .root = source->root,
-      .event = source->event,
-      .child = source->child,
-      .pos_absolute = vec2d{source->root_x, source->root_y},
-      .pos = vec2d{source->event_x, source->event_y},
-      .flags = source->flags,
-      .buttons = buttons,
-      .valuators = valuators,
-      .mods = source->mods,
-      .group = source->group,
-      .valuators_relative = {0.0, 0.0, 0.0, 0.0},
+      static_cast<xi_event_type>(source->evtype),
+      source->serial,
+      source->send_event,
+      source->display,
+      source->extension,
+      source->time,
+      device,
+      source->sourceid,
+      source->detail,
+      source->root,
+      source->event,
+      source->child,
+      vec2d{source->root_x, source->root_y},
+      vec2d{source->event_x, source->event_y},
+      source->flags,
+      buttons,
+      valuators,
+      source->mods,
+      source->group,
+      {0.0, 0.0, 0.0, 0.0},
   };
 
   for (size_t v = 0; v < VALUATOR_COUNT; v++) {

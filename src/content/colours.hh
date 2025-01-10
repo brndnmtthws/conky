@@ -30,8 +30,6 @@
 #ifndef _COLOURS_H_
 #define _COLOURS_H_
 
-#include "config.h"
-
 #include <cassert>
 #include <climits>
 #include <memory>

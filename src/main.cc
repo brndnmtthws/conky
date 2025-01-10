@@ -30,8 +30,6 @@
 #include <cstdio>
 #include <iostream>
 
-#include "build.h"
-#include "config.h"
 #include "conky.h"
 #include "output/display-output.hh"
 #include "lua/lua-config.hh"
@@ -153,7 +151,7 @@ static void print_version() {
 #ifdef BUILD_PULSEAUDIO
             << _("  * PulseAudio\n")
 #endif /* BUIL_PULSEAUDIO */
-#ifdef DEBUG
+#ifndef NDEBUG
             << _("  * Debugging extensions\n")
 #endif
 #if defined BUILD_LUA_CAIRO || defined BUILD_LUA_IMLIB2 || BUILD_LUA_RSVG

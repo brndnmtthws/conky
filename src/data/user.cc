@@ -27,8 +27,6 @@
  *
  */
 
-#include <config.h>
-
 #include <grp.h>
 #include <pwd.h>
 #include <cerrno>

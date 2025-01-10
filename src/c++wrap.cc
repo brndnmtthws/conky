@@ -20,8 +20,6 @@
  *
  */
 
-#include "config.h"
-
 #include "c++wrap.hh"
 
 #include <unistd.h>

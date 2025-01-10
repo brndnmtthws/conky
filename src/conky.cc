@@ -29,8 +29,6 @@
 
 #include "conky.h"
 
-#include "config.h"
-
 #include <algorithm>
 #include <cerrno>
 #include <climits>

@@ -21,8 +21,6 @@
  *
  */
 
-#include <config.h>
-
 #include <cmath>
 
 #include <mutex>

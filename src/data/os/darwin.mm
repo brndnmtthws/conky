@@ -88,10 +88,11 @@
 #endif
 
 /* debugging defines */
-#define DEBUG_MODE
+#define DEBUG
+// Always enabled
 
 /* (E)nhanced printf */
-#ifdef DEBUG_MODE
+#ifndef DEBUG
 #include <cstdarg>
 void eprintf(const char *fmt, ...) {
   va_list args;

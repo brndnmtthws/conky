@@ -25,8 +25,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include "config.h"
-
 #include <sys/dkstat.h>
 #include <sys/ioctl.h>
 #include <sys/param.h>
@@ -67,10 +65,6 @@
 #define GETSYSCTL(name, var) getsysctl(name, &(var), sizeof(var))
 #define KELVTOC(x) ((x - 2732) / 10.0)
 #define MAXSHOWDEVS 16
-
-#if 0
-#define FREEBSD_DEBUG
-#endif
 
 kvm_t *kd;
 std::mutex kvm_proc_mutex;

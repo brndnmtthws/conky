@@ -34,10 +34,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "config.h"
 #include "../../conky.h"
-#include "../../logging.h"
 #include "../../content/temphelper.h"
+#include "../../logging.h"
 
 static int ibm_acpi_temps[8];
 

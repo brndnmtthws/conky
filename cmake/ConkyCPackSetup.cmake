@@ -20,10 +20,13 @@
 
 set(CPACK_GENERATOR "TGZ;STGZ;DEB")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>=2.10-1), libgcc1 (>= 1:4.4.0)")
-set(CPACK_PACKAGE_CONTACT "brenden@diddyinc.com")
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Brenden Matthews")
 set(CPACK_PACKAGE_FILE_NAME
   "${PROJECT_NAME}-${VERSION}-${CMAKE_SYSTEM_NAME}-${CPU_ARCH}")
+
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://conky.cc/")
+set(CPACK_PACKAGE_CONTACT "sup@brenden.brndn.io")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Brenden Matthews")
+set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/data/logo/conky-logomark-violet.png")
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY ${PROJECT_NAME})
 

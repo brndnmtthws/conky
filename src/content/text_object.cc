@@ -29,7 +29,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "config.h"
 #include "../conky.h"
 #include "../logging.h"
 

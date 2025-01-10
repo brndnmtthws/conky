@@ -19,7 +19,7 @@
 #along with this program.If not, see < http:  // www.gnu.org/licenses/>.
 #
 
-if (NOT EXISTS ${CMAKE_BINARY_DIR} / install_manifest.txt)
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/install_manifest.txt")
     message(FATAL_ERROR "Cannot find install manifest: ${CMAKE_BINARY_DIR}/install_manifest.txt")
 endif()
 

@@ -25,8 +25,6 @@
 #ifndef CONKY_X11_H
 #define CONKY_X11_H
 
-#include "config.h"
-
 #ifndef BUILD_X11
 #error x11.h included when BUILD_X11 is disabled
 #endif

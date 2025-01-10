@@ -1,8 +1,6 @@
 #ifndef _CONKY_GEOMETRY_H_
 #define _CONKY_GEOMETRY_H_
 
-#include "config.h"
-
 #include "macros.h"
 
 #include <algorithm>
@@ -597,10 +595,10 @@ struct rect {
 
 #ifdef BUILD_X11
   XRectangle to_xrectangle() const {
-    return XRectangle{.x = static_cast<short>(this->x()),
-                      .y = static_cast<short>(this->y()),
-                      .width = static_cast<unsigned short>(this->width()),
-                      .height = static_cast<unsigned short>(this->height())};
+    return XRectangle{static_cast<short>(this->x()),
+                      static_cast<short>(this->y()),
+                      static_cast<unsigned short>(this->width()),
+                      static_cast<unsigned short>(this->height())};
   }
 #endif /* BUILD_X11 */
 

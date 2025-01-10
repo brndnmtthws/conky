@@ -32,12 +32,11 @@
 #include <cstdlib>
 #include <vector>
 #include "../../common.h"
-#include "config.h"
 #include "../../conky.h" /* text_buffer_size */
-#include "../../core.h"
-#include "../../logging.h"
 #include "../../content/specials.h"
 #include "../../content/text_object.h"
+#include "../../core.h"
+#include "../../logging.h"
 
 /* this is the root of all per disk stats,
  * also containing the totals. */

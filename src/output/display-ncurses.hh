@@ -23,8 +23,6 @@
 #ifndef DISPLAY_NCURSES_HH
 #define DISPLAY_NCURSES_HH
 
-#include "config.h"
-
 #include <limits>
 #include <string>
 #include <type_traits>

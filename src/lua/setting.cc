@@ -20,8 +20,6 @@
  *
  */
 
-#include <config.h>
-
 #include "setting.hh"
 
 #include <algorithm>

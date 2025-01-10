@@ -27,10 +27,9 @@ int get_entropy_avail(unsigned int *);
 int get_entropy_poolsize(unsigned int *);
 
 /* let's just mimic statfs64 */
+using statfs_struct = fs_info;
 
-struct statfs : public fs_info {};
-
-inline int statfs(const char *path, struct statfs *buf) {
+inline int statfs(const char *path, statfs_struct *buf) {
   return fs_stat_dev(dev_for_path(path), buf);
 }
 

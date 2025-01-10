@@ -24,8 +24,6 @@
  *
  */
 
-#include <config.h>
-
 #include "../conky.h"
 #include "../content/colours.hh"
 #include "display-ncurses.hh"

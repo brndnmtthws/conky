@@ -27,13 +27,10 @@
  *
  */
 
-#include "config.h"
-
 /* local headers */
 #include "content/algebra.h"
 #include "core.h"
 
-#include "build.h"
 #include "lua/colour-settings.hh"
 #include "content/colours.hh"
 #include "content/combine.h"

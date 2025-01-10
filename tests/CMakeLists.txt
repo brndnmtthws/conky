@@ -2,7 +2,6 @@ include(CTest)
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_BINARY_DIR})
-include_directories(${conky_includes})
 
 file(GLOB test_srcs test-*.cc)
 
@@ -18,8 +17,7 @@ add_library(Catch2 STATIC catch2/catch_amalgamated.cpp)
 
 add_executable(test-conky test-common.cc ${test_srcs})
 target_link_libraries(test-conky
-  PRIVATE Catch2
-  PUBLIC conky_core
+  PRIVATE Catch2 conky-dependencies conky-core
 )
 catch_discover_tests(test-conky)
 

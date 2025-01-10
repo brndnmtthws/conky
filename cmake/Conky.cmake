@@ -1,161 +1,9 @@
-#
-# Conky, a system monitor, based on torsmo
-#
-# Please see COPYING for details
-#
-# Copyright (c) 2005-2024 Brenden Matthews, et. al. (see AUTHORS) All rights
-# reserved.
-#
-# This program is free software: you can redistribute it and/or modify it under
-# the terms of the GNU General Public License as published by the Free Software
-# Foundation, either version 3 of the License, or (at your option) any later
-# version.
-#
-# This program is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-# details. You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+set(PACKAGE_NAME "conky" CACHE INTERNAL "Name of the package")
 
-# set(RELEASE true)
-
-# Set system vars
-if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-  set(OS_LINUX true)
-endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
-
-if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
-  set(OS_FREEBSD true)
-endif(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
-
-if(CMAKE_SYSTEM_NAME MATCHES "DragonFly")
-  set(OS_DRAGONFLY true)
-endif(CMAKE_SYSTEM_NAME MATCHES "DragonFly")
-
-if(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
-  set(OS_OPENBSD true)
-endif(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
-
-if(CMAKE_SYSTEM_NAME MATCHES "SunOS")
-  set(OS_SOLARIS true)
-endif(CMAKE_SYSTEM_NAME MATCHES "SunOS")
-
-if(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
-  set(OS_NETBSD true)
-endif(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
-
-if(CMAKE_SYSTEM_NAME MATCHES "Haiku")
-  set(OS_HAIKU true)
-endif(CMAKE_SYSTEM_NAME MATCHES "Haiku")
-
-if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-  set(OS_DARWIN true)
-endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-
-if(NOT OS_LINUX
-  AND NOT OS_FREEBSD
-  AND NOT OS_OPENBSD
-  AND NOT OS_NETBSD
-  AND NOT OS_DRAGONFLY
-  AND NOT OS_SOLARIS
-  AND NOT OS_HAIKU
-  AND NOT OS_DARWIN)
-  message(
-    FATAL_ERROR
-    "Your platform, '${CMAKE_SYSTEM_NAME}', is not currently supported.  Patches are welcome."
-  )
-endif(NOT
-  OS_LINUX
-  AND
-  NOT
-  OS_FREEBSD
-  AND
-  NOT
-  OS_OPENBSD
-  AND
-  NOT
-  OS_NETBSD
-  AND
-  NOT
-  OS_DRAGONFLY
-  AND
-  NOT
-  OS_SOLARIS
-  AND
-  NOT
-  OS_HAIKU
-  AND
-  NOT
-  OS_DARWIN)
-
-include(FindThreads)
-find_package(Threads)
-
-set(conky_libs ${CMAKE_THREAD_LIBS_INIT})
-set(conky_includes ${CMAKE_BINARY_DIR})
-
-#
-# On Darwin _POSIX_C_SOURCE must be >= __DARWIN_C_FULL for asprintf to be
-# enabled! Thus disable this and _LARGEFILE64_SOURCE isnt needed, it is already
-# used on macOS.
-#
-if(NOT OS_DARWIN AND NOT OS_OPENBSD)
-  add_definitions(-D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L) # Standard definitions
-  set(
-    CMAKE_REQUIRED_DEFINITIONS
-    "${CMAKE_REQUIRED_DEFINITIONS} -D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L"
-  )
-endif(NOT OS_DARWIN AND NOT OS_OPENBSD)
-
-if(OS_FREEBSD)
-  add_definitions(-D__BSD_VISIBLE=1 -D_XOPEN_SOURCE=700)
-  set(
-    CMAKE_REQUIRED_DEFINITIONS
-    "${CMAKE_REQUIRED_DEFINITIONS} -D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L -D__BSD_VISIBLE=1 -D_XOPEN_SOURCE=700"
-  )
-endif(OS_FREEBSD)
-
-if(OS_DRAGONFLY)
-  set(conky_libs ${conky_libs} -L/usr/pkg/lib)
-  set(conky_includes ${conky_includes} -I/usr/pkg/include)
-endif(OS_DRAGONFLY)
-
-if(OS_OPENBSD)
-  # For asprintf
-  add_definitions(-D_GNU_SOURCE) # Standard definitions
-  set(
-    CMAKE_REQUIRED_DEFINITIONS
-    "${CMAKE_REQUIRED_DEFINITIONS} -D_GNU_SOURCE"
-  )
-endif(OS_OPENBSD)
-if(OS_NETBSD)
-  set(conky_libs ${conky_libs} -L/usr/pkg/lib)
-
-  add_definitions(-D_NETBSD_SOURCE -D_XOPEN_SOURCE=700)
-  set(
-    CMAKE_REQUIRED_DEFINITIONS
-    "${CMAKE_REQUIRED_DEFINITIONS} -D_NETBSD_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
-  )
-endif(OS_NETBSD)
-
-if(OS_SOLARIS)
-  set(conky_libs ${conky_libs} -L/usr/local/lib)
-endif(OS_SOLARIS)
-
-if(OS_HAIKU)
-  # For asprintf
-  add_definitions(-D_GNU_SOURCE) # Standard definitions
-  set(
-    CMAKE_REQUIRED_DEFINITIONS
-    "${CMAKE_REQUIRED_DEFINITIONS} -D_GNU_SOURCE"
-  )
-endif(OS_HAIKU)
-
-# Do version stuff
-set(VERSION_MAJOR "1")
-set(VERSION_MINOR "22")
-set(VERSION_PATCH "1")
+# Current version
+set(VERSION_MAJOR "1" CACHE INTERNAL "${PACKAGE_NAME} major version")
+set(VERSION_MINOR "22" CACHE INTERNAL "${PACKAGE_NAME} minor version")
+set(VERSION_PATCH "1" CACHE INTERNAL "${PACKAGE_NAME} patch version")
 
 find_program(APP_AWK awk)
 
@@ -198,7 +46,7 @@ execute_process(COMMAND ${APP_GIT} rev-parse --short HEAD
   OUTPUT_VARIABLE GIT_SHORT_SHA
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-set(RELEASE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+set(RELEASE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}" CACHE INTERNAL "${PACKAGE_NAME} release version")
 
 if(RELEASE)
   set(VERSION ${RELEASE_VERSION})
@@ -207,34 +55,7 @@ else(RELEASE)
     "${RELEASE_VERSION}-pre-${GIT_SHORT_SHA}")
 endif(RELEASE)
 
-set(COPYRIGHT "Copyright Brenden Matthews, et al, 2005-2024")
-
-macro(AC_SEARCH_LIBS FUNCTION_NAME INCLUDES TARGET_VAR)
-  if("${TARGET_VAR}" MATCHES "^${TARGET_VAR}$")
-    unset(AC_SEARCH_LIBS_TMP CACHE)
-    check_symbol_exists(${FUNCTION_NAME} ${INCLUDES} AC_SEARCH_LIBS_TMP)
-
-    if(${AC_SEARCH_LIBS_TMP})
-      set(${TARGET_VAR} "" CACHE INTERNAL "Library containing ${FUNCTION_NAME}")
-    else(${AC_SEARCH_LIBS_TMP})
-      foreach(LIB ${ARGN})
-        unset(AC_SEARCH_LIBS_TMP CACHE)
-        unset(AC_SEARCH_LIBS_FOUND CACHE)
-        find_library(AC_SEARCH_LIBS_TMP ${LIB})
-        check_library_exists(${LIB}
-          ${FUNCTION_NAME}
-          ${AC_SEARCH_LIBS_TMP}
-          AC_SEARCH_LIBS_FOUND)
-
-        if(${AC_SEARCH_LIBS_FOUND})
-          set(${TARGET_VAR} ${AC_SEARCH_LIBS_TMP}
-            CACHE INTERNAL "Library containing ${FUNCTION_NAME}")
-          break()
-        endif(${AC_SEARCH_LIBS_FOUND})
-      endforeach(LIB)
-    endif(${AC_SEARCH_LIBS_TMP})
-  endif("${TARGET_VAR}" MATCHES "^${TARGET_VAR}$")
-endmacro(AC_SEARCH_LIBS)
+set(COPYRIGHT "Copyright Brenden Matthews, et al, 2005-2024" CACHE INTERNAL "${PACKAGE_NAME} copyright")
 
 # A function to print the target build properties
 function(print_target_properties tgt)
@@ -259,7 +80,84 @@ function(print_target_properties tgt)
 
     if(propval)
       get_target_property(propval ${tgt} ${prop})
-      message(STATUS "${prop} = ${propval}")
+      message(STATUS "${tgt} ${prop} = ${propval}")
     endif()
   endforeach(prop)
 endfunction(print_target_properties)
+
+#[[
+Conky uses a C++ compiler to compile the sources.
+
+DO NOT add c_std_99, because it will cause warnings, which are errors in
+MAINTANER_MODE, and that will cause all platform tests to fail in the CI.
+c_std_99 only causes a warning with g++/clang++, because they ARE NOT C
+compilers. Conky can't be compiled with a C compiler because it's a C++
+program. A program can't simutaneously adhere to both C and C++
+specifications because they're fundamentally different.
+]]
+add_library(conky-options INTERFACE)
+target_compile_features(conky-options INTERFACE cxx_std_17)
+target_compile_options(conky-options INTERFACE -Wpedantic) # disable compiler extensions
+
+# In 99% of use cases this shouldn't be touched. However, if some standard implementation for
+# compilation target is bad, it might be necessary to override the defaults.
+# Value is a ';'-delimited list of custom compilation definitions (without a '-D' prefix, like defaults).
+option(CUSTOM_COMPILE_DEFINITIONS "" "")
+mark_as_advanced(CUSTOM_COMPILE_DEFINITIONS)
+if(NOT CUSTOM_COMPILE_DEFINITIONS)
+  # Feature configuration
+  # These are shared across all supported platforms to ensure build consistency.
+  target_compile_definitions(conky-options INTERFACE
+    _POSIX_C_SOURCE=200809L # Use POSIX.1-2008     - https://ieeexplore.ieee.org/document/4694976
+    # _XOPEN_SOURCE=700     # Use X/Open 7 / SUSv4 - https://pubs.opengroup.org/onlinepubs/9699919799/
+    _FILE_OFFSET_BITS=64    # Use 64-bit types
+    _LARGEFILE64_SOURCE     # Enable statfs64
+    # _GNU_SOURCE is intentionally excluded to disable non-standard GNU extensions
+  )
+else()
+  foreach(ITEM IN LISTS CUSTOM_COMPILE_DEFINITIONS)
+    target_compile_definitions(conky-options INTERFACE ${ITEM})
+  endforeach()
+endif()
+
+if(NOT OS_OPENBSD)
+  # Always use libc++ when compiling w/ clang
+  # Not on OpenBSD because that's the default for its vendored Clang (warning is error -> build fails)
+  target_compile_options(conky-options INTERFACE
+    $<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>
+  )
+  target_link_options(conky-options INTERFACE
+    $<$<COMPILE_LANG_AND_ID:CXX,Clang>:-stdlib=libc++>
+  )
+endif()
+
+target_compile_options(conky-options INTERFACE
+  $<$<COMPILE_LANG_AND_ID:CXX,Clang>:-Wno-unknown-warning-option>
+  $<$<COMPILE_LANG_AND_ID:CXX,GCC>:-Wno-unknown-warning>
+)
+
+#[[
+Provides an interface to store compile-time definitions in. This is similar to
+configuring a header, only it doesn't require copying all variables multiple
+times (in CMake and in header input) and including that header in every place
+it's being used.
+
+This shouldn't contain any defines that affect third-party dependencies
+(e.g. _POSIX_C_SOURCE). Those go into `conky-definitions` target.
+]]
+add_library(conky-definitions INTERFACE)
+
+# Utility function that adds a source #define to default compilation targets.
+# This replaces having to configure and import a header file.
+function(source_define DEFINE_NAME)
+    set(VALUE "")
+    if(ARGC GREATER 1)
+        set(VALUE "=${ARGV1}")
+    endif()
+    target_compile_definitions(conky-definitions INTERFACE "${DEFINE_NAME}${VALUE}")
+endfunction()
+
+source_define(SYSTEM_NAME "\"${CMAKE_SYSTEM_NAME}\"")
+source_define(PACKAGE_NAME "\"${PACKAGE_NAME}\"")
+source_define(VERSION "\"${VERSION}\"")
+source_define(BUILD_ARCH "\"${BUILD_ARCH}\"")

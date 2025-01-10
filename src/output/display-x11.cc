@@ -24,8 +24,6 @@
  *
  */
 
-#include "config.h"
-
 #include "display-x11.hh"
 
 #include <X11/X.h>
@@ -752,10 +750,10 @@ bool handle_event<x_event_handler::EXPOSE>(conky::display_output_x11 *surface,
   if (ev.type != Expose) return false;
 
   XRectangle r{
-      .x = static_cast<short>(ev.xexpose.x),
-      .y = static_cast<short>(ev.xexpose.y),
-      .width = static_cast<unsigned short>(ev.xexpose.width),
-      .height = static_cast<unsigned short>(ev.xexpose.height),
+      static_cast<short>(ev.xexpose.x),
+      static_cast<short>(ev.xexpose.y),
+      static_cast<unsigned short>(ev.xexpose.width),
+      static_cast<unsigned short>(ev.xexpose.height),
   };
   XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
   XSync(display, False);

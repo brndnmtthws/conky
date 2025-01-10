@@ -29,8 +29,6 @@
 #ifndef _TEXT_OBJECT_H
 #define _TEXT_OBJECT_H
 
-#include "config.h"
-
 #include "../data/exec.h"
 #include "specials.h" /* enum special_types */
 

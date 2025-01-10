@@ -129,10 +129,13 @@ struct fs_stat *prepare_fs_stat(const char *s) {
 #elif defined(__NetBSD__)
   #define statfs_func statvfs
   #define statfs_struct statvfs
-#else
+#elif defined(HAVE_STATFS64)
   #define statfs_func statfs64
   #define statfs_struct statfs64
-#endif /* defined(__APPLE__) */
+#else
+  #define statfs_func statfs
+  #define statfs_struct statfs
+#endif
 
 static void update_fs_stat(struct fs_stat *fs) {
 #if defined(__sun)

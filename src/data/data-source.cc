@@ -20,8 +20,6 @@
  *
  */
 
-#include <config.h>
-
 #include "data-source.hh"
 
 #include <iostream>

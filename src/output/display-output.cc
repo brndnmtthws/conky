@@ -24,8 +24,6 @@
  *
  */
 
-#include <config.h>
-
 #include "display-output.hh"
 
 #include <algorithm>

@@ -18,38 +18,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-include_directories(${conky_includes})
-
-# always include the binary dir
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
-if(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
-  # include config output dir
-  include_directories(${CMAKE_BINARY_DIR}/data)
-endif(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
-
-# ensure build.h and config.h aren't in the way
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
-  message(
-    FATAL_ERROR
-    "You must remove the autotools generated file '${CMAKE_CURRENT_SOURCE_DIR}/config.h' in order to build with CMake."
-  )
-endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
-
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
-  message(
-    FATAL_ERROR
-    "You must remove the autotools generated file '${CMAKE_CURRENT_SOURCE_DIR}/build.h' in order to build with CMake."
-  )
-endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
-
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h)
-  message(
-    FATAL_ERROR
-    "You must remove the autotools generated file '${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h' in order to build with CMake."
-  )
-endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h)
-
 # Generate colour-names.hh with gperf
 execute_process(
   INPUT_FILE "${CMAKE_SOURCE_DIR}/data/color-names.yml"
@@ -63,92 +31,115 @@ execute_process(
 )
 
 set(conky_sources
-  ${conky_sources}
   c++wrap.cc
   c++wrap.hh
-  lua/colour-settings.cc
-  lua/colour-settings.hh
-  content/colours.cc
-  content/colours.hh
-  content/combine.cc
-  content/combine.h
   common.cc
   common.h
   conky.cc
   conky.h
+  content/algebra.cc
+  content/algebra.h
+  content/colours.cc
+  content/colours.hh
+  content/combine.cc
+  content/combine.h
+  content/gradient.cc
+  content/gradient.hh
+  content/scroll.cc
+  content/scroll.h
+  content/specials.cc
+  content/specials.h
+  content/temphelper.cc
+  content/temphelper.h
+  content/template.cc
+  content/template.h
+  content/text_object.cc
+  content/text_object.h
   core.cc
   core.h
-  data/hardware/cpu.cc
-  data/hardware/cpu.h
-  data/hardware/diskio.cc
-  data/hardware/diskio.h
+  data/data-source.cc
+  data/data-source.hh
   data/entropy.cc
   data/entropy.h
   data/exec.cc
   data/exec.h
   data/fs.cc
   data/fs.h
-  content/gradient.cc
-  content/gradient.hh
-  data/network/mail.cc
-  data/network/mail.h
+  data/hardware/cpu.cc
+  data/hardware/cpu.h
+  data/hardware/diskio.cc
+  data/hardware/diskio.h
   data/misc.cc
   data/misc.h
-  data/network/net_stat.cc
-  data/network/net_stat.h
-  content/template.cc
-  content/template.h
+  data/network/mail.cc
+  data/network/mail.h
   data/network/mboxscan.cc
   data/network/mboxscan.h
+  data/network/net_stat.cc
+  data/network/net_stat.h
   data/network/read_tcpip.cc
   data/network/read_tcpip.h
-  content/scroll.cc
-  content/scroll.h
-  content/specials.cc
-  content/specials.h
+  data/proc.cc
+  data/proc.h
   data/tailhead.cc
   data/tailhead.h
-  content/temphelper.cc
-  content/temphelper.h
-  content/text_object.cc
-  content/text_object.h
   data/timeinfo.cc
   data/timeinfo.h
   data/top.cc
   data/top.h
-  content/algebra.cc
-  content/algebra.h
-  prioqueue.cc
-  prioqueue.h
-  data/proc.cc
-  data/proc.h
   data/user.cc
   data/user.h
+  i18n.h
+  logging.h
+  lua/colour-settings.cc
+  lua/colour-settings.hh
+  lua/llua.cc
+  lua/llua.h
+  lua/lua-config.cc
+  lua/lua-config.hh
   lua/luamm.cc
   lua/luamm.hh
-  data/data-source.cc
-  data/data-source.hh
-  output/display-output.cc
-  output/display-output.hh
+  lua/setting.cc
+  lua/setting.hh
   output/display-console.cc
   output/display-console.hh
   output/display-file.cc
   output/display-file.hh
-  lua/lua-config.cc
-  lua/lua-config.hh
-  lua/setting.cc
-  lua/setting.hh
-  lua/llua.cc
-  lua/llua.h
+  output/display-output.cc
+  output/display-output.hh
+  prioqueue.cc
+  prioqueue.h
+  semaphore.hh
   update-cb.cc
   update-cb.hh
-  logging.h
-  semaphore.hh
 )
+add_library(conky-core SHARED ${conky_sources})
+add_dependencies(conky-core generated_hdr_files)
+target_include_directories(conky-core PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(conky-core
+  PRIVATE conky-options
+  PUBLIC conky-definitions conky-dependencies
+)
+set_target_properties(conky-core PROPERTIES
+  COMPILE_FLAGS -fPIC # required to make lua modules interact with conky binary
+  OUTPUT_NAME conky
+)
+
+if(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
+  # include config output dir
+  # NOTE: this is `<root>/data`, not `<root>/src/data`
+  target_include_directories(conky-core PUBLIC "${CMAKE_BINARY_DIR}/data")
+endif(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
+
+if(BUILD_TESTING)
+  set(PUBLIC_TESTING PUBLIC)
+else()
+  set(PUBLIC_TESTING PRIVATE)
+endif()
 
 # Platform specific sources
 if(OS_LINUX)
-  set(linux_sources
+  target_sources(conky-core ${PUBLIC_TESTING} 
     data/os/linux.cc
     data/os/linux.h
     data/users.cc
@@ -158,104 +149,120 @@ if(OS_LINUX)
     data/hardware/i8k.cc
     data/hardware/i8k.h
   )
-  set(optional_sources ${optional_sources} ${linux_sources})
-endif(OS_LINUX)
-
-if(OS_FREEBSD)
-  set(freebsd_sources
+elseif(OS_FREEBSD)
+  target_sources(conky-core ${PUBLIC_TESTING} 
     data/os/freebsd.cc
     data/os/freebsd.h
     data/hardware/bsdapm.cc
     data/hardware/bsdapm.h
   )
-  set(optional_sources ${optional_sources} ${freebsd_sources})
-endif(OS_FREEBSD)
-
-if(OS_DRAGONFLY)
-  set(dragonfly_sources
+elseif(OS_DRAGONFLY)
+  target_sources(conky-core ${PUBLIC_TESTING}
     data/os/dragonfly.cc
     data/os/dragonfly.h
     data/hardware/bsdapm.cc
     data/hardware/bsdapm.h
   )
-  set(optional_sources ${optional_sources} ${dragonfly_sources})
-endif(OS_DRAGONFLY)
-
-if(OS_OPENBSD)
-  set(openbsd_sources
+elseif(OS_OPENBSD)
+  target_sources(conky-core ${PUBLIC_TESTING} 
     data/os/openbsd.cc
     data/os/openbsd.h
     data/hardware/bsdapm.cc
     data/hardware/bsdapm.h
   )
-  set(optional_sources ${optional_sources} ${openbsd_sources})
-endif(OS_OPENBSD)
-
-# These below are not actually supported.  No idea what their status is.
-if(OS_SOLARIS)
-  set(solaris_sources data/os/solaris.cc data/os/solaris.h)
-  set(optional_sources ${optional_sources} ${solaris_sources})
-endif(OS_SOLARIS)
-
-if(OS_NETBSD)
-  set(netbsd_sources data/os/netbsd.cc data/os/netbsd.h data/os/bsdcommon.cc data/os/bsdcommon.h)
-  set(optional_sources ${optional_sources} ${netbsd_sources})
-endif(OS_NETBSD)
-
-if(OS_HAIKU)
-  set(haiku_sources data/os/haiku.cc data/os/haiku.h)
-  set(optional_sources ${optional_sources} ${haiku_sources})
-endif(OS_HAIKU)
-
-if(OS_DARWIN)
-  set(darwin_sources data/os/darwin.mm data/os/darwin.h data/os/darwin_sip.h i18n.h)
-  set(optional_sources ${optional_sources} ${darwin_sources})
-endif(OS_DARWIN)
+elseif(OS_SOLARIS)
+  target_sources(conky-core ${PUBLIC_TESTING}
+    data/os/solaris.cc
+    data/os/solaris.h
+  )
+elseif(OS_NETBSD)
+  target_sources(conky-core ${PUBLIC_TESTING}
+    data/os/netbsd.cc
+    data/os/netbsd.h
+    data/os/bsdcommon.cc
+    data/os/bsdcommon.h
+  )
+elseif(OS_HAIKU)
+  set(haiku_sources )
+  target_sources(conky-core ${PUBLIC_TESTING}
+    data/os/haiku.cc
+    data/os/haiku.h
+  )
+elseif(OS_DARWIN)
+  set(darwin_sources )
+  target_sources(conky-core ${PUBLIC_TESTING}
+    data/os/darwin.mm
+    data/os/darwin.h
+    data/os/darwin_sip.h
+  )
+endif()
 
 # Optional sources
 if(HAVE_SOUNDCARD_H)
-  set(mixer data/audio/mixer.cc data/audio/mixer.h)
-  set(optional_sources ${optional_sources} ${mixer})
+  target_sources(conky-core PUBLIC
+    data/audio/mixer.cc
+    data/audio/mixer.h
+  )
 endif(HAVE_SOUNDCARD_H)
 
 if(BUILD_AUDACIOUS)
-  set(audacious data/audio/audacious.cc data/audio/audacious.h)
-  set(optional_sources ${optional_sources} ${audacious})
+  target_sources(conky-core PUBLIC
+    data/audio/audacious.cc
+    data/audio/audacious.h
+  )
 endif(BUILD_AUDACIOUS)
 
 if(BUILD_IBM)
-  set(ibm data/hardware/ibm.cc data/hardware/ibm.h data/hardware/smapi.cc data/hardware/smapi.h)
-  set(optional_sources ${optional_sources} ${ibm})
+  target_sources(conky-core PUBLIC
+    data/hardware/ibm.cc
+    data/hardware/ibm.h
+    data/hardware/smapi.cc
+    data/hardware/smapi.h
+  )
 endif(BUILD_IBM)
 
 if(BUILD_MPD)
-  set(mpd data/audio/mpd.cc data/audio/mpd.h data/audio/libmpdclient.cc data/audio/libmpdclient.h)
-  set(optional_sources ${optional_sources} ${mpd})
+  target_sources(conky-core PUBLIC
+    data/audio/mpd.cc
+    data/audio/mpd.h
+    data/audio/libmpdclient.cc
+    data/audio/libmpdclient.h
+  )
 endif(BUILD_MPD)
 
 if(BUILD_MYSQL)
-  set(mysql data/mysql.cc data/mysql.h)
-  set(optional_sources ${optional_sources} ${mysql})
+  target_sources(conky-core PUBLIC
+    data/mysql.cc
+    data/mysql.h
+  )
 endif(BUILD_MYSQL)
 
 if(BUILD_MOC)
-  set(moc data/audio/moc.cc data/audio/moc.h)
-  set(optional_sources ${optional_sources} ${moc})
+  target_sources(conky-core PUBLIC
+    data/audio/moc.cc
+    data/audio/moc.h
+  )
 endif(BUILD_MOC)
 
 if(BUILD_CMUS)
-  set(cmus data/audio/cmus.cc data/audio/cmus.h)
-  set(optional_sources ${optional_sources} ${cmus})
+  target_sources(conky-core PUBLIC
+    data/audio/cmus.cc
+    data/audio/cmus.h
+  )
 endif(BUILD_CMUS)
 
 if(BUILD_JOURNAL)
-  set(journal data/os/journal.cc data/os/journal.h)
-  set(optional_sources ${optional_sources} ${journal})
+  target_sources(conky-core PUBLIC 
+    data/os/journal.cc
+    data/os/journal.h
+  )
 endif(BUILD_JOURNAL)
 
 if(BUILD_XMMS2)
-  set(xmms2 data/audio/xmms2.cc data/audio/xmms2.h)
-  set(optional_sources ${optional_sources} ${xmms2})
+  target_sources(conky-core PUBLIC
+    data/audio/xmms2.cc
+    data/audio/xmms2.h
+  )
 endif(BUILD_XMMS2)
 
 if(BUILD_PORT_MONITORS)
@@ -263,12 +270,14 @@ if(BUILD_PORT_MONITORS)
     data/network/libtcp-portmon.cc
     data/network/libtcp-portmon.h
   )
-  set(conky_libs ${conky_libs} tcp-portmon)
-  set(port_monitors
+  set_target_properties(tcp-portmon PROPERTIES
+    COMPILE_FLAGS -fPIC # conky-core is, so this must be as well
+  )
+  target_link_libraries(conky-core PUBLIC tcp-portmon)
+  target_sources(conky-core PUBLIC
     data/network/tcp-portmon.cc
     data/network/tcp-portmon.h
   )
-  set(optional_sources ${optional_sources} ${port_monitors})
 endif(BUILD_PORT_MONITORS)
 
 if(BUILD_HTTP)
@@ -276,7 +285,7 @@ if(BUILD_HTTP)
     output/display-http.cc
     output/display-http.hh
   )
-  set(optional_sources ${optional_sources} ${http})
+  target_sources(conky-core PUBLIC ${http})
 endif(BUILD_HTTP)
 
 if(BUILD_X11)
@@ -289,16 +298,22 @@ if(BUILD_X11)
     output/x11.cc
     output/x11.h
   )
-  set(optional_sources ${optional_sources} ${x11})
+  target_sources(conky-core PUBLIC ${x11})
 endif(BUILD_X11)
 
 if(BUILD_GUI)
-  set(gui lua/fonts.cc lua/fonts.h output/gui.cc output/gui.h)
-  set(optional_sources ${optional_sources} ${gui})
+  target_sources(conky-core PUBLIC
+    lua/fonts.cc
+    lua/fonts.h
+    output/gui.cc
+    output/gui.h
+  )
 
   if(BUILD_MOUSE_EVENTS OR BUILD_XINPUT)
-    set(mouse_events mouse-events.cc mouse-events.h)
-    set(optional_sources ${optional_sources} ${mouse_events})
+    target_sources(conky-core PUBLIC
+      mouse-events.cc
+      mouse-events.h
+    )
   endif(BUILD_MOUSE_EVENTS OR BUILD_XINPUT)
 endif(BUILD_GUI)
 
@@ -366,12 +381,12 @@ if(BUILD_WAYLAND)
   add_protocol(xdg-shell)
   add_protocol(wlr-layer-shell v1)
 
-  set(optional_sources ${optional_sources} ${wl_sources})
+  target_sources(conky-core PUBLIC ${wl_sources})
 endif(BUILD_WAYLAND)
 
 if(BUILD_HDDTEMP)
   set(hddtemp data/hardware/hddtemp.cc data/hardware/hddtemp.h)
-  set(optional_sources ${optional_sources} ${hddtemp})
+  target_sources(conky-core PUBLIC ${hddtemp})
 endif(BUILD_HDDTEMP)
 
 if(BUILD_CURL)
@@ -379,97 +394,93 @@ if(BUILD_CURL)
     data/network/ccurl_thread.cc
     data/network/ccurl_thread.h
   )
-  set(optional_sources ${optional_sources} ${ccurl_thread})
+  target_sources(conky-core PUBLIC ${ccurl_thread})
 endif(BUILD_CURL)
 
 if(BUILD_RSS)
-  set(rss
+  target_sources(conky-core PUBLIC
     data/network/rss.cc
     data/network/rss.h
     data/network/prss.cc
     data/network/prss.h
   )
-  set(optional_sources ${optional_sources} ${rss})
 endif(BUILD_RSS)
 
 if(BUILD_NVIDIA)
-  set(nvidia data/hardware/nvidia.cc data/hardware/nvidia.h)
-  set(optional_sources ${optional_sources} ${nvidia})
+  target_sources(conky-core PUBLIC
+    data/hardware/nvidia.cc
+    data/hardware/nvidia.h
+  )
 endif(BUILD_NVIDIA)
 
 if(BUILD_IMLIB2)
-  set(imlib2 conky-imlib2.cc conky-imlib2.h)
-  set(optional_sources ${optional_sources} ${imlib2})
+  target_sources(conky-core PUBLIC
+    conky-imlib2.cc
+    conky-imlib2.h
+  )
 endif(BUILD_IMLIB2)
 
 if(BUILD_APCUPSD)
-  set(apcupsd data/hardware/apcupsd.cc data/hardware/apcupsd.h)
-  set(optional_sources ${optional_sources} ${apcupsd})
+  target_sources(conky-core PUBLIC
+    data/hardware/apcupsd.cc
+    data/hardware/apcupsd.h
+  )
 endif(BUILD_APCUPSD)
 
 if(BUILD_ICAL)
-  set(ical data/ical.cc data/ical.h)
-  set(optional_sources ${optional_sources} ${ical})
+  target_sources(conky-core PUBLIC
+    data/ical.cc
+    data/ical.h
+  )
 endif(BUILD_ICAL)
 
 if(BUILD_IRC)
-  set(irc data/network/irc.cc data/network/irc.h)
-  set(optional_sources ${optional_sources} ${irc})
+  target_sources(conky-core PUBLIC
+    data/network/irc.cc
+    data/network/irc.h
+  )
 endif(BUILD_IRC)
 
 if(BUILD_ICONV)
-  set(iconv data/iconv_tools.cc data/iconv_tools.h)
-  set(optional_sources ${optional_sources} ${iconv})
+  target_sources(conky-core PUBLIC
+    data/iconv_tools.cc
+    data/iconv_tools.h
+  )
 endif(BUILD_ICONV)
 
 if(BUILD_NCURSES)
-  set(ncurses_srcs
+  target_sources(conky-core PUBLIC
     output/nc.cc
     output/nc.h
     output/display-ncurses.cc
     output/display-ncurses.hh
   )
-  set(optional_sources ${optional_sources} ${ncurses_srcs})
 endif(BUILD_NCURSES)
 
 if(BUILD_PULSEAUDIO)
-  set(pulseaudio data/audio/pulseaudio.cc data/audio/pulseaudio.h)
-  set(optional_sources ${optional_sources} ${pulseaudio})
+  target_sources(conky-core PUBLIC
+    data/audio/pulseaudio.cc
+    data/audio/pulseaudio.h
+  )
 endif(BUILD_PULSEAUDIO)
 
 if(BUILD_INTEL_BACKLIGHT)
-  set(intel_backlight data/hardware/intel_backlight.cc data/hardware/intel_backlight.h)
-  set(optional_sources ${optional_sources} ${intel_backlight})
+  target_sources(conky-core PUBLIC
+    data/hardware/intel_backlight.cc
+    data/hardware/intel_backlight.h
+  )
 endif(BUILD_INTEL_BACKLIGHT)
 
-if(BUILD_TESTING)
-  # Create a library strictly for testing
-  add_library(conky_core ${conky_sources} ${optional_sources})
-  add_dependencies(conky_core generated_hdr_files)
-  target_link_libraries(conky_core ${conky_libs})
-  add_executable(conky main.cc)
-  add_dependencies(conky generated_hdr_files)
-  target_link_libraries(conky conky_core ${conky_libs})
-  install(TARGETS conky_core
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-    ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
-else()
-  add_executable(conky main.cc ${conky_sources} ${optional_sources})
-  add_dependencies(conky generated_hdr_files)
-  target_link_libraries(conky ${conky_libs})
-endif()
-
-install(TARGETS conky
+install(TARGETS conky-core
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-  ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
+  ARCHIVE DESTINATION ${LIB_INSTALL_DIR}
+)
+print_target_properties(conky-core)
 
 if(BUILD_PORT_MONITORS)
   install(TARGETS tcp-portmon
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION ${LIB_INSTALL_DIR}
     ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
-endif(BUILD_PORT_MONITORS)
-
-print_target_properties(conky)
+endif()

@@ -34,10 +34,9 @@
 #include <unistd.h>
 #include <memory>
 #include "../../common.h"
-#include "config.h"
 #include "../../conky.h"
-#include "../../logging.h"
 #include "../../content/text_object.h"
+#include "../../logging.h"
 
 #define MAX_JOURNAL_LINES 200
 
