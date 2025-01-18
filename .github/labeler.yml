@@ -126,16 +126,6 @@ cairo:
           - src/data/hardware/diskio.cc
           - src/data/hardware/diskio.h
 
-'power':
-  - changed-files:
-      - any-glob-to-any-file:
-          - src/data/hardware/apcupsd.cc
-          - src/data/hardware/apcupsd.h
-          - src/data/hardware/bsdapm.cc
-          - src/data/hardware/bsdapm.h
-          - src/data/hardware/smapi.cc
-          - src/data/hardware/smapi.h
-
 'sensors':
   - changed-files:
       - any-glob-to-any-file:
