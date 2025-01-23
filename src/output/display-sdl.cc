@@ -486,6 +486,7 @@ int display_output_sdl::font_descent(unsigned int f) {
 }
 
 void display_output_sdl::setup_fonts(void) {
+  /* Build up the font search paths */
 #ifdef __HAIKU__
   directory_which dirs[] = {
     B_USER_NONPACKAGED_FONTS_DIRECTORY,
@@ -500,6 +501,13 @@ void display_output_sdl::setup_fonts(void) {
       font_search_paths.push_back(p);
   }
 #endif
+  const char *e;
+  e = getenv("HOME");
+  if (e) {
+    std::string s(e);
+    s.append("/.fonts");
+    font_search_paths.push_back(s.c_str());
+  }
   // TODO: depends on the OS
   // maybe use XDG_DATA_DIRS
   // also check local user dirs
@@ -561,7 +569,7 @@ static bool find_font() {
   int found = 0;
   for (unsigned int i = 0; i < font_search_paths.size(); i++) {
     found = ftw(font_search_paths[i].c_str(), &font_finder, 20);
-    printf("err %d\nF: %s\n", found, searched_font.c_str());
+    //printf("err %d\nF: %s\n", found, searched_font.c_str());
     if (found == 1)
       return true;
   }
