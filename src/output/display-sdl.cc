@@ -34,6 +34,10 @@
 #endif
 #endif /* BUILD_SDL */
 
+#ifdef __HAIKU__
+#include <FindDirectory.h>
+#include <Path.h>
+#endif
 #ifdef HAVE_FTW_H
 #include <ftw.h>
 #endif
@@ -85,6 +89,7 @@ extern conky::range_config_setting<int> maximum_width;
 extern Colour current_color;
 
 SDL_Surface *surface = nullptr;
+static std::vector<std::string> font_search_paths;
 static unsigned int thefont;
 
 // TODO: wrap the cairo_xlib_surface_create exposed to lua?
@@ -480,7 +485,27 @@ int display_output_sdl::font_descent(unsigned int f) {
   return std::abs(TTF_FontDescent(sdl_fonts[f].font));
 }
 
-void display_output_sdl::setup_fonts(void) {}
+void display_output_sdl::setup_fonts(void) {
+#ifdef __HAIKU__
+  directory_which dirs[] = {
+    B_USER_NONPACKAGED_FONTS_DIRECTORY,
+    B_USER_FONTS_DIRECTORY,
+    B_SYSTEM_NONPACKAGED_FONTS_DIRECTORY,
+    B_SYSTEM_FONTS_DIRECTORY
+  };
+
+  for (int i = 0; i < 4; i++) {
+    char p[B_PATH_NAME_LENGTHrm];
+    if (find_directory(dirs[i], -1, false, p, sizeof(p)) == B_OK)
+      font_search_paths.push_back(p);
+  }
+#endif
+  // TODO: depends on the OS
+  // maybe use XDG_DATA_DIRS
+  // also check local user dirs
+  // some fallbacks
+  font_search_paths.push_back("/usr/share/fonts");
+}
 
 void display_output_sdl::set_font(unsigned int f) {
   assert(f < sdl_fonts.size());
@@ -501,15 +526,6 @@ void display_output_sdl::free_fonts(bool utf8) {
  */
 static const char *font_name_filtered_chars = " _-";
 static std::string searched_font;
-static const char *font_search_paths[] = {
-  // TODO: depends on the OS
-  // maybe use XDG_DATA_DIRS
-  // also check local user dirs
-  "/usr/share/fonts",
-  // Haiku ; TODO: use find_directory()
-  "/system/data/fonts/ttfonts/",
-  nullptr
-};
 static const char *fallback_fonts[] = {
   "DejaVuSans.ttf",
   nullptr
@@ -543,8 +559,8 @@ static int font_finder(const char *fpath, const struct stat *sb, int typeflag) {
 static bool find_font() {
 #ifdef HAVE_FTW_H
   int found = 0;
-  for (unsigned int i = 0; font_search_paths[i]; i++) {
-    found = ftw(font_search_paths[i], &font_finder, 20);
+  for (unsigned int i = 0; i < font_search_paths.size(); i++) {
+    found = ftw(font_search_paths[i].c_str(), &font_finder, 20);
     printf("err %d\nF: %s\n", found, searched_font.c_str());
     if (found == 1)
       return true;
