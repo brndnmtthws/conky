@@ -388,8 +388,9 @@ void display_output_sdl::draw_string_at(int x, int y, const char *s, int w) {
   SDL_Color c = to_sdl(current_color);
   SDL_Surface *text = TTF_RenderText_Blended(sdl_fonts[thefont].font, s, c);
   y -= text->h;
+  int descent = TTF_FontDescent(sdl_fonts[thefont].font);
   SDL_Rect sr = { 0, 0, (Uint16)(text->w), (Uint16)(text->h)};
-  SDL_Rect dr = { (Sint16)x, (Sint16)y, (Uint16)(text->w), (Uint16)(text->h)};
+  SDL_Rect dr = { (Sint16)x, (Sint16)y - descent, (Uint16)(text->w), (Uint16)(text->h)};
   SDL_BlitSurface(text, &sr, surface, &dr);
   SDL_FreeSurface(text);
   // TODO
