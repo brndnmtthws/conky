@@ -124,6 +124,7 @@
 #cmakedefine BUILD_HTTP 1
 
 #cmakedefine BUILD_SDL 1
+#cmakedefine HAVE_SDL_GFXPRIMITIVES_H 1
 
 #cmakedefine BUILD_GUI 1
 

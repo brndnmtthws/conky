@@ -26,13 +26,11 @@
 
 #include <config.h>
 
-#ifdef BUILD_SDL
 #include <SDL.h>
 #include <SDL_ttf.h>
 #ifdef HAVE_SDL_GFXPRIMITIVES_H
 #include <SDL_gfxPrimitives.h>
 #endif
-#endif /* BUILD_SDL */
 
 #ifdef __HAIKU__
 #include <FindDirectory.h>
@@ -52,20 +50,16 @@
 #include "gui.h"
 #include "../lua/llua.h"
 //#include "x11.h"
-#ifdef BUILD_SDL
 #include "../lua/fonts.h"
-#endif
 #ifdef BUILD_IMLIB2
 #include "../conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
 
 /* TODO: cleanup global namespace */
-#ifdef BUILD_SDL
 
 #ifndef DIRSEP_CHAR
 #define DIRSEP_CHAR '/'
 //TODO: win
-#endif
 
 conky::simple_config_setting<bool> out_to_sdl("out_to_sdl", false, false);
 #ifndef BUILD_X11
@@ -87,6 +81,7 @@ extern int need_to_update;
 int get_border_total();
 extern conky::range_config_setting<int> maximum_width;
 extern Colour current_color;
+int line_width = 1;
 
 SDL_Surface *surface = nullptr;
 static std::vector<std::string> font_search_paths;
@@ -199,6 +194,10 @@ const SDL_Color to_sdl(const Colour& c) {
   return sdlc;
   // We know for a fact those strucs have the same fields in the same order.
   //return *(reinterpret_cast<const SDL_Color *>(&c));
+}
+
+const Uint32 to_gfx(const Colour& c) {
+  return c.red << 24 | c.green << 16 | c.blue << 8 | c.alpha;
 }
 
 template <>
@@ -398,6 +397,7 @@ void display_output_sdl::draw_string_at(int x, int y, const char *s, int w) {
 
 void display_output_sdl::set_line_style(int w, bool solid) {
   // TODO
+  line_width = w;
 }
 
 void display_output_sdl::set_dashes(char *s) {
@@ -405,14 +405,23 @@ void display_output_sdl::set_dashes(char *s) {
 }
 
 void display_output_sdl::draw_line(int x1, int y1, int x2, int y2) {
+  printf("draw_line(%d, %d, %d, %d)\n", x1, y1, x2, y2);
+  //SDL_Color c = to_sdl(current_color);
   // TODO
+#ifdef HAVE_SDL_GFXPRIMITIVES_H
+  Colour c = current_color;
+  thickLineRGBA(surface, x1, y1, x2, y2, line_width, c.red, c.green, c.blue, c.alpha);
+#endif
 }
 
 void display_output_sdl::draw_rect(int x, int y, int w, int h) {
   printf("draw_rect(%d, %d, %d, %d)\n", x, y, w, h);
-  SDL_Rect r = {(Sint16)x, (Sint16)y, (Uint16)w, 1};
+#ifdef HAVE_SDL_GFXPRIMITIVES_H
+  Colour c = current_color;
+  rectangleRGBA(surface, x, y, x + w, y + h, c.red, c.green, c.blue, c.alpha);
+#else
   SDL_Color c = to_sdl(current_color);
-  // TODO
+  SDL_Rect r = {(Sint16)x, (Sint16)y, (Uint16)w, 1};
   SDL_FillRect(surface, &r, SDL_MapRGB(surface->format, c.r, c.g, c.b));
   r.y += h/* - 1*/;
   SDL_FillRect(surface, &r, SDL_MapRGB(surface->format, c.r, c.g, c.b));
@@ -422,18 +431,29 @@ void display_output_sdl::draw_rect(int x, int y, int w, int h) {
   SDL_FillRect(surface, &r, SDL_MapRGB(surface->format, c.r, c.g, c.b));
   r.x += w/* - 1*/;
   SDL_FillRect(surface, &r, SDL_MapRGB(surface->format, c.r, c.g, c.b));
+#endif
 }
 
 void display_output_sdl::fill_rect(int x, int y, int w, int h) {
   printf("fill_rect(%d, %d, %d, %d)\n", x, y, w, h);
-  SDL_Rect r = {(Sint16)x, (Sint16)y, (Uint16)w, (Uint16)h};
+#ifdef HAVE_SDL_GFXPRIMITIVES_H
+  Colour c = current_color;
+  boxRGBA(surface, x, y, x + w, y + h, c.red, c.green, c.blue, c.alpha);
+#else
   SDL_Color c = to_sdl(current_color);
+  SDL_Rect r = {(Sint16)x, (Sint16)y, (Uint16)w, (Uint16)h};
   // TODO: fill with fg color
   SDL_FillRect(surface, &r, SDL_MapRGB(surface->format, c.r, c.g, c.b));
+#endif
 }
 
 void display_output_sdl::draw_arc(int x, int y, int w, int h, int a1, int a2) {
-  // TODO
+  printf("draw_arc(%d, %d, %d, %d, %d, %d)\n", x, y, w, h, a1, a2);
+#ifdef HAVE_SDL_GFXPRIMITIVES_H
+  // FIXME: does not seem to support stretched arcs
+  Colour c = current_color;
+  arcRGBA(surface, x, y, w/2, a1, a2, c.red, c.green, c.blue, c.alpha);
+#endif
 }
 
 void display_output_sdl::move_win(int x, int y) {
