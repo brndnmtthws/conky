@@ -4,7 +4,7 @@
  *
  * Please see COPYING for details
  *
- * Copyright (C) 2018-2022 François Revol et al.
+ * Copyright (C) 2018-2025 François Revol et al.
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
  * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
@@ -49,7 +49,6 @@
 #include "display-sdl.hh"
 #include "gui.h"
 #include "../lua/llua.h"
-//#include "x11.h"
 #include "../lua/fonts.h"
 #ifdef BUILD_IMLIB2
 #include "../conky-imlib2.h"
@@ -60,6 +59,7 @@
 #ifndef DIRSEP_CHAR
 #define DIRSEP_CHAR '/'
 //TODO: win
+#endif /*DIRSEP_CHAR*/
 
 conky::simple_config_setting<bool> out_to_sdl("out_to_sdl", false, false);
 #ifndef BUILD_X11
@@ -103,18 +103,6 @@ struct sdl_font_list {
 static std::vector<sdl_font_list> sdl_fonts; /* indexed by selected_font */
 
 static void SDL_create_window();
-
-struct _sdl_stuff_s {
-#if 0
-  Region region;
-#ifdef BUILD_XDAMAGE
-  Damage damage;
-  XserverRegion region2, part;
-  int event_base, error_base;
-#endif
-#endif
-} sdl_stuff;
-
 
 static const char NOT_IN_SDL[] = "Not running in SDL";
 
@@ -175,8 +163,6 @@ __attribute__((weak)) void print_desktop_name(struct text_object *obj, char *p,
   }
 }
 
-#endif /* BUILD_SDL */
-
 namespace conky {
 namespace {
 
@@ -187,17 +173,11 @@ extern void init_sdl_output() {}
 
 namespace priv {}  // namespace priv
 
-#ifdef BUILD_SDL
-
 const SDL_Color to_sdl(const Colour& c) {
   const SDL_Color sdlc = {c.red, c.green, c.blue, c.alpha};
   return sdlc;
   // We know for a fact those strucs have the same fields in the same order.
   //return *(reinterpret_cast<const SDL_Color *>(&c));
-}
-
-const Uint32 to_gfx(const Colour& c) {
-  return c.red << 24 | c.green << 16 | c.blue << 8 | c.alpha;
 }
 
 template <>
@@ -305,7 +285,7 @@ bool display_output_sdl::main_loop_wait(double t) {
       int height = text_size.y() + 2 * border_total;
       int flags = SDL_SWSURFACE | SDL_RESIZABLE;
       int bpp = 32;
-      printf("resize %dx%d\n", width, height);
+      //printf("resize %dx%d\n", width, height);
       surface = SDL_SetVideoMode(width, height, bpp, flags);
       if (surface == NULL) {
         NORM_ERR("SDL_SetVideoMode: %s", SDL_GetError());
@@ -327,12 +307,11 @@ bool display_output_sdl::main_loop_wait(double t) {
 
   /* handle events */
   while (SDL_PollEvent(&ev) != 0) {
-    //printf("ev %d\n", ev.type);
 
     switch (ev.type) {
       case SDL_ACTIVEEVENT:
         need_to_update = 1;
-        printf("gap: %d x %d\n", gap_x.get(*state), gap_y.get(*state));
+        //printf("gap: %d x %d\n", gap_x.get(*state), gap_y.get(*state));
         break;
       case SDL_VIDEORESIZE:
         // TODO
@@ -373,8 +352,6 @@ void display_output_sdl::set_foreground_color(Colour c) {
 
 int display_output_sdl::calc_text_width(const char *s) {
   size_t slen = strlen(s);
-  // TODO
-  // return XTextWidth(x_fonts[selected_font].font, s, slen);
   int w, h;
   // TODO: check utf8_mode.get(*state) ?
   if (sdl_fonts[thefont].font == nullptr || TTF_SizeUTF8(sdl_fonts[thefont].font, s, &w, &h) < 0)
@@ -388,12 +365,11 @@ void display_output_sdl::draw_string_at(int x, int y, const char *s, int w) {
   SDL_Color c = to_sdl(current_color);
   SDL_Surface *text = TTF_RenderText_Blended(sdl_fonts[thefont].font, s, c);
   y -= text->h;
-  int descent = TTF_FontDescent(sdl_fonts[thefont].font);
+  y -= TTF_FontDescent(sdl_fonts[thefont].font);
   SDL_Rect sr = { 0, 0, (Uint16)(text->w), (Uint16)(text->h)};
-  SDL_Rect dr = { (Sint16)x, (Sint16)y - descent, (Uint16)(text->w), (Uint16)(text->h)};
+  SDL_Rect dr = { (Sint16)x, (Sint16)y, (Uint16)(text->w), (Uint16)(text->h)};
   SDL_BlitSurface(text, &sr, surface, &dr);
   SDL_FreeSurface(text);
-  // TODO
 }
 
 void display_output_sdl::set_line_style(int w, bool solid) {
@@ -406,9 +382,6 @@ void display_output_sdl::set_dashes(char *s) {
 }
 
 void display_output_sdl::draw_line(int x1, int y1, int x2, int y2) {
-  printf("draw_line(%d, %d, %d, %d)\n", x1, y1, x2, y2);
-  //SDL_Color c = to_sdl(current_color);
-  // TODO
 #ifdef HAVE_SDL_GFXPRIMITIVES_H
   Colour c = current_color;
   thickLineRGBA(surface, x1, y1, x2, y2, line_width, c.red, c.green, c.blue, c.alpha);
@@ -416,7 +389,6 @@ void display_output_sdl::draw_line(int x1, int y1, int x2, int y2) {
 }
 
 void display_output_sdl::draw_rect(int x, int y, int w, int h) {
-  printf("draw_rect(%d, %d, %d, %d)\n", x, y, w, h);
 #ifdef HAVE_SDL_GFXPRIMITIVES_H
   Colour c = current_color;
   rectangleRGBA(surface, x, y, x + w, y + h, c.red, c.green, c.blue, c.alpha);
@@ -436,7 +408,6 @@ void display_output_sdl::draw_rect(int x, int y, int w, int h) {
 }
 
 void display_output_sdl::fill_rect(int x, int y, int w, int h) {
-  printf("fill_rect(%d, %d, %d, %d)\n", x, y, w, h);
 #ifdef HAVE_SDL_GFXPRIMITIVES_H
   Colour c = current_color;
   boxRGBA(surface, x, y, x + w, y + h, c.red, c.green, c.blue, c.alpha);
@@ -449,8 +420,8 @@ void display_output_sdl::fill_rect(int x, int y, int w, int h) {
 }
 
 void display_output_sdl::draw_arc(int x, int y, int w, int h, int a1, int a2) {
-  printf("draw_arc(%d, %d, %d, %d, %d, %d)\n", x, y, w, h, a1, a2);
 #ifdef HAVE_SDL_GFXPRIMITIVES_H
+  // Untested
   // FIXME: does not seem to support stretched arcs
   Colour c = current_color;
   arcRGBA(surface, x, y, w/2, a1, a2, c.red, c.green, c.blue, c.alpha);
@@ -483,8 +454,6 @@ void display_output_sdl::clear_text(int exposures) {
 
 int display_output_sdl::font_height(unsigned int f) {
   assert(f < sdl_fonts.size());
-  //  return sdl_fonts[f].font->max_bounds.ascent +
-  //         sdl_fonts[f].font->max_bounds.descent;
   if (sdl_fonts[f].font == nullptr)
     return 10;
   return TTF_FontHeight(sdl_fonts[f].font);
@@ -495,12 +464,10 @@ int display_output_sdl::font_ascent(unsigned int f) {
   if (sdl_fonts[f].font == nullptr)
     return 0;
   return TTF_FontAscent(sdl_fonts[f].font);
-  // return x_fonts[f].font->max_bounds.ascent;
 }
 
 int display_output_sdl::font_descent(unsigned int f) {
   assert(f < sdl_fonts.size());
-  // return sdl_fonts[f].font->max_bounds.descent;
   if (sdl_fonts[f].font == nullptr)
     return 0;
   return std::abs(TTF_FontDescent(sdl_fonts[f].font));
@@ -641,7 +608,5 @@ void display_output_sdl::load_fonts(bool utf8) {
     }
   }
 }
-
-#endif /* BUILD_SDL */
 
 }  // namespace conky
