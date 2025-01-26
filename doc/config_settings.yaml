@@ -374,6 +374,10 @@ values:
       Print text in the console, but use ncurses so that conky can
       print the text of a new update over the old text. (In the future this
       will provide more useful things).
+  - name: out_to_sdl
+    desc: |-
+      Render output to a window using SDL.
+    default: no
   - name: out_to_stderr
     desc: Print text to stderr.
   - name: out_to_wayland
