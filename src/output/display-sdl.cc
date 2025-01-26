@@ -449,8 +449,8 @@ void display_output_sdl::clear_text(int exposures) {
                   (Sint16)(text_start.y() - border_total),
                   (Uint16)(text_size.x() + 2 * border_total),
                   (Uint16)(text_size.y() + 2 * border_total)};
-    // TODO: fill with bg color
-    SDL_FillRect(surface, &r, SDL_MapRGB(surface->format, 0, 0, 0));
+    SDL_Color c = to_sdl(background_colour.get(*state));
+    SDL_FillRect(surface, &r, SDL_MapRGB(surface->format, c.r, c.g, c.b));
   }
 }
 
