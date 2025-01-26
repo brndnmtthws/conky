@@ -46,10 +46,10 @@
 #include <unordered_map>
 
 #include "../conky.h"
+#include "../lua/fonts.h"
+#include "../lua/llua.h"
 #include "display-sdl.hh"
 #include "gui.h"
-#include "../lua/llua.h"
-#include "../lua/fonts.h"
 #ifdef BUILD_IMLIB2
 #include "../conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
@@ -58,7 +58,7 @@
 
 #ifndef DIRSEP_CHAR
 #define DIRSEP_CHAR '/'
-//TODO: win
+// TODO: win
 #endif /*DIRSEP_CHAR*/
 
 conky::simple_config_setting<bool> out_to_sdl("out_to_sdl", false, false);
@@ -90,16 +90,17 @@ static unsigned int thefont;
 // https://www.cairographics.org/SDL/
 
 /* for sdl_fonts */
-struct sdl_font_list {
+struct sdl_font {
   TTF_Font *font;
+  std::string name;
 
-  sdl_font_list()
-      : font(nullptr)
-  {
-  }
+  sdl_font(std::string name) : font(nullptr), name(name) {}
+  ~sdl_font() { TTF_CloseFont(font); }
 };
 
-static std::vector<sdl_font_list> sdl_fonts; /* indexed by selected_font */
+typedef std::shared_ptr<sdl_font> sdl_font_ptr;
+static std::map<std::string, sdl_font_ptr> sdl_font_cache;
+static std::vector<sdl_font_ptr> sdl_fonts; /* indexed by selected_font */
 
 static void SDL_create_window();
 
@@ -172,11 +173,11 @@ extern void init_sdl_output() {}
 
 namespace priv {}  // namespace priv
 
-const SDL_Color to_sdl(const Colour& c) {
+const SDL_Color to_sdl(const Colour &c) {
   const SDL_Color sdlc = {c.red, c.green, c.blue, c.alpha};
   return sdlc;
   // We know for a fact those strucs have the same fields in the same order.
-  //return *(reinterpret_cast<const SDL_Color *>(&c));
+  // return *(reinterpret_cast<const SDL_Color *>(&c));
 }
 
 template <>
@@ -287,7 +288,7 @@ bool display_output_sdl::main_loop_wait(double t) {
       int height = text_size.y() + 2 * border_total;
       int flags = SDL_SWSURFACE | SDL_RESIZABLE;
       int bpp = 32;
-      //printf("resize %dx%d\n", width, height);
+      // DBGP2("resize %dx%d\n", width, height);
       surface = SDL_SetVideoMode(width, height, bpp, flags);
       if (surface == NULL) {
         NORM_ERR("SDL_SetVideoMode: %s", SDL_GetError());
@@ -309,11 +310,10 @@ bool display_output_sdl::main_loop_wait(double t) {
 
   /* handle events */
   while (SDL_PollEvent(&ev) != 0) {
-
     switch (ev.type) {
       case SDL_ACTIVEEVENT:
         need_to_update = 1;
-        //printf("gap: %d x %d\n", gap_x.get(*state), gap_y.get(*state));
+        // DBGP2("gap: %d x %d\n", gap_x.get(*state), gap_y.get(*state));
         break;
       case SDL_VIDEORESIZE:
         // TODO
@@ -327,7 +327,7 @@ bool display_output_sdl::main_loop_wait(double t) {
         update_text();
         draw_stuff();
         SDL_UpdateRect(surface, 0, 0, surface->w, surface->h);
-        //need_to_update = 1;
+        // need_to_update = 1;
         break;
       default:
         break;
@@ -345,18 +345,18 @@ void display_output_sdl::sigterm_cleanup() {}
 
 void display_output_sdl::cleanup() {
   // XXX:shutdown();
-  free_fonts(utf8_mode.get(*state));
+  sdl_fonts.clear();
+  sdl_font_cache.clear();
 }
 
-void display_output_sdl::set_foreground_color(Colour c) {
-  current_color = c;
-}
+void display_output_sdl::set_foreground_color(Colour c) { current_color = c; }
 
 int display_output_sdl::calc_text_width(const char *s) {
   size_t slen = strlen(s);
   int w, h;
   // TODO: check utf8_mode.get(*state) ?
-  if (sdl_fonts[thefont].font == nullptr || TTF_SizeUTF8(sdl_fonts[thefont].font, s, &w, &h) < 0)
+  if (sdl_fonts[thefont]->font == nullptr ||
+      TTF_SizeUTF8(sdl_fonts[thefont]->font, s, &w, &h) < 0)
     return slen * 10;
   return w;
 }
@@ -364,18 +364,18 @@ int display_output_sdl::calc_text_width(const char *s) {
 void display_output_sdl::draw_string_at(int x, int y, const char *s, int w) {
   int gx = gap_x.get(*state);
   int gy = gap_y.get(*state);
-  x -= gx; y -= gy;
+  x -= gx;
+  y -= gy;
 
-  if (sdl_fonts[thefont].font == nullptr)
-    return;
+  if (sdl_fonts[thefont]->font == nullptr) return;
 
   SDL_Color c = to_sdl(current_color);
-  SDL_Surface *text = TTF_RenderText_Blended(sdl_fonts[thefont].font, s, c);
+  SDL_Surface *text = TTF_RenderText_Blended(sdl_fonts[thefont]->font, s, c);
 
   y -= text->h;
-  y -= TTF_FontDescent(sdl_fonts[thefont].font);
-  SDL_Rect sr = { 0, 0, (Uint16)(text->w), (Uint16)(text->h)};
-  SDL_Rect dr = { (Sint16)x, (Sint16)y, (Uint16)(text->w), (Uint16)(text->h)};
+  y -= TTF_FontDescent(sdl_fonts[thefont]->font);
+  SDL_Rect sr = {0, 0, (Uint16)(text->w), (Uint16)(text->h)};
+  SDL_Rect dr = {(Sint16)x, (Sint16)y, (Uint16)(text->w), (Uint16)(text->h)};
   SDL_BlitSurface(text, &sr, surface, &dr);
 
   SDL_FreeSurface(text);
@@ -393,17 +393,22 @@ void display_output_sdl::set_dashes(char *s) {
 void display_output_sdl::draw_line(int x1, int y1, int x2, int y2) {
   int gx = gap_x.get(*state);
   int gy = gap_y.get(*state);
-  x1 -= gx; y1 -= gy; x2 -= gx; y2 -= gy;
+  x1 -= gx;
+  y1 -= gy;
+  x2 -= gx;
+  y2 -= gy;
 #ifdef HAVE_SDL_GFXPRIMITIVES_H
   Colour c = current_color;
-  thickLineRGBA(surface, x1, y1, x2, y2, line_width, c.red, c.green, c.blue, c.alpha);
+  thickLineRGBA(surface, x1, y1, x2, y2, line_width, c.red, c.green, c.blue,
+                c.alpha);
 #endif
 }
 
 void display_output_sdl::draw_rect(int x, int y, int w, int h) {
   int gx = gap_x.get(*state);
   int gy = gap_y.get(*state);
-  x -= gx; y -= gy;
+  x -= gx;
+  y -= gy;
 #ifdef HAVE_SDL_GFXPRIMITIVES_H
   Colour c = current_color;
   rectangleRGBA(surface, x, y, x + w, y + h, c.red, c.green, c.blue, c.alpha);
@@ -411,13 +416,13 @@ void display_output_sdl::draw_rect(int x, int y, int w, int h) {
   SDL_Color c = to_sdl(current_color);
   SDL_Rect r = {(Sint16)x, (Sint16)y, (Uint16)w, 1};
   SDL_FillRect(surface, &r, SDL_MapRGB(surface->format, c.r, c.g, c.b));
-  r.y += h/* - 1*/;
+  r.y += h /* - 1*/;
   SDL_FillRect(surface, &r, SDL_MapRGB(surface->format, c.r, c.g, c.b));
-  r.y -= h/* - 1*/;
+  r.y -= h /* - 1*/;
   r.h = h + 1;
   r.w = 1;
   SDL_FillRect(surface, &r, SDL_MapRGB(surface->format, c.r, c.g, c.b));
-  r.x += w/* - 1*/;
+  r.x += w /* - 1*/;
   SDL_FillRect(surface, &r, SDL_MapRGB(surface->format, c.r, c.g, c.b));
 #endif
 }
@@ -425,7 +430,8 @@ void display_output_sdl::draw_rect(int x, int y, int w, int h) {
 void display_output_sdl::fill_rect(int x, int y, int w, int h) {
   int gx = gap_x.get(*state);
   int gy = gap_y.get(*state);
-  x -= gx; y -= gy;
+  x -= gx;
+  y -= gy;
 #ifdef HAVE_SDL_GFXPRIMITIVES_H
   Colour c = current_color;
   boxRGBA(surface, x, y, x + w, y + h, c.red, c.green, c.blue, c.alpha);
@@ -440,12 +446,13 @@ void display_output_sdl::fill_rect(int x, int y, int w, int h) {
 void display_output_sdl::draw_arc(int x, int y, int w, int h, int a1, int a2) {
   int gx = gap_x.get(*state);
   int gy = gap_y.get(*state);
-  x -= gx; y -= gy;
+  x -= gx;
+  y -= gy;
 #ifdef HAVE_SDL_GFXPRIMITIVES_H
   // Untested
   // FIXME: does not seem to support stretched arcs
   Colour c = current_color;
-  arcRGBA(surface, x, y, w/2, a1, a2, c.red, c.green, c.blue, c.alpha);
+  arcRGBA(surface, x, y, w / 2, a1, a2, c.red, c.green, c.blue, c.alpha);
 #endif
 }
 
@@ -477,34 +484,28 @@ void display_output_sdl::clear_text(int exposures) {
 
 int display_output_sdl::font_height(unsigned int f) {
   assert(f < sdl_fonts.size());
-  if (sdl_fonts[f].font == nullptr)
-    return 10;
-  return TTF_FontHeight(sdl_fonts[f].font);
+  if (sdl_fonts[f]->font == nullptr) return 10;
+  return TTF_FontHeight(sdl_fonts[f]->font);
 }
 
 int display_output_sdl::font_ascent(unsigned int f) {
   assert(f < sdl_fonts.size());
-  if (sdl_fonts[f].font == nullptr)
-    return 0;
-  return TTF_FontAscent(sdl_fonts[f].font);
+  if (sdl_fonts[f]->font == nullptr) return 0;
+  return TTF_FontAscent(sdl_fonts[f]->font);
 }
 
 int display_output_sdl::font_descent(unsigned int f) {
   assert(f < sdl_fonts.size());
-  if (sdl_fonts[f].font == nullptr)
-    return 0;
-  return std::abs(TTF_FontDescent(sdl_fonts[f].font));
+  if (sdl_fonts[f]->font == nullptr) return 0;
+  return std::abs(TTF_FontDescent(sdl_fonts[f]->font));
 }
 
 void display_output_sdl::setup_fonts(void) {
   /* Build up the font search paths */
 #ifdef __HAIKU__
   directory_which dirs[] = {
-    B_USER_NONPACKAGED_FONTS_DIRECTORY,
-    B_USER_FONTS_DIRECTORY,
-    B_SYSTEM_NONPACKAGED_FONTS_DIRECTORY,
-    B_SYSTEM_FONTS_DIRECTORY
-  };
+      B_USER_NONPACKAGED_FONTS_DIRECTORY, B_USER_FONTS_DIRECTORY,
+      B_SYSTEM_NONPACKAGED_FONTS_DIRECTORY, B_SYSTEM_FONTS_DIRECTORY};
 
   for (int i = 0; i < 4; i++) {
     char p[B_PATH_NAME_LENGTHrm];
@@ -516,13 +517,18 @@ void display_output_sdl::setup_fonts(void) {
   e = getenv("HOME");
   if (e) {
     std::string s(e);
-    s.append("/.fonts");
-    font_search_paths.push_back(s.c_str());
+#if defined(__APPLE__) && defined(__MACH__)
+    font_search_paths.push_back(s + "/Library/Fonts");
+#endif /* defined(__APPLE__) && defined(__MACH__) */
+    font_search_paths.push_back(s + "/.fonts");
   }
   // TODO: depends on the OS
   // maybe use XDG_DATA_DIRS
   // also check local user dirs
   // some fallbacks
+#if defined(__APPLE__) && defined(__MACH__)
+  font_search_paths.push_back("/System/Library/Fonts");
+#endif /* defined(__APPLE__) && defined(__MACH__) */
   font_search_paths.push_back("/usr/share/fonts");
 }
 
@@ -532,10 +538,7 @@ void display_output_sdl::set_font(unsigned int f) {
 }
 
 void display_output_sdl::free_fonts(bool utf8) {
-  for (auto &font : sdl_fonts) {
-    if (font.font)
-      TTF_CloseFont(font.font);
-  }
+  sdl_font_cache.clear();
   sdl_fonts.clear();
 }
 
@@ -545,31 +548,28 @@ void display_output_sdl::free_fonts(bool utf8) {
  */
 static const char *font_name_filtered_chars = " _-";
 static std::string searched_font;
-static const char *fallback_fonts[] = {
-  "DejaVuSans.ttf",
-  nullptr
-};
+static const char *fallback_fonts[] = {"DejaVuSans.ttf",
+#if defined(__APPLE__) && defined(__MACH__)
+                                       "SFNSMono.ttf", "SFNSRounded.ttf",
+#endif /* defined(__APPLE__) && defined(__MACH__) */
+                                       nullptr};
 
 static int font_finder(const char *fpath, const struct stat *sb, int typeflag) {
-  //printf("%s %d\n", fpath, typeflag);
+  // DBG2("%s %d\n", fpath, typeflag);
 
-  if (typeflag != FTW_F)
-    return 0;
+  if (typeflag != FTW_F) return 0;
 
   const char *p = strrchr(fpath, DIRSEP_CHAR);
-  if (p == nullptr)
-    return 0;
+  if (p == nullptr) return 0;
   p++;
 
   std::string name;
   for (unsigned int i = 0; p[i]; i++) {
-    if (strchr(font_name_filtered_chars, p[i]))
-      continue;
+    if (strchr(font_name_filtered_chars, p[i])) continue;
     name += p[i];
   }
-  //printf("%s\n", name.c_str());
-  if (name.compare(searched_font))
-    return 0;
+  // DBG2("%s\n", name.c_str());
+  if (name.compare(searched_font)) return 0;
 
   searched_font = fpath;
   return 1;
@@ -580,9 +580,8 @@ static bool find_font() {
   int found = 0;
   for (unsigned int i = 0; i < font_search_paths.size(); i++) {
     found = ftw(font_search_paths[i].c_str(), &font_finder, 20);
-    //printf("err %d\nF: %s\n", found, searched_font.c_str());
-    if (found == 1)
-      return true;
+    // DBGP2(" %d\nF: %s\n", found, searched_font.c_str());
+    if (found == 1) return true;
   }
   return false;
 #else
@@ -595,23 +594,24 @@ void display_output_sdl::load_fonts(bool utf8) {
 
   // TODO: should we cache them?
 
-
   for (unsigned int f = 0; f < fonts.size(); f++) {
     auto &font = fonts[f];
-    auto &sdlfont = sdl_fonts[f];
-    sdlfont.font = nullptr;
+    if (sdl_font_cache.find(font.name) != sdl_font_cache.end()) {
+      sdl_fonts[f] = sdl_font_cache[font.name];
+      continue;
+    }
+    auto sdlfont = std::make_shared<sdl_font>(font.name);
+    sdl_fonts[f] = sdlfont;
     const char *p, *q;
     int size = 1;
 
     searched_font = "";
     p = font.name.c_str();
     q = strstr(p, ":size=");
-    if (q)
-      size = (int)strtol(q + 6, nullptr, 10);
+    if (q) size = (int)strtol(q + 6, nullptr, 10);
 
     for (unsigned int i = 0; p[i] && (&p[i] != q); i++) {
-      if (strchr(font_name_filtered_chars, p[i]))
-        continue;
+      if (strchr(font_name_filtered_chars, p[i])) continue;
       searched_font += p[i];
     }
     searched_font += ".ttf";
@@ -620,15 +620,16 @@ void display_output_sdl::load_fonts(bool utf8) {
 
     if (found) {
       DBGP("Loading '%s'\n", searched_font.c_str());
-      sdlfont.font = TTF_OpenFont(searched_font.c_str(), size);
+      sdlfont->font = TTF_OpenFont(searched_font.c_str(), size);
+      sdl_font_cache[font.name] = sdlfont;
     } else {
       NORM_ERR("can't load font '%s' %d", searched_font.c_str(), size);
       for (unsigned int i = 0; fallback_fonts[i]; i++) {
+        DBGP("Trying fallback '%s'\n", fallback_fonts[i]);
         searched_font = fallback_fonts[i];
         found = find_font();
       }
-      if (!found)
-        CRIT_ERR("can't load fallback font");
+      if (!found) CRIT_ERR("can't load fallback font");
     }
   }
 }
