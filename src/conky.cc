@@ -1968,8 +1968,13 @@ static void set_default_configurations() {
   state->pushboolean(true);
   out_to_x.lua_set(*state);
 #else
+#ifdef BUILD_SDL
+  state->pushboolean(true);
+  out_to_sdl.lua_set(*state);
+#else
   state->pushboolean(true);
   out_to_stdout.lua_set(*state);
+#endif
 #endif
 #endif
 
