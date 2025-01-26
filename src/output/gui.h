@@ -233,10 +233,10 @@ extern conky::simple_config_setting<uint16_t, window_hints_traits>
     own_window_hints;
 #endif /* OWN_WINDOW && BUILD_X11 */
 
-#if defined(OWN_WINDOW) || defined(BUILD_WAYLAND)
+#if defined(OWN_WINDOW) || defined(BUILD_WAYLAND) || defined(BUILD_SDL)
 extern priv::colour_setting background_colour;
 extern conky::simple_config_setting<bool> set_transparent;
-#endif /* OWN_WINDOW || BUILD_WAYLAND */
+#endif /* OWN_WINDOW || BUILD_WAYLAND || BUILD_SDL */
 
 #if defined(BUILD_ARGB) || defined(BUILD_WAYLAND)
 extern conky::simple_config_setting<bool> use_argb_visual;
