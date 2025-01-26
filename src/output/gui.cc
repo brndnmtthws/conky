@@ -58,13 +58,18 @@ char window_created = 0;
 void x11_init_window(lua::state &l, bool own);
 #endif /*BUILD_X11*/
 
+#ifndef BUILD_X11
+/* Catch up as a generic "out_to_gui" for now */
+conky::simple_config_setting<bool> out_to_x("out_to_x", false, false);
+#endif
+
 /********************* <SETTINGS> ************************/
 
 bool out_to_gui(lua::state &l) {
   bool to_gui = false;
-#ifdef BUILD_X11
+//#ifdef BUILD_X11
   to_gui |= out_to_x.get(l);
-#endif /* BUILD_X11 */
+//#endif /* BUILD_X11 */
 #ifdef BUILD_WAYLAND
   to_gui |= out_to_wayland.get(l);
 #endif /* BUILD_WAYLAND */
