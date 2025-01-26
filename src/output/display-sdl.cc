@@ -508,7 +508,7 @@ void display_output_sdl::setup_fonts(void) {
       B_SYSTEM_NONPACKAGED_FONTS_DIRECTORY, B_SYSTEM_FONTS_DIRECTORY};
 
   for (int i = 0; i < 4; i++) {
-    char p[B_PATH_NAME_LENGTHrm];
+    char p[B_PATH_NAME_LENGTH];
     if (find_directory(dirs[i], -1, false, p, sizeof(p)) == B_OK)
       font_search_paths.push_back(p);
   }
