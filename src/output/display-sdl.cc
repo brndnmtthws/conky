@@ -99,7 +99,7 @@ struct sdl_font {
 };
 
 typedef std::shared_ptr<sdl_font> sdl_font_ptr;
-static std::map<std::string, sdl_font_ptr> sdl_font_cache;
+static std::unordered_map<std::string, sdl_font_ptr> sdl_font_cache;
 static std::vector<sdl_font_ptr> sdl_fonts; /* indexed by selected_font */
 
 static void SDL_create_window();
