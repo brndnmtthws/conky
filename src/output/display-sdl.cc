@@ -362,15 +362,22 @@ int display_output_sdl::calc_text_width(const char *s) {
 }
 
 void display_output_sdl::draw_string_at(int x, int y, const char *s, int w) {
+  int gx = gap_x.get(*state);
+  int gy = gap_y.get(*state);
+  x -= gx; y -= gy;
+
   if (sdl_fonts[thefont].font == nullptr)
     return;
+
   SDL_Color c = to_sdl(current_color);
   SDL_Surface *text = TTF_RenderText_Blended(sdl_fonts[thefont].font, s, c);
+
   y -= text->h;
   y -= TTF_FontDescent(sdl_fonts[thefont].font);
   SDL_Rect sr = { 0, 0, (Uint16)(text->w), (Uint16)(text->h)};
   SDL_Rect dr = { (Sint16)x, (Sint16)y, (Uint16)(text->w), (Uint16)(text->h)};
   SDL_BlitSurface(text, &sr, surface, &dr);
+
   SDL_FreeSurface(text);
 }
 
@@ -384,6 +391,9 @@ void display_output_sdl::set_dashes(char *s) {
 }
 
 void display_output_sdl::draw_line(int x1, int y1, int x2, int y2) {
+  int gx = gap_x.get(*state);
+  int gy = gap_y.get(*state);
+  x1 -= gx; y1 -= gy; x2 -= gx; y2 -= gy;
 #ifdef HAVE_SDL_GFXPRIMITIVES_H
   Colour c = current_color;
   thickLineRGBA(surface, x1, y1, x2, y2, line_width, c.red, c.green, c.blue, c.alpha);
@@ -391,6 +401,9 @@ void display_output_sdl::draw_line(int x1, int y1, int x2, int y2) {
 }
 
 void display_output_sdl::draw_rect(int x, int y, int w, int h) {
+  int gx = gap_x.get(*state);
+  int gy = gap_y.get(*state);
+  x -= gx; y -= gy;
 #ifdef HAVE_SDL_GFXPRIMITIVES_H
   Colour c = current_color;
   rectangleRGBA(surface, x, y, x + w, y + h, c.red, c.green, c.blue, c.alpha);
@@ -410,6 +423,9 @@ void display_output_sdl::draw_rect(int x, int y, int w, int h) {
 }
 
 void display_output_sdl::fill_rect(int x, int y, int w, int h) {
+  int gx = gap_x.get(*state);
+  int gy = gap_y.get(*state);
+  x -= gx; y -= gy;
 #ifdef HAVE_SDL_GFXPRIMITIVES_H
   Colour c = current_color;
   boxRGBA(surface, x, y, x + w, y + h, c.red, c.green, c.blue, c.alpha);
@@ -422,6 +438,9 @@ void display_output_sdl::fill_rect(int x, int y, int w, int h) {
 }
 
 void display_output_sdl::draw_arc(int x, int y, int w, int h, int a1, int a2) {
+  int gx = gap_x.get(*state);
+  int gy = gap_y.get(*state);
+  x -= gx; y -= gy;
 #ifdef HAVE_SDL_GFXPRIMITIVES_H
   // Untested
   // FIXME: does not seem to support stretched arcs
@@ -441,12 +460,14 @@ void display_output_sdl::end_draw_stuff() {
 }
 
 void display_output_sdl::clear_text(int exposures) {
+  int gx = gap_x.get(*state);
+  int gy = gap_y.get(*state);
   if (surface != nullptr) {
     /* there is some extra space for borders and outlines */
     int border_total = get_border_total();
 
-    SDL_Rect r = {(Sint16)(text_start.x() - border_total),
-                  (Sint16)(text_start.y() - border_total),
+    SDL_Rect r = {(Sint16)(text_start.x() - border_total - gx),
+                  (Sint16)(text_start.y() - border_total - gy),
                   (Uint16)(text_size.x() + 2 * border_total),
                   (Uint16)(text_size.y() + 2 * border_total)};
     SDL_Color c = to_sdl(background_colour.get(*state));
