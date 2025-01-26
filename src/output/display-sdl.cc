@@ -598,6 +598,7 @@ void display_output_sdl::load_fonts(bool utf8) {
     bool found = find_font();
 
     if (found) {
+      DBGP("Loading '%s'\n", searched_font.c_str());
       sdlfont.font = TTF_OpenFont(searched_font.c_str(), size);
     } else {
       NORM_ERR("can't load font '%s' %d", searched_font.c_str(), size);
