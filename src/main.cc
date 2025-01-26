@@ -198,6 +198,12 @@ static void print_version() {
             << _("  * Mouse events\n")
 #endif /* BUILD_MOUSE_EVENTS */
 #endif /* BUILD_X11 */
+#ifdef BUILD_SDL
+            << _(" SDL:\n")
+#ifdef HAVE_SDL_GFXPRIMITIVES_H
+            << _("  * SDL_GFX\n")
+#endif /* HAVE_SDL_GFXPRIMITIVES_H */
+#endif /* BUILD_SDL */
 #ifdef BUILD_WAYLAND
             << _(" Wayland:\n")
 #ifdef BUILD_ARGB
