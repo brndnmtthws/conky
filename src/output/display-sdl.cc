@@ -63,8 +63,7 @@
 
 conky::simple_config_setting<bool> out_to_sdl("out_to_sdl", false, false);
 #ifndef BUILD_X11
-/* Catch up as a generic "out_to_gui" for now */
-conky::simple_config_setting<bool> out_to_x("out_to_x", false, false);
+extern conky::simple_config_setting<bool> out_to_x;
 #endif
 
 // TODO: cleanup externs (move to conky.h ?)
@@ -190,18 +189,21 @@ display_output_sdl::display_output_sdl() : display_output_base("sdl") {
 }
 
 bool display_output_sdl::detect() {
+  bool ret = false;
   if (out_to_sdl.get(*state)) {
     DBGP2("Display output '%s' enabled in config.", name.c_str());
     return true;
   }
 #ifndef BUILD_X11
+#ifndef BUILD_WAYLAND
   if (out_to_x.get(*state)) {
     DBGP2("Display output '%s' enabled in config as fallback of 'out_to_x'.",
           name.c_str());
-    return true;
+    ret = true;
   }
 #endif
-  return false;
+#endif
+  return ret;
 }
 
 bool display_output_sdl::initialize() {
