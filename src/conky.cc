@@ -1398,8 +1398,10 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             }
 #ifdef BUILD_MATH
             if (show_graph_scale.get(*state) && (current->show_scale == 1)) {
-              // Set the foreground colour to the first colour, ensures the scale text is always drawn in the same colour
-              set_foreground_color(current->first_colour);
+              if (current->colours_set) {
+                  // Set the foreground colour to the first colour, ensures the scale text is always drawn in the same colour
+                  set_foreground_color(current->first_colour);
+              }
               int tmp_x = cur_x;
               int tmp_y = cur_y;
               cur_x += font_ascent() / 2;
