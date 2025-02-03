@@ -266,7 +266,18 @@ values:
       - function_name
       - [function arguments]
   - name: lua_load
-    desc: Loads the Lua scripts separated by spaces.
+    desc: |-
+      List of Lua script paths to load at startup in order to provide Lua
+      functions for other hooks. Listed files are loaded (executed) before
+      'lua_startup_hook' and can (but shouldn't) run code in global scope.
+
+      Paths are ';' (semicolon) separated, and can be relative to the config
+      file path, or absolute.
+
+      The paths were previously ' ' (space) separated, this functionality is
+      still supported if ';' isn't found, but is deprecated and will be removed
+      in future versions. Empty paths are skipped so './example file.lua;' is
+      valid.
   - name: lua_mouse_hook
     desc: |-
       This function, if defined, will be called by Conky upon receiving mouse

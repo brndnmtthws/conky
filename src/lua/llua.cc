@@ -22,11 +22,12 @@
  */
 #include "config.h"
 
-#include "build.h"
+#include <cstring>
 #include "../conky.h"
 #include "../geometry.h"
-#include "llua.h"
 #include "../logging.h"
+#include "build.h"
+#include "llua.h"
 
 #ifdef BUILD_GUI
 #include "../output/gui.h"
@@ -75,13 +76,26 @@ class lua_load_setting : public conky::simple_config_setting<std::string> {
 
     if (init) {
       std::string files = do_convert(l, -1).first;
-      while (!files.empty()) {
-        std::string::size_type pos = files.find(' ');
-        if (pos > 0) {
-          std::string file(files, 0, pos);
-          llua_load(file.c_str());
+
+      // Split file names into separate `\0` strings
+      if (files.find(';') != std::string::npos) {
+        for (auto &ch : files) {
+          if (ch == ';') { ch = '\0'; }
         }
-        files.erase(0, pos == std::string::npos ? pos : pos + 1);
+      } else {
+        // TODO: Remove space-delimited file name handling in 3 years (2028.)
+        for (auto &ch : files) {
+          if (ch == ' ') { ch = '\0'; }
+        }
+      }
+
+      const char *start = files.c_str();
+      const char *end = start + files.size();
+      while (start < end) {
+        if (*start != '\0') {  // Skip empty strings
+          llua_load(start);
+        }
+        start += strlen(start) + 1;
       }
     }
 
