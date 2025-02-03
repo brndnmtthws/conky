@@ -108,6 +108,12 @@ power:
           - src/output/*x11*.cc
           - src/output/*x11*.h
           - src/output/*x11*.hh
+'display: sdl':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/output/*sdl*.cc
+          - src/output/*sdl*.h
+          - src/output/*sdl*.hh
 
 'build system':
   - changed-files:

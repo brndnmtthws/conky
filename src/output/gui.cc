@@ -58,16 +58,24 @@ char window_created = 0;
 void x11_init_window(lua::state &l, bool own);
 #endif /*BUILD_X11*/
 
+#ifndef BUILD_X11
+/* Catch up as a generic "out_to_gui" for now */
+conky::simple_config_setting<bool> out_to_x("out_to_x", false, false);
+#endif
+
 /********************* <SETTINGS> ************************/
 
 bool out_to_gui(lua::state &l) {
   bool to_gui = false;
-#ifdef BUILD_X11
+//#ifdef BUILD_X11
   to_gui |= out_to_x.get(l);
-#endif /* BUILD_X11 */
+//#endif /* BUILD_X11 */
 #ifdef BUILD_WAYLAND
   to_gui |= out_to_wayland.get(l);
 #endif /* BUILD_WAYLAND */
+#ifdef BUILD_SDL
+  to_gui |= out_to_sdl.get(l);
+#endif /* BUILD_SDL */
   return to_gui;
 }
 
@@ -222,11 +230,11 @@ conky::simple_config_setting<uint16_t, window_hints_traits> own_window_hints(
     "own_window_hints", 0, false);
 #endif /* OWN_WINDOW && BUILD_X11 */
 
-#if defined(OWN_WINDOW) || defined(BUILD_WAYLAND)
+#if defined(OWN_WINDOW) || defined(BUILD_WAYLAND) || defined(BUILD_SDL)
 priv::colour_setting background_colour("own_window_colour", 0);
 conky::simple_config_setting<bool> set_transparent("own_window_transparent",
                                                    false, false);
-#endif /* OWN_WINDOW || BUILD_WAYLAND */
+#endif /* OWN_WINDOW || BUILD_WAYLAND || BUILD_SDL */
 
 #if defined(BUILD_ARGB) || defined(BUILD_WAYLAND)
 conky::simple_config_setting<bool> use_argb_visual("own_window_argb_visual",

@@ -33,8 +33,8 @@
 #include "build.h"
 #include "config.h"
 #include "conky.h"
-#include "output/display-output.hh"
 #include "lua/lua-config.hh"
+#include "output/display-output.hh"
 
 #ifdef BUILD_X11
 #include "output/x11.h"
@@ -91,7 +91,7 @@ static void print_version() {
             << _("  * portmon\n")
 #endif /* BUILD_PORT_MONITORS */
 #ifdef BUILD_HTTP
-            << _("  * HTTP\n")
+            << _("  * HTTP (out_to_http)\n")
 #endif /* BUILD_HTTP */
 #ifdef BUILD_IPV6
             << _("  * IPv6\n")
@@ -145,7 +145,7 @@ static void print_version() {
             << _("  * iostats\n")
 #endif /* BUILD_IOSTATS */
 #ifdef BUILD_NCURSES
-            << _("  * ncurses\n")
+            << _("  * ncurses (out_to_ncurses)\n")
 #endif /* BUILD_NCURSES */
 #ifdef BUILD_I18N
             << _("  * Internationalization support\n")
@@ -169,7 +169,7 @@ static void print_version() {
             << _("  * RSVG\n")
 #endif /* BUILD_LUA_RSVG */
 #ifdef BUILD_X11
-            << _(" X11:\n")
+            << _(" X11:\n") << _("  * out_to_x\n")
 #ifdef BUILD_XDAMAGE
             << _("  * Xdamage extension\n")
 #endif /* BUILD_XDAMAGE */
@@ -198,8 +198,14 @@ static void print_version() {
             << _("  * Mouse events\n")
 #endif /* BUILD_MOUSE_EVENTS */
 #endif /* BUILD_X11 */
+#ifdef BUILD_SDL
+            << _(" SDL:\n") << _("  * out_to_sdl\n")
+#ifdef HAVE_SDL_GFXPRIMITIVES_H
+            << _("  * SDL_GFX\n")
+#endif /* HAVE_SDL_GFXPRIMITIVES_H */
+#endif /* BUILD_SDL */
 #ifdef BUILD_WAYLAND
-            << _(" Wayland:\n")
+            << _(" Wayland:\n") << _("  * out_to_wayland\n")
 #ifdef BUILD_ARGB
             << _("  * ARGB visual\n")
 #endif /* BUILD_ARGB */
@@ -281,11 +287,12 @@ static void print_help(const char *prog_name) {
          " (and quit)\n"
          "   -p, --pause=SECS          pause for SECS seconds at startup "
          "before doing anything\n"
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
-    defined(__HAIKU__) || defined(__NetBSD__)
+#if defined(__linux__) || defined(__FreeBSD__) || \
+    defined(__FreeBSD_kernel__) || defined(__HAIKU__) || defined(__NetBSD__)
          "   -U, --unique              only one conky process can be created\n"
 #endif /* Linux || FreeBSD || Haiku || NetBSD */
-         , prog_name);
+         ,
+         prog_name);
 }
 
 inline void reset_optind() {
@@ -367,8 +374,8 @@ int main(int argc, char **argv) {
         window.window = strtol(optarg, nullptr, 0);
         break;
 #endif /* BUILD_X11 */
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
-    defined(__HAIKU__) || defined(__NetBSD__)
+#if defined(__linux__) || defined(__FreeBSD__) || \
+    defined(__FreeBSD_kernel__) || defined(__HAIKU__) || defined(__NetBSD__)
       case 'U':
         unique_process = true;
         break;
@@ -378,8 +385,8 @@ int main(int argc, char **argv) {
     }
   }
 
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
-    defined(__HAIKU__) || defined(__NetBSD__)
+#if defined(__linux__) || defined(__FreeBSD__) || \
+    defined(__FreeBSD_kernel__) || defined(__HAIKU__) || defined(__NetBSD__)
   if (unique_process && is_conky_already_running()) {
     NORM_ERR("already running");
     return 0;
@@ -419,7 +426,7 @@ int main(int argc, char **argv) {
   bsdcommon::deinit_kvm();
 #endif
 
-//TODO(gmb): Move this to bsdcommon and remove external kd.
+// TODO(gmb): Move this to bsdcommon and remove external kd.
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   kvm_close(kd);
 #endif

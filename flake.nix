@@ -64,6 +64,7 @@
               "-DBUILD_LUA_IMLIB2=ON"
               "-DBUILD_LUA_RSVG=ON"
               "-DBUILD_RSS=ON"
+              "-DBUILD_SDL=ON"
               "-DREPRODUCIBLE_BUILD=ON"
             ];
             nativeBuildInputs = [
@@ -77,6 +78,9 @@
             ];
             buildInputs =
               [
+                SDL
+                SDL_ttf
+                SDL_gfx
                 cairo
                 curl
                 freetype
@@ -90,13 +94,13 @@
                 xorg.libICE
                 xorg.libSM
                 xorg.libX11
-                xorg.libxcb
                 xorg.libXdamage
                 xorg.libXext
                 xorg.libXfixes
                 xorg.libXft
                 xorg.libXi
                 xorg.libXinerama
+                xorg.libxcb
                 xorg.xcbutilerrors
               ]
               ++ lib.optional stdenv.isDarwin darwin.libobjc;

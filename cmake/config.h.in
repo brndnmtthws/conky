@@ -31,6 +31,8 @@
 
 #cmakedefine HAVE_SOUNDCARD_H 1
 
+#cmakedefine HAVE_FTW_H 1
+
 #cmakedefine HAVE_STRNDUP 1
 
 #cmakedefine HAVE_FOPENCOOKIE 1
@@ -120,6 +122,9 @@
 #cmakedefine BUILD_IPV6 1
 
 #cmakedefine BUILD_HTTP 1
+
+#cmakedefine BUILD_SDL 1
+#cmakedefine HAVE_SDL_GFXPRIMITIVES_H 1
 
 #cmakedefine BUILD_GUI 1
 
