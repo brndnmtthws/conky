@@ -24,6 +24,7 @@
 
 #include <cstring>
 #include <filesystem>
+#include <sstream>
 
 #include "../conky.h"
 #include "../geometry.h"
