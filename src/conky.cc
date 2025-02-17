@@ -121,7 +121,6 @@
 #include "data/timeinfo.h"
 #include "data/top.h"
 #include "logging.h"
-#include "lua/llua.h"
 #include "output/nc.h"
 
 #ifdef BUILD_MYSQL
@@ -134,6 +133,7 @@
 #include "data/network/ccurl_thread.h"
 #endif /* BUILD_CURL */
 
+#include "lua/llua.h"
 #include "lua/lua-config.hh"
 #include "lua/setting.hh"
 #include "output/display-output.hh"
@@ -1985,40 +1985,6 @@ void load_config_file() {
   lua::stack_sentry s(l);
   l.checkstack(2);
 
-  // Extend lua package.path so scripts can use relative paths
-  {
-    struct stat file_stat {};
-
-    std::string path_ext;
-
-    // add XDG directory to lua path
-    auto xdg_path =
-        std::filesystem::path(to_real_path(XDG_CONFIG_FILE)).parent_path();
-    if (stat(xdg_path.c_str(), &file_stat) == 0) {
-      path_ext.push_back(';');
-      path_ext.append(xdg_path);
-      path_ext.append("/?.lua");
-    }
-
-    auto parent_path = current_config.parent_path();
-    if (xdg_path != parent_path && stat(path_ext.c_str(), &file_stat) == 0) {
-      path_ext.push_back(';');
-      path_ext.append(parent_path);
-      path_ext.append("/?.lua");
-    }
-
-    l.getglobal("package");
-    l.getfield(-1, "path");
-
-    auto path = l.tostring(-1);
-    path.append(path_ext);
-    l.pop();
-    l.pushstring(path.c_str());
-
-    l.setfield(-2, "path");
-    l.pop();
-  }
-
   try {
 #ifdef BUILD_BUILTIN_CONFIG
     if (current_config == builtin_config_magic) {
@@ -2171,6 +2137,7 @@ void initialisation(int argc, char **argv) {
   set_default_configurations();
 
   set_current_config();
+  llua_init();
   load_config_file();
 
   /* handle other command line arguments */

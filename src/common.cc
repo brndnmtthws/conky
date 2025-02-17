@@ -146,10 +146,9 @@ std::filesystem::path to_real_path(const std::string &source) {
   wordexp_t p;
   char **w;
   int i;
+  std::string checked = "\"" + source + "\"";
   const char *csource = source.c_str();
-  if (wordexp(csource, &p, 0) != 0) {
-    return std::string();
-  }
+  if (wordexp(checked.c_str(), &p, 0) != 0) { return std::string(); }
   w = p.we_wordv;
   const char *resolved_path = strdup(w[0]);
   wordfree(&p);

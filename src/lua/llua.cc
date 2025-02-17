@@ -23,6 +23,8 @@
 #include "config.h"
 
 #include <cstring>
+#include <filesystem>
+
 #include "../conky.h"
 #include "../geometry.h"
 #include "../logging.h"
@@ -33,8 +35,8 @@
 #include "../output/gui.h"
 
 #ifdef BUILD_X11
-#include "x11-settings.h"
 #include "../output/x11.h"
+#include "x11-settings.h"
 #endif /* BUILD_X11 */
 
 #ifdef BUILD_MOUSE_EVENTS
@@ -108,7 +110,6 @@ class lua_load_setting : public conky::simple_config_setting<std::string> {
 #ifdef HAVE_SYS_INOTIFY_H
     llua_rm_notifies();
 #endif /* HAVE_SYS_INOTIFY_H */
-    if (lua_L == nullptr) { return; }
     lua_close(lua_L);
     lua_L = nullptr;
   }
@@ -185,15 +186,50 @@ void llua_init() {
 
   /* add our library path to the lua package.cpath global var */
   luaL_openlibs(lua_L);
-  lua_getglobal(lua_L, "package");
-  lua_getfield(lua_L, -1, "cpath");
+  lua_getglobal(lua_L, "package");   // stack: package
+  lua_getfield(lua_L, -1, "cpath");  // stack: package.cpath, package
 
   old_path = std::string(lua_tostring(lua_L, -1));
   new_path = libs + old_path;
 
-  lua_pushstring(lua_L, new_path.c_str());
-  lua_setfield(lua_L, -3, "cpath");
-  lua_pop(lua_L, 2);
+  lua_pushstring(lua_L,
+                 new_path.c_str());  // stack: new_path, package.cpath, package
+  lua_setfield(lua_L, -3, "cpath");  // stack: package.cpath, package
+  lua_pop(lua_L, 1);                 // stack: package
+
+  /* Add config file and XDG paths to package.path so scripts can load other
+   * scripts from relative paths */
+  {
+    struct stat file_stat{};
+
+    std::string path_ext;
+
+    // add XDG directory to lua path
+    auto xdg_path =
+        std::filesystem::path(to_real_path(XDG_CONFIG_FILE)).parent_path();
+    if (stat(xdg_path.c_str(), &file_stat) == 0) {
+      path_ext.append(xdg_path);
+      path_ext.append("/?.lua");
+      path_ext.push_back(';');
+    }
+
+    auto parent_path = current_config.parent_path();
+    if (xdg_path != parent_path && stat(path_ext.c_str(), &file_stat) == 0) {
+      path_ext.append(parent_path);
+      path_ext.append("/?.lua");
+      path_ext.push_back(';');
+    }
+
+    lua_getfield(lua_L, -1, "path");  // stack: package.path, package
+    old_path = std::string(lua_tostring(lua_L, -1));
+    new_path = path_ext + old_path;
+
+    lua_pushstring(lua_L,
+                   new_path.c_str());  // stack: new_path, package.path, package
+    lua_setfield(lua_L, -3, "path");   // stack: package.path, package
+    lua_pop(lua_L, 1);                 // stack: package
+  }
+  lua_pop(lua_L, 1);  // stack is empty
 
   lua_pushstring(lua_L, PACKAGE_NAME " " VERSION " compiled for " BUILD_ARCH);
   lua_setglobal(lua_L, "conky_build_info");
@@ -230,17 +266,46 @@ inline bool file_exists(const char *path) {
 void llua_load(const char *script) {
   int error;
 
-  std::string path = to_real_path(script);
+  std::filesystem::path path = to_real_path(script);
 
   if (!file_exists(path.c_str())) {
-    NORM_ERR("llua_load: specified script file '%s' doesn't exist",
-             path.c_str());
-    // return without initializing lua_L because other parts of the code rely
-    // on it being null if the script is not loaded
-    return;
-  }
+    bool found_alternative = false;
 
-  llua_init();
+    // Try resolving file name by using files in lua path:
+    lua_getglobal(lua_L, "package");  // stack: package
+    lua_getfield(lua_L, -1, "path");  // stack: package.path, package
+    auto lua_path = lua_tostring(lua_L, -1);
+    lua_pop(lua_L, 2);  // stack is empty
+
+    std::stringstream path_stream(lua_path);
+    std::string current;
+    while (std::getline(path_stream, current, ';')) {
+      // lua_load conky variable accepts full file names, so replace "?.lua"
+      // with "?" to ensure file names don't get the unexpected .lua suffix; but
+      // modules with init.lua will still work.
+      size_t substitute_pos = current.find("?.lua");
+      if (substitute_pos != std::string::npos) {
+        current.replace(substitute_pos, 5, "?");
+      }
+
+      substitute_pos = current.find('?');
+      if (substitute_pos == std::string::npos) { continue; }
+      current.replace(substitute_pos, 1, script);
+      path = to_real_path(current);
+
+      if (file_exists(path.c_str())) {
+        found_alternative = true;
+        break;
+      }
+    }
+
+    if (!found_alternative) {
+      NORM_ERR("llua_load: specified script file '%s' doesn't exist", script);
+      // return without initializing lua_L because other parts of the code rely
+      // on it being null if the script is not loaded
+      return;
+    }
+  }
 
   error = luaL_dofile(lua_L, path.c_str());
   if (error != 0) {
@@ -361,8 +426,6 @@ static char *llua_getstring(const char *args) {
   char *func;
   char *ret = nullptr;
 
-  if (lua_L == nullptr) { return nullptr; }
-
   func = llua_do_call(args, 1);
   if (func != nullptr) {
     if (lua_isstring(lua_L, -1) == 0) {
@@ -405,8 +468,6 @@ static char *llua_getstring_read(const char *function, const char *arg)
 /* call a function with args, and put the result in ret */
 static int llua_getnumber(const char *args, double *ret) {
   char *func;
-
-  if (lua_L == nullptr) { return 0; }
 
   func = llua_do_call(args, 1);
   if (func != nullptr) {
@@ -503,32 +564,30 @@ void llua_set_number(const char *key, double value) {
 }
 
 void llua_startup_hook() {
-  if ((lua_L == nullptr) || lua_startup_hook.get(*state).empty()) { return; }
+  if (lua_startup_hook.get(*state).empty()) { return; }
   llua_do_call(lua_startup_hook.get(*state).c_str(), 0);
 }
 
 void llua_shutdown_hook() {
-  if ((lua_L == nullptr) || lua_shutdown_hook.get(*state).empty()) { return; }
+  if (lua_shutdown_hook.get(*state).empty()) { return; }
   llua_do_call(lua_shutdown_hook.get(*state).c_str(), 0);
 }
 
 #ifdef BUILD_GUI
 void llua_draw_pre_hook() {
-  if ((lua_L == nullptr) || lua_draw_hook_pre.get(*state).empty()) { return; }
+  if (lua_draw_hook_pre.get(*state).empty()) { return; }
   llua_do_call(lua_draw_hook_pre.get(*state).c_str(), 0);
 }
 
 void llua_draw_post_hook() {
-  if ((lua_L == nullptr) || lua_draw_hook_post.get(*state).empty()) { return; }
+  if (lua_draw_hook_post.get(*state).empty()) { return; }
   llua_do_call(lua_draw_hook_post.get(*state).c_str(), 0);
 }
 
 #ifdef BUILD_MOUSE_EVENTS
 template <typename EventT>
 bool llua_mouse_hook(const EventT &ev) {
-  if ((lua_L == nullptr) || lua_mouse_hook.get(*state).empty()) {
-    return false;
-  }
+  if (lua_mouse_hook.get(*state).empty()) { return false; }
   const std::string raw_hook_name = lua_mouse_hook.get(*state);
   std::string hook_name;
   if (raw_hook_name.rfind("conky_", 0) == 0) {
@@ -593,7 +652,6 @@ void llua_set_userdata(const char *key, const char *type, void *value) {
 }
 
 void llua_setup_window_table(conky::rect<int> text_rect) {
-  if (lua_L == nullptr) { return; }
   lua_newtable(lua_L);
 
 #ifdef BUILD_X11
@@ -625,8 +683,6 @@ void llua_setup_window_table(conky::rect<int> text_rect) {
 }
 
 void llua_update_window_table(conky::rect<int> text_rect) {
-  if (lua_L == nullptr) { return; }
-
   lua_getglobal(lua_L, "conky_window");
   if (lua_isnil(lua_L, -1)) {
     /* window table isn't populated yet */
@@ -649,7 +705,6 @@ void llua_update_window_table(conky::rect<int> text_rect) {
 #endif /* BUILD_GUI */
 
 void llua_setup_info(struct information *i, double u_interval) {
-  if (lua_L == nullptr) { return; }
   lua_newtable(lua_L);
 
   llua_set_number("update_interval", u_interval);
@@ -659,8 +714,6 @@ void llua_setup_info(struct information *i, double u_interval) {
 }
 
 void llua_update_info(struct information *i, double u_interval) {
-  if (lua_L == nullptr) { return; }
-
   lua_getglobal(lua_L, "conky_info");
   if (lua_isnil(lua_L, -1)) {
     /* window table isn't populated yet */
