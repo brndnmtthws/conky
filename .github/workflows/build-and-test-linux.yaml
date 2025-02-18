@@ -94,7 +94,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: '${{ env.SCCACHE_DIR }}'
-          key: sccache-${{ matrix.os }}-${{ matrix.x11 }}-${{ matrix.wayland }}-${{ matrix.compiler }}-${{ github.ref }}-${{ github.run_id }}
+          key: sccache-${{ matrix.os }}-${{ matrix.x11 }}-${{ matrix.wayland }}-${{ matrix.compiler }}
           restore-keys: |
             sccache-${{ matrix.os }}-${{ matrix.x11 }}-${{ matrix.wayland }}-${{ matrix.compiler }}
             sccache-${{ matrix.os }}-${{ matrix.x11 }}-${{ matrix.wayland }}
