@@ -18,14 +18,13 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  SCCACHE_VERSION: "0.9.0"
+  SCCACHE_VERSION: '0.9.0'
 
 jobs:
   build:
     strategy:
       matrix:
         os:
-          - ubuntu-20.04
           - ubuntu-22.04
           - ubuntu-24.04
         x11: [ON, OFF]
@@ -94,7 +93,7 @@ jobs:
         id: compiler-cache
         uses: actions/cache@v4
         with:
-          path: "${{ env.SCCACHE_DIR }}"
+          path: '${{ env.SCCACHE_DIR }}'
           key: sccache-${{ matrix.os }}-${{ matrix.x11 }}-${{ matrix.wayland }}-${{ matrix.compiler }}-${{ github.ref }}-${{ github.run_id }}
           restore-keys: |
             sccache-${{ matrix.os }}-${{ matrix.x11 }}-${{ matrix.wayland }}-${{ matrix.compiler }}-${{ github.ref }}

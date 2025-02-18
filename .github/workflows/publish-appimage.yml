@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  SCCACHE_VERSION: "0.9.0"
+  SCCACHE_VERSION: '0.9.0'
 
 jobs:
   build:
@@ -26,7 +26,6 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-20.04
           - ubuntu-22.04
           - ubuntu-24.04
         arch:
@@ -109,7 +108,7 @@ jobs:
             libc++abi-${CLANG_VERSION}-dev
           echo "CC=clang-${CLANG_VERSION}" | tee -a $GITHUB_ENV
           echo "CXX=clang++-${CLANG_VERSION}" | tee -a $GITHUB_ENV
-      
+
       - name: Install sccache
         if: startsWith(github.ref, 'refs/tags/') != true
         run: .github/scripts/setup-sccache.sh
@@ -118,7 +117,7 @@ jobs:
         id: compiler-cache
         uses: actions/cache@v4
         with:
-          path: "${{ env.SCCACHE_DIR }}"
+          path: '${{ env.SCCACHE_DIR }}'
           key: sccache-${{ matrix.os }}-${{ matrix.arch }}-${{ github.ref }}-${{ github.run_id }}
           restore-keys: |
             sccache-${{ matrix.os }}-${{ matrix.arch }}-${{ github.ref }}
