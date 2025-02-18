@@ -33,8 +33,15 @@
 #include <string.h>
 
 #if defined(__NetBSD__)
-  #include <uvm/uvm_param.h>
   #include <uvm/uvm_extern.h>
+  #include <uvm/uvm_param.h>
+#elif defined(__OpenBSD__)
+  #include <sys/proc.h>
+  #include <sys/sched.h>
+  #include <sys/swap.h>
+  #include <sys/vmmeter.h>
+#else
+  #error Not supported BSD system
 #endif
 
 #include "../top.h"
@@ -112,9 +119,17 @@ void bsdcommon::get_cpu_count(float **cpu_usage, unsigned int *cpu_count) {
 
 void bsdcommon::update_cpu_usage(float **cpu_usage, unsigned int *cpu_count) {
   uint64_t cp_time0[CPUSTATES];
-  int mib_cpu0[2] = {CTL_KERN, KERN_CP_TIME};
   uint64_t cp_timen[CPUSTATES];
+#if defined(__NetBSD__)
+  int mib_cpu0[2] = {CTL_KERN, KERN_CP_TIME};
   int mib_cpun[3] = {CTL_KERN, KERN_CP_TIME, 0};
+#elif defined(__OpenBSD__)
+  int mib_cpu0[2] = {CTL_KERN, KERN_CPTIME};
+  int mib_cpun[3] = {CTL_KERN, KERN_CPTIME2, 0};
+#else
+  #error Not supported BSD system
+#endif
+
   size_t size = 0;
   u_int64_t used = 0, total = 0;
 
@@ -125,7 +140,7 @@ void bsdcommon::update_cpu_usage(float **cpu_usage, unsigned int *cpu_count) {
 
   size = sizeof(cp_time0);
   if (sysctl(mib_cpu0, 2, &cp_time0, &size, nullptr, 0) != 0) {
-      NORM_ERR("unable to get kern.cp_time for cpu0");
+      NORM_ERR("unable to get cpu time for cpu0");
       return;
   }
 
@@ -148,7 +163,7 @@ void bsdcommon::update_cpu_usage(float **cpu_usage, unsigned int *cpu_count) {
     mib_cpun[2] = i;
     size = sizeof(cp_timen);
     if (sysctl(mib_cpun, 3, &cp_timen, &size, nullptr, 0) != 0) {
-      NORM_ERR("unable to get kern.cp_time for cpu%d", i);
+      NORM_ERR("unable to get cpu time for cpu%d", i);
       return;
     }
 
@@ -179,21 +194,32 @@ BSD_COMMON_PROC_STRUCT *bsdcommon::get_processes(short unsigned int *procs) {
   }
 
   int n_processes = 0;
-  BSD_COMMON_PROC_STRUCT *ki = kvm_getproc2(kd, KERN_PROC_ALL, 0,
+#if defined(__NetBSD__)
+  BSD_COMMON_PROC_STRUCT *ps = kvm_getproc2(kd, KERN_PROC_ALL, 0,
                                             sizeof(BSD_COMMON_PROC_STRUCT),
                                             &n_processes);
-  if (ki == nullptr) {
-    NORM_ERR("kvm_getproc2() failed");
+ #elif defined(__OpenBSD__)
+  BSD_COMMON_PROC_STRUCT *ps = kvm_getprocs(kd, KERN_PROC_ALL, 0,
+                                            sizeof(BSD_COMMON_PROC_STRUCT),
+                                            &n_processes);
+#else
+  #error Not supported BSD system
+#endif
+
+ if (ps == nullptr) {
+    NORM_ERR("unable to get proceses");
     return nullptr;
   }
 
   *procs = n_processes;
-  return ki;
+  return ps;
 }
 
 static bool is_process_running(BSD_COMMON_PROC_STRUCT *p) {
 #if defined(__NetBSD__)
   return p->p_stat == LSRUN || p->p_stat == LSIDL || p->p_stat == LSONPROC;
+#elif defined(__OpenBSD__)
+  return p->p_stat == SRUN;
 #else
   #error Not supported BSD system 
 #endif
@@ -221,7 +247,7 @@ void bsdcommon::get_number_of_running_processes(short unsigned int *run_procs) {
 }
 
 static bool is_top_process(BSD_COMMON_PROC_STRUCT *p) {
-#if defined(__NetBSD__)
+#if defined(__NetBSD__) || defined(__OpenBSD__)
   return !((p->p_flag & P_SYSTEM)) && p->p_comm[0] != 0;
 #else
   #error Not supported BSD system 
@@ -229,7 +255,7 @@ static bool is_top_process(BSD_COMMON_PROC_STRUCT *p) {
 }
 
 static int32_t get_pid(BSD_COMMON_PROC_STRUCT *p) {
-#if defined(__NetBSD__)
+#if defined(__NetBSD__) || defined(__OpenBSD__)
   return p->p_pid;
 #else
   #error Not supported BSD system 
@@ -259,6 +285,19 @@ static void proc_from_bsdproc(struct process *proc, BSD_COMMON_PROC_STRUCT *p) {
   proc->amount = 100.0 * p->p_pctcpu / FSCALE;
   proc->vsize = p->p_vm_vsize * getpagesize();
   proc->rss = p->p_vm_rssize * getpagesize();
+  proc->total_cpu_time = to_conky_time(p->p_rtime_sec, p->p_rtime_usec);
+#elif defined(__OpenBSD__)
+  // https://github.com/openbsd/src/blob/master/sys/sys/sysctl.h
+  proc->time_stamp = g_time;
+  proc->user_time = to_conky_time(p->p_uutime_sec, p->p_uutime_usec);
+  proc->kernel_time = to_conky_time(p->p_ustime_sec, p->p_ustime_usec);
+  proc->total = proc->user_time + proc->kernel_time;
+  proc->uid = p->p_uid;
+  proc->name = strndup(p->p_comm, text_buffer_size.get(*state));
+  proc->basename = strndup(p->p_comm, text_buffer_size.get(*state));
+  proc->amount = 100.0 * p->p_pctcpu / FSCALE;
+  proc->vsize = p->p_vm_map_size;
+  proc->rss = (p->p_vm_rssize * getpagesize());
   proc->total_cpu_time = to_conky_time(p->p_rtime_sec, p->p_rtime_usec);
 #else
   #error Not supported BSD system 
@@ -324,7 +363,7 @@ void bsdcommon::update_top_info() {
 }
 
 static bool is_process(BSD_COMMON_PROC_STRUCT *p, const char *name) {
-#if defined(__NetBSD__)
+#if defined(__NetBSD__) || defined(__OpenBSD__)
   return p->p_comm[0] != 0 && strcmp(p->p_comm, name) == 0;
 #else
   #error Not supported BSD system 
@@ -361,24 +400,62 @@ static unsigned long long to_conky_size(uint64_t size, uint64_t pagesize) {
   return (size >> 10) * pagesize;
 }
 
+#if defined(__OpenBSD__)
+/* note: swapmode taken from 'top' source */
+/* swapmode is rewritten by Tobias Weingartner <weingart@openbsd.org>
+ * to be based on the new swapctl(2) system call. */
+static int swapmode(int *used, int *total) {
+  struct swapent *swdev;
+  int nswap, rnswap, i;
+
+  nswap = swapctl(SWAP_NSWAP, 0, 0);
+  if (nswap == 0) { return 0; }
+
+  swdev = (struct swapent *)malloc(nswap * sizeof(*swdev));
+  if (swdev == nullptr) { return 0; }
+
+  rnswap = swapctl(SWAP_STATS, swdev, nswap);
+  if (rnswap == -1) {
+    free(swdev);
+    return 0;
+  }
+
+  /* if rnswap != nswap, then what? */
+
+  /* Total things up */
+  *total = *used = 0;
+  for (i = 0; i < nswap; i++) {
+    if (swdev[i].se_flags & SWF_ENABLE) {
+      *used += (swdev[i].se_inuse / (1024 / DEV_BSIZE));
+      *total += (swdev[i].se_nblks / (1024 / DEV_BSIZE));
+    }
+  }
+  free(swdev);
+  return 1;
+}
+#endif /* OpenBSD */
+
 void bsdcommon::update_meminfo(struct information &info) {
   size_t len;
 #if defined(__NetBSD__)
   int mib[2] = {CTL_VM, VM_UVMEXP2};
   // NOTE(gmb): https://github.com/NetBSD/src/blob/trunk/sys/uvm/uvm_extern.h
   struct uvmexp_sysctl meminfo;
+#elif defined(__OpenBSD__)
+  int mib[2] = {CTL_VM, VM_METER};
+  struct vmtotal meminfo;
 #else
   #error Not supported BSD system.
 #endif
 
   len = sizeof(meminfo);
   if (sysctl(mib, 2, &meminfo, &len, NULL, 0) == -1 ) {
-    NORM_ERR("sysctl() failed");
+    NORM_ERR("unable to get meminfo");
     return;
   }
 
+// TODO(gmb): Try to fill all memory related fields.
 #if defined(__NetBSD__)
-  // TODO(gmb): Try to fill all memory related fields.
   info.memmax = to_conky_size(meminfo.npages, meminfo.pagesize);
   info.memfree = info.memeasyfree = to_conky_size(meminfo.free, meminfo.pagesize);
   info.mem = info.memmax - info.memfree;
@@ -386,6 +463,23 @@ void bsdcommon::update_meminfo(struct information &info) {
   info.swapmax = to_conky_size(meminfo.swpages, meminfo.pagesize);
   info.swap = to_conky_size(meminfo.swpginuse, meminfo.pagesize);
   info.swapfree = info.swapmax - info.swap;
+#elif defined(__OpenBSD__)
+  int pagesize = getpagesize();
+  info.memmax = to_conky_size(meminfo.t_rm + meminfo.t_free, pagesize);
+  info.mem = info.memwithbuffers = to_conky_size(meminfo.t_rm, pagesize);
+  info.memfree = info.memeasyfree = info.memmax - info.mem;
+  info.legacymem = info.mem;
+
+  int swap_avail, swap_used;
+  if ((swapmode(&swap_used, &swap_avail)) >= 0) {
+    info.swapmax = swap_avail;
+    info.swap = swap_used;
+    info.swapfree = swap_avail - swap_used;
+  } else {
+    info.swapmax = 0;
+    info.swap = 0;
+    info.swapfree = 0;
+  }
 #else
   #error Not supported BSD system.
 #endif
