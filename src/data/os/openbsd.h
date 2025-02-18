@@ -30,4 +30,6 @@ typedef struct apm_power_info *apm_info_t;
 int get_entropy_avail(unsigned int *);
 int get_entropy_poolsize(unsigned int *);
 
+bool is_conky_already_running();
+
 #endif /*OPENBSD_H_*/

@@ -2112,9 +2112,9 @@ void set_current_config() {
 const char *getopt_string =
     "vVqdDSs:t:u:i:hc:p:"
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
-    defined(__HAIKU__) || defined(__NetBSD__)
+    defined(__HAIKU__) || defined(__NetBSD__) || defined(__OpenBSD__)
     "U"
-#endif /* Linux || FreeBSD || Haiku || NetBSD */
+#endif /* Linux || FreeBSD || Haiku || NetBSD || OpenBSD */
 #ifdef BUILD_X11
     "x:y:w:a:X:m:f:"
 #ifdef OWN_WINDOW
@@ -2146,9 +2146,9 @@ const struct option longopts[] = {
     {"text", 1, nullptr, 't'},          {"interval", 1, nullptr, 'u'},
     {"pause", 1, nullptr, 'p'},
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
-    defined(__HAIKU__) || defined(__NetBSD__)
+    defined(__HAIKU__) || defined(__NetBSD__) || defined(__OpenBSD__)
     {"unique", 0, nullptr, 'U'},
-#endif /* Linux || FreeBSDi || Haiku || NetBSD */
+#endif /* Linux || FreeBSD || Haiku || NetBSD || OpenBSD */
     {nullptr, 0, nullptr, 0}
 };
 

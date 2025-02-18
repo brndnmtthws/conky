@@ -444,3 +444,8 @@ void prepare_update() {}
 int get_entropy_avail(unsigned int *val) { return 1; }
 
 int get_entropy_poolsize(unsigned int *val) { return 1; }
+
+bool is_conky_already_running() {
+  return bsdcommon::is_conky_already_running();
+}
+
