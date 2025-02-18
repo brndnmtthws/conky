@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export SCCACHE_VERSION="${SCCACHE_VERSION:=0.9.0}"
+export SCCACHE_VERSION="${SCCACHE_VERSION:=0.9.1}"
 
 export sccache_arch="x86_64"
 if [ "$RUNNER_ARCH" = "X86" ]; then
@@ -19,12 +19,12 @@ install_sccache() {
 
     echo "Downloading $sccache_url..."
     if ! wget -q "$sccache_url"; then
-        echo "Can't download $sccache_url.">2
+        echo "Can't download $sccache_url." >2
         exit 1
     fi
     echo "Extracting $sccache_archive.tar.gz..."
     if ! tar -xzf "$sccache_archive.tar.gz" >/dev/null; then
-        echo "Can't extract $sccache_archive.tar.gz">2
+        echo "Can't extract $sccache_archive.tar.gz" >2
         exit 1
     fi
     chmod +x "$sccache_archive/sccache"
@@ -61,10 +61,10 @@ echo "sccache installed."
 
 # Configure
 mkdir $HOME/.sccache
-echo "SCCACHE_DIR=$HOME/.sccache" >> $GITHUB_ENV
+echo "SCCACHE_DIR=$HOME/.sccache" >>$GITHUB_ENV
 if [ "$RUNNER_DEBUG" = "1" ]; then
     echo "Running with debug output; cached binary artifacts will be ignored to produce a cleaner build"
-    echo "SCCACHE_RECACHE=true" >> $GITHUB_ENV
+    echo "SCCACHE_RECACHE=true" >>$GITHUB_ENV
 fi
 
 echo "sccache configured."

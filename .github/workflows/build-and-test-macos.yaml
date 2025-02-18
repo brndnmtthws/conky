@@ -18,8 +18,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  SCCACHE_VERSION: "0.9.0"
-  
+  SCCACHE_VERSION: '0.9.1'
+
 jobs:
   build:
     env:
@@ -60,10 +60,11 @@ jobs:
         id: compiler-cache
         uses: actions/cache@v4
         with:
-          path: "${{ env.SCCACHE_DIR }}"
-          key: sccache-${{ matrix.os }}-${{ github.ref }}-${{ github.run_id }}
+          path: '${{ env.SCCACHE_DIR }}'
+          key: sccache-${{ matrix.os }}
           restore-keys: |
-            sccache-${{ matrix.os }}-${{ github.ref }}
+            sccache-${{ matrix.os }}
+            sccache-
       - name: Configure with CMake
         run: |
           # Reset sccache statistics

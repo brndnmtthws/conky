@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  SCCACHE_VERSION: '0.9.0'
+  SCCACHE_VERSION: '0.9.1'
 
 jobs:
   build:
@@ -96,7 +96,10 @@ jobs:
           path: '${{ env.SCCACHE_DIR }}'
           key: sccache-${{ matrix.os }}-${{ matrix.x11 }}-${{ matrix.wayland }}-${{ matrix.compiler }}-${{ github.ref }}-${{ github.run_id }}
           restore-keys: |
-            sccache-${{ matrix.os }}-${{ matrix.x11 }}-${{ matrix.wayland }}-${{ matrix.compiler }}-${{ github.ref }}
+            sccache-${{ matrix.os }}-${{ matrix.x11 }}-${{ matrix.wayland }}-${{ matrix.compiler }}
+            sccache-${{ matrix.os }}-${{ matrix.x11 }}-${{ matrix.wayland }}
+            sccache-${{ matrix.os }}-${{ matrix.x11 }}
+            sccache-${{ matrix.os }}
       - name: Configure with CMake
         run: |
           set -x # show the commands we're running
