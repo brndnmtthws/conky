@@ -187,6 +187,8 @@ if(OS_OPENBSD)
     data/os/openbsd.h
     data/hardware/bsdapm.cc
     data/hardware/bsdapm.h
+    data/os/bsdcommon.cc
+    data/os/bsdcommon.h
   )
   set(optional_sources ${optional_sources} ${openbsd_sources})
 endif(OS_OPENBSD)

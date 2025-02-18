@@ -73,67 +73,10 @@
 
 inline void proc_find_top(struct process **cpu, struct process **mem);
 
-static kvm_t *kd = 0;
-
 struct ifmibdata *data = nullptr;
 size_t len = 0;
 
-static int init_cpu = 0;
-static int init_kvm = 0;
 static int init_sensors = 0;
-
-struct cpu_load {
-  u_int64_t old_used;
-  u_int64_t old_total;
-};
-
-static struct cpu_load *cpu_loads = nullptr;
-
-static int kvm_init() {
-  if (init_kvm) { return 1; }
-
-  kd = kvm_open(nullptr, NULL, NULL, KVM_NO_FILES, NULL);
-  if (kd == nullptr) {
-    NORM_ERR("error opening kvm");
-  } else {
-    init_kvm = 1;
-  }
-
-  return 1;
-}
-
-/* note: swapmode taken from 'top' source */
-/* swapmode is rewritten by Tobias Weingartner <weingart@openbsd.org>
- * to be based on the new swapctl(2) system call. */
-static int swapmode(int *used, int *total) {
-  struct swapent *swdev;
-  int nswap, rnswap, i;
-
-  nswap = swapctl(SWAP_NSWAP, 0, 0);
-  if (nswap == 0) { return 0; }
-
-  swdev = (struct swapent *)malloc(nswap * sizeof(*swdev));
-  if (swdev == nullptr) { return 0; }
-
-  rnswap = swapctl(SWAP_STATS, swdev, nswap);
-  if (rnswap == -1) {
-    free(swdev);
-    return 0;
-  }
-
-  /* if rnswap != nswap, then what? */
-
-  /* Total things up */
-  *total = *used = 0;
-  for (i = 0; i < nswap; i++) {
-    if (swdev[i].se_flags & SWF_ENABLE) {
-      *used += (swdev[i].se_inuse / (1024 / DEV_BSIZE));
-      *total += (swdev[i].se_nblks / (1024 / DEV_BSIZE));
-    }
-  }
-  free(swdev);
-  return 1;
-}
 
 int check_mount(struct text_object *obj) {
   /* stub */
@@ -160,44 +103,8 @@ int update_uptime() {
 }
 
 int update_meminfo() {
-  static int mib[2] = {CTL_VM, VM_METER};
-  struct vmtotal vmtotal;
-  size_t size;
-  int pagesize, pageshift, swap_avail, swap_used;
-
-  pagesize = getpagesize();
-  pageshift = 0;
-  while (pagesize > 1) {
-    pageshift++;
-    pagesize >>= 1;
-  }
-
-  /* we only need the amount of log(2)1024 for our conversion */
-  pageshift -= LOG1024;
-
-  /* get total -- systemwide main memory usage structure */
-  size = sizeof(vmtotal);
-  if (sysctl(mib, 2, &vmtotal, &size, nullptr, 0) < 0) {
-    warn("sysctl failed");
-    bzero(&vmtotal, sizeof(vmtotal));
-  }
-
-  info.memmax = pagetok(vmtotal.t_rm) + pagetok(vmtotal.t_free);
-  info.mem = info.memwithbuffers = pagetok(vmtotal.t_rm);
-  info.memeasyfree = info.memfree = info.memmax - info.mem;
-  info.legacymem = info.mem;
-
-  if ((swapmode(&swap_used, &swap_avail)) >= 0) {
-    info.swapmax = swap_avail;
-    info.swap = swap_used;
-    info.swapfree = swap_avail - swap_used;
-  } else {
-    info.swapmax = 0;
-    info.swap = 0;
-    info.swapfree = 0;
-  }
-
-  return 0;
+  bsdcommon::update_meminfo(info);
+  return 1;
 }
 
 int update_net_stats() {
@@ -267,120 +174,22 @@ int update_net_stats() {
 }
 
 int update_total_processes() {
-  int n_processes;
-
-  kvm_init();
-  kvm_getprocs(kd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc),  &n_processes);
-
-  info.procs = n_processes;
-
-  return 0;
+  bsdcommon::get_processes(&info.procs);
+  return 1;
 }
 
 int update_running_processes() {
-  struct kinfo_proc *p;
-  int n_processes;
-  int i, cnt = 0;
-
-  kvm_init();
-  int max_size = sizeof(struct kinfo_proc);
-
-  p = kvm_getprocs(kd, KERN_PROC_ALL, 0, max_size, &n_processes);
-  for (i = 0; i < n_processes; i++) {
-    if (p[i].p_stat == SRUN) { cnt++; }
-  }
-
-  info.run_procs = cnt;
-  return 0;
+  bsdcommon::get_number_of_running_processes(&info.run_procs);
+  return 1;
 }
 
 void get_cpu_count() {
-  int cpu_count = 0;
-  int mib[2] = {CTL_HW, HW_NCPU};
-  size_t size = sizeof(cpu_count);
-
-  if (sysctl(mib, 2, &cpu_count, &size, nullptr, 0) != 0) {
-    NORM_ERR("unable to get hw.ncpu, defaulting to 1");
-    info.cpu_count = 1;
-  } else {
-    info.cpu_count = cpu_count;
-  }
-
-  // [1, 2, ..., N] - CPU0, CPU1, ..., CPUN-1
-  info.cpu_usage = (float *)calloc(info.cpu_count + 1, sizeof(float));
-  if (info.cpu_usage == nullptr) {
-    CRIT_ERR("calloc");
-  }
-
-  cpu_loads = (struct cpu_load*)calloc(info.cpu_count + 1, sizeof(struct cpu_load));
-  if (cpu_loads == nullptr) {
-    CRIT_ERR("calloc");
-  }
+  bsdcommon::get_cpu_count(&info.cpu_usage, &info.cpu_count);
 }
 
 int update_cpu_usage() {
-  long cp_time[CPUSTATES];
-  int mib_cp_time[2] = {CTL_KERN, KERN_CPTIME};
-  u_int64_t cp_time2[CPUSTATES];
-  int mib_cp_time2[3] = {CTL_KERN, KERN_CPTIME2, 0};
-  size_t size;
-  u_int64_t used = 0, total = 0;
-
-  if (init_cpu == 0){
-    get_cpu_count();
-    init_cpu = 1;
-  }
-
-  size = sizeof(cp_time);
-  if (sysctl(mib_cp_time, 2, &cp_time, &size, nullptr, 0) != 0) {
-      NORM_ERR("unable to get kern.cp_time");
-      return 1;
-  }
-
-  for (int j = 0; j < CPUSTATES; ++j) {
-    total += cp_time[j];
-  }
-  used = total - cp_time[CP_IDLE];
-
-  if ((total - cpu_loads[0].old_total) != 0) {
-    const float diff_used = (float)(used - cpu_loads[0].old_used);
-    const float diff_total = (float)(total - cpu_loads[0].old_total);
-    info.cpu_usage[0] = diff_used / diff_total;
-  } else {
-    info.cpu_usage[0] = 0;
-  }
-  cpu_loads[0].old_used = used;
-  cpu_loads[0].old_total = total;
-
-  for (int i = 0; i < info.cpu_count; ++i) {
-    mib_cp_time2[2] = i;
-    size = sizeof(cp_time2);
-    if (sysctl(mib_cp_time2, 3, &cp_time2, &size, nullptr, 0) != 0) {
-      NORM_ERR("unable to get kern.cp_time2 for cpu%d", i);
-      return 1;
-    }
-
-    total = 0;
-    used = 0;
-    for (int j = 0; j < CPUSTATES; ++j) {
-      total += cp_time2[j];
-    }
-    used = total - cp_time2[CP_IDLE];
-
-    const int n = i + 1; // [0] is the total CPU, must shift by 1
-    if ((total - cpu_loads[n].old_total) != 0) {
-      const float diff_used = (float)(used - cpu_loads[n].old_used);
-      const float diff_total = (float)(total - cpu_loads[n].old_total);
-      info.cpu_usage[n] = diff_used / diff_total;
-    } else {
-      info.cpu_usage[n] = 0;
-    }
-
-    cpu_loads[n].old_used = used;
-    cpu_loads[n].old_total = total;
-  }
-
-  return 0;
+  bsdcommon::update_cpu_usage(&info.cpu_usage, &info.cpu_count);
+  return 1;
 }
 
 void free_cpu(struct text_object *) { /* no-op */
@@ -619,41 +428,8 @@ cleanup:
 
 int update_diskio() { return 0; /* XXX: implement? hifi: not sure how */ }
 
-// conky uses time in hundredths of seconds (centiseconds)
-static unsigned long to_conky_time(u_int32_t sec, u_int32_t usec) {
-  return sec * 100 + (unsigned long)(usec * 0.0001);
-}
-
 void get_top_info(void) {
-  struct kinfo_proc *p;
-  struct process *proc;
-  int n_processes;
-  int i;
-
-  kvm_init();
-
-  p = kvm_getprocs(kd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc),
-                   &n_processes);
-
-  // NOTE(gmb): https://github.com/openbsd/src/blob/master/sys/sys/sysctl.h
-  for (i = 0; i < n_processes; i++) {
-    if (!((p[i].p_flag & P_SYSTEM)) && p[i].p_comm[0] != 0) {
-      proc = get_process(p[i].p_pid);
-      if (!proc) continue;
-
-      proc->time_stamp = g_time;
-      proc->user_time = to_conky_time(p[i].p_uutime_sec, p[i].p_uutime_usec);
-      proc->kernel_time = to_conky_time(p[i].p_ustime_sec, p[i].p_ustime_usec);
-      proc->total = proc->user_time + proc->kernel_time;
-      proc->uid = p[i].p_uid;
-      proc->name = strndup(p[i].p_comm, text_buffer_size.get(*state));
-      proc->basename = strndup(p[i].p_comm, text_buffer_size.get(*state));
-      proc->amount = 100.0 * p[i].p_pctcpu / FSCALE;
-      proc->vsize = p[i].p_vm_map_size;
-      proc->rss = (p[i].p_vm_rssize * getpagesize());
-      proc->total_cpu_time = to_conky_time(p[i].p_rtime_sec, p[i].p_rtime_usec);
-    }
-  }
+  bsdcommon::update_top_info();
 }
 
 void get_battery_short_status(char *buffer, unsigned int n, const char *bat) {

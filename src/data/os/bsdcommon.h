@@ -32,8 +32,12 @@
 #define BSD_COMMON
 
 #if defined(__NetBSD__)
-  #include "sys/sysctl.h"
+  #include <sys/sysctl.h>
   #define BSD_COMMON_PROC_STRUCT struct kinfo_proc2
+#elif defined(__OpenBSD__)
+  #include <sys/types.h>
+  #include <sys/sysctl.h>
+  #define BSD_COMMON_PROC_STRUCT struct kinfo_proc
 #else
   #error Not supported BSD system
 #endif

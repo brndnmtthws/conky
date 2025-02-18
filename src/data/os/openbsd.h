@@ -12,6 +12,8 @@
 
 #include "../../common.h"
 
+#include "bsdcommon.h"
+
 void parse_obsd_sensor(struct text_object *, const char *);
 void print_obsd_sensors_temp(struct text_object *, char *, unsigned int);
 void print_obsd_sensors_fan(struct text_object *, char *, unsigned int);
