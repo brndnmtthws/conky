@@ -44,6 +44,7 @@ extern "C" {
 void llua_inotify_query(int wd, int mask);
 #endif /* HAVE_SYS_INOTIFY_H */
 
+void llua_init();
 void llua_startup_hook(void);
 void llua_shutdown_hook(void);
 
