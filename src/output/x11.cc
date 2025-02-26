@@ -1498,17 +1498,19 @@ std::vector<Window> query_x11_windows(Display *display, bool eager) {
   return result;
 }
 
-Window query_x11_window_at_pos(Display *display, conky::vec2i pos) {
+Window query_x11_window_at_pos(Display *display, conky::vec2i pos, int deviceid) {
   Window root = DefaultVRootWindow(display);
 
   // these values are ignored but NULL can't be passed to XQueryPointer.
   Window root_return;
-  int root_x_return, root_y_return, win_x_return, win_y_return;
-  unsigned int mask_return;
+  double root_x_return, root_y_return, win_x_return, win_y_return;
+  XIButtonState buttons_return;
+  XIModifierState modifiers_return;
+  XIGroupState group_return;
 
   Window last = None;
-  XQueryPointer(display, window.root, &root_return, &last, &root_x_return,
-                &root_y_return, &win_x_return, &win_y_return, &mask_return);
+  XIQueryPointer(display,deviceid, window.root, &root_return, &last, &root_x_return,
+                &root_y_return, &win_x_return, &win_y_return, &buttons_return, &modifiers_return, &group_return);
 
   if (last == 0) return root;
   return last;

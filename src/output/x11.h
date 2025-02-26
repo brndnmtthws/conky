@@ -158,7 +158,7 @@ Window query_x11_top_parent(Display *display, Window child);
 /// @param x screen X position contained by window
 /// @param y screen Y position contained by window
 /// @return a top-most window at provided screen coordinates, or root
-Window query_x11_window_at_pos(Display *display, conky::vec2i pos);
+Window query_x11_window_at_pos(Display *display, conky::vec2i pos, int deviceid);
 
 /// @brief Returns a list of windows overlapping provided screen coordinates.
 ///

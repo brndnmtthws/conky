@@ -453,7 +453,7 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   }
   *cookie = data;
 
-  Window event_window = query_x11_window_at_pos(display, data->pos_absolute);
+  Window event_window = query_x11_window_at_pos(display, data->pos_absolute, data->device->master);
 
   bool same_window = query_x11_top_parent(display, event_window) ==
                      query_x11_top_parent(display, window.window);
