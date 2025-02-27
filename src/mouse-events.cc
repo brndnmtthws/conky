@@ -243,7 +243,7 @@ device_info *device_info::from_xi_id(xi_device_id device_id, Display *display) {
   }
 
   device_info info =
-      device_info{.id = device_id, .master = master, .name = std::string(device->name)};
+      device_info{device_id, master, std::string(device->name)};
 
   size_t id = last_device_id++;
   info.init_xi_device(display, device);
