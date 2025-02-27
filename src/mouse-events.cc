@@ -233,8 +233,17 @@ device_info *device_info::from_xi_id(xi_device_id device_id, Display *display) {
   XIDeviceInfo *device = XIQueryDevice(display, device_id, &num_devices);
   if (num_devices == 0) return nullptr;
 
+  int master;
+  
+  if(device->use == XIMasterPointer){
+    master = device->deviceid;
+  }
+  else{
+    master = device->attachment;
+  }
+
   device_info info =
-      device_info{.id = device_id, .name = std::string(device->name)};
+      device_info{device_id, master, std::string(device->name)};
 
   size_t id = last_device_id++;
   info.init_xi_device(display, device);
