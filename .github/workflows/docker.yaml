@@ -7,6 +7,9 @@ on:
     paths-ignore:
       - web/**
       - doc/**
+    # Publish `v1.2.3` tags as releases.
+    tags:
+      - v*
 
   pull_request:
     branches:
@@ -14,10 +17,6 @@ on:
     paths-ignore:
       - web/**
       - doc/**
-
-    # Publish `v1.2.3` tags as releases.
-    tags:
-      - v*
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
