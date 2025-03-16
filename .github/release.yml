@@ -3,6 +3,9 @@ changelog:
     - title: 🏕 Features
       labels:
         - feature
+    - title: 🧪 Improvements
+      labels:
+        - enhancement
     - title: 🐞 Bug fixes
       labels:
         - bug
@@ -16,6 +19,7 @@ changelog:
           - bug
           - regression
           - feature
+          - enhancement
     - title: 👒 Dependencies
       labels:
         - dependencies
