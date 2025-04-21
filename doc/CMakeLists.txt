@@ -38,7 +38,5 @@ if(BUILD_DOCS)
 
     install(FILES ${DOC_FILES} DESTINATION ${DOC_PATH})
 
-    if(BUILD_DOCS)
-        install(FILES ${MAN_FILES} DESTINATION ${MAN_PATH})
-    endif(BUILD_DOCS)
+    install(FILES ${MAN_FILES} DESTINATION ${MAN_PATH})
 endif(BUILD_DOCS)
