@@ -29,6 +29,7 @@ add_custom_target(conky.nanorc
     ${CMAKE_SOURCE_DIR}/doc/lua.yaml
     ${CMAKE_CURRENT_SOURCE_DIR}/nano/conky.nanorc.j2
 )
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/nano/conky.nanorc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/nano)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/vim/syntax)
 add_custom_target(conkyrc.vim
     ALL
@@ -40,3 +41,4 @@ add_custom_target(conkyrc.vim
     ${CMAKE_SOURCE_DIR}/doc/lua.yaml
     ${CMAKE_CURRENT_SOURCE_DIR}/vim/syntax/conkyrc.vim.j2
 )
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/vim/syntax/conkyrc.vim DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/vim/syntax)
