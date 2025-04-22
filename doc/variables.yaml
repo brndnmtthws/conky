@@ -809,7 +809,7 @@ values:
       Hwmon sensor from sysfs (Linux 2.6). Parameter dev can be:
       1. Number. e.g `1` means hwmon1.
       2. Module name. e.g. `k10temp` means the first hwmon device whose module
-      name is `k10temp.
+      name is `k10temp`.
       3. Omitted. Then the first hwmon device (hwmon0) will be used.
 
       Parameter type is either `in` or `vol` meaning voltage; `fan` meaning fan;
