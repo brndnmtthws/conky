@@ -94,12 +94,12 @@ option(BUILD_EXTRAS "Build extras (includes syntax files for editors)" false)
 
 option(BUILD_I18N "Enable if you want internationalization support" true)
 
-option(BUILD_COLOUR_NAME_MAP "Include mappings of colour name -> RGB (e.g. red -> ff0000)" true)
-
 if(BUILD_I18N)
   set(LOCALE_DIR "${CMAKE_INSTALL_PREFIX}/share/locale"
     CACHE STRING "Directory containing the locales")
 endif(BUILD_I18N)
+
+option(BUILD_COLOUR_NAME_MAP "Include mappings of colour name -> RGB (e.g. red -> ff0000)" true)
 
 # Some standard options
 set(SYSTEM_CONFIG_FILE "/etc/conky/conky.conf"
@@ -157,6 +157,8 @@ cmake_dependent_option(
   "Enable cpu freq calculation based on Intel® Power Gadget; otherwise use constant factory value"
   false
   "OS_DARWIN" false)
+
+option(ENABLE_RUNTIME_TWEAKS "Enable runtime environment checks for better system integration" true)
 
 # Optional features etc
 option(BUILD_WLAN "Enable wireless support" false)

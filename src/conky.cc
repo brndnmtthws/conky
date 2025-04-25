@@ -37,6 +37,7 @@
 #include <clocale>
 #include <cmath>
 #include <cstdarg>
+#include <cstring>
 #include <ctime>
 #include <filesystem>
 #include <iostream>
@@ -1706,13 +1707,112 @@ bool is_on_battery() {  // checks if at least one battery specified in
 
 volatile sig_atomic_t g_sigterm_pending, g_sighup_pending, g_sigusr2_pending;
 
-void log_system_details() {
+void get_system_details() {
   char *session_ty = getenv("XDG_SESSION_TYPE");
-  char *session = getenv("GDMSESSION");
-  char *desktop = getenv("XDG_CURRENT_DESKTOP");
-  if (desktop != nullptr || session != nullptr) {
-    NORM_ERR("'%s' %s session running '%s' desktop", session, session_ty,
-             desktop);
+  if (std::strcmp(session_ty, "x11") == 0) {
+    info.system.session = conky::info::display_session::x11;
+  } else if (std::strcmp(session_ty, "wayland") == 0) {
+    info.system.session = conky::info::display_session::wayland;
+  } else {
+    info.system.session = conky::info::display_session::unknown;
+  }
+
+  info.system.wm_name = getenv("XDG_CURRENT_DESKTOP");
+  // Per spec, XDG_CURRENT_DESKTOP is a semicolon separated list. In practice,
+  // nearly all WM/DEs simply define a single name.
+  // Others below are non-standard:
+  if (info.system.wm_name == nullptr) {
+    info.system.wm_name = getenv("XDG_SESSION_DESKTOP");
+  }
+  if (info.system.wm_name == nullptr) {
+    info.system.wm_name = getenv("DESKTOP_SESSION");
+  }
+  if (info.system.wm_name == nullptr) {
+    info.system.wm_name = getenv("GDMSESSION");
+  }
+
+#ifdef ENABLE_RUNTIME_TWEAKS
+  const auto is_wayland = [&]() {
+#ifndef BUILD_WAYLAND
+    return info.system.session == conky::info::display_session::wayland;
+#else
+    // ignore wayland WMs
+    return false;
+#endif
+  };
+
+  const auto is_session = [&](auto &&...names) {
+    return ((std::strcmp(info.system.wm_name, names) == 0) || ...);
+  };
+
+  // Only add is_wayland guard for WM/DE that will never support another display
+  // session protocol. e.g. Budgie will (or has) switch(ed) to Wayland at some
+  // point, but older versions may use X11, so it needs to be detected for both
+  // X11 and Wayland.
+  if (info.system.wm_name == nullptr) {
+    goto unknown_session;
+  } else if (is_session("GNOME")) {
+    info.system.wm = conky::info::window_manager::mutter;
+  } else if (is_session("GNOME Classic", "metacity")) {
+    info.system.wm = conky::info::window_manager::metacity;
+  } else if (is_session("MATE")) {
+    info.system.wm = conky::info::window_manager::marco;
+  } else if (is_session("XFCE", "XFCE4")) {
+    info.system.wm = conky::info::window_manager::xfwm;
+  } else if (is_session("KDE", "Plasma", "KDE Plasma")) {
+    info.system.wm = conky::info::window_manager::kwin;
+  } else if (is_session("LXDE", "LXQt")) {
+    info.system.wm = conky::info::window_manager::openbox;
+  } else if (is_session("Unity")) {
+    info.system.wm = conky::info::window_manager::compiz;
+  } else if (is_session("Cinnamon")) {
+    info.system.wm = conky::info::window_manager::mutter;  // Muffin → Mutter
+  } else if (!is_wayland() && is_session("Openbox")) {
+    // Openbox doesn't set any session name env variables; must be set manually
+    info.system.wm = conky::info::window_manager::openbox;
+  } else if (!is_wayland() && is_session("Fluxbox")) {
+    info.system.wm = conky::info::window_manager::fluxbox;
+  } else if (!is_wayland() && (is_session("i3", "i3wm"))) {
+    info.system.wm = conky::info::window_manager::i3;
+  } else if (is_wayland() && is_session("Hyprland")) {
+    info.system.wm = conky::info::window_manager::hyprland;
+  } else if (is_wayland() && is_session("Sway")) {
+    info.system.wm = conky::info::window_manager::sway;
+  } else if (!is_wayland() && is_session("bspwm")) {
+    info.system.wm = conky::info::window_manager::bspwm;
+  } else if (is_session("awesome")) {
+    // some talks about adding Wayland support
+    info.system.wm = conky::info::window_manager::awesome;
+  } else if (!is_wayland() && is_session("dwm")) {
+    info.system.wm = conky::info::window_manager::dwm;
+  } else if (!is_wayland() && is_session("herbstluftwm")) {
+    info.system.wm = conky::info::window_manager::herbstluftwm;
+  } else if (!is_wayland() && is_session("qtile")) {
+    info.system.wm = conky::info::window_manager::qtile;
+  } else if (!is_wayland() && is_session("windowmaker")) {
+    info.system.wm = conky::info::window_manager::windowmaker;
+  } else if (is_wayland() && is_session("Wayfire")) {
+    info.system.wm = conky::info::window_manager::wayfire;
+  } else if (is_wayland() && is_session("River")) {
+    info.system.wm = conky::info::window_manager::river;
+  } else if (is_session("Budgie")) {
+    info.system.wm = conky::info::window_manager::mutter;  // Budgie → Mutter
+  } else if (is_session("Deepin")) {
+    info.system.wm = conky::info::window_manager::dde;
+  } else if (is_session("Enlightenment", "E17")) {
+    info.system.wm = conky::info::window_manager::enlightenment;
+  } else {
+  unknown_session:
+    info.system.wm = conky::info::window_manager::unknown;
+    NORM_ERR("unknown %s session running: %s", session_ty, info.system.wm_name);
+    return;
+  }
+#endif
+
+  if (info.system.wm_name != nullptr) {
+    NORM_ERR("'%s' %s session running", info.system.wm_name, session_ty);
+  } else {
+    NORM_ERR("unknown %s session running", session_ty);
   }
 }
 
@@ -1738,7 +1838,7 @@ void main_loop() {
   sigaddset(&newmask, SIGUSR1);
 #endif
 
-  log_system_details();
+  get_system_details();
 
   last_update_time = 0.0;
   next_update_time = get_time() - fmod(get_time(), active_update_interval());

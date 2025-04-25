@@ -30,6 +30,8 @@
 #ifndef _conky_h_
 #define _conky_h_
 
+#include <cstddef>
+#include <iterator>
 #define __STDC_FORMAT_MACROS
 
 #include "config.h"
@@ -157,6 +159,52 @@ char **get_templates(void);
  * needed by conky.c, linux.c and freebsd.c */
 enum { BATTERY_STATUS, BATTERY_TIME };
 
+namespace conky::info {
+
+// Don't guard enum values with #ifdef *_BUILD features; it will only make code
+// harder to maintain - size_t won't change in size.
+
+enum class display_session : std::size_t { unknown, x11, wayland };
+enum class window_manager : std::size_t {
+  unknown,
+
+  // X11
+  awesome,
+  bspwm,
+  compiz,
+  dde,  // Deepin
+  dwm,
+  enlightenment,
+  fluxbox,
+  herbstluftwm,
+  i3,
+  kwin,
+  marco,
+  metacity,
+  mutter,
+  openbox,
+  qtile,
+  xfwm,
+  windowmaker,
+
+  // Wayland (only)
+  hyprland,
+  river,
+  sway,
+  wayfire,
+
+  // Remember to update get_system_details when adding new ones!
+};
+
+struct system {
+  display_session session;
+
+  window_manager wm;
+  const char *wm_name;
+};
+
+}  // namespace conky::info
+
 struct information {
   unsigned int mask;
 
@@ -229,6 +277,11 @@ struct information {
   csr_config_t csr_config;
   csr_config_flags_t csr_config_flags;
 #endif /* defined(__APPLE__) && defined(__MACH__) */
+
+  /**
+   * @brief General information about the system currently running conky.
+   */
+  conky::info::system system;
 };
 
 class music_player_interval_setting

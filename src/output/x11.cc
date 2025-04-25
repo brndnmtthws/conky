@@ -1119,7 +1119,8 @@ void print_desktop_name(struct text_object *obj, char *p,
 }
 
 #ifdef OWN_WINDOW
-enum class x11_strut : size_t {
+namespace x11_strut {
+enum value : size_t {
   LEFT,
   RIGHT,
   TOP,
@@ -1132,66 +1133,156 @@ enum class x11_strut : size_t {
   TOP_END_X,
   BOTTOM_START_X,
   BOTTOM_END_X,
+  COUNT,
 };
-const size_t STRUT_COUNT = static_cast<size_t>(x11_strut::BOTTOM_END_X) + 1;
-constexpr size_t operator*(x11_strut index) {
-  return static_cast<size_t>(index);
 }
 
-/* reserve window manager space */
 void set_struts(alignment align) {
   // Middle and none align don't have least significant bit set.
   // Ensures either vertical or horizontal axis are start/end
   if ((*align & 0b0101) == 0) return;
 
-  Atom strut = ATOM(_NET_WM_STRUT);
-  if (strut != None) {
-    long sizes[STRUT_COUNT] = {0};
+  // Before adding new sessions to the unsupported list, please check whether
+  // it's at all possible to support them by re-arranging values provided in
+  // this function
+  /* clang-format off */
+  const std::array<conky::info::window_manager, 1> UNSUPPORTED = {
+    conky::info::window_manager::enlightenment  // has its own gadgets system; requires a custom output
+  };
+  /* clang-format on */
+  if (std::find(UNSUPPORTED.begin(), UNSUPPORTED.end(), info.system.wm)) {
+    // feel free to add any special support
+    NORM_ERR(
+        "WM/DE you're using (%s) doesn't support WM_STRUT hints (well); "
+        "reserved area functionality might not work correctly",
+        info.system.wm_name);
+  }
 
-    int display_width = workarea.width();
-    int display_height = workarea.height();
+  Atom atom = ATOM(_NET_WM_STRUT);
+  if (atom == None) return;
 
+  long sizes[x11_strut::COUNT];
+  std::memset(&sizes, 0, sizeof(long) * x11_strut::COUNT);
+
+  int display_width = DisplayWidth(display, screen);
+  int display_height = DisplayHeight(display, screen);
+
+  bool larger_height = display_height > display_width;
+
+  if (ENABLE_RUNTIME_TWEAKS &&
+      info.system.wm == conky::info::window_manager::openbox &&
+      !larger_height) {
+    // Openbox doesn't support WM_STRUT_PARTIAL (well). So left & right
+    // placement are favored if horizontal workarea space is larger than
+    // vertical
     switch (align) {
       case alignment::TOP_LEFT:
-      case alignment::TOP_RIGHT:
-      case alignment::TOP_MIDDLE:
-        sizes[*x11_strut::TOP] = std::clamp(window.geometry.end_y(), 0, display_height);
-        sizes[*x11_strut::TOP_START_X] = std::clamp(window.geometry.x(), 0, display_width);
-        sizes[*x11_strut::TOP_END_X] = std::clamp(window.geometry.end_x(), 0, display_width);
-        break;
       case alignment::BOTTOM_LEFT:
-      case alignment::BOTTOM_RIGHT:
-      case alignment::BOTTOM_MIDDLE:
-        sizes[*x11_strut::BOTTOM] = display_height - std::clamp(window.geometry.y(), 0, display_height);
-        sizes[*x11_strut::BOTTOM_START_X] = std::clamp(window.geometry.x(), 0, display_width);
-        sizes[*x11_strut::BOTTOM_END_X] = std::clamp(window.geometry.end_x(), 0, display_width);
-        break;
       case alignment::MIDDLE_LEFT:
-        sizes[*x11_strut::LEFT] = std::clamp(window.geometry.end_x(), 0, display_width);
-        sizes[*x11_strut::LEFT_START_Y] = std::clamp(window.geometry.y(), 0, display_height);
-        sizes[*x11_strut::LEFT_END_Y] = std::clamp(window.geometry.end_y(), 0, display_height);
+        sizes[x11_strut::LEFT] =
+            std::clamp(window.geometry.end_x(), 0, display_width);
+        sizes[x11_strut::LEFT_START_Y] =
+            std::clamp(window.geometry.y(), 0, display_height);
+        sizes[x11_strut::LEFT_END_Y] =
+            std::clamp(window.geometry.end_y(), 0, display_height);
         break;
+
+      case alignment::TOP_RIGHT:
+      case alignment::BOTTOM_RIGHT:
       case alignment::MIDDLE_RIGHT:
-        sizes[*x11_strut::RIGHT] = display_width - std::clamp(window.geometry.x(), 0, display_width);
-        sizes[*x11_strut::RIGHT_START_Y] = std::clamp(window.geometry.y(), 0, display_height);
-        sizes[*x11_strut::RIGHT_END_Y] = std::clamp(window.geometry.end_y(), 0, display_height);
+        sizes[x11_strut::RIGHT] =
+            display_width - std::clamp(window.geometry.x(), 0, display_width);
+        sizes[x11_strut::RIGHT_START_Y] =
+            std::clamp(window.geometry.y(), 0, display_height);
+        sizes[x11_strut::RIGHT_END_Y] =
+            std::clamp(window.geometry.end_y(), 0, display_height);
+        break;
+      case alignment::TOP_MIDDLE:
+        sizes[x11_strut::TOP] =
+            std::clamp(window.geometry.end_y(), 0, display_height);
+        sizes[x11_strut::TOP_START_X] =
+            std::clamp(window.geometry.x(), 0, display_width);
+        sizes[x11_strut::TOP_END_X] =
+            std::clamp(window.geometry.end_x(), 0, display_width);
+        break;
+      case alignment::BOTTOM_MIDDLE:
+        sizes[x11_strut::BOTTOM] =
+            display_height - std::clamp(window.geometry.y(), 0, display_height);
+        sizes[x11_strut::BOTTOM_START_X] =
+            std::clamp(window.geometry.x(), 0, display_width);
+        sizes[x11_strut::BOTTOM_END_X] =
+            std::clamp(window.geometry.end_x(), 0, display_width);
         break;
       default:
         // can't reserve space in middle of the screen
         break;
     }
-
-    XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
-                    PropModeReplace, reinterpret_cast<unsigned char *>(&sizes),
-                    4);
-
-    strut = ATOM(_NET_WM_STRUT_PARTIAL);
-    if (strut != None) {
-      XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
-                      PropModeReplace,
-                      reinterpret_cast<unsigned char *>(&sizes), 12);
+  } else {
+    switch (align) {
+      case alignment::TOP_LEFT:
+      case alignment::TOP_RIGHT:
+      case alignment::TOP_MIDDLE:
+        sizes[x11_strut::TOP] =
+            std::clamp(window.geometry.end_y(), 0, display_height);
+        sizes[x11_strut::TOP_START_X] =
+            std::clamp(window.geometry.x(), 0, display_width);
+        sizes[x11_strut::TOP_END_X] =
+            std::clamp(window.geometry.end_x(), 0, display_width);
+        break;
+      case alignment::BOTTOM_LEFT:
+      case alignment::BOTTOM_RIGHT:
+      case alignment::BOTTOM_MIDDLE:
+        sizes[x11_strut::BOTTOM] =
+            display_height - std::clamp(window.geometry.y(), 0, display_height);
+        sizes[x11_strut::BOTTOM_START_X] =
+            std::clamp(window.geometry.x(), 0, display_width);
+        sizes[x11_strut::BOTTOM_END_X] =
+            std::clamp(window.geometry.end_x(), 0, display_width);
+        break;
+      case alignment::MIDDLE_LEFT:
+        sizes[x11_strut::LEFT] =
+            std::clamp(window.geometry.end_x(), 0, display_width);
+        sizes[x11_strut::LEFT_START_Y] =
+            std::clamp(window.geometry.y(), 0, display_height);
+        sizes[x11_strut::LEFT_END_Y] =
+            std::clamp(window.geometry.end_y(), 0, display_height);
+        break;
+      case alignment::MIDDLE_RIGHT:
+        sizes[x11_strut::RIGHT] =
+            display_width - std::clamp(window.geometry.x(), 0, display_width);
+        sizes[x11_strut::RIGHT_START_Y] =
+            std::clamp(window.geometry.y(), 0, display_height);
+        sizes[x11_strut::RIGHT_END_Y] =
+            std::clamp(window.geometry.end_y(), 0, display_height);
+        break;
+      default:
+        // can't reserve space in middle of the screen
+        break;
     }
   }
+
+  NORM_ERR(
+      "Reserved space: left=%d, right=%d, top=%d, "
+      "bottom=%d",
+      sizes[0], sizes[1], sizes[2], sizes[3]);
+
+  XChangeProperty(display, window.window, atom, XA_CARDINAL, 32,
+                  PropModeReplace, reinterpret_cast<unsigned char *>(&sizes),
+                  4);
+
+  atom = ATOM(_NET_WM_STRUT_PARTIAL);
+  if (atom == None) return;
+
+  NORM_ERR(
+      "Reserved space edges: left_start_y=%d, left_end_y=%d, "
+      "right_start_y=%d, right_end_y=%d, top_start_x=%d, "
+      "top_end_x=%d, bottom_start_x=%d, bottom_end_x=%d",
+      sizes[4], sizes[5], sizes[6], sizes[7], sizes[8], sizes[9], sizes[10],
+      sizes[11]);
+
+  XChangeProperty(display, window.window, atom, XA_CARDINAL, 32,
+                  PropModeReplace, reinterpret_cast<unsigned char *>(&sizes),
+                  12);
 }
 #endif /* OWN_WINDOW */
 
