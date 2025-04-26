@@ -1804,8 +1804,12 @@ void get_system_details() {
   } else {
   unknown_session:
     info.system.wm = conky::info::window_manager::unknown;
-    NORM_ERR("unknown %s session running: %s", session_ty, info.system.wm_name);
-    return;
+
+    // probably a misconfigured system... let's attempt a few more things
+    if (getenv("CINNAMON_VERSION") != nullptr) {
+      info.system.wm_name = "Cinnamon";
+      info.system.wm = conky::info::window_manager::mutter;
+    }
   }
 #endif
 
