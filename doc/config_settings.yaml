@@ -477,7 +477,8 @@ values:
         conky when they're clicked on.
       - `dock` windows are placed on screen edges. They're the same as `desktop`
         in most respects, but render on top of `desktop` windows and below
-        `normal` ones. Docks don't reserve screen space.
+        `normal` ones. Conky doesn't define struts for this window type, but
+        some WMs might still implicitly avoid placing windows on top of it.
       - `panel` windows are similar to `dock` windows, but they also reserve
         space _along a workarea edge_ (like taskbars), preventing maximized
         windows from overlapping them. The edge is chosen based on final conky
