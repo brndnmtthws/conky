@@ -372,6 +372,20 @@ int spaced_print(char *, int, const char *, int, ...)
     __attribute__((format(printf, 3, 5)));
 extern int inotify_fd;
 
+template <
+    typename Iterable = std::initializer_list<conky::info::window_manager>>
+inline bool wm_is(const Iterable &values) {
+  // if constexpr (!ENABLE_RUNTIME_TWEAKS) { return false; }
+  // can't assume unknown isn't in the list...
+  for (const auto &wm : values) {
+    if (info.system.wm == wm) return true;
+  }
+  return false;
+}
+inline bool wm_is(conky::info::window_manager single) {
+  return info.system.wm == single;
+}
+
 /* defined in conky.c
  * evaluates 'text' and places the result in 'p' of max length 'p_max_size'
  */

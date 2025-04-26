@@ -475,13 +475,16 @@ values:
         for background, icons and desktop menu, in those cases it might be
         better to use `normal` or one of the below options, as those will cover
         conky when they're clicked on.
-      - `dock` windows reserve space on the desktop, i.e. WMs will try their
-        best to not place windows on top of them. They're the same as `desktop`
-        in other respects, but render on top of `desktop` windows.
+      - `dock` windows are placed on screen edges. They're the same as `desktop`
+        in most respects, but render on top of `desktop` windows and below
+        `normal` ones. Docks don't reserve screen space.
       - `panel` windows are similar to `dock` windows, but they also reserve
-        space _along a desktop edge_ (like taskbars), preventing maximized
-        windows from overlapping them. The edge is chosen based on the
-        `alignment` setting.
+        space _along a workarea edge_ (like taskbars), preventing maximized
+        windows from overlapping them. The edge is chosen based on final conky
+        position and size, and workarea dimensions, to ensure normal windows
+        have most free space available. For WMs that "cut out" entirely covered
+        screens from reserved area, the edge will be chosen based on `alignment`
+        setting.
       - `utility` windows are persistent utility windows (e.g. a palette or
         toolbox). They appear on top of other windows (in the same group), but
         otherwise behave much like `normal` windows.
