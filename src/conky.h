@@ -31,7 +31,6 @@
 #define _conky_h_
 
 #include <cstddef>
-#include <iterator>
 #define __STDC_FORMAT_MACROS
 
 #include "config.h"
