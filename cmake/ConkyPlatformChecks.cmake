@@ -502,8 +502,11 @@ if(BUILD_WAYLAND)
 
     # find 'wayland-scanner' executable
     pkg_get_variable(Wayland_SCANNER wayland-scanner wayland_scanner)
+    if(NOT Wayland_SCANNER)
+      message(FATAL_ERROR "Unable to find wayland-scanner")
+    endif(NOT Wayland_SCANNER)
   else(Wayland_FOUND AND wayland-protocols_FOUND)
-    message(FATAL_ERROR "Unable to find wayland-scanner and xdg-shell protocol")
+    message(FATAL_ERROR "Unable to find wayland or wayland protocols")
   endif(Wayland_FOUND AND wayland-protocols_FOUND)
 
   if(OS_DARWIN OR OS_DRAGONFLY OR OS_FREEBSD OR OS_NETBSD OR OS_OPENBSD)
