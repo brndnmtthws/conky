@@ -743,11 +743,7 @@ int if_existing_iftest(struct text_object *obj) {
 }
 
 int if_running_iftest(struct text_object *obj) {
-#ifdef __linux__
-  if (!get_process_by_name(obj->data.s)) {
-#else
-  if (((obj->data.s) != nullptr) && (system(obj->data.s) != 0)) {
-#endif
+  if (!is_process_running(obj->data.s)) {
     return 0;
   }
   return 1;

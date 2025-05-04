@@ -1810,6 +1810,12 @@ void get_system_details() {
       info.system.wm_name = "Cinnamon";
       info.system.wm = conky::info::window_manager::mutter;
     }
+
+    // TODO: Doesn't work yet. Process information is not yet populated.
+    if (is_process_running("openbox")) {
+      info.system.wm_name = "Openbox";
+      info.system.wm = conky::info::window_manager::openbox;
+    }
   }
 #endif
 

@@ -41,8 +41,8 @@
 #include "../common.h"
 #include "../conky.h"
 #include "../geometry.h"
-#include "gui.h"
 #include "../logging.h"
+#include "gui.h"
 
 #ifdef BUILD_XINPUT
 #include "../mouse-events.h"
@@ -1135,13 +1135,15 @@ enum value : size_t {
   BOTTOM_END_X,
   COUNT,
 };
+
+inline std::array<long, x11_strut::COUNT> array() {
+  std::array<long, COUNT> sizes;
+  std::memset(sizes.data(), 0, sizeof(long) * COUNT);
+  return sizes;
 }
+}  // namespace x11_strut
 
-void set_struts(alignment align) {
-  // Middle and none align don't have least significant bit set.
-  // Ensures either vertical or horizontal axis are start/end
-  if ((*align & 0b0101) == 0) return;
-
+void set_struts() {
   /* clang-format on */
   static bool warn_once = true;
   if (warn_once) {
@@ -1151,7 +1153,7 @@ void set_struts(alignment align) {
     /* clang-format off */
     const bool unsupported = wm_is({
       /* clang-format off */
-      conky::info::window_manager::enlightenment  // has its own gadgets system; requires a custom output
+      conky::info::window_manager::enlightenment  // has its own gadgets system; requires a custom output and additional libraries
         /* clang-format on */
     });
 
@@ -1192,8 +1194,7 @@ void set_struts(alignment align) {
   Atom atom = ATOM(_NET_WM_STRUT);
   if (atom == None) return;
 
-  long sizes[x11_strut::COUNT];
-  std::memset(&sizes, 0, sizeof(long) * x11_strut::COUNT);
+  auto sizes = x11_strut::array();
 
   const int display_width = DisplayWidth(display, screen);
   const int display_height = DisplayHeight(display, screen);
@@ -1210,6 +1211,11 @@ void set_struts(alignment align) {
       });
 
   if (supports_cutout) {
+    alignment align = text_alignment.get(*state);
+    // Middle and none align don't have least significant bit set.
+    // Ensures either vertical or horizontal axis are start/end
+    if ((*align & 0b0101) == 0) return;
+
     // Compute larger dimension only once; so we don't jump between axes for
     // corner alignments.
     // If window is wider than it's tall, top/bottom placement is preferred.
