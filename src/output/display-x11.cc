@@ -333,9 +333,10 @@ bool display_output_x11::main_loop_wait(double t) {
       }
 
       /* update struts */
-      if ((changed != 0) && own_window_type.get(*state) == window_type::PANEL) {
-        NORM_ERR("defining struts");
-        set_struts(text_alignment.get(*state));
+      if (changed != 0) {
+        auto window_type = own_window_type.get(*state);
+        // Openbox will implicitly set struts even for window_type::DOCK
+        if (window_type == window_type::PANEL) { set_struts(); }
       }
     }
 #endif

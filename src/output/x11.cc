@@ -41,8 +41,8 @@
 #include "../common.h"
 #include "../conky.h"
 #include "../geometry.h"
-#include "gui.h"
 #include "../logging.h"
+#include "gui.h"
 
 #ifdef BUILD_XINPUT
 #include "../mouse-events.h"
@@ -1119,7 +1119,8 @@ void print_desktop_name(struct text_object *obj, char *p,
 }
 
 #ifdef OWN_WINDOW
-enum class x11_strut : size_t {
+namespace x11_strut {
+enum value : size_t {
   LEFT,
   RIGHT,
   TOP,
@@ -1132,66 +1133,255 @@ enum class x11_strut : size_t {
   TOP_END_X,
   BOTTOM_START_X,
   BOTTOM_END_X,
+  COUNT,
 };
-const size_t STRUT_COUNT = static_cast<size_t>(x11_strut::BOTTOM_END_X) + 1;
-constexpr size_t operator*(x11_strut index) {
-  return static_cast<size_t>(index);
+
+inline std::array<long, x11_strut::COUNT> array() {
+  std::array<long, COUNT> sizes;
+  std::memset(sizes.data(), 0, sizeof(long) * COUNT);
+  return sizes;
 }
+}  // namespace x11_strut
 
-/* reserve window manager space */
-void set_struts(alignment align) {
-  // Middle and none align don't have least significant bit set.
-  // Ensures either vertical or horizontal axis are start/end
-  if ((*align & 0b0101) == 0) return;
+void set_struts() {
+  /* clang-format on */
+  static bool warn_once = true;
+  if (warn_once) {
+    // Before adding new sessions to the unsupported list, please check whether
+    // it's at all possible to support them by re-arranging values provided in
+    // this function
+    /* clang-format off */
+    const bool unsupported = wm_is({
+      /* clang-format off */
+      conky::info::window_manager::enlightenment  // has its own gadgets system; requires a custom output and additional libraries
+        /* clang-format on */
+    });
 
-  Atom strut = ATOM(_NET_WM_STRUT);
-  if (strut != None) {
-    long sizes[STRUT_COUNT] = {0};
-
-    int display_width = workarea.width();
-    int display_height = workarea.height();
-
-    switch (align) {
-      case alignment::TOP_LEFT:
-      case alignment::TOP_RIGHT:
-      case alignment::TOP_MIDDLE:
-        sizes[*x11_strut::TOP] = std::clamp(window.geometry.end_y(), 0, display_height);
-        sizes[*x11_strut::TOP_START_X] = std::clamp(window.geometry.x(), 0, display_width);
-        sizes[*x11_strut::TOP_END_X] = std::clamp(window.geometry.end_x(), 0, display_width);
-        break;
-      case alignment::BOTTOM_LEFT:
-      case alignment::BOTTOM_RIGHT:
-      case alignment::BOTTOM_MIDDLE:
-        sizes[*x11_strut::BOTTOM] = display_height - std::clamp(window.geometry.y(), 0, display_height);
-        sizes[*x11_strut::BOTTOM_START_X] = std::clamp(window.geometry.x(), 0, display_width);
-        sizes[*x11_strut::BOTTOM_END_X] = std::clamp(window.geometry.end_x(), 0, display_width);
-        break;
-      case alignment::MIDDLE_LEFT:
-        sizes[*x11_strut::LEFT] = std::clamp(window.geometry.end_x(), 0, display_width);
-        sizes[*x11_strut::LEFT_START_Y] = std::clamp(window.geometry.y(), 0, display_height);
-        sizes[*x11_strut::LEFT_END_Y] = std::clamp(window.geometry.end_y(), 0, display_height);
-        break;
-      case alignment::MIDDLE_RIGHT:
-        sizes[*x11_strut::RIGHT] = display_width - std::clamp(window.geometry.x(), 0, display_width);
-        sizes[*x11_strut::RIGHT_START_Y] = std::clamp(window.geometry.y(), 0, display_height);
-        sizes[*x11_strut::RIGHT_END_Y] = std::clamp(window.geometry.end_y(), 0, display_height);
-        break;
-      default:
-        // can't reserve space in middle of the screen
-        break;
+    if (unsupported) {
+      // feel free to add any special support
+      NORM_ERR(
+          "WM/DE you're using (%s) doesn't support WM_STRUT hints (well); "
+          "reserved area functionality might not work correctly",
+          info.system.wm_name);
     }
+    warn_once = false;
+  }
 
-    XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
-                    PropModeReplace, reinterpret_cast<unsigned char *>(&sizes),
-                    4);
+  // Most WMs simply subtract the primary strut side from workarea where windows
+  // will be placed. e.g. TOP_LEFT will cause all windows to be shifted down
+  // even if conky is a thin and tall window. It's our responsibility to set the
+  // primary strut side to the value that's going to eat up least available
+  // space.
+  //
+  // compiz:
+  // https://github.com/compiz-reloaded/compiz/blob/155c201ec62c289c5a44b6dd23eddec3e3c20e26/src/window.c#L1843
+  // Fluxbox:
+  // https://github.com/fluxbox/fluxbox/blob/88bbf811dade299ca2dac66cb81e4b3d96cfe741/src/Ewmh.cc#L1397
+  // i3:
+  // https://github.com/i3/i3/blob/cfa4cf16bea809c7c715a86c428757e577c85254/src/manage.c#L260
+  // Mutter:
+  // https://gitlab.gnome.org/GNOME/mutter/-/blob/ea8b65d0c92ebf84060ea0b5c61d02fa9004e1e9/src/core/boxes.c#L564
+  // Openbox:
+  // https://github.com/Mikachu/openbox/blob/dac6e2f6f8f2e0c5586a9e19f18508a03db639cb/openbox/screen.c#L1428
+  // xfwm:
+  // https://github.com/xfce-mirror/xfwm4/blob/37636f55bcbca064e62489d7fe183ef7b9371b4c/src/placement.c#L220
+  //
+  // The EWMH spec doesn't handle placement of panels/docks in middle of the
+  // screen (e.g. left side of the right monitor with Xinerama). Submissions are
+  // closed and it won't be fixed.
+  // See: https://gitlab.freedesktop.org/xdg/xdg-specs/-/merge_requests/22
 
-    strut = ATOM(_NET_WM_STRUT_PARTIAL);
-    if (strut != None) {
-      XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
-                      PropModeReplace,
-                      reinterpret_cast<unsigned char *>(&sizes), 12);
+  Atom atom = ATOM(_NET_WM_STRUT);
+  if (atom == None) return;
+
+  auto sizes = x11_strut::array();
+
+  const int display_width = DisplayWidth(display, screen);
+  const int display_height = DisplayHeight(display, screen);
+
+  bool supports_cutout =
+      ENABLE_RUNTIME_TWEAKS &&
+      wm_is({
+          /* clang-format off */
+      conky::info::window_manager::compiz,
+      conky::info::window_manager::fluxbox,
+      conky::info::window_manager::i3,  // only uses WM_STRUT_PARTIAL to determine top/bottom dock placement
+      conky::info::window_manager::kwin,
+          /* clang-format on */
+      });
+
+  if (supports_cutout) {
+    alignment align = text_alignment.get(*state);
+    // Middle and none align don't have least significant bit set.
+    // Ensures either vertical or horizontal axis are start/end
+    if ((*align & 0b0101) == 0) return;
+
+    // Compute larger dimension only once; so we don't jump between axes for
+    // corner alignments.
+    // If window is wider than it's tall, top/bottom placement is preferred.
+    // It's also preferred for WMs that completely ignore horizontal docks.
+    static bool is_wide_window =
+        window.geometry.width() > window.geometry.height() ||
+        wm_is(conky::info::window_manager::i3);
+    if (is_wide_window) {
+      switch (align) {
+        case alignment::TOP_LEFT:
+        case alignment::TOP_RIGHT:
+        case alignment::TOP_MIDDLE:
+          sizes[x11_strut::TOP] =
+              std::clamp(window.geometry.end_y(), 0, display_height);
+          sizes[x11_strut::TOP_START_X] =
+              std::clamp(window.geometry.x(), 0, display_width);
+          sizes[x11_strut::TOP_END_X] =
+              std::clamp(window.geometry.end_x(), 0, display_width);
+          break;
+        case alignment::BOTTOM_LEFT:
+        case alignment::BOTTOM_RIGHT:
+        case alignment::BOTTOM_MIDDLE:
+          sizes[x11_strut::BOTTOM] =
+              display_height -
+              std::clamp(window.geometry.y(), 0, display_height);
+          sizes[x11_strut::BOTTOM_START_X] =
+              std::clamp(window.geometry.x(), 0, display_width);
+          sizes[x11_strut::BOTTOM_END_X] =
+              std::clamp(window.geometry.end_x(), 0, display_width);
+          break;
+        case alignment::MIDDLE_LEFT:
+          sizes[x11_strut::LEFT] =
+              std::clamp(window.geometry.end_x(), 0, display_width);
+          sizes[x11_strut::LEFT_START_Y] =
+              std::clamp(window.geometry.y(), 0, display_height);
+          sizes[x11_strut::LEFT_END_Y] =
+              std::clamp(window.geometry.end_y(), 0, display_height);
+          break;
+        case alignment::MIDDLE_RIGHT:
+          sizes[x11_strut::RIGHT] =
+              display_width - std::clamp(window.geometry.x(), 0, display_width);
+          sizes[x11_strut::RIGHT_START_Y] =
+              std::clamp(window.geometry.y(), 0, display_height);
+          sizes[x11_strut::RIGHT_END_Y] =
+              std::clamp(window.geometry.end_y(), 0, display_height);
+          break;
+        default:
+          // can't reserve space in middle of the screen
+          break;
+      }
+    } else {
+      // if window is thin, prefer left/right placement
+      switch (align) {
+        case alignment::TOP_LEFT:
+        case alignment::MIDDLE_LEFT:
+        case alignment::BOTTOM_LEFT:
+          sizes[x11_strut::LEFT] =
+              std::clamp(window.geometry.end_x(), 0, display_width);
+          sizes[x11_strut::LEFT_START_Y] =
+              std::clamp(window.geometry.y(), 0, display_height);
+          sizes[x11_strut::LEFT_END_Y] =
+              std::clamp(window.geometry.end_y(), 0, display_height);
+          break;
+        case alignment::TOP_RIGHT:
+        case alignment::MIDDLE_RIGHT:
+        case alignment::BOTTOM_RIGHT:
+          sizes[x11_strut::RIGHT] =
+              display_width - std::clamp(window.geometry.x(), 0, display_width);
+          sizes[x11_strut::RIGHT_START_Y] =
+              std::clamp(window.geometry.y(), 0, display_height);
+          sizes[x11_strut::RIGHT_END_Y] =
+              std::clamp(window.geometry.end_y(), 0, display_height);
+          break;
+        case alignment::TOP_MIDDLE:
+          sizes[x11_strut::TOP] =
+              std::clamp(window.geometry.end_y(), 0, display_height);
+          sizes[x11_strut::TOP_START_X] =
+              std::clamp(window.geometry.x(), 0, display_width);
+          sizes[x11_strut::TOP_END_X] =
+              std::clamp(window.geometry.end_x(), 0, display_width);
+          break;
+        case alignment::BOTTOM_MIDDLE:
+          sizes[x11_strut::BOTTOM] =
+              display_height -
+              std::clamp(window.geometry.y(), 0, display_height);
+          sizes[x11_strut::BOTTOM_START_X] =
+              std::clamp(window.geometry.x(), 0, display_width);
+          sizes[x11_strut::BOTTOM_END_X] =
+              std::clamp(window.geometry.end_x(), 0, display_width);
+          break;
+        default:
+          // can't reserve space in middle of the screen
+          break;
+      }
+    }
+  } else {
+    // This approach works better for fully spec-compliant WMs
+    if (window.geometry.width() < window.geometry.height()) {
+      const int space_left = window.geometry.end_x();
+      const int space_right =
+          display_width - window.geometry.end_x() + window.geometry.width();
+      if (space_left < space_right) {
+        sizes[x11_strut::LEFT] =
+            std::clamp(window.geometry.end_x(), 0, display_width);
+        sizes[x11_strut::LEFT_START_Y] =
+            std::clamp(window.geometry.y(), 0, display_height);
+        sizes[x11_strut::LEFT_END_Y] =
+            std::clamp(window.geometry.end_y(), 0, display_height);
+      } else {
+        // we subtract x from display_width in case conky isn't flush with the
+        // right screen side; i.e. there's a gap between conky and the right
+        // side of the screen
+        sizes[x11_strut::RIGHT] =
+            display_width - std::clamp(window.geometry.x(), 0, display_width);
+        sizes[x11_strut::RIGHT_START_Y] =
+            std::clamp(window.geometry.y(), 0, display_height);
+        sizes[x11_strut::RIGHT_END_Y] =
+            std::clamp(window.geometry.end_y(), 0, display_height);
+      }
+    } else {
+      const int space_top = window.geometry.end_y();
+      const int space_bottom =
+          display_height - window.geometry.end_y() + window.geometry.height();
+      if (space_top < space_bottom) {
+        sizes[x11_strut::TOP] =
+            std::clamp(window.geometry.end_y(), 0, display_height);
+        sizes[x11_strut::TOP_START_X] =
+            std::clamp(window.geometry.x(), 0, display_width);
+        sizes[x11_strut::TOP_END_X] =
+            std::clamp(window.geometry.end_x(), 0, display_width);
+      } else {
+        // we subtract y from display_height in case conky isn't flush with the
+        // bottom screen side; i.e. there's a gap between conky and the bottom
+        // of the screen
+        sizes[x11_strut::BOTTOM] =
+            display_height - std::clamp(window.geometry.y(), 0, display_height);
+        sizes[x11_strut::BOTTOM_START_X] =
+            std::clamp(window.geometry.x(), 0, display_width);
+        sizes[x11_strut::BOTTOM_END_X] =
+            std::clamp(window.geometry.end_x(), 0, display_width);
+      }
     }
   }
+
+  DBGP(
+      "Reserved space: left=%d, right=%d, top=%d, "
+      "bottom=%d",
+      sizes[0], sizes[1], sizes[2], sizes[3]);
+
+  XChangeProperty(display, window.window, atom, XA_CARDINAL, 32,
+                  PropModeReplace, reinterpret_cast<unsigned char *>(&sizes),
+                  4);
+
+  atom = ATOM(_NET_WM_STRUT_PARTIAL);
+  if (atom == None) return;
+
+  DBGP(
+      "Reserved space edges: left_start_y=%d, left_end_y=%d, "
+      "right_start_y=%d, right_end_y=%d, top_start_x=%d, "
+      "top_end_x=%d, bottom_start_x=%d, bottom_end_x=%d",
+      sizes[4], sizes[5], sizes[6], sizes[7], sizes[8], sizes[9], sizes[10],
+      sizes[11]);
+
+  XChangeProperty(display, window.window, atom, XA_CARDINAL, 32,
+                  PropModeReplace, reinterpret_cast<unsigned char *>(&sizes),
+                  12);
 }
 #endif /* OWN_WINDOW */
 

@@ -42,7 +42,11 @@
 
 #include "../conky.h"
 #include "../content/text_object.h"
+
 #define CPU_THRESHHOLD 0 /* threshold for the cpu diff to appear */
+
+#include <string_view>
+
 #include <assert.h>
 #include <ctype.h>
 #include <dirent.h>
@@ -116,8 +120,21 @@ struct sorted_process {
   struct process *proc;
 };
 
-/* lookup a program by it's name */
-struct process *get_process_by_name(const char *);
+/**
+ * @brief Returns process information for specified `name`.
+ * 
+ * @param name full command line or base name of the process.
+ * @return struct process* containing usage details of a process. 
+ */
+struct process *get_process_by_name(std::string_view name);
+/**
+ * @brief Checks if a process is running.
+ *
+ * @param name full command line or base name of the process.
+ * @return `true` if process with given command line or base name is currently
+ *         running, `false` otherwise.
+ */
+bool is_process_running(std::string_view name);
 
 int parse_top_args(const char *s, const char *arg, struct text_object *obj);
 
