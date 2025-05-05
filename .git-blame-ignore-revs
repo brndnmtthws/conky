@@ -11,6 +11,9 @@
 ### Reformatted all code (SVN@1007)
 3d26a4880e92df2c6004d85c1be458e35c6bfc3a
 
+# Spelling fixes
+b62e1158300f0644b304f2f8b7e8105ba09073b3
+
 ### outsource the whole template object machinery
 # Moves template variables code from core.c into template.c
 ff199355f66216600c4bdc6bec4743afe5b61470
