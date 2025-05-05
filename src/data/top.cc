@@ -29,6 +29,7 @@
  */
 
 #include "top.h"
+#include <cstring>
 #include "../logging.h"
 #include "../prioqueue.h"
 
@@ -102,6 +103,14 @@ static void unhash_all_processes() {
 struct process *get_first_process() { return first_process; }
 
 void free_all_processes() {
+  // Before freeing all the things, we need to clear globals pointing 'em.
+  std::memset(info.cpu, 0, sizeof(info.cpu));
+  std::memset(info.memu, 0, sizeof(info.memu));
+  std::memset(info.time, 0, sizeof(info.time));
+#ifdef BUILD_IOSTATS
+  std::memset(info.io, 0, sizeof(info.io));
+#endif
+
   struct process *next = nullptr, *pr = first_process;
 
   while (pr != nullptr) {
