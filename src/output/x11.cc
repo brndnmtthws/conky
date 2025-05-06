@@ -638,13 +638,18 @@ void x11_init_window(lua::state &l, bool own) {
         }
       }
 #endif /* BUILD_XSHAPE */
+      wmHint.initial_state = NormalState;
       if (own_window_type.get(l) == window_type::DOCK ||
           own_window_type.get(l) == window_type::PANEL) {
-        // Docks and panels MUST have WithdrawnState initially
+        // Docks and panels MUST have WithdrawnState initially for Fluxbox to
+        // move the window into the slit area.
         // See: https://github.com/brndnmtthws/conky/issues/2046
-        wmHint.initial_state = WithdrawnState;
-      } else {
-        wmHint.initial_state = NormalState;
+        // But most other WMs will explicitly ignore windows in WithdrawnState
+        // See: https://github.com/brndnmtthws/conky/issues/2112
+        // So we must resort to checking for WM at runtime
+        if (info.system.wm == conky::info::window_manager::fluxbox) {
+          wmHint.initial_state = WithdrawnState;
+        }
       }
 
       XmbSetWMProperties(display, window.window, nullptr, nullptr, argv_copy,
