@@ -1771,6 +1771,7 @@ void get_system_details() {
     // Openbox doesn't set any session name env variables; must be set manually
     info.system.wm = conky::info::window_manager::openbox;
   } else if (!is_wayland() && is_session("Fluxbox")) {
+    // Fluxbox doesn't set any session name env variables; must be set manually 
     info.system.wm = conky::info::window_manager::fluxbox;
   } else if (!is_wayland() && (is_session("i3", "i3wm"))) {
     info.system.wm = conky::info::window_manager::i3;
