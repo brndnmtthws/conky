@@ -1,6 +1,6 @@
 #include "netlink-conky.h"
 
-#include "logging.h"
+#include "../../logging.h"
 
 #include <array>
 #include <initializer_list>

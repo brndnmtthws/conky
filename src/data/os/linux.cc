@@ -90,7 +90,7 @@
 #endif
 
 #ifdef BUILD_WLAN
-#include "netlink-conky.h"
+#include "../network/netlink-conky.h"
 #endif
 
 struct sysfs {
