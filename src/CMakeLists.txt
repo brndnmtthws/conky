@@ -241,7 +241,7 @@ if(BUILD_MYSQL)
 endif(BUILD_MYSQL)
 
 if(BUILD_WLAN)
-  set(netlink-conky netlink-conky.cc netlink-conky.h)
+  set(netlink-conky data/network/netlink-conky.cc data/network/netlink-conky.h)
   set(optional_sources ${optional_sources} ${netlink-conky})
 endif(BUILD_WLAN)
 
