@@ -43,6 +43,7 @@
 #include <wlr-layer-shell-client-protocol.h>
 #include <xdg-shell-client-protocol.h>
 
+#include <cerrno>
 #include <cstdint>
 #include <iostream>
 #include <sstream>
@@ -333,7 +334,7 @@ static void output_description(void *data, struct wl_output *wl_output,
                                const char *description) {}
 #endif
 
-const struct wl_output_listener output_listener = {
+static const wl_output_listener output_listener = {
     /*.geometry =*/output_geometry,
     /*.mode =*/output_mode,
 #ifdef WL_OUTPUT_DONE_SINCE_VERSION
@@ -379,7 +380,7 @@ void registry_handle_global(void *data, struct wl_registry *registry,
 void registry_handle_global_remove(void *data, struct wl_registry *registry,
                                    uint32_t name) {}
 
-static const struct wl_registry_listener registry_listener = {
+static const wl_registry_listener registry_listener = {
     registry_handle_global, registry_handle_global_remove};
 
 static void layer_surface_configure(void *data,
@@ -392,7 +393,7 @@ static void layer_surface_configure(void *data,
 static void layer_surface_closed(void *data,
                                  struct zwlr_layer_surface_v1 *layer_surface) {}
 
-static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
+static const zwlr_layer_surface_v1_listener layer_surface_listener = {
     /*.configure =*/&layer_surface_configure,
     /*.closed =*/&layer_surface_closed,
 };
@@ -516,6 +517,14 @@ void on_pointer_axis(void *data, struct wl_pointer *pointer, std::uint32_t time,
   llua_mouse_hook(event);
 }
 
+static const wl_pointer_listener pointer_listener = {
+    .enter = on_pointer_enter,
+    .leave = on_pointer_leave,
+    .motion = on_pointer_motion,
+    .button = on_pointer_button,
+    .axis = on_pointer_axis,
+};
+
 static void seat_capability_listener(void *data, wl_seat *seat,
                                      uint32_t capability_int) {
   wl_seat_capability capabilities =
@@ -524,19 +533,17 @@ static void seat_capability_listener(void *data, wl_seat *seat,
     if ((capabilities & WL_SEAT_CAPABILITY_POINTER) > 0) {
       wl_globals.pointer = wl_seat_get_pointer(seat);
 
-      static wl_pointer_listener listener{
-          .enter = on_pointer_enter,
-          .leave = on_pointer_leave,
-          .motion = on_pointer_motion,
-          .button = on_pointer_button,
-          .axis = on_pointer_axis,
-      };
-      wl_pointer_add_listener(wl_globals.pointer, &listener, data);
+      wl_pointer_add_listener(wl_globals.pointer, &pointer_listener, data);
     }
   }
 }
 static void seat_name_listener(void *data, struct wl_seat *wl_seat,
                                const char *name) {}
+
+static const wl_seat_listener seat_listener = {
+    .capabilities = seat_capability_listener,
+    .name = seat_name_listener,
+};
 #endif /* BUILD_MOUSE_EVENTS */
 
 bool display_output_wayland::initialize() {
@@ -575,11 +582,7 @@ bool display_output_wayland::initialize() {
                                      &layer_surface_listener, nullptr);
 
 #ifdef BUILD_MOUSE_EVENTS
-  wl_seat_listener listener{
-      .capabilities = seat_capability_listener,
-      .name = seat_name_listener,
-  };
-  wl_seat_add_listener(wl_globals.seat, &listener, global_window);
+  wl_seat_add_listener(wl_globals.seat, &seat_listener, global_window);
 #endif /* BUILD_MOUSE_EVENTS */
 
   wl_surface_commit(global_window->surface);
@@ -598,41 +601,55 @@ bool display_output_wayland::shutdown() { return false; }
 
 #define ARRAY_LENGTH(x) (sizeof(x) / sizeof(x[0]))
 
-static bool added = false;
-
 bool display_output_wayland::main_loop_wait(double t) {
-  while (wl_display_prepare_read(global_display) != 0)
-    wl_display_dispatch_pending(global_display);
-  wl_display_flush(global_display);
+  errno = 0;
+  while (wl_display_prepare_read(global_display) != 0) {
+    if (wl_display_dispatch_pending(global_display) == -1) {
+      CRIT_ERR("wayland error: %s", strerror(errno));
+    }
+  }
+
+  errno = 0;
+  if (wl_display_flush(global_display) < 0 && errno != EAGAIN) {
+    wl_display_cancel_read(global_display);
+    CRIT_ERR("wayland error: %s", strerror(errno));
+  }
 
   if (t < 0.0) { t = 0.0; }
   int ms = t * 1000;
 
   /* add fd to epoll set the first time around */
-  if (!added) {
+  static bool configured_epoll = false;
+  if (!configured_epoll) {
     ep[0].events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
     ep[0].data.ptr = nullptr;
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, wl_display_get_fd(global_display),
                   &ep[0]) == -1) {
-      perror("conky: epoll_ctl: add");
+      CRIT_ERR("unable to setup epoll for display fd");
       return false;
     }
-    added = true;
+    configured_epoll = true;
   }
 
   /* wait for Wayland event or timeout */
   int ep_count = epoll_wait(epoll_fd, ep, ARRAY_LENGTH(ep), ms);
+
   if (ep_count > 0) {
-    if (ep[0].events & (EPOLLERR | EPOLLHUP)) {
-      NORM_ERR("output closed");
-      exit(1);
-      return false;
-    }
+    if (ep[0].events & (EPOLLERR | EPOLLHUP)) { CRIT_ERR("output closed"); }
   }
 
-  wl_display_read_events(global_display);
+  int read_status = 0;
+  if (ep_count > 0) {
+    read_status = wl_display_read_events(global_display);
+  } else {
+    wl_display_cancel_read(global_display);
+  }
 
-  wl_display_dispatch_pending(global_display);
+  if (read_status == 0) {
+    int num = wl_display_dispatch_pending(global_display);
+    (void)num;
+    DBGP2("dispatched %d Wayland events", num);
+  }
 
   wl_display_flush(global_display);
 
