@@ -1709,7 +1709,9 @@ volatile sig_atomic_t g_sigterm_pending, g_sighup_pending, g_sigusr2_pending;
 
 void get_system_details() {
   char *session_ty = getenv("XDG_SESSION_TYPE");
-  if (std::strcmp(session_ty, "x11") == 0) {
+  if (session_ty == nullptr) {
+    info.system.session = conky::info::display_session::unknown;
+  } else if (std::strcmp(session_ty, "x11") == 0) {
     info.system.session = conky::info::display_session::x11;
   } else if (std::strcmp(session_ty, "wayland") == 0) {
     info.system.session = conky::info::display_session::wayland;
@@ -1804,6 +1806,7 @@ void get_system_details() {
     info.system.wm = conky::info::window_manager::enlightenment;
   } else {
   unknown_session:
+    info.system.wm_name = "unknown";
     info.system.wm = conky::info::window_manager::unknown;
 
     // probably a misconfigured system... let's attempt a few more things
