@@ -267,7 +267,21 @@ inline bool file_exists(const char *path) {
 void llua_load(const char *script) {
   int error;
 
-  std::filesystem::path path = to_real_path(script);
+  std::filesystem::path path;
+  std::filesystem::path script_path(script);
+  
+  if (!script_path.is_absolute()) {
+    auto cfg_path = std::filesystem::path(to_real_path(XDG_CONFIG_FILE));
+    auto cfg_dir  = cfg_path.parent_path();
+
+    // prepend the config directory to the script path
+    auto full = cfg_dir / script_path;
+    path = to_real_path(full.c_str());
+  }
+  else {
+    // Already an absolute path
+    path = to_real_path(script);
+  }
 
   if (!file_exists(path.c_str())) {
     bool found_alternative = false;
