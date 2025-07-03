@@ -39,9 +39,12 @@
 #include <unistd.h>
 #include <cctype>
 #include <cerrno>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
+#include <filesystem>
+#include <string>
 #include <vector>
 
 #include "config.h"
@@ -141,36 +144,12 @@ double get_time() {
   return tv.tv_sec + (tv.tv_nsec * 1e-9);
 }
 
-#if defined(_POSIX_C_SOURCE) && !defined(__OpenBSD__) && !defined(__HAIKU__)
-std::filesystem::path to_real_path(const std::string &source) {
-  wordexp_t p;
-  char **w;
-  int i;
-  std::string checked = std::string(source);
-  std::string::size_type n = 0;
-  while ((n = checked.find(" ", n)) != std::string::npos) {
-    checked.replace(n, 1, "\\ ");
-    n += 2;
-  }
-  const char *csource = source.c_str();
-  if (wordexp(checked.c_str(), &p, 0) != 0) { return std::string(); }
-  w = p.we_wordv;
-  const char *resolved_path = strdup(w[0]);
-  wordfree(&p);
-  return std::filesystem::weakly_canonical(resolved_path);
-}
-#else
-// TODO: Use this implementation once it's finished.
-// `wordexp` calls shell which is inconsistent across different environments.
-std::filesystem::path to_real_path(const std::string &source) {
+std::filesystem::path to_real_path(const std::string &source, bool sensitive) {
   /*
   Wordexp (via default shell) does:
   - [x] tilde substitution `~`
   - [x] variable substitution (via `variable_substitute`)
-  - [ ] command substitution `$(command)`
-    - exec.cc does execution already; missing recursive descent parser for
-      $(...) because they can be nested and mixed with self & other expressions
-      from this list
+  - [x] command substitution `$(command)`
   - [ ] [arithmetic
     expansion](https://www.gnu.org/software/bash/manual/html_node/Arithmetic-Expansion.html)
     `$((10 + 2))`
@@ -179,12 +158,17 @@ std::filesystem::path to_real_path(const std::string &source) {
   - [ ] [field
     splitting](https://www.gnu.org/software/bash/manual/html_node/Word-Splitting.html)
   - [ ] wildcard expansion
-  - [ ] quote removal Extra:
-  - canonicalization added
+  - [-] quote removal (no need)
+
+  Extra:
+  - canonicalization to mimic `realpath`
   */
   try {
-    std::string input = tilde_expand(source);
-    std::string expanded = variable_substitute(input);
+    std::string expanded = tilde_expand(source);
+    expanded = variable_substitute(expanded);
+    expanded = command_substitute(expanded);
+    auto w_expanded = wildcard_expand_path(expanded);
+    if (w_expanded.size() > 0) { expanded = w_expanded.front(); }
     std::filesystem::path absolute = std::filesystem::absolute(expanded);
     return std::filesystem::weakly_canonical(absolute);
   } catch (const std::filesystem::filesystem_error &e) {
@@ -193,7 +177,6 @@ std::filesystem::path to_real_path(const std::string &source) {
     return source;
   }
 }
-#endif
 
 int open_fifo(const char *file, int *reported) {
   int fd = 0;
@@ -330,40 +313,145 @@ std::string variable_substitute(std::string s) {
     if (pos + 1 >= s.size()) { break; }
 
     if (s[pos + 1] == '$') {
+      // handle escaped $$
       s.erase(pos, 1);
       ++pos;
-    } else {
-      std::string var;
-      std::string::size_type l = 0;
+      continue;
+    }
 
-      if (isalpha(static_cast<unsigned char>(s[pos + 1])) != 0) {
-        l = 1;
-        while (pos + l < s.size() &&
-               (isalnum(static_cast<unsigned char>(s[pos + l])) != 0)) {
-          ++l;
-        }
-        var = s.substr(pos + 1, l - 1);
-      } else if (s[pos + 1] == '{') {
-        l = s.find('}', pos);
-        if (l == std::string::npos) { break; }
-        l -= pos - 1;
-        var = s.substr(pos + 2, l - 3);
-      } else {
-        ++pos;
+    std::string var;
+    std::string::size_type l = 0;
+
+    if (isalpha(static_cast<unsigned char>(s[pos + 1])) != 0) {
+      l = 1;
+      while (pos + l < s.size() &&
+             (isalnum(static_cast<unsigned char>(s[pos + l])) != 0)) {
+        ++l;
       }
+      var = s.substr(pos + 1, l - 1);
+    } else if (s[pos + 1] == '{') {
+      l = s.find('}', pos);
+      if (l == std::string::npos) { break; }
+      l -= pos - 1;
+      var = s.substr(pos + 2, l - 3);
+    } else {
+      ++pos;
+    }
 
-      if (l != 0u) {
-        s.erase(pos, l);
-        const char *val = getenv(var.c_str());
-        if (val != nullptr) {
-          s.insert(pos, val);
-          pos += strlen(val);
-        }
+    if (l != 0u) {
+      s.erase(pos, l);
+      const char *val = getenv(var.c_str());
+      if (val != nullptr) {
+        s.insert(pos, val);
+        pos += strlen(val);
       }
     }
   }
 
   return s;
+}
+
+std::string command_substitute(std::string s) {
+  std::string::size_type pos = 0;
+  while ((pos = s.find('$', pos)) != std::string::npos) {
+    if (s.length() - pos - 1 < 2) { break; }
+
+    if (s[pos + 1] == '$') {
+      // handle escaped $$
+      s.erase(pos, 1);
+      ++pos;
+      continue;
+    }
+
+    // must start with "$(", but not with "$(("
+    if (s[pos + 1] != '(' || s[pos + 2] == '(') { continue; }
+
+    auto start = pos + 2;  // exclusive (will end on closing brace)
+    auto end = start;      // exclusive (will end on closing brace)
+    size_t open_braces = 0;
+
+    // handle nested commands and math braces properly
+    while (end < s.size()) {
+      if (s[end] == '$' && (end + 1) < s.size() && s[end + 1] == '$') {
+        end += 2;
+        continue;
+      }
+      if (s[end] == '$' && (end + 1) < s.size() && s[end + 1] == '(') {
+        open_braces++;
+        end += 2;
+        if (end < s.size() && s[end] == '(') {
+          open_braces++;
+          end += 1;
+        }
+        continue;
+      }
+      if (s[end] == ')') {
+        if (open_braces > 0) {
+          open_braces -= 1;
+        } else {
+          break;
+        }
+      }
+      end += 1;
+    }
+    if (end >= s.size()) {
+      // unclosed command expression
+      break;
+    } else {
+      pos = end + 1;
+    }
+
+    auto command = s.substr(start + 2, end - start - 2);
+
+    std::string substitution = "";
+    // TODO: Much like previously used wordexp, this can hang. Ideally,
+    // pid_popen should be used to allow terminating to_real_path after some
+    // time.
+    FILE *pipe = popen(command.c_str(), "r");
+    if (pipe) {
+      char buffer[128];
+      while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+        substitution += buffer;
+      }
+      pclose(pipe);
+    } else {
+      NORM_ERR("unable to pipe command: '%s'", command.c_str());
+    }
+    std::int32_t substitution_delta = substitution.length() - end - start + 1;
+    s.replace(start, end - start + 1, substitution);
+    pos += substitution_delta;
+  }
+  return s;
+}
+
+std::vector<std::filesystem::path> wildcard_expand_path(
+    const std::filesystem::path &path) {
+  std::vector<std::filesystem::path> result;
+
+  struct path_segment_info {
+    bool special;
+    void *segment;
+  };
+
+  std::vector<path_segment_info> current_path;
+  for (auto segment : split(path, std::filesystem::path::preferred_separator)) {
+    bool special_segment = false;
+    for (std::string_view::size_type i = 0; i < segment.length(); i++) {
+      if (segment[i] == '\\') {
+        i++;
+      } else if (segment[i] == '?' || segment[i] == '*') {
+        special_segment = true;
+        break;
+      }
+    }
+
+    if (!current_path.empty()) {
+      current_path.push_back(std::filesystem::path::preferred_separator);
+    }
+    current_path.append(segment);
+  }
+
+  return result;
 }
 
 void format_seconds(char *buf, unsigned int n, long seconds) {
