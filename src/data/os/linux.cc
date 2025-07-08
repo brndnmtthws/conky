@@ -2793,10 +2793,26 @@ void print_distribution(struct text_object *obj, char *p,
   char *buf;
   struct stat sb;
 
+if ((buf = readfile("/etc/os-release", &bytes_read, 1))) {
+    fprintf(stderr, "DEBUG: /etc/os-release loaded: %.*s\n", bytes_read, buf);
+    if (strstr(buf, "ID=\"postmarketos\"")) { 
+    snprintf(p, p_max_size, "%s", "postmarketOS");
+        free(buf);
+        return;
+    }
+    free(buf);
+} else {
+    fprintf(stderr, "DEBUG: /etc/os-release read failed!\n");
+}
+
+
   if (stat("/etc/arch-release", &sb) == 0) {
     snprintf(p, p_max_size, "%s", "Arch Linux");
     return;
   }
+
+
+
   snprintf(p, p_max_size, "Unknown");
   buf = readfile("/proc/version", &bytes_read, 1);
   if (buf) {
