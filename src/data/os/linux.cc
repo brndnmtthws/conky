@@ -65,6 +65,7 @@
 #include <math.h>
 #include <pthread.h>
 #include <atomic>
+#include <fstream>
 #include <mutex>
 
 /* The following ifdefs were adapted from gkrellm */
@@ -2786,56 +2787,53 @@ int update_diskio(void) {
   return 0;
 }
 
-void print_distribution(struct text_object *obj, char *p,
+void print_distribution(struct text_object * /*obj*/, char *p,
                         unsigned int p_max_size) {
-  (void)obj;
-  int i, bytes_read;
-  char *buf;
-  struct stat sb;
+  // 1) Try /etc/os-release
+  std::ifstream os_rel("/etc/os-release");
+  if (os_rel) {
+    std::string line;
+    while (std::getline(os_rel, line)) {
+      if (line.rfind("NAME=", 0) == 0) {
+        std::string name = line.substr(5);
 
-if ((buf = readfile("/etc/os-release", &bytes_read, 1))) {
-    fprintf(stderr, "DEBUG: /etc/os-release loaded: %.*s\n", bytes_read, buf);
-    if (strstr(buf, "ID=\"postmarketos\"")) { 
-    snprintf(p, p_max_size, "%s", "postmarketOS");
-        free(buf);
-        return;
-    }
-    free(buf);
-} else {
-    fprintf(stderr, "DEBUG: /etc/os-release read failed!\n");
-}
-
-
-  if (stat("/etc/arch-release", &sb) == 0) {
-    snprintf(p, p_max_size, "%s", "Arch Linux");
-    return;
-  }
-
-
-
-  snprintf(p, p_max_size, "Unknown");
-  buf = readfile("/proc/version", &bytes_read, 1);
-  if (buf) {
-    /* I am assuming the distribution name is the first string in /proc/version
-    that:
-    - is preceded by a '('
-    - starts with a capital
-    - is followed by a space and a number
-    but i am not sure if this is always true... */
-    for (i = 1; i < bytes_read; i++) {
-      if (buf[i - 1] == '(' && buf[i] >= 'A' && buf[i] <= 'Z') break;
-    }
-    if (i < bytes_read) {
-      snprintf(p, p_max_size, "%s", &buf[i]);
-      for (i = 1; p[i]; i++) {
-        if (p[i - 1] == ' ' && p[i] >= '0' && p[i] <= '9') {
-          p[i - 1] = 0;
+        if (name.size() >= 2 && name.front() == '"' && name.back() == '"') {
+          name = name.substr(1, name.size() - 2);
+        } else {
+          // unexpected format - string not quoted
           break;
         }
+
+        std::strncpy(p, name.c_str(),
+                     std::min<std::size_t>(p_max_size, name.length() + 1));
+        return;
       }
     }
-    free(buf);
   }
+
+  // 2) Fallback: parse /proc/version
+  std::ifstream proc_version("/proc/version");
+  if (proc_version) {
+    std::string buff;
+    std::getline(proc_version, buff);
+    for (size_t from = 1; from < buff.size(); ++from) {
+      if (buff[from - 1] == '(' && std::isupper(buff[from])) {
+        // capture until space before digit
+        size_t to = from;
+        while (to < buff.size() &&
+               !(buff[to] == ' ' && std::isdigit(buff[to + 1]))) {
+          ++to;
+        }
+        buff = buff.substr(from, to - from);
+        std::strncpy(p, buff.c_str(),
+                     std::min<std::size_t>(p_max_size, buff.length() + 1));
+        break;
+      }
+    }
+  }
+
+  std::strncpy(p, "Unknown",
+               std::min<std::size_t>(p_max_size, sizeof("Unknown")));
 }
 
 /******************************************
