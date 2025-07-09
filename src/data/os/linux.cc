@@ -67,6 +67,7 @@
 #include <atomic>
 #include <fstream>
 #include <mutex>
+#include <string_view>
 
 /* The following ifdefs were adapted from gkrellm */
 #include <linux/major.h>
@@ -2789,6 +2790,14 @@ int update_diskio(void) {
 
 void print_distribution(struct text_object * /*obj*/, char *p,
                         unsigned int p_max_size) {
+  if (p_max_size == 0) return;  // can't do nothing
+
+  const auto set_result = [&](std::string_view value) {
+    auto len = std::min<std::size_t>(p_max_size - 1, value.length());
+    std::memcpy(p, value.data(), len);
+    p[len] = '\0';
+  };
+
   // 1) Try /etc/os-release
   // This file is provided even in some non-systemd distros like Void and
   // Devuan- Minimal distros like "Linux From Scratch" won't have it. But it can
@@ -2797,7 +2806,7 @@ void print_distribution(struct text_object * /*obj*/, char *p,
   std::ifstream os_rel("/etc/os-release");
   if (!os_rel) {
     // attempt alternative path
-    os_rel = std::ifstream("/usr/lib/os-release");
+    os_rel.open("/usr/lib/os-release");
   }
   if (os_rel) {
     std::string line;
@@ -2814,8 +2823,7 @@ void print_distribution(struct text_object * /*obj*/, char *p,
           break;
         }
 
-        std::strncpy(p, name.c_str(),
-                     std::min<std::size_t>(p_max_size, name.length() + 1));
+        set_result(name);
         return;
       }
     }
@@ -2842,25 +2850,24 @@ void print_distribution(struct text_object * /*obj*/, char *p,
       if (buff[from - 1] == '(' && std::isupper(buff[from])) {
         size_t to = from;
         // Capture braced content until version number or closing brace:
-        for (size_t to = from; to < buff.size(); to++) {
+        for (size_t to = from + 1; to < buff.size() - 1; to++) {
           if (buff[to] == ' ' &&
               (std::isdigit(buff[to + 1]) || buff[to + 1] == ')')) {
             break;
           }
         }
-        if (to == buff.size()) {
+        if (to == buff.size() - 1) {
           // No ending delimiter found.
           break;
         }
         buff = buff.substr(from, to - from);
-        std::strncpy(p, buff.c_str(),
-                     std::min<std::size_t>(p_max_size, buff.length() + 1));
+        set_result(buff);
         return;
       }
     }
   }
 
-  std::strncpy(p, "Linux", std::min<std::size_t>(p_max_size, sizeof("Linux")));
+  set_result("Linux");
 }
 
 /******************************************
