@@ -2790,10 +2790,20 @@ int update_diskio(void) {
 void print_distribution(struct text_object * /*obj*/, char *p,
                         unsigned int p_max_size) {
   // 1) Try /etc/os-release
+  // This file is provided even in some non-systemd distros like Void and
+  // Devuan- Minimal distros like "Linux From Scratch" won't have it. But it can
+  // be provided to ensure proper output (though it's mostly aesthetic). See:
+  // https://www.freedesktop.org/software/systemd/man/latest/os-release.html
   std::ifstream os_rel("/etc/os-release");
+  if (!os_rel) {
+    // attempt alternative path
+    os_rel = std::ifstream("/usr/lib/os-release");
+  }
   if (os_rel) {
     std::string line;
     while (std::getline(os_rel, line)) {
+      // NAME is "A string identifying the operating system, without a version
+      // component, and suitable for presentation to the user."
       if (line.rfind("NAME=", 0) == 0) {
         std::string name = line.substr(5);
 
@@ -2811,29 +2821,46 @@ void print_distribution(struct text_object * /*obj*/, char *p,
     }
   }
 
+  // Alternatives that are already handled by above file:
+  // /etc/lsb-release - Debian/Ubuntu only, LSB spec
+  // /etc/redhat-release - single string
+  // /etc/centos-release - single string e.g. "CentOS Linux release 7.9.2009 (Core)"
+  // /etc/fedora-release - single string
+  // /etc/debian_version - version only
+  // /etc/alpine-release - version only
+  // /etc/arch-release - single string: "Arch Linux"
+
   // 2) Fallback: parse /proc/version
+  // This file doesn't necessarily have distribution name in it (e.g. on Arch).
+  // Though on popular distros it could. This isn't a good fallback.
   std::ifstream proc_version("/proc/version");
   if (proc_version) {
     std::string buff;
     std::getline(proc_version, buff);
     for (size_t from = 1; from < buff.size(); ++from) {
+      // First braced uppercase text is usually the distribution name:
       if (buff[from - 1] == '(' && std::isupper(buff[from])) {
-        // capture until space before digit
         size_t to = from;
-        while (to < buff.size() &&
-               !(buff[to] == ' ' && std::isdigit(buff[to + 1]))) {
-          ++to;
+        // Capture braced content until version number or closing brace:
+        for (size_t to = from; to < buff.size(); to++) {
+          if (buff[to] == ' ' &&
+              (std::isdigit(buff[to + 1]) || buff[to + 1] == ')')) {
+            break;
+          }
+        }
+        if (to == buff.size()) {
+          // No ending delimiter found.
+          break;
         }
         buff = buff.substr(from, to - from);
         std::strncpy(p, buff.c_str(),
                      std::min<std::size_t>(p_max_size, buff.length() + 1));
-        break;
+        return;
       }
     }
   }
 
-  std::strncpy(p, "Unknown",
-               std::min<std::size_t>(p_max_size, sizeof("Unknown")));
+  std::strncpy(p, "Linux", std::min<std::size_t>(p_max_size, sizeof("Linux")));
 }
 
 /******************************************
