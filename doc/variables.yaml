@@ -458,13 +458,9 @@ values:
       - (-m value)
   - name: distribution
     desc: |-
-      The name of the distribution. It could be that some of the
-      untested distributions will show up wrong or as "unknown", if that's
-      the case post a bug on sourceforge, make sure it contains the name of
-      your distribution, the contents of&#160;and if there is a file that
-      only exists on your distribution, also add the path of that file in
-      the bug. If there is no such file, please add another way which we can
-      use to identify your distribution.
+      Name of the Linux distribution. `NAME` is read from the `/etc/os-release`
+      file with fallback on `/proc/version` content. Create an issue if reported
+      information is wrong.
     other:
       filename: /proc/version
   - name: downspeed

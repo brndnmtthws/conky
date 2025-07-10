@@ -65,7 +65,9 @@
 #include <math.h>
 #include <pthread.h>
 #include <atomic>
+#include <fstream>
 #include <mutex>
+#include <string_view>
 
 /* The following ifdefs were adapted from gkrellm */
 #include <linux/major.h>
@@ -2786,40 +2788,86 @@ int update_diskio(void) {
   return 0;
 }
 
-void print_distribution(struct text_object *obj, char *p,
+void print_distribution(struct text_object * /*obj*/, char *p,
                         unsigned int p_max_size) {
-  (void)obj;
-  int i, bytes_read;
-  char *buf;
-  struct stat sb;
+  if (p_max_size == 0) return;  // can't do nothing
 
-  if (stat("/etc/arch-release", &sb) == 0) {
-    snprintf(p, p_max_size, "%s", "Arch Linux");
-    return;
+  const auto set_result = [&](std::string_view value) {
+    auto len = std::min<std::size_t>(p_max_size - 1, value.length());
+    std::memcpy(p, value.data(), len);
+    p[len] = '\0';
+  };
+
+  // 1) Try /etc/os-release
+  // This file is provided even in some non-systemd distros like Void and
+  // Devuan- Minimal distros like "Linux From Scratch" won't have it. But it can
+  // be provided to ensure proper output (though it's mostly aesthetic). See:
+  // https://www.freedesktop.org/software/systemd/man/latest/os-release.html
+  std::ifstream os_rel("/etc/os-release");
+  if (!os_rel) {
+    // attempt alternative path
+    os_rel.open("/usr/lib/os-release");
   }
-  snprintf(p, p_max_size, "Unknown");
-  buf = readfile("/proc/version", &bytes_read, 1);
-  if (buf) {
-    /* I am assuming the distribution name is the first string in /proc/version
-    that:
-    - is preceded by a '('
-    - starts with a capital
-    - is followed by a space and a number
-    but i am not sure if this is always true... */
-    for (i = 1; i < bytes_read; i++) {
-      if (buf[i - 1] == '(' && buf[i] >= 'A' && buf[i] <= 'Z') break;
-    }
-    if (i < bytes_read) {
-      snprintf(p, p_max_size, "%s", &buf[i]);
-      for (i = 1; p[i]; i++) {
-        if (p[i - 1] == ' ' && p[i] >= '0' && p[i] <= '9') {
-          p[i - 1] = 0;
+  if (os_rel) {
+    std::string line;
+    while (std::getline(os_rel, line)) {
+      // NAME is "A string identifying the operating system, without a version
+      // component, and suitable for presentation to the user."
+      if (line.rfind("NAME=", 0) == 0) {
+        std::string name = line.substr(5);
+
+        if (name.size() >= 2 && name.front() == '"' && name.back() == '"') {
+          name = name.substr(1, name.size() - 2);
+        } else {
+          // unexpected format - string not quoted
           break;
         }
+
+        set_result(name);
+        return;
       }
     }
-    free(buf);
   }
+
+  // Alternatives that are already handled by above file:
+  // /etc/lsb-release - Debian/Ubuntu only, LSB spec
+  // /etc/redhat-release - single string
+  // /etc/centos-release - single string e.g. "CentOS Linux release 7.9.2009 (Core)"
+  // /etc/fedora-release - single string
+  // /etc/debian_version - version only
+  // /etc/alpine-release - version only
+  // /etc/arch-release - single string: "Arch Linux"
+
+  // 2) Fallback: parse /proc/version
+  // This file doesn't necessarily have distribution name in it (e.g. on Arch).
+  // Though on popular distros it could. This isn't a good fallback.
+  std::ifstream proc_version("/proc/version");
+  if (proc_version) {
+    std::string buff;
+    std::getline(proc_version, buff);
+    for (size_t from = 1; from < buff.size(); ++from) {
+      // First braced uppercase text is usually the distribution name:
+      if (buff[from - 1] == '(' && std::isupper(buff[from])) {
+        size_t to = from;
+        // Capture braced content until version number or closing brace:
+        for (size_t to = from + 1; to < buff.size() - 1; to++) {
+          if (buff[to] == ' ' &&
+              (std::isdigit(buff[to + 1]) || buff[to + 1] == ')')) {
+            break;
+          }
+        }
+        if (to == buff.size() - 1) {
+          // No ending delimiter found.
+          break;
+        }
+        buff = buff.substr(from, to - from);
+        set_result(buff);
+        return;
+      }
+    }
+  }
+
+  set_result("Linux");
 }
 
 /******************************************
