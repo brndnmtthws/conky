@@ -5,7 +5,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
- *	(see AUTHORS)
+ *  (see AUTHORS)
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -76,7 +76,6 @@ void cairo_place_image(const char *file, cairo_t *cr, int x, int y, int width,
     return;
   }
 
-  /* create scaled version of image to later extract the alpha channel */
   alpha_image = imlib_create_cropped_scaled_image(0, 0, w, h, width, height);
 
   /* create temporary image */
@@ -165,6 +164,8 @@ void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
 
   cr = cairo_create(cs);
   cairo_place_image(file, cr, x, y, scaled_w, scaled_h, 1.0);
+  imlib_context_set_image(image);
+  imlib_free_image_and_decache();
 
   cairo_destroy(cr);
 }

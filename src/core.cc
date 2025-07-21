@@ -30,100 +30,100 @@
 #include "config.h"
 
 /* local headers */
-#include "algebra.h"
+#include "content/algebra.h"
 #include "core.h"
 
-#include "bsdapm.h"
 #include "build.h"
-#include "colour-settings.h"
-#include "colours.h"
-#include "combine.h"
-#include "diskio.h"
-#include "entropy.h"
-#include "exec.h"
-#include "i8k.h"
-#include "misc.h"
-#include "proc.h"
-#include "text_object.h"
+#include "lua/colour-settings.hh"
+#include "content/colours.hh"
+#include "content/combine.h"
+#include "content/text_object.h"
+#include "data/entropy.h"
+#include "data/exec.h"
+#include "data/hardware/bsdapm.h"
+#include "data/hardware/diskio.h"
+#include "data/hardware/i8k.h"
+#include "data/misc.h"
+#include "data/proc.h"
 #ifdef BUILD_IMLIB2
 #include "conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
 #ifdef BUILD_MYSQL
-#include "mysql.h"
+#include "data/mysql.h"
 #endif /* BUILD_MYSQL */
 #ifdef BUILD_ICAL
-#include "ical.h"
+#include "data/ical.h"
 #endif /* BUILD_ICAL */
 #ifdef BUILD_IRC
-#include "irc.h"
+#include "data/network/irc.h"
 #endif /* BUILD_IRC */
 #ifdef BUILD_GUI
-#include "fonts.h"
-#include "gui.h"
+#include "lua/fonts.h"
+#include "output/gui.h"
 #endif /* BUILD_GUI */
-#include "fs.h"
+#include "data/fs.h"
 #ifdef BUILD_IBM
-#include "ibm.h"
-#include "smapi.h"
+#include "data/hardware/ibm.h"
+#include "data/hardware/smapi.h"
 #endif /* BUILD_IBM */
 #ifdef BUILD_ICONV
-#include "iconv_tools.h"
+#include "data/iconv_tools.h"
 #endif /* BUILD_ICONV */
-#include "llua.h"
+#include "data/audio/mixer.h"
+#include "data/network/mail.h"
+#include "data/network/mboxscan.h"
+#include "data/network/net_stat.h"
 #include "logging.h"
-#include "mail.h"
-#include "mboxscan.h"
-#include "mixer.h"
-#include "nc.h"
-#include "net_stat.h"
+#include "lua/llua.h"
+#include "output/nc.h"
 #ifdef BUILD_NVIDIA
-#include "nvidia.h"
+#include "data/hardware/nvidia.h"
 #endif /* BUILD_NVIDIA */
 #include <inttypes.h>
-#include "cpu.h"
-#include "read_tcpip.h"
-#include "scroll.h"
-#include "specials.h"
-#include "tailhead.h"
-#include "temphelper.h"
-#include "template.h"
-#include "timeinfo.h"
-#include "top.h"
-#include "user.h"
-#include "users.h"
+#include "content/scroll.h"
+#include "content/specials.h"
+#include "content/temphelper.h"
+#include "content/template.h"
+#include "data/hardware/cpu.h"
+#include "data/network/read_tcpip.h"
+#include "data/tailhead.h"
+#include "data/timeinfo.h"
+#include "data/top.h"
+#include "data/user.h"
+#include "data/users.h"
 #ifdef BUILD_CURL
-#include "ccurl_thread.h"
+#include "data/network/ccurl_thread.h"
 #endif /* BUILD_CURL */
 #ifdef BUILD_RSS
-#include "rss.h"
+#include "data/network/rss.h"
 #endif /* BUILD_RSS */
 #ifdef BUILD_AUDACIOUS
-#include "audacious.h"
+#include "data/audio/audacious.h"
 #endif /* BUILD_AUDACIOUS */
 #ifdef BUILD_CMUS
-#include "cmus.h"
+#include "data/audio/cmus.h"
 #endif /* BUILD_CMUS */
 #ifdef BUILD_JOURNAL
-#include "journal.h"
+#include "data/os/journal.h"
 #endif /* BUILD_JOURNAL */
 #ifdef BUILD_PULSEAUDIO
-#include "pulseaudio.h"
+#include "data/audio/pulseaudio.h"
 #endif /* BUILD_PULSEAUDIO */
 #ifdef BUILD_INTEL_BACKLIGHT
-#include "intel_backlight.h"
+#include "data/hardware/intel_backlight.h"
 #endif /* BUILD_INTEL_BACKLIGHT */
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
-#include "linux.h"
+#include "data/os/linux.h"
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-#include "freebsd.h"
+#include "data/os/freebsd.h"
 #elif defined(__DragonFly__)
-#include "dragonfly.h"
+#include "data/os/dragonfly.h"
 #elif defined(__OpenBSD__)
-#include "openbsd.h"
+#include "data/os/openbsd.h"
 #elif defined(__APPLE__) && defined(__MACH__)
-#include "darwin.h"
+#include "data/os/darwin.h"
 #endif
 
 #define STRNDUP_ARG strndup(arg ? arg : "", text_buffer_size.get(*state))
@@ -441,8 +441,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   }
   obj->callbacks.print = &print_acpiacadapter;
   obj->callbacks.free = &gen_free_opaque;
+  END
 #endif /* !__OpenBSD__ */
-  END OBJ(freq, nullptr) get_cpu_count();
+  OBJ(freq, nullptr) get_cpu_count();
   if ((arg == nullptr) || strlen(arg) >= 3 ||
       strtol(&arg[0], nullptr, 10) == 0 ||
       static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) >
@@ -731,7 +732,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #ifdef BUILD_GUI
   END OBJ(cpugraph, &update_cpu_usage) get_cpu_count();
   SCAN_CPU(arg, obj->data.i);
-  scan_graph(obj, arg, 1);
+  scan_graph(obj, arg, 1, FALSE);
   DBGP2("Adding $cpugraph for CPU %d", obj->data.i);
   obj->callbacks.graphval = &cpu_barval;
   obj->callbacks.free = &free_cpu;
@@ -1240,12 +1241,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(memwithbuffersbar, &update_meminfo) scan_bar(obj, arg, 1);
   obj->callbacks.barval = &mem_with_buffers_barval;
 #ifdef BUILD_GUI
-  END OBJ(memgraph, &update_meminfo) scan_graph(obj, arg, 1);
+  END OBJ(memgraph, &update_meminfo) scan_graph(obj, arg, 1, FALSE);
   obj->callbacks.graphval = &mem_barval;
-  END OBJ(memwithbuffersgraph, &update_meminfo) scan_graph(obj, arg, 1);
+  END OBJ(memwithbuffersgraph, &update_meminfo) scan_graph(obj, arg, 1, FALSE);
   obj->callbacks.graphval = &mem_with_buffers_barval;
 #endif /* BUILD_GUI*/
-#ifdef HAVE_SOME_SOUNDCARD_H
+#ifdef HAVE_SOUNDCARD_H
   END OBJ(mixer, 0) parse_mixer_arg(obj, arg);
   obj->callbacks.percentage = &mixer_percentage;
   END OBJ(mixerl, 0) parse_mixer_arg(obj, arg);
@@ -1260,7 +1261,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.barval = &mixerr_barval;
   END OBJ_IF(if_mixer_mute, 0) parse_mixer_arg(obj, arg);
   obj->callbacks.iftest = &check_mixer_muted;
-#endif /* HAVE_SOME_SOUNDCARD_H */
+#endif /* HAVE_SOUNDCARD_H */
 #ifdef BUILD_GUI
   END OBJ(monitor, nullptr) obj->callbacks.print = &print_monitor;
   END OBJ(monitor_number, nullptr) obj->callbacks.print = &print_monitor_number;
@@ -1814,7 +1815,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
               "colour 1] [gradient colour 2] [scale] [-t] [-l]") auto [buf,
                                                                        skip] =
       scan_command(arg);
-  scan_graph(obj, arg + skip, 100);
+  scan_graph(obj, arg + skip, 100, FALSE);
   if (buf != nullptr) {
     obj->data.s = buf;
   } else {
@@ -1941,7 +1942,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(apcupsd_loadbar, &update_apcupsd) scan_bar(obj, arg, 100);
   obj->callbacks.barval = &apcupsd_loadbarval;
 #ifdef BUILD_GUI
-  END OBJ(apcupsd_loadgraph, &update_apcupsd) scan_graph(obj, arg, 100);
+  END OBJ(apcupsd_loadgraph, &update_apcupsd) scan_graph(obj, arg, 100, FALSE);
   obj->callbacks.graphval = &apcupsd_loadbarval;
   END OBJ(apcupsd_loadgauge, &update_apcupsd) scan_gauge(obj, arg, 100);
   obj->callbacks.gaugeval = &apcupsd_loadbarval;

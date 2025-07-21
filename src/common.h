@@ -29,9 +29,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <filesystem>
+#include <optional>
 #include <string>
-#include "setting.hh"
-#include "text_object.h"
+
+#include "lua/setting.hh"
+#include "content/text_object.h"
 
 char *readfile(const char *filename, int *total_read, char showerror);
 
@@ -58,12 +61,27 @@ struct process *get_first_process(void);
 void get_cpu_count(void);
 double get_time(void);
 
-/* Converts '~/...' paths to '/home/blah/...'
- * It's similar to variable_substitute, except only cheques for $HOME and ~/ in
- * path */
-std::string to_real_path(const std::string &source);
+/// @brief Handles environment variable expansion in paths and canonicalization.
+///
+/// Examples:
+/// - `~/conky` -> `/home/conky_user/conky`
+/// - `$HOME/conky` -> `/home/conky_user/conky`
+/// - `$HOME/a/b/../c/../../conky` -> `/home/conky_user/conky`
+std::filesystem::path to_real_path(const std::string &source);
 FILE *open_file(const char *file, int *reported);
 int open_fifo(const char *file, int *reported);
+
+/// Returns current working directory of conky.
+std::filesystem::path get_cwd();
+/// Returns the username of user/account that started conky.
+std::string current_username();
+/// Returns home directory of user with `username`.
+std::optional<std::filesystem::path> user_home(const std::string &username);
+/// Returns home directory of user with `current_username`.
+std::optional<std::filesystem::path> user_home();
+/// Performs tilde expansion on a path-like string and returns the result.
+std::string tilde_expand(const std::string &unexpanded);
+/// Performs variable substitution on a string and returns the result.
 std::string variable_substitute(std::string s);
 
 void format_seconds(char *buf, unsigned int n, long seconds);

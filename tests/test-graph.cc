@@ -28,9 +28,10 @@
 
 #include <tuple>
 #include "catch2/catch.hpp"
-#include "conky.h"
-#include "lua-config.hh"
-#include "specials.h"
+
+#include <conky.h>
+#include <content/specials.h>
+#include <lua/lua-config.hh>
 
 #ifdef BUILD_GUI
 
@@ -54,7 +55,7 @@ struct graph {
 
 static std::pair<struct graph, bool> test_parse(const char *s) {
   struct text_object obj;
-  bool result = scan_graph(&obj, s, default_scale);
+  bool result = scan_graph(&obj, s, default_scale,FALSE);
   auto g = static_cast<struct graph *>(obj.special_data);
   struct graph graph = *g;
   free(g);

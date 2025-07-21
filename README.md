@@ -97,7 +97,7 @@ Conky. Some resources from the Wiki include:
 
 - [Installation](https://github.com/brndnmtthws/conky/wiki/Installation)
 - [Configuration Settings](https://github.com/brndnmtthws/conky/wiki/Configurations)
-- [User Configs](https://github.com/brndnmtthws/conky/wiki/Configs)
+- [Community Configs](https://github.com/brndnmtthws/conky/wiki/Community-Configurations)
 - [Frequently Asked Questions](https://github.com/brndnmtthws/conky/wiki/FAQ)
 
 ## License

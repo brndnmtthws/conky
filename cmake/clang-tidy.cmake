@@ -1,7 +1,7 @@
 get_target_property(ClangTidy_SRCS_TMP conky SOURCES)
 get_target_property(conky_SRC_DIR conky SOURCE_DIR)
 
-if(BUILD_TESTS)
+if(BUILD_TESTING)
   get_target_property(ClangTidy_SRCS_TMP_CORE conky_core SOURCES)
   list(APPEND ClangTidy_SRCS_TMP ${ClangTidy_SRCS_TMP_CORE})
 endif()

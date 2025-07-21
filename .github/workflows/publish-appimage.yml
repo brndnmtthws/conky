@@ -16,6 +16,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  SCCACHE_VERSION: '0.9.1'
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -23,7 +26,6 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-20.04
           - ubuntu-22.04
           - ubuntu-24.04
         arch:
@@ -106,10 +108,28 @@ jobs:
             libc++abi-${CLANG_VERSION}-dev
           echo "CC=clang-${CLANG_VERSION}" | tee -a $GITHUB_ENV
           echo "CXX=clang++-${CLANG_VERSION}" | tee -a $GITHUB_ENV
+
+      - name: Install sccache
+        if: startsWith(github.ref, 'refs/tags/') != true
+        run: .github/scripts/setup-sccache.sh
+      - name: Load cached compilation artifacts
+        if: startsWith(github.ref, 'refs/tags/') != true
+        id: compiler-cache
+        uses: actions/cache@v4
+        with:
+          path: '${{ env.SCCACHE_DIR }}'
+          key: sccache-${{ matrix.os }}-${{ matrix.arch }}
+          restore-keys: |
+            sccache-${{ matrix.os }}-${{ matrix.arch }}
+            sccache-${{ matrix.os }}
+            sccache-
       - name: Build AppImage
         run: ./appimage/build.sh
         env:
           RELEASE: "${{ startsWith(github.ref, 'refs/tags/') && 'ON' || 'OFF' }}"
+      - name: Show sccache stats
+        if: startsWith(github.ref, 'refs/tags/') != true
+        run: sccache --show-stats
       - run: ./conky-x86_64.AppImage --version # print version
       - name: Set CONKY_VERSION
         run: echo "CONKY_VERSION=$(./conky-x86_64.AppImage --short-version)" | tee -a $GITHUB_ENV

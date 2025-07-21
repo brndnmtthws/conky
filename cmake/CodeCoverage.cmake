@@ -223,14 +223,14 @@ function(SETUP_TARGET_FOR_COVERAGE_LCOV_HTML)
   # Show where to find the lcov info report
   add_custom_command(
     TARGET ${Coverage_NAME} POST_BUILD
-    COMMAND ;
+    COMMAND ${CMAKE_COMMAND} -E echo
     COMMENT
       "Lcov code coverage info report saved in ${Coverage_NAME}.info.cleaned")
 
   # Show info where to find the report
   add_custom_command(
     TARGET ${Coverage_NAME} POST_BUILD
-    COMMAND ;
+    COMMAND ${CMAKE_COMMAND} -E echo
     COMMENT
       "Open ./${Coverage_NAME}/index.html in your browser to view the coverage report."
     )
