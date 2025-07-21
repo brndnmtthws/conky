@@ -95,15 +95,17 @@ static char *fetch_hddtemp_output(void) {
   char *buf = nullptr;
   int buflen, offset = 0, rlen;
   struct addrinfo hints, *result, *rp;
-  int i;
 
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_INET; /* XXX: hddtemp has no ipv6 support (yet?) */
   hints.ai_socktype = SOCK_STREAM;
 
-  if ((i = getaddrinfo(hddtemp_host.get(*state).c_str(),
-                       hddtemp_port.get(*state).c_str(), &hints, &result))) {
-    NORM_ERR("getaddrinfo(): %s", gai_strerror(i));
+  const std::string host = hddtemp_host.get(*state);
+  const std::string port = hddtemp_port.get(*state);
+  int err = getaddrinfo(host.c_str(), port.c_str(), &hints, &result);
+  if (err) {
+    LOG_ERROR("can't resolve specified host and port: %s (host: %s, port: %s)",
+              gai_strerror(err), host.c_str(), port.c_str());
     return nullptr;
   }
 
@@ -114,7 +116,7 @@ static char *fetch_hddtemp_output(void) {
     close(sockfd);
   }
   if (!rp) {
-    NORM_ERR("could not connect to hddtemp host");
+    LOG_ERROR("can't open a socket connection to host");
     goto GET_OUT;
   }
 
