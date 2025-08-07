@@ -215,7 +215,7 @@ void llua_init() {
     }
 
     auto parent_path = current_config.parent_path();
-    if (xdg_path != parent_path && stat(path_ext.c_str(), &file_stat) == 0) {
+    if (xdg_path != parent_path && stat(parent_path.c_str(), &file_stat) == 0) {
       path_ext.append(parent_path);
       path_ext.append("/?.lua");
       path_ext.push_back(';');
@@ -269,18 +269,21 @@ void llua_load(const char *script) {
 
   std::filesystem::path path;
   std::filesystem::path script_path(script);
-  
-  if (!script_path.is_absolute()) {
-    auto cfg_path = std::filesystem::path(to_real_path(XDG_CONFIG_FILE));
-    auto cfg_dir  = cfg_path.parent_path();
 
-    // prepend the config directory to the script path
-    auto full = cfg_dir / script_path;
-    path = to_real_path(full.c_str());
-  }
-  else {
-    // Already an absolute path
-    path = to_real_path(script);
+  path = to_real_path(script); // handles ~/some/path.lua
+  if (!file_exists(path.c_str())) {
+    if (!script_path.is_absolute()) {
+      auto cfg_path = std::filesystem::path(to_real_path(XDG_CONFIG_FILE));
+      auto cfg_dir  = cfg_path.parent_path();
+  
+      // prepend the config directory to the script path
+      auto full = cfg_dir / script_path;
+      path = to_real_path(full.c_str());
+    }
+    else {
+      // Already an absolute path
+      path = to_real_path(script);
+    }
   }
 
   if (!file_exists(path.c_str())) {
