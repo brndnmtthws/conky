@@ -175,9 +175,6 @@ const char builtin_config_magic[] = "==builtin==";
 // #define SIGNAL_BLOCKING
 #undef SIGNAL_BLOCKING
 
-/* debugging level, used by logging.h */
-int global_debug_level = 0;
-
 /* disable inotify auto reload feature if desired */
 static conky::simple_config_setting<bool> disable_auto_reload(
     "disable_auto_reload", false, false);
@@ -722,9 +719,7 @@ static void generate_text() {
           p[k] = '\n';
           j = 0;
         } else {
-          NORM_ERR(
-              "The end of the text_buffer is reached, increase "
-              "\"text_buffer_size\"");
+          LOG_WARNING("text_buffer exhausted, increase \"text_buffer_size\"");
         }
       } else {
         j++;
@@ -865,7 +860,8 @@ void update_text_area() {
     last_font_height = font_height();
     for_each_line(text_buffer, text_size_updater);
 
-    text_size = text_size.max(conky::vec2i(text_size.x() + 1, dpi_scale(minimum_height.get(*state))));
+    text_size = text_size.max(
+        conky::vec2i(text_size.x() + 1, dpi_scale(minimum_height.get(*state))));
     int mw = dpi_scale(maximum_width.get(*state));
     if (mw > 0) text_size = text_size.min(conky::vec2i(mw, text_size.y()));
   }
@@ -1824,9 +1820,9 @@ void get_system_details() {
 #endif
 
   if (info.system.wm_name != nullptr) {
-    NORM_ERR("'%s' %s session running", info.system.wm_name, session_ty);
+    LOG_INFO("'%s' %s session running", info.system.wm_name, session_ty);
   } else {
-    NORM_ERR("unknown %s session running", session_ty);
+    LOG_INFO("unknown %s session running", session_ty);
   }
 }
 
@@ -1900,7 +1896,7 @@ void main_loop() {
 
     if (g_sighup_pending != 0) {
       g_sighup_pending = 0;
-      NORM_ERR("received SIGUSR1. reloading the config file.");
+      LOG_NOTICE("received SIGUSR1. reloading the config file.");
 
       reload_config();
     }
@@ -1908,7 +1904,7 @@ void main_loop() {
     if (g_sigusr2_pending != 0) {
       g_sigusr2_pending = 0;
       // refresh view;
-      NORM_ERR("received SIGUSR2. refreshing.");
+      LOG_NOTICE("received SIGUSR2. refreshing.");
       update_text();
       draw_stuff();
       for (auto output : display_outputs()) output->flush();
@@ -1916,7 +1912,7 @@ void main_loop() {
 
     if (g_sigterm_pending != 0) {
       g_sigterm_pending = 0;
-      NORM_ERR("received SIGHUP, SIGINT, or SIGTERM to terminate. bye!");
+      LOG_NOTICE("received SIGHUP, SIGINT, or SIGTERM to terminate. bye!");
       terminate = 1;
       for (auto output : display_outputs()) output->sigterm_cleanup();
     }
@@ -1947,7 +1943,7 @@ void main_loop() {
           if (ev->wd == inotify_config_wd &&
               (ev->mask & IN_MODIFY || ev->mask & IN_IGNORED)) {
             /* current_config should be reloaded */
-            NORM_ERR("'%s' modified, reloading...", current_config.c_str());
+            LOG_NOTICE("'%s' modified, reloading...", current_config.c_str());
             reload_config();
             if (ev->mask & IN_IGNORED) {
               /* for some reason we get IN_IGNORED here
@@ -1987,10 +1983,11 @@ static void reload_config() {
   struct stat sb {};
   if ((stat(current_config.c_str(), &sb) != 0) ||
       (!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
-    NORM_ERR(_("Config file '%s' is gone, continuing with config from "
-               "memory.\nIf you recreate this file sent me a SIGUSR1 to tell "
-               "me about it. ( kill -s USR1 %d )"),
-             current_config.c_str(), getpid());
+    LOG_WARNING(
+        _("Config file '%s' is gone, continuing with config from "
+          "memory.\nIf you recreate this file sent me a SIGUSR1 to tell "
+          "me about it. ( kill -s USR1 %d )"),
+        current_config.c_str(), getpid());
     return;
   }
   clean_up();
@@ -2054,6 +2051,11 @@ void clean_up(void) {
   state.reset();
 }
 
+void handle_terminate() {
+  clean_up();
+  std::abort();
+}
+
 static void set_default_configurations() {
   update_uname();
   info.memmax = 0;
@@ -2112,19 +2114,14 @@ void load_config_file() {
   } catch (lua::syntax_error &e) {
 #define SYNTAX_ERR_READ_CONF "Syntax error (%s) while reading config file. "
 #ifdef BUILD_OLD_CONFIG
-    NORM_ERR(_(SYNTAX_ERR_READ_CONF), e.what());
-    NORM_ERR(_("Assuming it's in old syntax and attempting conversion."));
+    LOG_WARNING(SYNTAX_ERR_READ_CONF, e.what());
+    LOG_NOTICE("assuming old syntax in use; attempting conversion...");
     // the strchr thingy skips the first line (#! /usr/bin/lua)
     l.loadstring(strchr(convertconf, '\n'));
     l.pushstring(current_config.c_str());
     l.call(1, 1);
 #else
-    char *syntaxerr;
-    if (asprintf(&syntaxerr, _(SYNTAX_ERR_READ_CONF), e.what())) {
-      std::string syntaxerrobj(syntaxerr);
-      free(syntaxerr);
-      throw conky::error(syntaxerrobj);
-    }
+    throw conky::error(SYNTAX_ERR_READ_CONF, e.what());
 #endif
   }
   l.call(0, 0);
@@ -2133,7 +2130,7 @@ void load_config_file() {
   l.getfield(-1, "text");
   l.replace(-2);
   if (l.type(-1) != lua::TSTRING) {
-    throw conky::error(_("missing text block in configuration"));
+    throw conky::error("missing text block in configuration");
   }
 
   /* Remove \\-\n. */
@@ -2178,7 +2175,7 @@ void set_current_config() {
 #define NOCFGFILEFOUND "no personal or system-wide config file found"
 #ifdef BUILD_BUILTIN_CONFIG
     current_config = builtin_config_magic;
-    NORM_ERR(NOCFGFILEFOUND ", using builtin default");
+    LOG_WARNING(NOCFGFILEFOUND ", using builtin default");
 #else
     throw conky::error(NOCFGFILEFOUND);
 #endif
@@ -2190,7 +2187,7 @@ void set_current_config() {
 
 /* : means that character before that takes an argument */
 const char *getopt_string =
-    "vVqdDSs:t:u:i:hc:p:"
+    "vVqdDLSs:t:u:i:hc:p:"
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
     defined(__HAIKU__) || defined(__NetBSD__) || defined(__OpenBSD__)
     "U"
@@ -2210,7 +2207,8 @@ const char *getopt_string =
 const struct option longopts[] = {
     {"help", 0, nullptr, 'h'},          {"version", 0, nullptr, 'v'},
     {"short-version", 0, nullptr, 'V'}, {"quiet", 0, nullptr, 'q'},
-    {"debug", 0, nullptr, 'D'},         {"config", 1, nullptr, 'c'},
+    {"debug", 0, nullptr, 'D'},         {"log-less", 0, nullptr, 'L'},
+    {"config", 1, nullptr, 'c'},
 #ifdef BUILD_BUILTIN_CONFIG
     {"print-config", 0, nullptr, 'C'},
 #endif
@@ -2325,7 +2323,7 @@ void initialisation(int argc, char **argv) {
       case 'u':
         state->pushnumber(strtod(optarg, &conv_end));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is an invalid update interval", optarg);
+          USER_ERR("'%s' is an invalid update interval", optarg);
         }
         update_interval.lua_set(*state);
         break;
@@ -2333,7 +2331,7 @@ void initialisation(int argc, char **argv) {
       case 'i':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is an invalid number of update times", optarg);
+          USER_ERR("'%s' is an invalid number of update times", optarg);
         }
         total_run_times.lua_set(*state);
         break;
@@ -2341,7 +2339,7 @@ void initialisation(int argc, char **argv) {
       case 'x':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is an invalid value for the X-position", optarg);
+          USER_ERR("'%s' is an invalid value for the X-position", optarg);
         }
         gap_x.lua_set(*state);
         break;
@@ -2349,7 +2347,7 @@ void initialisation(int argc, char **argv) {
       case 'y':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is a wrong value for the Y-position", optarg);
+          USER_ERR("'%s' is a wrong value for the Y-position", optarg);
         }
         gap_y.lua_set(*state);
         break;
@@ -2383,8 +2381,7 @@ void initialisation(int argc, char **argv) {
 
     switch (pid) {
       case -1:
-        NORM_ERR(PACKAGE_NAME ": couldn't fork() to background: %s",
-                 strerror(errno));
+        LOG_WARNING("couldn't fork() to background: %s", strerror(errno));
         break;
 
       case 0:
@@ -2396,8 +2393,7 @@ void initialisation(int argc, char **argv) {
 
       default:
         /* parent process */
-        fprintf(stderr, PACKAGE_NAME ": forked to background, pid is %d\n",
-                pid);
+        LOG_NOTICE("forked to background, pid is %d\n", pid);
         fflush(stderr);
         throw fork_throw();
     }
@@ -2434,7 +2430,7 @@ void initialisation(int argc, char **argv) {
       sigaction(SIGUSR2, &act, &oact) < 0 ||
       sigaction(SIGHUP, &act, &oact) < 0 ||
       sigaction(SIGTERM, &act, &oact) < 0) {
-    NORM_ERR("error setting signal handler: %s", strerror(errno));
+    LOG_ERROR("can't set signal handler: %s", strerror(errno));
   }
 
   llua_startup_hook();

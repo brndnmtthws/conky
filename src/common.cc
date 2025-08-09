@@ -202,7 +202,7 @@ int open_fifo(const char *file, int *reported) {
 
   if (fd == -1) {
     if ((reported == nullptr) || *reported == 0) {
-      NORM_ERR("can't open %s: %s", file, strerror(errno));
+      LOG_WARNING("can't open file %s: %s", file, strerror(errno));
       if (reported != nullptr) { *reported = 1; }
     }
     return -1;
@@ -218,7 +218,7 @@ FILE *open_file(const char *file, int *reported) {
 
   if (fp == nullptr) {
     if ((reported == nullptr) || *reported == 0) {
-      NORM_ERR("can't open %s: %s", file, strerror(errno));
+      LOG_WARNING("can't open file %s: %s", file, strerror(errno));
       if (reported != nullptr) { *reported = 1; }
     }
     return nullptr;
@@ -471,7 +471,7 @@ void scan_loadavg_arg(struct text_object *obj, const char *arg) {
       (isdigit(static_cast<unsigned char>(arg[0])) != 0)) {
     obj->data.i = strtol(arg, nullptr, 10);
     if (obj->data.i > 3 || obj->data.i < 1) {
-      NORM_ERR("loadavg arg needs to be in range (1,3)");
+      LOG_WARNING("argument needs to be in range (1,3)");
       obj->data.i = 0;
     }
   }
@@ -517,8 +517,8 @@ double loadgraphval(struct text_object *obj) {
 
 uint8_t cpu_percentage(struct text_object *obj) {
   if (static_cast<unsigned int>(obj->data.i) > info.cpu_count) {
-    NORM_ERR("obj->data.i %i info.cpu_count %i", obj->data.i, info.cpu_count);
-    CRIT_ERR("attempting to use more CPUs than you have!");
+    LOG_DEBUG("obj->data.i=%i; info.cpu_count=%i", obj->data.i, info.cpu_count);
+    USER_ERR("attempting to use more CPUs than you have!");
   }
   if (info.cpu_usage != nullptr) {
     return round_to_positive_int(info.cpu_usage[obj->data.i] * 100.0);
@@ -528,8 +528,8 @@ uint8_t cpu_percentage(struct text_object *obj) {
 
 double cpu_barval(struct text_object *obj) {
   if (static_cast<unsigned int>(obj->data.i) > info.cpu_count) {
-    NORM_ERR("obj->data.i %i info.cpu_count %i", obj->data.i, info.cpu_count);
-    CRIT_ERR("attempting to use more CPUs than you have!");
+    LOG_DEBUG("obj->data.i=%i; info.cpu_count=%i", obj->data.i, info.cpu_count);
+    USER_ERR("attempting to use more CPUs than you have!");
   }
   if (info.cpu_usage != nullptr) { return info.cpu_usage[obj->data.i]; }
   return 0.;
@@ -722,7 +722,7 @@ static int check_contains(char *f, char *s) {
     }
     fclose(where);
   } else {
-    NORM_ERR("Could not open the file");
+    LOG_WARNING("could not open file %s", f);
   }
   return ret;
 }
@@ -882,7 +882,7 @@ static size_t read_github_data_cb(char *data, size_t size, size_t nmemb,
           's' == *(ptr + 3) && z + 13 < sz) { /* "message": */
         if ('B' == *(ptr + 10) && 'a' == *(ptr + 11) &&
             'd' == *(ptr + 12)) { /* "Bad credentials" */
-          NORM_ERR("Bad credentials: generate a new token:\n" NEW_TOKEN);
+          LOG_WARNING("bad credentials: generate a new token:\n" NEW_TOKEN);
           snprintf(p, 80, "%s",
                    "GitHub: Bad credentials, generate a new token.");
           skip = 1U;
@@ -890,8 +890,8 @@ static size_t read_github_data_cb(char *data, size_t size, size_t nmemb,
         }
         if ('M' == *(ptr + 10) && 'i' == *(ptr + 11) &&
             's' == *(ptr + 12)) { /* Missing the 'notifications' scope. */
-          NORM_ERR(
-              "Missing 'notifications' scope. Generate a new "
+          LOG_WARNING(
+              "missing 'notifications' scope. Generate a new "
               "token\n" NEW_TOKEN);
           snprintf(
               p, 80, "%s",
@@ -916,7 +916,7 @@ void print_github(struct text_object *obj, char *p, unsigned int p_max_size) {
   CURLcode res;
 
   if (0 == strcmp(github_token.get(*state).c_str(), "")) {
-    NORM_ERR(
+    LOG_WARNING(
         "${github_notifications} requires token. "
         "Go ahead and generate one " NEW_TOKEN
         "Insert it in conky.config = { github_token='TOKEN_SHA' }\n");

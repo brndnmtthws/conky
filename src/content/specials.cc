@@ -229,7 +229,7 @@ std::pair<char *, size_t> scan_command(const char *s) {
         _ptr != s) {
       _size = _ptr - s - 1;
     } else {
-      NORM_ERR("mismatched double-quote in execgraph object");
+      LOG_WARNING("mismatched double-quote in execgraph object");
       return {nullptr, 0};
     }
 

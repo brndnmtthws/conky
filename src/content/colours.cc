@@ -146,7 +146,7 @@ Colour parse_color(const std::string &color) {
 
 #undef TRY_PARSER
 
-  NORM_ERR("can't parse color '%s'", color.c_str());
+  LOG_WARNING("can't parse color '%s'", color.c_str());
   return ERROR_COLOUR;
 }
 

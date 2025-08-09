@@ -30,11 +30,9 @@
 #ifndef _LOGGING_H
 #define _LOGGING_H
 
-#include <cinttypes>  // correct formatting for int types
-#include <cstdio>
-#include <stdexcept>
-#include "config.h"
-#include "i18n.h"
+#include "logger.hh"
+
+#include <string>
 
 class fork_throw : public std::runtime_error {
  public:
@@ -62,63 +60,133 @@ class obj_create_error : public std::runtime_error {
   obj_create_error(const std::string &msg) : std::runtime_error(msg) {}
 };
 
-void clean_up(void);
+extern conky::log::logger DEFAULT_LOGGER;
 
-template <typename... Args>
-inline void gettextize_format(const char *format, Args &&...args) {
-  fprintf(stderr, _(format), args...);
-}
+#define LOG(Level, ...)                                              \
+  DEFAULT_LOGGER.log_location<::conky::log::log_level::Level>(           \
+      ::conky::log::_priv::relative_source_path(__FILE__), __LINE__, \
+      __VA_ARGS__)
 
-// explicit specialization for no arguments to avoid the
-// "format not a string literal and no format arguments" warning
-inline void gettextize_format(const char *format) { fputs(_(format), stderr); }
+#define LOG_CRITICAL(...) LOG(CRITICAL, __VA_ARGS__)
+#define LOG_ERROR(...) LOG(ERROR, __VA_ARGS__)
+#define LOG_WARNING(...) LOG(WARNING, __VA_ARGS__)
+#define LOG_NOTICE(...) LOG(NOTICE, __VA_ARGS__)
+#define LOG_INFO(...) LOG(INFO, __VA_ARGS__)
+#define LOG_DEBUG(...) LOG(DEBUG, __VA_ARGS__)
+#define LOG_TRACE(...) LOG(TRACE, __VA_ARGS__)
 
-template <typename... Args>
-void NORM_ERR(const char *format, Args &&...args) {
-  fprintf(stderr, PACKAGE_NAME ": ");
-  gettextize_format(format, args...);
-  fputs("\n", stderr);
-}
+#define LOG_CONTEXT(Key, Value)                                   \
+  volatile ::conky::log::logger::context_guard _log_guard_##Key = \
+      DEFAULT_LOGGER.add_context(#Key, Value)
 
-/* critical error with additional cleanup */
-template <typename... Args>
-__attribute__((noreturn)) inline void CRIT_ERR_FREE(void *memtofree1,
-                                                    void *memtofree2,
-                                                    const char *format,
-                                                    Args &&...args) {
-  NORM_ERR(format, args...);
-  free(memtofree1);
-  free(memtofree2);
-  clean_up();
-  exit(EXIT_FAILURE);
-}
+// backwards compatibility aliases
+#define NORM_ERR(...) LOG_INFO(__VA_ARGS__)
+#define DBGP(...) LOG_DEBUG(__VA_ARGS__)
+#define DBGP2(...) LOG_TRACE(__VA_ARGS__)
 
-/* critical error */
-template <typename... Args>
-__attribute__((noreturn)) inline void CRIT_ERR(const char *format,
-                                               Args &&...args) {
-  CRIT_ERR_FREE(nullptr, nullptr, format, args...);
-}
+/// @brief Error that warrants termination of the program, and is caused by
+/// developer so it should produce a core dump for reporting.
+///
+/// @param Format printf style format string.
+/// @param Args printf style arguments.
+#define CRIT_ERR(...)        \
+  LOG_CRITICAL(__VA_ARGS__); \
+  std::terminate()
 
 namespace conky {
-class error : public std::runtime_error {
- public:
+namespace _priv_error_print {
+template <typename... Args>
+inline std::string alloc_printf(const char *format, Args &&...args) {
+  auto size = std::snprintf(nullptr, 0, format, args...);
+  char output[size + 1];
+  std::snprintf(output, sizeof(output), format, args...);
+  return std::string(&output[0]);
+}
+inline std::string alloc_printf(const char *format) {
+  return std::string(format);
+}
+}  // namespace _priv_error_print
+
+struct error : public std::runtime_error {
+  /// @brief Construct a new error.
+  ///
+  /// @param msg already localized error message.
   error(const std::string &msg) : std::runtime_error(msg) {}
+  /// @brief Construct a new error.
+  ///
+  /// @param msg unlocalized error message.
+  error(const char *msg) : std::runtime_error(_(msg)) {}
+  /// @brief Construct a new error.
+  ///
+  /// @param format unlocalized format of error message.
+  /// @param args format arguments.
+  template <typename... Args>
+  error(const char *format, Args &&...args)
+      : error(_priv_error_print::alloc_printf(_(format), args...)) {}
+};
+
+struct bad_command_arguments_error : public std::runtime_error {
+  std::string command;
+
+  /// @brief Construct a new error.
+  ///
+  /// @param command command with invalid arguments.
+  /// @param msg already localized error message.
+  bad_command_arguments_error(const char *command, const std::string &msg)
+      : std::runtime_error(msg), command(command) {}
+  /// @brief Construct a new error.
+  ///
+  /// @param command command with invalid arguments.
+  /// @param msg unlocalized error message.
+  bad_command_arguments_error(const char *command, const char *msg)
+      : std::runtime_error(_(msg)), command(std::string(command)) {}
+  /// @brief Construct a new error.
+  ///
+  /// @param command command with invalid arguments.
+  /// @param format unlocalized format of error message.
+  /// @param args format arguments.
+  template <typename... Args>
+  bad_command_arguments_error(const char *command, const char *format,
+                              Args &&...args)
+      : bad_command_arguments_error(
+            _priv_error_print::alloc_printf(_(format), args...)),
+        command(std::string(command)) {}
 };
 }  // namespace conky
 
-/* debugging output */
-extern int global_debug_level;
+/// @brief Error that warrants termination of the program, but is caused by user
+/// error (e.g. bad input) and as such a core dump isn't useful.
+///
+/// @param Format printf style format string.
+/// @param Args printf style arguments.
+#define USER_ERR(...)     \
+  LOG_ERROR(__VA_ARGS__); \
+  throw conky::error(__VA_ARGS__)
 
-#define __DBGP(level, ...)                                               \
-  do {                                                                   \
-    if (global_debug_level > level) {                                    \
-      fprintf(stderr, "DEBUG(%d) [" __FILE__ ":%d]: ", level, __LINE__); \
-      gettextize_format(__VA_ARGS__);                                    \
-      fputs("\n", stderr);                                               \
-    }                                                                    \
-  } while (0)
-#define DBGP(...) __DBGP(0, __VA_ARGS__)
-#define DBGP2(...) __DBGP(1, __VA_ARGS__)
+/// @brief Error caused by system not supporting some required conky feature.
+///
+/// We assume the fault is with user for not properly configuring conky so we
+/// don't produce a core dump.
+///
+/// @param Format printf style format string.
+/// @param Args printf style arguments.
+#define SYSTEM_ERR(...)   \
+  LOG_ERROR(__VA_ARGS__); \
+  throw conky::error(__VA_ARGS__)
+
+/// @brief Invalid command arguments error.
+///
+/// @param Command command with invalid arguments.
+/// @param Format printf style format string.
+/// @param Args printf style arguments.
+#define COMMAND_ARG_ERR(Command, ...) \
+  LOG_ERROR(__VA_ARGS__);             \
+  throw conky::bad_command_arguments_error(Command, __VA_ARGS__)
+
+/* critical error with additional cleanup */
+#define CRIT_ERR_FREE(memtofree1, memtofree2, ...) \
+  free(memtofree1);                                \
+  free(memtofree2);                                \
+  SYSTEM_ERR(__VA_ARGS__);
 
 #endif /* _LOGGING_H */

@@ -83,9 +83,9 @@ class out_to_http_setting : public conky::simple_config_setting<bool> {
     if (init && do_convert(l, -1).first) {
       /* warn about old default port */
       if (http_port.get(*state) == 10080) {
-        NORM_ERR(
-            "warning: port 10080 is blocked by browsers "
-            "like Firefox and Chromium, you may want to change http_port.");
+        LOG_WARNING(
+            "port 10080 is blocked by browsers like Firefox and Chromium, you "
+            "may want to change http_port setting.");
       }
       httpd =
           MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, http_port.get(*state),
