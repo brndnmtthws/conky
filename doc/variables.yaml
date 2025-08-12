@@ -1381,12 +1381,22 @@ values:
     desc: Album of the current MOC song.
   - name: moc_artist
     desc: Artist of the current MOC song.
+  - name: moc_bar
+    desc: Bar of the current MOC song's progress.
+    args:
+      - (height),(width)
   - name: moc_bitrate
     desc: Bitrate in the current MOC song.
+  - name: moc_avgbitrate
+    desc: Average bitrate in the current MOC song.
   - name: moc_curtime
     desc: Current time of the current MOC song.
+  - name: moc_cursec
+    desc: Current time of the current MOC song in seconds.
   - name: moc_file
     desc: File name of the current MOC song.
+  - name: moc_percent
+    desc: Percent of current MOC song's progress.
   - name: moc_rate
     desc: Rate of the current MOC song.
   - name: moc_song
@@ -1399,6 +1409,8 @@ values:
     desc: Title of the current MOC song.
   - name: moc_totaltime
     desc: Total length of the current MOC song.
+  - name: moc_totalsec
+    desc: Total length of the current MOC song in seconds.
   - name: monitor
     desc: |-
       Number of the monitor on which conky is running or the
@@ -1424,8 +1436,7 @@ values:
   - name: mpd_comment
     desc: Comment of current MPD song.
     args:
-      - (max
-      - length)
+      - (max-length)
   - name: mpd_date
     desc: Date of current song.
   - name: mpd_elapsed
