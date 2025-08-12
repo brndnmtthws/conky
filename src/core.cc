@@ -1663,9 +1663,15 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(moc_album, nullptr) obj->callbacks.print = &print_moc_album;
   END OBJ(moc_totaltime, nullptr) obj->callbacks.print = &print_moc_totaltime;
   END OBJ(moc_timeleft, nullptr) obj->callbacks.print = &print_moc_timeleft;
+  END OBJ(moc_totalsec, nullptr) obj->callbacks.print = &print_moc_totalsec;
   END OBJ(moc_curtime, nullptr) obj->callbacks.print = &print_moc_curtime;
+  END OBJ(moc_cursec, nullptr) obj->callbacks.print = &print_moc_cursec;
   END OBJ(moc_bitrate, nullptr) obj->callbacks.print = &print_moc_bitrate;
+  END OBJ(moc_avgbitrate, nullptr) obj->callbacks.print = &print_moc_avgbitrate;
   END OBJ(moc_rate, nullptr) obj->callbacks.print = &print_moc_rate;
+  END OBJ(moc_percent, nullptr) obj->callbacks.percentage = &moc_percentage;
+  END OBJ(moc_bar, nullptr) scan_bar(obj, arg, 1);
+  obj->callbacks.barval = &moc_barval;
 #endif /* BUILD_MOC */
 #ifdef BUILD_CMUS
   END OBJ(cmus_state, 0) obj->callbacks.print = &print_cmus_state;
