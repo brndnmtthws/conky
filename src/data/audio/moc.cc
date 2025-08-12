@@ -52,8 +52,6 @@ struct moc_result {
 
 class moc_cb : public conky::callback<moc_result> {
   using Base = conky::callback<moc_result>;
- private:
-  int time_string_to_int(const std::string& time_str );
 
  protected:
   void work() override;
@@ -61,25 +59,6 @@ class moc_cb : public conky::callback<moc_result> {
  public:
   explicit moc_cb(uint32_t period) : Base(period, false, Tuple()) {}
 };
-
-/* Convert string to integer. Meant to be used for time formats, such as "MM:SS"
- * and returns the number of seconds in the string.
- * If : is not present in the string, it will be assumed to only be integers,
- * and then use std::stoi. */
-int moc_cb::time_string_to_int(const std::string& time_str ) {
-  size_t colon_pos = time_str.find(':');
-  if (colon_pos != std::string::npos) {
-    std::string minutes_str = time_str.substr(0, colon_pos);
-    std::string seconds_str = time_str.substr(colon_pos + 1);
-
-    int minutes = std::stoi(minutes_str);
-    int seconds = std::stoi(seconds_str);
-
-    return (minutes * 60) + seconds;
-  } else {
-    return std::stoi(time_str);
-  }
-}
 
 void moc_cb::work() {
   moc_result moc;
@@ -100,7 +79,7 @@ void moc_cb::work() {
       /**
        * Parse infos. Example output of mocp -i:
        * State: PLAY
-       * File: /home/jojan/Korn - Falling Away From Me.ogg
+       * File: /home/user/music/Korn - Falling Away From Me.ogg
        * Title: 2 Korn - Falling Away From Me (Issues)
        * Artist: Korn
        * SongTitle: Falling Away From Me
