@@ -40,3 +40,10 @@ src/colour-names.hh
 
 # Ignore direnv
 .direnv
+
+# Built AppImages
+/conky*.AppImage
+/conky*.AppImage.sha256
+
+# Built manual
+/conky.1.gz
