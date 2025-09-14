@@ -35,7 +35,6 @@ jobs:
       - name: Install dependencies
         run: |
           brew install --force \
-            cmake              \
             curl               \
             freetype           \
             gettext            \
