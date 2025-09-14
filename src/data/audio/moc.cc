@@ -42,8 +42,11 @@ struct moc_result {
   std::string album;
   std::string totaltime;
   std::string timeleft;
+  std::string totalsec;
   std::string curtime;
+  std::string cursec;
   std::string bitrate;
+  std::string avgbitrate;
   std::string rate;
 };
 
@@ -73,7 +76,24 @@ void moc_cb::work() {
       if (fgets(line, 100, fp) == nullptr) { break; }
       if ((p = strrchr(line, '\n')) != nullptr) { *p = '\0'; }
 
-      /* Parse infos. */
+      /**
+       * Parse infos. Example output of mocp -i:
+       * State: PLAY
+       * File: /home/user/music/Korn - Falling Away From Me.ogg
+       * Title: 2 Korn - Falling Away From Me (Issues)
+       * Artist: Korn
+       * SongTitle: Falling Away From Me
+       * Album: Issues
+       * TotalTime: 04:31
+       * TimeLeft: 02:44
+       * TotalSec: 271
+       * CurrentTime: 01:47
+       * CurrentSec: 107
+       * Bitrate: 54kbps
+       * AvgBitrate: 233kbps
+       * Rate: 44kHz
+       **/
+      /* Match each line with their lengths, then store where data starts. */
       if (strncmp(line, "State:", 6) == 0) {
         moc.state = line + 7;
       } else if (strncmp(line, "File:", 5) == 0) {
@@ -90,10 +110,16 @@ void moc_cb::work() {
         moc.totaltime = line + 11;
       } else if (strncmp(line, "TimeLeft:", 9) == 0) {
         moc.timeleft = line + 10;
+      } else if (strncmp(line, "TotalSec:", 9) == 0) {
+        moc.totalsec = line + 10;
       } else if (strncmp(line, "CurrentTime:", 12) == 0) {
         moc.curtime = line + 13;
+      } else if (strncmp(line, "CurrentSec:", 11) == 0) {
+        moc.cursec = line + 12;
       } else if (strncmp(line, "Bitrate:", 8) == 0) {
         moc.bitrate = line + 9;
+      } else if (strncmp(line, "AvgBitrate:", 11) == 0) {
+        moc.avgbitrate = line + 12;
       } else if (strncmp(line, "Rate:", 5) == 0) {
         moc.rate = line + 6;
       }
@@ -128,8 +154,35 @@ MOC_PRINT_GENERATOR(song, "no song")
 MOC_PRINT_GENERATOR(album, "no album")
 MOC_PRINT_GENERATOR(totaltime, "0:00")
 MOC_PRINT_GENERATOR(timeleft, "0:00")
+MOC_PRINT_GENERATOR(totalsec, "0")
 MOC_PRINT_GENERATOR(curtime, "0:00")
-MOC_PRINT_GENERATOR(bitrate, "0Kbps")
-MOC_PRINT_GENERATOR(rate, "0KHz")
+MOC_PRINT_GENERATOR(cursec, "0")
+MOC_PRINT_GENERATOR(bitrate, "0kbps")
+MOC_PRINT_GENERATOR(avgbitrate, "0kbps")
+MOC_PRINT_GENERATOR(rate, "0kHz")
 
 #undef MOC_PRINT_GENERATOR
+
+double moc_barval(struct text_object * obj) {
+  (void)obj;
+  uint32_t period = std::max(
+      lround(music_player_interval.get(*state) / active_update_interval()),
+      1l);
+  const moc_result &moc = conky::register_cb<moc_cb>(period)->get_result_copy();
+  double progress;
+
+  int totalsec = atoi(moc.totalsec.c_str());
+  int cursec = atoi(moc.cursec.c_str());
+
+  if(totalsec == 0) {
+    progress = 0.0;
+  } else {
+    progress = ((double)cursec) / ((double)totalsec);
+  }
+
+  return progress;
+}
+
+uint8_t moc_percentage(struct text_object *obj){
+  return round_to_positive_int(100.0f * moc_barval(obj));
+}
