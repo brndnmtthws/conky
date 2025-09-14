@@ -30,6 +30,9 @@ jobs:
           - ubuntu-24.04
         arch:
           - x86_64
+        mode:
+          - debug
+          - release
     permissions:
       contents: write
       discussions: write
@@ -124,7 +127,7 @@ jobs:
             sccache-${{ matrix.os }}
             sccache-
       - name: Build AppImage
-        run: ./appimage/build.sh
+        run: ./appimage/build.sh --${{ matrix.mode }}
         env:
           RELEASE: "${{ startsWith(github.ref, 'refs/tags/') && 'ON' || 'OFF' }}"
       - name: Show sccache stats
@@ -133,19 +136,19 @@ jobs:
       - run: ./conky-x86_64.AppImage --version # print version
       - name: Set CONKY_VERSION
         run: echo "CONKY_VERSION=$(./conky-x86_64.AppImage --short-version)" | tee -a $GITHUB_ENV
-      - run: mv conky-x86_64.AppImage conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}.AppImage
-      - run: mv conky-x86_64.AppImage.sha256 conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}.AppImage.sha256
+      - run: mv conky-x86_64.AppImage conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage
+      - run: mv conky-x86_64.AppImage.sha256 conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage.sha256
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v4
         with:
-          path: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}.AppImage'
-          name: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}.AppImage'
+          path: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage'
+          name: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage'
           if-no-files-found: error
       - name: Upload AppImage checksum artifact
         uses: actions/upload-artifact@v4
         with:
-          path: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}.AppImage.sha256'
-          name: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}.AppImage.sha256'
+          path: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage.sha256'
+          name: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage.sha256'
           if-no-files-found: error
       - name: Upload man page artifact
         uses: actions/upload-artifact@v4
