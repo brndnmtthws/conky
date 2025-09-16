@@ -19,8 +19,8 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: nixbuild/nix-quick-install-action@v32
+      - uses: actions/checkout@v5
+      - uses: nixbuild/nix-quick-install-action@v33
       - name: Restore and cache Nix store
         uses: nix-community/cache-nix-action@v6
         with:
