@@ -64,7 +64,7 @@ jobs:
             ninja-build \
             wayland-protocols
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
