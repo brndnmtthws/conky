@@ -35,7 +35,7 @@ values:
       |`middle_left` (or `ml`)|`middle_middle` (or `mm`)|`middle_right` (or `mr`)|
       |`bottom_left` (or `bl`)|`bottom_middle` (or `bm`)|`bottom_right` (or `br`)|
 
-      In case of `panel` and `dock` windows, it might make more sense to use one
+      In case of `panel` and `dock` [windows](#own_window_type), it might make more sense to use one
       of the following aliases:
 
       | Alias  |     Value     |
@@ -46,7 +46,7 @@ values:
       |`bottom`|`bottom_middle`|
       |`center`|`middle_middle`|
 
-      See also `gap_x` and `gap_y` settings.
+      See also [`gap_x`](#gap_x) and [`gap_y`](#gap_y) settings.
   - name: append_file
     desc: Append the file given as argument.
   - name: background
@@ -90,7 +90,7 @@ values:
     desc: |-
       Specify a default width for bars. If not specified, the
       default value is 0, which causes the bar to expand to fit the width of
-      your Conky window. If you set out_to_console = true, the default value
+      your Conky window. If you set [out_to_console](#out_to_console) = true, the default value
       will be 10 for the text version of the bar.
     default: 0
   - name: default_color
@@ -123,7 +123,7 @@ values:
   - name: detect_battery
     desc: |-
       One or more batteries to check in order to use
-      update_interval_on_battery (comma separated).
+      [update_interval_on_battery](#update_interval_on_battery) (comma separated).
     default: BAT0
   - name: disable_auto_reload
     desc: |-
@@ -154,7 +154,7 @@ values:
     desc: Draw shades.
   - name: extra_newline
     desc: |-
-      Put an extra newline at the end when writing to stdout,
+      Put an extra newline at the end when writing to [stdout](#out_to_console),
       useful for writing to awesome's wiboxes.
   - name: font
     desc: Font name in X, xfontsel can be used to get a nice font.
@@ -176,12 +176,12 @@ values:
     desc: |-
       Gap, in pixels, between right or left border of screen, same
       as passing -x at command line, e.g. gap_x 10. For other position
-      related stuff, see 'alignment'.
+      related stuff, see [`alignment`](#alignment).
   - name: gap_y
     desc: |-
       Gap, in pixels, between top or bottom border of screen, same
       as passing -y at command line, e.g. gap_y 10. For other position
-      related stuff, see 'alignment'.
+      related stuff, see [`alignment`](#alignment).
   - name: github_token
     desc: |-
       Specify API token for GitHub notifications.
@@ -210,7 +210,7 @@ values:
     default: 10080
   - name: http_refresh
     desc: |-
-      When this is set the page generated with out_to_http will
+      When this is set the page generated with [out_to_http](#out_to_http) will
       automatically refresh each interval.
     default: no
   - name: if_up_strictness
@@ -394,12 +394,12 @@ values:
   - name: out_to_x
     desc: |-
       When set to no, there will be no output in X (useful when
-      you also use things like out_to_console). If you set it to no, make
+      you also use things like [out_to_console](#out_to_console)). If you set it to no, make
       sure that it's placed before all other X-related setting (take the
       first line of your configfile to be sure).
     default: yes
   - name: override_utf8_locale
-    desc: Force UTF8. Requires XFT.
+    desc: Force UTF8. Requires [XFT](#use_xft).
   - name: overwrite_file
     desc: Overwrite the file given as argument.
   - name: own_window
@@ -417,13 +417,13 @@ values:
       Boolean, use ARGB visual? ARGB can be used for real transparency, note
       that a composite manager is required on X11.
       This option will not work as desired (in most cases) in conjunction with
-      'own_window_type override'.
+      ['own_window_type override'](#own_window_type).
   - name: own_window_class
     desc: Manually set the WM_CLASS name.
     default: Conky
   - name: own_window_colour
     desc: |-
-      If own_window_transparent no, set a specified background
+      If [own_window_transparent](#own_window_transparent) no, set a specified background
       colour. Takes either a hex value (e.g. '#ffffff'),
       a shorthand hex value (e.g. '#fff'), or a valid RGB name
       (see `/usr/lib/X11/rgb.txt`).
@@ -432,20 +432,20 @@ values:
       - color
   - name: own_window_hints
     desc: |-
-      If `own_window` is set, on X11 you may specify comma separated window
+      If [`own_window`](#own_window) is set, on X11 you may specify comma separated window
       manager hints to affect the way Conky displays.
 
       Following hints are some of the standard WM specification ones:
       - `above` indicates that conky should be on top of most windows.
       - `below` indicates that conky should be below most windows.
       - `skip_pager` indicates that conky should not be included on a
-        Pager. **Implied if** `own_window_type` is 'dock' or 'panel'.
+        Pager. **Implied if** [`own_window_type`](#own_window_type) is 'dock' or 'panel'.
       - `skip_taskbar` indicates that conky should not be included on a
-        taskbar. **Implied if** `own_window_type` is 'dock' or 'panel'.
+        taskbar. **Implied if** [`own_window_type`](#own_window_type) is 'dock' or 'panel'.
       - `sticky` indicates that the Window Manager SHOULD keep conky's
         position fixed on the screen, even when the virtual desktop scrolls.
       - `undecorated` indicates that conky shouldn't have any window
-        decorations (e.g. title bar). **Implied if** `own_window_type` is
+        decorations (e.g. title bar). **Implied if** [`own_window_type`](#own_window_type) is
         'dock' or 'panel'.
 
       Notes:
@@ -459,16 +459,16 @@ values:
     default: 'conky (<hostname>)'
   - name: own_window_transparent
     desc: |-
-      Make conky window transparent. If `own_window_argb_visual` is enabled,
+      Make conky window transparent. If [`own_window_argb_visual`](#own_window_argb_visual) is enabled,
       sets background opacity to 0%.
-    default: false
+    default: `false`
   - name: own_window_type
     desc: |-
       If `own_window` is set, under X11 you can specify type of window conky
       displayed as:
 
       - `normal` mode makes conky show as normal window. This mode can be
-        configured with use of `own_window_hints` setting.
+        configured with use of [`own_window_hints`](#own_window_hints) setting.
       - `desktop` windows are special windows that have no window decorations,
         are always visible on the desktop, do not appear in pager or taskbar,
         and are sticky across all workspaces. Many DEs include `desktop` windows
@@ -493,9 +493,9 @@ values:
         background) and are not under the control of the window manager. These
         will not work with DEs which draw desktop icons via custom
         panels/windows as those will cover conky.
-        `own_window_hints` are ignored for `override` windows.
+        [`own_window_hints`](#own_window_hints) are ignored for `override` windows.
 
-      To make conky mount on root window, set `own_window` to `false`.
+      To make conky mount on root window, set [`own_window`](#own_window) to `false`.
     default: normal
     args:
       - (normal|desktop|dock|panel|utility|override)
@@ -532,8 +532,8 @@ values:
       Enable storing graph data explicitly by ID. This avoids resets while
       using conditional colors. This option should be disabled while using
       graphs indirectly e.g. via execpi or lua_parse. Otherwise the graph
-      stays emtpy. The default value is true.
-    default: true
+      stays emtpy.
+    default: `true`
   - name: temperature_unit
     desc: |-
       Desired output unit of all objects displaying a temperature.
@@ -552,14 +552,15 @@ values:
       * `\\N` -> template argument N (starting from 1)
   - name: text_buffer_size
     desc: |-
-      Size of the standard text buffer (default is 256 bytes).
+      Size of the standard text buffer in bytes.
       This buffer is used for intermediary text, such as individual lines,
       output from $exec vars, and various other variables. Increasing the
       size of this buffer can drastically reduce Conky's performance, but
       will allow for more text display per variable. The size of this buffer
       cannot be smaller than the default value of 256 bytes.
     args:
-      - seconds
+      - integer_number
+    default: 256
   - name: times_in_seconds
     desc: |-
       If true, variables that output times output a number that
@@ -573,17 +574,18 @@ values:
     desc: |-
       If true, top name shows the full command line of each
       process, including arguments (whenever possible). Otherwise, only the
-      basename is displayed. Default value is false.
-    default: false
+      basename is displayed.
+    default: `false`
   - name: top_name_width
-    desc: Width for $top name value (defaults to 15 characters).
+    desc: Width for $top name value in characters.
+    default: 15
   - name: total_run_times
     desc: |-
       Total number of times for Conky to update before quitting.
       Zero makes Conky run forever.
   - name: units_spacer
     desc: String to place between values and units.
-    default: ''
+    default: '' (empty string)
   - name: update_interval
     desc: Update interval.
     args:
@@ -597,7 +599,7 @@ values:
   - name: use_spacer
     desc: |-
       Adds spaces around certain objects to stop them from moving
-      other things around. Arguments are left, right, and none (default).
+      other things around. May be `none` (default) or `left` or `right`.
       The old true/false values are deprecated and default to right/none
       respectively. Note that this only helps if you are using a mono font,
       such as Bitstream Vera Sans Mono.
