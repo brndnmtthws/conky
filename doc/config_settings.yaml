@@ -586,7 +586,7 @@ values:
       Zero makes Conky run forever.
   - name: units_spacer
     desc: String to place between values and units.
-    default: '' (empty string)
+    default: '`'' (empty string)`'
   - name: update_interval
     desc: Update interval.
     args:
