@@ -462,7 +462,7 @@ values:
     desc: |-
       Make conky window transparent. If [`own_window_argb_visual`](#own_window_argb_visual) is enabled,
       sets background opacity to 0%.
-    default: `false`
+    default: 'false'
   - name: own_window_type
     desc: |-
       If `own_window` is set, under X11 you can specify type of window conky
@@ -534,7 +534,7 @@ values:
       using conditional colors. This option should be disabled while using
       graphs indirectly e.g. via execpi or lua_parse. Otherwise the graph
       stays emtpy.
-    default: `true`
+    default: 'true'
   - name: temperature_unit
     desc: |-
       Desired output unit of all objects displaying a temperature.
@@ -576,7 +576,7 @@ values:
       If true, top name shows the full command line of each
       process, including arguments (whenever possible). Otherwise, only the
       basename is displayed.
-    default: `false`
+    default: 'false'
   - name: top_name_width
     desc: Width for $top name value in characters.
     default: 15
