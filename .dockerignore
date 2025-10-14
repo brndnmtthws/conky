@@ -6,9 +6,9 @@ Dockerfile
 .git/
 .gitlab-ci.yml
 
-.DS_Store
-*~
-.*.swp
+**/.DS_Store
+**/*~
+**/.*.swp
 Doxyfile
 patches/
 doc/conky.1
