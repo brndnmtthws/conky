@@ -114,7 +114,7 @@ const Search: React.FunctionComponent<SearchProps> = () => {
     const searchResult = fuse.search(value)
     setSearchResults(searchResult)
   }
-  const onChange = (value?: FuseResult<SearchItem>) => {
+  const onChange = (value: FuseResult<SearchItem> | null | undefined) => {
     if (value) {
       if (value.item.kind === 'var') {
         router.push(`/variables#${value.item.name}`, undefined, {
