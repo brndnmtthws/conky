@@ -938,9 +938,11 @@ void display_output_wayland::clear_text(int exposures) {
     color.alpha = own_window_argb_value.get(*state);
   }
 
+  cairo_set_operator(window->cr, CAIRO_OPERATOR_CLEAR);
+  cairo_paint(window->cr);
   cairo_set_source_rgba(window->cr, color.red / 255.0, color.green / 255.0,
                         color.blue / 255.0, color.alpha / 255.0);
-  cairo_set_operator(window->cr, CAIRO_OPERATOR_CLEAR);
+  cairo_set_operator(window->cr, CAIRO_OPERATOR_OVER);
   cairo_rectangle(window->cr, 0, 0, window->rectangle.width(),
                   window->rectangle.height());
   cairo_fill(window->cr);
