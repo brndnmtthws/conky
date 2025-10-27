@@ -36,7 +36,7 @@ if(NOT CMAKE_BUILD_TYPE)
     set(
       CMAKE_BUILD_TYPE Debug
       CACHE
-        STRING
+      STRING
         "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
       FORCE)
   else(MAINTAINER_MODE)
