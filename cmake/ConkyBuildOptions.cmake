@@ -44,8 +44,8 @@ if(NOT CMAKE_BUILD_TYPE)
     set(
       CMAKE_BUILD_TYPE RelWithDebInfo
       CACHE
-        STRING
-        "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+      STRING
+      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
       FORCE)
   endif(MAINTAINER_MODE)
 endif(NOT CMAKE_BUILD_TYPE)
@@ -96,7 +96,7 @@ option(BUILD_I18N "Enable if you want internationalization support" true)
 
 if(BUILD_I18N)
   set(LOCALE_DIR "${CMAKE_INSTALL_PREFIX}/share/locale"
-      CACHE STRING "Directory containing the locales")
+    CACHE STRING "Directory containing the locales")
 endif(BUILD_I18N)
 
 option(BUILD_COLOUR_NAME_MAP "Include mappings of colour name -> RGB (e.g. red -> ff0000)" true)
