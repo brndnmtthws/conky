@@ -1,4 +1,4 @@
-FROM ubuntu:jammy AS builder
+FROM ubuntu:noble AS builder
 
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive \
