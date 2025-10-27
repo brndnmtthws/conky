@@ -240,7 +240,7 @@ void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, const char 
   hb_buffer_set_unicode_funcs(buf, hb_glib_get_unicode_funcs());
   hb_buffer_set_language(buf, text_language);
   if (script != NULL) {
-    hb_buffer_set_script(buf, text_script); /* see hb-unicode.h */
+    hb_buffer_set_script(buf, text_script); /* see hb-common.h */
   }
   else {
     hb_buffer_guess_segment_properties(buf);
