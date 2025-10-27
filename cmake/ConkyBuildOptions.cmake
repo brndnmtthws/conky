@@ -37,7 +37,7 @@ if(NOT CMAKE_BUILD_TYPE)
       CMAKE_BUILD_TYPE Debug
       CACHE
       STRING
-        "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
       FORCE)
   else(MAINTAINER_MODE)
     message(STATUS "Default build type: RelWithDebInfo")
@@ -103,7 +103,7 @@ option(BUILD_COLOUR_NAME_MAP "Include mappings of colour name -> RGB (e.g. red -
 
 # Some standard options
 set(SYSTEM_CONFIG_FILE "/etc/conky/conky.conf"
-    CACHE STRING "Default system-wide Conky configuration file")
+  CACHE STRING "Default system-wide Conky configuration file")
 
 # use FORCE below to make sure this changes when CMAKE_INSTALL_PREFIX is
 # modified
@@ -112,8 +112,8 @@ if(NOT LIB_INSTALL_DIR)
 endif(NOT LIB_INSTALL_DIR)
 
 set(PACKAGE_LIBRARY_DIR "${LIB_INSTALL_DIR}/conky"
-    CACHE STRING "Package library path (where Lua bindings are installed"
-    FORCE)
+  CACHE STRING "Package library path (where Lua bindings are installed"
+  FORCE)
 set(DEFAULTNETDEV "eno1" CACHE STRING "Default networkdevice")
 
 # Mac only override
@@ -122,13 +122,13 @@ if(OS_DARWIN)
 endif(OS_DARWIN)
 
 set(XDG_CONFIG_FILE "$HOME/.config/conky/conky.conf"
-    CACHE STRING "Configfile of the user (XDG)")
+  CACHE STRING "Configfile of the user (XDG)")
 set(CONFIG_FILE "$HOME/.conkyrc" CACHE STRING "Configfile of the user")
 set(MAX_USER_TEXT_DEFAULT "16384"
-    CACHE STRING
-          "Default maximum size of config TEXT buffer, i.e. below TEXT line.")
+  CACHE STRING
+  "Default maximum size of config TEXT buffer, i.e. below TEXT line.")
 set(DEFAULT_TEXT_BUFFER_SIZE "256"
-    CACHE STRING "Default size used for temporary, static text buffers")
+  CACHE STRING "Default size used for temporary, static text buffers")
 set(MAX_NET_INTERFACES "256" CACHE STRING "Maximum number of network devices")
 
 # Platform specific options Linux only
@@ -168,7 +168,7 @@ option(BUILD_BUILTIN_CONFIG "Enable builtin default configuration" true)
 option(BUILD_IOSTATS "Enable disk I/O stats" true)
 
 option(BUILD_OLD_CONFIG "Enable support for the old syntax of configurations"
-       true)
+  true)
 
 option(BUILD_MATH "Enable math support" true)
 
@@ -294,13 +294,13 @@ option(BUILD_ICONV "Enable iconv support" false)
 option(BUILD_CMUS "Enable support for cmus music player" true)
 
 option(BUILD_JOURNAL "Enable support for reading from the systemd journal"
-       false)
+  false)
 
 option(BUILD_PULSEAUDIO
-       "Enable support for Pulseaudio's default sink and source" false)
+  "Enable support for Pulseaudio's default sink and source" false)
 
 option(BUILD_INTEL_BACKLIGHT
-       "Enable support for Intel backlight" false)
+  "Enable support for Intel backlight" false)
 
 run_dependency_checks()
 
@@ -318,6 +318,6 @@ message(STATUS "CMAKE_CXX_FLAGS_RELEASE: " ${CMAKE_CXX_FLAGS_RELEASE})
 
 message(STATUS "CMAKE_C_FLAGS_RELWITHDEBINFO: " ${CMAKE_C_FLAGS_RELWITHDEBINFO})
 message(STATUS "CMAKE_CXX_FLAGS_RELWITHDEBINFO: "
-               ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
+  ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
 
 message(STATUS "CMAKE_BUILD_TYPE: " ${CMAKE_BUILD_TYPE})
