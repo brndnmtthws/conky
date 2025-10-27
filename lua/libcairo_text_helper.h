@@ -4,7 +4,7 @@
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2005-2021 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2025 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -443,5 +443,8 @@ void cairo_text_hp_text_size( const char *text, const char *font, int font_size,
 
   *width = string_width_in_pixels;
   *height = string_height_in_pixels;
+
+  free(cairo_glyphs);
+  hb_buffer_destroy(buf);
 }
 #endif
