@@ -3,7 +3,7 @@
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2021 Brenden Matthews, et. al. (see AUTHORS) All rights
+# Copyright (c) 2005-2025 Brenden Matthews, et. al. (see AUTHORS) All rights
 # reserved.
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -24,21 +24,21 @@ add_definitions(-DTOLUA_RELEASE)
 
 # NOTE: Don't chain options in IFs here, their dependency is already handled by
 # ConkyBuildOptions.cmake
-  if(BUILD_LUA_CAIRO)
-    include_directories(${luacairo_includes} ${CMAKE_CURRENT_SOURCE_DIR})
+if(BUILD_LUA_CAIRO)
+  include_directories(${luacairo_includes} ${CMAKE_CURRENT_SOURCE_DIR})
 
-    # cairo_set_dash() needs this special hack to work properly if you have a
-    # better solution, please let me know
-    wrap_tolua(luacairo_src cairo.pkg libcairo.patch)
+  # cairo_set_dash() needs this special hack to work properly if you have a
+  # better solution, please let me know
+  wrap_tolua(luacairo_src cairo.pkg libcairo.patch)
 
   add_library(conky-cairo MODULE ${luacairo_src})
-    set_target_properties(conky-cairo PROPERTIES OUTPUT_NAME "cairo")
+  set_target_properties(conky-cairo PROPERTIES OUTPUT_NAME "cairo")
 
-    target_link_libraries(conky-cairo ${luacairo_libs} toluapp_lib_static)
-    set(lua_libs ${lua_libs} conky-cairo)
+  target_link_libraries(conky-cairo ${luacairo_libs} toluapp_lib_static)
+  set(lua_libs ${lua_libs} conky-cairo)
 
-    print_target_properties(conky-cairo)
-  endif(BUILD_LUA_CAIRO)
+  print_target_properties(conky-cairo)
+endif(BUILD_LUA_CAIRO)
 
 if(BUILD_LUA_CAIRO_XLIB)
   include_directories(${luacairoxlib_includes} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -60,39 +60,39 @@ if(BUILD_LUA_CAIRO_XLIB)
   print_target_properties(conky-cairo_xlib)
 endif(BUILD_LUA_CAIRO_XLIB)
 
-  if(BUILD_LUA_IMLIB2)
+if(BUILD_LUA_IMLIB2)
   include_directories(${luaimlib2_includes} ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/src)
 
-    if(IMLIB2_VERSION VERSION_GREATER_EQUAL "1.10.0")
-      wrap_tolua(luaimlib2_src imlib2.pkg)
-    else(IMLIB2_VERSION VERSION_GREATER_EQUAL "1.10.0")
-      wrap_tolua(luaimlib2_src imlib2_old.pkg)
-    endif(IMLIB2_VERSION VERSION_GREATER_EQUAL "1.10.0")
+  if(IMLIB2_VERSION VERSION_GREATER_EQUAL "1.10.0")
+    wrap_tolua(luaimlib2_src imlib2.pkg)
+  else(IMLIB2_VERSION VERSION_GREATER_EQUAL "1.10.0")
+    wrap_tolua(luaimlib2_src imlib2_old.pkg)
+  endif(IMLIB2_VERSION VERSION_GREATER_EQUAL "1.10.0")
 
   add_library(conky-imlib2 MODULE ${luaimlib2_src})
-    set_target_properties(conky-imlib2 PROPERTIES OUTPUT_NAME "imlib2")
+  set_target_properties(conky-imlib2 PROPERTIES OUTPUT_NAME "imlib2")
 
-    target_link_libraries(conky-imlib2 ${luaimlib2_libs} toluapp_lib_static)
-    set(lua_libs ${lua_libs} conky-imlib2)
+  target_link_libraries(conky-imlib2 ${luaimlib2_libs} toluapp_lib_static)
+  set(lua_libs ${lua_libs} conky-imlib2)
 
-    print_target_properties(conky-imlib2)
-  endif(BUILD_LUA_IMLIB2)
+  print_target_properties(conky-imlib2)
+endif(BUILD_LUA_IMLIB2)
 
-  if(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
-    include_directories(${luacairo_includes} ${luaimlib2_includes}
-                        ${CMAKE_CURRENT_SOURCE_DIR})
-    wrap_tolua(luacairo_imlib2_helper_src cairo_imlib2_helper.pkg)
+if(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
+  include_directories(${luacairo_includes} ${luaimlib2_includes}
+    ${CMAKE_CURRENT_SOURCE_DIR})
+  wrap_tolua(luacairo_imlib2_helper_src cairo_imlib2_helper.pkg)
 
   add_library(conky-cairo_imlib2_helper MODULE ${luacairo_imlib2_helper_src})
-    set_target_properties(conky-cairo_imlib2_helper
-                          PROPERTIES OUTPUT_NAME "cairo_imlib2_helper")
+  set_target_properties(conky-cairo_imlib2_helper
+    PROPERTIES OUTPUT_NAME "cairo_imlib2_helper")
 
-    target_link_libraries(conky-cairo_imlib2_helper
-                          ${luacairo_libs}
-                          ${luaimlib2_libs}
-                          toluapp_lib_static)
-    set(lua_libs ${lua_libs} conky-cairo_imlib2_helper)
-  endif(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
+  target_link_libraries(conky-cairo_imlib2_helper
+    ${luacairo_libs}
+    ${luaimlib2_libs}
+    toluapp_lib_static)
+  set(lua_libs ${lua_libs} conky-cairo_imlib2_helper)
+endif(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
 
 if(BUILD_LUA_RSVG)
   include_directories(${luarsvg_includes} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -109,20 +109,20 @@ endif(BUILD_LUA_RSVG)
 
 if(BUILD_LUA_CAIRO AND BUILD_LUA_TEXT)
   include_directories(${luacairo_includes} ${luatext_includes}
-                      ${CMAKE_CURRENT_SOURCE_DIR})
+    ${CMAKE_CURRENT_SOURCE_DIR})
   wrap_tolua(luacairo_text_helper_src cairo_text_helper.pkg)
 
   add_library(conky-cairo_text_helper MODULE ${luacairo_text_helper_src})
   set_target_properties(conky-cairo_text_helper
-                        PROPERTIES OUTPUT_NAME "cairo_text_helper")
+    PROPERTIES OUTPUT_NAME "cairo_text_helper")
 
   target_link_libraries(conky-cairo_text_helper
-                        ${luacairo_libs}
-                        ${luatext_libs}
-                        toluapp_lib_static)
+    ${luacairo_libs}
+    ${luatext_libs}
+    toluapp_lib_static)
   set(lua_libs ${lua_libs} conky-cairo_text_helper)
 endif(BUILD_LUA_CAIRO AND BUILD_LUA_TEXT)
 
 install(TARGETS ${lua_libs}
-        LIBRARY DESTINATION ${LIB_INSTALL_DIR}/conky
-        ARCHIVE DESTINATION ${LIB_INSTALL_DIR}/conky)
+  LIBRARY DESTINATION ${LIB_INSTALL_DIR}/conky
+  ARCHIVE DESTINATION ${LIB_INSTALL_DIR}/conky)
