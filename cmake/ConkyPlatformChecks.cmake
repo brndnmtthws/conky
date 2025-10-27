@@ -56,6 +56,13 @@ set(conky_libs ${conky_libs} ${CLOCK_GETTIME_LIB})
 # standard path to search for includes
 set(INCLUDE_SEARCH_PATH /usr/include /usr/local/include)
 
+# Detect CI
+if(DEFINED ENV{CI})
+  # For GitHub actions CI=true is set
+  set(ENV_IS_CI true)
+  mark_as_advanced(ENV_IS_CI)
+endif()
+
 # Set system vars
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
   set(OS_LINUX true)
@@ -65,7 +72,7 @@ endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
 
 if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
   set(OS_FREEBSD true)
-  set(conky_libs ${conky_libs} -lkvm -ldevstat -lintl -linotify)
+  set(conky_libs ${conky_libs} -lkvm -ldevstat -linotify)
 
   if(BUILD_IRC)
     set(conky_libs ${conky_libs} -lssl -lcrypto)
@@ -83,6 +90,7 @@ endif(CMAKE_SYSTEM_NAME MATCHES "DragonFly")
 
 if(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
   set(OS_OPENBSD true)
+  set(conky_libs ${conky_libs} -lkvm)
 else(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
   set(OS_OPENBSD false)
 endif(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
@@ -96,13 +104,14 @@ endif(CMAKE_SYSTEM_NAME MATCHES "SunOS")
 
 if(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
   set(OS_NETBSD true)
+  set(conky_libs ${conky_libs} -lkvm)
 else(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
   set(OS_NETBSD false)
 endif(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 
 if(CMAKE_SYSTEM_NAME MATCHES "Haiku")
   set(OS_HAIKU true)
-  set(conky_libs ${conky_libs} -lnetwork -lintl)
+  set(conky_libs ${conky_libs} -lnetwork)
 else(CMAKE_SYSTEM_NAME MATCHES "Haiku")
   set(OS_HAIKU false)
 endif(CMAKE_SYSTEM_NAME MATCHES "Haiku")
@@ -116,6 +125,7 @@ endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 if(NOT OS_LINUX
   AND NOT OS_FREEBSD
   AND NOT OS_OPENBSD
+  AND NOT OS_NETBSD
   AND NOT OS_DRAGONFLY
   AND NOT OS_SOLARIS
   AND NOT OS_HAIKU
@@ -134,6 +144,9 @@ endif(NOT
   OS_OPENBSD
   AND
   NOT
+  OS_NETBSD
+  AND
+  NOT
   OS_DRAGONFLY
   AND
   NOT
@@ -145,42 +158,44 @@ endif(NOT
   NOT
   OS_DARWIN)
 
-# Check for soundcard header
 if(OS_LINUX)
-  check_include_files("linux/soundcard.h" HAVE_SOME_SOUNDCARD_H)
-  check_include_files("linux/soundcard.h" HAVE_LINUX_SOUNDCARD_H)
   check_include_files("linux/sockios.h" HAVE_LINUX_SOCKIOS_H)
-elseif(OS_OPENBSD)
-  check_include_files("soundcard.h" HAVE_SOME_SOUNDCARD_H)
-else(OS_LINUX)
-  check_include_files("sys/soundcard.h" HAVE_SOME_SOUNDCARD_H)
 endif(OS_LINUX)
 
-if(BUILD_I18N AND OS_DRAGONFLY)
-  set(conky_libs ${conky_libs} -lintl)
-endif(BUILD_I18N AND OS_DRAGONFLY)
+# Handle Open Sound System
+if(BUILD_OPENSOUNDSYS)
+  if(OS_LINUX)
+    check_include_files("linux/soundcard.h" HAVE_SOUNDCARD_H)
+  elseif(OS_OPENBSD OR OS_NETBSD)
+    check_include_files("soundcard.h" HAVE_SOUNDCARD_H)
+    # OpenBSD (and FreeBSD?) provide emulation layer on top of sndio.
+    if(HAVE_SOUNDCARD_H)
+      find_library(OSS_AUDIO_LIB
+        NAMES ossaudio
+        PATHS /usr/lib
+        /usr/local/lib)
+      set(conky_libs ${conky_libs} ${OSS_AUDIO_LIB})
+    endif(HAVE_SOUNDCARD_H)
+else(OS_LINUX)
+    check_include_files("sys/soundcard.h" HAVE_SOUNDCARD_H)
+endif(OS_LINUX)
+endif(BUILD_OPENSOUNDSYS)
 
-if(BUILD_I18N AND OS_DARWIN)
-  find_path(LIBINTL_H_N libintl.h
-    PATHS /usr/local/opt/gettext/include
-    /usr/include
-    /usr/local/include
-    /usr/local/opt/include)
+if(BUILD_I18N)
+  include(FindIntl)
+  find_package(Intl)
 
-  if(LIBINTL_H_N)
-    include_directories(${LIBINTL_H_N})
-  else(LIBINTL_H_N)
-    message(FATAL_ERROR "Unable to find libintl.h (try `brew install gettext`)")
-  endif(LIBINTL_H_N)
+  if(NOT Intl_FOUND)
+    if(OS_DARWIN)
+      message(WARNING "Try running `brew install gettext` for I18N support")
+      # Should be present by default everywhere else
+    endif(OS_DARWIN)
+    message(FATAL_ERROR "Unable to find libintl")
+  endif(NOT Intl_FOUND)
 
-  find_library(INTL_LIB
-    NAMES intl
-    PATHS /usr/local/opt/gettext/lib
-    /usr/lib
-    /usr/local/lib
-    /usr/local/opt/lib)
-  set(conky_libs ${conky_libs} ${INTL_LIB})
-endif(BUILD_I18N AND OS_DARWIN)
+  include_directories(${Intl_INCLUDE_DIRS})
+  set(conky_libs ${conky_libs} ${Intl_LIBRARIES})
+endif(BUILD_I18N)
 
 if(BUILD_NCURSES AND OS_DARWIN)
   set(conky_libs ${conky_libs} -lncurses)
@@ -239,20 +254,45 @@ endif(BUILD_IPV6)
 
 if(BUILD_HTTP)
   pkg_check_modules(MICROHTTPD REQUIRED libmicrohttpd>=0.9.25)
-  set(conky_libs ${conky_libs} ${MICROHTTPD_LIBRARIES})
+  set(conky_libs ${conky_libs} ${MICROHTTPD_LINK_LIBRARIES})
   set(conky_includes ${conky_includes} ${MICROHTTPD_INCLUDE_DIRS})
 endif(BUILD_HTTP)
 
 if(BUILD_NCURSES)
   set(CURSES_NEED_NCURSES TRUE)
-  include(FindCurses)
 
-  if(NOT CURSES_FOUND)
-    message(FATAL_ERROR "Unable to find ncurses library")
-  endif(NOT CURSES_FOUND)
+  find_path(CURSES_INCLUDE_PATH
+    NAMES curses.h
+    PATH_SUFFIXES ncurses
+    PATHS /usr/include /usr/local/include /usr/pkg/include
+  )
 
-  set(conky_libs ${conky_libs} ${CURSES_LIBRARIES})
-  set(conky_includes ${conky_includes} ${CURSES_INCLUDE_DIR})
+  find_library(CURSES_LIBRARY
+    NAMES curses
+    PATHS /lib /usr/lib /usr/local/lib /usr/pkg/lib
+  )
+
+  find_package(PkgConfig QUIET)
+  if(PKG_CONFIG_FOUND)
+    pkg_search_module(NCURSES ncurses)
+    set(CURSES_LIBRARY ${NCURSES_LDFLAGS})
+  endif()
+
+  if(NOT CURSES_LIBRARY OR NOT CURSES_INCLUDE_PATH)
+    message(FATAL_ERROR "Unable to find curses library")
+  else(NOT CURSES_LIBRARY OR NOT CURSES_INCLUDE_PATH)
+    message(STATUS "curses found.")
+    message(STATUS "  include: ${CURSES_INCLUDE_PATH}")
+    message(STATUS "  lib: ${CURSES_LIBRARY}")
+  endif(NOT CURSES_LIBRARY OR NOT CURSES_INCLUDE_PATH)
+
+  set(conky_libs ${conky_libs} ${CURSES_LIBRARY})
+  set(conky_includes ${conky_includes} ${CURSES_INCLUDE_PATH})
+
+  if(OS_NETBSD)
+    cmake_path(GET CURSES_INCLUDE_PATH PARENT_PATH CURSES_PARENT)
+    set(conky_includes ${conky_includes} ${CURSES_PARENT})
+  endif(OS_NETBSD)
 endif(BUILD_NCURSES)
 
 if(BUILD_MYSQL)
@@ -375,7 +415,12 @@ if(BUILD_X11)
 
     # check for Xft
     if(BUILD_XFT)
-      find_package(Freetype REQUIRED)
+      if(FREETYPE_INCLUDE_DIR_freetype2)
+        set(FREETYPE_FOUND true)
+        set(conky_includes ${conky_includes} ${FREETYPE_INCLUDE_DIR_freetype2})
+      else(FREETYPE_INCLUDE_DIR_freetype2)
+        message(FATAL_ERROR "Unable to find freetype library")
+      endif(FREETYPE_INCLUDE_DIR_freetype2)
 
       if(NOT X11_Xft_FOUND)
         message(FATAL_ERROR "Unable to find Xft library")
@@ -457,34 +502,37 @@ if(BUILD_WAYLAND)
 
     # find 'wayland-scanner' executable
     pkg_get_variable(Wayland_SCANNER wayland-scanner wayland_scanner)
+    if(NOT Wayland_SCANNER)
+      message(FATAL_ERROR "Unable to find wayland-scanner")
+    endif(NOT Wayland_SCANNER)
   else(Wayland_FOUND AND wayland-protocols_FOUND)
-    message(FATAL_ERROR "Unable to find wayland-scanner and xdg-shell protocol")
+    message(FATAL_ERROR "Unable to find wayland or wayland protocols")
   endif(Wayland_FOUND AND wayland-protocols_FOUND)
 
   if(OS_DARWIN OR OS_DRAGONFLY OR OS_FREEBSD OR OS_NETBSD OR OS_OPENBSD)
     pkg_check_modules(EPOLL REQUIRED epoll-shim)
-    set(conky_libs ${conky_libs} ${EPOLL_LIBRARIES})
+    set(conky_libs ${conky_libs} ${EPOLL_LINK_LIBRARIES})
     set(conky_includes ${conky_includes} ${EPOLL_INCLUDE_DIRS})
   endif(OS_DARWIN OR OS_DRAGONFLY OR OS_FREEBSD OR OS_NETBSD OR OS_OPENBSD)
 
   pkg_check_modules(CAIRO REQUIRED cairo)
-  set(conky_libs ${conky_libs} ${CAIRO_LIBRARIES})
+  set(conky_libs ${conky_libs} ${CAIRO_LINK_LIBRARIES})
   set(conky_includes ${conky_includes} ${CAIRO_INCLUDE_DIR})
 
   pkg_check_modules(PANGO REQUIRED pango)
-  set(conky_libs ${conky_libs} ${PANGO_LIBRARIES})
+  set(conky_libs ${conky_libs} ${PANGO_LINK_LIBRARIES})
   set(conky_includes ${conky_includes} ${PANGO_INCLUDE_DIRS})
 
   pkg_check_modules(PANGOCAIRO pangocairo)
-  set(conky_libs ${conky_libs} ${PANGOCAIRO_LIBRARIES})
+  set(conky_libs ${conky_libs} ${PANGOCAIRO_LINK_LIBRARIES})
   set(conky_includes ${conky_includes} ${PANGOCAIRO_INCLUDE_DIRS})
 
   pkg_check_modules(PANGOFC pangofc)
-  set(conky_libs ${conky_libs} ${PANGOFC_LIBRARIES})
+  set(conky_libs ${conky_libs} ${PANGOFC_LINK_LIBRARIES})
   set(conky_includes ${conky_includes} ${PANGOFC_INCLUDE_DIRS})
 
   pkg_check_modules(PANGOFT2 pangoft2)
-  set(conky_libs ${conky_libs} ${PANGOFT2_LIBRARIES})
+  set(conky_libs ${conky_libs} ${PANGOFT2_LINK_LIBRARIES})
   set(conky_includes ${conky_includes} ${PANGOFT2_INCLUDE_DIRS})
 endif(BUILD_WAYLAND)
 
@@ -494,37 +542,37 @@ set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
 set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIR})
 include_directories(3rdparty/toluapp/include)
 
-  # Check for libraries used by Lua bindings
-  if(BUILD_LUA_CAIRO)
+# Check for libraries used by Lua bindings
+if(BUILD_LUA_CAIRO)
   pkg_check_modules(CAIRO REQUIRED cairo>=1.14)
-    set(luacairo_libs ${CAIRO_LIBRARIES} ${LUA_LIBRARIES})
-    set(luacairo_includes ${CAIRO_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
+  set(luacairo_libs ${CAIRO_LINK_LIBRARIES} ${LUA_LIBRARIES})
+  set(luacairo_includes ${CAIRO_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
 
   if(BUILD_LUA_CAIRO_XLIB)
     pkg_check_modules(CAIROXLIB REQUIRED cairo-xlib)
-    set(luacairo_libs ${CAIROXLIB_LIBRARIES} ${luacairo_libs})
+    set(luacairo_libs ${CAIROXLIB_LINK_LIBRARIES} ${luacairo_libs})
     set(luacairo_includes ${CAIROXLIB_INCLUDE_DIRS} ${luacairo_includes})
   endif(BUILD_LUA_CAIRO_XLIB)
 
-    find_program(APP_PATCH patch)
+  find_program(APP_PATCH patch)
 
-    if(NOT APP_PATCH)
-      message(FATAL_ERROR "Unable to find program 'patch'")
-    endif(NOT APP_PATCH)
-  endif(BUILD_LUA_CAIRO)
+  if(NOT APP_PATCH)
+    message(FATAL_ERROR "Unable to find program 'patch'")
+  endif(NOT APP_PATCH)
+endif(BUILD_LUA_CAIRO)
 
 if(BUILD_LUA_IMLIB2)
-    pkg_search_module(IMLIB2 REQUIRED imlib2 Imlib2)
-    set(luaimlib2_libs ${IMLIB2_LIBS} ${IMLIB2_LDFLAGS} ${LUA_LIBRARIES})
-    set(luaimlib2_includes
-      ${IMLIB2_INCLUDE_DIRS}
-      ${LUA_INCLUDE_DIR}
-      ${X11_INCLUDE_DIR})
+  pkg_search_module(IMLIB2 REQUIRED imlib2 Imlib2)
+  set(luaimlib2_libs ${IMLIB2_LIBS} ${IMLIB2_LDFLAGS} ${LUA_LIBRARIES})
+  set(luaimlib2_includes
+    ${IMLIB2_INCLUDE_DIRS}
+    ${LUA_INCLUDE_DIR}
+    ${X11_INCLUDE_DIR})
 endif(BUILD_LUA_IMLIB2)
 
 if(BUILD_LUA_RSVG)
   pkg_check_modules(RSVG REQUIRED librsvg-2.0>=2.52)
-  set(luarsvg_libs ${RSVG_LIBRARIES} ${LUA_LIBRARIES})
+  set(luarsvg_libs ${RSVG_LINK_LIBRARIES} ${LUA_LIBRARIES})
   set(luarsvg_includes ${RSVG_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
 endif(BUILD_LUA_RSVG)
 
@@ -547,7 +595,7 @@ if(BUILD_AUDACIOUS)
     pkg_check_modules(AUDACIOUS REQUIRED audacious<1.4.0)
   endif(NEW_AUDACIOUS_FOUND)
 
-  set(conky_libs ${conky_libs} ${AUDACIOUS_LIBRARIES} ${DBUS_GLIB_LIBRARIES})
+  set(conky_libs ${conky_libs} ${AUDACIOUS_LINK_LIBRARIES} ${DBUS_GLIB_LIBRARIES})
   set(conky_includes
     ${conky_includes}
     ${AUDACIOUS_INCLUDE_DIRS}
@@ -556,7 +604,7 @@ endif(BUILD_AUDACIOUS)
 
 if(BUILD_XMMS2)
   pkg_check_modules(XMMS2 REQUIRED xmms2-client>=0.6)
-  set(conky_libs ${conky_libs} ${XMMS2_LIBRARIES})
+  set(conky_libs ${conky_libs} ${XMMS2_LINK_LIBRARIES})
   set(conky_includes ${conky_includes} ${XMMS2_INCLUDE_DIRS})
 endif(BUILD_XMMS2)
 
@@ -596,26 +644,26 @@ endif(BUILD_JOURNAL)
 
 if(BUILD_PULSEAUDIO)
   pkg_check_modules(PULSEAUDIO REQUIRED libpulse)
-  set(conky_libs ${conky_libs} ${PULSEAUDIO_LIBRARIES})
+  set(conky_libs ${conky_libs} ${PULSEAUDIO_LINK_LIBRARIES})
   set(conky_includes ${conky_includes} ${PULSEAUDIO_INCLUDE_DIRS})
 endif(BUILD_PULSEAUDIO)
 
 if(WANT_CURL)
   pkg_check_modules(CURL REQUIRED libcurl)
-  set(conky_libs ${conky_libs} ${CURL_LIBRARIES})
+  set(conky_libs ${conky_libs} ${CURL_LINK_LIBRARIES})
   set(conky_includes ${conky_includes} ${CURL_INCLUDE_DIRS})
 endif(WANT_CURL)
 
 # Common libraries
 if(WANT_GLIB)
   pkg_check_modules(GLIB REQUIRED glib-2.0>=2.36)
-  set(conky_libs ${conky_libs} ${GLIB_LIBRARIES})
+  set(conky_libs ${conky_libs} ${GLIB_LINK_LIBRARIES})
   set(conky_includes ${conky_includes} ${GLIB_INCLUDE_DIRS})
 endif(WANT_GLIB)
 
 if(WANT_CURL)
   pkg_check_modules(CURL REQUIRED libcurl)
-  set(conky_libs ${conky_libs} ${CURL_LIBRARIES})
+  set(conky_libs ${conky_libs} ${CURL_LINK_LIBRARIES})
   set(conky_includes ${conky_includes} ${CURL_INCLUDE_DIRS})
 endif(WANT_CURL)
 

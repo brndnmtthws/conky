@@ -282,6 +282,7 @@ struct conky_valuator_info {
 struct device_info {
   /// @brief Device name.
   xi_device_id id;
+  xi_device_id master;
   std::string name;
   std::array<conky_valuator_info, VALUATOR_COUNT> valuators{};
 

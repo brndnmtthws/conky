@@ -37,6 +37,7 @@
 #include <clocale>
 #include <cmath>
 #include <cstdarg>
+#include <cstring>
 #include <ctime>
 #include <filesystem>
 #include <iostream>
@@ -66,15 +67,15 @@
 #endif /* HAVE_DIRENT_H */
 
 #include "common.h"
-#include "text_object.h"
+#include "content/text_object.h"
 
 #ifdef BUILD_WAYLAND
-#include "wl.h"
+#include "output/wl.h"
 #endif /* BUILD_WAYLAND */
 
 #ifdef BUILD_X11
-#include "x11-settings.h"
-#include "x11.h"
+#include "lua/x11-settings.h"
+#include "output/x11.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
@@ -101,55 +102,57 @@
 #endif /* BUILD_RSS */
 
 /* local headers */
-#include "colours.h"
+#include "content/colours.hh"
 #include "core.h"
-#include "diskio.h"
-#include "exec.h"
+#include "data/exec.h"
+#include "data/hardware/diskio.h"
 #ifdef BUILD_GUI
-#include "fonts.h"
-#include "gui.h"
+#include "lua/fonts.h"
+#include "output/gui.h"
 #endif /* BUILD_GUI */
-#include "fs.h"
+#include "data/fs.h"
 #ifdef BUILD_ICONV
-#include "iconv_tools.h"
+#include "data/iconv_tools.h"
 #endif /* BUILD_ICONV */
-#include "llua.h"
+#include "content/specials.h"
+#include "content/temphelper.h"
+#include "content/template.h"
+#include "data/network/mail.h"
+#include "data/network/net_stat.h"
+#include "data/timeinfo.h"
+#include "data/top.h"
 #include "logging.h"
-#include "mail.h"
-#include "nc.h"
-#include "net_stat.h"
-#include "specials.h"
-#include "temphelper.h"
-#include "template.h"
-#include "timeinfo.h"
-#include "top.h"
+#include "output/nc.h"
 
 #ifdef BUILD_MYSQL
-#include "mysql.h"
+#include "data/mysql.h"
 #endif /* BUILD_MYSQL */
 #ifdef BUILD_NVIDIA
-#include "nvidia.h"
+#include "data/hardware/nvidia.h"
 #endif /* BUILD_NVIDIA */
 #ifdef BUILD_CURL
-#include "ccurl_thread.h"
+#include "data/network/ccurl_thread.h"
 #endif /* BUILD_CURL */
 
-#include "display-output.hh"
-#include "lua-config.hh"
-#include "setting.hh"
+#include "lua/llua.h"
+#include "lua/lua-config.hh"
+#include "lua/setting.hh"
+#include "output/display-output.hh"
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
-#include "linux.h"
+#include "data/os/linux.h"
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-#include "freebsd.h"
+#include "data/os/freebsd.h"
 #elif defined(__DragonFly__)
-#include "dragonfly.h"
+#include "data/os/dragonfly.h"
 #elif defined(__OpenBSD__)
-#include "openbsd.h"
-#endif /* __OpenBSD__ */
+#include "data/os/openbsd.h"
+#elif defined(__NetBSD__)
+#include "data/os/netbsd.h"
+#endif
 
-#include "gradient.h"
+#include "content/gradient.hh"
 
 #ifdef BUILD_OLD_CONFIG
 #include "convertconf.h"
@@ -1396,8 +1399,10 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             }
 #ifdef BUILD_MATH
             if (show_graph_scale.get(*state) && (current->show_scale == 1)) {
-              // Set the foreground colour to the first colour, ensures the scale text is always drawn in the same colour
-              set_foreground_color(current->first_colour);
+              if (current->colours_set) {
+                  // Set the foreground colour to the first colour, ensures the scale text is always drawn in the same colour
+                  set_foreground_color(current->first_colour);
+              }
               int tmp_x = cur_x;
               int tmp_y = cur_y;
               cur_x += font_ascent() / 2;
@@ -1702,13 +1707,126 @@ bool is_on_battery() {  // checks if at least one battery specified in
 
 volatile sig_atomic_t g_sigterm_pending, g_sighup_pending, g_sigusr2_pending;
 
-void log_system_details() {
+void get_system_details() {
   char *session_ty = getenv("XDG_SESSION_TYPE");
-  char *session = getenv("GDMSESSION");
-  char *desktop = getenv("XDG_CURRENT_DESKTOP");
-  if (desktop != nullptr || session != nullptr) {
-    NORM_ERR("'%s' %s session running '%s' desktop", session, session_ty,
-             desktop);
+  if (session_ty == nullptr) {
+    info.system.session = conky::info::display_session::unknown;
+  } else if (std::strcmp(session_ty, "x11") == 0) {
+    info.system.session = conky::info::display_session::x11;
+  } else if (std::strcmp(session_ty, "wayland") == 0) {
+    info.system.session = conky::info::display_session::wayland;
+  } else {
+    info.system.session = conky::info::display_session::unknown;
+  }
+
+  info.system.wm_name = getenv("XDG_CURRENT_DESKTOP");
+  // Per spec, XDG_CURRENT_DESKTOP is a semicolon separated list. In practice,
+  // nearly all WM/DEs simply define a single name.
+  // Others below are non-standard:
+  if (info.system.wm_name == nullptr) {
+    info.system.wm_name = getenv("XDG_SESSION_DESKTOP");
+  }
+  if (info.system.wm_name == nullptr) {
+    info.system.wm_name = getenv("DESKTOP_SESSION");
+  }
+  if (info.system.wm_name == nullptr) {
+    info.system.wm_name = getenv("GDMSESSION");
+  }
+
+#ifdef ENABLE_RUNTIME_TWEAKS
+  const auto is_wayland = [&]() {
+#ifndef BUILD_WAYLAND
+    return info.system.session == conky::info::display_session::wayland;
+#else
+    // ignore wayland WMs
+    return false;
+#endif
+  };
+
+  const auto is_session = [&](auto &&...names) {
+    return ((std::strcmp(info.system.wm_name, names) == 0) || ...);
+  };
+
+  // Only add is_wayland guard for WM/DE that will never support another display
+  // session protocol. e.g. Budgie will (or has) switch(ed) to Wayland at some
+  // point, but older versions may use X11, so it needs to be detected for both
+  // X11 and Wayland.
+  if (info.system.wm_name == nullptr) {
+    goto unknown_session;
+  } else if (is_session("GNOME")) {
+    info.system.wm = conky::info::window_manager::mutter;
+  } else if (is_session("GNOME Classic", "metacity")) {
+    info.system.wm = conky::info::window_manager::metacity;
+  } else if (is_session("MATE")) {
+    info.system.wm = conky::info::window_manager::marco;
+  } else if (is_session("XFCE", "XFCE4")) {
+    info.system.wm = conky::info::window_manager::xfwm;
+  } else if (is_session("KDE", "Plasma", "KDE Plasma")) {
+    info.system.wm = conky::info::window_manager::kwin;
+  } else if (is_session("LXDE", "LXQt")) {
+    info.system.wm = conky::info::window_manager::openbox;
+  } else if (is_session("Unity")) {
+    info.system.wm = conky::info::window_manager::compiz;
+  } else if (is_session("Cinnamon")) {
+    info.system.wm = conky::info::window_manager::mutter;  // Muffin → Mutter
+  } else if (!is_wayland() && is_session("Openbox")) {
+    // Openbox doesn't set any session name env variables; must be set manually
+    info.system.wm = conky::info::window_manager::openbox;
+  } else if (!is_wayland() && is_session("Fluxbox")) {
+    // Fluxbox doesn't set any session name env variables; must be set manually 
+    info.system.wm = conky::info::window_manager::fluxbox;
+  } else if (!is_wayland() && (is_session("i3", "i3wm"))) {
+    info.system.wm = conky::info::window_manager::i3;
+  } else if (is_wayland() && is_session("Hyprland")) {
+    info.system.wm = conky::info::window_manager::hyprland;
+  } else if (is_wayland() && is_session("Sway")) {
+    info.system.wm = conky::info::window_manager::sway;
+  } else if (!is_wayland() && is_session("bspwm")) {
+    info.system.wm = conky::info::window_manager::bspwm;
+  } else if (is_session("awesome")) {
+    // some talks about adding Wayland support
+    info.system.wm = conky::info::window_manager::awesome;
+  } else if (!is_wayland() && is_session("dwm")) {
+    info.system.wm = conky::info::window_manager::dwm;
+  } else if (!is_wayland() && is_session("herbstluftwm")) {
+    info.system.wm = conky::info::window_manager::herbstluftwm;
+  } else if (!is_wayland() && is_session("qtile")) {
+    info.system.wm = conky::info::window_manager::qtile;
+  } else if (!is_wayland() && is_session("windowmaker")) {
+    info.system.wm = conky::info::window_manager::windowmaker;
+  } else if (is_wayland() && is_session("Wayfire")) {
+    info.system.wm = conky::info::window_manager::wayfire;
+  } else if (is_wayland() && is_session("River")) {
+    info.system.wm = conky::info::window_manager::river;
+  } else if (is_session("Budgie")) {
+    info.system.wm = conky::info::window_manager::mutter;  // Budgie → Mutter
+  } else if (is_session("Deepin")) {
+    info.system.wm = conky::info::window_manager::dde;
+  } else if (is_session("Enlightenment", "E17")) {
+    info.system.wm = conky::info::window_manager::enlightenment;
+  } else {
+  unknown_session:
+    info.system.wm_name = "unknown";
+    info.system.wm = conky::info::window_manager::unknown;
+
+    // probably a misconfigured system... let's attempt a few more things
+    if (getenv("CINNAMON_VERSION") != nullptr) {
+      info.system.wm_name = "Cinnamon";
+      info.system.wm = conky::info::window_manager::mutter;
+    }
+
+    // TODO: Doesn't work yet. Process information is not yet populated.
+    if (is_process_running("openbox")) {
+      info.system.wm_name = "Openbox";
+      info.system.wm = conky::info::window_manager::openbox;
+    }
+  }
+#endif
+
+  if (info.system.wm_name != nullptr) {
+    NORM_ERR("'%s' %s session running", info.system.wm_name, session_ty);
+  } else {
+    NORM_ERR("unknown %s session running", session_ty);
   }
 }
 
@@ -1734,7 +1852,7 @@ void main_loop() {
   sigaddset(&newmask, SIGUSR1);
 #endif
 
-  log_system_details();
+  get_system_details();
 
   last_update_time = 0.0;
   next_update_time = get_time() - fmod(get_time(), active_update_interval());
@@ -1981,40 +2099,6 @@ void load_config_file() {
   lua::stack_sentry s(l);
   l.checkstack(2);
 
-  // Extend lua package.path so scripts can use relative paths
-  {
-    struct stat file_stat {};
-
-    std::string path_ext;
-
-    // add XDG directory to lua path
-    auto xdg_path =
-        std::filesystem::path(to_real_path(XDG_CONFIG_FILE)).parent_path();
-    if (stat(xdg_path.c_str(), &file_stat) == 0) {
-      path_ext.push_back(';');
-      path_ext.append(xdg_path);
-      path_ext.append("/?.lua");
-    }
-
-    auto parent_path = current_config.parent_path();
-    if (xdg_path != parent_path && stat(path_ext.c_str(), &file_stat) == 0) {
-      path_ext.push_back(';');
-      path_ext.append(parent_path);
-      path_ext.append("/?.lua");
-    }
-
-    l.getglobal("package");
-    l.getfield(-1, "path");
-
-    auto path = l.tostring(-1);
-    path.append(path_ext);
-    l.pop();
-    l.pushstring(path.c_str());
-
-    l.setfield(-2, "path");
-    l.pop();
-  }
-
   try {
 #ifdef BUILD_BUILTIN_CONFIG
     if (current_config == builtin_config_magic) {
@@ -2061,7 +2145,7 @@ void load_config_file() {
 
 inline void reset_optind() {
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
-    defined(__OpenBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
+    defined(__OpenBSD__) || defined(__DragonFly__)
   optind = optreset = 1;
 #else
   optind = 0;
@@ -2107,9 +2191,10 @@ void set_current_config() {
 /* : means that character before that takes an argument */
 const char *getopt_string =
     "vVqdDSs:t:u:i:hc:p:"
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
+    defined(__HAIKU__) || defined(__NetBSD__) || defined(__OpenBSD__)
     "U"
-#endif /* Linux || FreeBSD */
+#endif /* Linux || FreeBSD || Haiku || NetBSD || OpenBSD */
 #ifdef BUILD_X11
     "x:y:w:a:X:m:f:"
 #ifdef OWN_WINDOW
@@ -2140,9 +2225,10 @@ const struct option longopts[] = {
 #endif /* BUILD_X11 */
     {"text", 1, nullptr, 't'},          {"interval", 1, nullptr, 'u'},
     {"pause", 1, nullptr, 'p'},
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
+    defined(__HAIKU__) || defined(__NetBSD__) || defined(__OpenBSD__)
     {"unique", 0, nullptr, 'U'},
-#endif /* Linux || FreeBSD */
+#endif /* Linux || FreeBSD || Haiku || NetBSD || OpenBSD */
     {nullptr, 0, nullptr, 0}
 };
 
@@ -2165,6 +2251,7 @@ void initialisation(int argc, char **argv) {
   set_default_configurations();
 
   set_current_config();
+  llua_init();
   load_config_file();
 
   /* handle other command line arguments */

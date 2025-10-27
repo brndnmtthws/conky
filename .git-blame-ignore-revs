@@ -1,0 +1,68 @@
+# Run this command to always ignore formatting commits in `git blame`
+# git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Following commits only reformat/cleanup code and can be ignored when tracking
+# down regressions and introduced bugs:
+
+### Clarifying licensing (SVN@904)
+# Updates license headers
+27b4c8550cfae4fd0f2169962e33f4907a8e7d71
+
+### Reformatted all code (SVN@1007)
+3d26a4880e92df2c6004d85c1be458e35c6bfc3a
+
+# Spelling fixes
+b62e1158300f0644b304f2f8b7e8105ba09073b3
+
+### outsource the whole template object machinery
+# Moves template variables code from core.c into template.c
+ff199355f66216600c4bdc6bec4743afe5b61470
+
+### Add formatting/static analysis (#486)
+# Large cleanup of codebase that fixed indentation in most files
+eebc8c653b34eb946d23ceb913ed5d69cc22f10e
+
+### Build improvements: clang-tidy, sonar, Dockerfile. (#488)
+# Touches most files with minor changes (NULL -> nullptr)
+4b92556fca9cbede3cbac4112f0a24b554390099
+
+### Use clang-format
+# Applies clang-format formatting
+033508a93e6b0440ddbd2376c1e97b69e3308687
+
+### Move X11 stuff from conky.cc to display-x11
+281097a2a562ef58e5604a3519f739c715ba5410
+
+### Get rid of silly `if (not ...` expressions (#713)
+3a3092902ee8a5fda71996d264f981b98375c6a3
+
+### Fix docbook2x handling.
+# Large diff, affects only docbook2x which is no longer used
+c6ad28074af3ec1bb4b3cc052df58062ce2a7c9b
+
+### Fix MAINTAINER_MODE (-Wall -Werror -Wpedantic) (#714)
+# Large diff, minor refactoring changes
+9af6fa7903c5cb6f05614deac23373d4d0cf5959
+
+### Refactor docs, make a new website
+# Large diff, no changes affecting code
+47ad3f9982baea4069a5c37ffdb2e1523e504f18
+
+### Fix issues building without BUILD_ARGB flag
+# Changes a lot of indentations in x11.cc
+f6d42c5a69fed134a8b4ed0602c892f6f7b6e242
+### Fix DependentOptions splitting arguments on spaces
+# Again, indentation changes in x11.cc
+cbebe447078e28c50957d568303f42d6b8aae126
+
+### Cleanup build flags, global namespace and includes (#1841)
+# Large refactor of global namespace
+# Includes changes to functionality so it can't be ignored:
+# color parsing, text alignment, output registration
+# 6adf6b9dd4d368640bf7ef57f3e6199d83154d78
+
+### Move sources into appropriate subdirectories (#2119)
+# Performed no changes to the source files, only moved them. Child commit
+# addressed the bugs caused by the move, to separate renames from changes.
+342f07b8ca101e0c4ef5c75346033c4df241d16d
+ae8f1fa8472d6c3a31b4a09be4d19568a3f3f23e

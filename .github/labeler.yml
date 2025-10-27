@@ -1,33 +1,36 @@
 documentation:
   - changed-files:
       - any-glob-to-any-file:
-          - doc/*
           - doc/**/*
           - data/conky*.conf
 
 extras:
   - changed-files:
       - any-glob-to-any-file:
-          - extras/*
           - extras/**/*
 
 sources:
   - changed-files:
       - any-glob-to-any-file:
-          - src/*
           - src/**/*
 
 tests:
   - changed-files:
       - any-glob-to-any-file:
           - tests/**/*
-          - tests/*
 
 web:
   - changed-files:
       - any-glob-to-any-file:
-          - web/*
           - web/**/*
+
+javascript:
+  - changed-files:
+      - any-glob-to-any-file:
+          - web/**/*.tsx
+          - web/**/*.jsx
+          - web/**/*.ts
+          - web/**/*.js
 
 appimage:
   - changed-files:
@@ -38,7 +41,6 @@ appimage:
 3rdparty:
   - changed-files:
       - any-glob-to-any-file:
-          - 3rdparty/*
           - 3rdparty/**/*
 
 gh-actions:
@@ -58,78 +60,60 @@ dependencies:
 audio:
   - changed-files:
       - any-glob-to-any-file:
-          - src/audacious.cc
-          - src/audacious.h
-          - src/cmus.cc
-          - src/cmus.h
-          - src/libmpdclient.cc
-          - src/libmpdclient.h
-          - src/mpd.cc
-          - src/mpd.h
-          - src/moc.cc
-          - src/moc.h
-          - src/mixer.cc
-          - src/mixer.h
-          - src/xmms2.cc
-          - src/xmms2.h
-          - src/pulseaudio.cc
-          - src/pulseaudio.h
+          - src/data/audio/**/*
 
 power:
   - changed-files:
       - any-glob-to-any-file:
-          - src/apcupsd.cc
-          - src/apcupsd.h
-          - src/bsdapm.cc
-          - src/bsdapm.h
-          - src/smapi.cc
-          - src/smapi.h
+          - src/data/hardware/apcupsd.cc
+          - src/data/hardware/apcupsd.h
+          - src/data/hardware/bsdapm.cc
+          - src/data/hardware/bsdapm.h
+          - src/data/hardware/smapi.cc
+          - src/data/hardware/smapi.h
 
 'display: console':
   - changed-files:
       - any-glob-to-any-file:
-          - src/display-console.cc
-          - src/display-console.hh
+          - src/output/display-console.cc
+          - src/output/display-console.hh
 'display: file':
   - changed-files:
       - any-glob-to-any-file:
-          - src/display-file.cc
-          - src/display-file.hh
+          - src/output/display-file.cc
+          - src/output/display-file.hh
 'display: http':
   - changed-files:
       - any-glob-to-any-file:
-          - src/display-http.cc
-          - src/display-http.hh
+          - src/output/display-http.cc
+          - src/output/display-http.hh
 'display: ncurses':
   - changed-files:
       - any-glob-to-any-file:
-          - src/nc.cc
-          - src/nc.h
-          - src/display-ncurses.cc
-          - src/display-ncurses.hh
+          - src/output/nc.cc
+          - src/output/nc.h
+          - src/output/display-ncurses.cc
+          - src/output/display-ncurses.hh
 'display: wayland':
   - changed-files:
       - any-glob-to-any-file:
-          - src/wl.cc
-          - src/wl.h
-          - src/wlr-layer-shell-unstable-v1.xml
-          - src/display-wayland.cc
-          - src/display-wayland.hh
+          - src/wl_protocols/**/*
+          - src/output/wl.cc
+          - src/output/wl.h
+          - src/output/display-wayland.cc
+          - src/output/display-wayland.hh
 'display: x11':
   - changed-files:
       - any-glob-to-any-file:
-          - src/x11-color.cc
-          - src/x11-color.h
-          - src/x11.cc
-          - src/x11.h
-          - src/display-x11.cc
-          - src/display-x11.hh
+          - src/output/*x11*.cc
+          - src/output/*x11*.h
+          - src/output/*x11*.hh
 
 'build system':
   - changed-files:
       - any-glob-to-any-file:
-          - '**/CMakeLists.txt'
-          - '*.cmake'
+          - 'CMakeLists.txt'
+          - 'cmake/**/*'
 
 cairo:
   - changed-files:
@@ -139,78 +123,122 @@ cairo:
 'disk io':
   - changed-files:
       - any-glob-to-any-file:
-          - src/diskio.cc
-          - src/diskio.h
+          - src/data/hardware/diskio.cc
+          - src/data/hardware/diskio.h
+
+'sensors':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/data/hardware/hddtemp.cc
+          - src/data/hardware/hddtemp.h
+          - src/data/hardware/i8k.cc
+          - src/data/hardware/i8k.h
+          - src/data/hardware/sony.cc
+          - src/data/hardware/sony.h
 
 cpu:
   - changed-files:
       - any-glob-to-any-file:
-          - src/cpu.cc
-          - src/cpu.h
-          - src/proc.cc
-          - src/proc.h
-          - src/top.cc
-          - src/top.h
+          - src/data/hardware/cpu.cc
+          - src/data/hardware/cpu.h
+          - src/data/proc.cc
+          - src/data/proc.h
+          - src/data/top.cc
+          - src/data/top.h
 
 lua:
   - changed-files:
       - any-glob-to-any-file:
-          - lua/*
           - lua/**/*
-          - src/llua.cc
-          - src/llua.h
-          - src/luamm.cc
-          - src/luamm.h
-          - src/lua-config.cc
-          - src/lua-config.hh
+          - src/lua/**/*
 
-macos:
+'os: linux':
   - changed-files:
       - any-glob-to-any-file:
-          - src/darwin_sip.h
-          - src/darwin.h
-          - src/darwin.mm
+          - src/data/os/linux.cc
+          - src/data/os/linux.h
+
+'os: dragonfly':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/data/os/dragonfly.cc
+          - src/data/os/dragonfly.h
+
+'os: freebsd':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/data/os/freebsd.cc
+          - src/data/os/freebsd.h
+
+'os: haiku':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/data/os/haiku.cc
+          - src/data/os/haiku.h
+
+'os: netbsd':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/data/os/netbsd.cc
+          - src/data/os/netbsd.h
+
+'os: openbsd':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/data/os/openbsd.cc
+          - src/data/os/openbsd.h
+
+'os: solaris':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/data/os/solaris.cc
+          - src/data/os/solaris.h
+
+'os: macos':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/data/os/darwin_sip.h
+          - src/data/os/darwin.h
+          - src/data/os/darwin.mm
 
 'mouse events':
   - changed-files:
       - any-glob-to-any-file:
-          - src/scroll.cc
-          - src/scroll.h
           - src/mouse-events.cc
           - src/mouse-events.h
 
 networking:
   - changed-files:
       - any-glob-to-any-file:
-          - src/net_stat.cc
-          - src/net_stat.h
-          - src/tcp-portmon.cc
-          - src/tcp-portmon.h
-          - src/read_tcpip.cc
-          - src/read_tcpip.h
+          - src/data/network/**/*
+
+mail:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/data/network/mail.cc
+          - src/data/network/mail.h
+
+calendar:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/data/network/ical.cc
+          - src/data/network/ical.h
 
 nvidia:
   - changed-files:
       - any-glob-to-any-file:
-          - src/nvidia.cc
-          - src/nvidia.h
+          - src/data/hardware/nvidia.cc
+          - src/data/hardware/nvidia.h
 
 rendering:
   - changed-files:
       - any-glob-to-any-file:
-          - src/text_object.cc
-          - src/text_object.h
+          - src/output/gui.cc
+          - src/output/gui.h
           - src/specials.cc
           - src/specials.h
 
 text:
   - changed-files:
       - any-glob-to-any-file:
-          - src/text_object.cc
-          - src/text_object.h
-          - src/template.cc
-          - src/template.h
-          - src/tailhead.cc
-          - src/tailhead.h
-          - src/specials.cc
-          - src/specials.h
+          - src/content/**/*

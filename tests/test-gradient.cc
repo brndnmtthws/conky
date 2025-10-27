@@ -28,9 +28,9 @@
 
 #include "catch2/catch.hpp"
 
-#include <colours.h>
 #include <conky.h>
-#include <gradient.h>
+#include <content/colours.hh>
+#include <content/gradient.hh>
 
 #include <iomanip>
 #include <iostream>

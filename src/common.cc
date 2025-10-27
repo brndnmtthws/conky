@@ -27,47 +27,58 @@
  *
  */
 
+#include "common.h"
+
 #include <fcntl.h>
 #include <net/if.h>
 #include <netinet/in.h>
 #include <pthread.h>
+#include <pwd.h>
 #include <semaphore.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <cctype>
 #include <cerrno>
+#include <cstdio>
+#include <cstdlib>
 #include <ctime>
 #include <vector>
-#include <wordexp.h>
+
 #include "config.h"
 #include "conky.h"
 #include "core.h"
-#include "fs.h"
+#include "data/fs.h"
 #include "logging.h"
-#include "misc.h"
-#include "net_stat.h"
-#include "specials.h"
-#include "temphelper.h"
-#include "timeinfo.h"
-#include "top.h"
+#include "data/misc.h"
+#include "data/network/net_stat.h"
+#include "content/specials.h"
+#include "content/temphelper.h"
+#include "data/timeinfo.h"
+#include "data/top.h"
+
+#if defined(_POSIX_C_SOURCE) && !defined(__OpenBSD__) && !defined(__HAIKU__)
+#include <wordexp.h>
+#endif
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
-#include "linux.h"
+#include "data/os/linux.h"
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-#include "freebsd.h"
+#include "data/os/freebsd.h"
 #elif defined(__DragonFly__)
-#include "dragonfly.h"
+#include "data/os/dragonfly.h"
 #elif defined(__OpenBSD__)
-#include "openbsd.h"
+#include "data/os/openbsd.h"
+#elif defined(__NetBSD__)
+#include "data/os/netbsd.h"
 #elif defined(__APPLE__) && defined(__MACH__)
-#include "darwin.h"  // strings.h
+#include "data/os/darwin.h"  // strings.h
 #endif
 
 #include "update-cb.hh"
 
 #ifdef BUILD_CURL
-#include "ccurl_thread.h"
+#include "data/network/ccurl_thread.h"
 #endif /* BUILD_CURL */
 
 /* folds a string over top of itself, like so:
@@ -130,21 +141,59 @@ double get_time() {
   return tv.tv_sec + (tv.tv_nsec * 1e-9);
 }
 
-/* Converts '~/...' paths to '/home/blah/...'.  It's similar to
- * variable_substitute, works for any enviroment variable */
-std::string to_real_path(const std::string &source) {
-    wordexp_t p;
-    char **w;
-    int i;
-    const char *csource = source.c_str();
-    if (wordexp(csource, &p, 0) != 0) {
-        return nullptr;
-    }
-    w = p.we_wordv;
-    const char *resolved_path = strdup(w[0]);
-    wordfree(&p);
-    return std::string(resolved_path);
+#if defined(_POSIX_C_SOURCE) && !defined(__OpenBSD__) && !defined(__HAIKU__)
+std::filesystem::path to_real_path(const std::string &source) {
+  wordexp_t p;
+  char **w;
+  int i;
+  std::string checked = std::string(source);
+  std::string::size_type n = 0;
+  while ((n = checked.find(" ", n)) != std::string::npos) {
+    checked.replace(n, 1, "\\ ");
+    n += 2;
+  }
+  const char *csource = source.c_str();
+  if (wordexp(checked.c_str(), &p, 0) != 0) { return std::string(); }
+  w = p.we_wordv;
+  const char *resolved_path = strdup(w[0]);
+  wordfree(&p);
+  return std::filesystem::weakly_canonical(resolved_path);
 }
+#else
+// TODO: Use this implementation once it's finished.
+// `wordexp` calls shell which is inconsistent across different environments.
+std::filesystem::path to_real_path(const std::string &source) {
+  /*
+  Wordexp (via default shell) does:
+  - [x] tilde substitution `~`
+  - [x] variable substitution (via `variable_substitute`)
+  - [ ] command substitution `$(command)`
+    - exec.cc does execution already; missing recursive descent parser for
+      $(...) because they can be nested and mixed with self & other expressions
+      from this list
+  - [ ] [arithmetic
+    expansion](https://www.gnu.org/software/bash/manual/html_node/Arithmetic-Expansion.html)
+    `$((10 + 2))`
+    - would be nice to have for other things as well, could possibly use lua and
+      replace stuff like $VAR and $(...) with equivalent functions.
+  - [ ] [field
+    splitting](https://www.gnu.org/software/bash/manual/html_node/Word-Splitting.html)
+  - [ ] wildcard expansion
+  - [ ] quote removal Extra:
+  - canonicalization added
+  */
+  try {
+    std::string input = tilde_expand(source);
+    std::string expanded = variable_substitute(input);
+    std::filesystem::path absolute = std::filesystem::absolute(expanded);
+    return std::filesystem::weakly_canonical(absolute);
+  } catch (const std::filesystem::filesystem_error &e) {
+    // file not found or permission issues
+    NORM_ERR("can't canonicalize path: %s", source.c_str());
+    return source;
+  }
+}
+#endif
 
 int open_fifo(const char *file, int *reported) {
   int fd = 0;
@@ -176,6 +225,103 @@ FILE *open_file(const char *file, int *reported) {
   }
 
   return fp;
+}
+
+std::filesystem::path get_cwd() {
+  char *cwd;
+  char buffer[1024];
+
+  // Attempt to get the current working directory
+  cwd = getcwd(buffer, sizeof(buffer));
+  if (cwd == NULL) {
+    const char *error;
+    perror(error);
+    NORM_ERR("can't get conky current working directory: %s", error);
+    DBGP("returning '.' as PWD");  // hope things work out well
+    return std::string(".");
+  }
+
+  return std::string(buffer);
+}
+
+std::string current_username() {
+  const char *user = std::getenv("USER");
+
+  if (!user) {
+    NORM_ERR(
+        "can't determine current user (USER environment variable not set)");
+    return std::string();
+  }
+
+  return std::string(user);
+}
+
+std::optional<std::filesystem::path> user_home(const std::string &username) {
+  if (username == current_username()) {
+    const char *home = std::getenv("HOME");
+    if (home) { return std::filesystem::path(home); }
+  }
+
+  struct passwd *pw = getpwnam(username.c_str());
+  if (!pw) {
+    DBGP(
+        "can't determine HOME directory for user %s (neither w/ HOME nor "
+        "getpwnam)",
+        username.c_str());
+    return std::nullopt;
+  }
+  return std::filesystem::path(pw->pw_dir);
+}
+std::optional<std::filesystem::path> user_home() {
+  return user_home(current_username());
+}
+
+std::string tilde_expand(const std::string &unexpanded) {
+  if (unexpanded.compare(0, 1, "~") != 0) { return unexpanded; }
+  if (unexpanded.length() == 1) {
+    auto home = user_home();
+    if (home->empty()) {
+      NORM_ERR(
+          "can't expand '~' path because user_home couldn't locate home "
+          "directory");
+      return unexpanded;
+    }
+    return home.value();
+  }
+  char next = unexpanded.at(1);
+  if (next == '/') {
+    auto home = user_home();
+    if (home->empty()) {
+      NORM_ERR(
+          "can't expand '~' path because user_home couldn't locate home "
+          "directory");
+      return unexpanded;
+    }
+    return home.value().string() + unexpanded.substr(1);
+  }
+  if (next == '+') { return get_cwd().string() + unexpanded.substr(2); }
+  // if (next == '-') {
+  //   auto oldpwd = std::getenv("OLDPWD");
+  //   if (oldpwd == nullptr) {
+  //     return unexpanded;
+  //   }
+  //   return std::string(oldpwd) + unexpanded.substr(2);
+  // }
+  // ~+/-N is tied to bash functionality
+  if (std::isalpha(next)) {  // handles ~USERNAME
+    auto name_end = unexpanded.find_first_of('/', 1);
+    std::string name;
+    if (name_end == std::string::npos) {
+      name = unexpanded.substr(1);
+      name_end = unexpanded.length();
+    } else {
+      name = unexpanded.substr(1, name_end - 1);
+    }
+    auto home = user_home(name);
+    if (home->empty()) { return unexpanded; }
+    return home.value().string() + unexpanded.substr(name_end);
+  }
+  return unexpanded;
 }
 
 std::string variable_substitute(std::string s) {
@@ -597,11 +743,7 @@ int if_existing_iftest(struct text_object *obj) {
 }
 
 int if_running_iftest(struct text_object *obj) {
-#ifdef __linux__
-  if (!get_process_by_name(obj->data.s)) {
-#else
-  if (((obj->data.s) != nullptr) && (system(obj->data.s) != 0)) {
-#endif
+  if (!is_process_running(obj->data.s)) {
     return 0;
   }
   return 1;

@@ -3,6 +3,12 @@
 set -e
 set -x
 
+MODE=Release
+if [ "$1" == "--debug" ]; then
+    MODE=Debug
+    export NO_STRIP=1 # disable strip in linuxdeploy
+fi
+
 # building in temporary directory to keep system clean
 # use RAM disk if possible (as in: not building on CI system like Travis, and RAM disk is available)
 if [ "$CI" == "" ] && [ -d /dev/shm ]; then
@@ -38,14 +44,13 @@ pushd "$BUILD_DIR"
 # configure build files with cmake
 # we need to explicitly set the install prefix, as CMake's default is /usr/local for some reason...
 cmake -G Ninja                         \
-  -DCMAKE_BUILD_TYPE=RelWithDebInfo    \
+  -DCMAKE_BUILD_TYPE=$MODE             \
   -DRELEASE=$RELEASE                   \
   -DBUILD_AUDACIOUS=ON                 \
   -DBUILD_DOCS=ON                      \
   -DBUILD_HTTP=ON                      \
   -DBUILD_ICAL=ON                      \
   -DBUILD_ICONV=ON                     \
-  -DBUILD_IRC=ON                       \
   -DBUILD_IRC=ON                       \
   -DBUILD_JOURNAL=ON                   \
   -DBUILD_LUA_CAIRO=ON                 \
@@ -79,7 +84,7 @@ chmod +x linuxdeploy-x86_64.AppImage
   -i AppDir/usr/share/icons/hicolor/scalable/apps/conky-logomark-violet.svg \
   -d AppDir/usr/share/applications/conky.desktop
 
-wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
 
 chmod +x appimagetool-x86_64.AppImage
 

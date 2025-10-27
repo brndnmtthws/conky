@@ -48,7 +48,7 @@ if(BUILD_LUA_CAIRO_XLIB)
   link_directories(${X11_SM_LIB_PATH})
   wrap_tolua(luacairoxlib_src cairo_xlib.pkg)
 
-  add_library(conky-cairo_xlib SHARED ${luacairoxlib_src})
+  add_library(conky-cairo_xlib MODULE ${luacairoxlib_src})
   set_target_properties(conky-cairo_xlib PROPERTIES OUTPUT_NAME "cairo_xlib")
 
   target_link_libraries(conky-cairo_xlib

@@ -64,6 +64,7 @@
               "-DBUILD_LUA_IMLIB2=ON"
               "-DBUILD_LUA_RSVG=ON"
               "-DBUILD_RSS=ON"
+              "-DREPRODUCIBLE_BUILD=ON"
             ];
             nativeBuildInputs = [
               clang_18

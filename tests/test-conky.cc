@@ -27,8 +27,9 @@
  */
 
 #include "catch2/catch.hpp"
-#include "conky.h"
-#include "lua-config.hh"
+
+#include <conky.h>
+#include <lua/lua-config.hh>
 
 TEST_CASE("Expressions can be evaluated", "[evaluate]") {
   state = std::make_unique<lua::state>();

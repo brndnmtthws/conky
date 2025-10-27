@@ -30,6 +30,7 @@
 #ifndef _conky_h_
 #define _conky_h_
 
+#include <cstddef>
 #define __STDC_FORMAT_MACROS
 
 #include "config.h"
@@ -41,9 +42,9 @@
 #include <filesystem>
 #include <memory>
 
-#include "colours.h"
+#include "content/colours.hh"
 #include "common.h" /* at least for struct dns_data */
-#include "luamm.hh"
+#include "lua/luamm.hh"
 
 #if defined(HAS_MCHECK_H)
 #include <mcheck.h>
@@ -76,35 +77,35 @@ char *strndup(const char *s, size_t n);
 struct text_object;
 
 #ifdef BUILD_HDDTEMP
-#include "hddtemp.h"
+#include "data/hardware/hddtemp.h"
 #endif /* BUILD_HDDTEMP */
 
 #ifdef BUILD_MOC
-#include "moc.h"
+#include "data/audio/moc.h"
 #endif /* BUILD_MOC */
 
 #ifdef BUILD_MPD
-#include "mpd.h"
+#include "data/audio/mpd.h"
 #endif /* BUILD_MPD */
 
 #ifdef BUILD_MYSQL
-#include "mysql.h"
+#include "data/mysql.h"
 #endif /* BUILD_MYSQL */
 
 #ifdef BUILD_PORT_MONITORS
-#include "tcp-portmon.h"
+#include "data/network/tcp-portmon.h"
 #endif
 
 #ifdef BUILD_XMMS2
-#include "xmms2.h"
+#include "data/audio/xmms2.h"
 #endif /* BUILD_XMMS2 */
 
 #ifdef BUILD_APCUPSD
-#include "apcupsd.h"
+#include "data/hardware/apcupsd.h"
 #endif /* BUILD_APCUPSD */
 
 /* sony support */
-#include "sony.h"
+#include "data/hardware/sony.h"
 
 /* A size for temporary, static buffers to use when
  * one doesn't know what to choose. Defaults to 256.  */
@@ -156,6 +157,52 @@ char **get_templates(void);
 /* get_battery_stuff() item selector
  * needed by conky.c, linux.c and freebsd.c */
 enum { BATTERY_STATUS, BATTERY_TIME };
+
+namespace conky::info {
+
+// Don't guard enum values with #ifdef *_BUILD features; it will only make code
+// harder to maintain - size_t won't change in size.
+
+enum class display_session : std::size_t { unknown, x11, wayland };
+enum class window_manager : std::size_t {
+  unknown,
+
+  // X11
+  awesome,
+  bspwm,
+  compiz,
+  dde,  // Deepin
+  dwm,
+  enlightenment,
+  fluxbox,
+  herbstluftwm,
+  i3,
+  kwin,
+  marco,
+  metacity,
+  mutter,
+  openbox,
+  qtile,
+  xfwm,
+  windowmaker,
+
+  // Wayland (only)
+  hyprland,
+  river,
+  sway,
+  wayfire,
+
+  // Remember to update get_system_details when adding new ones!
+};
+
+struct system {
+  display_session session;
+
+  window_manager wm;
+  const char *wm_name;
+};
+
+}  // namespace conky::info
 
 struct information {
   unsigned int mask;
@@ -229,6 +276,11 @@ struct information {
   csr_config_t csr_config;
   csr_config_flags_t csr_config_flags;
 #endif /* defined(__APPLE__) && defined(__MACH__) */
+
+  /**
+   * @brief General information about the system currently running conky.
+   */
+  conky::info::system system;
 };
 
 class music_player_interval_setting
@@ -319,6 +371,20 @@ int get_total_updates(void);
 int spaced_print(char *, int, const char *, int, ...)
     __attribute__((format(printf, 3, 5)));
 extern int inotify_fd;
+
+template <
+    typename Iterable = std::initializer_list<conky::info::window_manager>>
+inline bool wm_is(const Iterable &values) {
+  // if constexpr (!ENABLE_RUNTIME_TWEAKS) { return false; }
+  // can't assume unknown isn't in the list...
+  for (const auto &wm : values) {
+    if (info.system.wm == wm) return true;
+  }
+  return false;
+}
+inline bool wm_is(conky::info::window_manager single) {
+  return info.system.wm == single;
+}
 
 /* defined in conky.c
  * evaluates 'text' and places the result in 'p' of max length 'p_max_size'

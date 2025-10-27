@@ -33,24 +33,36 @@
 #include "build.h"
 #include "config.h"
 #include "conky.h"
-#include "display-output.hh"
-#include "lua-config.hh"
+#include "output/display-output.hh"
+#include "lua/lua-config.hh"
 
 #ifdef BUILD_X11
-#include "x11.h"
+#include "output/x11.h"
 #endif /* BUILD_X11 */
 
 #ifdef BUILD_CURL
-#include "ccurl_thread.h"
+#include "data/network/ccurl_thread.h"
 #endif /* BUILD_CURL */
 
 #if defined(__linux__)
-#include "linux.h"
+#include "data/os/linux.h"
 #endif /* Linux */
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-#include "freebsd.h"
+#include "data/os/freebsd.h"
 #endif /* FreeBSD */
+
+#if defined(__NetBSD__)
+#include "data/os/netbsd.h"
+#endif /* NetBSD */
+
+#if defined(__OpenBSD__)
+#include "data/os/openbsd.h"
+#endif /* OpenBSD */
+
+#if defined(__HAIKU__)
+#include "data/os/haiku.h"
+#endif /* Haiku */
 
 #ifdef BUILD_BUILTIN_CONFIG
 #include "defconfig.h"
@@ -124,9 +136,9 @@ static void print_version() {
 #ifdef BUILD_IMLIB2
             << _("  * Imlib2\n")
 #endif /* BUILD_IMLIB2 */
-#ifdef HAVE_SOME_SOUNDCARD_H
+#ifdef HAVE_SOUNDCARD_H
             << _("  * OSS mixer support\n")
-#endif /* HAVE_SOME_SOUNDCARD_H */
+#endif /* HAVE_SOUNDCARD_H */
 #ifdef BUILD_MIXER_ALSA
             << _("  * ALSA mixer support\n")
 #endif /* BUILD_MIXER_ALSA */
@@ -276,15 +288,16 @@ static void print_help(const char *prog_name) {
          " (and quit)\n"
          "   -p, --pause=SECS          pause for SECS seconds at startup "
          "before doing anything\n"
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
+    defined(__HAIKU__) || defined(__NetBSD__) || defined(__OpenBSD__)
          "   -U, --unique              only one conky process can be created\n"
-#endif /* Linux || FreeBSD */
+#endif /* Linux || FreeBSD || Haiku || NetBSD || OpenBSD */
          , prog_name);
 }
 
 inline void reset_optind() {
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
-    defined(__OpenBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
+    defined(__OpenBSD__) || defined(__DragonFly__)
   optind = optreset = 1;
 #else
   optind = 0;
@@ -361,22 +374,24 @@ int main(int argc, char **argv) {
         window.window = strtol(optarg, nullptr, 0);
         break;
 #endif /* BUILD_X11 */
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
+    defined(__HAIKU__) || defined(__NetBSD__) || defined(__OpenBSD__)
       case 'U':
         unique_process = true;
         break;
-#endif /* Linux || FreeBSD */
+#endif /* Linux || FreeBSD || Haiku || NetBSD || OpenBSD */
       case '?':
         return EXIT_FAILURE;
     }
   }
 
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
+    defined(__HAIKU__) || defined(__NetBSD__) || defined(__OpenBSD__)
   if (unique_process && is_conky_already_running()) {
     NORM_ERR("already running");
     return 0;
   }
-#endif /* Linux || FreeBSD */
+#endif /* Linux || FreeBSD || Haiku || NetBSD || OpenBSD */
 
   try {
     set_current_config();
@@ -407,6 +422,11 @@ int main(int argc, char **argv) {
 
   conky::shutdown_display_outputs();
 
+#ifdef BSD_COMMON
+  bsdcommon::deinit_kvm();
+#endif
+
+//TODO(gmb): Move this to bsdcommon and remove external kd.
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   kvm_close(kd);
 #endif

@@ -34,6 +34,8 @@
 #include <common.h>
 #include <conky.h>
 
+using namespace Catch::Matchers;
+
 extern char **environ;
 
 std::string get_valid_environment_variable_name() {
@@ -65,7 +67,13 @@ std::string get_invalid_environment_variable_name() {
   return variable_name;
 }
 
-TEST_CASE("to_real_path becomes homedir", "[to_real_path]") {
+TEST_CASE("to_real_path simplifies complex paths", "[to_real_path]") {
+  REQUIRE(to_real_path("/a/b/c/../d/../../e") == "/a/e");
+}
+TEST_CASE("to_real_path resolves variables", "[to_real_path]") {
+  REQUIRE(to_real_path("$HOME/test") == std::string(getenv("HOME")) + "/test");
+}
+TEST_CASE("to_real_path resolves `~` symbol", "[to_real_path]") {
   REQUIRE(to_real_path("~/test") == std::string(getenv("HOME")) + "/test");
 }
 
@@ -185,11 +193,12 @@ TEST_CASE("cpu_percentage and cpu_barval return correct values") {
     info.cpu_usage[1] = 0.507;
 
     REQUIRE(cpu_percentage(&obj0) == 25);
-    REQUIRE(cpu_barval(&obj0) == Approx(0.253));
+    REQUIRE_THAT(cpu_barval(&obj0), WithinRel(0.253, 0.001));
     REQUIRE(cpu_percentage(&obj1) == 51);
-    REQUIRE(cpu_barval(&obj1) == Approx(0.507));
+    REQUIRE_THAT(cpu_barval(&obj1), WithinRel(0.507, 0.001));
 
     delete[] info.cpu_usage;
+    info.cpu_usage = nullptr;
   }
 }
 
@@ -207,7 +216,7 @@ TEST_CASE("mem_percentage and mem_barval return correct values") {
     info.memmax = 24;
 
     REQUIRE(mem_percentage(nullptr) == 25);
-    REQUIRE(mem_barval(nullptr) == Approx(0.25));
+    REQUIRE_THAT(mem_barval(nullptr), WithinRel(0.25, 0.005));
   }
 }
 
@@ -221,7 +230,7 @@ TEST_CASE("mem_with_buffers_barval returns correct value") {
 
   SECTION("for memmax > 0") {
     info.memmax = 24;
-    REQUIRE(mem_with_buffers_barval(nullptr) == Approx(0.25));
+    REQUIRE_THAT(mem_with_buffers_barval(nullptr), WithinRel(0.25, 0.005));
   }
 }
 
@@ -239,6 +248,6 @@ TEST_CASE("swap_percentage and swap_barval return correct values") {
     info.swapmax = 24;
 
     REQUIRE(swap_percentage(nullptr) == 25);
-    REQUIRE(swap_barval(nullptr) == Approx(0.25));
+    REQUIRE_THAT(swap_barval(nullptr), WithinRel(0.25, 0.005));
   }
 }

@@ -28,7 +28,7 @@
 
 #include "catch2/catch.hpp"
 
-#include <darwin.h>
+#include <data/os/darwin.h>
 
 TEST_CASE("get_entropy_avail returns 1", "[get_entropy_avail]") {
   unsigned int unused = 0;

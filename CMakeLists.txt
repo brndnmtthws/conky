@@ -40,6 +40,9 @@ include(ConkyPlatformChecks)
 # CPack module for installation tasks
 include(ConkyCPackSetup)
 
+# Use compilation cache (if enabled)
+include(CCache)
+
 # setup our configuration headers
 configure_file(${CMAKE_MODULE_PATH}/config.h.in ${CMAKE_BINARY_DIR}/config.h)
 configure_file(${CMAKE_MODULE_PATH}/build.h.in ${CMAKE_BINARY_DIR}/build.h)
@@ -61,7 +64,7 @@ if(BUILD_EXTRAS)
   add_subdirectory(extras)
 endif(BUILD_EXTRAS)
 
-if(BUILD_TESTS)
+if(BUILD_TESTING)
   if(CODE_COVERAGE)
     # Enable coverage checks
     include(CodeCoverage)
@@ -73,7 +76,7 @@ endif()
 
 add_subdirectory(src)
 
-if(BUILD_TESTS)
+if(BUILD_TESTING)
   add_subdirectory(tests)
   enable_testing()
 endif()

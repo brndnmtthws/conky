@@ -19,10 +19,17 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v15
-      - name: Setup Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v8
+      - uses: actions/checkout@v5
+      - uses: nixbuild/nix-quick-install-action@v34
+      - name: Restore and cache Nix store
+        uses: nix-community/cache-nix-action@v6
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          gc-max-store-size: 1073741824
+          purge: true
+          purge-prefixes: cache-${{ runner.os }}-
+          purge-created: 0
+          purge-primary-key: never
       - run: nix build
       - run: nix flake check
