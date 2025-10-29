@@ -270,10 +270,18 @@ void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, const char 
 
   unsigned int string_width_in_pixels = 0;
   for (int i=0; i < glyph_count; ++i) {
+    if (HB_DIRECTION_IS_VERTICAL(text_direction)) {
+      int glyph_width = glyph_pos[i].x_offset/64*-1;
+      if (glyph_width > string_width_in_pixels) {
+        string_width_in_pixels = glyph_width;
+      }
+    }
+    else {
       string_width_in_pixels += glyph_pos[i].x_advance/64;
       if (text_direction == HB_DIRECTION_RTL) {
         string_width_in_pixels -= rtl_fix;
       }
+    }
   }
   /* More RTL Hacks */
   if (text_direction == HB_DIRECTION_RTL) {
@@ -282,8 +290,16 @@ void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, const char 
   int draw_x = x;
   int draw_y = y;
 
-  if (HB_DIRECTION_IS_VERTICAL(text_direction)) { 
-    draw_x = width/2 - string_width_in_pixels/2 + x;
+  if (HB_DIRECTION_IS_VERTICAL(text_direction)) {
+    if (alignment == CAIRO_TEXT_ALIGN_LEFT) {
+      draw_x = x + string_width_in_pixels;
+    }
+    else if (alignment == CAIRO_TEXT_ALIGN_RIGHT) {
+      draw_x = width - string_width_in_pixels + x;
+    }
+    else {
+      draw_x = width/2 - string_width_in_pixels + x;
+    }
   }
   else {
     draw_y = baseline_offset + y;
