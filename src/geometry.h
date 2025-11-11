@@ -122,7 +122,7 @@ struct vec {
     static_assert(Length == 4, "constructor only valid for vec4<T>");
   }
 
-  vec(vec<T, Length> &&other) { this->value = other->value; }
+  vec(vec<T, Length> &&other) = default;
 
   static inline vec<T, Length> uniform(T v) {
     std::array<T, Length> data;
@@ -325,14 +325,14 @@ struct vec {
   inline T distance_squared(vec<T, Length> other) const {
     vec<T, Length> buffer = other - *this;
     buffer *= buffer;
-    return std::accumulate(buffer->value.begin(), buffer->value.end(), T{0});
+    return std::accumulate(buffer.value.begin(), buffer.value.end(), T{0});
   }
   inline T distance(vec<T, Length> &other) const {
     return std::sqrt(this->distance_squared(other));
   }
   inline T magnitude_squared() const {
     vec<T, Length> buffer = this->value * this->value;
-    return std::accumulate(buffer->value.begin(), buffer->value.end(), T{0});
+    return std::accumulate(buffer.value.begin(), buffer.value.end(), T{0});
   }
   inline T magnitude() const { return std::sqrt(this->magnitude_squared()); }
 
