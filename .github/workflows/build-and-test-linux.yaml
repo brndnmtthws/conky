@@ -48,6 +48,9 @@ jobs:
             libpango1.0-dev \
             libcurl4-gnutls-dev \
             libdbus-glib-1-dev \
+            libfreetype-dev \
+            libfreetype6-dev \
+            libstdc++6 \
             libglib2.0-dev \
             libical-dev \
             libimlib2-dev \
@@ -130,6 +133,7 @@ jobs:
             -DBUILD_LUA_CAIRO_XLIB=ON            \
             -DBUILD_LUA_IMLIB2=ON                \
             -DBUILD_LUA_RSVG=${RSVG_ENABLED}     \
+            -DBUILD_LUA_TEXT=ON                  \
             -DBUILD_MYSQL=ON                     \
             -DBUILD_NVIDIA=ON                    \
             -DBUILD_PULSEAUDIO=ON                \
