@@ -59,7 +59,8 @@ set(conky_includes ${conky_includes} "${CMAKE_SOURCE_DIR}/3rdparty/Vc")
 add_subdirectory(lua)
 add_subdirectory(data)
 add_subdirectory(doc)
-
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBGIT2 REQUIRED IMPORTED_TARGET libgit2)
 if(BUILD_EXTRAS)
   add_subdirectory(extras)
 endif(BUILD_EXTRAS)
@@ -73,6 +74,7 @@ if(BUILD_TESTING)
 
   include(Catch)
 endif()
+
 
 add_subdirectory(src)
 
