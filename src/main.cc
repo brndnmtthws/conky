@@ -69,6 +69,7 @@
 
 #ifdef BUILD_OLD_CONFIG
 #include "convertconf.h"
+#include "themespresetmanager.h"
 #endif /* BUILD_OLD_CONFIG */
 #endif /* BUILD_BUILTIN_CONFIG */
 
@@ -255,7 +256,7 @@ static void print_help(const char *prog_name) {
          "   -q, --quiet               quiet mode\n"
          "   -D, --debug               increase debugging output, ie. -DD for "
          "more debugging\n"
-         "   -c, --config=FILE         config file to load\n"
+         "   -c, --config=FILE         config file to load or theme preset alias\n"
 #ifdef BUILD_BUILTIN_CONFIG
          "   -C, --print-config        print the builtin default config to "
          "stdout\n"
@@ -300,7 +301,8 @@ inline void reset_optind() {
   optind = 0;
 #endif
 }
-
+const char * THEME_PRESETS_REPO_CLONING_URL = "https://github.com/Cetttok/testRepoForConkyThemes"; // it is example need to create norm repo
+const char * THEME_PRESETS_REPO_PATH = "/var/lib/conky/themes";
 int main(int argc, char **argv) {
 #ifdef BUILD_I18N
   setlocale(LC_ALL, "");
@@ -335,8 +337,12 @@ int main(int argc, char **argv) {
     NORM_ERR("Can't set the specified locale!\nCheck LANG, LC_CTYPE, LC_ALL.");
   }
 #endif /* BUILD_X11 */
+  // SystemGitRepoSource* dataSource = new SystemGitRepoSource("newdatabase","https://github.com/Cetttok/testRepoForConkyThemes");
+  // ThemesPresetManager presets(dataSource);
+  // std::cout << argc << argv << getopt_string << longopts << std::endl;
   while (1) {
     int c = getopt_long(argc, argv, getopt_string, longopts, nullptr);
+
 
     if (c == -1) { break; }
 
@@ -361,6 +367,10 @@ int main(int argc, char **argv) {
       case 'h':
         print_help(argv[0]);
         return 0;
+      // case 'S':
+      //   std::cout << "optarg " <<  optarg << std::endl;
+      //   std::cout << presets.getThemePath(std::string(optarg)) << std::endl;
+      //   break;
 #ifdef BUILD_BUILTIN_CONFIG
       case 'C':
         std::cout << defconfig;
@@ -389,10 +399,24 @@ int main(int argc, char **argv) {
     return 0;
   }
 #endif /* Linux || FreeBSD || Haiku || NetBSD || OpenBSD */
+  ////////
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+  /// ///
+  /// ///
+  ///
+  ///
+  ///
+  ///
+  /// ////
 
   try {
     set_current_config();
-
+    tryToReplaceAliasToPresetPath(THEME_PRESETS_REPO_PATH, THEME_PRESETS_REPO_CLONING_URL );
     state = std::make_unique<lua::state>();
 
     conky::export_symbols(*state);

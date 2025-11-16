@@ -160,6 +160,7 @@
 
 #ifdef BUILD_BUILTIN_CONFIG
 #include "defconfig.h"
+#include "themespresetmanager.h"
 
 namespace {
 const char builtin_config_magic[] = "==builtin==";
@@ -2151,7 +2152,23 @@ inline void reset_optind() {
   optind = 0;
 #endif
 }
-
+bool tryToReplaceAliasToPresetPath(std::string pathToPresetsRepo, std::string urlToCloneRepo){
+  if (current_config.empty()){
+    return false;
+  }
+  SystemGitRepoSource dataSource = SystemGitRepoSource(pathToPresetsRepo/*"/var/lib/conky/themes"*/, urlToCloneRepo/*"https://github.com/Cetttok/testRepoForConkyThemes"*/);
+  if (!dataSource.loadThemesDb()){
+    return false;
+  }
+  ThemesPresetManager presets(&dataSource);
+  std::string configPath = presets.getThemePath(current_config);
+  if ( configPath.empty()){
+    return false;
+  }
+  current_config = configPath;
+  NORM_ERR(("use preset theme with path " +  current_config.string() ).c_str());
+  return true;
+}
 void set_current_config() {
   /* load current_config, CONFIG_FILE or SYSTEM_CONFIG_FILE */
   struct stat s {};
@@ -2172,6 +2189,9 @@ void set_current_config() {
   if (current_config.empty() && (stat(SYSTEM_CONFIG_FILE, &s) == 0)) {
     current_config = SYSTEM_CONFIG_FILE;
   }
+
+
+
 
   /* No readable config found */
   if (current_config.empty()) {
@@ -2210,6 +2230,7 @@ const char *getopt_string =
 const struct option longopts[] = {
     {"help", 0, nullptr, 'h'},          {"version", 0, nullptr, 'v'},
     {"short-version", 0, nullptr, 'V'}, {"quiet", 0, nullptr, 'q'},
+    //{"Style", 1, nullptr, 'S'},
     {"debug", 0, nullptr, 'D'},         {"config", 1, nullptr, 'c'},
 #ifdef BUILD_BUILTIN_CONFIG
     {"print-config", 0, nullptr, 'C'},

@@ -445,6 +445,7 @@ extern conky::simple_config_setting<bool> out_to_stdout;
 
 void setup_inotify();
 void initialisation(int argc, char **argv);
+bool tryToReplaceAliasToPresetPath(std::string pathToPresetsRepo, std::string urlToCloneRepo);
 void set_current_config();
 void main_loop();
 
