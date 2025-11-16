@@ -144,6 +144,8 @@ set(conky_sources
   update-cb.hh
   logging.h
   semaphore.hh
+  themespresetmanager.h
+  themespresetmanager.cpp
 )
 
 # Platform specific sources
@@ -459,7 +461,7 @@ if(BUILD_TESTING)
 else()
   add_executable(conky main.cc ${conky_sources} ${optional_sources})
   add_dependencies(conky generated_hdr_files)
-  target_link_libraries(conky ${conky_libs})
+  target_link_libraries(conky ${conky_libs} PkgConfig::LIBGIT2)
 endif()
 
 install(TARGETS conky
