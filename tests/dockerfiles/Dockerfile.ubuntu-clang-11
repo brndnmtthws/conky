@@ -16,6 +16,7 @@ RUN wget -q https://apt.llvm.org/llvm-snapshot.gpg.key \
   lld-11 \
   lldb-11 \
   llvm-11 \
+  libgit2-dev \
   nodejs \
   npm \
   && apt-get clean \

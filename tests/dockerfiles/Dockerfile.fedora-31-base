@@ -14,6 +14,7 @@ RUN dnf update -y -q \
   libcurl-devel \
   libical-devel \
   libircclient-devel \
+  libgit2 \
   libmicrohttpd-devel \
   librsvg2-devel \
   libX11-devel \

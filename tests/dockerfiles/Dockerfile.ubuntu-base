@@ -34,6 +34,7 @@ RUN apt-get update \
   libxmmsclient-dev \
   libxnvctrl-dev \
   man \
+  libgit2-dev \
   ncurses-dev \
   software-properties-common \
   wget
