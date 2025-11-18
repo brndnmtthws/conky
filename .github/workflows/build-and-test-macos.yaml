@@ -40,6 +40,7 @@ jobs:
             gettext            \
             gperf              \
             imlib2             \
+            libgit2            \
             lcov               \
             librsvg            \
             libxfixes          \
