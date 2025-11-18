@@ -86,6 +86,7 @@
                 libxml2
                 llvmPackages_18.libcxx
                 lua5_4
+                libgit2
                 ncurses
                 xorg.libICE
                 xorg.libSM
