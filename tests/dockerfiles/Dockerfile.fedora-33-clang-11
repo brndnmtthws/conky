@@ -6,7 +6,6 @@ RUN dnf -y -q install \
   gcovr \
   libcxx-devel \
   libcxxabi-devel \
-
   llvm \
   npm \
   && dnf clean all \

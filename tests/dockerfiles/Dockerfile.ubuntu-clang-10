@@ -11,7 +11,6 @@ RUN wget -q https://apt.llvm.org/llvm-snapshot.gpg.key \
   lld-10 \
   libc++-10-dev \
   libc++abi-10-dev \
-  libgit2-dev \
   clang-tools-10 \
   clang-format-10 \
   clang-tidy-10 \

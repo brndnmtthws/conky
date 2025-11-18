@@ -12,7 +12,6 @@ RUN dnf update -y -q \
   imlib2-devel \
   lcov \
   libcurl-devel \
-  libgit2 \
   libical-devel \
   libircclient-devel \
   libmicrohttpd-devel \

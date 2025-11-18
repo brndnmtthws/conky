@@ -1,2 +1,3 @@
 pyyaml
 jinja2
+libgit2-dev

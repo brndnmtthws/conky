@@ -10,7 +10,6 @@ RUN apk add --no-cache \
   icu-dev \
   imlib2-dev \
   iw \
-  libgit2 \
   libmicrohttpd-dev \
   libpulse \
   libxdamage-dev \

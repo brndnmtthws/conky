@@ -10,8 +10,7 @@ RUN wget -q https://apt.llvm.org/llvm-snapshot.gpg.key \
   lldb-9 \
   lld-9 \
   libc++-9-dev \
-  libc++abi-9-dev
-  libgit2-dev \\
+  libc++abi-9-dev \
   clang-tools-9 \
   clang-format-9 \
   clang-tidy-9 \

@@ -13,7 +13,6 @@ RUN pacman -Syu --noconfirm --needed \
   glib2 \
   imlib2 \
   iw \
-  libgit2 \
   libical \
   libircclient \
   libmicrohttpd \

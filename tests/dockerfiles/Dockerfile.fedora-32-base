@@ -17,7 +17,6 @@ RUN dnf update -y -q \
   libmicrohttpd-devel \
   librsvg2-devel \
   libX11-devel \
-  libgit2 \
   libXdamage-devel \
   libXext-devel \
   libXft-devel \
