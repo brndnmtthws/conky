@@ -49,6 +49,7 @@ jobs:
             libmysqlclient-dev \
             libpulse-dev \
             librsvg2-dev \
+            libgit2-dev \
             libsystemd-dev \
             libwayland-bin \
             libwayland-dev \

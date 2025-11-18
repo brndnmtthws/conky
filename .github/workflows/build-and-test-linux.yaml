@@ -67,6 +67,7 @@ jobs:
             libxft-dev \
             libxinerama-dev \
             libxml2-dev \
+            libgit2-dev \
             libxmmsclient-dev \
             libxnvctrl-dev \
             ncurses-dev \
