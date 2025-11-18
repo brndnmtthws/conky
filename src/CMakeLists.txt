@@ -461,7 +461,7 @@ if(BUILD_TESTING)
 else()
   add_executable(conky main.cc ${conky_sources} ${optional_sources})
   add_dependencies(conky generated_hdr_files)
-  target_link_libraries(conky ${conky_libs} PkgConfig::LIBGIT2)
+  target_link_libraries(conky ${conky_libs})
 endif()
 
 install(TARGETS conky
