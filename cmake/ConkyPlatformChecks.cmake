@@ -659,6 +659,14 @@ if(WANT_CURL)
   set(conky_includes ${conky_includes} ${CURL_INCLUDE_DIRS})
 endif(WANT_CURL)
 
+if(BUILD_PRESETS)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(LIBGIT2 REQUIRED IMPORTED_TARGET libgit2)
+  set(conky_libs ${conky_libs}  PkgConfig::LIBGIT2)
+  set(WANT_LIBXML2 true)
+endif(BUILD_PRESETS)
+
+
 if(WANT_LIBXML2)
   include(FindLibXml2)
 
@@ -738,3 +746,4 @@ if(DEBUG)
     OUTPUT_VARIABLE COMMIT_COUNT
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif(DEBUG)
+

@@ -2156,12 +2156,12 @@ bool tryToReplaceAliasToPresetPath(std::string pathToPresetsRepo, std::string ur
   if (current_config.empty()){
     return false;
   }
-  SystemGitRepoSource dataSource = SystemGitRepoSource(pathToPresetsRepo/*"/var/lib/conky/themes"*/, urlToCloneRepo/*"https://github.com/Cetttok/testRepoForConkyThemes"*/);
-  if (!dataSource.loadThemesDb()){
+  advanced_git_repo_source dataSource = advanced_git_repo_source(pathToPresetsRepo/*"/var/lib/conky/themes"*/, urlToCloneRepo/*"https://github.com/Cetttok/testRepoForConkyThemes"*/);
+  if (!dataSource.load_themes_db()){
     return false;
   }
-  ThemesPresetManager presets(&dataSource);
-  std::string configPath = presets.getThemePath(current_config);
+  theme_presets_manager presets(&dataSource);
+  std::string configPath = presets.get_theme_path(current_config);
   if ( configPath.empty()){
     return false;
   }

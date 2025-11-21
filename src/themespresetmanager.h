@@ -19,77 +19,104 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef THEMESPRESETMANAGER_H
-#define THEMESPRESETMANAGER_H
+#ifndef theme_presets_manager_H
+#define theme_presets_manager_H
 
+#include <git2.h>
 #include <map>
 #include <string>
 #include <vector>
-#include <git2.h>
+#include <libxml/parser.h>
 
-class AbstractThemesSource{
+class abstract_themes_source {
  public:
-  AbstractThemesSource();
-  virtual bool loadThemesDb() = 0; // or reload
-  virtual std::map<std::string, std::string> getThemesDb() = 0;
-  virtual std::vector<std::string> loadPossibleAliasOfThemes() = 0 ;
-  virtual std::string getThemePathForAlias(std::string alias) = 0 ;
+  abstract_themes_source();
+  virtual bool load_themes_db() = 0;  // or reload
+  virtual std::map<std::string, std::string> get_themes_db() = 0;
+  virtual std::vector<std::string> load_possible_alias_of_themes() = 0;
+  virtual std::string get_theme_path_for_alias(std::string alias) = 0;
+
  protected:
-  bool isDir(std::string dir);
+  bool is_dir(std::string dir);
   bool mkdir(std::string path);
-
 };
-class BaseLocalFileSystemFolderSource : public AbstractThemesSource
-{
+class base_local_fs_folder_source : public abstract_themes_source {
  public:
-  BaseLocalFileSystemFolderSource(std::string pathToFolder);
-  virtual bool loadThemesDb();
-  virtual std::map<std::string, std::string> getThemesDb();
-  virtual std::vector<std::string> loadPossibleAliasOfThemes();
-  virtual std::string getThemePathForAlias(std::string alias);
+  base_local_fs_folder_source(std::string path_to_folder);
+  virtual bool load_themes_db();
+  virtual std::map<std::string, std::string> get_themes_db();
+  virtual std::vector<std::string> load_possible_alias_of_themes();
+  virtual std::string get_theme_path_for_alias(std::string alias);
+
  protected:
-  const std::string _pathToFolder;
-  std::string parseThemeAliasFromFilename(std::string filename);
-  std::map<std::string, std::string>  _themesDb;
+  const std::string path_to_folder;
+  std::string parse_theme_alias_from_filename(std::string filename);
+  std::map<std::string, std::string> themes_db;
 };
-class RepoLocalFileSystemSource : public BaseLocalFileSystemFolderSource{
+class repo_local_fs_source : public base_local_fs_folder_source {
  public:
-  RepoLocalFileSystemSource(std::string pathToRepo);
-  virtual bool loadThemesDb();
-  //virtual std::map<std::string, std::string> getThemesDb();
-  //virtual std::vector<std::string> loadPossibleAliasOfThemes();
-  //virtual std::string getThemePathForAlias(std::string alias);
+  repo_local_fs_source(std::string path_to_repo);
+  virtual bool load_themes_db();
+  // virtual std::map<std::string, std::string> get_themes_db();
+  // virtual std::vector<std::string> load_possible_alias_of_themes();
+  // virtual std::string get_theme_path_for_alias(std::string alias);
  protected:
-  std::string checkIsDirHaveConfig(std::string path);
+  std::string check_is_dir_have_config(std::string path);
 };
-class SystemGitRepoSource : public RepoLocalFileSystemSource{
+class system_git_repo_source : public repo_local_fs_source {
  public:
-  SystemGitRepoSource (std::string pathToNewGitRepo, std::string cloneUrlToGitRepo); // if repo exists url dont used simple pull if not git clone
-  SystemGitRepoSource (std::string pathToGitAlreadyClonedRepo);
-  ~SystemGitRepoSource();
-  virtual bool loadThemesDb(); // if loded one or more theme returns true
+  system_git_repo_source(
+      std::string pathToNewGitRepo,
+      std::string cloneUrlToGitRepo);  // if repo exists url dont used simple
+                                       // pull if not git clone
+  system_git_repo_source(std::string path_to_git_already_cloned_repo);
+  ~system_git_repo_source();
+  virtual bool load_themes_db();  // if loded one or more theme returns true
  protected:
-  bool pullChanges();
-  bool openRepo(std::string pathToRepo);
-  bool isGettedPathGitRepo(std::string pathToRepo);
-  git_repository * _repo = NULL;
-  // /std::string _pathToRepo = "";
-  std::string _repoUrl = "";
-  //   virtual std::map<std::string, std::string> getThemesDb();
-//   virtual std::vector<std::string> loadPossibleAliasOfThemes();
-//   virtual std::string getThemePathForAlias(std::string alias);
-
-};
-
-class ThemesPresetManager {
-public:
-  ThemesPresetManager(AbstractThemesSource * themesSource);
-  std::vector<std::string> getPossiblePreloadThemeAlias();
-  std::string getThemePath(std::string id);
-private:
-  AbstractThemesSource * _themesSource;
+  bool pull_changes(git_repository * target, bool use_base_branch = true);
+  bool pull_changes();
+  bool open_repo(std::string path_to_repo);
+  bool is_getted_path_git_repo(std::string path_to_repo);
+  git_repository* repo = NULL;
+  bool fetch_repo(git_repository * target);
+  bool fetch_repo();
+  std::string get_head_branch_name_for_repo(git_repository * target);
+  bool is_submodule_of_repo(std::string path, git_submodule **result_submodule = nullptr);
+  // /std::string _path_to_repo = "";
+  std::string repo_url = "";
+  //   virtual std::map<std::string, std::string> get_themes_db();
+  //   virtual std::vector<std::string> load_possible_alias_of_themes();
+  //   virtual std::string get_theme_path_for_alias(std::string alias);
+  bool is_getted_initilaized_repo_submodule(git_submodule *submodule, git_repository **repo_result = nullptr);
 };
 
 
+class advanced_git_repo_source: public system_git_repo_source{
+ public:
+  advanced_git_repo_source(std::string repo_path, std::string repo_url);
+  ~advanced_git_repo_source();
+  virtual bool load_themes_db();
+  virtual std::string get_theme_path_for_alias(std::string alias);
+ protected:
+  bool set_repo_info_from_info_node(xmlNode * node);
+  std::map<std::string, std::string> parse_themes_db_from_xml();
+  bool git_init_with_remote_origin(std::string  path_to_repo, std::string remote_origin_url);
+  bool git_pull_specific_path(std::string path, bool use_base_branch = true);
 
-#endif  // THEMESPRESETMANAGER_H
+
+  std::string repo_name = "udefinded";
+  std::string repo_description = "udefinded";
+  xmlDoc * xml_doc = nullptr;
+};
+
+class theme_presets_manager {
+ public:
+  theme_presets_manager(abstract_themes_source*  source);
+  std::vector<std::string> get_possible_preload_theme_alias();
+  std::string get_theme_path(std::string id);
+
+ private:
+  abstract_themes_source*  themes_source = nullptr;
+};
+
+#endif  // theme_presets_manager_H
