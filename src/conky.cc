@@ -160,7 +160,7 @@
 
 #ifdef BUILD_BUILTIN_CONFIG
 #include "defconfig.h"
-#include "themespresetmanager.h"
+#include "theme-presets-manager.hh"
 
 namespace {
 const char builtin_config_magic[] = "==builtin==";

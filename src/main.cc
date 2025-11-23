@@ -41,7 +41,7 @@
 #endif /* BUILD_X11 */
 
 #ifdef BUILD_PRESETS
-#include "themespresetmanager.h"
+#include "theme-presets-manager.hh"
 #endif
 
 #ifdef BUILD_CURL

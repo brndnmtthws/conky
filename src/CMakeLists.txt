@@ -144,8 +144,8 @@ set(conky_sources
   update-cb.hh
   logging.h
   semaphore.hh
-  themespresetmanager.h
-  themespresetmanager.cpp
+  theme-presets-manager.hh
+  theme-presets-manager.cc
 )
 
 # Platform specific sources

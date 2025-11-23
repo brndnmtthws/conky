@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include "themespresetmanager.h"
+#include "theme-presets-manager.hh"
 #include <git2.h>
 #include <git2/common.h>
 #include <sys/stat.h>
