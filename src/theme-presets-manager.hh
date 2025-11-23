@@ -24,7 +24,6 @@
 
 #include <git2.h>
 #include <libxml/parser.h>
-
 #include <map>
 #include <string>
 #include <vector>
