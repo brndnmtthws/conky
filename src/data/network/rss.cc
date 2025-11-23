@@ -52,7 +52,7 @@ class rss_cb : public curl_callback<std::shared_ptr<PRSS>> {
 
       std::unique_lock<std::mutex> lock(Base::result_mutex);
       Base::result = tmp;
-    } catch (std::runtime_error &e) { NORM_ERR("%s", e.what()); }
+    } catch (std::runtime_error &e) { LOG_ERROR("%s", e.what()); }
   }
 
  public:
@@ -140,7 +140,7 @@ static void rss_process_info(char *p, int p_max_size, const std::string &uri,
         free(tmpspaces);
       }
     } else {
-      NORM_ERR("rss: Invalid action '%s'", action);
+      LOG_WARNING("rss: Invalid action '%s'", action);
     }
   }
 }
@@ -155,7 +155,7 @@ void rss_scan_arg(struct text_object *obj, const char *arg) {
   argc = sscanf(arg, "%127s %f %63s %d %u", rd->uri, &rd->interval, rd->action,
                 &rd->act_par, &rd->nrspaces);
   if (argc < 3) {
-    NORM_ERR("wrong number of arguments for $rss");
+    LOG_WARNING("wrong number of arguments for $rss");
     free(rd);
     return;
   }
@@ -166,7 +166,7 @@ void rss_print_info(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct rss_data *rd = (struct rss_data *)obj->data.opaque;
 
   if (!rd) {
-    NORM_ERR("error processing RSS data");
+    LOG_ERROR("invalid RSS data");
     return;
   }
   rss_process_info(p, p_max_size, rd->uri, rd->action, rd->act_par,

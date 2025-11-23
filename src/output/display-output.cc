@@ -36,7 +36,7 @@
 namespace conky {
 
 inline void log_missing(const char *name, const char *flag) {
-  DBGP(
+  LOG_INFO(
       "%s display output disabled. Enable by recompiling with '%s' "
       "flag enabled.",
       name, flag);
@@ -93,7 +93,9 @@ bool initialize_display_outputs() {
   register_output<output_t::NCURSES>(outputs);
   register_output<output_t::CONSOLE>(outputs);  // global fallback - always works
 
-  for (auto out : outputs) { NORM_ERR("FOUND: %s", out->name.c_str()); }
+  for (auto out : outputs) {
+    LOG_TRACE("%s output display found.", out->name.c_str());
+  }
 
   int graphical_count = 0;
 

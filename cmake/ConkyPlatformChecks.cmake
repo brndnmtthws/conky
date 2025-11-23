@@ -722,13 +722,9 @@ if(BUILD_COLOUR_NAME_MAP)
   mark_as_advanced(APP_GPERF)
 endif(BUILD_COLOUR_NAME_MAP)
 
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-  set(DEBUG true)
-endif(CMAKE_BUILD_TYPE MATCHES "Debug")
-
 # The version numbers are simply derived from the date and number of commits
 # since start of month
-if(DEBUG)
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
   execute_process(COMMAND ${APP_GIT} --git-dir=${CMAKE_CURRENT_SOURCE_DIR}/.git
     log --since=${VERSION_MAJOR}-${VERSION_MINOR}-01
     --pretty=oneline
@@ -737,4 +733,4 @@ if(DEBUG)
     RESULT_VARIABLE RETVAL
     OUTPUT_VARIABLE COMMIT_COUNT
     OUTPUT_STRIP_TRAILING_WHITESPACE)
-endif(DEBUG)
+endif()
