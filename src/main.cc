@@ -73,6 +73,7 @@
 
 #ifdef BUILD_OLD_CONFIG
 #include "convertconf.h"
+
 #endif /* BUILD_OLD_CONFIG */
 #endif /* BUILD_BUILTIN_CONFIG */
 
@@ -300,7 +301,6 @@ inline void reset_optind() {
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
     defined(__OpenBSD__) || defined(__DragonFly__)
   optind = optreset = 1;
-
 #else
   optind = 0;
 #endif
@@ -341,6 +341,7 @@ int main(int argc, char **argv) {
 #endif /* BUILD_X11 */
   while (1) {
     int c = getopt_long(argc, argv, getopt_string, longopts, nullptr);
+
 
     if (c == -1) { break; }
 

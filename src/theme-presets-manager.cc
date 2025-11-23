@@ -20,14 +20,12 @@
  *
  */
 #include "theme-presets-manager.hh"
+#include <git2.h>
+#include <git2/common.h>
 #include <sys/stat.h>
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
-
-#include <git2.h>
-#include <git2/common.h>
-
 const char *THEME_END_NAME = ".theme";   // can be changed at another one
 const char *THEME_CONFIG_END = ".conf";  // can be changed at another one
 
