@@ -305,8 +305,6 @@ inline void reset_optind() {
   optind = 0;
 #endif
 }
-// const char * THEME_PRESETS_REPO_CLONING_URL = "https://github.com/Cetttok/testRepoForConkyThemes"; // it is example need to create norm repo
-// const char * THEME_PRESETS_REPO_PATH = "/var/lib/conky/themes";
 int main(int argc, char **argv) {
 #ifdef BUILD_I18N
   setlocale(LC_ALL, "");
