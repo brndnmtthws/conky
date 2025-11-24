@@ -1048,7 +1048,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       parse_platform_sensor(obj, arg);
   obj->callbacks.print = &print_sysfs_sensor;
   obj->callbacks.free = &free_sysfs_sensor;
-  END OBJ_ARG(hwmon, 0, "hwmon needs argumanets") parse_hwmon_sensor(obj, arg);
+  END OBJ_ARG(hwmon, 0, "hwmon needs arguments") parse_hwmon_sensor(obj, arg);
   obj->callbacks.print = &print_sysfs_sensor;
   obj->callbacks.free = &free_sysfs_sensor;
 #endif /* __linux__ */
