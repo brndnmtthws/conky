@@ -1469,6 +1469,10 @@ static void parse_sysfs_sensor(struct text_object *obj, const char *arg,
 #define PARSER_GENERATOR(name, path)                                     \
   void parse_##name##_sensor(struct text_object *obj, const char *arg) { \
     parse_sysfs_sensor(obj, arg, path, #name);                           \
+  }                                                                      \
+  void parse_##name##_bar(struct text_object *obj, const char *arg) {    \
+    arg = scan_bar(obj, arg, 100);                                       \
+    parse_sysfs_sensor(obj, arg, path, #name);                           \
   }
 
 PARSER_GENERATOR(i2c, "/sys/bus/i2c/devices/")
@@ -1495,6 +1499,29 @@ void print_sysfs_sensor(struct text_object *obj, char *p,
   } else {
     snprintf(p, p_max_size, "%.1f", r);
   }
+}
+
+double sysfs_sensor_barval(struct text_object *obj) {
+  double r;
+  struct sysfs *sf = (struct sysfs *)obj->data.opaque;
+
+  if (!sf || sf->fd < 0) return 0.0;
+
+  r = get_sysfs_info(&sf->fd, sf->arg, sf->devtype, sf->type);
+
+  r = r * sf->factor + sf->offset;
+
+  if (r > 100.0) {
+    DBGP("your sysfs bar value is higher than 100. Please adjust factor and "
+        "offset to avoid this");
+    r = 100.0;
+  } else if (r < 0.0) {
+    DBGP("your sysfs bar value is lower than 0. Please adjust factor and "
+        "offset to avoid this");
+    r = 0.0;
+  }
+
+  return r;
 }
 
 void free_sysfs_sensor(struct text_object *obj) {
