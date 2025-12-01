@@ -52,7 +52,7 @@ jobs:
             pkg-config         \
             || true # Ignore errors
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Configure sccache
         run: .github/scripts/setup-sccache.sh
       - name: Load cached compilation artifacts
