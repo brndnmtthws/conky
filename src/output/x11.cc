@@ -851,12 +851,9 @@ void x11_init_window(lua::state &l, bool own) {
     XISetMask(mask_bytes, XI_HierarchyChanged);
 #ifdef BUILD_MOUSE_EVENTS
     XISetMask(mask_bytes, XI_Motion);
+    XISetMask(mask_bytes, XI_ButtonPress);
+    XISetMask(mask_bytes, XI_ButtonRelease);
 #endif /* BUILD_MOUSE_EVENTS */
-    // Capture click events for "override" window type
-    if (!own) {
-      XISetMask(mask_bytes, XI_ButtonPress);
-      XISetMask(mask_bytes, XI_ButtonRelease);
-    }
 
     XIEventMask ev_masks[1];
     ev_masks[0].deviceid = XIAllDevices;
