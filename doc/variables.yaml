@@ -821,6 +821,21 @@ values:
       - (factor offset)
     other:
       filename: null
+  - name: hwmonbar
+    desc: |-
+      Same as hwmon, except if the first value returned is a value
+      between 0-100, it will use that number to draw a horizontal bar (use the
+      factor and offset to transform the raw value). The height and width
+      parameters are optional, and default to the default_bar_height and
+      default_bar_width config settings, respectively.
+    args:
+      - (height),(width)
+      - (dev)
+      - type
+      - n
+      - (factor offset)
+    other:
+      filename: null
   - name: i2c
     desc: |-
       I2C sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you have
@@ -832,6 +847,21 @@ values:
       they have to be given as decimal values (i.e. contain at least one decimal
       place).
     args:
+      - (dev)
+      - type
+      - n
+      - (factor offset)
+    other:
+      filename: null
+  - name: i2cbar
+    desc: |-
+      Same as i2c, except if the first value returned is a value between 0-100,
+      it will use that number to draw a horizontal bar (use the
+      factor and offset to transform the raw value). The height and width
+      parameters are optional, and default to the default_bar_height and
+      default_bar_width config settings, respectively.
+    args:
+      - (height),(width)
       - (dev)
       - type
       - n
@@ -1837,6 +1867,19 @@ values:
       factor + offset`. Note that they have to be given as decimal values (i.e.
       contain at least one decimal place).
     args:
+      - (dev)
+      - type
+      - n
+      - (factor offset)
+  - name: platformbar
+    desc: |-
+      Same as platform, except if the first value returned is a value between
+      0-100, it will use that number to draw a horizontal bar (use the factor
+      and offset to transform the raw value). The height and width parameters
+      are optional, and default to the default_bar_height and default_bar_width
+      config settings, respectively.
+    args:
+      - (height),(width)
       - (dev)
       - type
       - n
