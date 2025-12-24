@@ -471,6 +471,15 @@ void print_cmdline_to_pid(struct text_object *obj, char *p,
   dir = opendir(PROCDIR);
   if (dir != nullptr) {
     while ((entry = readdir(dir)) != nullptr) {
+      bool numeric = true;
+      for (const char *ch = entry->d_name; *ch != '\0'; ++ch) {
+        if (!std::isdigit(static_cast<unsigned char>(*ch))) {
+          numeric = false;
+          break;
+        }
+      }
+      if (!numeric) { continue; }
+
       pathstream.str("");
       pathstream.clear();
       pathstream << PROCDIR "/" << entry->d_name << "/cmdline";
