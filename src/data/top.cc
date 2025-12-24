@@ -175,6 +175,7 @@ static struct process *new_process(pid_t pid) {
   p->previous_user_time = ULONG_MAX;
   p->previous_kernel_time = ULONG_MAX;
   p->total_cpu_time = 0;
+  p->previous_total_cpu_time = ULONG_MAX;
   p->vsize = 0;
   p->rss = 0;
 #ifdef BUILD_IOSTATS
