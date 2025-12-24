@@ -278,21 +278,19 @@ TEST_CASE("pid_environ reads values from /proc environ",
           "[proc][pid_environ]") {
   ensure_lua_state();
 
-  setenv("CONKY_PROC_TEST", "ok", 1);
+  const char *expected = getenv("PATH");
+  REQUIRE(expected != nullptr);
 
   std::string pid_str = std::to_string(getpid());
-  std::string arg = pid_str + " conky_proc_test";
+  std::string arg = pid_str + " PATH";
   sub_text_object sub(arg.c_str());
   struct text_object obj {};
   obj.sub = &sub.root;
-  obj.data.s = strdup("conky_proc_test");
 
-  char buf[64]{};
-  print_pid_environ(&obj, buf, sizeof(buf));
+  std::vector<char> buf(strlen(expected) + 1);
+  print_pid_environ(&obj, buf.data(), static_cast<unsigned int>(buf.size()));
 
-  free(obj.data.s);
-
-  REQUIRE(std::string(buf) == "ok");
+  REQUIRE(std::string(buf.data()) == expected);
 }
 
 TEST_CASE("pid_state_short returns the short state",
