@@ -33,12 +33,14 @@
 #include <content/text_object.h>
 #include <data/proc.h>
 #include <sys/prctl.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <lua/lua-config.hh>
 
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -117,8 +119,9 @@ std::string read_cmdline() {
   return raw;
 }
 
-std::string read_status_value(const std::string &key) {
-  std::ifstream input("/proc/self/status");
+std::string read_status_value_for_pid(pid_t pid, const std::string &key) {
+  std::string path = "/proc/" + std::to_string(pid) + "/status";
+  std::ifstream input(path);
   std::string line;
   while (std::getline(input, line)) {
     if (line.rfind(key, 0) == 0) {
@@ -132,6 +135,31 @@ std::string read_status_value(const std::string &key) {
   }
   return {};
 }
+
+std::string read_status_value(const std::string &key) {
+  return read_status_value_for_pid(getpid(), key);
+}
+
+pid_t spawn_stopped_child() {
+  pid_t pid = fork();
+  if (pid == 0) {
+    raise(SIGSTOP);
+    _exit(0);
+  }
+  return pid;
+}
+
+struct child_guard {
+  pid_t pid = -1;
+
+  ~child_guard() {
+    if (pid > 0) {
+      kill(pid, SIGKILL);
+      int status = 0;
+      waitpid(pid, &status, 0);
+    }
+  }
+};
 
 bool parse_proc_stat_times(const std::string &stat, unsigned long int *utime,
                            unsigned long int *stime) {
@@ -314,24 +342,30 @@ TEST_CASE("pid_state_short returns the short state",
 TEST_CASE("pid_vm values map to correct status entries", "[proc][pid_vm]") {
   ensure_lua_state();
 
-  std::string vmstk = read_status_value("VmStk:");
-  std::string vmexe = read_status_value("VmExe:");
+  pid_t child = spawn_stopped_child();
+  REQUIRE(child > 0);
+  int status = 0;
+  REQUIRE(waitpid(child, &status, WUNTRACED) == child);
+  REQUIRE(WIFSTOPPED(status));
+
+  child_guard guard;
+  guard.pid = child;
+
+  std::string vmrss = read_status_value_for_pid(child, "VmRSS:");
+  std::string vmstk = read_status_value_for_pid(child, "VmStk:");
+  std::string vmexe = read_status_value_for_pid(child, "VmExe:");
+  REQUIRE_FALSE(vmrss.empty());
   REQUIRE_FALSE(vmstk.empty());
   REQUIRE_FALSE(vmexe.empty());
 
-  std::string pid_str = std::to_string(getpid());
+  std::string pid_str = std::to_string(child);
   sub_text_object sub(pid_str.c_str());
   struct text_object obj {};
   obj.sub = &sub.root;
 
   char buf[64]{};
-  std::string vmrss_before = read_status_value("VmRSS:");
-  REQUIRE_FALSE(vmrss_before.empty());
   print_pid_vmrss(&obj, buf, sizeof(buf));
-  std::string vmrss_after = read_status_value("VmRSS:");
-  REQUIRE_FALSE(vmrss_after.empty());
-  REQUIRE(
-      (std::string(buf) == vmrss_before || std::string(buf) == vmrss_after));
+  REQUIRE(std::string(buf) == vmrss);
 
   memset(buf, 0, sizeof(buf));
   print_pid_vmstk(&obj, buf, sizeof(buf));
