@@ -44,6 +44,7 @@
 
 #include "../../conky.h"  // for struct info
 #include "darwin.h"
+#include "darwin_top_helpers.h"
 
 #include <AvailabilityMacros.h>
 
@@ -198,20 +199,6 @@ static void helper_update_threads_processes() {
 }
 
 /*
- * useful info about the cpu used by functions such as update_cpu_usage() and
- * get_top_info()
- */
-struct cpusample {
-  uint64_t totalUserTime;   /* ticks of CPU in userspace */
-  uint64_t totalSystemTime; /* ticks of CPU in kernelspace */
-  uint64_t totalIdleTime;   /* ticks in idleness */
-
-  uint64_t total;          /* delta of current and previous */
-  uint64_t current_total;  /* total CPU ticks of current iteration */
-  uint64_t previous_total; /* total CPU tick of previous iteration */
-};
-
-/*
  * Memory sample
  */
 typedef struct memorysample {
@@ -259,11 +246,7 @@ static void get_cpu_sample(struct cpusample **sample) {
   /*
    * sum up all totals
    */
-  for (natural_t i = 1; i < processorCount + 1; i++) {
-    (*sample)[0].totalSystemTime += (*sample)[i].totalSystemTime;
-    (*sample)[0].totalUserTime += (*sample)[i].totalUserTime;
-    (*sample)[0].totalIdleTime += (*sample)[i].totalIdleTime;
-  }
+  sum_cpu_sample_overall(*sample, processorCount);
 
   /*
    * Dealloc
@@ -1151,6 +1134,11 @@ static void calc_cpu_usage_for_proc(struct process *proc, uint64_t total) {
   float mul = 100.0;
   if (top_cpu_separate.get(*state)) { mul *= info.cpu_count; }
 
+  if (total == 0) {
+    proc->amount = 0.0f;
+    return;
+  }
+
   proc->amount =
       mul * (proc->user_time + proc->kernel_time) / static_cast<float>(total);
 }
@@ -1169,10 +1157,14 @@ static void calc_cpu_total(struct process *proc, uint64_t *total) {
   current_total =
       sample[0].totalUserTime + sample[0].totalIdleTime + sample[0].totalSystemTime;
 
-  *total = current_total - proc->previous_total_cpu_time;
-  proc->previous_total_cpu_time = current_total;
+  uint64_t delta = cpu_total_delta(current_total, &proc->previous_total_cpu_time);
 
-  *total = ((*total / sysconf(_SC_CLK_TCK)) * 100) / info.cpu_count;
+  if (delta == 0) {
+    *total = 0;
+    return;
+  }
+
+  *total = (delta / sysconf(_SC_CLK_TCK)) * 100;
 }
 
 /*
@@ -1186,13 +1178,8 @@ static void calc_cpu_time_for_proc(struct process *process,
   unsigned long long user_time = 0;
   unsigned long long kernel_time = 0;
 
-  process->user_time = pti->pti_total_user;
-  process->kernel_time = pti->pti_total_system;
-
-  /* user_time and kernel_time are in nanoseconds, total_cpu_time in
-   * centiseconds. Therefore we divide by 10^7 . */
-  process->user_time /= 10000000;
-  process->kernel_time /= 10000000;
+  process->user_time = mach_ticks_to_centis_system(pti->pti_total_user);
+  process->kernel_time = mach_ticks_to_centis_system(pti->pti_total_system);
 
   process->total_cpu_time = process->user_time + process->kernel_time;
   if (process->previous_user_time == ULONG_MAX) {
