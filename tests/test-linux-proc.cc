@@ -117,6 +117,22 @@ std::string read_cmdline() {
   return raw;
 }
 
+std::string read_status_value(const std::string &key) {
+  std::ifstream input("/proc/self/status");
+  std::string line;
+  while (std::getline(input, line)) {
+    if (line.rfind(key, 0) == 0) {
+      std::string value = line.substr(key.size());
+      while (!value.empty() &&
+             (value.front() == '\t' || value.front() == ' ')) {
+        value.erase(value.begin());
+      }
+      return value;
+    }
+  }
+  return {};
+}
+
 bool parse_proc_stat_times(const std::string &stat, unsigned long int *utime,
                            unsigned long int *stime) {
   if (utime == nullptr || stime == nullptr) { return false; }
@@ -178,6 +194,59 @@ TEST_CASE("pid_time handles comm with spaces", "[proc][pid_time]") {
   REQUIRE_THAT(actual, WithinAbs(expected, 0.01));
 }
 
+TEST_CASE("pid_time_kernelmode uses system time",
+          "[proc][pid_time_kernelmode]") {
+  ensure_lua_state();
+
+  std::ifstream input("/proc/self/stat", std::ios::binary);
+  std::string stat((std::istreambuf_iterator<char>(input)),
+                   std::istreambuf_iterator<char>());
+  REQUIRE_FALSE(stat.empty());
+
+  unsigned long int utime = 0;
+  unsigned long int stime = 0;
+  REQUIRE(parse_proc_stat_times(stat, &utime, &stime));
+
+  double expected = static_cast<double>(stime) / 100.0;
+
+  std::string pid_str = std::to_string(getpid());
+  sub_text_object sub(pid_str.c_str());
+  struct text_object obj {};
+  obj.sub = &sub.root;
+
+  char buf[64]{};
+  print_pid_time_kernelmode(&obj, buf, sizeof(buf));
+
+  double actual = std::stod(buf);
+  REQUIRE_THAT(actual, WithinAbs(expected, 0.01));
+}
+
+TEST_CASE("pid_time_usermode uses user time", "[proc][pid_time_usermode]") {
+  ensure_lua_state();
+
+  std::ifstream input("/proc/self/stat", std::ios::binary);
+  std::string stat((std::istreambuf_iterator<char>(input)),
+                   std::istreambuf_iterator<char>());
+  REQUIRE_FALSE(stat.empty());
+
+  unsigned long int utime = 0;
+  unsigned long int stime = 0;
+  REQUIRE(parse_proc_stat_times(stat, &utime, &stime));
+
+  double expected = static_cast<double>(utime) / 100.0;
+
+  std::string pid_str = std::to_string(getpid());
+  sub_text_object sub(pid_str.c_str());
+  struct text_object obj {};
+  obj.sub = &sub.root;
+
+  char buf[64]{};
+  print_pid_time_usermode(&obj, buf, sizeof(buf));
+
+  double actual = std::stod(buf);
+  REQUIRE_THAT(actual, WithinAbs(expected, 0.01));
+}
+
 TEST_CASE("pid_thread_list does not overflow small buffers",
           "[proc][pid_thread_list]") {
   ensure_lua_state();
@@ -203,5 +272,72 @@ TEST_CASE("pid_thread_list does not overflow small buffers",
   for (size_t i = k_buf_size; i < buffer.size(); ++i) {
     REQUIRE(buffer[i] == k_sentinel);
   }
+}
+
+TEST_CASE("pid_environ reads values from /proc environ",
+          "[proc][pid_environ]") {
+  ensure_lua_state();
+
+  setenv("CONKY_PROC_TEST", "ok", 1);
+
+  std::string pid_str = std::to_string(getpid());
+  std::string arg = pid_str + " conky_proc_test";
+  sub_text_object sub(arg.c_str());
+  struct text_object obj {};
+  obj.sub = &sub.root;
+  obj.data.s = strdup("conky_proc_test");
+
+  char buf[64]{};
+  print_pid_environ(&obj, buf, sizeof(buf));
+
+  free(obj.data.s);
+
+  REQUIRE(std::string(buf) == "ok");
+}
+
+TEST_CASE("pid_state_short returns the short state",
+          "[proc][pid_state_short]") {
+  ensure_lua_state();
+
+  std::string state = read_status_value("State:");
+  REQUIRE_FALSE(state.empty());
+
+  std::string pid_str = std::to_string(getpid());
+  sub_text_object sub(pid_str.c_str());
+  struct text_object obj {};
+  obj.sub = &sub.root;
+
+  char buf[8]{};
+  print_pid_state_short(&obj, buf, sizeof(buf));
+
+  REQUIRE(buf[0] == state[0]);
+}
+
+TEST_CASE("pid_vm values map to correct status entries", "[proc][pid_vm]") {
+  ensure_lua_state();
+
+  std::string vmrss = read_status_value("VmRSS:");
+  std::string vmstk = read_status_value("VmStk:");
+  std::string vmexe = read_status_value("VmExe:");
+  REQUIRE_FALSE(vmrss.empty());
+  REQUIRE_FALSE(vmstk.empty());
+  REQUIRE_FALSE(vmexe.empty());
+
+  std::string pid_str = std::to_string(getpid());
+  sub_text_object sub(pid_str.c_str());
+  struct text_object obj {};
+  obj.sub = &sub.root;
+
+  char buf[64]{};
+  print_pid_vmrss(&obj, buf, sizeof(buf));
+  REQUIRE(std::string(buf) == vmrss);
+
+  memset(buf, 0, sizeof(buf));
+  print_pid_vmstk(&obj, buf, sizeof(buf));
+  REQUIRE(std::string(buf) == vmstk);
+
+  memset(buf, 0, sizeof(buf));
+  print_pid_vmexe(&obj, buf, sizeof(buf));
+  REQUIRE(std::string(buf) == vmexe);
 }
 #endif
