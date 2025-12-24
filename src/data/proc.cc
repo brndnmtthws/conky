@@ -31,6 +31,7 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <cctype>
+#include <cstring>
 #include <memory>
 #include <sstream>
 #include "../conky.h"
@@ -56,6 +57,22 @@ char *readfile(const char *filename, int *total_read, char showerror) {
     NORM_ERR(READERR, filename);
   }
   return buf;
+}
+
+static bool parse_proc_stat_times(const char *buf, unsigned long int *utime,
+                                  unsigned long int *stime) {
+  if (buf == nullptr || utime == nullptr || stime == nullptr) { return false; }
+
+  const char *close_paren = strrchr(buf, ')');
+  if (close_paren == nullptr) { return false; }
+
+  const char *after = close_paren + 1;
+  while (*after == ' ') { ++after; }
+
+  int parsed =
+      sscanf(after, "%*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu %lu",
+             utime, stime);
+  return parsed == 2;
 }
 
 void pid_readlink(const char *file, char *p, unsigned int p_max_size) {
@@ -454,6 +471,8 @@ void print_cmdline_to_pid(struct text_object *obj, char *p,
   dir = opendir(PROCDIR);
   if (dir != nullptr) {
     while ((entry = readdir(dir)) != nullptr) {
+      pathstream.str("");
+      pathstream.clear();
       pathstream << PROCDIR "/" << entry->d_name << "/cmdline";
 
       buf = readfile(pathstream.str().c_str(), &bytes_read, 0);
@@ -508,7 +527,7 @@ void print_pid_thread_list(struct text_object *obj, char *p,
                            unsigned int p_max_size) {
   DIR *dir;
   struct dirent *entry;
-  int totallength = 0;
+  unsigned int totallength = 0;
   std::ostringstream pathstream;
   std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
 
@@ -519,9 +538,16 @@ void print_pid_thread_list(struct text_object *obj, char *p,
   if (dir != nullptr) {
     while ((entry = readdir(dir)) != nullptr) {
       if (entry->d_name[0] != '.') {
-        snprintf(p + totallength, p_max_size - totallength, "%s,",
-                 entry->d_name);
-        totallength += strlen(entry->d_name) + 1;
+        if (totallength + 1 >= p_max_size) { break; }
+        unsigned int remaining = p_max_size - totallength;
+        int written =
+            snprintf(p + totallength, remaining, "%s,", entry->d_name);
+        if (written < 0) { break; }
+        if (static_cast<unsigned int>(written) >= remaining) {
+          totallength = p_max_size - 1;
+          break;
+        }
+        totallength += static_cast<unsigned int>(written);
       }
     }
     closedir(dir);
@@ -537,7 +563,8 @@ void print_pid_time_kernelmode(struct text_object *obj, char *p,
                                unsigned int p_max_size) {
   char *buf = nullptr;
   int bytes_read;
-  unsigned long int umtime;
+  unsigned long int utime = 0;
+  unsigned long int stime = 0;
   std::ostringstream pathstream;
   std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
 
@@ -547,9 +574,9 @@ void print_pid_time_kernelmode(struct text_object *obj, char *p,
     pathstream << PROCDIR "/" << objbuf.get() << "/stat";
     buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
     if (buf != nullptr) {
-      sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu",
-             &umtime);
-      snprintf(p, p_max_size, "%.2f", static_cast<float>(umtime) / 100);
+      if (parse_proc_stat_times(buf, &utime, &stime)) {
+        snprintf(p, p_max_size, "%.2f", static_cast<float>(utime) / 100);
+      }
       free(buf);
     }
   } else {
@@ -561,7 +588,8 @@ void print_pid_time_usermode(struct text_object *obj, char *p,
                              unsigned int p_max_size) {
   char *buf = nullptr;
   int bytes_read;
-  unsigned long int kmtime;
+  unsigned long int utime = 0;
+  unsigned long int stime = 0;
   std::ostringstream pathstream;
   std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
 
@@ -571,9 +599,9 @@ void print_pid_time_usermode(struct text_object *obj, char *p,
     pathstream << PROCDIR "/" << objbuf.get() << "/stat";
     buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
     if (buf != nullptr) {
-      sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %*u %lu",
-             &kmtime);
-      snprintf(p, p_max_size, "%.2f", static_cast<float>(kmtime) / 100);
+      if (parse_proc_stat_times(buf, &utime, &stime)) {
+        snprintf(p, p_max_size, "%.2f", static_cast<float>(stime) / 100);
+      }
       free(buf);
     }
   } else {
@@ -584,7 +612,8 @@ void print_pid_time_usermode(struct text_object *obj, char *p,
 void print_pid_time(struct text_object *obj, char *p, unsigned int p_max_size) {
   char *buf = nullptr;
   int bytes_read;
-  unsigned long int umtime, kmtime;
+  unsigned long int utime = 0;
+  unsigned long int stime = 0;
   std::ostringstream pathstream;
   std::unique_ptr<char[]> objbuf(new char[max_user_text.get(*state)]);
 
@@ -594,10 +623,10 @@ void print_pid_time(struct text_object *obj, char *p, unsigned int p_max_size) {
     pathstream << PROCDIR "/" << objbuf.get() << "/stat";
     buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
     if (buf != nullptr) {
-      sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu %lu",
-             &umtime, &kmtime);
-      snprintf(p, p_max_size, "%.2f",
-               static_cast<float>(umtime + kmtime) / 100);
+      if (parse_proc_stat_times(buf, &utime, &stime)) {
+        snprintf(p, p_max_size, "%.2f",
+                 static_cast<float>(utime + stime) / 100);
+      }
       free(buf);
     }
   } else {
