@@ -86,6 +86,36 @@ static bool parse_proc_stat_times(const char *buf, unsigned long int *utime,
   return parsed == 2;
 }
 
+static bool parse_proc_stat_prio_nice(const char *after, long int *priority,
+                                      long int *nice) {
+  if (after == nullptr || priority == nullptr || nice == nullptr) {
+    return false;
+  }
+
+  char state;
+  int ppid;
+  int pgrp;
+  int session;
+  int tty_nr;
+  int tpgid;
+  unsigned int flags;
+  unsigned long minflt;
+  unsigned long cminflt;
+  unsigned long majflt;
+  unsigned long cmajflt;
+  unsigned long utime;
+  unsigned long stime;
+  long cutime;
+  long cstime;
+
+  int parsed = sscanf(
+      after, "%c %d %d %d %d %d %u %lu %lu %lu %lu %lu %lu %ld %ld %ld %ld",
+      &state, &ppid, &pgrp, &session, &tty_nr, &tpgid, &flags, &minflt,
+      &cminflt, &majflt, &cmajflt, &utime, &stime, &cutime, &cstime, priority,
+      nice);
+  return parsed == 17;
+}
+
 void pid_readlink(const char *file, char *p, unsigned int p_max_size) {
   std::unique_ptr<char[]> buf(new char[p_max_size]);
 
@@ -276,11 +306,8 @@ void print_pid_nice(struct text_object *obj, char *p, unsigned int p_max_size) {
     buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
     if (buf != nullptr) {
       after = skip_proc_stat_comm(buf);
-      if (after != nullptr &&
-          sscanf(after,
-                 "%*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %*lu %*lu %*ld "
-                 "%*ld %*ld %ld",
-                 &nice_value) == 1) {
+      long int priority_value = 0;
+      if (parse_proc_stat_prio_nice(after, &priority_value, &nice_value)) {
         snprintf(p, p_max_size, "%ld", nice_value);
       }
       free(buf);
@@ -381,11 +408,8 @@ void print_pid_priority(struct text_object *obj, char *p,
     buf = readfile(pathstream.str().c_str(), &bytes_read, 1);
     if (buf != nullptr) {
       after = skip_proc_stat_comm(buf);
-      if (after != nullptr &&
-          sscanf(after,
-                 "%*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %*lu %*lu %*ld "
-                 "%*ld %ld",
-                 &priority) == 1) {
+      long int nice_value = 0;
+      if (parse_proc_stat_prio_nice(after, &priority, &nice_value)) {
         snprintf(p, p_max_size, "%ld", priority);
       }
       free(buf);
