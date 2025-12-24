@@ -314,10 +314,8 @@ TEST_CASE("pid_state_short returns the short state",
 TEST_CASE("pid_vm values map to correct status entries", "[proc][pid_vm]") {
   ensure_lua_state();
 
-  std::string vmrss = read_status_value("VmRSS:");
   std::string vmstk = read_status_value("VmStk:");
   std::string vmexe = read_status_value("VmExe:");
-  REQUIRE_FALSE(vmrss.empty());
   REQUIRE_FALSE(vmstk.empty());
   REQUIRE_FALSE(vmexe.empty());
 
@@ -327,8 +325,13 @@ TEST_CASE("pid_vm values map to correct status entries", "[proc][pid_vm]") {
   obj.sub = &sub.root;
 
   char buf[64]{};
+  std::string vmrss_before = read_status_value("VmRSS:");
+  REQUIRE_FALSE(vmrss_before.empty());
   print_pid_vmrss(&obj, buf, sizeof(buf));
-  REQUIRE(std::string(buf) == vmrss);
+  std::string vmrss_after = read_status_value("VmRSS:");
+  REQUIRE_FALSE(vmrss_after.empty());
+  REQUIRE(
+      (std::string(buf) == vmrss_before || std::string(buf) == vmrss_after));
 
   memset(buf, 0, sizeof(buf));
   print_pid_vmstk(&obj, buf, sizeof(buf));
