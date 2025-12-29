@@ -77,7 +77,7 @@ jobs:
             pandoc \
             wayland-protocols
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - uses: actions/setup-python@v6
@@ -118,7 +118,7 @@ jobs:
       - name: Load cached compilation artifacts
         if: startsWith(github.ref, 'refs/tags/') != true
         id: compiler-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: '${{ env.SCCACHE_DIR }}'
           key: sccache-${{ matrix.os }}-${{ matrix.arch }}
@@ -139,19 +139,19 @@ jobs:
       - run: mv conky-x86_64.AppImage conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage
       - run: mv conky-x86_64.AppImage.sha256 conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage.sha256
       - name: Upload AppImage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           path: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage'
           name: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage'
           if-no-files-found: error
       - name: Upload AppImage checksum artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           path: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage.sha256'
           name: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage.sha256'
           if-no-files-found: error
       - name: Upload man page artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: conky.1.gz
           path: conky.1.gz
@@ -163,7 +163,7 @@ jobs:
     needs: build
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           path: ${{ github.workspace }}/artifacts
 
