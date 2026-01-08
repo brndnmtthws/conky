@@ -3,7 +3,7 @@
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2024 Brenden Matthews, et. al. (see AUTHORS) All rights
+# Copyright (c) 2005-2025 Brenden Matthews, et. al. (see AUTHORS) All rights
 # reserved.
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -575,6 +575,14 @@ if(BUILD_LUA_RSVG)
   set(luarsvg_libs ${RSVG_LINK_LIBRARIES} ${LUA_LIBRARIES})
   set(luarsvg_includes ${RSVG_INCLUDE_DIRS} ${LUA_INCLUDE_DIR})
 endif(BUILD_LUA_RSVG)
+
+if(BUILD_LUA_TEXT)
+  find_package(Freetype REQUIRED)
+  PKG_CHECK_MODULES(FONTCONFIG REQUIRED fontconfig)
+  PKG_CHECK_MODULES(HARFBUZZ REQUIRED harfbuzz)
+  set(luatext_libs ${FONTCONFIG_LIBRARIES} ${HARFBUZZ_LIBRARIES} ${LUA_LIBRARIES})
+  set(luatext_includes ${FREETYPE_INCLUDE_DIR_freetype2} ${FONTCONFIG_INCLUDE_DIRS} ${HARFBUZZ_INCLUDE_DIRS} ${LUA_INCLUDE_DIRS})
+endif(BUILD_LUA_TEXT)
 
 if(BUILD_AUDACIOUS)
   set(WANT_GLIB true)

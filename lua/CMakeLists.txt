@@ -3,7 +3,7 @@
 #
 # Please see COPYING for details
 #
-# Copyright (c) 2005-2024 Brenden Matthews, et. al. (see AUTHORS) All rights
+# Copyright (c) 2005-2025 Brenden Matthews, et. al. (see AUTHORS) All rights
 # reserved.
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -106,6 +106,22 @@ if(BUILD_LUA_RSVG)
 
   print_target_properties(conky-rsvg)
 endif(BUILD_LUA_RSVG)
+
+if(BUILD_LUA_CAIRO AND BUILD_LUA_TEXT)
+  include_directories(${luacairo_includes} ${luatext_includes}
+    ${CMAKE_CURRENT_SOURCE_DIR})
+  wrap_tolua(luacairo_text_helper_src cairo_text_helper.pkg)
+
+  add_library(conky-cairo_text_helper MODULE ${luacairo_text_helper_src})
+  set_target_properties(conky-cairo_text_helper
+    PROPERTIES OUTPUT_NAME "cairo_text_helper")
+
+  target_link_libraries(conky-cairo_text_helper
+    ${luacairo_libs}
+    ${luatext_libs}
+    toluapp_lib_static)
+  set(lua_libs ${lua_libs} conky-cairo_text_helper)
+endif(BUILD_LUA_CAIRO AND BUILD_LUA_TEXT)
 
 install(TARGETS ${lua_libs}
   LIBRARY DESTINATION ${LIB_INSTALL_DIR}/conky

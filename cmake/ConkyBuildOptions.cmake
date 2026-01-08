@@ -253,6 +253,9 @@ dependent_option(BUILD_LUA_IMLIB2 "Build Imlib2 bindings for Lua" false
 dependent_option(BUILD_LUA_RSVG "Build rsvg bindings for Lua" false
   "BUILD_GUI" false
   "RSVG Lua bindings depend on BUILD_GUI")
+dependent_option(BUILD_LUA_TEXT "Build Fontconfig Freetype and Harfbuzz for Lua" false
+  "BUILD_GUI" false
+  "Text Lua bindings depend on BUILD_GUI")
 
 option(BUILD_OPENSOUNDSYS "Build with Open Sound System support" true)
 

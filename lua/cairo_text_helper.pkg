@@ -1,0 +1,19 @@
+$#include <cairo.h>
+$#include <libcairo_text_helper.h>
+
+typedef enum _cairo_text_alignment {
+  CAIRO_TEXT_ALIGN_LEFT = 0,
+  CAIRO_TEXT_ALIGN_RIGHT,
+  CAIRO_TEXT_ALIGN_CENTER
+} cairo_text_alignment_t;
+
+void cairo_text_hp_show(cairo_t *cr, int x, int y, const char *text, const char *font, int font_size, 
+                        cairo_text_alignment_t alignment = CAIRO_TEXT_ALIGN_LEFT, const char *language = "en",
+                        const char *script = NULL, const char *direction = NULL);
+
+/* This function allows you to get sizing so you can layout multiple sets of text next to each other */
+void cairo_text_hp_text_size(const char *text, const char *font, int font_size, 
+                             const char *language = "en", const char *script = NULL, const char *direction, int *width, int *height);
+
+/* This will clear all currently loaded / cached fonts */
+void cairo_text_hp_delete_fonts();
