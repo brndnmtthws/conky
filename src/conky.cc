@@ -1181,7 +1181,11 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             int h = current->height;
             int mid = font_ascent() / 2;
 
-            w = text_start.x() + text_size.x() - cur_x;
+            /* if no width was specified, current->width is set to 0 */
+            w = current->width;
+            if (w <= 0) {
+              w = text_start.x() + text_size.x() - cur_x;
+            }
 
             if (display_output()) {
               display_output()->set_line_style(h, true);
@@ -1200,7 +1204,12 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             int mid = font_ascent() / 2;
             char ss[2] = {tmp_s, tmp_s};
 
-            w = text_start.x() + text_size.x() - cur_x - 1;
+            /* if no width was specified, current->width is set to 0 */
+            w = current->width;
+            if (w <= 0) {
+              w = text_start.x() + text_size.x() - cur_x - 1;
+            }
+
             if (display_output()) {
               display_output()->set_line_style(h, false);
               display_output()->set_dashes(ss);
