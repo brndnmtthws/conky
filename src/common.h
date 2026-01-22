@@ -138,6 +138,7 @@ void print_swap(struct text_object *, char *, unsigned int);
 void print_swapfree(struct text_object *, char *, unsigned int);
 void print_swapmax(struct text_object *, char *, unsigned int);
 uint8_t mem_percentage(struct text_object *);
+uint8_t mem_with_buffers_percentage(struct text_object *);
 double mem_barval(struct text_object *);
 double mem_with_buffers_barval(struct text_object *);
 uint8_t swap_percentage(struct text_object *);

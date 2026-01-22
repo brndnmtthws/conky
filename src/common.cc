@@ -567,6 +567,14 @@ uint8_t mem_percentage(struct text_object *obj) {
               : 0);
 }
 
+uint8_t mem_with_buffers_percentage(struct text_object *obj) {
+  (void)obj;
+
+  return (info.memmax != 0u
+              ? round_to_positive_int(info.memwithbuffers * 100 / info.memmax)
+              : 0);
+}
+
 double mem_barval(struct text_object *obj) {
   (void)obj;
 
