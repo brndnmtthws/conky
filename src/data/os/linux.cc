@@ -504,8 +504,9 @@ void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
 
     /* quit only after all non-header lines from /proc/net/dev parsed */
     // FIXME: arbitrary size chosen to keep code simple.
-    char buf[256];
-    if (fgets(buf, 255, net_dev_fp) == nullptr) { break; }
+    const int BUF_SIZE = 256;
+    char buf[BUF_SIZE];
+    if (fgets(buf, BUF_SIZE - 1, net_dev_fp) == nullptr) { break; }
     p = buf;
     /* change char * p to first non-space character, which is the beginning
      * of the interface name */
