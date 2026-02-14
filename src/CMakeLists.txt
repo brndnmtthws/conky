@@ -342,6 +342,7 @@ if(BUILD_WAYLAND)
         NO_CACHE
         REQUIRED
         NO_DEFAULT_PATH
+        NO_CMAKE_FIND_ROOT_PATH
       )
       message(STATUS "PROTOCOL '${name}' ${VERSION} file: ${PROTOCOL_FILE}")
       unset(VERSION)
@@ -354,6 +355,7 @@ if(BUILD_WAYLAND)
         NO_CACHE
         REQUIRED
         NO_DEFAULT_PATH
+        NO_CMAKE_FIND_ROOT_PATH
       )
       message(STATUS "PROTOCOL '${name}' file: ${PROTOCOL_FILE}")
     endif()
