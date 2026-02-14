@@ -797,9 +797,12 @@ values:
       - lines
       - (next_check)
   - name: hr
-    desc: Horizontal line, height is the height in pixels.
+    desc: |-
+      Horizontal line, height is the height in pixels. width can be used to
+      set the width, in pixels, of the horizontal line.
     args:
       - (height)
+      - (width)
   - name: hwmon
     desc: |-
       Hwmon sensor from sysfs (Linux 2.6). Parameter dev can be:
@@ -2036,6 +2039,8 @@ values:
     desc: Stippled (dashed) horizontal line.
     args:
       - (space)
+      - (height)
+      - (width)
   - name: stock
     desc: |-
       Displays the data of a stock symbol. The following data is
