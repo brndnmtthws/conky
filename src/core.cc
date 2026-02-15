@@ -1202,6 +1202,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_memmax;
   obj->callbacks.free = &gen_free_opaque;
   END OBJ(memperc, &update_meminfo) obj->callbacks.percentage = &mem_percentage;
+  END OBJ(memwithbuffersperc, &update_meminfo)
+  obj->callbacks.percentage = &mem_with_buffers_percentage;
 #ifdef __linux__
   END OBJ(memdirty, &update_meminfo) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_memdirty;

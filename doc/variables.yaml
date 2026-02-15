@@ -1335,6 +1335,10 @@ values:
       - (-x)
       - (-y)
       - (-m value)
+  - name: memwithbuffersperc
+    desc: |-
+      Percentage of memory in use (including memory used by system buffers
+      and caches).
   - name: mixer
     desc: |-
       Prints the mixer value as reported by the OS. On Linux, this
