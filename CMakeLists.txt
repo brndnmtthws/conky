@@ -53,13 +53,15 @@ set(conky_sources ${CMAKE_BINARY_DIR}/config.h ${CMAKE_BINARY_DIR}/build.h)
 add_subdirectory(3rdparty)
 set(conky_libs ${conky_libs} toluapp_lib_static)
 set(conky_libs ${conky_libs} Vc)
+
 set(conky_includes ${conky_includes} "${CMAKE_SOURCE_DIR}/3rdparty/Vc")
 
 # Finally, add some code
 add_subdirectory(lua)
 add_subdirectory(data)
 add_subdirectory(doc)
-
+# find_package(PkgConfig REQUIRED)
+# pkg_check_modules(LIBGIT2 REQUIRED IMPORTED_TARGET libgit2)
 if(BUILD_EXTRAS)
   add_subdirectory(extras)
 endif(BUILD_EXTRAS)
@@ -73,6 +75,7 @@ if(BUILD_TESTING)
 
   include(Catch)
 endif()
+
 
 add_subdirectory(src)
 

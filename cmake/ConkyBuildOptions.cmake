@@ -302,6 +302,12 @@ option(BUILD_PULSEAUDIO
 option(BUILD_INTEL_BACKLIGHT
   "Enable support for Intel backlight" false)
 
+option(BUILD_PRESETS "Enable theme presets support" true)
+
+set(PRESETS_REPO_URL "https://github.com/Cetttok/testRepoForConkyThemes")
+
+set(PRESETS_REPO_PATH "/var/lib/conky/themes")
+
 run_dependency_checks()
 
 message(STATUS "CMAKE_C_FLAGS: " ${CMAKE_C_FLAGS})
