@@ -1,0 +1,4 @@
+#ifndef __CONKY_LINUX_IEEE80211_H__
+#define __CONKY_LINUX_IEEE80211_H__
+
+#endif /* __CONKY_LINUX_IEEE80211_H__ */
