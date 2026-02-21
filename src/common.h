@@ -22,6 +22,10 @@
  *
  */
 
+/// This file contains functions that are useful to most target platforms and
+/// behave similarly across them.
+/// It also has some non-specific functions that extend C++ standard library.
+
 #ifndef _COMMON_H
 #define _COMMON_H
 
@@ -30,11 +34,16 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <filesystem>
+#include <iterator>
 #include <optional>
 #include <string>
+#include <string_view>
+#include <type_traits>
+#include <vector>
 
-#include "lua/setting.hh"
 #include "content/text_object.h"
+#include "logging.h"
+#include "lua/setting.hh"
 
 char *readfile(const char *filename, int *total_read, char showerror);
 
@@ -61,13 +70,133 @@ struct process *get_first_process(void);
 void get_cpu_count(void);
 double get_time(void);
 
+/// @brief Iterator that handles interation over `D` delimited segments of a
+/// string.
+///
+/// Iterated sequence can be any type that can be turned into std::string_view.
+/// `D` can be one of many delimiter elements - a char or a substring.
+///
+/// If `Yield` is `std::string_view` string will not be copied, but
+/// `std::string_view` isn't null terminated. If `Yield` is `std::string` then
+/// the string will be copied and will be null terminated (compatible with C
+/// APIs).
+template <typename D, typename Yield = std::string_view>
+class SplitIterator {
+  std::string_view base;
+  D delimiter;
+  std::string_view::size_type delimiter_length;
+  std::string_view::size_type pos;
+  std::string_view item;
+
+ public:
+  using iterator_category = std::forward_iterator_tag;
+  using value_type = Yield;
+
+  SplitIterator(std::string_view str, D delimiter, size_t start = 0)
+      : base(str), delimiter(delimiter), pos(start) {
+    // Precompute delimiter length based on `D` type.
+    if constexpr (std::is_same_v<D, char>) {
+      delimiter_length = 1;
+    } else {
+      delimiter_length =
+          static_cast<std::string_view::size_type>(delimiter.size());
+      if (delimiter_length == 0) {
+        CRIT_ERR("SplitIterator provided with an empty delimiter for string %s",
+                 base);
+      }
+    }
+    ++(*this);  // Load first entry
+  }
+
+  Yield operator*() const {
+    if constexpr (std::is_same_v<Yield, std::string_view>) {
+      return item;
+    } else {
+      return Yield(item);
+    }
+  }
+
+  inline SplitIterator &operator++() { return next(); }
+  inline SplitIterator &operator++(int) { return next(); }
+
+  bool operator==(const SplitIterator &other) const {
+    return base == other.base && pos == other.pos;
+  }
+
+  bool operator!=(const SplitIterator &other) const {
+    return base != other.base || pos != other.pos;
+  }
+
+ private:
+  SplitIterator &next() {
+    if (pos == std::string_view::npos) { return *this; }
+
+    size_t next = base.find(delimiter, pos);
+    if (next == std::string::npos) {
+      item = base.substr(pos);
+      pos = std::string_view::npos;
+    } else {
+      item = base.substr(pos, next - pos);
+      pos = next + delimiter_length;
+    }
+    return *this;
+  }
+};
+
+/// SplitIterator helper class, see SplitIterator for details.
+template <typename D, typename Yield = std::string_view>
+class SplitIterable {
+  std::string_view base;
+  D delimiter;
+
+ public:
+  SplitIterable(std::string_view base, D delim)
+      : base(base), delimiter(delim) {}
+
+  auto begin() const { return SplitIterator<D, Yield>(base, delimiter); }
+  auto end() const {
+    return SplitIterator<D, Yield>(base, delimiter, std::string_view::npos);
+  }
+};
+
+/// Splits a string like type `S` with a delimiter `D`, producing entries of
+/// type `Yield` (`std::string_view` by default).
+template <typename S, typename D, typename Yield = std::string_view>
+inline SplitIterable<D, Yield> split(const S &string, const D &delimiter) {
+  return SplitIterable<D, Yield>(std::string_view(string), delimiter);
+}
+
+/// Splits a string like type `S` with a delimiter `D`, allocating a
+/// `std::vector` with entries of type `Yield`.
+template <typename S, typename D, typename Yield = std::string_view>
+inline std::vector<Yield> split_to_vec(const S &string, const D &delimiter) {
+  std::vector<Yield> result;
+  for (const auto yield : split<S, D, Yield>(string, delimiter)) {
+    result.push_back(yield);
+  }
+  return result;
+}
+
 /// @brief Handles environment variable expansion in paths and canonicalization.
+///
+/// This is a simplified reimplementation of `wordexp` function that's cross
+/// platform.
+/// Path expansion is done in following stages:
+/// - Tilde expansion (e.g. `~/file` -> `/home/user/file`)
+/// - Variable substitution (e.g. `$XDG_CONFIG_DIRS/file` -> `/etc/xdg/file`)
+/// - Command substitution (e.g. `path/$(echo "part")` -> `path/part`)
+/// - Wildcard expansion (e.g. `/some/**/path` -> `/some/deeply/nested/path`)
+///
+/// In case wildcard expansion produces multiple matches, first one will be
+/// returned, but ordering depends on directory listing order (of filesystem
+//  and/or OS).
 ///
 /// Examples:
 /// - `~/conky` -> `/home/conky_user/conky`
 /// - `$HOME/conky` -> `/home/conky_user/conky`
 /// - `$HOME/a/b/../c/../../conky` -> `/home/conky_user/conky`
 std::filesystem::path to_real_path(const std::string &source);
+
 FILE *open_file(const char *file, int *reported);
 int open_fifo(const char *file, int *reported);
 
@@ -81,8 +210,27 @@ std::optional<std::filesystem::path> user_home(const std::string &username);
 std::optional<std::filesystem::path> user_home();
 /// Performs tilde expansion on a path-like string and returns the result.
 std::string tilde_expand(const std::string &unexpanded);
-/// Performs variable substitution on a string and returns the result.
+/// @brief Performs variable substitution on a string and returns the result.
+///
+/// Example:
+/// - `$HOME/.config/conky` -> `/home/user/.config/conky`
 std::string variable_substitute(std::string s);
+/// @brief Performs command substitution on a string and returns the result.
+///
+/// Examples:
+/// - `/some/$(echo "path")` -> `/some/path`
+/// - `/nested/$(echo $((2 + 3)))` -> `/nested/5`
+std::string command_substitute(std::string s);
+/// @brief Performs wildcard expansion of a path.
+///
+/// This function will
+///
+/// Following characters are supported:
+/// - ? (question mark) - a single character
+/// - * (asterisk) - zero or more characters
+/// - ** (double asterisk) - zero or more subpaths
+std::vector<std::filesystem::path> wildcard_expand_path(
+    const std::filesystem::path &path);
 
 void format_seconds(char *buf, unsigned int n, long seconds);
 void format_seconds_short(char *buf, unsigned int n, long seconds);

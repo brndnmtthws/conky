@@ -1681,24 +1681,11 @@ void update_text() {
 int inotify_fd = -1;
 #endif
 
-template <typename Out>
-void split(const std::string &s, char delim, Out result) {
-  std::stringstream ss(s);
-  std::string item;
-  while (std::getline(ss, item, delim)) { *(result++) = item; }
-}
-std::vector<std::string> split(const std::string &s, char delim) {
-  std::vector<std::string> elems;
-  split(s, delim, std::back_inserter(elems));
-  return elems;
-}
-
 bool is_on_battery() {  // checks if at least one battery specified in
                         // "detect_battery" is discharging
   char buf[64];
-  std::vector<std::string> b_items = split(detect_battery.get(*state), ',');
-
-  for (auto const &value : b_items) {
+  for (auto const &value :
+       split<std::string, char, std::string>(detect_battery.get(*state), ',')) {
     get_battery_short_status(buf, 64, value.c_str());
     if (buf[0] == 'D') { return true; }
   }
