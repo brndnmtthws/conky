@@ -9,17 +9,17 @@
 
 ## Build, Test, and Development Commands
 
-- Configure: `cmake -S . -B build -DMAINTAINER_MODE=ON` sets up a debug-friendly out-of-tree build.
-- Compile: `cmake --build build` or `make` within `build/` builds all binaries and modules.
+- Configure: `cmake -S . -B build -G Ninja -DMAINTAINER_MODE=ON` sets up a debug-friendly out-of-tree build aligned with CI.
+- Compile: `cmake --build build` or `ninja -C build` builds all binaries and modules.
 - Test: `ctest --test-dir build --output-on-failure` runs the suite; narrow focus with `./build/tests/test-conky "<test-or-tag>"` (for example `"[linux]"`) or `./build/tests/test-conky --section "<section>"`.
-- Format: `cmake --build build --target clang-format` or `make clang-format` rewrites sources; pair with `make check-clang-format` in CI. If the target is missing, reconfigure with `-DCHECK_CODE_QUALITY=ON`.
-- Coverage: `cmake -S . -B build -DMAINTAINER_MODE=ON -DCODE_COVERAGE=ON` then `cmake --build build --target test-conky-coverage-html`; HTML results are generated in the build tree under `test-conky-coverage-html/` (for example `build/tests/test-conky-coverage-html/index.html`).
+- Format: `cmake --build build --target clang-format` or `ninja -C build clang-format` rewrites sources; pair with `cmake --build build --target check-clang-format` in CI. If the target is missing, reconfigure with `-DCHECK_CODE_QUALITY=ON`.
+- Coverage: `cmake -S . -B build -G Ninja -DMAINTAINER_MODE=ON -DCODE_COVERAGE=ON` then `cmake --build build --target test-conky-coverage-html`; HTML results are generated in the build tree under `test-conky-coverage-html/` (for example `build/tests/test-conky-coverage-html/index.html`).
 
 ## Coding Style & Naming Conventions
 
 - Adopt Google C++ style: 2-space indent, 80-column target, left-aligned pointers (`char* ptr`), and braced initialization.
 - Keep include blocks ordered: system, third-party, project. Run clang-format before committing, and avoid manual tabs.
-- Mirror existing naming patterns such as `display_output_x11`, `text_object_xyz`, and `update_cb<Foo>` for new components.
+- Mirror existing naming patterns such as `display_output_x11`, `text_object_xyz`, and the callback pattern from `update-cb.hh` (`callback<Result, Keys...>` plus `register_cb<YourCallback>`) for new components.
 
 ## Testing Guidelines
 
@@ -36,6 +36,6 @@
 
 ## Architecture Overview
 
-- Register text objects via `CREATE_NODE_CALLBACK` and reuse existing caching/update helpers instead of ad-hoc loops.
+- Register text objects via the `OBJ`, `OBJ_ARG`, `OBJ_IF`, and `OBJ_IF_ARG` macros in `src/core.cc` (`construct_text_object`) and reuse existing caching/update helpers instead of ad-hoc loops.
 - Backends derive from `display_output_base`; ensure new drawing code degrades gracefully for ncurses and HTTP outputs.
 - Long-running stats should use the shared `update_cb` + `conky::callback_handle` pattern to keep the UI responsive.
