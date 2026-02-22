@@ -1044,12 +1044,22 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ_ARG(i2c, 0, "i2c needs arguments") parse_i2c_sensor(obj, arg);
   obj->callbacks.print = &print_sysfs_sensor;
   obj->callbacks.free = &free_sysfs_sensor;
+  END OBJ_ARG(i2cbar, 0, "i2cbar needs arguments") parse_i2c_bar(obj, arg);
+  obj->callbacks.barval = &sysfs_sensor_barval;
+  obj->callbacks.free = &free_sysfs_sensor;
   END OBJ_ARG(platform, 0, "platform needs arguments")
       parse_platform_sensor(obj, arg);
   obj->callbacks.print = &print_sysfs_sensor;
   obj->callbacks.free = &free_sysfs_sensor;
+  END OBJ_ARG(platformbar, 0, "platformbar needs arguments")
+      parse_platform_bar(obj, arg);
+  obj->callbacks.barval = &sysfs_sensor_barval;
+  obj->callbacks.free = &free_sysfs_sensor;
   END OBJ_ARG(hwmon, 0, "hwmon needs arguments") parse_hwmon_sensor(obj, arg);
   obj->callbacks.print = &print_sysfs_sensor;
+  obj->callbacks.free = &free_sysfs_sensor;
+  END OBJ_ARG(hwmonbar, 0, "hwmonbar needs arguments") parse_hwmon_bar(obj, arg);
+  obj->callbacks.barval = &sysfs_sensor_barval;
   obj->callbacks.free = &free_sysfs_sensor;
 #endif /* __linux__ */
   END
