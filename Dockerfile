@@ -39,6 +39,7 @@ RUN apt-get update \
   libxdamage-dev \
   libxext-dev \
   libxft-dev \
+  libgit2-dev \
   libxinerama-dev \
   libxml2-dev \
   libxmmsclient-dev \
