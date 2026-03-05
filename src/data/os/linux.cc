@@ -3026,8 +3026,9 @@ static void process_parse_stat(struct process *process) {
     strncpy(cmdline_procname, cmdline, BUFFER_LEN);
   } else {
     long int slash_pos = slash_ptr - tmpstr;
-    strncpy(cmdline_procname, cmdline + slash_pos + 1, BUFFER_LEN - slash_pos);
-    cmdline_procname[BUFFER_LEN - slash_pos] = 0;
+    strncpy(cmdline_procname, cmdline + slash_pos + 1,
+            BUFFER_LEN - slash_pos - 1);
+    cmdline_procname[BUFFER_LEN - slash_pos - 1] = 0;
   }
 
   /* Extract cpu times from data in /proc filesystem */
