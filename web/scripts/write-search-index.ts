@@ -4,4 +4,4 @@ async function main() {
   await writeSearchIndex()
 }
 
-main()
+void main()

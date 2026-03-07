@@ -1,58 +1,11 @@
-const sunIcon = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="25"
-    height="24"
-    fill="none"
-    viewBox="0 0 25 24"
-    className="dark:opacity-50"
-  >
-    <g
-      stroke="#fff"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      clipPath="url(#clip0_192_823)"
-    >
-      <path d="M12.5 17a5 5 0 100-10 5 5 0 000 10zM12.5 1v2M12.5 21v2M4.72 4.22l1.42 1.42M18.86 18.36l1.42 1.42M1.5 12h2M21.5 12h2M4.72 19.78l1.42-1.42M18.86 5.64l1.42-1.42"></path>
-    </g>
-    <defs>
-      <clipPath id="clip0_192_823">
-        <path
-          className="fill-current text-white"
-          d="M0 0H24V24H0z"
-          transform="translate(.5)"
-        ></path>
-      </clipPath>
-    </defs>
-  </svg>
-)
-
-const moonIcon = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="25"
-    height="24"
-    fill="none"
-    viewBox="0 0 21 20"
-  >
-    <path
-      stroke="#fff"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      className="stroke-current text-gray-400 dark:text-white"
-      d="M19.5 10.79A9 9 0 119.71 1a7 7 0 009.79 9.79v0z"
-    ></path>
-  </svg>
-)
+import { Moon, Sun } from 'lucide-react'
 
 type Props = {
   setDarkMode: (state: boolean) => void
 }
 export default function ThemeSwitcher({ setDarkMode }: Props) {
   return (
-    <div className="flex bg-gray-200 dark:bg-gray-700 rounded-2xl">
+    <div className="flex rounded-full border border-zinc-900/10 bg-zinc-100/90 p-0.5 dark:border-white/10 dark:bg-zinc-900">
       <button
         type="button"
         aria-label="Use Dark Mode"
@@ -60,9 +13,9 @@ export default function ThemeSwitcher({ setDarkMode }: Props) {
         onClick={() => {
           setDarkMode(true)
         }}
-        className="flex items-center dark:bg-purple-500 rounded-3xl justify-center align-center p-1 w-10 h-full transition"
+        className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-500 transition hover:text-zinc-900 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:text-white"
       >
-        {moonIcon}
+        <Moon size={20} strokeWidth={2} />
       </button>
 
       <button
@@ -72,9 +25,9 @@ export default function ThemeSwitcher({ setDarkMode }: Props) {
         onClick={() => {
           setDarkMode(false)
         }}
-        className="flex items-center bg-purple-500 dark:bg-transparent rounded-3xl justify-center align-center p-1 w-10 h-full transition"
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-zinc-900 shadow-sm transition hover:bg-zinc-50 dark:bg-transparent dark:text-zinc-500 dark:shadow-none dark:hover:text-white"
       >
-        {sunIcon}
+        <Sun size={20} strokeWidth={2} />
       </button>
     </div>
   )

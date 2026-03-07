@@ -4,16 +4,17 @@ description: How to compile Conky from source
 indexWeight: 0
 ---
 
-Using CMake to build Conky is pretty easy, and here is how I do it:
+Building Conky with CMake is straightforward:
 
-1. From the top level source dir, create a build working dir, and cd into it
+1. From the top-level source directory, create a build directory and change
+   into it:
 
 ```shell-session
 mkdir build
 cd build
 ```
 
-2. Run the cmake configuration process
+2. Run the CMake configuration step:
 
 ```shell-session
 cmake ../ # pass the path to the sources to cmake
@@ -22,20 +23,20 @@ cmake ../ # pass the path to the sources to cmake
 OR
 
 ```shell-session
-ccmake ../ # you can also use the fance curses interface, or try cmake-gui
+ccmake ../ # use the ncurses interface instead, or try cmake-gui
 ```
 
-3. Compile as usual, and enjoy the out-of-source goodness
+3. Build and install as usual:
 
 ```shell-session
 make
-sudo make install # if you want
+sudo make install # optional
 ```
 
-There are a number of build options for Conky, and the best way to discover
-them is to use the `ccmake` (or `cmake-gui`) CMake tool for browsing them.
+Conky provides a number of build options. The easiest way to explore them is to
+use `ccmake` or `cmake-gui`.
 
-Certain Conky build time features (such as doc generation) require third-party
-applications, which you should be notified of via CMake. In the case of doc
-generation, you'll need the docbook2X package (available on most
-distributions).
+Some build-time features, such as documentation generation, require third-party
+tools. CMake will usually tell you when one is missing. For documentation
+generation, you will need the `docbook2X` package, which is available on most
+distributions.

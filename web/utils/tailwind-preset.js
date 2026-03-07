@@ -1,7 +1,7 @@
-import plugin = require('tailwindcss/plugin')
-import pluginTypography = require('@tailwindcss/typography')
+const plugin = require('tailwindcss/plugin')
+const pluginTypography = require('@tailwindcss/typography')
 
-const hoveredSiblingPlugin = plugin(function ({ addVariant, e }) {
+const hoveredSiblingPlugin = plugin(function ({ addVariant }) {
   addVariant('hovered-sibling', ({ container }) => {
     container.walkRules((rule) => {
       rule.selector = `:hover + .hovered-sibling\\:${rule.selector.slice(1)}`
@@ -66,13 +66,6 @@ module.exports = {
           },
         },
       }),
-    },
-  },
-  variants: {
-    extend: {
-      borderRadius: ['first', 'last'],
-      borderWidth: ['last', 'hovered-sibling'],
-      typography: ['dark'],
     },
   },
   plugins: [hoveredSiblingPlugin, pluginTypography],

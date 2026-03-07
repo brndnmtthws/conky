@@ -11,23 +11,24 @@
 #  * `default`: an optional default value, if applicable
 ---
 desc: |-
-  This is a listing of global configuration options for Conky. These are placed
-  in the `conky.config` section of your configuration file, before `conky.text`.
+  This is a list of Conky's global configuration options. These belong in the
+  `conky.config` section of your configuration file, before `conky.text`.
 
   The default configuration file location is `~/.config/conky/conky.conf` or
   `${sysconfdir}/conky/conky.conf`. On most systems, `$sysconfdir` is `/etc`,
   and you can find the sample config file there in
   `/etc/conky/conky.conf`.
 
-  You might want to copy the default config to `~/.config/conky/conky.conf` and
-  then start modifying it. User configs can be found at
+  You may want to copy the default config to `~/.config/conky/conky.conf` and
+  modify it there. User configs can be found at
   https://github.com/brndnmtthws/conky/wiki/Configs.
 
-  Optional arguments are generally denoted with paretheses (i.e., `(optional)`).
+  Optional arguments are generally denoted with parentheses, for example
+  `(optional)`.
 values:
   - name: alignment
     desc: |-
-      Aligned position on screen, may be `none` or one of:
+      Screen alignment. May be `none` or one of:
 
       |                       |                         |                        |
       |:----------------------|:-----------------------:|-----------------------:|
@@ -35,8 +36,8 @@ values:
       |`middle_left` (or `ml`)|`middle_middle` (or `mm`)|`middle_right` (or `mr`)|
       |`bottom_left` (or `bl`)|`bottom_middle` (or `bm`)|`bottom_right` (or `br`)|
 
-      In case of `panel` and `dock` [windows](#own_window_type), it might make more sense to use one
-      of the following aliases:
+      For `panel` and `dock` [windows](#own_window_type), it may be more useful
+      to use one of the following aliases:
 
       | Alias  |     Value     |
       |:------:|:-------------:|
@@ -48,10 +49,10 @@ values:
 
       See also [`gap_x`](#gap_x) and [`gap_y`](#gap_y) settings.
   - name: append_file
-    desc: Append the file given as argument.
+    desc: Append the file given as an argument.
   - name: background
     desc: |-
-      Boolean value, if true, Conky will be forked to background
+      Boolean value. If true, Conky will fork into the background
       when started.
   - name: border_inner_margin
     desc: |-
@@ -65,9 +66,9 @@ values:
     desc: Border width in pixels.
   - name: colorN
     desc: |-
-      Predefine a color for use inside conky.text segments.
-      Substitute N by a digit between 0 and 9, inclusively. When specifying
-      the color value in hex, omit the leading hash (#).
+      Predefine a color for use inside `conky.text` segments.
+      Replace `N` with a digit between 0 and 9, inclusive. When specifying
+      the color value in hex, omit the leading `#`.
   - name: console_bar_fill
     desc: 'A character to fill the console bars.'
     default: '#'
@@ -76,10 +77,10 @@ values:
     default: '.'
   - name: console_graph_ticks
     desc: |-
-      A comma-separated list of strings to use as the bars of a
-      graph output to console/shell. The first list item is used for the
-      minimum bar height and the last item is used for the maximum, e.g. \"
-      ,_,=,#\".
+      A comma-separated list of strings to use as the bars in a graph rendered
+      to the console or shell. The first list item is used for the minimum bar
+      height and the last item is used for the maximum, for example
+      `",_,=,#"`.
   - name: cpu_avg_samples
     desc: The number of samples to average for CPU monitoring.
   - name: default_bar_height
@@ -94,7 +95,7 @@ values:
       will be 10 for the text version of the bar.
     default: 0
   - name: default_color
-    desc: Default color and border color.
+    desc: Default text color and border color.
   - name: default_gauge_height
     desc: |-
       Specify a default height for gauges.

@@ -12,28 +12,30 @@
 ---
 desc: |-
   To configure what Conky displays, you must supply some variables in the
-  `conky.text` section of your configuration. In this secton you'll find a
+  `conky.text` section of your configuration. In this section you will find a
   listing of the available variables. Some of them may require build options to
   be enabled at compile time for them to work.
 
-  Colours are parsed using `XParseColor()`, there might be a list of them:
-  `/usr/share/X11/rgb.txt`. Colour can be also in `#rrggbb` format (hex).
+  Colors are parsed using `XParseColor()`. A list of named colors may be
+  available in `/usr/share/X11/rgb.txt`. Colors may also be specified in
+  `#rrggbb` hexadecimal format.
 
   Some objects may create threads, and sometimes these threads will not be
   destroyed until Conky terminates. There is no way to destroy or clean up
   threads while Conky is running. For example, if you use an MPD variable,
-  the MPD thread will keep running until Conky dies. Some threaded objects
-  will use one of the parameters as a `key`, so that you only have 1
+  the MPD thread will keep running until Conky exits. Some threaded objects
+  will use one of the parameters as a `key`, so that you only have one
   relevant thread running (for example, the $curl, and $rss
   objects launch one thread per URI).
 
-  Optional arguments are generally denoted with paretheses (i.e., `(optional)`).
+  Optional arguments are generally denoted with parentheses, for example
+  `(optional)`.
 values:
   - name: acpiacadapter
     desc: |-
-      ACPI AC adapter state. On linux, the adapter option
+      ACPI AC adapter state. On Linux, the adapter option
       specifies the subfolder of `/sys/class/power_supply` containing the state
-      information (tries `AC` and `ADP1` if there is no argument given).
+      information. Tries `AC` and `ADP1` if no argument is given.
       Non-linux systems ignore it.
     args:
       - (adapter)
@@ -58,7 +60,7 @@ values:
   - name: adt746xfan
     desc: Fan speed from therm_adt746x.
   - name: alignc
-    desc: Align text to centre.
+    desc: Align text to the center.
     args:
       - (num)
   - name: alignr
@@ -119,7 +121,7 @@ values:
   - name: apm_battery_time
     desc: |-
       Display remaining APM battery life in hh:mm:ss or "unknown"
-      if AC adapterstatus is on-line or charging. FreeBSD, OpenBSD only.
+      if AC adapter status is online or charging. FreeBSD and OpenBSD only.
   - name: audacious_bar
     desc: Progress bar.
     args:
@@ -137,7 +139,7 @@ values:
   - name: audacious_length_seconds
     desc: Total length of current tune in seconds.
   - name: audacious_main_volume
-    desc: The current volume fetched from Audacious.
+    desc: The current volume reported by Audacious.
   - name: audacious_playlist_length
     desc: Number of tunes in playlist.
   - name: audacious_playlist_position
@@ -157,7 +159,7 @@ values:
   - name: battery
     desc: |-
       Battery status and remaining percentage capacity of ACPI or
-      APM battery. ACPI battery number can be given as argument.
+      APM battery. An ACPI battery number may be given as an argument.
     default: BAT0
     args:
       - (num)
@@ -187,23 +189,23 @@ values:
   - name: battery_short
     desc: |-
       Battery status and remaining percentage capacity of ACPI or APM battery.
-      ACPI battery number can be given as argument. This mode display a short
-      status, which means that C is displayed instead of charging, D for
-      discharging, F for full, N for not present, E for empty and U for unknown.
+      An ACPI battery number may be given as an argument. This mode displays a
+      short status: `C` for charging, `D` for discharging, `F` for full, `N`
+      for not present, `E` for empty, and `U` for unknown.
     default: BAT0
     args:
       - (num)
   - name: battery_status
     desc: |-
-      Battery status for ACPI battery. ACPI battery number can be
-      given as arguments.
+      Battery status for an ACPI battery. An ACPI battery number may be given
+      as an argument.
     default: BAT0
     args:
       - (num)
   - name: battery_time
     desc: |-
       Battery charge/discharge time remaining of ACPI battery.
-      ACPI battery number can be given as argument.
+      An ACPI battery number may be given as an argument.
     default: BAT0
     args:
       - (num)
@@ -217,23 +219,23 @@ values:
     desc: Amount of memory cached.
   - name: cat
     desc: |-
-      Reads a file and displays the contents in conky. This is
+      Reads a file and displays its contents in Conky. This is
       useful if you have an independent process generating output that you
-      want to include in conky.
+      want to include in Conky.
     args:
       - file
   - name: catp
     desc: |-
-      Reads a file and displays the contents in conky. This is
+      Reads a file and displays its contents in Conky. This is
       useful if you have an independent process generating output that you
-      want to include in conky. This differs from $cat in that it parses the
+      want to include in Conky. This differs from `$cat` in that it parses the
       contents of the file, so you can insert things like
       `${color red}hi!${color}` in your file and have it correctly parsed by
       Conky.
     args:
       - file
   - name: cmdline_to_pid
-    desc: PID of the first process that has string in its commandline.
+    desc: PID of the first process whose command line contains the given string.
     args:
       - string
   - name: cmus_aaa

@@ -31,23 +31,29 @@ export interface Document {
 export const getDocuments = (): Document[] => {
   const documents = documentFilePaths.map((filePath) => {
     const source = fs.readFileSync(path.join(DOCUMENTS_PATH, filePath), 'utf-8')
-    const { content, data } = matter(source)
+    const parsed = matter(source)
+    const data = parsed.data as DocumentData
 
     return {
-      content,
+      content: parsed.content,
       data,
       filePath,
     }
   })
 
   documents.sort((a, b) => {
-    if (a.data.indexWeight > b.data.indexWeight) {
+    const leftWeight = a.data.indexWeight ?? 0
+    const rightWeight = b.data.indexWeight ?? 0
+
+    if (leftWeight > rightWeight) {
       return 1
     }
-    if (a.data.indexWeight < b.data.indexWeight) {
+    if (leftWeight < rightWeight) {
       return -1
     }
-    return a.data.title.localeCompare(b.data.title)
+    const leftTitle = typeof a.data.title === 'string' ? a.data.title : ''
+    const rightTitle = typeof b.data.title === 'string' ? b.data.title : ''
+    return leftTitle.localeCompare(rightTitle)
   })
 
   return documents
@@ -57,7 +63,8 @@ export const getDocumentBySlug = async (slug: string) => {
   const documentFilePath = path.join(DOCUMENTS_PATH, `${slug}.mdx`)
   const source = fs.readFileSync(documentFilePath, 'utf-8')
 
-  const { content, data } = matter(source)
+  const parsed = matter(source)
+  const data = parsed.data as DocumentData
 
   const result = await unified()
     .use(remarkParse)
@@ -65,7 +72,7 @@ export const getDocumentBySlug = async (slug: string) => {
     .use(remarkRehype, {allowDangerousHtml: true})
     // .use(rehypePrism)
     .use(rehypeStringify, {allowDangerousHtml: true})
-    .process(content)
+    .process(parsed.content)
 
   return { source: result.value, data, documentFilePath }
 }

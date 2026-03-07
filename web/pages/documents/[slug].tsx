@@ -7,15 +7,7 @@ import {
 
 import Layout from '../../components/Layout'
 import SEO from '../../components/SEO'
-import { GetStaticProps } from 'next'
-import Link from 'next/link'
-import { unified } from 'unified'
-import rehypeReact from 'rehype-react'
-import * as prod from 'react/jsx-runtime'
-import rehypeParse from 'rehype-parse'
-import { createElement, Fragment, useEffect, useState } from 'react'
-
-const production = { Fragment: prod.Fragment, jsx: prod.jsx, jsxs: prod.jsxs }
+import type { GetStaticProps } from 'next'
 
 interface FrontMatter {
   title: string
@@ -31,27 +23,10 @@ export default function DocumentPage({
   source,
   frontMatter,
 }: DocumentPageProps) {
-  const [children, setChildren] = useState(createElement(Fragment))
-
-  useEffect(
-    function () {
-      ;(async function () {
-        const file = await unified()
-          .use(rehypeParse, { fragment: true })
-          // @ts-expect-error: the react types are missing.
-          .use(rehypeReact, { ...production, components: { a: Link } })
-          .process(source)
-
-        setChildren(file.result)
-      })()
-    },
-    [source]
-  )
-
   return (
     <Layout>
       <SEO
-        title={`${frontMatter.title}`}
+        title={frontMatter.title}
         description={frontMatter.description}
       />
       <article className="p-2 pt-4 lg:p-4 w-full">
@@ -64,7 +39,10 @@ export default function DocumentPage({
           )}
         </header>
         <main>
-          <article className="prose dark:prose-invert">{children}</article>
+          <article
+            className="prose dark:prose-invert"
+            dangerouslySetInnerHTML={{ __html: source }}
+          />
         </main>
       </article>
     </Layout>

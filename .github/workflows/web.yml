@@ -21,17 +21,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Use Node.js 18
+      - name: Use Node.js runtime for Next.js
         uses: actions/setup-node@v5
         with:
-          node-version: 18
-          cache: npm
-          cache-dependency-path: '**/package-lock.json'
-      - run: npm ci
+          node-version: 20
+      - name: Use Bun package manager
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
         working-directory: web
-      - run: npm run lint
+      - run: bun run lint
         working-directory: web
-      - run: npm run build --if-present
+      - run: bun run build
         working-directory: web
-      - run: npm run e2e:headless
+      - run: bun run e2e:headless
         working-directory: web

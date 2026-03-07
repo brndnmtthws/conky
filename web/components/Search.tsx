@@ -1,79 +1,76 @@
-import Fuse, { FuseResult } from 'fuse.js'
-import React, { Fragment, useCallback, useEffect, useState } from 'react'
-import { Search as SearchIcon } from 'react-feather'
-import { SearchIndex, SearchItem } from '../utils/search'
+import Fuse from 'fuse.js'
+import type { FuseResult } from 'fuse.js'
+import React, {
+  Fragment,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
+import type { SearchIndex, SearchItem } from '../utils/search'
 import { Dialog, Transition, Combobox } from '@headlessui/react'
+import { Search as SearchIcon } from 'lucide-react'
 import { useRouter } from 'next/router'
-
-export interface SearchProps {}
 
 interface SearchResultProps {
   result: FuseResult<SearchItem>
-  selected: boolean
   active: boolean
 }
 
-const SearchResult: React.FunctionComponent<SearchResultProps> = (props) => {
-  const excerpt = (s: string) => {
-    if (s.length < 120) {
-      return <>{s}</>
-    } else {
-      return <>{s.substring(0, 120)}&hellip;</>
-    }
-  }
-  const bg_for = (s: string) => {
-    const bg = 'p-1 rounded bg-opacity-20 '
-    if (s === 'var') {
-      return bg + 'bg-blue-500'
-    }
-    if (s === 'config') {
-      return bg + 'bg-green-500'
-    }
-    if (s === 'lua') {
-      return bg + 'bg-red-500'
-    }
-    return bg
-  }
-  const selection = props.active ? 'bg-slate-300 dark:bg-slate-700' : ''
+const KIND_STYLES: Record<string, string> = {
+  var: 'bg-blue-500',
+  config: 'bg-green-500',
+  lua: 'bg-red-500',
+}
+
+const SearchResult: React.FunctionComponent<SearchResultProps> = ({
+  active,
+  result,
+}) => {
+  const selection = active ? 'bg-slate-300 dark:bg-slate-700' : ''
+  const kindClass = KIND_STYLES[result.item.kind] ?? ''
+  const excerpt =
+    result.item.desc.length <= 120
+      ? result.item.desc
+      : `${result.item.desc.slice(0, 120)}…`
 
   return (
     <div className={`m-1 rounded flex flex-col p-2 ${selection}`}>
-      <hr className="border-black/10 dark:border-white/10 mb-2"/>
+      <hr className="mb-2 border-black/10 dark:border-white/10" />
       <div className="flex justify-between">
         <div>
           <code className="text-lg p-1 mx-1 bg-fuchsia-200 dark:bg-fuchsia-900 font-bold">
-            {props.result.item.name}
+            {result.item.name}
           </code>
         </div>
-        <div className={bg_for(props.result.item.kind)}>
-          {props.result.item.kind}
+        <div className={`rounded bg-opacity-20 p-1 ${kindClass}`}>
+          {result.item.kind}
         </div>
       </div>
       <div>
-        <p className="w-11/12">{excerpt(props.result.item.desc)}</p>
+        <p className="w-11/12">{excerpt}</p>
       </div>
     </div>
   )
 }
 
-const Search: React.FunctionComponent<SearchProps> = () => {
+const Search: React.FunctionComponent = () => {
   const router = useRouter()
+  const inputRef = useRef<HTMLInputElement | null>(null)
   const [searchText, setSearchText] = useState('')
   const [searchResults, setSearchResults] = useState<FuseResult<SearchItem>[]>(
     []
   )
-  const [fuse, setFuse] = React.useState<Fuse<SearchItem> | undefined>(
-    undefined
-  )
-  const fusePromise = async () => {
+  const [fuse, setFuse] = React.useState<Fuse<SearchItem>>()
+
+  const loadFuse = async () => {
     const data = await fetch('/static/fuse-index.json')
-    console.log(data)
     const searchIndex: SearchIndex = await data.json()
-    console.log(searchIndex)
     return new Fuse(searchIndex.list, {}, Fuse.parseIndex(searchIndex.index))
   }
+
   React.useEffect(() => {
-    fusePromise().then((fuse) => setFuse(fuse))
+    void loadFuse().then((nextFuse) => setFuse(nextFuse))
   }, [])
 
   const [isOpen, setIsOpen] = useState(false)
@@ -83,7 +80,7 @@ const Search: React.FunctionComponent<SearchProps> = () => {
         setIsOpen(false)
         event.preventDefault()
       } else if (
-        (event.key == '/' ||
+        (event.key === '/' ||
           (event.key === 'k' && (event.metaKey || event.ctrlKey))) &&
         !isOpen
       ) {
@@ -101,10 +98,25 @@ const Search: React.FunctionComponent<SearchProps> = () => {
     }
   }, [handleKeyPress])
 
+  useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    }, 0)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [isOpen])
+
   if (!fuse) {
     return (
-      <div className="flex items-center ml-2">
-        <SearchIcon size={32} />
+      <div className="flex h-10 w-10 items-center justify-center text-zinc-950 dark:text-white">
+        <SearchIcon size={28} strokeWidth={2} />
       </div>
     )
   }
@@ -117,17 +129,17 @@ const Search: React.FunctionComponent<SearchProps> = () => {
   const onChange = (value: FuseResult<SearchItem> | null | undefined) => {
     if (value) {
       if (value.item.kind === 'var') {
-        router.push(`/variables#${value.item.name}`, undefined, {
+        void router.push(`/variables#${value.item.name}`, undefined, {
           scroll: false,
         })
       }
       if (value.item.kind === 'config') {
-        router.push(`/config_settings#${value.item.name}`, undefined, {
+        void router.push(`/config_settings#${value.item.name}`, undefined, {
           scroll: false,
         })
       }
       if (value.item.kind === 'lua') {
-        router.push(`/lua#${value.item.name}`, undefined, { scroll: false })
+        void router.push(`/lua#${value.item.name}`, undefined, { scroll: false })
       }
       setIsOpen(false)
     }
@@ -143,14 +155,23 @@ const Search: React.FunctionComponent<SearchProps> = () => {
 
   return (
     <>
-      <div className="flex items-center ml-2">
-        <button onClick={openModal} title="Search (/ or ⌘K)">
-          <SearchIcon size={32} />
+      <div className="flex items-center">
+        <button
+          onClick={openModal}
+          title="Search (/ or ⌘K)"
+          className="inline-flex h-10 w-10 items-center justify-center text-zinc-950 transition hover:text-zinc-600 dark:text-white dark:hover:text-zinc-300"
+        >
+          <SearchIcon size={28} strokeWidth={2} />
         </button>
       </div>
 
       <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={closeModal}>
+        <Dialog
+          as="div"
+          className="relative z-10"
+          initialFocus={inputRef}
+          onClose={closeModal}
+        >
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -172,9 +193,10 @@ const Search: React.FunctionComponent<SearchProps> = () => {
                   <Combobox nullable onChange={onChange}>
                     <div className="flex">
                       <Combobox.Label className="flex items-center ml-2">
-                        <SearchIcon size={32} />
+                        <SearchIcon size={32} strokeWidth={2} />
                       </Combobox.Label>
                       <Combobox.Input
+                        ref={inputRef}
                         placeholder="Search docs (/ or ⌘K)"
                         className="mx-1 p-2 w-full bg-gray-200 dark:bg-gray-800 outline-none"
                         onChange={(e) => setSearch(e.target.value)}
@@ -188,11 +210,10 @@ const Search: React.FunctionComponent<SearchProps> = () => {
                       ) : (
                         searchResults.map((r) => (
                           <Combobox.Option key={r.refIndex} value={r}>
-                            {({ selected, active }) => (
+                            {({ selected: _selected, active }) => (
                               <SearchResult
-                                result={r}
-                                selected={selected}
                                 active={active}
+                                result={r}
                               />
                             )}
                           </Combobox.Option>

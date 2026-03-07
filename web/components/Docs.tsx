@@ -1,6 +1,6 @@
-import { Documentation } from '../utils/doc-utils'
-import { Link as LinkIcon } from 'react-feather'
+import type { Documentation } from '../utils/doc-utils'
 import Link from 'next/link'
+import { Link as LinkIcon } from 'lucide-react'
 import { useRouter } from 'next/router'
 
 export interface DocsProps {
@@ -33,7 +33,7 @@ export default function Docs({ docs, braces, assign }: DocsProps) {
               <div className="flex">
                 <div className="px-2 lg:pl-4 py-3">
                   <Link href={`#${doc.name}`} data-anchor-name={doc.name}>
-                    <LinkIcon size={20} />
+                    <LinkIcon size={20} strokeWidth={2} />
                   </Link>
                 </div>
                 <div className="flex-col p-1 pr-2 lg:pr-4">
@@ -42,7 +42,7 @@ export default function Docs({ docs, braces, assign }: DocsProps) {
                     <code className="text-lg p-1 mx-1 bg-fuchsia-200 dark:bg-fuchsia-900 font-bold">
                       {doc.name}
                     </code>
-                    {typeof doc.args != 'undefined' && doc.args.length > 0 && (
+                    {typeof doc.args !== 'undefined' && doc.args.length > 0 && (
                       <>
                         {assign && <code>=</code>}
                         <em>
@@ -63,7 +63,7 @@ export default function Docs({ docs, braces, assign }: DocsProps) {
                     className="py-2"
                     dangerouslySetInnerHTML={{ __html: doc.desc_md }}
                   />
-                  {typeof doc.default != 'undefined' && (
+                  {typeof doc.default !== 'undefined' && (
                     <div>
                       Default:{' '}
                       <code className="px-1 mx-1 bg-slate-200 dark:bg-slate-800">
