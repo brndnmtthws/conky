@@ -33,8 +33,8 @@
 #include <optional>
 #include <string>
 
-#include "lua/setting.hh"
 #include "content/text_object.h"
+#include "lua/setting.hh"
 
 char *readfile(const char *filename, int *total_read, char showerror);
 
@@ -203,6 +203,8 @@ int updatenr_iftest(struct text_object *);
 void print_github(struct text_object *, char *, unsigned int);
 void print_stock(struct text_object *, char *, unsigned int);
 void free_stock(struct text_object *);
+std::string github_notifications_url();
+std::string github_authorization_header(const std::string &token);
 #endif /* BUILD_CURL */
 
 #endif /* _COMMON_H */

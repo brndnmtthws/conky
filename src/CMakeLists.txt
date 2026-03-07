@@ -28,6 +28,47 @@ if(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
   include_directories(${CMAKE_BINARY_DIR}/data)
 endif(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
 
+set(conky_target_includes
+  ${conky_includes}
+  ${CMAKE_CURRENT_BINARY_DIR})
+
+if(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
+  list(APPEND conky_target_includes ${CMAKE_BINARY_DIR}/data)
+endif(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
+
+# Some package probes do not consistently flow through conky_includes on
+# Darwin/Nix, so assemble the compile include set from the resolved package
+# variables as well.
+conky_append_include_dirs(conky_target_includes
+  ${CONKY_PLATFORM_EXTRA_INCLUDE_DIRS}
+  ${Intl_INCLUDE_DIRS}
+  ${MICROHTTPD_INCLUDE_DIRS}
+  ${CURSES_INCLUDE_PATH}
+  ${CURSES_PARENT}
+  ${ICONV_INCLUDE_DIR}
+  ${X11_INCLUDE_DIR}
+  ${FREETYPE_INCLUDE_DIR_freetype2}
+  ${Fontconfig_INCLUDE_DIRS}
+  ${X11_xcb_INCLUDE_PATH}
+  ${Wayland_CLIENT_INCLUDE_DIR}
+  ${EPOLL_INCLUDE_DIRS}
+  ${CAIRO_INCLUDE_DIRS}
+  ${PANGO_INCLUDE_DIRS}
+  ${PANGOCAIRO_INCLUDE_DIRS}
+  ${PANGOFC_INCLUDE_DIRS}
+  ${PANGOFT2_INCLUDE_DIRS}
+  ${LUA_INCLUDE_DIR}
+  ${AUDACIOUS_INCLUDE_DIRS}
+  ${DBUS_GLIB_INCLUDE_DIRS}
+  ${XMMS2_INCLUDE_DIRS}
+  ${XNVCtrl_INCLUDE_PATH}
+  ${IMLIB2_INCLUDE_DIRS}
+  ${SYSTEMD_INCLUDE_DIRS}
+  ${PULSEAUDIO_INCLUDE_DIRS}
+  ${CURL_INCLUDE_DIRS}
+  ${GLIB_INCLUDE_DIRS}
+  ${LIBXML2_INCLUDE_DIR})
+
 # ensure build.h and config.h aren't in the way
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
   message(
@@ -218,6 +259,17 @@ if(OS_DARWIN)
     data/os/darwin_top_helpers.h
     i18n.h)
   set(optional_sources ${optional_sources} ${darwin_sources})
+
+  if(CMAKE_OSX_SYSROOT
+    AND EXISTS "${CMAKE_OSX_SYSROOT}/usr/include")
+    # Nix clang wrappers can skip SDK ObjC headers for Objective-C++ sources
+    # even with -isysroot; add them after the normal search order.
+    set_property(
+      SOURCE data/os/darwin.mm
+      APPEND PROPERTY COMPILE_OPTIONS
+      -idirafter
+      ${CMAKE_OSX_SYSROOT}/usr/include)
+  endif()
 endif(OS_DARWIN)
 
 # Optional sources
@@ -456,9 +508,11 @@ if(BUILD_TESTING)
   # Create a library strictly for testing
   add_library(conky_core ${conky_sources} ${optional_sources})
   add_dependencies(conky_core generated_hdr_files)
+  target_include_directories(conky_core PUBLIC ${conky_target_includes})
   target_link_libraries(conky_core ${conky_libs})
   add_executable(conky main.cc)
   add_dependencies(conky generated_hdr_files)
+  target_include_directories(conky PRIVATE ${conky_target_includes})
   target_link_libraries(conky conky_core ${conky_libs})
   install(TARGETS conky_core
     RUNTIME DESTINATION bin
@@ -467,6 +521,7 @@ if(BUILD_TESTING)
 else()
   add_executable(conky main.cc ${conky_sources} ${optional_sources})
   add_dependencies(conky generated_hdr_files)
+  target_include_directories(conky PRIVATE ${conky_target_includes})
   target_link_libraries(conky ${conky_libs})
 endif()
 

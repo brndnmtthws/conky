@@ -29,8 +29,8 @@
 #include <string>
 #include <type_traits>
 
-#include "display-output.hh"
 #include "../lua/luamm.hh"
+#include "display-output.hh"
 
 namespace conky {
 
@@ -60,6 +60,8 @@ class display_output_http : public display_output_base {
   // std::string webpage;
   // struct MHD_Daemon *httpd;
 };
+
+std::string html_escape(const std::string &input);
 
 }  // namespace conky
 

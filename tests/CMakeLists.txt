@@ -17,6 +17,9 @@ endif()
 add_library(Catch2 STATIC catch2/catch_amalgamated.cpp)
 
 add_executable(test-conky test-common.cc ${test_srcs})
+target_include_directories(test-conky PRIVATE
+  ${CMAKE_SOURCE_DIR}/src
+  ${CMAKE_BINARY_DIR})
 target_link_libraries(test-conky
   PRIVATE Catch2
   PUBLIC conky_core

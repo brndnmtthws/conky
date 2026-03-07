@@ -124,6 +124,36 @@ std::string string_replace_all(std::string original, const std::string &oldpart,
   return original;
 }
 
+std::string html_escape(const std::string &input) {
+  std::string escaped;
+  escaped.reserve(input.size());
+
+  for (char ch : input) {
+    switch (ch) {
+      case '&':
+        escaped.append("&amp;");
+        break;
+      case '<':
+        escaped.append("&lt;");
+        break;
+      case '>':
+        escaped.append("&gt;");
+        break;
+      case '"':
+        escaped.append("&quot;");
+        break;
+      case '\'':
+        escaped.append("&#39;");
+        break;
+      default:
+        escaped.push_back(ch);
+        break;
+    }
+  }
+
+  return escaped;
+}
+
 //}  // namespace priv
 
 display_output_http::display_output_http() : display_output_base("http") {
@@ -174,7 +204,7 @@ void display_output_http::end_draw_text() { webpage.append(WEBPAGE_END); }
 
 void display_output_http::draw_string(const char *s, int) {
   std::string::size_type origlen = webpage.length();
-  webpage.append(s);
+  webpage.append(html_escape(s));
   webpage = string_replace_all(webpage, "\n", "<br />", origlen);
   webpage = string_replace_all(webpage, "  ", "&nbsp;&nbsp;", origlen);
   webpage = string_replace_all(webpage, "&nbsp; ", "&nbsp;&nbsp;", origlen);
