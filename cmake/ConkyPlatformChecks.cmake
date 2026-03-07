@@ -56,6 +56,50 @@ set(conky_libs ${conky_libs} ${CLOCK_GETTIME_LIB})
 # standard path to search for includes
 set(INCLUDE_SEARCH_PATH /usr/include /usr/local/include)
 
+function(conky_append_include_dirs dest_var)
+  foreach(_dir IN LISTS ARGN)
+    if(NOT _dir)
+      continue()
+    endif()
+
+    if(OS_DARWIN)
+      if(_dir MATCHES "/usr/include/?$")
+        continue()
+      endif()
+      if(_dir MATCHES "MacOSX[^/]*/usr/include/?$")
+        continue()
+      endif()
+    endif()
+
+    list(APPEND ${dest_var} ${_dir})
+  endforeach()
+
+  list(REMOVE_DUPLICATES ${dest_var})
+  set(${dest_var} "${${dest_var}}" PARENT_SCOPE)
+endfunction()
+
+function(conky_filter_implicit_include_dirs var_name)
+  set(_filtered)
+  foreach(_dir IN LISTS ${var_name})
+    if(OS_DARWIN AND _dir MATCHES "^/nix/store/")
+      if(_dir MATCHES "libcxx"
+        OR _dir MATCHES "compiler-rt"
+        OR _dir MATCHES "clang-wrapper"
+        OR _dir MATCHES "clang-[0-9]"
+        OR _dir MATCHES "libobjc"
+        OR _dir MATCHES "resource-root"
+        OR _dir MATCHES "libSystem"
+        OR _dir MATCHES "sdkroot")
+        list(APPEND _filtered "${_dir}")
+      endif()
+    else()
+      list(APPEND _filtered "${_dir}")
+    endif()
+  endforeach()
+
+  set(${var_name} "${_filtered}" PARENT_SCOPE)
+endfunction()
+
 # Detect CI
 if(DEFINED ENV{CI})
   # For GitHub actions CI=true is set
@@ -122,6 +166,24 @@ else(CMAKE_SYSTEM_NAME MATCHES "Darwin")
   set(OS_DARWIN false)
 endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
+if(OS_DARWIN)
+  set(CONKY_C_IMPLICIT_INCLUDE_DIRECTORIES_RAW
+    ${CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES})
+  set(CONKY_CXX_IMPLICIT_INCLUDE_DIRECTORIES_RAW
+    ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
+  set(CONKY_PLATFORM_EXTRA_INCLUDE_DIRS
+    ${CONKY_C_IMPLICIT_INCLUDE_DIRECTORIES_RAW}
+    ${CONKY_CXX_IMPLICIT_INCLUDE_DIRECTORIES_RAW})
+  list(REMOVE_DUPLICATES CONKY_PLATFORM_EXTRA_INCLUDE_DIRS)
+
+  # Nix clang wrappers can report third-party package headers as implicit
+  # includes. CMake then drops those directories from generated compile
+  # commands, so feature-enabled builds lose X11/Lua/curl headers unless we
+  # keep only the true toolchain/runtime implicit paths here.
+  conky_filter_implicit_include_dirs(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES)
+  conky_filter_implicit_include_dirs(CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES)
+endif()
+
 if(NOT OS_LINUX
   AND NOT OS_FREEBSD
   AND NOT OS_OPENBSD
@@ -185,15 +247,74 @@ if(BUILD_I18N)
   include(FindIntl)
   find_package(Intl)
 
+  if(OS_DARWIN AND NOT Intl_FOUND)
+    set(CONKY_DARWIN_GETTEXT_PREFIXES
+      /opt/homebrew/opt/gettext
+      /usr/local/opt/gettext)
+
+    find_path(CONKY_DARWIN_GETTEXT_INCLUDE_DIR
+      NAMES libintl.h
+      PATHS ${CONKY_DARWIN_GETTEXT_PREFIXES}
+      PATH_SUFFIXES include
+      NO_DEFAULT_PATH)
+    find_library(CONKY_DARWIN_GETTEXT_LIBRARY
+      NAMES intl libintl
+      PATHS ${CONKY_DARWIN_GETTEXT_PREFIXES}
+      PATH_SUFFIXES lib
+      NO_DEFAULT_PATH)
+
+    if(CONKY_DARWIN_GETTEXT_INCLUDE_DIR AND CONKY_DARWIN_GETTEXT_LIBRARY)
+      set(Intl_FOUND TRUE)
+      set(Intl_IS_BUILT_IN FALSE)
+      set(Intl_INCLUDE_DIR "${CONKY_DARWIN_GETTEXT_INCLUDE_DIR}")
+      set(Intl_LIBRARY "${CONKY_DARWIN_GETTEXT_LIBRARY}")
+      set(Intl_INCLUDE_DIRS "${CONKY_DARWIN_GETTEXT_INCLUDE_DIR}")
+      set(Intl_LIBRARIES "${CONKY_DARWIN_GETTEXT_LIBRARY}")
+      set(Intl_INCLUDE_DIR "${CONKY_DARWIN_GETTEXT_INCLUDE_DIR}" CACHE PATH
+        "Directory containing libintl headers" FORCE)
+      set(Intl_LIBRARY "${CONKY_DARWIN_GETTEXT_LIBRARY}" CACHE FILEPATH
+        "Path to libintl library" FORCE)
+    endif()
+  endif()
+
   if(NOT Intl_FOUND)
     if(OS_DARWIN)
-      message(WARNING "Try running `brew install gettext` for I18N support")
-      # Should be present by default everywhere else
+      message(FATAL_ERROR
+        "Unable to find libintl.\n"
+        "Checked CMake's default search and Homebrew prefixes:\n"
+        "  /opt/homebrew/opt/gettext\n"
+        "  /usr/local/opt/gettext\n"
+        "If gettext is installed via Homebrew, re-run CMake after ensuring\n"
+        "the prefix exists or pass -DIntl_INCLUDE_DIR and -DIntl_LIBRARY explicitly.")
+    else()
+      message(FATAL_ERROR "Unable to find libintl")
     endif(OS_DARWIN)
-    message(FATAL_ERROR "Unable to find libintl")
   endif(NOT Intl_FOUND)
 
-  include_directories(${Intl_INCLUDE_DIRS})
+  if(OS_DARWIN AND Intl_IS_BUILT_IN)
+    set(CONKY_DARWIN_INTL_IMPLICIT_LIBS)
+    foreach(_lib ${CMAKE_C_IMPLICIT_LINK_LIBRARIES}
+                 ${CMAKE_CXX_IMPLICIT_LINK_LIBRARIES})
+      if(_lib STREQUAL "intl" OR _lib STREQUAL "iconv")
+        unset(CONKY_IMPLICIT_LIB_PATH CACHE)
+        find_library(CONKY_IMPLICIT_LIB_PATH
+          NAMES ${_lib}
+          PATHS ${CMAKE_C_IMPLICIT_LINK_DIRECTORIES}
+                ${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}
+          NO_DEFAULT_PATH)
+        if(CONKY_IMPLICIT_LIB_PATH)
+          list(APPEND CONKY_DARWIN_INTL_IMPLICIT_LIBS
+            ${CONKY_IMPLICIT_LIB_PATH})
+        else()
+          list(APPEND CONKY_DARWIN_INTL_IMPLICIT_LIBS ${_lib})
+        endif()
+      endif()
+    endforeach()
+    list(REMOVE_DUPLICATES CONKY_DARWIN_INTL_IMPLICIT_LIBS)
+    set(conky_libs ${conky_libs} ${CONKY_DARWIN_INTL_IMPLICIT_LIBS})
+  endif()
+
+  conky_append_include_dirs(conky_includes ${Intl_INCLUDE_DIRS})
   set(conky_libs ${conky_libs} ${Intl_LIBRARIES})
 endif(BUILD_I18N)
 
@@ -253,9 +374,70 @@ if(BUILD_IPV6)
 endif(BUILD_IPV6)
 
 if(BUILD_HTTP)
-  pkg_check_modules(MICROHTTPD REQUIRED libmicrohttpd>=0.9.25)
-  set(conky_libs ${conky_libs} ${MICROHTTPD_LINK_LIBRARIES})
-  set(conky_includes ${conky_includes} ${MICROHTTPD_INCLUDE_DIRS})
+  pkg_check_modules(MICROHTTPD libmicrohttpd>=0.9.25)
+
+  if(MICROHTTPD_FOUND)
+    set(conky_libs ${conky_libs} ${MICROHTTPD_LINK_LIBRARIES})
+    conky_append_include_dirs(conky_includes ${MICROHTTPD_INCLUDE_DIRS})
+  else()
+    if(OS_DARWIN)
+      set(CONKY_DARWIN_MICROHTTPD_PREFIXES
+        /opt/homebrew/opt/libmicrohttpd
+        /usr/local/opt/libmicrohttpd)
+
+      find_path(MICROHTTPD_INCLUDE_DIR
+        NAMES microhttpd.h
+        PATHS ${CONKY_DARWIN_MICROHTTPD_PREFIXES}
+        PATH_SUFFIXES include
+        NO_DEFAULT_PATH)
+      find_library(MICROHTTPD_LIBRARY
+        NAMES microhttpd libmicrohttpd
+        PATHS ${CONKY_DARWIN_MICROHTTPD_PREFIXES}
+        PATH_SUFFIXES lib
+        NO_DEFAULT_PATH)
+    else()
+      find_path(MICROHTTPD_INCLUDE_DIR NAMES microhttpd.h)
+      find_library(MICROHTTPD_LIBRARY NAMES microhttpd libmicrohttpd)
+    endif()
+
+    if(MICROHTTPD_INCLUDE_DIR AND MICROHTTPD_LIBRARY)
+      file(STRINGS "${MICROHTTPD_INCLUDE_DIR}/microhttpd.h"
+        MICROHTTPD_VERSION_LINE
+        REGEX "^#define MHD_VERSION 0x[0-9A-Fa-f]+")
+      if(NOT MICROHTTPD_VERSION_LINE)
+        message(FATAL_ERROR
+          "Unable to determine libmicrohttpd version from "
+          "${MICROHTTPD_INCLUDE_DIR}/microhttpd.h")
+      endif()
+
+      string(REGEX REPLACE ".*0x([0-9A-Fa-f]+).*" "\\1"
+        MICROHTTPD_VERSION_HEX "${MICROHTTPD_VERSION_LINE}")
+      math(EXPR MICROHTTPD_VERSION_NUM "0x${MICROHTTPD_VERSION_HEX}")
+      math(EXPR MICROHTTPD_MIN_VERSION_NUM "0x00092500")
+
+      if(MICROHTTPD_VERSION_NUM LESS MICROHTTPD_MIN_VERSION_NUM)
+        message(FATAL_ERROR
+          "Found libmicrohttpd version 0x${MICROHTTPD_VERSION_HEX}, but "
+          "Conky requires at least 0x00092500 (0.9.25).")
+      endif()
+
+      set(MICROHTTPD_INCLUDE_DIRS "${MICROHTTPD_INCLUDE_DIR}")
+      set(MICROHTTPD_LINK_LIBRARIES "${MICROHTTPD_LIBRARY}")
+      set(conky_libs ${conky_libs} ${MICROHTTPD_LINK_LIBRARIES})
+      conky_append_include_dirs(conky_includes ${MICROHTTPD_INCLUDE_DIRS})
+    elseif(OS_DARWIN)
+      message(FATAL_ERROR
+        "Unable to find libmicrohttpd.\n"
+        "Checked pkg-config and Homebrew prefixes:\n"
+        "  /opt/homebrew/opt/libmicrohttpd\n"
+        "  /usr/local/opt/libmicrohttpd\n"
+        "If installed via Homebrew, ensure PKG_CONFIG_PATH includes\n"
+        "libmicrohttpd/lib/pkgconfig or pass MICROHTTPD_INCLUDE_DIR and\n"
+        "MICROHTTPD_LIBRARY explicitly.")
+    else()
+      message(FATAL_ERROR "Unable to find libmicrohttpd")
+    endif()
+  endif()
 endif(BUILD_HTTP)
 
 if(BUILD_NCURSES)
@@ -475,6 +657,7 @@ if(BUILD_X11)
 
       if(X11_xcb_errors_FOUND)
         set(HAVE_XCB_ERRORS true)
+        set(conky_includes ${conky_includes} ${X11_xcb_errors_INCLUDE_PATH})
         set(conky_libs ${conky_libs} ${X11_xcb_LIB} ${X11_xcb_errors_LIB})
       else(X11_xcb_errors_FOUND)
         set(HAVE_XCB_ERRORS false)
@@ -649,9 +832,79 @@ if(BUILD_PULSEAUDIO)
 endif(BUILD_PULSEAUDIO)
 
 if(WANT_CURL)
-  pkg_check_modules(CURL REQUIRED libcurl)
-  set(conky_libs ${conky_libs} ${CURL_LINK_LIBRARIES})
-  set(conky_includes ${conky_includes} ${CURL_INCLUDE_DIRS})
+  pkg_check_modules(CURL libcurl)
+  if(CURL_FOUND)
+    set(conky_libs ${conky_libs} ${CURL_LINK_LIBRARIES})
+    conky_append_include_dirs(conky_includes ${CURL_INCLUDE_DIRS})
+  else()
+    find_package(CURL REQUIRED)
+    set(CONKY_CURL_INCLUDE_CANDIDATE "${CURL_INCLUDE_DIRS}")
+    if(NOT CONKY_CURL_INCLUDE_CANDIDATE)
+      set(CONKY_CURL_INCLUDE_CANDIDATE "${CURL_INCLUDE_DIR}")
+    endif()
+
+    set(CONKY_CURL_LIBRARY_CANDIDATE "${CURL_LIBRARIES}")
+    if(NOT CONKY_CURL_LIBRARY_CANDIDATE)
+      if(CURL_LIBRARY_RELEASE)
+        set(CONKY_CURL_LIBRARY_CANDIDATE "${CURL_LIBRARY_RELEASE}")
+      elseif(CURL_LIBRARY)
+        set(CONKY_CURL_LIBRARY_CANDIDATE "${CURL_LIBRARY}")
+      endif()
+    endif()
+
+    if(OS_DARWIN AND
+        (NOT CONKY_CURL_INCLUDE_CANDIDATE OR
+         CONKY_CURL_INCLUDE_CANDIDATE MATCHES "MacOSX[^/]*/usr/include/?$"))
+      set(CONKY_DARWIN_CURL_PREFIXES
+        /opt/homebrew/opt/curl
+        /usr/local/opt/curl)
+
+      find_path(CONKY_DARWIN_CURL_INCLUDE_DIR
+        NAMES curl/curl.h
+        PATHS ${CONKY_DARWIN_CURL_PREFIXES}
+        PATH_SUFFIXES include
+        NO_DEFAULT_PATH)
+      find_library(CONKY_DARWIN_CURL_LIBRARY
+        NAMES curl libcurl
+        PATHS ${CONKY_DARWIN_CURL_PREFIXES}
+        PATH_SUFFIXES lib
+        NO_DEFAULT_PATH)
+
+      if(CONKY_DARWIN_CURL_INCLUDE_DIR AND CONKY_DARWIN_CURL_LIBRARY)
+        set(CONKY_CURL_INCLUDE_CANDIDATE "${CONKY_DARWIN_CURL_INCLUDE_DIR}")
+        set(CONKY_CURL_LIBRARY_CANDIDATE "${CONKY_DARWIN_CURL_LIBRARY}")
+      endif()
+    endif()
+
+    if(NOT CONKY_CURL_INCLUDE_CANDIDATE OR
+        NOT EXISTS "${CONKY_CURL_INCLUDE_CANDIDATE}/curl/curl.h" OR
+        NOT CONKY_CURL_LIBRARY_CANDIDATE)
+      message(FATAL_ERROR
+        "Unable to find a consistent libcurl installation.\n"
+        "If libcurl is installed in a non-standard prefix, set PKG_CONFIG_PATH\n"
+        "or pass -DCURL_INCLUDE_DIR and -DCURL_LIBRARY explicitly.")
+    endif()
+
+    get_filename_component(CONKY_CURL_LIBRARY_DIR
+      "${CONKY_CURL_LIBRARY_CANDIDATE}" DIRECTORY)
+    get_filename_component(CONKY_CURL_PREFIX
+      "${CONKY_CURL_INCLUDE_CANDIDATE}" DIRECTORY)
+    get_filename_component(CONKY_CURL_PREFIX
+      "${CONKY_CURL_PREFIX}" DIRECTORY)
+
+    if(NOT CONKY_CURL_LIBRARY_DIR MATCHES "^${CONKY_CURL_PREFIX}(/|$)")
+      message(FATAL_ERROR
+        "Detected libcurl headers in '${CONKY_CURL_INCLUDE_CANDIDATE}' but "
+        "library in '${CONKY_CURL_LIBRARY_CANDIDATE}'.\n"
+        "Refusing to mix libcurl installations; set PKG_CONFIG_PATH or pass "
+        "-DCURL_INCLUDE_DIR and -DCURL_LIBRARY explicitly.")
+    endif()
+
+    set(CURL_INCLUDE_DIRS "${CONKY_CURL_INCLUDE_CANDIDATE}")
+    set(CURL_LIBRARIES "${CONKY_CURL_LIBRARY_CANDIDATE}")
+    set(conky_libs ${conky_libs} ${CURL_LIBRARIES})
+    conky_append_include_dirs(conky_includes ${CURL_INCLUDE_DIRS})
+  endif()
 endif(WANT_CURL)
 
 # Common libraries
@@ -661,12 +914,6 @@ if(WANT_GLIB)
   set(conky_includes ${conky_includes} ${GLIB_INCLUDE_DIRS})
 endif(WANT_GLIB)
 
-if(WANT_CURL)
-  pkg_check_modules(CURL REQUIRED libcurl)
-  set(conky_libs ${conky_libs} ${CURL_LINK_LIBRARIES})
-  set(conky_includes ${conky_includes} ${CURL_INCLUDE_DIRS})
-endif(WANT_CURL)
-
 if(WANT_LIBXML2)
   include(FindLibXml2)
 
@@ -675,7 +922,7 @@ if(WANT_LIBXML2)
   endif(NOT LIBXML2_FOUND)
 
   set(conky_libs ${conky_libs} ${LIBXML2_LIBRARIES})
-  set(conky_includes ${conky_includes} ${LIBXML2_INCLUDE_DIR})
+  conky_append_include_dirs(conky_includes ${LIBXML2_INCLUDE_DIR})
 endif(WANT_LIBXML2)
 
 # Look for doc generation programs

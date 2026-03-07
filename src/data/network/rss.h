@@ -28,5 +28,6 @@
 void rss_scan_arg(struct text_object *, const char *);
 void rss_print_info(struct text_object *, char *, unsigned int);
 void rss_free_obj_info(struct text_object *);
+void rss_safe_append(char *dest, unsigned int dest_size, const char *src);
 
 #endif /*RSS_H_*/

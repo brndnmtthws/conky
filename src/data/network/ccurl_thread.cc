@@ -26,8 +26,8 @@
 #include <cmath>
 #include <mutex>
 #include "../../conky.h"
-#include "../../logging.h"
 #include "../../content/text_object.h"
+#include "../../logging.h"
 
 #ifdef DEBUG
 #include <assert.h>
@@ -86,7 +86,19 @@ curl_internal::curl_internal(const std::string &url) : curl(curl_easy_init()) {
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
   curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
   curl_easy_setopt(curl, CURLOPT_USERAGENT, "conky-curl/1.1");
+#ifdef CURLOPT_PROTOCOLS_STR
+  curl_easy_setopt(curl, CURLOPT_PROTOCOLS_STR, "http,https");
+#elif defined(CURLOPT_PROTOCOLS)
+  curl_easy_setopt(curl, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+#endif
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+  curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 3L);
+#ifdef CURLOPT_REDIR_PROTOCOLS_STR
+  curl_easy_setopt(curl, CURLOPT_REDIR_PROTOCOLS_STR, "http,https");
+#elif defined(CURLOPT_REDIR_PROTOCOLS)
+  curl_easy_setopt(curl, CURLOPT_REDIR_PROTOCOLS,
+                   CURLPROTO_HTTP | CURLPROTO_HTTPS);
+#endif
   curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1000);
   curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 60);
 

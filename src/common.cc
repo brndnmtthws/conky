@@ -46,15 +46,15 @@
 
 #include "config.h"
 #include "conky.h"
-#include "core.h"
-#include "data/fs.h"
-#include "logging.h"
-#include "data/misc.h"
-#include "data/network/net_stat.h"
 #include "content/specials.h"
 #include "content/temphelper.h"
+#include "core.h"
+#include "data/fs.h"
+#include "data/misc.h"
+#include "data/network/net_stat.h"
 #include "data/timeinfo.h"
 #include "data/top.h"
+#include "logging.h"
 
 #if defined(_POSIX_C_SOURCE) && !defined(__OpenBSD__) && !defined(__HAIKU__)
 #include <wordexp.h>
@@ -743,9 +743,7 @@ int if_existing_iftest(struct text_object *obj) {
 }
 
 int if_running_iftest(struct text_object *obj) {
-  if (!is_process_running(obj->data.s)) {
-    return 0;
-  }
+  if (!is_process_running(obj->data.s)) { return 0; }
   return 1;
 }
 
@@ -859,6 +857,17 @@ void print_include(struct text_object *obj, char *p, unsigned int p_max_size) {
 }
 
 #ifdef BUILD_CURL
+namespace {
+constexpr char kGithubNotificationsUrl[] =
+    "https://api.github.com/notifications";
+}
+
+std::string github_notifications_url() { return kGithubNotificationsUrl; }
+
+std::string github_authorization_header(const std::string &token) {
+  return "Authorization: Bearer " + token;
+}
+
 #define NEW_TOKEN                       \
   "https://github.com/settings/tokens/" \
   "new?scopes=notifications&description=conky-query-github\n"
@@ -908,14 +917,14 @@ static size_t read_github_data_cb(char *data, size_t size, size_t nmemb,
 
 void print_github(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
-  char github_url[256] = {""};
-  char user_agent[30] = {""};
   static char cached_result[256] = {""};
   static unsigned int last_update = 1U;
   CURL *curl = nullptr;
   CURLcode res;
+  struct curl_slist *headers = nullptr;
+  std::string token = github_token.get(*state);
 
-  if (0 == strcmp(github_token.get(*state).c_str(), "")) {
+  if (token.empty()) {
     NORM_ERR(
         "${github_notifications} requires token. "
         "Go ahead and generate one " NEW_TOKEN
@@ -931,21 +940,19 @@ void print_github(struct text_object *obj, char *p, unsigned int p_max_size) {
     return;
   }
 
-  snprintf(github_url, 255, "%s%s",
-           "https://api.github.com/notifications?access_token=",
-           github_token.get(*state).c_str());
-  /* unique string for each conky user, so we dont hit any query limits */
-  snprintf(user_agent, 29, "conky/%s", github_token.get(*state).c_str());
-
   curl_global_init(CURL_GLOBAL_ALL);
   if (nullptr == (curl = curl_easy_init())) { goto error; }
-  curl_easy_setopt(curl, CURLOPT_URL, github_url);
+  headers =
+      curl_slist_append(headers, github_authorization_header(token).c_str());
+  if (headers == nullptr) { goto error; }
+  curl_easy_setopt(curl, CURLOPT_URL, github_notifications_url().c_str());
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 #if defined(CURLOPT_ACCEPT_ENCODING)
   curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "gzip");
 #else  /* defined(CURLOPT_ACCEPT_ENCODING) */
   curl_easy_setopt(curl, CURLOPT_ENCODING, "gzip");
 #endif /* defined(CURLOPT_ACCEPT_ENCODING) */
-  curl_easy_setopt(curl, CURLOPT_USERAGENT, user_agent);
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, "conky-github/1.0");
   curl_easy_setopt(curl, CURLOPT_USE_SSL, (long)CURLUSESSL_ALL);
   curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20L);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, read_github_data_cb);
@@ -957,6 +964,7 @@ void print_github(struct text_object *obj, char *p, unsigned int p_max_size) {
   last_update = 60U;
 
 error:
+  if (headers != nullptr) { curl_slist_free_all(headers); }
   if (nullptr != curl) { curl_easy_cleanup(curl); }
   curl_global_cleanup();
 
