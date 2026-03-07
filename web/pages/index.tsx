@@ -1,7 +1,8 @@
+import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
-import { getDocuments, Document } from '../utils/mdx-utils'
+import { getDocuments } from '../utils/mdx-utils'
+import type { Document } from '../utils/mdx-utils'
 import Layout from '../components/Layout'
-import ArrowIcon from '../components/ArrowIcon'
 import SEO from '../components/SEO'
 
 const pages = [
@@ -13,12 +14,12 @@ const pages = [
   {
     slug: '/config_settings',
     title: 'Configuration settings',
-    desc: 'Global configuration pramaters for Conky allow you to customize various behaviours.',
+    desc: 'Global configuration parameters let you customize how Conky behaves.',
   },
   {
     slug: '/lua',
     title: 'Lua API',
-    desc: 'Program wild things into your Conky with the Lua API',
+    desc: 'Extend Conky with custom behavior by using the Lua API.',
   },
 ]
 
@@ -31,15 +32,23 @@ interface IndexItemProps {
 
 const IndexItem: React.FunctionComponent<IndexItemProps> = (props) => {
   return (
-    <div className="md:first:rounded-t-lg md:last:rounded-b-lg backdrop-blur-lg bg-slate-300 dark:bg-black dark:bg-opacity-30 bg-opacity-10 hover:bg-opacity-30 dark:hover:bg-opacity-50 transition border border-gray-800 dark:border-white border-opacity-10 dark:border-opacity-10 border-b-0 last:border-b hover:border-b hovered-sibling:border-t-0">
+    <div className="backdrop-blur-sm transition first:rounded-t-2xl last:rounded-b-2xl border border-zinc-300/80 bg-white/70 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 border-b-0 last:border-b hovered-sibling:border-t-0">
       <Link
         as={props.as}
         href={props.href}
-        className="py-2 lg:py-4 px-2 lg:px-4 block focus:outline-none focus:ring-4"
+        className="block px-4 py-4 focus:outline-none focus:ring-4 focus:ring-zinc-400/40 lg:px-5 lg:py-5"
       >
-        <h2 className="text-xl md:text-2xl">{props.title}</h2>
-        {props.desc && <p className="mt-3 text-lg opacity-60">{props.desc}</p>}
-        <ArrowIcon className="mt-4" />
+        <h2 className="text-xl md:text-[2rem] md:leading-tight">{props.title}</h2>
+        {props.desc && (
+          <p className="mt-4 max-w-3xl text-lg leading-8 text-zinc-600 dark:text-zinc-400">
+            {props.desc}
+          </p>
+        )}
+        <ArrowRight
+          className="mt-5 text-zinc-900 dark:text-zinc-100"
+          size={24}
+          strokeWidth={2}
+        />
       </Link>
     </div>
   )
@@ -75,7 +84,7 @@ export default function Index({ documents }: IndexProps) {
           <IndexItem
             href="https://github.com/brndnmtthws/conky/wiki"
             title="Wiki"
-            desc="The Wiki (hosted on GitHub) contains a number of user configs, Lua scripts, FAQs and more."
+            desc="The wiki on GitHub contains user configs, Lua scripts, FAQs, and more."
           />
         </div>
       </main>

@@ -2,24 +2,16 @@ import { useEffect, useState } from 'react'
 import Footer from './Footer'
 import Header from './Header'
 
-function darkModeDefault() {
-  if (typeof window === 'undefined') {
-    return false
-  } else {
-    const theme = localStorage.getItem('theme')
-    return (
-      theme === 'dark' ||
-      (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    )
-  }
-}
-
 interface LayoutProps {
   children: React.ReactNode
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const [darkMode, setDarkMode] = useState(darkModeDefault())
+  const [darkMode, setDarkMode] = useState(
+    () =>
+      typeof document !== 'undefined' &&
+      document.documentElement.classList.contains('dark')
+  )
 
   useEffect(() => {
     if (darkMode) {
@@ -33,23 +25,26 @@ export default function Layout({ children }: LayoutProps) {
 
   useEffect(() => {
     const darkQuery = window.matchMedia('(prefers-color-scheme: dark)')
-
-    darkQuery.onchange = (e) => {
-      if (e.matches) {
-        setDarkMode(true)
-      } else {
-        setDarkMode(false)
+    const onChange = (event: MediaQueryListEvent) => {
+      if (!window.localStorage.getItem('theme')) {
+        setDarkMode(event.matches)
       }
+    }
+
+    darkQuery.addEventListener('change', onChange)
+
+    return () => {
+      darkQuery.removeEventListener('change', onChange)
     }
   }, [])
 
   return (
-    <div>
+    <div className="min-h-screen bg-transparent text-zinc-950 dark:text-zinc-50">
       <div className="sticky top-0 z-10">
         <Header name="Conky" setDarkMode={setDarkMode} />
       </div>
-      <div className="relative pb-4 md:pt-4">
-        <div className="flex flex-col items-center max-w-3xl w-full mx-auto">
+      <div className="relative pb-6 pt-4 md:pt-6">
+        <div className="mx-auto flex w-full max-w-4xl flex-col items-center px-4">
           {children}
         </div>
       </div>

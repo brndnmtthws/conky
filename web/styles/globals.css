@@ -1,10 +1,46 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-@tailwind variants;
+@config "../tailwind.config.js";
+@import "tailwindcss";
+
+@layer base {
+  html {
+    background-color: rgb(250 250 250);
+    color: rgb(17 24 39);
+  }
+
+  html.dark {
+    background-color: rgb(10 10 10);
+    color: rgb(244 244 245);
+  }
+
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at top, rgb(255 255 255 / 0.75), transparent 50%),
+      rgb(250 250 250);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  html.dark body {
+    background:
+      radial-gradient(circle at top, rgb(39 39 42 / 0.45), transparent 45%),
+      rgb(10 10 10);
+  }
+}
 
 code[class*='language-'],
 pre[class*='language-'] {
   font-family: 'Fira Code Variable', 'ui-monospace', 'SFMono-Regular', 'Menlo',
     'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace';
+}
+
+@layer base {
+  code::before,
+  code::after {
+    content: "" !important;
+  }
+
+  .prose {
+    font-family: var(--font-sans);
+  }
 }

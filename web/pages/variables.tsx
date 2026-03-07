@@ -1,6 +1,7 @@
 import Layout from '../components/Layout'
 import SEO from '../components/SEO'
-import { getVariables, Documentation, filterDesc } from '../utils/doc-utils'
+import { getVariables, filterDesc } from '../utils/doc-utils'
+import type { Documentation } from '../utils/doc-utils'
 import Docs from '../components/Docs'
 
 export interface VariablesProps {
@@ -24,7 +25,7 @@ export default function Variables(props: VariablesProps) {
   )
 }
 
-export async function getStaticProps() {
+export function getStaticProps() {
   const variables = filterDesc(getVariables())
 
   return { props: { variables } }

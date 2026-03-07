@@ -11,21 +11,21 @@
 #  * `default`: an optional default value, if applicable
 ---
 desc: |-
-  Conky features a Lua Programming API, and also ships with Lua bindings
+  Conky features a Lua programming API and also ships with Lua bindings
   for some useful libraries. Note that the bindings require tolua++.
 
-  To use Lua Conky, you first need to make sure you have a version of
+  To use Lua with Conky, first make sure you have a version of
   Conky with Lua support enabled (`conky -v` will report this).
-  Conky defines certain global functions and variables which can be
-  accessed from Lua code running in Conky. Scripts must first be loaded
-  using the lua_load configuration option. You then call functions in Lua
-  via Conky's $lua, $lua_read, and Lua hooks.
+  Conky defines certain global functions and variables that can be
+  accessed from Lua code running inside Conky. Scripts must first be loaded
+  using the `lua_load` configuration option. You can then call Lua functions
+  through Conky's `$lua`, `$lua_read`, and Lua hooks.
 
-  Be careful when creating threaded objects through the Lua API. You could
-  wind up with a whole bunch of threads running if a thread is created
+  Be careful when creating threaded objects through the Lua API. You could end
+  up with a large number of threads running if a thread is created
   with each iteration.
 
-  NOTE: In order to accommodate certain features in the cairo library's
+  Note: to accommodate certain features in the Cairo library's
   API, Conky will export a few additional functions for the creation of
   certain structures. These are documented below.
 values:
@@ -140,12 +140,11 @@ values:
       `tolua.takeownership(cte)`
   - name: conky_build_arch
     desc: |-
-      A string containing the build architecture for this
-      particular instance of Conky.
+      A string containing the build architecture for this Conky instance.
   - name: conky_build_info
     desc: |-
-      A string containing the build info for this particular
-      instance of Conky, including the version, build date, and
+      A string containing build information for this Conky instance, including
+      the version, build date, and
       architecture.
   - name: conky_config
     desc: |-
@@ -170,8 +169,7 @@ values:
       'number'.
   - name: conky_version
     desc: |-
-      A string containing the version of the current instance of
-      Conky.
+      A string containing the version of the current Conky instance.
   - name: conky_window
     desc: |-
       This table contains some information about Conky's window.
@@ -210,8 +208,8 @@ values:
 
   - name: cairo_text_hp_show(cr, x, y, text, font, font_size, alignment, language, script, direction)
     desc: |-
-      Renders text to a cairo_t using harfbuzz and freetype, this provides significantly
-      better text rendering then using cairo's inbuilt functions.
+      Renders text to a `cairo_t` using HarfBuzz and FreeType. This provides
+      significantly better text rendering than Cairo's built-in functions.
 
       | Argument            | Description                                                                          |
       |---------------------|--------------------------------------------------------------------------------------|

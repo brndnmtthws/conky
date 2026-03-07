@@ -12,7 +12,7 @@ Build the image with:
 docker build --tag=conky .
 ```
 
-or if you want the commandline version:
+If you want the command-line version, use:
 
 ```shell-session
 docker build --build-arg X11=no --tag=conkycmd .
@@ -20,64 +20,67 @@ docker build --build-arg X11=no --tag=conkycmd .
 
 ## Running the container
 
-After building you can run the graphical version with:
+After building, you can run the graphical version with:
 
 ```shell-session
 docker run --rm -ti --net=host -e DISPLAY -v ~/.Xauthority:/root/.Xauthority conky
 ```
 
-The commandline version is easier:
+The command-line version is simpler:
 
 ```shell-session
 docker run --rm -ti conkycmd
 ```
 
-If you want to pass some options to conky you can just add them if you mention
-'conky' twice. Once for the image and once for the command. For example:
+To pass options to Conky, specify `conky` twice: once as the image name and
+once as the command. For example:
 
 ```shell-session
 docker run --rm -ti --net=host -e DISPLAY -v ~/.Xauthority:/root/.Xauthority conky conky --version
 ```
 
-will show you the version of conky. Since you don't need X for this you could also do:
+This prints the Conky version. Because X is not required for this command, you
+can also run:
 
 ```shell-session
 docker run --rm -ti conkycmd conky --version
 ```
 
-If you want to fiddle around a bit with the configuration first you could do:
+If you want to experiment with the configuration first, run:
 
 ```shell-session
 docker run --rm -ti --net=host -e DISPLAY -v ~/.Xauthority:/root/.Xauthority conky bash
 ```
 
-_change things is in the configuration_
+_Make any changes you want in the configuration._
 
 ```shell-session
 conky -c configurationfile ; exit
 ```
 
-See the docker docs to a lot of other ways to (ab)use this container
+See the Docker documentation for many other ways to use this container.
 
 ## Why?
 
-Disadvantages of using the docker:
+Disadvantages of using Docker:
 
-- You'll have to install docker.
+- You need to install Docker.
   This can be done by following the instructions in
-  https://docs.docker.com/install/ to install docker CE. But just using the
-  packagemanager of your distro like you would do with other software will work.
-- A lot of info will be about the current container instead of the whole system
-- At the moment our docker image is still in development fase.
+  https://docs.docker.com/install/ to install Docker CE. Installing it through
+  your distribution's package manager may also work.
+- Much of the information displayed will reflect the current container rather
+  than the entire host system.
+- At the moment, the Docker image is still under development.
 
-Advantages of using docker:
+Advantages of using Docker:
 
-- During the installation you won't have to care about which compilers,
-  libraries, ... are installed. Neither should you care about how to use them.
-- The containerization of conky will make it a lot harder to let problems with
-  conky affect the rest of the system.
+- During installation, you do not need to worry as much about which compilers
+  and libraries are installed, or how they are configured.
+- Containerizing Conky makes it much less likely that problems with Conky will
+  affect the rest of the system.
 - Your Conky will run in exactly the same environment as everyone else's, so
-  if it works for someone it will work for everyone. No matter which distro you
-  are using or how you configured that distro. (The conky configuration itself
-  will matter and also the version of conky)
-- Problems will be easier to recreate by developers causing faster debugging.
+  if it works for one person, it should work for others as well, regardless of
+  distribution or host configuration. The Conky configuration itself, and the
+  Conky version, still matter.
+- Problems are easier for developers to reproduce, which can lead to faster
+  debugging.

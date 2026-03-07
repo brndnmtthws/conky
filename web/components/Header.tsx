@@ -1,6 +1,6 @@
+import { Github } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import GitHub from './GitHub'
 import ThemeSwitcher from './ThemeSwitcher'
 
 import * as React from 'react'
@@ -24,7 +24,7 @@ const NavLink: React.FunctionComponent<NavLinkProps> = (props) => {
   return (
     <Link
       href={props.href}
-      className={`m-0.5 p-1 self-end hover:ring-1 ring-black dark:ring-white hover:bg-rose-300 dark:hover:bg-rose-700 ${bg} rounded`}
+      className={`mx-0.5 inline-flex h-10 items-center rounded px-3 hover:ring-1 ring-black dark:ring-white hover:bg-rose-300 dark:hover:bg-rose-700 ${bg}`}
     >
       {props.name}
     </Link>
@@ -35,35 +35,36 @@ export default function Header({ name, setDarkMode }: HeaderProps) {
   const router = useRouter()
 
   return (
-    <div className="border-b-1 backdrop-blur-lg bg-white dark:bg-black bg-opacity-20 dark:bg-opacity-20 transition">
-      <header className="max-w-3xl mx-auto m-0 py-1 px-2 lg:px-4 grow flex w-full">
-        <h1 className="text-3xl dark:text-white self-end mr-1">
-          <Link href="/" className="font-bold" data-cy="top-link">
+    <div className="border-b border-zinc-900/15 bg-white/80 backdrop-blur-md transition dark:border-white/10 dark:bg-black/40">
+      <header className="mx-auto flex w-full max-w-4xl items-center px-4 py-3">
+        <h1 className="mr-4 text-3xl font-bold leading-none tracking-tight text-zinc-950 dark:text-white">
+          <Link href="/" data-cy="top-link" className="inline-flex h-10 items-center">
             {name}
           </Link>
         </h1>
-        {router.asPath != '/' && (
-          <div className="hidden sm:flex text-md items-stretch self-stretch mr-1">
+        {router.asPath !== '/' && (
+          <div className="mr-2 hidden items-center text-md sm:flex">
             <NavLink href="/variables" name="Vars" />
             <NavLink href="/config_settings" name="Config" />
             <NavLink href="/lua" name="Lua" />
           </div>
         )}
         <div className="flex-grow" />
-        <Search />
-        <div className="flex">
-          <div className="flex items-center border-r mx-1 px-1 border-slate-700">
-            <a href="https://github.com/brndnmtthws/conky">
-              <GitHub />
+        <div className="flex items-center gap-1.5">
+          <Search />
+          <div className="mx-1 flex h-10 items-center border-r border-zinc-900/15 px-2 dark:border-white/10">
+            <a
+              href="https://github.com/brndnmtthws/conky"
+              className="inline-flex h-10 w-10 items-center justify-center text-zinc-950 transition hover:text-zinc-600 dark:text-white dark:hover:text-zinc-300"
+            >
+              <Github size={28} strokeWidth={2} />
             </a>
           </div>
-          <div className="ml-1 pl-1 flex place-content-center place-items-center">
-            <ThemeSwitcher setDarkMode={setDarkMode} />
-          </div>
+          <ThemeSwitcher setDarkMode={setDarkMode} />
         </div>
       </header>
-      {router.asPath != '/' && (
-        <div className="flex sm:hidden text-md items-stretch self-stretch px-1 pb-1">
+      {router.asPath !== '/' && (
+        <div className="mx-auto flex max-w-4xl items-center px-3 pb-2 text-md sm:hidden">
           <NavLink href="/variables" name="Vars" />
           <NavLink href="/config_settings" name="Config" />
           <NavLink href="/lua" name="Lua" />

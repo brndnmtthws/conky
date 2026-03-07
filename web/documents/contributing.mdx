@@ -10,23 +10,25 @@ Contributions are welcome from anyone.
 
 When submitting PRs, please:
 
-- Describe the changes, why they were necessary, etc
-- Describe how the changes affect existing behaviour
-- Describe how you tested and validated your changes
+- Describe the changes and explain why they were necessary
+- Describe how the changes affect existing behavior
+- Explain how you tested and validated your changes
 - Include unit tests when appropriate
-- Include any relevant screenshots/evidence demonstrating that the changes work and have been tested
-- Any new source files should include a GPLv3 license header
-- All new code must be GPLv3 licensed
+- Include relevant screenshots or other evidence showing that the changes work
+- Add a GPLv3 license header to any new source files
+- Ensure that all new code is GPLv3-licensed
 - Try to leave the code better than you found it
 - PRs with failed checks may be ignored or closed; please make sure
-  the build and checks pass if possible (and notify someone when the build
-  system is not working)
+  the build and checks pass if possible, and let someone know when the build
+  system is not working
 
 _Patches submitted in issues, email, or elsewhere may be ignored._
 
 ## Coding Style
 
-Code should be formatted using `clang-format`. By configuring Conky with `cmake -DCHECK_CODE_QUALITY=ON`, you will be able to run `make clang-format` to automatically format code.
+Code should be formatted with `clang-format`. If you configure Conky with
+`cmake -DCHECK_CODE_QUALITY=ON`, you can run `make clang-format` to format the
+code automatically.
 
 ## Git hooks
 
@@ -34,9 +36,11 @@ To make life easier, you can use
 [lefthook](https://github.com/evilmartians/lefthook) to handle some basic
 linting with a pre-commit hook, as defined in [lefthook.yml](lefthook.yml).
 Follow the [installation guide for
-lefhook](https://github.com/evilmartians/lefthook/blob/master/docs/install.md),
+lefthook](https://github.com/evilmartians/lefthook/blob/master/docs/install.md),
 then run `lefthook install` to enable the hooks.
 
 ## Unit Testing
 
-Conky uses the [Catch2](https://github.com/catchorg/Catch2) unit testing framework. If you are adding new functions or methods, please consider adding unit tests for that code. Additionally, if you'd like to add tests for existing code, that would be a welcome contribution.
+Conky uses the [Catch2](https://github.com/catchorg/Catch2) unit testing
+framework. If you add new functions or methods, please consider adding unit
+tests for them. Additional tests for existing code are also welcome.

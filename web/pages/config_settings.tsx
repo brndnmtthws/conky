@@ -2,9 +2,9 @@ import Layout from '../components/Layout'
 import SEO from '../components/SEO'
 import {
   getConfigSettings,
-  Documentation,
   filterDesc,
 } from '../utils/doc-utils'
+import type { Documentation } from '../utils/doc-utils'
 import Docs from '../components/Docs'
 
 export interface ConfigSettingsProps {
@@ -30,7 +30,7 @@ export default function ConfigSettings(props: ConfigSettingsProps) {
   )
 }
 
-export async function getStaticProps() {
+export function getStaticProps() {
   const config_settings = filterDesc(getConfigSettings())
 
   return { props: { config_settings } }

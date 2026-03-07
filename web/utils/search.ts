@@ -1,4 +1,5 @@
-import Fuse, { FuseIndexRecords } from 'fuse.js'
+import Fuse from 'fuse.js'
+import type { FuseIndexRecords } from 'fuse.js'
 import { getConfigSettings, getLua, getVariables } from './doc-utils'
 
 export interface SearchItem {
