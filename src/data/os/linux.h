@@ -48,7 +48,13 @@ void get_powerbook_batt_info(struct text_object *, char *, unsigned int);
 void parse_i2c_sensor(struct text_object *, const char *);
 void parse_hwmon_sensor(struct text_object *, const char *);
 void parse_platform_sensor(struct text_object *, const char *);
+
+void parse_i2c_bar(struct text_object *, const char *);
+void parse_hwmon_bar(struct text_object *, const char *);
+void parse_platform_bar(struct text_object *, const char *);
+
 void print_sysfs_sensor(struct text_object *, char *, unsigned int);
+double sysfs_sensor_barval(struct text_object *);
 void free_sysfs_sensor(struct text_object *);
 
 int get_entropy_avail(unsigned int *);
