@@ -112,7 +112,6 @@ void print_no_update(struct text_object *, char *, unsigned int);
 void free_no_update(struct text_object *);
 
 void scan_loadavg_arg(struct text_object *, const char *);
-void print_loadavg(struct text_object *, char *, unsigned int);
 #ifdef BUILD_GUI
 void scan_loadgraph_arg(struct text_object *, const char *);
 double loadgraphval(struct text_object *);
@@ -121,50 +120,12 @@ double loadgraphval(struct text_object *);
 uint8_t cpu_percentage(struct text_object *);
 double cpu_barval(struct text_object *);
 
-void print_mem(struct text_object *, char *, unsigned int);
-void print_memwithbuffers(struct text_object *, char *, unsigned int);
-void print_memeasyfree(struct text_object *, char *, unsigned int);
-void print_legacymem(struct text_object *, char *, unsigned int);
-void print_memfree(struct text_object *, char *, unsigned int);
-void print_memmax(struct text_object *, char *, unsigned int);
-void print_memactive(struct text_object *, char *, unsigned int);
-void print_meminactive(struct text_object *, char *, unsigned int);
-void print_memwired(struct text_object *, char *, unsigned int);
-void print_memlaundry(struct text_object *, char *, unsigned int);
-void print_memdirty(struct text_object *, char *, unsigned int);
-void print_shmem(struct text_object *, char *, unsigned int);
-void print_memavail(struct text_object *, char *, unsigned int);
-void print_swap(struct text_object *, char *, unsigned int);
-void print_swapfree(struct text_object *, char *, unsigned int);
-void print_swapmax(struct text_object *, char *, unsigned int);
-uint8_t mem_percentage(struct text_object *);
-double mem_barval(struct text_object *);
-double mem_with_buffers_barval(struct text_object *);
-uint8_t swap_percentage(struct text_object *);
-double swap_barval(struct text_object *);
-
-void print_kernel(struct text_object *, char *, unsigned int);
-void print_machine(struct text_object *, char *, unsigned int);
-void print_nodename(struct text_object *, char *, unsigned int);
-void print_nodename_short(struct text_object *, char *, unsigned int);
-void print_sysname(struct text_object *, char *, unsigned int);
-
-#if defined(__DragonFly__)
-void print_version(struct text_object *obj, char *p, unsigned int p_max_size);
-#endif
-
-void print_uptime(struct text_object *, char *, unsigned int);
-void print_uptime_short(struct text_object *, char *, unsigned int);
-
-void print_processes(struct text_object *, char *, unsigned int);
-void print_running_processes(struct text_object *, char *, unsigned int);
-void print_running_threads(struct text_object *, char *, unsigned int);
-void print_threads(struct text_object *, char *, unsigned int);
-
-void print_buffers(struct text_object *, char *, unsigned int);
-void print_cached(struct text_object *, char *, unsigned int);
-void print_free_bufcache(struct text_object *, char *, unsigned int);
-void print_free_cached(struct text_object *, char *, unsigned int);
+/// Memory/swap state queries — used by variable lambdas and tests.
+uint8_t mem_percentage();
+double mem_barval();
+double mem_with_buffers_barval();
+uint8_t swap_percentage();
+double swap_barval();
 
 void print_evaluate(struct text_object *, char *, unsigned int);
 

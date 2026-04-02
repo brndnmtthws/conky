@@ -32,6 +32,7 @@
 /* local headers */
 #include "content/algebra.h"
 #include "core.h"
+#include "parse/variables.hh"
 
 #include "build.h"
 #include "lua/colour-settings.hh"
@@ -374,6 +375,11 @@ legacy_cb_handle *create_cb_handle(int (*fn)()) {
 struct text_object *construct_text_object(char *s, const char *arg, long line,
                                           void **ifblock_opaque,
                                           void *free_at_crash) {
+  auto *result = conky::text_object::construct_text_object(s, arg, line,
+                                                           ifblock_opaque,
+                                                           free_at_crash);
+  if (result != nullptr) { return result; }
+
   // struct text_object *obj = new_text_object();
   struct text_object *obj = new_text_object_internal();
 
@@ -691,12 +697,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(obsd_vendor, 0) obj->callbacks.print = &get_obsd_vendor;
   END OBJ(obsd_product, 0) obj->callbacks.print = &get_obsd_product;
 #endif /* __OpenBSD__ */
-  END OBJ(buffers, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_buffers;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(cached, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_cached;
-  obj->callbacks.free = &gen_free_opaque;
 #define SCAN_CPU(__arg, __var)                                          \
   {                                                                     \
     int __offset = 0;                                                   \
@@ -1092,8 +1092,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       STRNDUP_ARG;
   obj->callbacks.print = &print_words;
   obj->callbacks.free = &gen_free_opaque;
-  END OBJ(loadavg, &update_load_average) scan_loadavg_arg(obj, arg);
-  obj->callbacks.print = &print_loadavg;
   END OBJ_IF_ARG(if_empty, nullptr, "if_empty needs an argument") obj->sub =
       static_cast<text_object *>(malloc(sizeof(struct text_object)));
   extract_variable_text_internal(obj->sub, arg);
@@ -1136,11 +1134,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   /* XXX: maybe use a different callback here */
   obj->callbacks.iftest = &if_running_iftest;
 #endif
-  END OBJ(kernel, nullptr) obj->callbacks.print = &print_kernel;
-  END OBJ(machine, nullptr) obj->callbacks.print = &print_machine;
-#if defined(__DragonFly__)
-  END OBJ(version, 0) obj->callbacks.print = &print_version;
-#endif
   END OBJ(mails, nullptr) parse_local_mail_args(obj, arg);
   obj->callbacks.print = &print_mails;
   obj->callbacks.free = &free_local_mails;
@@ -1180,70 +1173,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(mboxscan, nullptr) parse_mboxscan_arg(obj, arg);
   obj->callbacks.print = &print_mboxscan;
   obj->callbacks.free = &free_mboxscan;
-  END OBJ(mem, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_mem;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(legacymem, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_legacymem;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(memwithbuffers, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_memwithbuffers;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(memeasyfree, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_memeasyfree;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(memfree, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_memfree;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(memmax, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_memmax;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(memperc, &update_meminfo) obj->callbacks.percentage = &mem_percentage;
-#ifdef __linux__
-  END OBJ(memdirty, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_memdirty;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(memavail, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_memavail;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(shmem, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_shmem;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(free_bufcache, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_free_bufcache;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(free_cached, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_free_cached;
-  obj->callbacks.free = &gen_free_opaque;
-#endif /* __linux__ */
-#ifdef __FreeBSD__
-  END OBJ(memactive, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_memactive;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(meminactive, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_meminactive;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(memwired, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_memwired;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(memlaundry, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_memlaundry;
-  obj->callbacks.free = &gen_free_opaque;
-#endif /* __FreeBSD__ */
-#ifdef BUILD_GUI
-  END OBJ(memgauge, &update_meminfo) scan_gauge(obj, arg, 1);
-  obj->callbacks.gaugeval = &mem_barval;
-#endif /* BUILD_GUI */
-  END OBJ(membar, &update_meminfo) scan_bar(obj, arg, 1);
-  obj->callbacks.barval = &mem_barval;
-  END OBJ(memwithbuffersbar, &update_meminfo) scan_bar(obj, arg, 1);
-  obj->callbacks.barval = &mem_with_buffers_barval;
-#ifdef BUILD_GUI
-  END OBJ(memgraph, &update_meminfo) scan_graph(obj, arg, 1, FALSE);
-  obj->callbacks.graphval = &mem_barval;
-  END OBJ(memwithbuffersgraph, &update_meminfo) scan_graph(obj, arg, 1, FALSE);
-  obj->callbacks.graphval = &mem_with_buffers_barval;
-#endif /* BUILD_GUI*/
 #ifdef HAVE_SOUNDCARD_H
   END OBJ(mixer, 0) parse_mixer_arg(obj, arg);
   obj->callbacks.percentage = &mixer_percentage;
@@ -1271,8 +1200,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       obj->sub = static_cast<text_object *>(malloc(sizeof(struct text_object)));
   extract_variable_text_internal(obj->sub, arg);
   obj->callbacks.print = &print_format_time;
-  END OBJ(nodename, nullptr) obj->callbacks.print = &print_nodename;
-  END OBJ(nodename_short, nullptr) obj->callbacks.print = &print_nodename_short;
   END OBJ_ARG(cmdline_to_pid, nullptr,
               "cmdline_to_pid needs a command line as argument")
       scan_cmdline_to_pid_arg(obj, arg, free_at_crash);
@@ -1409,33 +1336,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ_ARG(pid_write, nullptr, "pid_write needs a pid as argument")
       extract_object_args_to_sub(obj, arg);
   obj->callbacks.print = &print_pid_write;
-#ifdef __DragonFly__
-  END OBJ(processes, &update_top)
-#else
-  END OBJ(processes, &update_total_processes)
-#endif
-      obj->callbacks.print = &print_processes;
 #ifdef __linux__
   END OBJ(distribution, 0) obj->callbacks.print = &print_distribution;
-  END OBJ(running_processes, &update_top) top_running = 1;
-  obj->callbacks.print = &print_running_processes;
-  END OBJ(threads, &update_threads) obj->callbacks.print = &print_threads;
-  END OBJ(running_threads, &update_stat) obj->callbacks.print =
-      &print_running_threads;
-#else
-#if defined(__DragonFly__)
-  END OBJ(running_processes, &update_top) obj->callbacks.print =
-      &print_running_processes;
-#elif (defined(__APPLE__) && defined(__MACH__))
-  END OBJ(running_processes, &update_running_processes) obj->callbacks.print =
-      &print_running_processes;
-  END OBJ(threads, &update_threads) obj->callbacks.print = &print_threads;
-  END OBJ(running_threads, &update_running_threads) obj->callbacks.print =
-      &print_running_threads;
-#else
-  END OBJ(running_processes, &update_running_processes) obj->callbacks.print =
-      &print_running_processes;
-#endif
 #endif /* __linux__ */
   END OBJ(shadecolor, nullptr)
 #ifdef BUILD_GUI
@@ -1456,21 +1358,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       scan_stippled_hr(obj, arg);
   obj->callbacks.print = &new_stippled_hr;
 #endif /* BUILD_GUI */
-  END OBJ(swap, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_swap;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(swapfree, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_swapfree;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(swapmax, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_swapmax;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(swapperc, &update_meminfo) obj->callbacks.percentage =
-      &swap_percentage;
-  END OBJ(swapbar, &update_meminfo) scan_bar(obj, arg, 1);
-  obj->callbacks.barval = &swap_barval;
-  /* XXX: swapgraph, swapgauge? */
-  END OBJ(sysname, nullptr) obj->callbacks.print = &print_sysname;
   END OBJ(time, nullptr) scan_time(obj, arg);
   obj->callbacks.print = &print_time;
   obj->callbacks.free = &free_time;
@@ -1505,7 +1392,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(totalup, &update_net_stats)
       parse_net_stat_arg(obj, arg, free_at_crash);
   obj->callbacks.print = &print_totalup;
-  END OBJ(updates, nullptr) obj->callbacks.print = &print_updates;
   END OBJ_IF(if_updatenr, nullptr) obj->data.i =
       arg != nullptr ? strtol(arg, nullptr, 10) : 0;
   if (obj->data.i == 0) {
@@ -1533,9 +1419,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       parse_net_stat_graph_arg(obj, arg, free_at_crash);
   obj->callbacks.graphval = &upspeedgraphval;
 #endif
-  END OBJ(uptime_short, &update_uptime) obj->callbacks.print =
-      &print_uptime_short;
-  END OBJ(uptime, &update_uptime) obj->callbacks.print = &print_uptime;
 #if defined(__linux__)
   END OBJ(user_names, &update_users) obj->callbacks.print = &print_user_names;
   obj->callbacks.free = &free_user_names;

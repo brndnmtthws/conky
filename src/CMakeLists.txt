@@ -20,7 +20,8 @@
 
 include_directories(${conky_includes})
 
-# always include the binary dir
+# always include the source and binary dirs
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 if(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
@@ -30,6 +31,7 @@ endif(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
 
 set(conky_target_includes
   ${conky_includes}
+  ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR})
 
 if(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
@@ -186,6 +188,8 @@ set(conky_sources
   update-cb.hh
   logging.h
   semaphore.hh
+  parse/variables.cc
+  parse/variables.hh
 )
 
 # Platform specific sources
