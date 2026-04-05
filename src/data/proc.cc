@@ -38,6 +38,7 @@
 #include <string>
 #include "../conky.h"
 #include "../core.h"
+#include "parse/variables.hh"
 #include "../logging.h"
 
 static const char *skip_proc_stat_comm(const char *stat) {
@@ -1007,3 +1008,55 @@ void print_pid_write(struct text_object *obj, char *p,
     free(buf);
   }
 }
+
+using namespace conky::text_object;
+
+// clang-format off
+CONKY_REGISTER_VARIABLES(
+    {"cmdline_to_pid", [](text_object *obj, const construct_context &ctx) {
+      scan_cmdline_to_pid_arg(obj, ctx.arg, ctx.free_at_crash);
+      obj->callbacks.print = &print_cmdline_to_pid;
+      obj->callbacks.free = &gen_free_opaque;
+    }, nullptr, {}, obj_flags::arg},
+    arg_object_variable<&print_pid_chroot>("pid_chroot"),
+    arg_object_variable<&print_pid_cmdline>("pid_cmdline"),
+    arg_object_variable<&print_pid_cwd>("pid_cwd"),
+    arg_object_variable<&print_pid_environ>("pid_environ"),
+    arg_object_variable<&print_pid_environ_list>("pid_environ_list"),
+    arg_object_variable<&print_pid_exe>("pid_exe"),
+    arg_object_variable<&print_pid_nice>("pid_nice"),
+    arg_object_variable<&print_pid_openfiles>("pid_openfiles"),
+    arg_object_variable<&print_pid_parent>("pid_parent"),
+    arg_object_variable<&print_pid_priority>("pid_priority"),
+    arg_object_variable<&print_pid_state>("pid_state"),
+    arg_object_variable<&print_pid_state_short>("pid_state_short"),
+    arg_object_variable<&print_pid_stderr>("pid_stderr"),
+    arg_object_variable<&print_pid_stdin>("pid_stdin"),
+    arg_object_variable<&print_pid_stdout>("pid_stdout"),
+    arg_object_variable<&print_pid_threads>("pid_threads"),
+    arg_object_variable<&print_pid_thread_list>("pid_thread_list"),
+    arg_object_variable<&print_pid_time_kernelmode>("pid_time_kernelmode"),
+    arg_object_variable<&print_pid_time_usermode>("pid_time_usermode"),
+    arg_object_variable<&print_pid_time>("pid_time"),
+    arg_object_variable<&print_pid_uid>("pid_uid"),
+    arg_object_variable<&print_pid_euid>("pid_euid"),
+    arg_object_variable<&print_pid_suid>("pid_suid"),
+    arg_object_variable<&print_pid_fsuid>("pid_fsuid"),
+    arg_object_variable<&print_pid_gid>("pid_gid"),
+    arg_object_variable<&print_pid_egid>("pid_egid"),
+    arg_object_variable<&print_pid_sgid>("pid_sgid"),
+    arg_object_variable<&print_pid_fsgid>("pid_fsgid"),
+    arg_object_variable<&print_pid_read>("pid_read"),
+    arg_object_variable<&print_pid_vmpeak>("pid_vmpeak"),
+    arg_object_variable<&print_pid_vmsize>("pid_vmsize"),
+    arg_object_variable<&print_pid_vmlck>("pid_vmlck"),
+    arg_object_variable<&print_pid_vmhwm>("pid_vmhwm"),
+    arg_object_variable<&print_pid_vmrss>("pid_vmrss"),
+    arg_object_variable<&print_pid_vmdata>("pid_vmdata"),
+    arg_object_variable<&print_pid_vmstk>("pid_vmstk"),
+    arg_object_variable<&print_pid_vmexe>("pid_vmexe"),
+    arg_object_variable<&print_pid_vmlib>("pid_vmlib"),
+    arg_object_variable<&print_pid_vmpte>("pid_vmpte"),
+    arg_object_variable<&print_pid_write>("pid_write"),
+)
+// clang-format on

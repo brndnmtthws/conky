@@ -539,12 +539,6 @@ double swap_barval() {
                             : 0;
 }
 
-void print_evaluate(struct text_object *obj, char *p, unsigned int p_max_size) {
-  std::vector<char> buf(text_buffer_size.get(*state));
-  evaluate(obj->data.s, &buf[0], buf.size());
-  evaluate(&buf[0], p, p_max_size);
-}
-
 int if_empty_iftest(struct text_object *obj) {
   std::vector<char> buf(max_user_text.get(*state));
   int result = 1;
@@ -989,5 +983,408 @@ CONKY_REGISTER_VARIABLES(
 
     // --- updates ---
     print_variable("updates", get_total_updates),
+
+    // --- eval ---
+    {"eval", [](text_object *obj, const construct_context &ctx) {
+      obj->data.s = strndup(ctx.arg ? ctx.arg : "", text_buffer_size.get(*state));
+      obj->callbacks.print = [](text_object *obj, char *p, unsigned int s) {
+        std::vector<char> buf(text_buffer_size.get(*state));
+        evaluate(obj->data.s, &buf[0], buf.size());
+        evaluate(&buf[0], p, s);
+      };
+      obj->callbacks.free = &gen_free_opaque;
+    }},
 )
+
+#ifndef __OpenBSD__
+CONKY_REGISTER_VARIABLES(
+    // --- acpi ---
+    {"acpitemp", [](text_object *obj, const construct_context &ctx) {
+      obj->data.i = open_acpi_temperature(ctx.arg);
+      obj->callbacks.print = &print_acpitemp;
+      obj->callbacks.free = &free_acpitemp;
+    }},
+    {"acpiacadapter", [](text_object *obj, const construct_context &ctx) {
+      if (ctx.arg != nullptr) {
+#ifdef __linux__
+        if (strpbrk(ctx.arg, "/.") != nullptr) {
+          LOG_ERROR("acpiacadapter: arg must not contain '/' or '.', got '{}'", ctx.arg);
+        } else {
+          obj->data.opaque = strdup(ctx.arg);
+        }
+#else
+        LOG_WARNING("acpiacadapter: arg is only used on linux");
+#endif
+      }
+      obj->callbacks.print = &print_acpiacadapter;
+      obj->callbacks.free = &gen_free_opaque;
+    }},
+    {"acpifan", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = [](text_object *, char *p, unsigned int s) {
+        get_acpi_fan(p, s);
+      };
+    }},
+
+    // --- battery ---
+    {"battery", [](text_object *obj, const construct_context &ctx) {
+      char bat[64];
+      if (ctx.arg != nullptr) { sscanf(ctx.arg, "%63s", bat); }
+      else { strncpy(bat, "BAT0", 5); }
+      obj->data.s = strndup(bat, text_buffer_size.get(*state));
+      obj->callbacks.print = &print_battery;
+      obj->callbacks.free = &gen_free_opaque;
+    }},
+    {"battery_short", [](text_object *obj, const construct_context &ctx) {
+      char bat[64];
+      if (ctx.arg != nullptr) { sscanf(ctx.arg, "%63s", bat); }
+      else { strncpy(bat, "BAT0", 5); }
+      obj->data.s = strndup(bat, text_buffer_size.get(*state));
+      obj->callbacks.print = &print_battery_short;
+      obj->callbacks.free = &gen_free_opaque;
+    }},
+    {"battery_status", [](text_object *obj, const construct_context &ctx) {
+      obj->data.s = strndup(ctx.arg ? ctx.arg : "BAT0", text_buffer_size.get(*state));
+      obj->callbacks.print = &print_battery_status;
+      obj->callbacks.free = &gen_free_opaque;
+    }},
+    {"battery_time", [](text_object *obj, const construct_context &ctx) {
+      char bat[64];
+      if (ctx.arg != nullptr) { sscanf(ctx.arg, "%63s", bat); }
+      else { strncpy(bat, "BAT0", 5); }
+      obj->data.s = strndup(bat, text_buffer_size.get(*state));
+      obj->callbacks.print = &print_battery_time;
+      obj->callbacks.free = &gen_free_opaque;
+    }},
+    {"battery_percent", [](text_object *obj, const construct_context &ctx) {
+      char bat[64];
+      if (ctx.arg != nullptr) { sscanf(ctx.arg, "%63s", bat); }
+      else { strncpy(bat, "BAT0", 5); }
+      obj->data.s = strndup(bat, text_buffer_size.get(*state));
+      obj->callbacks.percentage = &battery_percentage;
+      obj->callbacks.free = &gen_free_opaque;
+    }},
+    {"battery_power_draw", [](text_object *obj, const construct_context &ctx) {
+      char bat[64];
+      if (ctx.arg != nullptr) { sscanf(ctx.arg, "%63s", bat); }
+      else { strncpy(bat, "BAT0", 5); }
+      obj->data.s = strndup(bat, text_buffer_size.get(*state));
+      obj->callbacks.print = &battery_power_draw;
+      obj->callbacks.free = &gen_free_opaque;
+    }},
+    {"battery_bar", [](text_object *obj, const construct_context &ctx) {
+      char bat[64];
+      auto *remaining = scan_bar(obj, ctx.arg, 100);
+      if (remaining != nullptr && strlen(remaining) > 0) {
+        sscanf(remaining, "%63s", bat);
+      } else {
+        strncpy(bat, "BAT0", 5);
+      }
+      obj->data.s = strndup(bat, text_buffer_size.get(*state));
+      obj->callbacks.barval = &get_battery_perct_bar;
+      obj->callbacks.free = &gen_free_opaque;
+    }},
+)
+#endif /* !__OpenBSD__ */
+
+CONKY_REGISTER_VARIABLES(
+    // --- freq ---
+    {"freq", [](text_object *obj, const construct_context &ctx) {
+      get_cpu_count();
+      if (ctx.arg == nullptr || strlen(ctx.arg) >= 3 ||
+          strtol(&ctx.arg[0], nullptr, 10) == 0 ||
+          static_cast<unsigned int>(strtol(&ctx.arg[0], nullptr, 10)) > info.cpu_count) {
+        obj->data.i = 1;
+        LOG_WARNING("invalid CPU number '{}', falling back to CPU 1",
+                    ctx.arg ? ctx.arg : "(null)");
+      } else {
+        obj->data.i = strtol(&ctx.arg[0], nullptr, 10);
+      }
+      obj->callbacks.print = &print_freq;
+    }},
+    {"freq_g", [](text_object *obj, const construct_context &ctx) {
+      get_cpu_count();
+      if (ctx.arg == nullptr || strlen(ctx.arg) >= 3 ||
+          strtol(&ctx.arg[0], nullptr, 10) == 0 ||
+          static_cast<unsigned int>(strtol(&ctx.arg[0], nullptr, 10)) > info.cpu_count) {
+        obj->data.i = 1;
+        LOG_WARNING("invalid CPU number '{}', falling back to CPU 1",
+                    ctx.arg ? ctx.arg : "(null)");
+      } else {
+        obj->data.i = strtol(&ctx.arg[0], nullptr, 10);
+      }
+      obj->callbacks.print = &print_freq_g;
+    }},
+
+    // --- no_update ---
+    {"no_update", [](text_object *obj, const construct_context &ctx) {
+      scan_no_update(obj, ctx.arg);
+      obj->callbacks.print = &print_no_update;
+      obj->callbacks.free = &free_no_update;
+    }, nullptr, {}, obj_flags::arg},
+
+    // --- conditionals ---
+    {"if_empty", [](text_object *obj, const construct_context &ctx) {
+      obj->sub = static_cast<text_object *>(malloc(sizeof(struct text_object)));
+      extract_variable_text_internal(obj->sub, ctx.arg);
+      obj->callbacks.iftest = &if_empty_iftest;
+    }, nullptr, {}, obj_flags::arg | obj_flags::cond},
+    {"if_existing", [](text_object *obj, const construct_context &ctx) {
+      obj->data.s = strndup(ctx.arg ? ctx.arg : "", text_buffer_size.get(*state));
+      obj->callbacks.iftest = &if_existing_iftest;
+      obj->callbacks.free = &gen_free_opaque;
+    }, nullptr, {}, obj_flags::arg | obj_flags::cond},
+    {"if_running", [](text_object *obj, const construct_context &ctx) {
+#if defined(__linux__) || defined(__FreeBSD__)
+      top_running = 1;
+#endif
+      obj->data.s = strndup(ctx.arg ? ctx.arg : "", text_buffer_size.get(*state));
+      obj->callbacks.iftest = &if_running_iftest;
+      obj->callbacks.free = &gen_free_opaque;
+    },
+#if defined(__linux__) || defined(__FreeBSD__)
+    &update_top,
+#else
+    nullptr,
+#endif
+    {}, obj_flags::arg | obj_flags::cond},
+    {"if_updatenr", [](text_object *obj, const construct_context &ctx) {
+      obj->data.i = ctx.arg != nullptr ? strtol(ctx.arg, nullptr, 10) : 0;
+      if (obj->data.i == 0) {
+        *ctx.status = create_status::invalid_argument;
+        LOG_ERROR("if_updatenr needs a number above 0 as argument");
+        return;
+      }
+      set_updatereset(obj->data.i > get_updatereset() ? obj->data.i : get_updatereset());
+      obj->callbacks.iftest = &updatenr_iftest;
+    }, nullptr, {}, obj_flags::cond},
+
+    // --- blink / include ---
+    {"blink", [](text_object *obj, const construct_context &ctx) {
+      obj->sub = static_cast<text_object *>(malloc(sizeof(struct text_object)));
+      extract_variable_text_internal(obj->sub, ctx.arg);
+      obj->callbacks.print = &print_blink;
+    }, nullptr, {}, obj_flags::arg},
+    {"include", [](text_object *obj, const construct_context &ctx) {
+      obj->sub = static_cast<text_object *>(malloc(sizeof(struct text_object)));
+      extract_variable_text_internal(obj->sub, ctx.arg);
+      obj->callbacks.print = &print_include;
+    }, nullptr, {}, obj_flags::arg},
+)
+
+#ifdef BUILD_GUI
+CONKY_REGISTER_VARIABLES(
+    {"loadgraph", [](text_object *obj, const construct_context &ctx) {
+      scan_loadgraph_arg(obj, ctx.arg);
+      obj->callbacks.graphval = &loadgraphval;
+    }, &update_load_average},
+)
+#endif /* BUILD_GUI */
+
+#ifdef BUILD_CURL
+
+void stock_parse_arg(struct text_object *obj, const char *arg) {
+  char stock[8];
+  char data[16];
+
+  obj->data.s = nullptr;
+  if (sscanf(arg, "%7s %15s", stock, data) != 2) {
+    LOG_ERROR("wrong number of arguments for $stock (got '{}')", arg ? arg : "(null)");
+    return;
+  }
+  if (!strcasecmp("ask", data)) {
+    strncpy(data, "a", 3);
+  } else if (!strcasecmp("adv", data)) {
+    strncpy(data, "a2", 3);
+  } else if (!strcasecmp("asksize", data)) {
+    strncpy(data, "a5", 3);
+  } else if (!strcasecmp("bid", data)) {
+    strncpy(data, "b", 3);
+  } else if (!strcasecmp("askrt", data)) {
+    strncpy(data, "b2", 3);
+  } else if (!strcasecmp("bidrt", data)) {
+    strncpy(data, "b3", 3);
+  } else if (!strcasecmp("bookvalue", data)) {
+    strncpy(data, "b4", 3);
+  } else if (!strcasecmp("bidsize", data)) {
+    strncpy(data, "b6", 3);
+  } else if (!strcasecmp("change", data)) {
+    strncpy(data, "c1", 3);
+  } else if (!strcasecmp("commission", data)) {
+    strncpy(data, "c3", 3);
+  } else if (!strcasecmp("changert", data)) {
+    strncpy(data, "c6", 3);
+  } else if (!strcasecmp("ahcrt", data)) {
+    strncpy(data, "c8", 3);
+  } else if (!strcasecmp("ds", data)) {
+    strncpy(data, "d", 3);
+  } else if (!strcasecmp("ltd", data)) {
+    strncpy(data, "d1", 3);
+  } else if (!strcasecmp("tradedate", data)) {
+    strncpy(data, "d2", 3);
+  } else if (!strcasecmp("es", data)) {
+    strncpy(data, "e", 3);
+  } else if (!strcasecmp("ei", data)) {
+    strncpy(data, "e1", 3);
+  } else if (!strcasecmp("epsecy", data)) {
+    strncpy(data, "e7", 3);
+  } else if (!strcasecmp("epseny", data)) {
+    strncpy(data, "e8", 3);
+  } else if (!strcasecmp("epsenq", data)) {
+    strncpy(data, "e9", 3);
+  } else if (!strcasecmp("floatshares", data)) {
+    strncpy(data, "f6", 3);
+  } else if (!strcasecmp("dayslow", data)) {
+    strncpy(data, "g", 3);
+  } else if (!strcasecmp("dayshigh", data)) {
+    strncpy(data, "h", 3);
+  } else if (!strcasecmp("52weeklow", data)) {
+    strncpy(data, "j", 3);
+  } else if (!strcasecmp("52weekhigh", data)) {
+    strncpy(data, "k", 3);
+  } else if (!strcasecmp("hgp", data)) {
+    strncpy(data, "g1", 3);
+  } else if (!strcasecmp("ag", data)) {
+    strncpy(data, "g3", 3);
+  } else if (!strcasecmp("hg", data)) {
+    strncpy(data, "g4", 3);
+  } else if (!strcasecmp("hgprt", data)) {
+    strncpy(data, "g5", 3);
+  } else if (!strcasecmp("hgrt", data)) {
+    strncpy(data, "g6", 3);
+  } else if (!strcasecmp("moreinfo", data)) {
+    strncpy(data, "i", 3);
+  } else if (!strcasecmp("obrt", data)) {
+    strncpy(data, "i5", 3);
+  } else if (!strcasecmp("mc", data)) {
+    strncpy(data, "j1", 3);
+  } else if (!strcasecmp("mcrt", data)) {
+    strncpy(data, "j3", 3);
+  } else if (!strcasecmp("ebitda", data)) {
+    strncpy(data, "j4", 3);
+  } else if (!strcasecmp("c52wlow", data)) {
+    strncpy(data, "j5", 3);
+  } else if (!strcasecmp("pc52wlow", data)) {
+    strncpy(data, "j6", 3);
+  } else if (!strcasecmp("cprt", data)) {
+    strncpy(data, "k2", 3);
+  } else if (!strcasecmp("lts", data)) {
+    strncpy(data, "k3", 3);
+  } else if (!strcasecmp("c52whigh", data)) {
+    strncpy(data, "k4", 3);
+  } else if (!strcasecmp("pc52whigh", data)) {
+    strncpy(data, "k5", 3);
+  } else if (!strcasecmp("ltp", data)) {
+    strncpy(data, "l1", 3);
+  } else if (!strcasecmp("hl", data)) {
+    strncpy(data, "l2", 3);
+  } else if (!strcasecmp("ll", data)) {
+    strncpy(data, "l3", 3);
+  } else if (!strcasecmp("dr", data)) {
+    strncpy(data, "m", 3);
+  } else if (!strcasecmp("drrt", data)) {
+    strncpy(data, "m2", 3);
+  } else if (!strcasecmp("50ma", data)) {
+    strncpy(data, "m3", 3);
+  } else if (!strcasecmp("200ma", data)) {
+    strncpy(data, "m4", 3);
+  } else if (!strcasecmp("c200ma", data)) {
+    strncpy(data, "m5", 3);
+  } else if (!strcasecmp("pc200ma", data)) {
+    strncpy(data, "m6", 3);
+  } else if (!strcasecmp("c50ma", data)) {
+    strncpy(data, "m7", 3);
+  } else if (!strcasecmp("pc50ma", data)) {
+    strncpy(data, "m8", 3);
+  } else if (!strcasecmp("name", data)) {
+    strncpy(data, "n", 3);
+  } else if (!strcasecmp("notes", data)) {
+    strncpy(data, "n4", 3);
+  } else if (!strcasecmp("open", data)) {
+    strncpy(data, "o", 3);
+  } else if (!strcasecmp("pc", data)) {
+    strncpy(data, "p", 3);
+  } else if (!strcasecmp("pricepaid", data)) {
+    strncpy(data, "p1", 3);
+  } else if (!strcasecmp("cip", data)) {
+    strncpy(data, "p2", 3);
+  } else if (!strcasecmp("ps", data)) {
+    strncpy(data, "p5", 3);
+  } else if (!strcasecmp("pb", data)) {
+    strncpy(data, "p6", 3);
+  } else if (!strcasecmp("edv", data)) {
+    strncpy(data, "q", 3);
+  } else if (!strcasecmp("per", data)) {
+    strncpy(data, "r", 3);
+  } else if (!strcasecmp("dpd", data)) {
+    strncpy(data, "r1", 3);
+  } else if (!strcasecmp("perrt", data)) {
+    strncpy(data, "r2", 3);
+  } else if (!strcasecmp("pegr", data)) {
+    strncpy(data, "r5", 3);
+  } else if (!strcasecmp("pepsecy", data)) {
+    strncpy(data, "r6", 3);
+  } else if (!strcasecmp("pepseny", data)) {
+    strncpy(data, "r7", 3);
+  } else if (!strcasecmp("symbol", data)) {
+    strncpy(data, "s", 3);
+  } else if (!strcasecmp("sharesowned", data)) {
+    strncpy(data, "s1", 3);
+  } else if (!strcasecmp("shortratio", data)) {
+    strncpy(data, "s7", 3);
+  } else if (!strcasecmp("ltt", data)) {
+    strncpy(data, "t1", 3);
+  } else if (!strcasecmp("tradelinks", data)) {
+    strncpy(data, "t6", 3);
+  } else if (!strcasecmp("tt", data)) {
+    strncpy(data, "t7", 3);
+  } else if (!strcasecmp("1ytp", data)) {
+    strncpy(data, "t8", 3);
+  } else if (!strcasecmp("volume", data)) {
+    strncpy(data, "v", 3);
+  } else if (!strcasecmp("hv", data)) {
+    strncpy(data, "v1", 3);
+  } else if (!strcasecmp("hvrt", data)) {
+    strncpy(data, "v7", 3);
+  } else if (!strcasecmp("52weekrange", data)) {
+    strncpy(data, "w", 3);
+  } else if (!strcasecmp("dvc", data)) {
+    strncpy(data, "w1", 3);
+  } else if (!strcasecmp("dvcrt", data)) {
+    strncpy(data, "w4", 3);
+  } else if (!strcasecmp("se", data)) {
+    strncpy(data, "x", 3);
+  } else if (!strcasecmp("dy", data)) {
+    strncpy(data, "y", 3);
+  } else {
+    LOG_ERROR("\"{}\" is not supported by $stock. supported: 1ytp, 200ma, 50ma, "
+        "52weeklow, 52weekhigh, 52weekrange, adv, ag, ahcrt, ask, askrt, "
+        "asksize, bid, bidrt, bidsize, bookvalue, c200ma, c50ma, c52whigh, "
+        "c52wlow, change, changert, cip, commission, cprt, dayshigh, dayslow, "
+        "dpd, dr, drrt, ds, dvc, dvcrt, dy, ebitda, edv, ei, epsecy, epsenq, "
+        "epseny, es, floatshares, hg, hgp, hgprt, hl, hv, hvrt, ll, ltd, ltp, "
+        "lts, ltt, mc, mcrt, moreinfo, name, notes, obrt, open, pb, pc, "
+        "pc200ma, pc50ma, pc52whigh, pc52wlow, pegr, pepsecy, pepseny, per, "
+        "perrt, pricepaid, ps, se, sharesowned, shortratio, symbol, tradedate, "
+        "tradelinks, tt, volume",
+        data);
+    return;
+  }
+#define MAX_FINYAH_URL_LENGTH 75
+  obj->data.s = static_cast<char *>(malloc(MAX_FINYAH_URL_LENGTH));
+  snprintf(obj->data.s, MAX_FINYAH_URL_LENGTH,
+           "http://download.finance.yahoo.com/d/quotes.csv?s=%s&f=%s", stock,
+           data);
+}
+
+CONKY_REGISTER_VARIABLES(
+    {"github_notifications", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = &print_github;
+    }},
+    {"stock", [](text_object *obj, const construct_context &ctx) {
+      stock_parse_arg(obj, ctx.arg);
+      obj->callbacks.print = &print_stock;
+      obj->callbacks.free = &free_stock;
+    }, nullptr, {}, obj_flags::arg},
+)
+#endif /* BUILD_CURL */
 // clang-format on

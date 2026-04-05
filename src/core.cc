@@ -168,202 +168,6 @@ static struct text_object *create_plain_text(const char *s) {
   return obj;
 }
 
-#ifdef BUILD_CURL
-void stock_parse_arg(struct text_object *obj, const char *arg) {
-  char stock[8];
-  char data[16];
-
-  obj->data.s = nullptr;
-  if (sscanf(arg, "%7s %15s", stock, data) != 2) {
-    LOG_ERROR("wrong number of arguments for $stock (got '{}')", arg ? arg : "(null)");
-    return;
-  }
-  if (!strcasecmp("ask", data)) {
-    strncpy(data, "a", 3);
-  } else if (!strcasecmp("adv", data)) {
-    strncpy(data, "a2", 3);
-  } else if (!strcasecmp("asksize", data)) {
-    strncpy(data, "a5", 3);
-  } else if (!strcasecmp("bid", data)) {
-    strncpy(data, "b", 3);
-  } else if (!strcasecmp("askrt", data)) {
-    strncpy(data, "b2", 3);
-  } else if (!strcasecmp("bidrt", data)) {
-    strncpy(data, "b3", 3);
-  } else if (!strcasecmp("bookvalue", data)) {
-    strncpy(data, "b4", 3);
-  } else if (!strcasecmp("bidsize", data)) {
-    strncpy(data, "b6", 3);
-  } else if (!strcasecmp("change", data)) {
-    strncpy(data, "c1", 3);
-  } else if (!strcasecmp("commission", data)) {
-    strncpy(data, "c3", 3);
-  } else if (!strcasecmp("changert", data)) {
-    strncpy(data, "c6", 3);
-  } else if (!strcasecmp("ahcrt", data)) {
-    strncpy(data, "c8", 3);
-  } else if (!strcasecmp("ds", data)) {
-    strncpy(data, "d", 3);
-  } else if (!strcasecmp("ltd", data)) {
-    strncpy(data, "d1", 3);
-  } else if (!strcasecmp("tradedate", data)) {
-    strncpy(data, "d2", 3);
-  } else if (!strcasecmp("es", data)) {
-    strncpy(data, "e", 3);
-  } else if (!strcasecmp("ei", data)) {
-    strncpy(data, "e1", 3);
-  } else if (!strcasecmp("epsecy", data)) {
-    strncpy(data, "e7", 3);
-  } else if (!strcasecmp("epseny", data)) {
-    strncpy(data, "e8", 3);
-  } else if (!strcasecmp("epsenq", data)) {
-    strncpy(data, "e9", 3);
-  } else if (!strcasecmp("floatshares", data)) {
-    strncpy(data, "f6", 3);
-  } else if (!strcasecmp("dayslow", data)) {
-    strncpy(data, "g", 3);
-  } else if (!strcasecmp("dayshigh", data)) {
-    strncpy(data, "h", 3);
-  } else if (!strcasecmp("52weeklow", data)) {
-    strncpy(data, "j", 3);
-  } else if (!strcasecmp("52weekhigh", data)) {
-    strncpy(data, "k", 3);
-  } else if (!strcasecmp("hgp", data)) {
-    strncpy(data, "g1", 3);
-  } else if (!strcasecmp("ag", data)) {
-    strncpy(data, "g3", 3);
-  } else if (!strcasecmp("hg", data)) {
-    strncpy(data, "g4", 3);
-  } else if (!strcasecmp("hgprt", data)) {
-    strncpy(data, "g5", 3);
-  } else if (!strcasecmp("hgrt", data)) {
-    strncpy(data, "g6", 3);
-  } else if (!strcasecmp("moreinfo", data)) {
-    strncpy(data, "i", 3);
-  } else if (!strcasecmp("obrt", data)) {
-    strncpy(data, "i5", 3);
-  } else if (!strcasecmp("mc", data)) {
-    strncpy(data, "j1", 3);
-  } else if (!strcasecmp("mcrt", data)) {
-    strncpy(data, "j3", 3);
-  } else if (!strcasecmp("ebitda", data)) {
-    strncpy(data, "j4", 3);
-  } else if (!strcasecmp("c52wlow", data)) {
-    strncpy(data, "j5", 3);
-  } else if (!strcasecmp("pc52wlow", data)) {
-    strncpy(data, "j6", 3);
-  } else if (!strcasecmp("cprt", data)) {
-    strncpy(data, "k2", 3);
-  } else if (!strcasecmp("lts", data)) {
-    strncpy(data, "k3", 3);
-  } else if (!strcasecmp("c52whigh", data)) {
-    strncpy(data, "k4", 3);
-  } else if (!strcasecmp("pc52whigh", data)) {
-    strncpy(data, "k5", 3);
-  } else if (!strcasecmp("ltp", data)) {
-    strncpy(data, "l1", 3);
-  } else if (!strcasecmp("hl", data)) {
-    strncpy(data, "l2", 3);
-  } else if (!strcasecmp("ll", data)) {
-    strncpy(data, "l3", 3);
-  } else if (!strcasecmp("dr", data)) {
-    strncpy(data, "m", 3);
-  } else if (!strcasecmp("drrt", data)) {
-    strncpy(data, "m2", 3);
-  } else if (!strcasecmp("50ma", data)) {
-    strncpy(data, "m3", 3);
-  } else if (!strcasecmp("200ma", data)) {
-    strncpy(data, "m4", 3);
-  } else if (!strcasecmp("c200ma", data)) {
-    strncpy(data, "m5", 3);
-  } else if (!strcasecmp("pc200ma", data)) {
-    strncpy(data, "m6", 3);
-  } else if (!strcasecmp("c50ma", data)) {
-    strncpy(data, "m7", 3);
-  } else if (!strcasecmp("pc50ma", data)) {
-    strncpy(data, "m8", 3);
-  } else if (!strcasecmp("name", data)) {
-    strncpy(data, "n", 3);
-  } else if (!strcasecmp("notes", data)) {
-    strncpy(data, "n4", 3);
-  } else if (!strcasecmp("open", data)) {
-    strncpy(data, "o", 3);
-  } else if (!strcasecmp("pc", data)) {
-    strncpy(data, "p", 3);
-  } else if (!strcasecmp("pricepaid", data)) {
-    strncpy(data, "p1", 3);
-  } else if (!strcasecmp("cip", data)) {
-    strncpy(data, "p2", 3);
-  } else if (!strcasecmp("ps", data)) {
-    strncpy(data, "p5", 3);
-  } else if (!strcasecmp("pb", data)) {
-    strncpy(data, "p6", 3);
-  } else if (!strcasecmp("edv", data)) {
-    strncpy(data, "q", 3);
-  } else if (!strcasecmp("per", data)) {
-    strncpy(data, "r", 3);
-  } else if (!strcasecmp("dpd", data)) {
-    strncpy(data, "r1", 3);
-  } else if (!strcasecmp("perrt", data)) {
-    strncpy(data, "r2", 3);
-  } else if (!strcasecmp("pegr", data)) {
-    strncpy(data, "r5", 3);
-  } else if (!strcasecmp("pepsecy", data)) {
-    strncpy(data, "r6", 3);
-  } else if (!strcasecmp("pepseny", data)) {
-    strncpy(data, "r7", 3);
-  } else if (!strcasecmp("symbol", data)) {
-    strncpy(data, "s", 3);
-  } else if (!strcasecmp("sharesowned", data)) {
-    strncpy(data, "s1", 3);
-  } else if (!strcasecmp("shortratio", data)) {
-    strncpy(data, "s7", 3);
-  } else if (!strcasecmp("ltt", data)) {
-    strncpy(data, "t1", 3);
-  } else if (!strcasecmp("tradelinks", data)) {
-    strncpy(data, "t6", 3);
-  } else if (!strcasecmp("tt", data)) {
-    strncpy(data, "t7", 3);
-  } else if (!strcasecmp("1ytp", data)) {
-    strncpy(data, "t8", 3);
-  } else if (!strcasecmp("volume", data)) {
-    strncpy(data, "v", 3);
-  } else if (!strcasecmp("hv", data)) {
-    strncpy(data, "v1", 3);
-  } else if (!strcasecmp("hvrt", data)) {
-    strncpy(data, "v7", 3);
-  } else if (!strcasecmp("52weekrange", data)) {
-    strncpy(data, "w", 3);
-  } else if (!strcasecmp("dvc", data)) {
-    strncpy(data, "w1", 3);
-  } else if (!strcasecmp("dvcrt", data)) {
-    strncpy(data, "w4", 3);
-  } else if (!strcasecmp("se", data)) {
-    strncpy(data, "x", 3);
-  } else if (!strcasecmp("dy", data)) {
-    strncpy(data, "y", 3);
-  } else {
-    LOG_ERROR("\"{}\" is not supported by $stock. supported: 1ytp, 200ma, 50ma, "
-        "52weeklow, 52weekhigh, 52weekrange, adv, ag, ahcrt, ask, askrt, "
-        "asksize, bid, bidrt, bidsize, bookvalue, c200ma, c50ma, c52whigh, "
-        "c52wlow, change, changert, cip, commission, cprt, dayshigh, dayslow, "
-        "dpd, dr, drrt, ds, dvc, dvcrt, dy, ebitda, edv, ei, epsecy, epsenq, "
-        "epseny, es, floatshares, hg, hgp, hgprt, hl, hv, hvrt, ll, ltd, ltp, "
-        "lts, ltt, mc, mcrt, moreinfo, name, notes, obrt, open, pb, pc, "
-        "pc200ma, pc50ma, pc52whigh, pc52wlow, pegr, pepsecy, pepseny, per, "
-        "perrt, pricepaid, ps, se, sharesowned, shortratio, symbol, tradedate, "
-        "tradelinks, tt, volume",
-        data);
-    return;
-  }
-#define MAX_FINYAH_URL_LENGTH 75
-  obj->data.s = static_cast<char *>(malloc(MAX_FINYAH_URL_LENGTH));
-  snprintf(obj->data.s, MAX_FINYAH_URL_LENGTH,
-           "http://download.finance.yahoo.com/d/quotes.csv?s=%s&f=%s", stock,
-           data);
-}
-#endif /* BUILD_CURL */
-
 legacy_cb_handle *create_cb_handle(int (*fn)()) {
   if (fn != nullptr) {
     return new legacy_cb_handle(conky::register_cb<legacy_cb>(1, fn));
@@ -419,53 +223,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
     obj->callbacks.print = &new_fg;
   } else
 #endif /* BUILD_GUI */
-#ifndef __OpenBSD__
-    OBJ(acpitemp, nullptr)
-  obj->data.i = open_acpi_temperature(arg);
-  obj->callbacks.print = &print_acpitemp;
-  obj->callbacks.free = &free_acpitemp;
-  END OBJ(acpiacadapter, nullptr) if (arg != nullptr) {
-#ifdef __linux__
-    if (strpbrk(arg, "/.") != nullptr) {
-      /*
-       * a bit of paranoia. screen out funky paths
-       * i hope no device will have a '.' in its name
-       */
-      LOG_ERROR("acpiacadapter arg must not contain '/' or '.', got '{}'", arg);
-    } else
-      obj->data.opaque = strdup(arg);
-#else
-    LOG_WARNING("acpiacadapter arg is only used on linux");
-#endif
-  }
-  obj->callbacks.print = &print_acpiacadapter;
-  obj->callbacks.free = &gen_free_opaque;
-  END
-#endif /* !__OpenBSD__ */
-  OBJ(freq, nullptr) get_cpu_count();
-  if ((arg == nullptr) || strlen(arg) >= 3 ||
-      strtol(&arg[0], nullptr, 10) == 0 ||
-      static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) >
-          info.cpu_count) {
-    obj->data.i = 1;
-    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1", arg ? arg : "(null)");
-  } else {
-    obj->data.i = strtol(&arg[0], nullptr, 10);
-  }
-  obj->callbacks.print = &print_freq;
-  END OBJ(freq_g, nullptr) get_cpu_count();
-  if ((arg == nullptr) || strlen(arg) >= 3 ||
-      strtol(&arg[0], nullptr, 10) == 0 ||
-      static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) >
-          info.cpu_count) {
-    obj->data.i = 1;
-    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1", arg ? arg : "(null)");
-  } else {
-    obj->data.i = strtol(&arg[0], nullptr, 10);
-  }
-  obj->callbacks.print = &print_freq_g;
 #if defined(__linux__)
-  END OBJ(cpugovernor, nullptr) get_cpu_count();
+  OBJ(cpugovernor, nullptr) get_cpu_count();
   if ((arg == nullptr) || strlen(arg) >= 3 ||
       strtol(&arg[0], nullptr, 10) == 0 ||
       static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) >
@@ -547,77 +306,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       parse_net_stat_bar_arg(obj, arg, free_at_crash);
   obj->callbacks.barval = &wireless_link_barval;
 #endif /* BUILD_WLAN */
-
-#ifndef __OpenBSD__
-  END OBJ(acpifan, nullptr) obj->callbacks.print = &print_acpifan;
-  END OBJ(battery, nullptr) char bat[64];
-
-  if (arg != nullptr) {
-    sscanf(arg, "%63s", bat);
-  } else {
-    strncpy(bat, "BAT0", 5);
-  }
-  obj->data.s = strndup(bat, text_buffer_size.get(*state));
-  obj->callbacks.print = &print_battery;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(battery_short, nullptr) char bat[64];
-
-  if (arg != nullptr) {
-    sscanf(arg, "%63s", bat);
-  } else {
-    strncpy(bat, "BAT0", 5);
-  }
-  obj->data.s = strndup(bat, text_buffer_size.get(*state));
-  obj->callbacks.print = &print_battery_short;
-  obj->callbacks.free = &gen_free_opaque;
-
-  END OBJ(battery_status, 0) obj->data.s =
-      strndup(arg ? arg : "BAT0", text_buffer_size.get(*state));
-  obj->callbacks.print = &print_battery_status;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(battery_time, nullptr) char bat[64];
-
-  if (arg != nullptr) {
-    sscanf(arg, "%63s", bat);
-  } else {
-    strncpy(bat, "BAT0", 5);
-  }
-  obj->data.s = strndup(bat, text_buffer_size.get(*state));
-  obj->callbacks.print = &print_battery_time;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(battery_percent, nullptr) char bat[64];
-
-  if (arg != nullptr) {
-    sscanf(arg, "%63s", bat);
-  } else {
-    strncpy(bat, "BAT0", 5);
-  }
-  obj->data.s = strndup(bat, text_buffer_size.get(*state));
-  obj->callbacks.percentage = &battery_percentage;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(battery_power_draw, nullptr) char bat[64];
-
-  if (arg != nullptr) {
-    sscanf(arg, "%63s", bat);
-  } else {
-    strncpy(bat, "BAT0", 5);
-  }
-  obj->data.s = strndup(bat, text_buffer_size.get(*state));
-  obj->callbacks.print = &battery_power_draw;
-  obj->callbacks.free = &gen_free_opaque;
-
-  END OBJ(battery_bar, nullptr) char bat[64];
-
-  arg = scan_bar(obj, arg, 100);
-  if ((arg != nullptr) && strlen(arg) > 0) {
-    sscanf(arg, "%63s", bat);
-  } else {
-    strncpy(bat, "BAT0", 5);
-  }
-  obj->data.s = strndup(bat, text_buffer_size.get(*state));
-  obj->callbacks.barval = &get_battery_perct_bar;
-  obj->callbacks.free = &gen_free_opaque;
-#endif /* !__OpenBSD__ */
 
 #if defined(__linux__)
   END OBJ_ARG(disk_protect, 0, "disk_protect needs an argument") obj->data.s =
@@ -731,8 +419,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   LOG_TRACE("adding $cpugraph for CPU {}", obj->data.i);
   obj->callbacks.graphval = &cpu_barval;
   obj->callbacks.free = &free_cpu;
-  END OBJ(loadgraph, &update_load_average) scan_loadgraph_arg(obj, arg);
-  obj->callbacks.graphval = &loadgraphval;
 #endif /* BUILD_GUI */
   END OBJ(diskio, &update_diskio) parse_diskio_arg(obj, arg);
   obj->callbacks.print = &print_diskio;
@@ -853,9 +539,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.iftest = &gen_false_iftest;
   END OBJ(endif, nullptr) obj_be_ifblock_endif(ifblock_opaque, obj);
   obj->callbacks.print = &gen_print_nothing;
-  END OBJ(eval, nullptr) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_evaluate;
-  obj->callbacks.free = &gen_free_opaque;
 #if defined(BUILD_IMLIB2) && defined(BUILD_GUI)
   END OBJ(image, nullptr) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_image_callback;
@@ -865,10 +548,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ_ARG(mysql, 0, "mysql needs a query") obj->data.s = strdup(arg);
   obj->callbacks.print = &print_mysql;
 #endif /* BUILD_MYSQL */
-  END OBJ_ARG(no_update, nullptr, "no_update needs arguments")
-      scan_no_update(obj, arg);
-  obj->callbacks.print = &print_no_update;
-  obj->callbacks.free = &free_no_update;
   END OBJ(cat, 0) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_cat;
   obj->callbacks.free = &gen_free_opaque;
@@ -1092,27 +771,14 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       STRNDUP_ARG;
   obj->callbacks.print = &print_words;
   obj->callbacks.free = &gen_free_opaque;
-  END OBJ_IF_ARG(if_empty, nullptr, "if_empty needs an argument") obj->sub =
-      static_cast<text_object *>(malloc(sizeof(struct text_object)));
-  extract_variable_text_internal(obj->sub, arg);
-  obj->callbacks.iftest = &if_empty_iftest;
   END OBJ_IF_ARG(if_match, nullptr, "if_match needs arguments") obj->sub =
       static_cast<text_object *>(malloc(sizeof(struct text_object)));
   extract_variable_text_internal(obj->sub, arg);
   obj->callbacks.iftest = &check_if_match;
-  END OBJ_IF_ARG(if_existing, nullptr, "if_existing needs an argument or two")
-      obj->data.s = STRNDUP_ARG;
-  obj->callbacks.iftest = &if_existing_iftest;
-  obj->callbacks.free = &gen_free_opaque;
 #if defined(__linux__) || defined(__FreeBSD__)
   END OBJ_IF_ARG(if_mounted, 0, "if_mounted needs an argument") obj->data.s =
       STRNDUP_ARG;
   obj->callbacks.iftest = &check_mount;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ_IF_ARG(if_running, &update_top, "if_running needs an argument")
-      top_running = 1;
-  obj->data.s = STRNDUP_ARG;
-  obj->callbacks.iftest = &if_running_iftest;
   obj->callbacks.free = &gen_free_opaque;
 #elif defined(__APPLE__) && defined(__MACH__)
   END OBJ_IF_ARG(if_mounted, nullptr, "if_mounted needs an argument")
@@ -1124,15 +790,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(sip_status, &get_sip_status) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_sip_status;
   obj->callbacks.free = &gen_free_opaque;
-#else
-  END OBJ_IF_ARG(if_running, 0, "if_running needs an argument")
-
-      char buf[DEFAULT_TEXT_BUFFER_SIZE];
-
-  snprintf(buf, DEFAULT_TEXT_BUFFER_SIZE, "pidof %s >/dev/null", arg);
-  obj->data.s = STRNDUP_ARG;
-  /* XXX: maybe use a different callback here */
-  obj->callbacks.iftest = &if_running_iftest;
 #endif
   END OBJ(mails, nullptr) parse_local_mail_args(obj, arg);
   obj->callbacks.print = &print_mails;
@@ -1200,142 +857,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       obj->sub = static_cast<text_object *>(malloc(sizeof(struct text_object)));
   extract_variable_text_internal(obj->sub, arg);
   obj->callbacks.print = &print_format_time;
-  END OBJ_ARG(cmdline_to_pid, nullptr,
-              "cmdline_to_pid needs a command line as argument")
-      scan_cmdline_to_pid_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_cmdline_to_pid;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ_ARG(pid_chroot, nullptr, "pid_chroot needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_chroot;
-  END OBJ_ARG(pid_cmdline, nullptr, "pid_cmdline needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_cmdline;
-  END OBJ_ARG(pid_cwd, nullptr, "pid_cwd needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_cwd;
-  END OBJ_ARG(pid_environ, nullptr, "pid_environ needs arguments")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_environ;
-  END OBJ_ARG(pid_environ_list, nullptr,
-              "pid_environ_list needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_environ_list;
-  END OBJ_ARG(pid_exe, nullptr, "pid_exe needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_exe;
-  END OBJ_ARG(pid_nice, nullptr, "pid_nice needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_nice;
-  END OBJ_ARG(pid_openfiles, nullptr, "pid_openfiles needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_openfiles;
-  END OBJ_ARG(pid_parent, nullptr, "pid_parent needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_parent;
-  END OBJ_ARG(pid_priority, nullptr, "pid_priority needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_priority;
-  END OBJ_ARG(pid_state, nullptr, "pid_state needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_state;
-  END OBJ_ARG(pid_state_short, nullptr,
-              "pid_state_short needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_state_short;
-  END OBJ_ARG(pid_stderr, nullptr, "pid_stderr needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_stderr;
-  END OBJ_ARG(pid_stdin, nullptr, "pid_stdin needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_stdin;
-  END OBJ_ARG(pid_stdout, nullptr, "pid_stdout needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_stdout;
-  END OBJ_ARG(pid_threads, nullptr, "pid_threads needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_threads;
-  END OBJ_ARG(pid_thread_list, nullptr,
-              "pid_thread_list needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_thread_list;
-  END OBJ_ARG(pid_time_kernelmode, nullptr,
-              "pid_time_kernelmode needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_time_kernelmode;
-  END OBJ_ARG(pid_time_usermode, nullptr,
-              "pid_time_usermode needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_time_usermode;
-  END OBJ_ARG(pid_time, nullptr, "pid_time needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_time;
-  END OBJ_ARG(pid_uid, nullptr, "pid_uid needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_uid;
-  END OBJ_ARG(pid_euid, nullptr, "pid_euid needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_euid;
-  END OBJ_ARG(pid_suid, nullptr, "pid_suid needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_suid;
-  END OBJ_ARG(pid_fsuid, nullptr, "pid_fsuid needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_fsuid;
-  END OBJ_ARG(pid_gid, nullptr, "pid_gid needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_gid;
-  END OBJ_ARG(pid_egid, nullptr, "pid_egid needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_egid;
-  END OBJ_ARG(pid_sgid, nullptr, "pid_sgid needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_sgid;
-  END OBJ_ARG(pid_fsgid, nullptr, "pid_fsgid needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_fsgid;
-  END OBJ_ARG(gid_name, nullptr, "gid_name needs a gid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_gid_name;
-  END OBJ_ARG(uid_name, nullptr, "uid_name needs a uid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_uid_name;
-  END OBJ_ARG(pid_read, nullptr, "pid_read needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_read;
-  END OBJ_ARG(pid_vmpeak, nullptr, "pid_vmpeak needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_vmpeak;
-  END OBJ_ARG(pid_vmsize, nullptr, "pid_vmsize needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_vmsize;
-  END OBJ_ARG(pid_vmlck, nullptr, "pid_vmlck needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_vmlck;
-  END OBJ_ARG(pid_vmhwm, nullptr, "pid_vmhwm needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_vmhwm;
-  END OBJ_ARG(pid_vmrss, nullptr, "pid_vmrss needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_vmrss;
-  END OBJ_ARG(pid_vmdata, nullptr, "pid_vmdata needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_vmdata;
-  END OBJ_ARG(pid_vmstk, nullptr, "pid_vmstk needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_vmstk;
-  END OBJ_ARG(pid_vmexe, nullptr, "pid_vmexe needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_vmexe;
-  END OBJ_ARG(pid_vmlib, nullptr, "pid_vmlib needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_vmlib;
-  END OBJ_ARG(pid_vmpte, nullptr, "pid_vmpte needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_vmpte;
-  END OBJ_ARG(pid_write, nullptr, "pid_write needs a pid as argument")
-      extract_object_args_to_sub(obj, arg);
-  obj->callbacks.print = &print_pid_write;
 #ifdef __linux__
   END OBJ(distribution, 0) obj->callbacks.print = &print_distribution;
 #endif /* __linux__ */
@@ -1392,16 +913,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(totalup, &update_net_stats)
       parse_net_stat_arg(obj, arg, free_at_crash);
   obj->callbacks.print = &print_totalup;
-  END OBJ_IF(if_updatenr, nullptr) obj->data.i =
-      arg != nullptr ? strtol(arg, nullptr, 10) : 0;
-  if (obj->data.i == 0) {
-    free(obj);
-    free(free_at_crash);
-    COMMAND_ARG_ERR("if_updatenr", "if_updatenr needs a number above 0 as argument");
-  }
-  set_updatereset(obj->data.i > get_updatereset() ? obj->data.i
-                                                  : get_updatereset());
-  obj->callbacks.iftest = &updatenr_iftest;
   END OBJ(alignr, nullptr) obj->data.l =
       arg != nullptr ? strtol(arg, nullptr, 10) : 1;
   obj->callbacks.print = &new_alignr;
@@ -1676,7 +1187,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       curl_parse_arg(obj, arg);
   obj->callbacks.print = &curl_print;
   obj->callbacks.free = &curl_obj_free;
-  END OBJ(github_notifications, 0) obj->callbacks.print = &print_github;
 #endif /* BUILD_CURL */
 #ifdef BUILD_RSS
   END OBJ_ARG(rss, 0,
@@ -1759,19 +1269,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       &print_entropy_poolsize;
   END OBJ(entropy_bar, &update_entropy) scan_bar(obj, arg, 1);
   obj->callbacks.barval = &entropy_barval;
-  END OBJ_ARG(blink, nullptr, "blink needs a argument") obj->sub =
-      static_cast<text_object *>(malloc(sizeof(struct text_object)));
-  extract_variable_text_internal(obj->sub, arg);
-  obj->callbacks.print = &print_blink;
   END OBJ_ARG(to_bytes, nullptr, "to_bytes needs a argument") obj->sub =
       static_cast<text_object *>(malloc(sizeof(struct text_object)));
   extract_variable_text_internal(obj->sub, arg);
   obj->callbacks.print = &print_to_bytes;
-#ifdef BUILD_CURL
-  END OBJ_ARG(stock, 0, "stock needs arguments") stock_parse_arg(obj, arg);
-  obj->callbacks.print = &print_stock;
-  obj->callbacks.free = &free_stock;
-#endif /* BUILD_CURL */
   END OBJ(scroll, nullptr)
 #ifdef BUILD_GUI
   /* allocate a follower to reset any color changes */
@@ -2126,13 +1627,6 @@ int extract_variable_text_internal(struct text_object *retval,
 
   free(orig_p);
   return 0;
-}
-
-void extract_object_args_to_sub(struct text_object *obj, const char *args) {
-  obj->sub =
-      static_cast<struct text_object *>(malloc(sizeof(struct text_object)));
-  memset(obj->sub, 0, sizeof(struct text_object));
-  extract_variable_text_internal(obj->sub, args);
 }
 
 /* Frees the list of text objects root points to. */

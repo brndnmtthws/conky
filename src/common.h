@@ -107,16 +107,6 @@ void get_battery_power_draw(char *buffer, unsigned int n, const char *bat);
 double get_battery_perct_bar(struct text_object *);
 void get_battery_short_status(char *buf, unsigned int n, const char *bat);
 
-void scan_no_update(struct text_object *, const char *);
-void print_no_update(struct text_object *, char *, unsigned int);
-void free_no_update(struct text_object *);
-
-void scan_loadavg_arg(struct text_object *, const char *);
-#ifdef BUILD_GUI
-void scan_loadgraph_arg(struct text_object *, const char *);
-double loadgraphval(struct text_object *);
-#endif /* BUILD_GUI */
-
 uint8_t cpu_percentage(struct text_object *);
 double cpu_barval(struct text_object *);
 
@@ -127,43 +117,9 @@ double mem_with_buffers_barval();
 uint8_t swap_percentage();
 double swap_barval();
 
-void print_evaluate(struct text_object *, char *, unsigned int);
-
-int if_empty_iftest(struct text_object *);
-int if_existing_iftest(struct text_object *);
-int if_running_iftest(struct text_object *);
-
-#ifndef __OpenBSD__
-void print_acpitemp(struct text_object *, char *, unsigned int);
-void free_acpitemp(struct text_object *);
-#endif /* !__OpenBSD__ */
-
-void print_freq(struct text_object *, char *, unsigned int);
-void print_freq_g(struct text_object *, char *, unsigned int);
-
-#ifndef __OpenBSD__
-void print_acpifan(struct text_object *, char *, unsigned int);
-void print_acpiacadapter(struct text_object *, char *, unsigned int);
-void print_battery(struct text_object *, char *, unsigned int);
-void print_battery_time(struct text_object *, char *, unsigned int);
-uint8_t battery_percentage(struct text_object *);
-void battery_power_draw(struct text_object *, char *, unsigned int);
-void print_battery_short(struct text_object *, char *, unsigned int);
-void print_battery_status(struct text_object *, char *, unsigned int);
-#endif /* !__OpenBSD__ */
-
 void free_cpu(struct text_object *);
 
-void print_blink(struct text_object *, char *, unsigned int);
-void print_include(struct text_object *, char *, unsigned int);
-
-void print_updates(struct text_object *, char *, unsigned int);
-int updatenr_iftest(struct text_object *);
-
 #ifdef BUILD_CURL
-void print_github(struct text_object *, char *, unsigned int);
-void print_stock(struct text_object *, char *, unsigned int);
-void free_stock(struct text_object *);
 std::string github_notifications_url();
 std::string github_authorization_header(const std::string &token);
 #endif /* BUILD_CURL */
