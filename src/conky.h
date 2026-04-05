@@ -393,8 +393,6 @@ void evaluate(const char *text, char *p, int p_max_size);
 
 void parse_conky_vars(struct text_object *, const char *, char *, int);
 
-void extract_object_args_to_sub(struct text_object *, const char *);
-
 void generate_text_internal(char *, int, struct text_object);
 
 void update_text_area();

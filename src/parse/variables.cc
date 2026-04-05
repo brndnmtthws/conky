@@ -27,7 +27,7 @@ int register_variable_impl(std::initializer_list<variable_definition> entries) {
     auto [it, inserted] = m.emplace(e.name, e);
 #ifndef NDEBUG
     if (!inserted) {
-      NORM_ERR("text object '%s' registered more than once", e.name);
+      LOG_ERROR("text object '{}' registered more than once", e.name);
     }
 #endif
   }
@@ -52,7 +52,7 @@ int register_variable_impl(std::initializer_list<variable_definition> entries) {
 
   if ((entry->flags & obj_flags::arg) && !arg) {
     free(obj);
-    NORM_ERR("'%s' requires an argument", s);
+    LOG_ERROR("'{}' requires an argument", s);
     return nullptr;
   }
   if (entry->flags & obj_flags::cond) {

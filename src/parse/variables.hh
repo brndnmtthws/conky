@@ -9,10 +9,12 @@
 #include <unordered_map>
 
 #include "content/text_object.h"
+#include "macros.h"
 
 // Forward declarations — defined in conky.cc / common.cc
 int spaced_print(char *, int, const char *, int, ...);
 void format_seconds(char *buf, unsigned int n, long seconds);
+int extract_variable_text_internal(struct text_object *, const char *);
 
 namespace conky::text_object {
 
@@ -186,6 +188,28 @@ constexpr variable_definition print_variable_impl(const char *name,
   };
 }
 
+/// Print callback signature: writes the text object's output into a buffer.
+using print_cb = void (*)(::text_object *, char *, unsigned int);
+
+/// Creates a variable_definition for a variable whose argument is a live
+/// sub-expression (re-evaluated each render cycle). The argument is parsed
+/// into obj->sub via extract_variable_text_internal, and the given print
+/// callback reads the evaluated result at render time.
+///
+/// Used by pid_* variables where the PID comes from a dynamic expression.
+template <print_cb print_fn>
+constexpr variable_definition arg_object_variable(const char *name) {
+  return {name,
+    [](::text_object *obj, const construct_context &ctx) {
+      obj->sub = static_cast<::text_object *>(
+          malloc(sizeof(struct text_object)));
+      memset(obj->sub, 0, sizeof(struct text_object));
+      extract_variable_text_internal(obj->sub, ctx.arg);
+      obj->callbacks.print = print_fn;
+    },
+    nullptr, {}, obj_flags::arg};
+}
+
 ::text_object *construct_text_object(const char *s, const char *arg, long line,
                                      void **ifblock_opaque,
                                      void *free_at_crash);
@@ -210,9 +234,10 @@ constexpr variable_definition print_variable_impl(const char *name,
   print_variable_w(0, name, lambda, ##__VA_ARGS__)
 
 /// Each variable definition is a `variable_definition` initializer.
-#define CONKY_REGISTER_VARIABLES(...)\
-namespace {                         \
-  static const auto conky_variable_registration = conky::text_object::register_variable_impl({__VA_ARGS__});\
+#define CONKY_REGISTER_VARIABLES(...)                                          \
+namespace {                                                                    \
+  static const auto CONKY_CONCAT(conky_reg_, __LINE__) =                       \
+      conky::text_object::register_variable_impl({__VA_ARGS__});               \
 }
 
 #endif  // CONKY_PARSE_VARIABLES_HH
