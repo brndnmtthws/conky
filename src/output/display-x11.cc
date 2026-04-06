@@ -405,7 +405,6 @@ enum class x_event_handler {
   EXPOSE,
   REPARENT,
   CONFIGURE,
-  BORDER_CROSSING,
   DAMAGE,
 };
 
@@ -420,13 +419,10 @@ template <>
 bool handle_event<x_event_handler::MOUSE_INPUT>(
     conky::display_output_x11 *surface, Display *display, XEvent &ev,
     bool *consumed, void **cookie) {
-#ifdef BUILD_X11
   if (ev.type == ButtonPress || ev.type == ButtonRelease ||
       ev.type == MotionNotify) {
-    // destroy basic X11 events; and manufacture them later when trying to
-    // propagate XInput ones - this is required because there's no (simple) way
-    // of making sure the lua hook controls both when it only handles XInput
-    // ones.
+    // Consume basic X11 input events; XInput2 handles these and synthesizes
+    // legacy events for propagation when needed.
     *consumed = true;
     return true;
   }
@@ -577,58 +573,6 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
         type, data->pos, data->pos_absolute, button.value(), mods));
   }
 #endif /* BUILD_MOUSE_EVENTS */
-
-#else /* BUILD_X11 */
-  if (ev.type != ButtonPress && ev.type != ButtonRelease &&
-      ev.type != MotionNotify)
-    return false;
-  if (ev.xany.window != window.window) return true;  // Skip other windows
-
-#ifdef BUILD_MOUSE_EVENTS
-  switch (ev.type) {
-    case ButtonPress: {
-      modifier_state_t mods = x11_modifier_state(ev.xbutton.state);
-      if (ev.xbutton.button >= 4 &&
-          ev.xbutton.button <= 7) {  // scroll "buttons"
-        scroll_direction_t direction = x11_scroll_direction(ev.xbutton.button);
-        *consumed = llua_mouse_hook(mouse_scroll_event(
-            vec2i(ev.xbutton.x, ev.xbutton.y),
-            vec2i(ev.xbutton.x_root, ev.xbutton.y_root), direction, mods));
-      } else {
-        auto button = x11_mouse_button_code(ev.xbutton.button);
-        if (button.has_value()) {
-          *consumed = llua_mouse_hook(mouse_button_event(
-              mouse_event_t::PRESS, vec2i(ev.xbutton.x, ev.xbutton.y),
-              vec2i(ev.xbutton.x_root, ev.xbutton.y_root), button.value(),
-              mods));
-        }
-      }
-      break;
-    }
-    case ButtonRelease: {
-      /* don't report scroll release events */
-      if (ev.xbutton.button >= 4 && ev.xbutton.button <= 7) return true;
-
-      modifier_state_t mods = x11_modifier_state(ev.xbutton.state);
-      auto button = x11_mouse_button_code(ev.xbutton.button);
-      if (button.has_value()) {
-        *consumed = llua_mouse_hook(mouse_button_event(
-            mouse_event_t::RELEASE, vec2i(ev.xbutton.x, ev.xbutton.y),
-            vec2i(ev.xbutton.x_root, ev.xbutton.y_root), button.value(),
-            mods));
-      }
-      break;
-    }
-    case MotionNotify: {
-      modifier_state_t mods = x11_modifier_state(ev.xmotion.state);
-      *consumed = llua_mouse_hook(
-          mouse_move_event(vec2i(ev.xmotion.x, ev.xmotion.y),
-                           vec2i(ev.xmotion.x_root, ev.xmotion.y_root), mods));
-      break;
-    }
-  }
-#endif /* BUILD_MOUSE_EVENTS */
-#endif /* BUILD_X11 */
 #ifndef BUILD_MOUSE_EVENTS
   // always propagate mouse input if not handling mouse events
   *consumed = false;
@@ -710,29 +654,6 @@ bool handle_event<x_event_handler::CONFIGURE>(
 
   return true;
 }
-
-#ifdef BUILD_MOUSE_EVENTS
-template <>
-bool handle_event<x_event_handler::BORDER_CROSSING>(
-    conky::display_output_x11 *surface, Display *display, XEvent &ev,
-    bool *consumed, void **cookie) {
-  if (ev.type != EnterNotify && ev.type != LeaveNotify) return false;
-  if (window.xi_opcode != 0) return true;  // handled by mouse_input already
-
-  auto crossing_pos = vec2i(ev.xcrossing.x_root, ev.xcrossing.y_root);
-  bool over_conky = window.geometry.contains(crossing_pos);
-
-  if ((!over_conky && ev.xcrossing.type == LeaveNotify) ||
-      (over_conky && ev.xcrossing.type == EnterNotify)) {
-    llua_mouse_hook(mouse_crossing_event(
-        ev.xcrossing.type == EnterNotify ? mouse_event_t::AREA_ENTER
-                                         : mouse_event_t::AREA_LEAVE,
-        vec2i(ev.xcrossing.x, ev.xcrossing.y),
-        vec2i(ev.xcrossing.x_root, ev.xcrossing.y_root)));
-  }
-  return true;
-}
-#endif /* BUILD_MOUSE_EVENTS */
 #endif /* OWN_WINDOW */
 
 template <>
@@ -826,7 +747,6 @@ bool process_event(conky::display_output_x11 *surface, Display *display,
   HANDLE_EV(EXPOSE)
   HANDLE_EV(REPARENT)
   HANDLE_EV(CONFIGURE)
-  HANDLE_EV(BORDER_CROSSING)
   HANDLE_EV(DAMAGE)
 
 #undef HANDLE_EV
