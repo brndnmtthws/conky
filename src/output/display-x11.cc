@@ -397,6 +397,9 @@ bool display_output_x11::main_loop_wait(double t) {
   return true;
 }
 
+/// Cached top-level parent of conky's window; invalidated on ReparentNotify.
+static Window window_top_parent = None;
+
 enum class x_event_handler {
   XINPUT_MOTION,
   MOUSE_INPUT,
@@ -454,12 +457,22 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   }
   *cookie = data;
 
-  Window event_window = query_x11_window_at_pos(display, data->pos_absolute, data->device->master);
-
-  bool same_window = query_x11_top_parent(display, event_window) ==
-                     query_x11_top_parent(display, window.window);
-  bool cursor_over_conky =
-      same_window && window.geometry.contains(data->pos_absolute);
+  // Fast reject: if cursor is outside our geometry, it's definitely not over
+  // this conky instance.  This avoids expensive X11 round-trips
+  // (XIQueryPointer + XQueryTree) for the vast majority of events when
+  // multiple conky instances are running.  See #1886.
+  bool inside_geometry = window.geometry.contains(data->pos_absolute);
+  bool cursor_over_conky = false;
+  if (inside_geometry) {
+    Window event_window = query_x11_window_at_pos(
+        display, data->pos_absolute, data->device->master);
+    if (window_top_parent == None) {
+      window_top_parent = query_x11_top_parent(display, window.window);
+    }
+    bool same_window =
+        query_x11_top_parent(display, event_window) == window_top_parent;
+    cursor_over_conky = same_window;
+  }
 
   // XInput reports events twice on some hardware (even by 'xinput --test-xi2')
   auto hash = std::make_tuple(data->serial, data->evtype, data->event);
@@ -649,6 +662,8 @@ bool handle_event<x_event_handler::REPARENT>(conky::display_output_x11 *surface,
   if (ev.type != ReparentNotify) return false;
 
   if (own_window.get(*state)) { set_transparent_background(window.window); }
+  // Invalidate cached top parent -- window tree changed.
+  window_top_parent = None;
   return true;
 }
 
