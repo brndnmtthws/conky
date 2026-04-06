@@ -356,10 +356,10 @@ if(BUILD_GUI)
   set(gui lua/fonts.cc lua/fonts.h output/gui.cc output/gui.h)
   set(optional_sources ${optional_sources} ${gui})
 
-  if(BUILD_MOUSE_EVENTS OR BUILD_XINPUT)
+  if(BUILD_MOUSE_EVENTS OR BUILD_X11)
     set(mouse_events mouse-events.cc mouse-events.h)
     set(optional_sources ${optional_sources} ${mouse_events})
-  endif(BUILD_MOUSE_EVENTS OR BUILD_XINPUT)
+  endif(BUILD_MOUSE_EVENTS OR BUILD_X11)
 endif(BUILD_GUI)
 
 if(BUILD_WAYLAND)

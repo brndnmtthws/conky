@@ -27,9 +27,7 @@
 
 #include "logging.h"
 
-#ifdef BUILD_XINPUT
 #include <cstring>
-#endif
 
 extern "C" {
 #include <lua.h>
@@ -216,7 +214,7 @@ void mouse_button_event::push_lua_data(lua_State *L) const {
 }
 #endif /* BUILD_MOUSE_EVENTS */
 
-#ifdef BUILD_XINPUT
+#ifdef BUILD_X11
 /// Last global device id.
 size_t last_device_id = 0;
 
@@ -668,6 +666,6 @@ std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(
 
   return result;
 }
-#endif /* BUILD_XINPUT */
+#endif /* BUILD_X11 */
 
 }  // namespace conky

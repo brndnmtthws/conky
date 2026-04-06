@@ -192,9 +192,7 @@ static void print_version() {
 #ifdef BUILD_XFT
             << _("  * Xft\n")
 #endif /* BUILD_XFT */
-#ifdef BUILD_XINPUT
             << _("  * Xinput\n")
-#endif /* BUILD_XINPUT */
 #ifdef BUILD_ARGB
             << _("  * ARGB visual\n")
 #endif /* BUILD_ARGB */

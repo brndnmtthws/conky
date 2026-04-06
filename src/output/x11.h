@@ -87,10 +87,8 @@ struct conky_x11_window {
 #ifdef BUILD_XFT
   XftDraw *xftdraw;
 #endif /*BUILD_XFT*/
-#if defined(BUILD_MOUSE_EVENTS) || defined(BUILD_XINPUT)
-  // Don't feature gate with BUILD_XINPUT; controls fallback.
+  /// XInput2 extension opcode; 0 if unavailable.
   std::int32_t xi_opcode;
-#endif /* BUILD_MOUSE_EVENTS || BUILD_XINPUT */
 
   /// @brief Window geometry in screen coordinate space
   conky::rect<int> geometry;
@@ -162,7 +160,7 @@ Window query_x11_top_parent(Display *display, Window child);
 /// @param display display of parent
 /// @param x screen X position contained by window
 /// @param y screen Y position contained by window
-/// @param device_id pointer device id to be queried (will be ignored if BUILD_XINPUT is disabled)
+/// @param device_id pointer device id to be queried
 /// @return a top-most window at provided screen coordinates, or root
 Window query_x11_window_at_pos(Display *display, conky::vec2i pos, int device_id);
 

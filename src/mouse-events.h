@@ -31,24 +31,20 @@
 #include "geometry.h"
 #include "logging.h"
 
-#ifdef BUILD_XINPUT
+#ifdef BUILD_X11
 #include <array>
 #include <map>
 #include <tuple>
 #include <variant>
 #include <vector>
-#endif /* BUILD_XINPUT */
+#endif /* BUILD_X11 */
 
 extern "C" {
 #ifdef BUILD_X11
 #include <X11/X.h>
-
-#ifdef BUILD_XINPUT
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
 #undef COUNT  // define from X11/extensions/Xi.h
-
-#endif /* BUILD_XINPUT */
 #endif /* BUILD_X11 */
 
 #include <lua.h>
@@ -255,7 +251,7 @@ struct mouse_crossing_event : public mouse_positioned_event {
 };
 #endif /* BUILD_MOUSE_EVENTS */
 
-#ifdef BUILD_XINPUT
+#ifdef BUILD_X11
 typedef int xi_device_id;
 typedef int xi_event_type;
 
@@ -336,7 +332,7 @@ struct xi_event_data {
       Window target, Window child, conky::vec2d target_pos) const;
 };
 
-#endif /* BUILD_XINPUT */
+#endif /* BUILD_X11 */
 }  // namespace conky
 
 #endif /* MOUSE_EVENTS_H */
