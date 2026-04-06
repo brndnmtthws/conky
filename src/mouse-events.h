@@ -23,6 +23,7 @@
 
 #include <bitset>
 #include <cstdint>
+#include <optional>
 #include <string>
 
 #include "config.h"
@@ -33,7 +34,6 @@
 #ifdef BUILD_XINPUT
 #include <array>
 #include <map>
-#include <optional>
 #include <tuple>
 #include <variant>
 #include <vector>
@@ -106,29 +106,23 @@ constexpr uint32_t operator*(mouse_button_t index) {
 }
 
 #ifdef BUILD_X11
-inline mouse_button_t x11_mouse_button_code(unsigned int x11_mouse_button) {
-  mouse_button_t button;
+inline std::optional<mouse_button_t> x11_mouse_button_code(
+    unsigned int x11_mouse_button) {
   switch (x11_mouse_button) {
     case Button1:
-      button = mouse_button_t::LEFT;
-      break;
+      return mouse_button_t::LEFT;
     case Button2:
-      button = mouse_button_t::MIDDLE;
-      break;
+      return mouse_button_t::MIDDLE;
     case Button3:
-      button = mouse_button_t::RIGHT;
-      break;
+      return mouse_button_t::RIGHT;
     case 8:
-      button = mouse_button_t::BACK;
-      break;
+      return mouse_button_t::BACK;
     case 9:
-      button = mouse_button_t::FORWARD;
-      break;
+      return mouse_button_t::FORWARD;
     default:
       DBGP("X11 button %d is not mapped", x11_mouse_button);
-      break;
+      return std::nullopt;
   }
-  return button;
 }
 #endif /* BUILD_X11 */
 

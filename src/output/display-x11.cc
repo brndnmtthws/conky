@@ -556,12 +556,14 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
       return true;
     }
 
+    auto button = x11_mouse_button_code(data->detail);
+    if (!button.has_value()) return true;
+
     mouse_event_t type = mouse_event_t::PRESS;
     if (data->evtype == XI_ButtonRelease) { type = mouse_event_t::RELEASE; }
 
-    mouse_button_t button = x11_mouse_button_code(data->detail);
-    *consumed = llua_mouse_hook(
-        mouse_button_event(type, data->pos, data->pos_absolute, button, mods));
+    *consumed = llua_mouse_hook(mouse_button_event(
+        type, data->pos, data->pos_absolute, button.value(), mods));
   }
 #endif /* BUILD_MOUSE_EVENTS */
 
@@ -582,10 +584,13 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
             vec2i(ev.xbutton.x, ev.xbutton.y),
             vec2i(ev.xbutton.x_root, ev.xbutton.y_root), direction, mods));
       } else {
-        mouse_button_t button = x11_mouse_button_code(ev.xbutton.button);
-        *consumed = llua_mouse_hook(mouse_button_event(
-            mouse_event_t::PRESS, vec2i(ev.xbutton.x, ev.xbutton.y),
-            vec2i(ev.xbutton.x_root, ev.xbutton.y_root), button, mods));
+        auto button = x11_mouse_button_code(ev.xbutton.button);
+        if (button.has_value()) {
+          *consumed = llua_mouse_hook(mouse_button_event(
+              mouse_event_t::PRESS, vec2i(ev.xbutton.x, ev.xbutton.y),
+              vec2i(ev.xbutton.x_root, ev.xbutton.y_root), button.value(),
+              mods));
+        }
       }
       break;
     }
@@ -594,10 +599,13 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
       if (ev.xbutton.button >= 4 && ev.xbutton.button <= 7) return true;
 
       modifier_state_t mods = x11_modifier_state(ev.xbutton.state);
-      mouse_button_t button = x11_mouse_button_code(ev.xbutton.button);
-      *consumed = llua_mouse_hook(mouse_button_event(
-          mouse_event_t::RELEASE, vec2i(ev.xbutton.x, ev.xbutton.y),
-          vec2i(ev.xbutton.x_root, ev.xbutton.y_root), button, mods));
+      auto button = x11_mouse_button_code(ev.xbutton.button);
+      if (button.has_value()) {
+        *consumed = llua_mouse_hook(mouse_button_event(
+            mouse_event_t::RELEASE, vec2i(ev.xbutton.x, ev.xbutton.y),
+            vec2i(ev.xbutton.x_root, ev.xbutton.y_root), button.value(),
+            mods));
+      }
       break;
     }
     case MotionNotify: {
@@ -837,7 +845,9 @@ void process_surface_events(conky::display_output_x11 *surface,
 
     if (!consumed) { propagate_x11_event(ev, cookie); }
 
-    if (cookie != nullptr) { free(cookie); }
+    if (cookie != nullptr) {
+      delete static_cast<conky::xi_event_data *>(cookie);
+    }
   }
 
   DBGP2("Done processing %d events.", pending);

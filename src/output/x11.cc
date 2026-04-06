@@ -1533,7 +1533,7 @@ void propagate_xinput_event(const conky::xi_event_data *ev) {
   for (auto it : events) {
     auto ev = std::get<1>(it);
     XSendEvent(display, target, True, std::get<0>(it), ev);
-    free(ev);
+    delete ev;
   }
 
   XFlush(display);

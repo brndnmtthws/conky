@@ -532,6 +532,8 @@ std::optional<double> xi_event_data::valuator_value(valuator_t valuator) const {
 
 std::optional<double> xi_event_data::valuator_relative_value(
     valuator_t valuator) const {
+  auto &info = this->device->valuator(valuator);
+  if (this->valuators.count(info.index) == 0) return std::nullopt;
   return this->valuators_relative.at(*valuator);
 }
 
@@ -568,10 +570,7 @@ std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(
       result.emplace_back(std::make_tuple(PointerMotionMask, produced));
     }
     if (is_scroll) {
-      XEvent *produced = new XEvent;
-      std::memset(produced, 0, sizeof(XEvent));
-
-      uint scroll_direction = 4;
+      uint scroll_direction = 0;
       auto vertical = this->valuator_relative_value(valuator_t::SCROLL_Y);
       double vertical_value = vertical.value_or(0.0);
 
@@ -590,27 +589,32 @@ std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(
         }
       }
 
-      XButtonEvent *e = &produced->xbutton;
-      e->display = display;
-      e->root = this->root;
-      e->window = target;
-      e->subwindow = child;
-      e->time = CurrentTime;
-      e->x = static_cast<int>(target_pos.x());
-      e->y = static_cast<int>(target_pos.y());
-      e->x_root = static_cast<int>(this->pos_absolute.x());
-      e->y_root = static_cast<int>(this->pos_absolute.y());
-      e->state = this->mods.effective;
-      e->button = scroll_direction;
-      e->same_screen = True;
+      if (scroll_direction != 0) {
+        XEvent *produced = new XEvent;
+        std::memset(produced, 0, sizeof(XEvent));
 
-      XEvent *press = new XEvent;
-      e->type = ButtonPress;
-      std::memcpy(press, produced, sizeof(XEvent));
-      result.emplace_back(std::make_tuple(ButtonPressMask, press));
+        XButtonEvent *e = &produced->xbutton;
+        e->display = display;
+        e->root = this->root;
+        e->window = target;
+        e->subwindow = child;
+        e->time = CurrentTime;
+        e->x = static_cast<int>(target_pos.x());
+        e->y = static_cast<int>(target_pos.y());
+        e->x_root = static_cast<int>(this->pos_absolute.x());
+        e->y_root = static_cast<int>(this->pos_absolute.y());
+        e->state = this->mods.effective;
+        e->button = scroll_direction;
+        e->same_screen = True;
 
-      e->type = ButtonRelease;
-      result.emplace_back(std::make_tuple(ButtonReleaseMask, produced));
+        XEvent *press = new XEvent;
+        e->type = ButtonPress;
+        std::memcpy(press, produced, sizeof(XEvent));
+        result.emplace_back(std::make_tuple(ButtonPressMask, press));
+
+        e->type = ButtonRelease;
+        result.emplace_back(std::make_tuple(ButtonReleaseMask, produced));
+      }
     }
   } else {
     XEvent *produced = new XEvent;
