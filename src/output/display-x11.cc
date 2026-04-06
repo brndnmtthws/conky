@@ -675,17 +675,16 @@ bool handle_event<x_event_handler::CONFIGURE>(
       if (mw > 0) { text_size.set_x(std::min(mw, text_size.x())); }
     }
 
-    /* if position isn't what expected, set fixed pos
-     * total_updates avoids setting fixed_pos when window
-     * is set to weird locations when started */
-    /* // this is broken
-    if (total_updates >= 2 && !fixed_pos
-        && (window.geometry.x != ev.xconfigure.x
-        || window.geometry.y != ev.xconfigure.y)
-        && (ev.xconfigure.x != 0
-        || ev.xconfigure.y != 0)) {
-      fixed_pos = 1;
-    } */
+    // Keep window.geometry.pos() in sync with the actual screen position.
+    // ev.xconfigure.x/y can't be used directly because for reparented windows
+    // they're relative to the WM's decoration frame, not the root.
+    {
+      int root_x, root_y;
+      Window child_return;
+      XTranslateCoordinates(display, window.window, window.root, 0, 0, &root_x,
+                            &root_y, &child_return);
+      window.geometry.set_pos(root_x, root_y);
+    }
   }
 
   return true;
