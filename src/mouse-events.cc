@@ -389,6 +389,29 @@ void device_info::init_xi_device(
         fixed_valuator_index(display, device, static_cast<valuator_t>(i));
   }
 
+  // Discover scroll valuator indices and increments from XIScrollClass.
+  // These are authoritative for scroll axis mapping and direction convention.
+  std::map<size_t, double> scroll_increments;
+  for (int i = 0; i < device->num_classes; i++) {
+    if (device->classes[i]->type != XIScrollClass) continue;
+    auto *si = reinterpret_cast<XIScrollClassInfo *>(device->classes[i]);
+    scroll_increments[si->number] = si->increment;
+
+    valuator_t target = valuator_t::UNKNOWN;
+    if (si->scroll_type == XIScrollTypeVertical)
+      target = valuator_t::SCROLL_Y;
+    else if (si->scroll_type == XIScrollTypeHorizontal)
+      target = valuator_t::SCROLL_X;
+
+    if (target != valuator_t::UNKNOWN) {
+      // Override hardcoded ordinal default, but respect user overrides.
+      // If fixed_valuator_index returned the ordinal default, replace it.
+      if (valuator_indices[*target] == *target) {
+        valuator_indices[*target] = si->number;
+      }
+    }
+  }
+
   // class order is undefined!
   for (int i = 0; i < device->num_classes; i++) {
     if (device->classes[i]->type != XIValuatorClass) continue;
@@ -412,6 +435,10 @@ void device_info::init_xi_device(
         .relative =
             fixed_valuator_relative(display, device, valuator, class_info),
     };
+
+    // Store scroll increment if this valuator has an associated XIScrollClass.
+    auto it = scroll_increments.find(class_info->number);
+    if (it != scroll_increments.end()) { info.increment = it->second; }
 
     this->valuators[*valuator] = info;
   }
@@ -479,9 +506,8 @@ xi_event_data *xi_event_data::read_cookie(Display *display, const void *data) {
     if (valuator_info.relative) {
       result->valuators_relative[v] = current;
     } else {
-      // XXX these doubles come from int values and might wrap around though
-      // it's hard to tell what int type is the source as it depends on the
-      // device/driver.
+      // Source int width is driver-dependent; wraparound is theoretically
+      // possible but unrealistic with 32-bit values.
       result->valuators_relative[v] = current - valuator_info.value;
     }
     valuator_info.value = current;
@@ -550,12 +576,17 @@ std::vector<std::tuple<int, XEvent *>> xi_event_data::generate_events(
       double vertical_value = vertical.value_or(0.0);
 
       if (vertical_value != 0.0) {
-        scroll_direction = vertical_value < 0.0 ? Button4 : Button5;
+        double increment =
+            this->device->valuator(valuator_t::SCROLL_Y).increment;
+        scroll_direction =
+            (vertical_value * increment) < 0.0 ? Button4 : Button5;
       } else {
         auto horizontal = this->valuator_relative_value(valuator_t::SCROLL_X);
         double horizontal_value = horizontal.value_or(0.0);
         if (horizontal_value != 0.0) {
-          scroll_direction = horizontal_value < 0.0 ? 6 : 7;
+          double increment =
+              this->device->valuator(valuator_t::SCROLL_X).increment;
+          scroll_direction = (horizontal_value * increment) < 0.0 ? 6 : 7;
         }
       }
 

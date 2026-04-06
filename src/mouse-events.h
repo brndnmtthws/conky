@@ -277,6 +277,9 @@ struct conky_valuator_info {
   double max;
   double value;
   bool relative;
+  /// Scroll increment from XIScrollClassInfo; sign defines direction convention.
+  /// Positive means increasing valuator value = down/right.
+  double increment = 1.0;
 };
 
 struct device_info {

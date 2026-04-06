@@ -526,14 +526,20 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
       double vertical_value = vertical.value_or(0.0);
 
       if (vertical_value != 0.0) {
-        scroll_direction = vertical_value < 0.0 ? scroll_direction_t::UP
-                                                : scroll_direction_t::DOWN;
+        auto *info = data->valuator_info(valuator_t::SCROLL_Y);
+        double increment = (info != nullptr) ? info->increment : 1.0;
+        scroll_direction = (vertical_value * increment) < 0.0
+                               ? scroll_direction_t::UP
+                               : scroll_direction_t::DOWN;
       } else {
         auto horizontal = data->valuator_relative_value(valuator_t::SCROLL_X);
         double horizontal_value = horizontal.value_or(0.0);
         if (horizontal_value != 0.0) {
-          scroll_direction = horizontal_value < 0.0 ? scroll_direction_t::LEFT
-                                                    : scroll_direction_t::RIGHT;
+          auto *info = data->valuator_info(valuator_t::SCROLL_X);
+          double increment = (info != nullptr) ? info->increment : 1.0;
+          scroll_direction = (horizontal_value * increment) < 0.0
+                                 ? scroll_direction_t::LEFT
+                                 : scroll_direction_t::RIGHT;
         }
       }
 
