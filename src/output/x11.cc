@@ -44,13 +44,10 @@
 #include "../logging.h"
 #include "gui.h"
 
-#ifdef BUILD_XINPUT
 #include "../mouse-events.h"
 
-#include <vector>
-#endif
-
 #include <algorithm>
+#include <vector>
 #include <array>
 #include <cstddef>
 #include <cstdio>
@@ -89,10 +86,8 @@ extern "C" {
 #ifdef BUILD_XFIXES
 #include <X11/extensions/Xfixes.h>
 #endif /* BUILD_XFIXES */
-#ifdef BUILD_XINPUT
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
-#endif /* BUILD_XINPUT */
 #ifdef HAVE_XCB_ERRORS
 #include <xcb/xcb.h>
 #include <xcb/xcb_errors.h>
@@ -822,13 +817,8 @@ void x11_init_window(lua::state &l, bool own) {
 #ifdef OWN_WINDOW
   if (own_window.get(l)) {
     input_mask |= StructureNotifyMask;
-#if !defined(BUILD_XINPUT)
-    input_mask |= ButtonPressMask | ButtonReleaseMask;
-#endif
   }
-#if defined(BUILD_MOUSE_EVENTS) || defined(BUILD_XINPUT)
   bool xinput_ok = false;
-#ifdef BUILD_XINPUT
   // not a loop; substitutes goto with break - if checks fail
   do {
     int _ignored;  // segfault if NULL
@@ -886,7 +876,6 @@ void x11_init_window(lua::state &l, bool own) {
 
     xinput_ok = true;
   } while (false);
-#endif /* BUILD_XINPUT */
   // Fallback to basic X11 enter/leave events if xinput fails to init.
   // It's not recommended to add event masks to special windows in X; causes a
   // crash (thus own_window_type != TYPE_DESKTOP)
@@ -895,7 +884,6 @@ void x11_init_window(lua::state &l, bool own) {
     input_mask |= PointerMotionMask | EnterWindowMask | LeaveWindowMask;
   }
 #endif /* BUILD_MOUSE_EVENTS */
-#endif /* BUILD_MOUSE_EVENTS || BUILD_XINPUT */
 #endif /* OWN_WINDOW */
   window.event_mask = input_mask;
   XSelectInput(display, window.window, input_mask);
@@ -1498,7 +1486,6 @@ int ev_to_mask(int event_type, int button) {
   }
 }
 
-#ifdef BUILD_XINPUT
 void propagate_xinput_event(const conky::xi_event_data *ev) {
   if (ev->evtype != XI_Motion && ev->evtype != XI_ButtonPress &&
       ev->evtype != XI_ButtonRelease) {
@@ -1538,19 +1525,16 @@ void propagate_xinput_event(const conky::xi_event_data *ev) {
 
   XFlush(display);
 }
-#endif
 
 void propagate_x11_event(XEvent &ev, const void *cookie) {
   bool focus = ev.type == ButtonPress;
 
   // cookie must be allocated before propagation, and freed after
-#ifdef BUILD_XINPUT
   if (ev.type == GenericEvent && ev.xgeneric.extension == window.xi_opcode) {
     if (cookie == nullptr) { return; }
     return propagate_xinput_event(
         reinterpret_cast<const conky::xi_event_data *>(cookie));
   }
-#endif
 
   if (!(ev.type == KeyPress || ev.type == KeyRelease ||
         ev.type == ButtonPress || ev.type == ButtonRelease ||
@@ -1698,24 +1682,15 @@ Window query_x11_window_at_pos(Display *display, conky::vec2i pos, int device_id
   Window root_return;
   Window last = None;
 
-  #ifdef BUILD_XINPUT
   // these values are ignored but NULL can't be passed to XIQueryPointer.
   double root_x_return, root_y_return, win_x_return, win_y_return;
   XIButtonState buttons_return;
   XIModifierState modifiers_return;
   XIGroupState group_return;
 
-  
-  XIQueryPointer(display,device_id, window.root, &root_return, &last, &root_x_return,
-                &root_y_return, &win_x_return, &win_y_return, &buttons_return, &modifiers_return, &group_return);
-  #else
-  // these values are ignored but NULL can't be passed to XQueryPointer.
-  int root_x_return, root_y_return, win_x_return, win_y_return;
-  unsigned int mask_return;
-
-  XQueryPointer(display, window.root, &root_return, &last, &root_x_return,
-                &root_y_return, &win_x_return, &win_y_return, &mask_return);
-  #endif
+  XIQueryPointer(display, device_id, window.root, &root_return, &last,
+                 &root_x_return, &root_y_return, &win_x_return, &win_y_return,
+                 &buttons_return, &modifiers_return, &group_return);
 
   if (last == 0) return root;
   return last;

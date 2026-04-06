@@ -64,8 +64,6 @@
 
 #cmakedefine BUILD_XFIXES 1
 
-#cmakedefine BUILD_XINPUT 1
-
 #cmakedefine BUILD_ARGB 1
 
 #cmakedefine BUILD_XDBE 1

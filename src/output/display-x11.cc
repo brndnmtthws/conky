@@ -43,14 +43,12 @@
 #ifdef BUILD_IMLIB2
 #include "../conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
-#if defined(BUILD_MOUSE_EVENTS) || defined(BUILD_XINPUT)
+#ifdef BUILD_MOUSE_EVENTS
 #include "../mouse-events.h"
-#endif /* BUILD_MOUSE_EVENTS || BUILD_XINPUT */
-#ifdef BUILD_XINPUT
+#endif /* BUILD_MOUSE_EVENTS */
 #include <X11/extensions/XI2.h>
 #include <X11/extensions/XInput2.h>
 #undef COUNT
-#endif /* BUILD_XINPUT */
 #include <X11/Xresource.h>
 
 #include <cstdint>
@@ -422,7 +420,7 @@ template <>
 bool handle_event<x_event_handler::MOUSE_INPUT>(
     conky::display_output_x11 *surface, Display *display, XEvent &ev,
     bool *consumed, void **cookie) {
-#ifdef BUILD_XINPUT
+#ifdef BUILD_X11
   if (ev.type == ButtonPress || ev.type == ButtonRelease ||
       ev.type == MotionNotify) {
     // destroy basic X11 events; and manufacture them later when trying to
@@ -580,7 +578,7 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   }
 #endif /* BUILD_MOUSE_EVENTS */
 
-#else /* BUILD_XINPUT */
+#else /* BUILD_X11 */
   if (ev.type != ButtonPress && ev.type != ButtonRelease &&
       ev.type != MotionNotify)
     return false;
@@ -630,7 +628,7 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
     }
   }
 #endif /* BUILD_MOUSE_EVENTS */
-#endif /* BUILD_XINPUT */
+#endif /* BUILD_X11 */
 #ifndef BUILD_MOUSE_EVENTS
   // always propagate mouse input if not handling mouse events
   *consumed = false;
