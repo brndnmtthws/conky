@@ -262,11 +262,11 @@ constexpr uint8_t operator*(valuator_t index) {
 }
 
 struct conky_valuator_info {
-  size_t index;
-  double min;
-  double max;
-  double value;
-  bool relative;
+  size_t index = SIZE_MAX;
+  double min = 0.0;
+  double max = 0.0;
+  double value = 0.0;
+  bool relative = false;
   /// Scroll increment from XIScrollClassInfo; sign defines direction convention.
   /// Positive means increasing valuator value = down/right.
   double increment = 1.0;

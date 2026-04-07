@@ -498,10 +498,12 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   if (data->evtype == XI_Motion) {
     // TODO: Make valuator_index names configurable?
 
-    bool is_move = data->test_valuator(valuator_t::MOVE_X) ||
-                   data->test_valuator(valuator_t::MOVE_Y);
-    bool is_scroll = data->test_valuator(valuator_t::SCROLL_X) ||
-                     data->test_valuator(valuator_t::SCROLL_Y);
+    bool has_move_x = data->test_valuator(valuator_t::MOVE_X);
+    bool has_move_y = data->test_valuator(valuator_t::MOVE_Y);
+    bool has_scroll_x = data->test_valuator(valuator_t::SCROLL_X);
+    bool has_scroll_y = data->test_valuator(valuator_t::SCROLL_Y);
+    bool is_move = has_move_x || has_move_y;
+    bool is_scroll = has_scroll_x || has_scroll_y;
 
     if (is_move) {
       static bool cursor_inside = false;
@@ -529,7 +531,7 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
       }
     }
     if (is_scroll && cursor_over_conky) {
-      scroll_direction_t scroll_direction;
+      scroll_direction_t scroll_direction = scroll_direction_t::UNKNOWN;
       auto vertical = data->valuator_relative_value(valuator_t::SCROLL_Y);
       double vertical_value = vertical.value_or(0.0);
 
@@ -560,8 +562,18 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   } else if (cursor_over_conky && (data->evtype == XI_ButtonPress ||
                                    data->evtype == XI_ButtonRelease)) {
     if (data->detail >= 4 && data->detail <= 7) {
-      // Handled via motion event valuators, ignoring "backward compatibility"
-      // ones.
+      // Fallback: use button 4-7 as scroll if this device has no independent
+      // scroll valuators (e.g. Xephyr aliases scroll and move axes).
+      // Devices with working scroll valuators handle scroll via XI_Motion.
+      bool has_scroll_valuators =
+          data->device->valuator(valuator_t::SCROLL_X).index != SIZE_MAX ||
+          data->device->valuator(valuator_t::SCROLL_Y).index != SIZE_MAX;
+      if (!has_scroll_valuators && data->evtype == XI_ButtonPress) {
+        scroll_direction_t direction = x11_scroll_direction(data->detail);
+        auto window_pos = data->pos_absolute - window.geometry.pos();
+        *consumed = llua_mouse_hook(mouse_scroll_event(
+            window_pos, data->pos_absolute, direction, mods));
+      }
       return true;
     }
 
