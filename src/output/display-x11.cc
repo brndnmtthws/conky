@@ -523,8 +523,9 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
 
       // generate movement events
       if (cursor_over_conky) {
+        auto window_pos = data->pos_absolute - window.geometry.pos();
         *consumed = llua_mouse_hook(
-            mouse_move_event(data->pos, data->pos_absolute, mods));
+            mouse_move_event(window_pos, data->pos_absolute, mods));
       }
     }
     if (is_scroll && cursor_over_conky) {
@@ -551,8 +552,9 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
       }
 
       if (scroll_direction != scroll_direction_t::UNKNOWN) {
+        auto window_pos = data->pos_absolute - window.geometry.pos();
         *consumed = llua_mouse_hook(mouse_scroll_event(
-            data->pos, data->pos_absolute, scroll_direction, mods));
+            window_pos, data->pos_absolute, scroll_direction, mods));
       }
     }
   } else if (cursor_over_conky && (data->evtype == XI_ButtonPress ||
