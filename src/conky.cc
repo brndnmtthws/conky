@@ -850,6 +850,40 @@ static int get_string_width_special(char *s, int special_index) {
 
 static int text_size_updater(char *s, int special_index);
 
+/// Compute text position from alignment, gap, and workarea.
+static conky::vec2i aligned_pos(alignment align) {
+  conky::vec2i pos;
+  switch (vertical_alignment(align)) {
+    case axis_align::START:
+      pos.set_y(workarea.y() + dpi_scale(gap_y.get(*state)));
+      break;
+    case axis_align::END:
+    default:
+      pos.set_y(workarea.end_y() - text_size.y() -
+                dpi_scale(gap_y.get(*state)));
+      break;
+    case axis_align::MIDDLE:
+      pos.set_y(workarea.y() + workarea.height() / 2 - text_size.y() / 2 -
+                dpi_scale(gap_y.get(*state)));
+      break;
+  }
+  switch (horizontal_alignment(align)) {
+    case axis_align::START:
+    default:
+      pos.set_x(workarea.x() + dpi_scale(gap_x.get(*state)));
+      break;
+    case axis_align::END:
+      pos.set_x(workarea.end_x() - text_size.x() -
+                dpi_scale(gap_x.get(*state)));
+      break;
+    case axis_align::MIDDLE:
+      pos.set_x(workarea.x() + workarea.width() / 2 - text_size.x() / 2 -
+                dpi_scale(gap_x.get(*state)));
+      break;
+  }
+  return pos;
+}
+
 int last_font_height;
 void update_text_area() {
   conky::vec2i xy;
@@ -871,50 +905,53 @@ void update_text_area() {
   }
 
   alignment align = text_alignment.get(*state);
-  /* get text position on workarea */
-  switch (vertical_alignment(align)) {
-    case axis_align::START:
-      xy.set_y(workarea.y() + dpi_scale(gap_y.get(*state)));
-      break;
-    case axis_align::END:
-    default:
-      xy.set_y(workarea.end_y() - text_size.y() - dpi_scale(gap_y.get(*state)));
-      break;
-    case axis_align::MIDDLE:
-      xy.set_y(workarea.y() + workarea.height() / 2 - text_size.y() / 2 -
-               dpi_scale(gap_y.get(*state)));
-      break;
-  }
-  switch (horizontal_alignment(align)) {
-    case axis_align::START:
-    default:
-      xy.set_x(workarea.x() + dpi_scale(gap_x.get(*state)));
-      break;
-    case axis_align::END:
-      xy.set_x(workarea.end_x() - text_size.x() - dpi_scale(gap_x.get(*state)));
-      break;
-    case axis_align::MIDDLE:
-      xy.set_x(workarea.x() + workarea.width() / 2 - text_size.x() / 2 -
-               dpi_scale(gap_x.get(*state)));
-      break;
-  }
 #ifdef OWN_WINDOW
-  if (align == alignment::NONE) {  // Let the WM manage the window
+  if (align == alignment::NONE) {
     xy = window.geometry.pos();
     fixed_pos = 1;
     fixed_size = 1;
   }
-#endif /* OWN_WINDOW */
-#ifdef OWN_WINDOW
 
   if (own_window.get(*state) && (fixed_pos == 0)) {
     int border_total = get_border_total();
     text_start = conky::vec2i::uniform(border_total);
-    window.geometry.set_pos(xy - text_start);
+
+    if (!window.initial_position_set) {
+      window.initial_position_set = true;
+      window.geometry.set_pos(aligned_pos(align) - text_start);
+    } else if (window.geometry.size().surface() != 0) {
+      // Resize: hold alignment anchor corner fixed, adjust position.
+      auto border_size = conky::vec2i::uniform(border_total * 2);
+      auto size_delta = (text_size + border_size) - window.geometry.size();
+      if (size_delta.x() != 0 || size_delta.y() != 0) {
+        auto pos = window.geometry.pos();
+        switch (horizontal_alignment(align)) {
+          case axis_align::END:
+            pos.set_x(pos.x() - size_delta.x());
+            break;
+          case axis_align::MIDDLE:
+            pos.set_x(pos.x() - size_delta.x() / 2);
+            break;
+          default:
+            break;
+        }
+        switch (vertical_alignment(align)) {
+          case axis_align::END:
+            pos.set_y(pos.y() - size_delta.y());
+            break;
+          case axis_align::MIDDLE:
+            pos.set_y(pos.y() - size_delta.y() / 2);
+            break;
+          default:
+            break;
+        }
+        window.geometry.set_pos(pos);
+      }
+    }
   } else
 #endif
   {
-    text_start = xy;
+    text_start = aligned_pos(align);
   }
   /* update lua window globals */
   llua_update_window_table(conky::rect<int>(text_start, text_size));

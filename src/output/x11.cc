@@ -237,6 +237,21 @@ inline Window DefaultVRootWindow(Display *display) {
   return VRootWindowOfScreen(DefaultScreenOfDisplay(display));
 }
 
+void move_window(int x, int y) {
+  window.geometry.set_pos(x, y);
+  if (window.frame != None) {
+    // Reparented: compute frame offset and move the frame directly so
+    // the client ends up at (x, y) in screen coordinates.
+    int client_x, client_y;
+    Window child;
+    XTranslateCoordinates(display, window.window, window.frame, 0, 0,
+                          &client_x, &client_y, &child);
+    XMoveWindow(display, window.frame, x - client_x, y - client_y);
+  } else {
+    XMoveWindow(display, window.window, x, y);
+  }
+}
+
 /* X11 initializer */
 void init_x11() {
   DBGP("enter init_x11()");
@@ -887,6 +902,24 @@ void x11_init_window(lua::state &l, bool own) {
 #endif /* OWN_WINDOW */
   window.event_mask = input_mask;
   XSelectInput(display, window.window, input_mask);
+
+  // Detect WM frame if we were reparented during XMapWindow.
+  // ReparentNotify may not arrive until the event loop starts, but the
+  // reparent itself happens synchronously in the WM.
+  XSync(display, False);
+  {
+    Window ret_root, parent, *children;
+    unsigned int nchildren;
+    if (XQueryTree(display, window.window, &ret_root, &parent, &children,
+                   &nchildren) != 0) {
+      if (nchildren > 0) XFree(children);
+      if (parent != window.root && parent != None) {
+        window.frame = parent;
+        XSelectInput(display, window.frame, StructureNotifyMask);
+        DBGP("detected WM frame 0x%lx during init", window.frame);
+      }
+    }
+  }
 
   window_created = 1;
   DBGP("leave x11_init_window()");

@@ -90,12 +90,25 @@ struct conky_x11_window {
   /// XInput2 extension opcode; 0 if unavailable.
   std::int32_t xi_opcode;
 
+  /// WM frame window that contains our client window, or None if not
+  /// reparented. Updated on ReparentNotify. Used to listen for frame
+  /// position changes (WM moves, user drags, xdotool).
+  Window frame;
+
+  /// Set after initial alignment placement. Subsequent cycles use
+  /// anchor-based resize instead of recomputing position from scratch.
+  bool initial_position_set = false;
+
   /// @brief Window geometry in screen coordinate space
   conky::rect<int> geometry;
 };
 
 extern struct conky_x11_window window;
 
+/// Move the conky window to screen coordinates (x, y). Handles WM frame
+/// offset: if reparented, moves the frame so the client ends up at the
+/// requested position.
+void move_window(int x, int y);
 void update_x11_resource_db(bool first_run = false);
 void update_x11_workarea();
 void init_x11();

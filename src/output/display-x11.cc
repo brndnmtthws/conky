@@ -182,8 +182,7 @@ static void X11_create_window() {
 #ifdef OWN_WINDOW
   if (own_window.get(*state)) {
     if (fixed_pos == 0) {
-      XMoveWindow(display, window.window, window.geometry.x(),
-                  window.geometry.y());
+      move_window(window.geometry.x(), window.geometry.y());
     }
 
     set_transparent_background(window.window);
@@ -273,6 +272,10 @@ bool display_output_x11::main_loop_wait(double t) {
     }
   }
 
+  // Process X events before update_text_area so ConfigureNotify from external
+  // moves updates window.geometry.pos() before anchor-based resize reads it.
+  process_surface_events(this, display);
+
   vec2i border_total = vec2i::uniform(get_border_total());
   if (need_to_update != 0) {
 #ifdef OWN_WINDOW
@@ -325,8 +328,7 @@ bool display_output_x11::main_loop_wait(double t) {
 
       /* move window if it isn't in right position */
       if ((fixed_pos == 0) && old_pos != window.geometry.pos()) {
-        XMoveWindow(display, window.window, window.geometry.x(),
-                    window.geometry.y());
+        move_window(window.geometry.x(), window.geometry.y());
         changed++;
       }
 
@@ -395,9 +397,6 @@ bool display_output_x11::main_loop_wait(double t) {
   return true;
 }
 
-/// Cached top-level parent of conky's window; invalidated on ReparentNotify.
-static Window window_top_parent = None;
-
 enum class x_event_handler {
   XINPUT_MOTION,
   MOUSE_INPUT,
@@ -460,11 +459,10 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   if (inside_geometry) {
     Window event_window = query_x11_window_at_pos(
         display, data->pos_absolute, data->device->master);
-    if (window_top_parent == None) {
-      window_top_parent = query_x11_top_parent(display, window.window);
-    }
+    Window our_toplevel =
+        window.frame != None ? window.frame : window.window;
     bool same_window =
-        query_x11_top_parent(display, event_window) == window_top_parent;
+        query_x11_top_parent(display, event_window) == our_toplevel;
     cursor_over_conky = same_window;
   }
 
@@ -618,8 +616,18 @@ bool handle_event<x_event_handler::REPARENT>(conky::display_output_x11 *surface,
   if (ev.type != ReparentNotify) return false;
 
   if (own_window.get(*state)) { set_transparent_background(window.window); }
-  // Invalidate cached top parent -- window tree changed.
-  window_top_parent = None;
+
+  // Track WM frame and listen for its ConfigureNotify.
+  Window old_frame = window.frame;
+  if (ev.xreparent.parent != window.root) {
+    window.frame = ev.xreparent.parent;
+    XSelectInput(display, window.frame, StructureNotifyMask);
+  } else {
+    window.frame = None;
+  }
+  if (old_frame != None && old_frame != window.frame) {
+    XSelectInput(display, old_frame, NoEventMask);
+  }
   return true;
 }
 
@@ -628,15 +636,16 @@ bool handle_event<x_event_handler::CONFIGURE>(
     conky::display_output_x11 *surface, Display *display, XEvent &ev,
     bool *consumed, void **cookie) {
   if (ev.type != ConfigureNotify) return false;
+  if (!own_window.get(*state)) return false;
+  if (ev.xany.window != window.window && ev.xany.window != window.frame)
+    return false;
 
-  if (own_window.get(*state)) {
+  // Handle size changes only for our own window's ConfigureNotify.
+  if (ev.xany.window == window.window) {
     auto configure_size = vec2i(ev.xconfigure.width, ev.xconfigure.height);
-    /* if window size isn't what's expected, set fixed size */
     if (configure_size != window.geometry.size()) {
       if (window.geometry.size().surface() != 0) { fixed_size = 1; }
 
-      /* clear old stuff before screwing up
-       * size and pos */
       surface->clear_text(1);
 
       {
@@ -649,21 +658,18 @@ bool handle_event<x_event_handler::CONFIGURE>(
       auto border_total = vec2i::uniform(get_border_total() * 2);
       text_size = window.geometry.size() - border_total;
 
-      // don't apply dpi scaling to max pixel size
       int mw = dpi_scale(maximum_width.get(*state));
       if (mw > 0) { text_size.set_x(std::min(mw, text_size.x())); }
     }
+  }
 
-    // Keep window.geometry.pos() in sync with the actual screen position.
-    // ev.xconfigure.x/y can't be used directly because for reparented windows
-    // they're relative to the WM's decoration frame, not the root.
-    {
-      int root_x, root_y;
-      Window child_return;
-      XTranslateCoordinates(display, window.window, window.root, 0, 0, &root_x,
-                            &root_y, &child_return);
-      window.geometry.set_pos(root_x, root_y);
-    }
+  // Always update position on any ConfigureNotify (own window or WM frame).
+  {
+    int root_x, root_y;
+    Window child_return;
+    XTranslateCoordinates(display, window.window, window.root, 0, 0, &root_x,
+                          &root_y, &child_return);
+    window.geometry.set_pos(root_x, root_y);
   }
 
   return true;
@@ -754,13 +760,13 @@ bool process_event(conky::display_output_x11 *surface, Display *display,
   HANDLE_EV(XINPUT_MOTION)
   HANDLE_EV(MOUSE_INPUT)
   HANDLE_EV(PROPERTY_NOTIFY)
+  HANDLE_EV(CONFIGURE)
 
   // only accept remaining events if they're sent to Conky.
   if (ev.xany.window != window.window) return false;
 
   HANDLE_EV(EXPOSE)
   HANDLE_EV(REPARENT)
-  HANDLE_EV(CONFIGURE)
   HANDLE_EV(DAMAGE)
 
 #undef HANDLE_EV
@@ -920,8 +926,7 @@ void display_output_x11::draw_arc(int x, int y, int w, int h, int a1, int a2) {
 
 void display_output_x11::move_win(int x, int y) {
 #ifdef OWN_WINDOW
-  window.geometry.set_pos(x, y);
-  XMoveWindow(display, window.window, x, y);
+  move_window(x, y);
 #endif /* OWN_WINDOW */
 }
 
