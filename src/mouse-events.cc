@@ -387,9 +387,16 @@ void device_info::init_xi_device(
         fixed_valuator_index(display, device, static_cast<valuator_t>(i));
   }
 
-  // Discover scroll valuator indices and increments from XIScrollClass.
-  // These are authoritative for scroll axis mapping and direction convention.
+  // XIScrollClass is the authoritative source for scroll valuator mapping.
+  // Per the spec, each XIScrollClassInfo::number corresponds to an
+  // XIValuatorClassInfo with the same number. Don't guess from ordinals.
+  // Devices without XIScrollClass entries have no scroll valuators; scroll
+  // is handled via button 4-7 events instead.
   std::map<size_t, double> scroll_increments;
+  // Invalidate ordinal defaults; keep user overrides from fixed_valuator_index.
+  for (auto sv : {valuator_t::SCROLL_X, valuator_t::SCROLL_Y}) {
+    if (valuator_indices[*sv] == *sv) { valuator_indices[*sv] = SIZE_MAX; }
+  }
   for (int i = 0; i < device->num_classes; i++) {
     if (device->classes[i]->type != XIScrollClass) continue;
     auto *si = reinterpret_cast<XIScrollClassInfo *>(device->classes[i]);
@@ -401,12 +408,14 @@ void device_info::init_xi_device(
     else if (si->scroll_type == XIScrollTypeHorizontal)
       target = valuator_t::SCROLL_X;
 
-    if (target != valuator_t::UNKNOWN) {
-      // Override hardcoded ordinal default, but respect user overrides.
-      // If fixed_valuator_index returned the ordinal default, replace it.
-      if (valuator_indices[*target] == *target) {
-        valuator_indices[*target] = si->number;
-      }
+    // Only set if not already claimed and doesn't conflict with a move axis.
+    // Some devices (e.g. Xephyr) alias scroll and move to the same valuator;
+    // movement deltas would be misinterpreted as scroll.
+    if (target != valuator_t::UNKNOWN &&
+        valuator_indices[*target] == SIZE_MAX &&
+        si->number != valuator_indices[*valuator_t::MOVE_X] &&
+        si->number != valuator_indices[*valuator_t::MOVE_Y]) {
+      valuator_indices[*target] = si->number;
     }
   }
 
