@@ -165,7 +165,6 @@ set(conky_sources
   prioqueue.cc
   prioqueue.h
   data/proc.cc
-  data/proc.h
   data/user.cc
   data/user.h
   lua/luamm.cc

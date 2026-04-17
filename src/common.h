@@ -36,8 +36,6 @@
 #include "content/text_object.h"
 #include "lua/setting.hh"
 
-char *readfile(const char *filename, int *total_read, char showerror);
-
 void print_to_bytes(struct text_object *, char *, unsigned int);
 
 void strfold(char *start, int count);

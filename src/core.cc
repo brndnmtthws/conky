@@ -44,7 +44,6 @@
 #include "data/hardware/diskio.h"
 #include "data/hardware/i8k.h"
 #include "data/misc.h"
-#include "data/proc.h"
 #include "lua/colour-settings.hh"
 #ifdef BUILD_IMLIB2
 #include "conky-imlib2.h"

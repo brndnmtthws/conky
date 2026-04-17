@@ -25,7 +25,11 @@
 #ifndef _LINUX_H
 #define _LINUX_H
 
-#include "../../common.h"
+#include <filesystem>
+
+#include "config.h"
+
+const std::filesystem::path process_directory{"/proc"};
 
 void print_disk_protect_queue(struct text_object *, char *, unsigned int);
 
