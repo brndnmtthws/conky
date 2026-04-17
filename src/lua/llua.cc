@@ -257,13 +257,28 @@ void llua_init() {
   lua_pushcfunction(lua_L, &llua_conky_set_update_interval);
   lua_setglobal(lua_L, "conky_set_update_interval");
 
-#if defined(BUILD_X11)
+#if defined(BUILD_X11) || \
+    (defined(BUILD_WAYLAND) && defined(BUILD_LUA_CAIRO))
   /* register tolua++ user types */
   tolua_open(lua_L);
+#endif
+#if defined(BUILD_X11)
   tolua_usertype(lua_L, "Drawable");
   tolua_usertype(lua_L, "Visual");
   tolua_usertype(lua_L, "Display");
 #endif /* BUILD_X11 */
+#if defined(BUILD_WAYLAND) && defined(BUILD_LUA_CAIRO)
+  // Register the tolua type tag for cairo_surface_t so that the
+  // userdata pushed into conky_window.cairo_surface carries the
+  // correct metatable. Without this registration, tolua_pushusertype
+  // stamps userdata with a NULL metatable; the first cairo_create()
+  // call from Lua then dereferences junk in liblua's metatable lookup
+  // path and crashes with a general protection fault. Mirrors the X11
+  // block above. The actual cairo_surface_t metatable methods are
+  // installed later when user Lua loads `require 'cairo'`, but the
+  // usertype slot must exist before llua_setup_window_table() pushes.
+  tolua_usertype(lua_L, "cairo_surface_t");
+#endif /* BUILD_WAYLAND && BUILD_LUA_CAIRO */
 }
 
 inline bool file_exists(const char *path) {
