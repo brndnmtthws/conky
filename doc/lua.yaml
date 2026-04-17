@@ -175,23 +175,27 @@ values:
       This table contains some information about Conky's window.
       The following table describes the values contained:
 
-      | Key                 | Value                                                                           |
-      |---------------------|---------------------------------------------------------------------------------|
-      | drawable            | Window's drawable (Xlib Drawable), requires Lua extras enabled at compile time. |
-      | visual              | Window's visual (Xlib Visual), requires Lua extras enabled at compile time.     |
-      | display             | Window's display (Xlib Display), requires Lua extras enabled at compile time.   |
-      | width               | Window width (in pixels).                                                       |
-      | height              | Window height (in pixels).                                                      |
-      | border_inner_margin | Window's inner border margin (in pixels).                                       |
-      | border_outer_margin | Window's outer border margin (in pixels).                                       |
-      | border_width        | Window's border width (in pixels).                                              |
-      | text_start_x        | The x component of the starting coordinate of text drawing.                     |
-      | text_start_y        | The y component of the starting coordinate of text drawing.                     |
-      | text_width          | The width of the text drawing region.                                           |
-      | text_height         | The height of the text drawing region.                                          |
+      | Key                 | Value                                                                                           |
+      |---------------------|-------------------------------------------------------------------------------------------------|
+      | drawable            | Window's drawable (Xlib Drawable). X11 only; requires Lua extras enabled at compile time.       |
+      | visual              | Window's visual (Xlib Visual). X11 only; requires Lua extras enabled at compile time.           |
+      | display             | Window's display (Xlib Display). X11 only; requires Lua extras enabled at compile time.         |
+      | cairo_surface       | The live `cairo_surface_t` backing the window. Wayland only; populated when `out_to_wayland` is |
+      |                     | enabled and `BUILD_LUA_CAIRO` was set at compile time. Pass directly to `cairo_create()`.       |
+      | width               | Window width (in pixels).                                                                       |
+      | height              | Window height (in pixels).                                                                      |
+      | border_inner_margin | Window's inner border margin (in pixels).                                                       |
+      | border_outer_margin | Window's outer border margin (in pixels).                                                       |
+      | border_width        | Window's border width (in pixels).                                                              |
+      | text_start_x        | The x component of the starting coordinate of text drawing.                                     |
+      | text_start_y        | The y component of the starting coordinate of text drawing.                                     |
+      | text_width          | The width of the text drawing region.                                                           |
+      | text_height         | The height of the text drawing region.                                                          |
 
-      NOTE: This table is only defined when X support is
-      enabled.
+      NOTE: This table is defined when either X11 or Wayland
+      graphical output is enabled. On X11, use `drawable`/`visual`/
+      `display` to construct a cairo surface; on Wayland, the live
+      surface is provided directly as `cairo_surface`.
   - name: ret_scale_x,ret_scale_y:cairo_draw_image(file, cs, x, y, scale_x, scale_y)
     desc: |-
       Renders an image onto a cairo_surface_t, using imlib2. Returns the amount the image was scaled by

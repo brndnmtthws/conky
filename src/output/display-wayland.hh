@@ -25,6 +25,8 @@
 
 #include "config.h"
 
+#include <cairo.h>
+
 #include <limits>
 #include <string>
 #include <type_traits>
@@ -86,6 +88,29 @@ class display_output_wayland : public display_output_base {
 
   // Wayland-specific
 };
+
+// Forward declaration; defined in display-wayland.cc where `struct window`
+// is a complete type. Kept here so llua.cc and other non-backend code can
+// call it without pulling in the full Wayland implementation header.
+struct window;
+
+// Returns a reference-counted cairo surface backing the active Wayland
+// window, or nullptr if the Wayland backend is not initialized or its
+// surface has not yet been attached. Callers are responsible for
+// cairo_surface_destroy() on the returned surface.
+//
+// Intended for the Lua binding (llua.cc) so conky_window.cairo_surface
+// can be populated on Wayland without requiring X11. See PR (#1844) for
+// the build-system groundwork this completes.
+cairo_surface_t *get_wayland_cairo_surface();
+
+// Populates *w and *h with the current Wayland window's width and height
+// in surface-local pixels, or sets both to zero if the Wayland backend is
+// not initialized. Thin wrapper over the existing
+// window_get_width_height(struct window*, int*, int*) that resolves
+// global_window internally so non-backend callers (llua.cc in particular)
+// do not need visibility into the `struct window` layout.
+void get_wayland_window_size(int *w, int *h);
 
 }  // namespace conky
 

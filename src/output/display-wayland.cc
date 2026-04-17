@@ -1276,4 +1276,38 @@ void window_get_width_height(struct window *window, int *w, int *h) {
   *h = window->rectangle.height();
 }
 
+// Implementation of the accessor declared in display-wayland.hh.
+//
+// `global_window` is a namespace-scoped `static struct window*`
+// maintained by this translation unit; it is populated after the first
+// successful
+// `wayland_create_window()` call and its `cairo_surface` field is
+// populated after the first shm-pool/buffer creation round-trip. Either
+// may be null during startup, on teardown, or between a size change and
+// the next buffer commit — we must not hand Lua a dangling pointer.
+//
+// We bump the surface's reference count before returning so the caller's
+// lifetime is independent of conky's own surface recreation (which
+// happens on resize). The caller owns the returned reference and must
+// cairo_surface_destroy() it when done.
+cairo_surface_t *get_wayland_cairo_surface() {
+  if (global_window == nullptr) return nullptr;
+  cairo_surface_t *surface = global_window->cairo_surface;
+  if (surface == nullptr) return nullptr;
+  return cairo_surface_reference(surface);
+}
+
+// Convenience wrapper around window_get_width_height that resolves
+// global_window internally. See display-wayland.hh for the rationale —
+// lets non-backend code fetch window dimensions without needing the
+// `struct window` definition.
+void get_wayland_window_size(int *w, int *h) {
+  if (global_window == nullptr) {
+    *w = 0;
+    *h = 0;
+    return;
+  }
+  window_get_width_height(global_window, w, h);
+}
+
 }  // namespace conky

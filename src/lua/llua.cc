@@ -40,6 +40,13 @@
 #include "x11-settings.h"
 #endif /* BUILD_X11 */
 
+#ifdef BUILD_WAYLAND
+// Brings in the out_to_wayland runtime setting (via wl.h) and the
+// get_wayland_cairo_surface() accessor used to hand the live Wayland
+// cairo surface to Lua, mirroring the X11 Drawable/Visual/Display path.
+#include "../output/display-wayland.hh"
+#endif /* BUILD_WAYLAND */
+
 #ifdef BUILD_MOUSE_EVENTS
 #include "../mouse-events.h"
 #endif /* BUILD_MOUSE_EVENTS */
@@ -680,12 +687,43 @@ void llua_setup_window_table(conky::rect<int> text_rect) {
   }
 #endif /*BUILD_X11*/
 
+#ifdef BUILD_WAYLAND
+  // Mirror the X11 branch above: publish a handle Lua scripts can pass to
+  // cairo_create(). The Wayland surface is populated asynchronously, so
+  // get_wayland_cairo_surface() may return nullptr here at startup; we
+  // push only when the surface is ready. update_window_table() refreshes
+  // this each frame so late-arriving surfaces are picked up.
+  if (out_to_wayland.get(*state)) {
+    cairo_surface_t *wl_surface = conky::get_wayland_cairo_surface();
+    if (wl_surface != nullptr) {
+      // The tolua type tag is the typedef name from cairo.pkg
+      // (`cairo_surface_t`), not the underlying struct tag. Using the
+      // struct tag leaves the userdata unmatched by lua's cairo_create
+      // metatable check.
+      llua_set_userdata("cairo_surface", "cairo_surface_t", wl_surface);
+    }
+  }
+#endif /*BUILD_WAYLAND*/
+
 #ifdef BUILD_GUI
   if (out_to_gui(*state)) {
 #ifdef BUILD_X11
     llua_set_number("width", window.geometry.width());
     llua_set_number("height", window.geometry.height());
 #endif /*BUILD_X11*/
+#ifdef BUILD_WAYLAND
+    // On Wayland the window dimensions live on the file-static
+    // conky::global_window tracked by display-wayland.cc. We expose them
+    // via the existing conky::window_get_width_height(struct window*,
+    // int*, int*) helper, routed through a thin wrapper that resolves
+    // global_window internally.
+    if (out_to_wayland.get(*state)) {
+      int wl_w = 0, wl_h = 0;
+      conky::get_wayland_window_size(&wl_w, &wl_h);
+      llua_set_number("width", wl_w);
+      llua_set_number("height", wl_h);
+    }
+#endif /*BUILD_WAYLAND*/
     llua_set_number("border_inner_margin", border_inner_margin.get(*state));
     llua_set_number("border_outer_margin", border_outer_margin.get(*state));
     llua_set_number("border_width", border_width.get(*state));
@@ -709,9 +747,31 @@ void llua_update_window_table(conky::rect<int> text_rect) {
   }
 
 #ifdef BUILD_X11
-  llua_set_number("width", window.geometry.width());
-  llua_set_number("height", window.geometry.height());
+  if (out_to_x.get(*state)) {
+    llua_set_number("width", window.geometry.width());
+    llua_set_number("height", window.geometry.height());
+  }
 #endif /*BUILD_X11*/
+
+#ifdef BUILD_WAYLAND
+  // Per-frame refresh of the Wayland surface pointer and window
+  // dimensions. The surface may have been resized (destroying and
+  // recreating cairo_surface on the conky side) since the previous
+  // frame; push the current reference so Lua draws onto the live
+  // surface, not a freed one. get_wayland_cairo_surface() returns an
+  // already-referenced surface; Lua's cairo binding destroys it when the
+  // userdata is collected, matching the ownership contract.
+  if (out_to_wayland.get(*state)) {
+    cairo_surface_t *wl_surface = conky::get_wayland_cairo_surface();
+    if (wl_surface != nullptr) {
+      llua_set_userdata("cairo_surface", "cairo_surface_t", wl_surface);
+    }
+    int wl_w = 0, wl_h = 0;
+    conky::get_wayland_window_size(&wl_w, &wl_h);
+    llua_set_number("width", wl_w);
+    llua_set_number("height", wl_h);
+  }
+#endif /*BUILD_WAYLAND*/
 
   llua_set_number("text_start_x", text_rect.x());
   llua_set_number("text_start_y", text_rect.y());
