@@ -23,9 +23,6 @@
 #include "../../common.h"
 #include "../../conky.h"
 
-int get_entropy_avail(unsigned int *);
-int get_entropy_poolsize(unsigned int *);
-
 /* let's just mimic statfs64 */
 
 struct statfs : public fs_info {};

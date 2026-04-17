@@ -28,6 +28,7 @@
 
 #include "catch2/catch.hpp"
 
+#include <data/entropy.h>
 #include <data/os/darwin.h>
 
 TEST_CASE("get_entropy_avail returns 1", "[get_entropy_avail]") {

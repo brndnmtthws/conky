@@ -238,7 +238,7 @@ endif(OS_OPENBSD)
 
 # These below are not actually supported.  No idea what their status is.
 if(OS_SOLARIS)
-  set(solaris_sources data/os/solaris.cc data/os/solaris.h)
+  set(solaris_sources data/os/solaris.cc)
   set(optional_sources ${optional_sources} ${solaris_sources})
 endif(OS_SOLARIS)
 

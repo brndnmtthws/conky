@@ -27,31 +27,14 @@
  *
  */
 
+#include "entropy.h"
+
 #include <inttypes.h>
 #include <time.h>
-#include "config.h"
-#include "../conky.h"
-#include "../logging.h"
-#include "../content/text_object.h"
 
-/* check for OS and include appropriate headers */
-#if defined(__linux__)
-#include "os/linux.h"
-#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-#include "os/freebsd.h"
-#elif defined(__DragonFly__)
-#include "os/dragonfly.h"
-#elif defined(__OpenBSD__)
-#include "os/openbsd.h"
-#elif defined(__NetBSD__)
-#include "os/netbsd.h"
-#elif defined(__sun)
-#include "os/solaris.h"
-#elif defined(__HAIKU__)
-#include "os/haiku.h"
-#elif defined(__APPLE__) && defined(__MACH__)
-#include "os/darwin.h"
-#endif
+#include "config.h"
+#include "conky.h"
+#include "content/text_object.h"
 
 struct _entropy {
   _entropy() = default;
@@ -64,9 +47,6 @@ static _entropy entropy;
 int update_entropy() {
   get_entropy_avail(&entropy.avail);
   get_entropy_poolsize(&entropy.poolsize);
-  if (entropy.poolsize == 0) {
-    LOG_WARNING("entropy pool size is zero, metrics will be unavailable");
-  }
   return 0;
 }
 
