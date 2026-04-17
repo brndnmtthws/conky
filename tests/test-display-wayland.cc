@@ -34,6 +34,17 @@
 
 #include <output/display-wayland.hh>
 
+#ifdef BUILD_LUA_CAIRO
+extern "C" {
+#include <lua.h>
+#include <tolua++.h>
+}
+#include <lua/llua.h>
+// Defined non-static in src/lua/llua.cc; accessed here to verify that
+// llua_init() registered the cairo_surface_t tolua usertype.
+extern lua_State *lua_L;
+#endif /* BUILD_LUA_CAIRO */
+
 // Exercises the null-guard branches of the Lua-facing Wayland accessors
 // added alongside PR (#1844)'s build-system groundwork. The accessors
 // read a namespace-scoped static `global_window` maintained by
@@ -63,5 +74,39 @@ TEST_CASE(
   REQUIRE(w == 0);
   REQUIRE(h == 0);
 }
+
+#ifdef BUILD_LUA_CAIRO
+// Regression guard for the v2 crash: tolua_pushusertype requires the type
+// tag to have been registered via tolua_usertype() earlier in the same Lua
+// state's lifetime. Without registration, pushed userdata carries a NULL
+// metatable and the first Lua-side method call (e.g. cairo_create) faults
+// inside liblua's metatable-lookup path with a general protection fault.
+//
+// This test proves llua_init() registers `cairo_surface_t` by pushing a
+// sentinel pointer with that tag and asking tolua whether it recognises
+// the stack value as a valid cairo_surface_t userdata. A passing assertion
+// here means the registration path fired; a failure means we regressed
+// to the v2 crash shape.
+TEST_CASE("llua_init registers cairo_surface_t tolua usertype",
+          "[wayland][lua]") {
+  llua_init();
+  REQUIRE(lua_L != nullptr);
+
+  // Push a sentinel pointer tagged as cairo_surface_t. The value is never
+  // dereferenced by the test — only its tolua metatable tag is inspected.
+  int sentinel = 0;
+  tolua_pushusertype(lua_L, &sentinel, "cairo_surface_t");
+
+  tolua_Error err{};
+  const int stack_top = lua_gettop(lua_L);
+  const int is_cs = tolua_isusertype(lua_L, stack_top, "cairo_surface_t",
+                                     /*def=*/0, &err);
+  lua_pop(lua_L, 1);
+
+  // is_cs is non-zero iff tolua recognised the userdata as cairo_surface_t,
+  // which requires the tag to have been registered at llua_init() time.
+  REQUIRE(is_cs != 0);
+}
+#endif /* BUILD_LUA_CAIRO */
 
 #endif /* BUILD_WAYLAND */

@@ -257,8 +257,7 @@ void llua_init() {
   lua_pushcfunction(lua_L, &llua_conky_set_update_interval);
   lua_setglobal(lua_L, "conky_set_update_interval");
 
-#if defined(BUILD_X11) || \
-    (defined(BUILD_WAYLAND) && defined(BUILD_LUA_CAIRO))
+#if defined(BUILD_X11) || (defined(BUILD_WAYLAND) && defined(BUILD_LUA_CAIRO))
   /* register tolua++ user types */
   tolua_open(lua_L);
 #endif
