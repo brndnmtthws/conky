@@ -137,7 +137,6 @@ set(conky_sources
   data/network/mail.cc
   data/network/mail.h
   data/misc.cc
-  data/misc.h
   data/network/net_stat.cc
   data/network/net_stat.h
   content/template.cc

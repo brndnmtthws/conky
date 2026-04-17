@@ -51,7 +51,6 @@
 #include "content/temphelper.h"
 #include "core.h"
 #include "data/fs.h"
-#include "data/misc.h"
 #include "data/network/net_stat.h"
 #include "data/timeinfo.h"
 #include "data/top.h"
@@ -857,7 +856,8 @@ constexpr variable_definition info_field_variable(const char* name) {
   return {name, [](text_object *obj, const construct_context &ctx) {
       obj->data.s = strndup(ctx.arg ? ctx.arg : "", text_buffer_size.get(*state));
       obj->callbacks.print = [](text_object *o, char *p, unsigned int s) {
-        human_readable(apply_base_multiplier(o->data.s, info.*Member), p, s);
+        auto base = strcmp(o->data.s, "si") == 0 ? 1000 : 1024;
+        human_readable(info.*Member * base, p, s);
       };
       obj->callbacks.free = &gen_free_opaque;
     }, &update_meminfo};
