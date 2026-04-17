@@ -45,7 +45,6 @@
 #include "data/hardware/diskio.h"
 #include "data/hardware/i8k.h"
 #include "data/misc.h"
-#include "data/proc.h"
 #ifdef BUILD_IMLIB2
 #include "conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */

@@ -38,7 +38,6 @@
 #include "../hardware/diskio.h"
 #include "../../logging.h"
 #include "../network/net_stat.h"
-#include "../proc.h"
 #include "../../content/temphelper.h"
 #ifndef HAVE_CLOCK_GETTIME
 #include <sys/time.h>
@@ -718,7 +717,8 @@ void update_ipv6_net_stats() {
     }
   }
 
-  if ((file = fopen(PROCDIR "/net/if_inet6", "r")) == nullptr) { return; }
+  auto path = process_directory / "net/if_inet6";
+  if ((file = fopen(path.c_str(), "r")) == nullptr) { return; }
 
   while (fscanf(file, "%32s %*02x %02x %02x %*02x %20s\n", v6addr, &netmask,
                 &scope, devname) != EOF) {
