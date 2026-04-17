@@ -169,6 +169,9 @@ constexpr variable_definition print_variable_impl(const char *name,
           }
           return;
         }
+        if constexpr (std::is_same_v<Value, const char *> || std::is_same_v<Value, char *>) {
+          if (value == nullptr) { *p = 0; return; }
+        }
         constexpr const char *format = [] {
           if constexpr (std::is_same_v<Value, const char *> || std::is_same_v<Value, char *>) { return "%s"; }
           else if constexpr (std::is_floating_point_v<Value>) { return "%.2f"; }

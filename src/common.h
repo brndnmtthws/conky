@@ -36,6 +36,18 @@
 #include "content/text_object.h"
 #include "lua/setting.hh"
 
+/// Resolve a device path and strip the "/dev/" prefix.
+inline std::string dev_name(const char *path) {
+  if (path == nullptr) { return {}; }
+  char resolved[PATH_MAX];
+  const char *p = realpath(path, resolved) != nullptr ? resolved : path;
+  constexpr std::string_view prefix = "/dev/";
+  if (std::string_view(p).substr(0, prefix.size()) == prefix) {
+    return p + prefix.size();
+  }
+  return p;
+}
+
 void print_to_bytes(struct text_object *, char *, unsigned int);
 
 void strfold(char *start, int count);

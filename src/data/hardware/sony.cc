@@ -28,34 +28,37 @@
  *   I mimicked the methods from ibm.c
  * Yeon-Hyeong Yang <lbird94@gmail.com> */
 
-#include "sony.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "config.h"
-#include "../../conky.h"
-#include "../../logging.h"
-#include "../../content/text_object.h"
 
-#define SONY_LAPTOP_DIR "/sys/devices/platform/sony-laptop"
+#include "config.h"
+#include "conky.h"
+#include "content/text_object.h"
+#include "logging.h"
+#include "parse/variables.hh"
+
+using namespace conky::text_object;
+
+constexpr const char *fan =
+    "/sys/devices/platform/sony-laptop/fanspeed";
 
 /* fanspeed in SONY_LAPTOP_DIR contains an integer value for fanspeed (0~255).
  * I don't know the exact measurement unit, though. I may assume that 0 for
  * 'fan stopped' and 255 for 'maximum fan speed'. */
 void get_sony_fanspeed(struct text_object *obj, char *p_client_buffer,
                        unsigned int client_buffer_size) {
-  FILE *fp;
   unsigned int speed = 0;
-  char fan[128];
 
   (void)obj;
 
   if (!p_client_buffer || client_buffer_size <= 0) { return; }
 
-  snprintf(fan, 127, "%s/fanspeed", SONY_LAPTOP_DIR);
-
-  fp = fopen(fan, "r");
+  // FIXME: while(!feof) loop is an antipattern - file is a single-line sysfs
+  // node, one fgets suffices. Also fclose is called unconditionally, including
+  // on nullptr fp when fopen fails.
+  FILE *fp = fopen(fan, "r");
   if (fp != nullptr) {
     while (!feof(fp)) {
       char line[256];
@@ -73,3 +76,11 @@ void get_sony_fanspeed(struct text_object *obj, char *p_client_buffer,
   fclose(fp);
   snprintf(p_client_buffer, client_buffer_size, "%d", speed);
 }
+
+// clang-format off
+CONKY_REGISTER_VARIABLES(
+    {"sony_fanspeed", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = &get_sony_fanspeed;
+    }},
+)
+// clang-format on

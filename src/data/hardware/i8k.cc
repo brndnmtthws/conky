@@ -28,13 +28,22 @@
  *
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "../../conky.h"
-#include "../../logging.h"
-#include "../../content/temphelper.h"
-#include "../../content/text_object.h"
+// TODO: guard behind BUILD_LEGACY_HARDWARE. The /proc/i8k interface is
+// deprecated. Modern Dell laptops use dell-smm-hwmon via standard hwmon/sysfs.
+// Shouldn't be removed as keeping support is trivial, but it shouldn't be
+// included in builds by default at this point.
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+#include "conky.h"
+#include "logging.h"
+#include "content/temphelper.h"
+#include "content/text_object.h"
+#include "parse/variables.hh"
+
+using namespace conky::text_object;
 
 struct _i8k {
   char *version;
@@ -50,39 +59,44 @@ struct _i8k {
 } i8k;
 
 /* FIXME: there should be an ioctl interface to request specific data */
-#define PROC_I8K "/proc/i8k"
-#define I8K_DELIM " "
+constexpr const char *proc_i8k = "/proc/i8k"; // TODO: char * should be std::filesystem::path
+constexpr const char *i8k_delim = " ";
+
 static char *i8k_procbuf = nullptr;
 int update_i8k(void) {
   FILE *fp;
 
-  if ((fp = fopen(PROC_I8K, "r")) == nullptr) {
+  if ((fp = fopen(proc_i8k, "r")) == nullptr) {
     LOG_ERROR(
-        "/proc/i8k doesn't exist, use insmod to make sure the kernel driver is "
-        "loaded");
+        "failed to open /proc/i8k; ensure the i8k kernel module is loaded "
+        "(modprobe dell-smm-hwmon or insmod i8k)");
     return 1;
   }
 
   if (!i8k_procbuf) { i8k_procbuf = (char *)malloc(128 * sizeof(char)); }
   memset(&i8k_procbuf[0], 0, 128);
   if (fread(&i8k_procbuf[0], sizeof(char), 128, fp) == 0) {
-    LOG_ERROR("failed to read /proc/i8k: {}", strerror(errno));
+    LOG_ERROR("failed to read from /proc/i8k: fread returned 0 bytes");
   }
 
   fclose(fp);
 
   LOG_DEBUG("read '{}' from /proc/i8k", i8k_procbuf);
 
-  i8k.version = strtok(&i8k_procbuf[0], I8K_DELIM);
-  i8k.bios = strtok(nullptr, I8K_DELIM);
-  i8k.serial = strtok(nullptr, I8K_DELIM);
-  i8k.cpu_temp = strtok(nullptr, I8K_DELIM);
-  i8k.left_fan_status = strtok(nullptr, I8K_DELIM);
-  i8k.right_fan_status = strtok(nullptr, I8K_DELIM);
-  i8k.left_fan_rpm = strtok(nullptr, I8K_DELIM);
-  i8k.right_fan_rpm = strtok(nullptr, I8K_DELIM);
-  i8k.ac_status = strtok(nullptr, I8K_DELIM);
-  i8k.buttons_status = strtok(nullptr, I8K_DELIM);
+  // FIXME: replace strtok chain with a string_view tokenizer that terminates
+  // gracefully on short input. Fields should be std::string (empty on missing)
+  // instead of char* (nullptr on missing) to avoid null dereference in print
+  // functions like cpu_temp/ac_status/fan_status.
+  i8k.version = strtok(&i8k_procbuf[0], i8k_delim);
+  i8k.bios = strtok(nullptr, i8k_delim);
+  i8k.serial = strtok(nullptr, i8k_delim);
+  i8k.cpu_temp = strtok(nullptr, i8k_delim);
+  i8k.left_fan_status = strtok(nullptr, i8k_delim);
+  i8k.right_fan_status = strtok(nullptr, i8k_delim);
+  i8k.left_fan_rpm = strtok(nullptr, i8k_delim);
+  i8k.right_fan_rpm = strtok(nullptr, i8k_delim);
+  i8k.ac_status = strtok(nullptr, i8k_delim);
+  i8k.buttons_status = strtok(nullptr, i8k_delim);
   return 0;
 }
 
@@ -131,19 +145,25 @@ void print_i8k_ac_status(struct text_object *obj, char *p,
   if (ac_status == 1) { snprintf(p, p_max_size, "%s", "on"); }
 }
 
-#define I8K_PRINT_GENERATOR(name)                         \
-  void print_i8k_##name(struct text_object *obj, char *p, \
-                        unsigned int p_max_size) {        \
-    (void)obj;                                            \
-    const char *str = i8k.name ? i8k.name : "error";      \
-    snprintf(p, p_max_size, "%s", str);                   \
-  }
-
-I8K_PRINT_GENERATOR(version)
-I8K_PRINT_GENERATOR(bios)
-I8K_PRINT_GENERATOR(serial)
-I8K_PRINT_GENERATOR(left_fan_rpm)
-I8K_PRINT_GENERATOR(right_fan_rpm)
-I8K_PRINT_GENERATOR(buttons_status)
-
-#undef I8K_PRINT_GENERATOR
+// clang-format off
+CONKY_REGISTER_VARIABLES(
+    print_variable("i8k_version", +[] { return i8k.version; }, &update_i8k),
+    print_variable("i8k_bios", +[] { return i8k.bios; }, &update_i8k),
+    print_variable("i8k_serial", +[] { return i8k.serial; }, &update_i8k),
+    {"i8k_cpu_temp", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = &print_i8k_cpu_temp;
+    }, &update_i8k},
+    {"i8k_left_fan_status", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = &print_i8k_left_fan_status;
+    }, &update_i8k},
+    {"i8k_right_fan_status", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = &print_i8k_right_fan_status;
+    }, &update_i8k},
+    print_variable("i8k_left_fan_rpm", +[] { return i8k.left_fan_rpm; }, &update_i8k),
+    print_variable("i8k_right_fan_rpm", +[] { return i8k.right_fan_rpm; }, &update_i8k),
+    {"i8k_ac_status", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = &print_i8k_ac_status;
+    }, &update_i8k},
+    print_variable("i8k_buttons_status", +[] { return i8k.buttons_status; }, &update_i8k),
+)
+// clang-format on

@@ -30,6 +30,7 @@
 #include "config.h"
 
 /* local headers */
+#include "common.h"
 #include "content/algebra.h"
 #include "core.h"
 #include "parse/variables.hh"
@@ -43,7 +44,6 @@
 #include "data/exec.h"
 #include "data/hardware/bsdapm.h"
 #include "data/hardware/diskio.h"
-#include "data/hardware/i8k.h"
 #include "data/misc.h"
 #ifdef BUILD_IMLIB2
 #include "conky-imlib2.h"
@@ -63,7 +63,6 @@
 #endif /* BUILD_GUI */
 #include "data/fs.h"
 #ifdef BUILD_IBM
-#include "data/hardware/ibm.h"
 #include "data/hardware/smapi.h"
 #endif /* BUILD_IBM */
 #ifdef BUILD_ICONV
@@ -131,25 +130,6 @@
 #include <cctype>
 #include <cstring>
 
-/* strip a leading /dev/ if any, following symlinks first
- *
- * BEWARE: this function returns a pointer to static content
- *         which gets overwritten in consecutive calls. I.e.:
- *         this function is NOT reentrant.
- */
-const char *dev_name(const char *path) {
-  static char buf[PATH_MAX];
-
-  if (path == nullptr) { return nullptr; }
-
-#define DEV_NAME(x)                                                         \
-  ((x) != nullptr && strlen(x) > 5 && strncmp(x, "/dev/", 5) == 0 ? (x) + 5 \
-                                                                  : (x))
-  if (realpath(path, buf) == nullptr) { return DEV_NAME(path); }
-  return DEV_NAME(buf);
-#undef DEV_NAME
-}
-
 static struct text_object *new_text_object_internal() {
   auto *obj = static_cast<text_object *>(malloc(sizeof(struct text_object)));
   memset(obj, 0, sizeof(struct text_object));
@@ -195,11 +175,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #define __OBJ_IF obj_be_ifblock_if(ifblock_opaque, obj)
 #define __OBJ_ARG(...)                              \
   if (!arg) {                                       \
-    auto _cmd_name = std::string(s);                \
     free(s);                                        \
-    free(obj);                                      \
-    free(free_at_crash);                            \
-    COMMAND_ARG_ERR(_cmd_name.c_str(), __VA_ARGS__);\
+    CRIT_ERR_FREE(obj, free_at_crash, __VA_ARGS__); \
   }
 
 /* defines to be used below */
@@ -222,20 +199,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
     obj->callbacks.print = &new_fg;
   } else
 #endif /* BUILD_GUI */
-#if defined(__linux__)
-  OBJ(cpugovernor, nullptr) get_cpu_count();
-  if ((arg == nullptr) || strlen(arg) >= 3 ||
-      strtol(&arg[0], nullptr, 10) == 0 ||
-      static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) >
-          info.cpu_count) {
-    obj->data.i = 1;
-    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1", arg ? arg : "(null)");
-  } else {
-    obj->data.i = strtol(&arg[0], nullptr, 10);
-  }
-  obj->callbacks.print = &print_cpugovernor;
-#endif /* __linux__ */
-  END OBJ_ARG(read_tcp, nullptr,
+  OBJ_ARG(read_tcp, nullptr,
               "read_tcp: Needs \"(host) port\" as argument(s)")
       parse_read_tcpip_arg(obj, arg, free_at_crash);
   obj->callbacks.print = &print_read_tcp;
@@ -306,62 +270,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.barval = &wireless_link_barval;
 #endif /* BUILD_WLAN */
 
-#if defined(__linux__)
-  END OBJ_ARG(disk_protect, 0, "disk_protect needs an argument") obj->data.s =
-      strndup(dev_name(arg), text_buffer_size.get(*state));
-  obj->callbacks.print = &print_disk_protect_queue;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(i8k_version, &update_i8k) obj->callbacks.print = &print_i8k_version;
-  END OBJ(i8k_bios, &update_i8k) obj->callbacks.print = &print_i8k_bios;
-  END OBJ(i8k_serial, &update_i8k) obj->callbacks.print = &print_i8k_serial;
-  END OBJ(i8k_cpu_temp, &update_i8k) obj->callbacks.print = &print_i8k_cpu_temp;
-  END OBJ(i8k_left_fan_status, &update_i8k) obj->callbacks.print =
-      &print_i8k_left_fan_status;
-  END OBJ(i8k_right_fan_status, &update_i8k) obj->callbacks.print =
-      &print_i8k_right_fan_status;
-  END OBJ(i8k_left_fan_rpm, &update_i8k) obj->callbacks.print =
-      &print_i8k_left_fan_rpm;
-  END OBJ(i8k_right_fan_rpm, &update_i8k) obj->callbacks.print =
-      &print_i8k_right_fan_rpm;
-  END OBJ(i8k_ac_status, &update_i8k) obj->callbacks.print =
-      &print_i8k_ac_status;
-  END OBJ(i8k_buttons_status, &update_i8k) obj->callbacks.print =
-      &print_i8k_buttons_status;
-#if defined(BUILD_IBM)
-  END OBJ(ibm_fan, 0) obj->callbacks.print = &get_ibm_acpi_fan;
-  END OBJ_ARG(ibm_temps, &get_ibm_acpi_temps, "ibm_temps: needs an argument")
-      parse_ibm_temps_arg(obj, arg);
-  obj->callbacks.print = &print_ibm_temps;
-  END OBJ(ibm_volume, 0) obj->callbacks.print = &get_ibm_acpi_volume;
-  END OBJ(ibm_brightness, 0) obj->callbacks.print = &get_ibm_acpi_brightness;
-  END OBJ(ibm_thinklight, 0) obj->callbacks.print = &get_ibm_acpi_thinklight;
-#endif
-  /* information from sony_laptop kernel module
-   * /sys/devices/platform/sony-laptop */
-  END OBJ(sony_fanspeed, 0) obj->callbacks.print = &get_sony_fanspeed;
-  END OBJ_ARG(ioscheduler, 0, "get_ioscheduler needs an argument (e.g. hda)")
-      obj->data.s = strndup(dev_name(arg), text_buffer_size.get(*state));
-  obj->callbacks.print = &print_ioscheduler;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(laptop_mode, 0) obj->callbacks.print = &print_laptop_mode;
-  END OBJ_ARG(
-      pb_battery, 0,
-      "pb_battery: needs one argument: status, percent or time") if (strcmp(arg,
-                                                                            "st"
-                                                                            "at"
-                                                                            "u"
-                                                                            "s") ==
-                                                                     EQUAL) {
-    obj->data.i = PB_BATT_STATUS;
-  }
-  else if (strcmp(arg, "percent") == EQUAL) { obj->data.i = PB_BATT_PERCENT; }
-  else if (strcmp(arg, "time") == EQUAL) { obj->data.i = PB_BATT_TIME; }
-  else {
-    LOG_WARNING("illegal pb_battery argument '{}', defaulting to status", arg);
-    obj->data.i = PB_BATT_STATUS;
-  }
-  obj->callbacks.print = get_powerbook_batt_info;
-#endif /* __linux__ */
 #if (defined(__FreeBSD__) || defined(__linux__) || defined(__DragonFly__) || \
      (defined(__APPLE__) && defined(__MACH__)))
   END OBJ_IF_ARG(if_up, nullptr, "if_up needs an argument")
@@ -593,88 +501,88 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_catp;
   obj->callbacks.free = &gen_free_opaque;
   END OBJ_ARG(exec, nullptr, "exec needs arguments: <command>")
-      scan_exec_arg(obj, arg);
+      scan_exec_arg(obj, arg, EF_EXEC);
   obj->parse = false;
   obj->thread = false;
   register_exec(obj);
   obj->callbacks.print = &print_exec;
   obj->callbacks.free = &free_exec;
   END OBJ_ARG(execi, nullptr, "execi needs arguments: <interval> <command>")
-      scan_exec_arg(obj, arg, exec_flag::interval);
+      scan_exec_arg(obj, arg, EF_EXECI);
   obj->parse = false;
   obj->thread = false;
-  register_exec(obj);
+  register_execi(obj);
   obj->callbacks.print = &print_exec;
-  obj->callbacks.free = &free_exec;
+  obj->callbacks.free = &free_execi;
   END OBJ_ARG(execp, nullptr, "execp needs arguments: <command>")
-      scan_exec_arg(obj, arg);
+      scan_exec_arg(obj, arg, EF_EXEC);
   obj->parse = true;
   obj->thread = false;
   register_exec(obj);
   obj->callbacks.print = &print_exec;
   obj->callbacks.free = &free_exec;
   END OBJ_ARG(execpi, nullptr, "execpi needs arguments: <interval> <command>")
-      scan_exec_arg(obj, arg, exec_flag::interval);
+      scan_exec_arg(obj, arg, EF_EXECI);
   obj->parse = true;
   obj->thread = false;
-  register_exec(obj);
+  register_execi(obj);
   obj->callbacks.print = &print_exec;
-  obj->callbacks.free = &free_exec;
+  obj->callbacks.free = &free_execi;
   END OBJ_ARG(execbar, nullptr,
               "execbar needs arguments: [height],[width] <command>")
-      scan_exec_arg(obj, arg, exec_flag::bar);
+      scan_exec_arg(obj, arg, EF_EXEC | EF_BAR);
   register_exec(obj);
   obj->callbacks.barval = &execbarval;
   obj->callbacks.free = &free_exec;
   END OBJ_ARG(execibar, nullptr,
               "execibar needs arguments: <interval> [height],[width] <command>")
-      scan_exec_arg(obj, arg, exec_flag::interval | exec_flag::bar);
-  register_exec(obj);
+      scan_exec_arg(obj, arg, EF_EXECI | EF_BAR);
+  register_execi(obj);
   obj->callbacks.barval = &execbarval;
-  obj->callbacks.free = &free_exec;
+  obj->callbacks.free = &free_execi;
 #ifdef BUILD_GUI
   END OBJ_ARG(execgauge, nullptr,
               "execgauge needs arguments: [height],[width] <command>")
-      scan_exec_arg(obj, arg, exec_flag::gauge);
+      scan_exec_arg(obj, arg, EF_EXEC | EF_GAUGE);
   register_exec(obj);
   obj->callbacks.gaugeval = &execbarval;
   obj->callbacks.free = &free_exec;
   END OBJ_ARG(
       execigauge, nullptr,
       "execigauge needs arguments: <interval> [height],[width] <command>")
-      scan_exec_arg(obj, arg, exec_flag::interval | exec_flag::gauge);
-  register_exec(obj);
+      scan_exec_arg(obj, arg, EF_EXECI | EF_GAUGE);
+  register_execi(obj);
   obj->callbacks.gaugeval = &execbarval;
-  obj->callbacks.free = &free_exec;
+  obj->callbacks.free = &free_execi;
   END OBJ_ARG(execgraph, nullptr,
               "execgraph needs arguments: <command> [height],[width] [color1] "
               "[color2] [scale] [-t|-l]")
-      scan_exec_arg(obj, arg, exec_flag::graph);
+      scan_exec_arg(obj, arg, EF_EXEC | EF_GRAPH);
   register_exec(obj);
   obj->callbacks.graphval = &execbarval;
   obj->callbacks.free = &free_exec;
   END OBJ_ARG(execigraph, nullptr,
               "execigraph needs arguments: <interval> <command> "
               "[height],[width] [color1] [color2] [scale] [-t|-l]")
-      scan_exec_arg(obj, arg, exec_flag::interval | exec_flag::graph);
-  register_exec(obj);
+      scan_exec_arg(obj, arg, EF_EXECI | EF_GRAPH);
+  register_execi(obj);
   obj->callbacks.graphval = &execbarval;
-  obj->callbacks.free = &free_exec;
+  obj->callbacks.free = &free_execi;
 #endif /* BUILD_GUI */
   END OBJ_ARG(texeci, nullptr, "texeci needs arguments: <interval> <command>")
-      scan_exec_arg(obj, arg, exec_flag::interval);
+      scan_exec_arg(obj, arg, EF_EXECI);
   obj->parse = false;
   obj->thread = true;
-  register_exec(obj);
+  register_execi(obj);
   obj->callbacks.print = &print_exec;
-  obj->callbacks.free = &free_exec;
+  obj->callbacks.free = &free_execi;
   END OBJ_ARG(texecpi, nullptr, "texecpi needs arguments: <interval> <command>")
-      scan_exec_arg(obj, arg, exec_flag::interval);
+      scan_exec_arg(obj, arg, EF_EXECI);
   obj->parse = true;
   obj->thread = true;
-  register_exec(obj);
+  register_execi(obj);
   obj->callbacks.print = &print_exec;
-  obj->callbacks.free = &free_exec;
+  obj->callbacks.free = &free_execi;
   END OBJ(fs_bar, &update_fs_stats) init_fs_bar(obj, arg);
   obj->callbacks.barval = &fs_barval;
   END OBJ(fs_bar_free, &update_fs_stats) init_fs_bar(obj, arg);
@@ -715,18 +623,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(tab, nullptr) scan_tab(obj, arg);
   obj->callbacks.print = &new_tab;
 #endif /* BUILD_GUI */
-#ifdef __linux__
-  END OBJ_ARG(i2c, 0, "i2c needs arguments") parse_i2c_sensor(obj, arg);
-  obj->callbacks.print = &print_sysfs_sensor;
-  obj->callbacks.free = &free_sysfs_sensor;
-  END OBJ_ARG(platform, 0, "platform needs arguments")
-      parse_platform_sensor(obj, arg);
-  obj->callbacks.print = &print_sysfs_sensor;
-  obj->callbacks.free = &free_sysfs_sensor;
-  END OBJ_ARG(hwmon, 0, "hwmon needs arguments") parse_hwmon_sensor(obj, arg);
-  obj->callbacks.print = &print_sysfs_sensor;
-  obj->callbacks.free = &free_sysfs_sensor;
-#endif /* __linux__ */
   END
       /* we have four different types of top (top, top_mem, top_time and
        * top_io). To avoid having almost-same code four times, we have this
@@ -856,9 +752,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       obj->sub = static_cast<text_object *>(malloc(sizeof(struct text_object)));
   extract_variable_text_internal(obj->sub, arg);
   obj->callbacks.print = &print_format_time;
-#ifdef __linux__
-  END OBJ(distribution, 0) obj->callbacks.print = &print_distribution;
-#endif /* __linux__ */
   END OBJ(shadecolor, nullptr)
 #ifdef BUILD_GUI
       obj->data.l =
@@ -941,17 +834,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(user_terms, &update_users) obj->callbacks.print = &print_user_terms;
   obj->callbacks.free = &free_user_terms;
   END OBJ(user_number, &update_users) obj->callbacks.print = &print_user_number;
-  END OBJ(gw_iface, &update_gateway_info) obj->callbacks.print =
-      &print_gateway_iface;
-  obj->callbacks.free = &free_gateway_info;
-  END OBJ_IF(if_gw, &update_gateway_info) obj->callbacks.iftest =
-      &gateway_exists;
-  obj->callbacks.free = &free_gateway_info;
-  END OBJ(gw_ip, &update_gateway_info) obj->callbacks.print = &print_gateway_ip;
-  obj->callbacks.free = &free_gateway_info;
-  END OBJ(iface, &update_gateway_info2) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_gateway_iface2;
-  obj->callbacks.free = &gen_free_opaque;
 #endif /* __linux__ */
 #if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
      defined(__DragonFly__) || defined(__OpenBSD__)) &&     \
@@ -1153,9 +1035,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (obj->data.i > 0) {
     ++obj->data.i;
   } else {
-    free(obj);
-    free(free_at_crash);
-    COMMAND_ARG_ERR("audacious_title", "audacious_title: invalid length argument");
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "audacious_title: invalid length argument");
   }
   obj->callbacks.print = &print_audacious_title;
   END OBJ(audacious_length, 0) obj->callbacks.print = &print_audacious_length;
@@ -1211,10 +1092,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (arg != nullptr) {
     obj->data.s = STRNDUP_ARG;
   } else {
-    free(obj);
-    free(free_at_crash);
-    COMMAND_ARG_ERR("lua_bar", "lua_bar needs arguments: <height>,<width> <function name> "
-             "[function parameters]");
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "lua_bar needs arguments: <height>,<width> <function name> "
+                  "[function parameters]");
   }
   obj->callbacks.barval = &lua_barval;
   obj->callbacks.free = &gen_free_opaque;
@@ -1228,10 +1108,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (buf != nullptr) {
     obj->data.s = buf;
   } else {
-    free(obj);
-    free(free_at_crash);
-    COMMAND_ARG_ERR("lua_graph", "lua_graph needs arguments: <function name> [height],[width] "
-             "[gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "lua_graph needs arguments: <function name> [height],[width] "
+                  "[gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
   }
   obj->callbacks.graphval = &lua_barval;
   obj->callbacks.free = &gen_free_opaque;
@@ -1241,10 +1120,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (arg != nullptr) {
     obj->data.s = STRNDUP_ARG;
   } else {
-    free(obj);
-    free(free_at_crash);
-    COMMAND_ARG_ERR("lua_gauge", "lua_gauge needs arguments: <height>,<width> <function name> "
-             "[function parameters]");
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "lua_gauge needs arguments: <height>,<width> <function name> "
+                  "[function parameters]");
   }
   obj->callbacks.gaugeval = &lua_barval;
   obj->callbacks.free = &gen_free_opaque;
@@ -1279,8 +1157,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       parse_scroll_arg(obj, arg, free_at_crash, s);
   obj->callbacks.print = &print_scroll;
   obj->callbacks.free = &free_scroll;
-  END OBJ(combine, nullptr)
+  END OBJ(combine, nullptr) try {
     parse_combine_arg(obj, arg);
+  } catch (combine_needs_2_args_error &e) {
+    free(obj);
+    throw obj_create_error(e.what());
+  }
   obj->callbacks.print = &print_combine;
   obj->callbacks.free = &free_combine;
 #ifdef BUILD_NVIDIA
@@ -1288,11 +1170,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
                                                              obj, arg,
                                                              text_node_t::
                                                                  NONSPECIAL)) {
-    free(obj);
-    free(free_at_crash);
-    COMMAND_ARG_ERR("nvidia", "nvidia: invalid argument"
-             " specified: '{}'",
-             arg);
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "nvidia: invalid argument"
+                  " specified: '%s'",
+                  arg);
   }
   obj->callbacks.print = &print_nvidia_value;
   obj->callbacks.free = &free_nvidia;
@@ -1300,11 +1181,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       nvidiabar, 0,
       "nvidiabar needs an argument") if (set_nvidia_query(obj, arg,
                                                           text_node_t::BAR)) {
-    free(obj);
-    free(free_at_crash);
-    COMMAND_ARG_ERR("nvidiabar", "nvidiabar: invalid argument"
-             " specified: '{}'",
-             arg);
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "nvidiabar: invalid argument"
+                  " specified: '%s'",
+                  arg);
   }
   obj->callbacks.barval = &get_nvidia_barval;
   obj->callbacks.free = &free_nvidia;
@@ -1313,11 +1193,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       "nvidiagraph needs an argument") if (set_nvidia_query(obj, arg,
                                                             text_node_t::
                                                                 GRAPH)) {
-    free(obj);
-    free(free_at_crash);
-    COMMAND_ARG_ERR("nvidiagraph", "nvidiagraph: invalid argument"
-             " specified: '{}'",
-             arg);
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "nvidiagraph: invalid argument"
+                  " specified: '%s'",
+                  arg);
   }
   obj->callbacks.graphval = &get_nvidia_barval;
   obj->callbacks.free = &free_nvidia;
@@ -1326,11 +1205,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       "nvidiagauge needs an argument") if (set_nvidia_query(obj, arg,
                                                             text_node_t::
                                                                 GAUGE)) {
-    free(obj);
-    free(free_at_crash);
-    COMMAND_ARG_ERR("nvidiagauge", "nvidiagauge: invalid argument"
-             " specified: '{}'",
-             arg);
+    CRIT_ERR_FREE(obj, free_at_crash,
+                  "nvidiagauge: invalid argument"
+                  " specified: '%s'",
+                  arg);
   }
   obj->callbacks.gaugeval = &get_nvidia_barval;
   obj->callbacks.free = &free_nvidia;
@@ -1340,9 +1218,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       apcupsd, &update_apcupsd,
       "apcupsd needs arguments: <host> <port>") if (apcupsd_scan_arg(arg) !=
                                                     0) {
-    free(obj);
-    free(free_at_crash);
-    COMMAND_ARG_ERR("apcupsd", "apcupsd needs arguments: <host> <port>");
+    CRIT_ERR_FREE(obj, free_at_crash, "apcupsd needs arguments: <host> <port>");
   }
   obj->callbacks.print = &gen_print_nothing;
   END OBJ(apcupsd_name, &update_apcupsd) obj->callbacks.print =
@@ -1428,7 +1304,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END {
     auto *buf = static_cast<char *>(malloc(text_buffer_size.get(*state)));
 
-    LOG_WARNING("unknown variable '${}'", s);
+    LOG_ERROR("unknown variable '${}'", s);
     snprintf(buf, text_buffer_size.get(*state), "${%s}", s);
     obj_be_plain_text(obj, buf);
     free(buf);
@@ -1478,7 +1354,6 @@ size_t remove_comments(char *string) {
 
 int extract_variable_text_internal(struct text_object *retval,
                                    const char *const_p) {
-  auto _scope = LOG_SCOPE("parse_variables");
   struct text_object *obj;
   char *p, *s, *orig_p;
   long line;
@@ -1584,19 +1459,10 @@ int extract_variable_text_internal(struct text_object *retval,
 
         try {
           obj = construct_text_object(buf, arg, line, &ifblock_opaque, orig_p);
-        } catch (std::exception &e) {
-          const char *cmd = buf;
-          if (auto *ce = dynamic_cast<conky::bad_command_arguments_error *>(&e)) {
-            cmd = ce->command.c_str();
-          }
-          LOG_ERROR("${{{}}}: {}", cmd, e.what());
-          obj = new_text_object_internal();
-          auto *fallback = static_cast<char *>(
-              malloc(text_buffer_size.get(*state)));
-          snprintf(fallback, text_buffer_size.get(*state), "${%s}", cmd);
-          obj_be_plain_text(obj, fallback);
-          free(fallback);
+        } catch (obj_create_error &e) {
+          free(buf);
           free(orig_p);
+          throw;
         }
         if (obj != nullptr) { append_object(retval, obj); }
         free(buf);
@@ -1621,7 +1487,7 @@ int extract_variable_text_internal(struct text_object *retval,
   if (obj != nullptr) { append_object(retval, obj); }
 
   if (ifblock_stack_empty(&ifblock_opaque) == 0) {
-    LOG_WARNING("one or more $endif's are missing");
+    LOG_ERROR("one or more $endif's are missing");
   }
 
   free(orig_p);

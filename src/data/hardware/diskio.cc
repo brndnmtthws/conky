@@ -175,7 +175,7 @@ void parse_diskiograph_arg(struct text_object *obj, const char *arg) {
   auto [buf, skip] = scan_command(arg);
   scan_graph(obj, arg + skip, 0, FALSE);
 
-  obj->data.opaque = prepare_diskio_stat(dev_name(buf));
+  obj->data.opaque = prepare_diskio_stat(dev_name(buf).c_str());
   free_and_zero(buf);
 }
 
