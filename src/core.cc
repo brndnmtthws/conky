@@ -44,7 +44,6 @@
 #include "data/exec.h"
 #include "data/hardware/bsdapm.h"
 #include "data/hardware/diskio.h"
-#include "data/misc.h"
 #ifdef BUILD_IMLIB2
 #include "conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
@@ -367,10 +366,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ_ARG(mysql, 0, "mysql needs a query") obj->data.s = strdup(arg);
   obj->callbacks.print = &print_mysql;
 #endif /* BUILD_MYSQL */
-  END OBJ(cat, 0) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_cat;
-  obj->callbacks.free = &gen_free_opaque;
-
 #ifdef BUILD_X11
   END OBJ(key_num_lock, 0) obj->callbacks.print = &print_key_num_lock;
   END OBJ(key_caps_lock, 0) obj->callbacks.print = &print_key_caps_lock;
@@ -393,25 +388,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #ifdef __x86_64__
   END OBJ(freq2, 0) obj->callbacks.print = &print_freq2;
 #endif /* __x86_64__ */
-  END OBJ(startcase, 0) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_startcase;
-  obj->callbacks.free = &gen_free_opaque;
-  // Deprecated, for compatibility purposes only
-  END OBJ(start_case, 0) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_startcase;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(lowercase, 0) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_lowercase;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(uppercase, 0) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_uppercase;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(rstrip, 0) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &strip_trailing_whitespace;
-  obj->callbacks.free = &gen_free_opaque;
-  END OBJ(catp, 0) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_catp;
-  obj->callbacks.free = &gen_free_opaque;
   END OBJ_ARG(exec, nullptr, "exec needs arguments: <command>")
       scan_exec_arg(obj, arg, EF_EXEC);
   obj->parse = false;
