@@ -37,9 +37,6 @@ int update_gateway_info(void);
 
 enum { PB_BATT_STATUS, PB_BATT_PERCENT, PB_BATT_TIME };
 
-int get_entropy_avail(unsigned int *);
-int get_entropy_poolsize(unsigned int *);
-
 int update_stat(void);
 
 extern char e_iface[64];
