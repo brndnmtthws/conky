@@ -26,30 +26,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include "../conky.h"
+#include "conky.h"
 #ifdef BUILD_GUI
-#include "../lua/fonts.h"
-#include "../output/gui.h"
+#include "lua/fonts.h"
+#include "output/gui.h"
 #endif /* BUILD_GUI */
 #include <cmath>
-#include "../logging.h"
-#include "../output/nc.h"
+#include "logging.h"
+#include "lua/colour-settings.hh"
+#include "output/nc.h"
+#include "parse/variables.hh"
 #include "specials.h"
+
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif /* HAVE_SYS_PARAM_H */
 #include <algorithm>
-#include <functional>
+#include <map>
 #include <sstream>
 #include "../common.h"
 #include "../conky.h"
 #include "../output/display-output.hh"
 #include "colours.hh"
 
+using namespace conky::text_object;
+
 struct special_node *specials = nullptr;
 
 int special_count;
+int graph_count = 0;
 double maxspeedval = 1e-47; /* The maximum value among the speed graphs */
+
+std::map<int, double *> graphs;
 
 namespace {
 conky::range_config_setting<int> default_bar_width(
@@ -68,6 +76,8 @@ conky::range_config_setting<int> default_gauge_width(
 conky::range_config_setting<int> default_gauge_height(
     "default_gauge_height", 0, std::numeric_limits<int>::max(), 25, false);
 
+conky::simple_config_setting<bool> store_graph_data_explicitly(
+    "store_graph_data_explicitly", true, true);
 #endif /* BUILD_GUI */
 
 conky::simple_config_setting<std::string> console_graph_ticks(
@@ -99,6 +109,7 @@ struct gauge {
 };
 
 struct graph {
+  int id;
   char flags;
   int width, height;
   bool colours_set;
@@ -108,8 +119,6 @@ struct graph {
   char speedgraph;  /* If the current graph is a speed graph */
   char invertflag;  /* If the axis needs to be inverted */
   int minheight;    /* Clamp values below this threshold to this threshold */
-  size_t data_hash; /* identifies the data source for slot reuse */
-  std::vector<double> history; /* pre-allocated at scan time when width known */
 };
 
 struct stippled_hr {
@@ -236,14 +245,10 @@ std::pair<char *, size_t> scan_command(const char *s) {
     return {quoted_cmd, _size + 2};
   } else {
     size_t len;
-    for (len = 0; s[len] != '\0' && !isspace(s[len]); len++);
+    for (len = 0; s[len] != '\0' && !isspace(s[len]); len++)
+      ;
     return {strndup(s, len), len};
   }
-}
-
-static void free_graph(struct text_object *obj) {
-  delete static_cast<struct graph *>(obj->special_data);
-  obj->special_data = nullptr;
 }
 
 /**
@@ -253,8 +258,7 @@ static void free_graph(struct text_object *obj) {
  * -t will set the tempgrad member to true, enabling temperature gradient colors
  * -x will set the invertx flag to true, inverting the x axis
  * -y will set the invertx flag to true, inverting the y axis
- * -m will set the minheight to value, this will clamp values below the
- * threshold to the threshold
+ * -m will set the minheight to value, this will clamp values below the threshold to the threshold
  *
  * @param[out] obj  struct in which to save width, height and other options
  * @param[in]  args argument string to parse
@@ -262,14 +266,15 @@ static void free_graph(struct text_object *obj) {
  * @param[in]  speedGraph if graph is network speed graph or not
  * @return whether parsing was successful
  **/
-bool scan_graph(struct text_object *obj, const char *argstr, double defscale,
-                char speedGraph, graph_data_key key) {
+bool scan_graph(struct text_object *obj, const char *argstr, double defscale, char speedGraph) {
   char first_colour_name[1024] = {'\0'};
   char last_colour_name[1024] = {'\0'};
 
-  auto *g = new graph{};
+  auto *g = static_cast<struct graph *>(malloc(sizeof(struct graph)));
+  memset(g, 0, sizeof(struct graph));
   obj->special_data = g;
-  obj->callbacks.free = &free_graph;
+
+  g->id = ++graph_count;
   /* zero width means all space that is available */
   g->width = default_graph_width.get(*state);
   g->height = default_graph_height.get(*state);
@@ -280,7 +285,9 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale,
   g->tempgrad = FALSE;
   g->invertflag = FALSE;
   g->minheight = 0;
-  if (speedGraph) { g->speedgraph = TRUE; }
+  if (speedGraph) {
+    g->speedgraph = TRUE;
+  }
   if (argstr == nullptr) return false;
 
   /* set tempgrad to true if '-t' specified.
@@ -312,29 +319,28 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale,
    * It doesn't matter where the argument is exactly.
    * Accepted values are from [0-5] */
   const char *position = strstr(argstr, " " MINHEIGHT);
-  if (position != nullptr) {
-    position += 1;
-  } else if (strncmp(argstr, MINHEIGHT, strlen(MINHEIGHT)) == 0) {
-    position = argstr;
-  }
-  if (position != nullptr) {
-    int minheight = 0;
-    int size = strlen(argstr);
-    position += strlen(MINHEIGHT);
-    // Avoid whitespaces
-    while (position < argstr + size && *position == ' ') { position++; }
-    // Get the numeric value start and end position
-    const char *numStart = position;
-    while (position < argstr + size &&
-           isdigit(static_cast<unsigned char>(*position))) {
-      position++;
-    }
-    // Convert the numeric value to an integer
-    std::string numStr(numStart, position);
-    if (!numStr.empty()) { minheight = atoi(numStr.c_str()); }
-    // If specified value is greater than the max threshold
-    minheight = minheight > 5 ? 5 : minheight;
-    g->minheight = minheight;
+  if ((position != nullptr) ||
+      strncmp(argstr, MINHEIGHT, strlen(MINHEIGHT)) == 0) {
+      int minheight = 0;
+      position += strlen(MINHEIGHT) + 1;
+      int size = strlen(argstr);
+      // Avoid whitespaces
+      while(*position == ' ' && position < argstr + size) {
+        position++;
+      }
+      // Get the numeric value start and end position
+      const char* numStart = position;
+      while (isdigit(*position)) {
+          position++;
+      }
+      // Convert the numeric value to an integer
+      std::string numStr(numStart, position);
+      if (!numStr.empty()) {
+          minheight = atoi(numStr.c_str());
+      }
+      // If specified value is greater than the max threshold
+      minheight = minheight > 5 ? 5 : minheight;
+      g->minheight = minheight;
   }
 
   /* all the following functions try to interpret the beginning of a
@@ -347,7 +353,7 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale,
   if (sscanf(argstr, "%d,%d %s %s %lf", &g->height, &g->width,
              first_colour_name, last_colour_name, &g->scale) == 5) {
     apply_graph_colours(g, first_colour_name, last_colour_name);
-    goto done;
+    return true;
   }
   g->height = default_graph_height.get(*state);
   g->width = default_graph_width.get(*state);
@@ -360,9 +366,9 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale,
    * therfore we ensure last_colour_name is not TEMPGRAD or LOGGRAPH */
   if (sscanf(argstr, "%d,%d %s %s", &g->height, &g->width, first_colour_name,
              last_colour_name) == 4 &&
-      strchr(last_colour_name, '-') == NULL) {
+             strchr(last_colour_name,'-') == NULL) {
     apply_graph_colours(g, first_colour_name, last_colour_name);
-    goto done;
+    return true;
   }
   g->height = default_graph_height.get(*state);
   g->width = default_graph_width.get(*state);
@@ -371,27 +377,27 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale,
 
   /* [height],[width] [scale] */
   if (sscanf(argstr, "%d,%d %lf", &g->height, &g->width, &g->scale) == 3) {
-    goto done;
+    return true;
   }
   g->height = default_graph_height.get(*state);
   g->width = default_graph_width.get(*state);
   g->scale = defscale;
 
   /* [height],[width] */
-  if (sscanf(argstr, "%d,%d", &g->height, &g->width) == 2) { goto done; }
+  if (sscanf(argstr, "%d,%d", &g->height, &g->width) == 2) { return true; }
   g->height = default_graph_height.get(*state);
   g->width = default_graph_width.get(*state);
 
   /* [height], */
   char comma;
-  if (sscanf(argstr, "%d%[,]", &g->height, &comma) == 2) { goto done; }
+  if (sscanf(argstr, "%d%[,]", &g->height, &comma) == 2) { return true; }
   g->height = default_graph_height.get(*state);
 
   /* [color1] [color2] [scale] */
   if (sscanf(argstr, "%s %s %lf", first_colour_name, last_colour_name,
              &g->scale) == 3) {
     apply_graph_colours(g, first_colour_name, last_colour_name);
-    goto done;
+    return true;
   }
   first_colour_name[0] = '\0';
   last_colour_name[0] = '\0';
@@ -401,27 +407,16 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale,
    * This could match as [scale] [-l | -t],
    * therfore we ensure last_colour_name is not TEMPGRAD or LOGGRAPH */
   if (sscanf(argstr, "%s %s", first_colour_name, last_colour_name) == 2 &&
-      strchr(last_colour_name, '-') == NULL) {
+             strchr(last_colour_name,'-') == NULL) {
     apply_graph_colours(g, first_colour_name, last_colour_name);
-    goto done;
+    return true;
   }
   first_colour_name[0] = '\0';
   last_colour_name[0] = '\0';
 
   /* [scale] */
-  sscanf(argstr, "%lf", &g->scale);
+  if (sscanf(argstr, "%lf", &g->scale) == 1) { return true; }
 
-done:
-  if (std::holds_alternative<std::string>(key)) {
-    g->data_hash = std::hash<std::string>{}(std::get<std::string>(key));
-  } else if (std::holds_alternative<size_t>(key)) {
-    g->data_hash = std::get<size_t>(key);
-  } else {
-    g->data_hash = reinterpret_cast<size_t>(obj);
-  }
-  /* pre-allocate history at scan time when width is known to avoid
-   * reallocation on first draw */
-  if (g->width > 0) { g->history.resize(dpi_scale(g->width), 0.0); }
   return true;
 }
 #endif /* BUILD_GUI */
@@ -430,7 +425,12 @@ done:
  * Printing various special text objects
  */
 
-struct special_node *new_special_t_node() { return new special_node{}; }
+struct special_node *new_special_t_node() {
+  auto *newnode = new special_node;
+
+  memset(newnode, 0, sizeof *newnode);
+  return newnode;
+}
 
 /**
  * expands the current global linked list specials to special_count elements
@@ -535,8 +535,10 @@ void new_font(struct text_object *obj, char *p, unsigned int p_max_size) {
  * Adds value f to graph possibly truncating and scaling the graph
  **/
 static void graph_append(struct special_node *graph, double f, char showaslog) {
+  int i;
+
   /* do nothing if we don't even have a graph yet */
-  if (graph->graph_data.empty()) { return; }
+  if (graph->graph == nullptr) { return; }
 
   if (showaslog != 0) {
 #ifdef BUILD_MATH
@@ -547,27 +549,27 @@ static void graph_append(struct special_node *graph, double f, char showaslog) {
   if ((graph->scaled == 0) && f > graph->scale) { f = graph->scale; }
 
   /* shift all the data by 1 */
-  for (int i = static_cast<int>(graph->graph_data.size()) - 1; i > 0; i--) {
-    graph->graph_data[i] = graph->graph_data[i - 1];
+  for (i = graph->graph_allocated - 1; i > 0; i--) {
+    graph->graph[i] = graph->graph[i - 1];
   }
-  graph->graph_data[0] = f; /* add new data */
+  graph->graph[0] = f; /* add new data */
 
   if (graph->scaled != 0) {
-    double *currentmax =
-        std::max_element(graph->graph_data.data(),
-                         graph->graph_data.data() + graph->graph_data.size());
+    /* Get the location of the currentmax in the graph */
+    double* currentmax =
+        std::max_element(graph->graph + 0, graph->graph + graph->graph_width);
     graph->scale = *currentmax;
     if (graph->speedgraph) {
-      if (maxspeedval < graph->scale) { maxspeedval = graph->scale; }
-      graph->scale = maxspeedval;
-      /* If the currentmax is the maxspeedval and
-       * currentmax location is at the last position
-       * Then we reset our maxspeedval */
-      if (*currentmax == maxspeedval &&
-          currentmax ==
-              (graph->graph_data.data() + graph->graph_data.size() - 1)) {
-        maxspeedval = 1e-47;
-      }
+        if(maxspeedval < graph->scale){
+          maxspeedval = graph->scale;
+        }
+        graph->scale = maxspeedval;
+        /* If the currentmax is the maxspeedval and
+         * currentmax location is at the last position
+         * Then we reset our maxspeedval */
+        if(*currentmax == maxspeedval && currentmax == (graph->graph + graph->width - 1)){
+          maxspeedval = 1e-47;
+        }
     }
     if (graph->scale < 1e-47) {
       /* avoid NaN's when the graph is all-zero (e.g. before the first update)
@@ -590,8 +592,8 @@ void new_graph_in_shell(struct special_node *s, char *buf, int buf_max_size) {
   char *p = buf;
   char *buf_max = buf + (sizeof(char) * buf_max_size);
   double scale = (tickitems.size() - 1) / s->scale;
-  for (int i = static_cast<int>(s->graph_data.size()) - 1; i >= 0; i--) {
-    const unsigned int v = round_to_positive_int(s->graph_data[i] * scale);
+  for (int i = s->graph_allocated - 1; i >= 0; i--) {
+    const unsigned int v = round_to_positive_int(s->graph[i] * scale);
     const char *tick = tickitems[v].c_str();
     size_t itemlen = tickitems[v].size();
     for (unsigned int j = 0; j < itemlen; j++) {
@@ -601,6 +603,32 @@ void new_graph_in_shell(struct special_node *s, char *buf, int buf_max_size) {
   }
 graph_buf_end:
   *p = '\0';
+}
+
+double *copy_graph(double *original_graph, int graph_width) {
+  double *new_graph =
+      static_cast<double *>(malloc(graph_width * sizeof(double)));
+
+  memcpy(new_graph, original_graph, graph_width * sizeof(double));
+
+  return new_graph;
+}
+
+double *retrieve_graph(int graph_id, int graph_width) {
+  if (graphs.find(graph_id) == graphs.end()) {
+    return static_cast<double *>(calloc(1, graph_width * sizeof(double)));
+  } else {
+    return copy_graph(graphs[graph_id], graph_width);
+  }
+}
+
+void store_graph(int graph_id, struct special_node *s) {
+  if (s->graph == nullptr) {
+    graphs[graph_id] = nullptr;
+  } else {
+    if (graphs.find(graph_id) != graphs.end()) { free(graphs[graph_id]); }
+    graphs[graph_id] = s->graph;
+  }
 }
 
 /**
@@ -624,17 +652,28 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
   s->width = dpi_scale(g->width);
   if (s->width != 0) { s->graph_width = s->width; }
 
-  if (s->data_hash != g->data_hash) {
-    s->graph_data.clear();
-    s->data_hash = g->data_hash;
+  if (s->graph_width != s->graph_allocated) {
+    auto *graph = static_cast<double *>(
+        realloc(s->graph, s->graph_width * sizeof(double)));
+    LOG_TRACE("reallocating graph from {} to {}", s->graph_allocated, s->graph_width);
+    if (s->graph == nullptr) {
+      /* initialize */
+      std::fill_n(graph, s->graph_width, 0.0);
+      s->scale = 100;
+    } else if (graph != nullptr) {
+      if (s->graph_width > s->graph_allocated) {
+        /* initialize the new region */
+        std::fill(graph + s->graph_allocated, graph + s->graph_width, 0.0);
+      }
+    } else {
+      LOG_ERROR("graph realloc failed for width {}", s->graph_width);
+      graph = s->graph;
+      s->graph_width = s->graph_allocated;
+    }
+    s->graph = graph;
+    s->graph_allocated = s->graph_width;
+    graphs[g->id] = graph;
   }
-
-  /* on first use, take the pre-allocated storage from the scan-time struct
-   * (O(1) pointer swap); otherwise resize to match the current width */
-  if (s->graph_data.empty() && !g->history.empty()) {
-    s->graph_data = std::move(g->history);
-  }
-  s->graph_data.resize(s->graph_width, 0.0);
   s->height = dpi_scale(g->height);
   s->colours_set = g->colours_set;
   s->first_colour = g->first_colour;
@@ -656,11 +695,25 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
     s->scale = log10(s->scale + 1);
   }
 #endif
-  if ((g->invertflag & SF_INVERTX) != 0) { s->invertx = 1; }
-  if ((g->invertflag & SF_INVERTY) != 0) { s->inverty = 1; }
-  if (g->speedgraph) { s->speedgraph = TRUE; }
+  if ((g->invertflag & SF_INVERTX) != 0){
+    s->invertx = 1;
+  }
+  if ((g->invertflag & SF_INVERTY) != 0){
+    s->inverty = 1;
+  }
+  if (g->speedgraph) {
+    s->speedgraph = TRUE;
+  }
 
-  graph_append(s, val, g->flags);
+  if (store_graph_data_explicitly.get(*state)) {
+    if (s->graph) { s->graph = retrieve_graph(g->id, s->graph_width); }
+
+    graph_append(s, val, g->flags);
+
+    store_graph(g->id, s);
+  } else {
+    graph_append(s, val, g->flags);
+  }
 
   if (out_to_stdout.get(*state)) { new_graph_in_shell(s, buf, buf_max_size); }
 }
@@ -864,3 +917,67 @@ void new_tab(struct text_object *obj, char *p, unsigned int p_max_size) {
   s->width = dpi_scale(t->width);
   s->arg = dpi_scale(t->arg);
 }
+
+void clear_stored_graphs() {
+  graph_count = 0;
+  graphs.clear();
+}
+
+// clang-format off
+CONKY_REGISTER_VARIABLES(
+    {"color", [](text_object *obj, const construct_context &ctx) {
+      if (false
+#ifdef BUILD_GUI
+          || out_to_gui(*state)
+#endif
+#ifdef BUILD_NCURSES
+          || out_to_ncurses.get(*state)
+#endif
+      ) {
+        Colour c = ctx.arg != nullptr ? parse_color(ctx.arg)
+                                      : default_color.get(*state);
+        obj->data.l = c.to_argb32();
+        set_current_text_color(c);
+      }
+      obj->callbacks.print = &new_fg;
+    }},
+)
+
+#ifdef BUILD_GUI
+namespace {
+template <std::size_t N>
+void use_colorN(text_object *obj, const construct_context &) {
+  Colour c = color[N].get(*state);
+  obj->data.l = c.to_argb32();
+  set_current_text_color(c);
+  obj->callbacks.print = &new_fg;
+}
+
+template <std::size_t N>
+void use_fontN(text_object *obj, const construct_context &) {
+  scan_font(obj, font_template[N].get(*state).c_str());
+  obj->callbacks.print = &new_font;
+  obj->callbacks.free = &gen_free_opaque;
+}
+}  // namespace
+
+CONKY_REGISTER_VARIABLES(
+    {"color0", use_colorN<0>}, {"color1", use_colorN<1>},
+    {"color2", use_colorN<2>}, {"color3", use_colorN<3>},
+    {"color4", use_colorN<4>}, {"color5", use_colorN<5>},
+    {"color6", use_colorN<6>}, {"color7", use_colorN<7>},
+    {"color8", use_colorN<8>}, {"color9", use_colorN<9>},
+
+    {"font", [](text_object *obj, const construct_context &ctx) {
+      scan_font(obj, ctx.arg);
+      obj->callbacks.print = &new_font;
+      obj->callbacks.free = &gen_free_opaque;
+    }},
+    {"font0", use_fontN<0>}, {"font1", use_fontN<1>},
+    {"font2", use_fontN<2>}, {"font3", use_fontN<3>},
+    {"font4", use_fontN<4>}, {"font5", use_fontN<5>},
+    {"font6", use_fontN<6>}, {"font7", use_fontN<7>},
+    {"font8", use_fontN<8>}, {"font9", use_fontN<9>},
+)
+#endif /* BUILD_GUI */
+// clang-format on
