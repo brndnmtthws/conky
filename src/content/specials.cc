@@ -26,15 +26,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include "../conky.h"
+#include "conky.h"
 #ifdef BUILD_GUI
-#include "../lua/fonts.h"
-#include "../output/gui.h"
+#include "lua/fonts.h"
+#include "output/gui.h"
 #endif /* BUILD_GUI */
 #include <cmath>
-#include "../logging.h"
-#include "../output/nc.h"
+#include "logging.h"
+#include "lua/colour-settings.hh"
+#include "output/nc.h"
+#include "parse/variables.hh"
 #include "specials.h"
+
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif /* HAVE_SYS_PARAM_H */
@@ -45,6 +48,8 @@
 #include "../conky.h"
 #include "../output/display-output.hh"
 #include "colours.hh"
+
+using namespace conky::text_object;
 
 struct special_node *specials = nullptr;
 
@@ -311,7 +316,7 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale, ch
   }
 
   /* set MINHEIGHT to specified value if '-m' specified.
-   * It doesn't matter where the argument is exactly. 
+   * It doesn't matter where the argument is exactly.
    * Accepted values are from [0-5] */
   const char *position = strstr(argstr, " " MINHEIGHT);
   if ((position != nullptr) ||
@@ -356,11 +361,11 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale, ch
   last_colour_name[0] = '\0';
   g->scale = defscale;
 
-  /* [height],[width] [color1] [color2] 
-   * This could match as [height],[width] [scale] [-l | -t], 
+  /* [height],[width] [color1] [color2]
+   * This could match as [height],[width] [scale] [-l | -t],
    * therfore we ensure last_colour_name is not TEMPGRAD or LOGGRAPH */
   if (sscanf(argstr, "%d,%d %s %s", &g->height, &g->width, first_colour_name,
-             last_colour_name) == 4 && 
+             last_colour_name) == 4 &&
              strchr(last_colour_name,'-') == NULL) {
     apply_graph_colours(g, first_colour_name, last_colour_name);
     return true;
@@ -398,11 +403,11 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale, ch
   last_colour_name[0] = '\0';
   g->scale = defscale;
 
-  /* [color1] [color2] 
-   * This could match as [scale] [-l | -t], 
+  /* [color1] [color2]
+   * This could match as [scale] [-l | -t],
    * therfore we ensure last_colour_name is not TEMPGRAD or LOGGRAPH */
   if (sscanf(argstr, "%s %s", first_colour_name, last_colour_name) == 2 &&
-             strchr(last_colour_name,'-') == NULL) { 
+             strchr(last_colour_name,'-') == NULL) {
     apply_graph_colours(g, first_colour_name, last_colour_name);
     return true;
   }
@@ -559,7 +564,7 @@ static void graph_append(struct special_node *graph, double f, char showaslog) {
           maxspeedval = graph->scale;
         }
         graph->scale = maxspeedval;
-        /* If the currentmax is the maxspeedval and 
+        /* If the currentmax is the maxspeedval and
          * currentmax location is at the last position
          * Then we reset our maxspeedval */
         if(*currentmax == maxspeedval && currentmax == (graph->graph + graph->width - 1)){
@@ -917,3 +922,62 @@ void clear_stored_graphs() {
   graph_count = 0;
   graphs.clear();
 }
+
+// clang-format off
+CONKY_REGISTER_VARIABLES(
+    {"color", [](text_object *obj, const construct_context &ctx) {
+      if (false
+#ifdef BUILD_GUI
+          || out_to_gui(*state)
+#endif
+#ifdef BUILD_NCURSES
+          || out_to_ncurses.get(*state)
+#endif
+      ) {
+        Colour c = ctx.arg != nullptr ? parse_color(ctx.arg)
+                                      : default_color.get(*state);
+        obj->data.l = c.to_argb32();
+        set_current_text_color(c);
+      }
+      obj->callbacks.print = &new_fg;
+    }},
+)
+
+#ifdef BUILD_GUI
+namespace {
+template <std::size_t N>
+void use_colorN(text_object *obj, const construct_context &) {
+  Colour c = color[N].get(*state);
+  obj->data.l = c.to_argb32();
+  set_current_text_color(c);
+  obj->callbacks.print = &new_fg;
+}
+
+template <std::size_t N>
+void use_fontN(text_object *obj, const construct_context &) {
+  scan_font(obj, font_template[N].get(*state).c_str());
+  obj->callbacks.print = &new_font;
+  obj->callbacks.free = &gen_free_opaque;
+}
+}  // namespace
+
+CONKY_REGISTER_VARIABLES(
+    {"color0", use_colorN<0>}, {"color1", use_colorN<1>},
+    {"color2", use_colorN<2>}, {"color3", use_colorN<3>},
+    {"color4", use_colorN<4>}, {"color5", use_colorN<5>},
+    {"color6", use_colorN<6>}, {"color7", use_colorN<7>},
+    {"color8", use_colorN<8>}, {"color9", use_colorN<9>},
+
+    {"font", [](text_object *obj, const construct_context &ctx) {
+      scan_font(obj, ctx.arg);
+      obj->callbacks.print = &new_font;
+      obj->callbacks.free = &gen_free_opaque;
+    }},
+    {"font0", use_fontN<0>}, {"font1", use_fontN<1>},
+    {"font2", use_fontN<2>}, {"font3", use_fontN<3>},
+    {"font4", use_fontN<4>}, {"font5", use_fontN<5>},
+    {"font6", use_fontN<6>}, {"font7", use_fontN<7>},
+    {"font8", use_fontN<8>}, {"font9", use_fontN<9>},
+)
+#endif /* BUILD_GUI */
+// clang-format on
