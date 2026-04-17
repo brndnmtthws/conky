@@ -104,9 +104,6 @@ struct text_object;
 #include "data/hardware/apcupsd.h"
 #endif /* BUILD_APCUPSD */
 
-/* sony support */
-#include "data/hardware/sony.h"
-
 /* A size for temporary, static buffers to use when
  * one doesn't know what to choose. Defaults to 256.  */
 extern conky::range_config_setting<unsigned int> text_buffer_size;

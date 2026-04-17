@@ -32,12 +32,12 @@
 #include <cstdlib>
 #include <vector>
 #include "../../common.h"
+#include "config.h"
 #include "../../conky.h" /* text_buffer_size */
-#include "../../content/specials.h"
-#include "../../content/text_object.h"
 #include "../../core.h"
 #include "../../logging.h"
-#include "config.h"
+#include "../../content/specials.h"
+#include "../../content/text_object.h"
 
 /* this is the root of all per disk stats,
  * also containing the totals. */
@@ -54,7 +54,7 @@ void clear_diskio_stats() {
 }
 
 struct diskio_stat *prepare_diskio_stat(const char *s) {
-  struct stat sb{};
+  struct stat sb {};
   std::vector<char> stat_name(text_buffer_size.get(*state)),
       device_name(text_buffer_size.get(*state)),
       device_s(text_buffer_size.get(*state));
@@ -173,12 +173,9 @@ void print_diskio_write(struct text_object *obj, char *p,
 #ifdef BUILD_GUI
 void parse_diskiograph_arg(struct text_object *obj, const char *arg) {
   auto [buf, skip] = scan_command(arg);
-  const char *dev = dev_name(buf);
-  scan_graph(obj, arg + skip, 0, FALSE,
-             dev != nullptr ? graph_data_key{fmt::format("diskio:{}", dev)}
-                            : graph_parent_obj_key);
+  scan_graph(obj, arg + skip, 0, FALSE);
 
-  obj->data.opaque = prepare_diskio_stat(dev);
+  obj->data.opaque = prepare_diskio_stat(dev_name(buf).c_str());
   free_and_zero(buf);
 }
 

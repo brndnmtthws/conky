@@ -25,6 +25,7 @@
  */
 
 #include "linux.h"
+
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
@@ -33,12 +34,15 @@
 #include <sys/sysinfo.h>
 #include <sys/types.h>
 #include <clocale>
-#include "../../common.h"
-#include "../../conky.h"
-#include "../../content/temphelper.h"
-#include "../../logging.h"
-#include "../hardware/diskio.h"
-#include "../network/net_stat.h"
+
+#include "common.h"
+#include "conky.h"
+#include "data/hardware/diskio.h"
+#include "logging.h"
+#include "data/network/net_stat.h"
+#include "content/temphelper.h"
+#include "parse/variables.hh"
+
 #ifndef HAVE_CLOCK_GETTIME
 #include <sys/time.h>
 #endif
@@ -46,7 +50,6 @@
 #include <unistd.h>
 // #include <assert.h>
 #include <time.h>
-#include <algorithm>
 #include <unordered_map>
 #include "../../lua/setting.hh"
 #include "../top.h"
@@ -1103,7 +1106,8 @@ int update_cpu_usage(void) {
   return 0;
 }
 
-void free_cpu(struct text_object *) { /* no-op */ }
+void free_cpu(struct text_object *) { /* no-op */
+}
 
 // fscanf() that reads floats with points even if you are using a locale where
 // floats are with commas
@@ -1455,7 +1459,7 @@ static void parse_sysfs_sensor(struct text_object *obj, const char *arg,
     return;
   }
   LOG_DEBUG("parsed {} args: '{}' '{}' {} {} {}", type, buf1, buf2, n, factor,
-            offset);
+       offset);
   sf = (struct sysfs *)malloc(sizeof(struct sysfs));
   memset(sf, 0, sizeof(struct sysfs));
   sf->fd = open_sysfs_sensor(path, (*buf1) ? buf1 : 0, buf2, n, &sf->arg,
@@ -1466,30 +1470,8 @@ static void parse_sysfs_sensor(struct text_object *obj, const char *arg,
   obj->data.opaque = sf;
 }
 
-static bool is_sysfs_sensor_type(const char *type) {
-  return strcmp(type, "fan") == 0 || strcmp(type, "in") == 0 ||
-         strcmp(type, "temp") == 0 || strcmp(type, "temp2") == 0 ||
-         strcmp(type, "tempf") == 0 || strcmp(type, "vol") == 0;
-}
-
-static const char *scan_sysfs_bar(struct text_object *obj, const char *arg) {
-  char maybe_dev[64], maybe_type[64];
-
-  if (arg != nullptr && sscanf(arg, " %63s %63s", maybe_dev, maybe_type) == 2 &&
-      is_sysfs_sensor_type(maybe_type)) {
-    scan_bar(obj, nullptr, 100);
-    return arg;
-  }
-
-  return scan_bar(obj, arg, 100);
-}
-
 #define PARSER_GENERATOR(name, path)                                     \
   void parse_##name##_sensor(struct text_object *obj, const char *arg) { \
-    parse_sysfs_sensor(obj, arg, path, #name);                           \
-  }                                                                      \
-  void parse_##name##_bar(struct text_object *obj, const char *arg) {    \
-    arg = scan_sysfs_bar(obj, arg);                                      \
     parse_sysfs_sensor(obj, arg, path, #name);                           \
   }
 
@@ -1517,22 +1499,6 @@ void print_sysfs_sensor(struct text_object *obj, char *p,
   } else {
     snprintf(p, p_max_size, "%.1f", r);
   }
-}
-
-double sysfs_sensor_barval(struct text_object *obj) {
-  double r;
-  struct sysfs *sf = (struct sysfs *)obj->data.opaque;
-
-  if (!sf || sf->fd < 0) return 0.0;
-
-  r = get_sysfs_info(&sf->fd, sf->arg, sf->devtype, sf->type);
-
-  r = r * sf->factor + sf->offset;
-
-  if (r < 0.0 || r > 100.0) {
-    LOG_WARNING("sysfs bar value {} out of [0, 100]; adjust factor/offset", r);
-  }
-  return std::clamp(r, 0.0, 100.0);
 }
 
 void free_sysfs_sensor(struct text_object *obj) {
@@ -1584,8 +1550,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
   // open the CPU information file
   f = open_file("/proc/cpuinfo", &reported);
   if (!f) {
-    LOG_ERROR("failed to access '/proc/cpuinfo' at get_freq: {}",
-              strerror(errno));
+    LOG_ERROR("failed to access '/proc/cpuinfo' at get_freq: {}", strerror(errno));
     return 0;
   }
 
@@ -1693,8 +1658,7 @@ static char get_voltage(char *p_client_buffer, size_t client_buffer_size,
     }
     fclose(f);
   } else {
-    LOG_ERROR("failed to access '{}' at get_voltage: {}", current_freq_file,
-              strerror(errno));
+    LOG_ERROR("failed to access '{}' at get_voltage: {}", current_freq_file, strerror(errno));
     return 0;
   }
 
@@ -1714,8 +1678,7 @@ static char get_voltage(char *p_client_buffer, size_t client_buffer_size,
     }
     fclose(f);
   } else {
-    LOG_ERROR("failed to access '{}' at get_voltage: {}", current_freq_file,
-              strerror(errno));
+    LOG_ERROR("failed to access '{}' at get_voltage: {}", current_freq_file, strerror(errno));
     return 0;
   }
   snprintf(p_client_buffer, client_buffer_size, p_format,
@@ -1760,8 +1723,7 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
     return;
   }
   memset(buf, 0, sizeof(buf));
-  if (fscanf(fp, "%*s %99s", buf) <= 0)
-    LOG_ERROR("fscanf: {}", strerror(errno));
+  if (fscanf(fp, "%*s %99s", buf) <= 0) LOG_ERROR("fscanf: {}", strerror(errno));
   fclose(fp);
 
   snprintf(p_client_buffer, client_buffer_size, "%s", buf);
@@ -1839,8 +1801,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
       return;
     }
     memset(buf, 0, sizeof(buf));
-    if (fscanf(fp, "%*s %99s", buf) <= 0)
-      LOG_ERROR("fscanf: {}", strerror(errno));
+    if (fscanf(fp, "%*s %99s", buf) <= 0) LOG_ERROR("fscanf: {}", strerror(errno));
     fclose(fp);
 
     snprintf(p_client_buffer, client_buffer_size, "%s", buf);
@@ -2423,20 +2384,24 @@ void get_battery_power_draw(char *buffer, unsigned int n, const char *bat) {
 
   snprintf(path, 255, SYSFS_BATTERY_BASE_PATH "/%s/current_now", bat);
   fp = open_file(path, &reported_other);
-  if (fp == nullptr) return;
+  if (fp == nullptr)
+    return;
   ret = fgets(value, 256, fp);
   fclose(fp);
 
-  if (ret == nullptr) return;
+  if (ret == nullptr)
+    return;
   double result = strtol(value, NULL, 10) * 1e-6;
 
   snprintf(path, 255, SYSFS_BATTERY_BASE_PATH "/%s/voltage_now", bat);
   fp = open_file(path, &reported_other);
-  if (fp == nullptr) return;
+  if (fp == nullptr)
+    return;
   ret = fgets(value, 256, fp);
   fclose(fp);
 
-  if (fp == nullptr) return;
+  if (fp == nullptr)
+    return;
   result *= strtol(value, NULL, 10) * 1e-6;
   snprintf(buffer, n, "%.1f", result);
 }
@@ -2867,10 +2832,11 @@ void print_distribution(struct text_object * /*obj*/, char *p,
   // Alternatives that are already handled by above file:
   // /etc/lsb-release - Debian/Ubuntu only, LSB spec
   // /etc/redhat-release - single string
-  // /etc/centos-release - single string e.g. "CentOS Linux release 7.9.2009
-  // (Core)" /etc/fedora-release - single string /etc/debian_version - version
-  // only /etc/alpine-release - version only /etc/arch-release - single string:
-  // "Arch Linux"
+  // /etc/centos-release - single string e.g. "CentOS Linux release 7.9.2009 (Core)"
+  // /etc/fedora-release - single string
+  // /etc/debian_version - version only
+  // /etc/alpine-release - version only
+  // /etc/arch-release - single string: "Arch Linux"
 
   // 2) Fallback: parse /proc/version
   // This file doesn't necessarily have distribution name in it (e.g. on Arch).
@@ -3263,15 +3229,21 @@ bool is_conky_already_running(void) {
   while ((ent = readdir(dir)) != NULL) {
     char *endptr = ent->d_name;
     long lpid = strtol(ent->d_name, &endptr, 10);
-    if (*endptr != '\0') { continue; }
+    if (*endptr != '\0') {
+      continue;
+    }
 
     snprintf(buf, sizeof(buf), "/proc/%ld/stat", lpid);
     FILE *fp = fopen(buf, "r");
-    if (!fp) { continue; }
+    if (!fp) {
+      continue;
+    }
 
     if (fgets(buf, sizeof(buf), fp) != NULL) {
       char *conky = strstr(buf, "(conky)");
-      if (conky) { instances++; }
+      if (conky) {
+        instances++;
+      }
     }
     fclose(fp);
   }
@@ -3279,3 +3251,85 @@ bool is_conky_already_running(void) {
   closedir(dir);
   return instances > 1;
 }
+
+using namespace conky::text_object;
+
+// clang-format off
+CONKY_REGISTER_VARIABLES(
+    {"disk_protect", [](text_object *obj, const construct_context &ctx) {
+      obj->data.s = strndup(dev_name(ctx.arg).c_str(), text_buffer_size.get(*state));
+      obj->callbacks.print = &print_disk_protect_queue;
+      obj->callbacks.free = &gen_free_opaque;
+    }, nullptr, {}, obj_flags::arg},
+    {"ioscheduler", [](text_object *obj, const construct_context &ctx) {
+      obj->data.s = strndup(dev_name(ctx.arg).c_str(), text_buffer_size.get(*state));
+      obj->callbacks.print = &print_ioscheduler;
+      obj->callbacks.free = &gen_free_opaque;
+    }, nullptr, {}, obj_flags::arg},
+    {"laptop_mode", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = &print_laptop_mode;
+    }},
+    {"distribution", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = &print_distribution;
+    }},
+    {"pb_battery", [](text_object *obj, const construct_context &ctx) {
+      if (strcmp(ctx.arg, "status") == EQUAL) {
+        obj->data.i = PB_BATT_STATUS;
+      } else if (strcmp(ctx.arg, "percent") == EQUAL) {
+        obj->data.i = PB_BATT_PERCENT;
+      } else if (strcmp(ctx.arg, "time") == EQUAL) {
+        obj->data.i = PB_BATT_TIME;
+      } else {
+        LOG_ERROR("pb_battery: unrecognized argument '{}', defaulting to status", ctx.arg);
+        obj->data.i = PB_BATT_STATUS;
+      }
+      obj->callbacks.print = get_powerbook_batt_info;
+    }, nullptr, {}, obj_flags::arg},
+
+    {"cpugovernor", [](text_object *obj, const construct_context &ctx) {
+      get_cpu_count();
+      if (ctx.arg == nullptr || strlen(ctx.arg) >= 3 ||
+          strtol(&ctx.arg[0], nullptr, 10) == 0 ||
+          static_cast<unsigned int>(strtol(&ctx.arg[0], nullptr, 10)) > info.cpu_count) {
+        obj->data.i = 1;
+      } else {
+        obj->data.i = strtol(&ctx.arg[0], nullptr, 10);
+      }
+      obj->callbacks.print = &print_cpugovernor;
+    }},
+
+    {"i2c", [](text_object *obj, const construct_context &ctx) {
+      parse_i2c_sensor(obj, ctx.arg);
+      obj->callbacks.print = &print_sysfs_sensor;
+      obj->callbacks.free = &free_sysfs_sensor;
+    }, nullptr, {}, obj_flags::arg},
+    {"platform", [](text_object *obj, const construct_context &ctx) {
+      parse_platform_sensor(obj, ctx.arg);
+      obj->callbacks.print = &print_sysfs_sensor;
+      obj->callbacks.free = &free_sysfs_sensor;
+    }, nullptr, {}, obj_flags::arg},
+    {"hwmon", [](text_object *obj, const construct_context &ctx) {
+      parse_hwmon_sensor(obj, ctx.arg);
+      obj->callbacks.print = &print_sysfs_sensor;
+      obj->callbacks.free = &free_sysfs_sensor;
+    }, nullptr, {}, obj_flags::arg},
+
+    {"gw_iface", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = &print_gateway_iface;
+      obj->callbacks.free = &free_gateway_info;
+    }, &update_gateway_info},
+    {"if_gw", [](text_object *obj, const construct_context &) {
+      obj->callbacks.iftest = &gateway_exists;
+      obj->callbacks.free = &free_gateway_info;
+    }, &update_gateway_info, {}, obj_flags::cond},
+    {"gw_ip", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = &print_gateway_ip;
+      obj->callbacks.free = &free_gateway_info;
+    }, &update_gateway_info},
+    {"iface", [](text_object *obj, const construct_context &ctx) {
+      obj->data.s = strndup(ctx.arg ? ctx.arg : "", text_buffer_size.get(*state));
+      obj->callbacks.print = &print_gateway_iface2;
+      obj->callbacks.free = &gen_free_opaque;
+    }, &update_gateway_info2},
+)
+// clang-format on

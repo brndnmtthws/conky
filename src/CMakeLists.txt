@@ -199,9 +199,7 @@ if(OS_LINUX)
     data/users.cc
     data/users.h
     data/hardware/sony.cc
-    data/hardware/sony.h
     data/hardware/i8k.cc
-    data/hardware/i8k.h
   )
   set(optional_sources ${optional_sources} ${linux_sources})
 endif(OS_LINUX)
@@ -288,7 +286,7 @@ if(BUILD_AUDACIOUS)
 endif(BUILD_AUDACIOUS)
 
 if(BUILD_IBM)
-  set(ibm data/hardware/ibm.cc data/hardware/ibm.h data/hardware/smapi.cc data/hardware/smapi.h)
+  set(ibm data/hardware/ibm.cc data/hardware/smapi.cc data/hardware/smapi.h)
   set(optional_sources ${optional_sources} ${ibm})
 endif(BUILD_IBM)
 
@@ -416,8 +414,8 @@ if(BUILD_WAYLAND)
       )
       message(STATUS "PROTOCOL '${name}' file: ${PROTOCOL_FILE}")
     endif()
-    
-    
+
+
     add_custom_command(
       OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${name}-client-protocol.h"
       COMMAND ${Wayland_SCANNER} client-header "${PROTOCOL_FILE}" "${name}-client-protocol.h")
@@ -429,7 +427,7 @@ if(BUILD_WAYLAND)
     unset(PROTOCOL_FILE)
     unset(WL_PROTOCOL_PATHS)
   endmacro()
-  
+
   add_protocol(xdg-shell)
   add_protocol(wlr-layer-shell v1)
 
