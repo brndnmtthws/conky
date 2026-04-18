@@ -397,6 +397,7 @@ struct rect {
 
  public:
   rect() : m_pos(vec2<T>::Zero()), m_other(vec2<T>::Zero()) {}
+  rect(const rect &) = default;
   rect(vec2<T> pos, vec2<T> other) : m_pos(pos), m_other(other) {}
 
   /// @brief Rectangle x position.

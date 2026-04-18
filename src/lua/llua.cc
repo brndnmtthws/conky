@@ -25,13 +25,15 @@
 #include <cstring>
 #include <filesystem>
 #include <sstream>
+#if defined(BUILD_LUA_CAIRO) || defined(BUILD_WAYLAND)
+#include <cairo.h>
+#endif
 
 #include "../conky.h"
 #include "../geometry.h"
 #include "../logging.h"
 #include "build.h"
 #include "llua.h"
-
 #include "../output/display-output.hh"
 
 #ifdef BUILD_GUI
@@ -691,7 +693,8 @@ void llua_set_userdata(const char *key, const char *type, void *value) {
   lua_setfield(lua_L, -2, key);
 }
 
-void llua_setup_window_table(conky::rect<int> text_rect) {
+void llua_setup_window_table(conky::vec2i window_size,
+                             conky::rect<int> text_rect) {
   lua_newtable(lua_L);
 
 #ifdef BUILD_X11
@@ -704,10 +707,9 @@ void llua_setup_window_table(conky::rect<int> text_rect) {
 
 #ifdef BUILD_GUI
   if (out_to_gui(*state)) {
-#ifdef BUILD_X11
-    llua_set_number("width", window.geometry.width());
-    llua_set_number("height", window.geometry.height());
-#endif /*BUILD_X11*/
+    llua_set_number("width", window_size.x());
+    llua_set_number("height", window_size.y());
+    
     llua_set_number("border_inner_margin", border_inner_margin.get(*state));
     llua_set_number("border_outer_margin", border_outer_margin.get(*state));
     llua_set_number("border_width", border_width.get(*state));
@@ -718,11 +720,13 @@ void llua_setup_window_table(conky::rect<int> text_rect) {
     llua_set_number("text_height", text_rect.height());
 
     lua_setglobal(lua_L, "conky_window");
+    llua_update_window_table(window_size, text_rect);
   }
 #endif /*BUILD_GUI*/
 }
 
-void llua_update_window_table(conky::rect<int> text_rect) {
+void llua_update_window_table(conky::vec2i window_size,
+                              conky::rect<int> text_rect) {
   lua_getglobal(lua_L, "conky_window");
   if (lua_isnil(lua_L, -1)) {
     /* window table isn't populated yet */
@@ -730,10 +734,25 @@ void llua_update_window_table(conky::rect<int> text_rect) {
     return;
   }
 
-#ifdef BUILD_X11
-  llua_set_number("width", window.geometry.width());
-  llua_set_number("height", window.geometry.height());
-#endif /*BUILD_X11*/
+  /* Determine device scale from the drawing surface. */
+  double scale_x = 1.0, scale_y = 1.0;
+#if defined(BUILD_LUA_CAIRO) || defined(BUILD_WAYLAND)
+  auto *output = display_output();
+  if (output) {
+    auto weak = output->drawing_surface();
+    auto surface = weak.lock();
+    if (surface) {
+      cairo_surface_get_device_scale(surface.get(), &scale_x, &scale_y);
+    }
+  }
+#endif
+
+  lua_newtable(lua_L);
+  llua_set_number("x", static_cast<int>(window_size.x() * scale_x));
+  llua_set_number("y", static_cast<int>(window_size.y() * scale_y));
+  lua_setfield(lua_L, -2, "pixel_size");
+
+  llua_set_number("scale", scale_x);
 
   llua_set_number("text_start_x", text_rect.x());
   llua_set_number("text_start_y", text_rect.y());

@@ -327,8 +327,6 @@ bool display_output_x11::main_loop_wait(double t) {
 #endif
 
         changed++;
-        /* update lua window globals */
-        llua_update_window_table(rect<int>(text_start, text_size));
 #ifdef BUILD_LUA_CAIRO_XLIB
         update_surface();
 #endif /* BUILD_LUA_CAIRO_XLIB */
@@ -349,6 +347,10 @@ bool display_output_x11::main_loop_wait(double t) {
       }
     }
 #endif
+
+    /* update lua window globals */
+    llua_update_window_table(window.geometry.size(),
+                             rect<int>(text_start, text_size));
 
     clear_text(1);
 

@@ -916,8 +916,6 @@ void update_text_area() {
   {
     text_start = xy;
   }
-  /* update lua window globals */
-  llua_update_window_table(conky::rect<int>(text_start, text_size));
 }
 
 /* drawing stuff */
@@ -2415,7 +2413,9 @@ void initialisation(int argc, char **argv) {
   }
 #ifdef BUILD_GUI
   /* setup lua window globals */
-  llua_setup_window_table(conky::rect<int>(text_start, text_size));
+  llua_setup_window_table(
+      text_size + conky::vec2i::uniform(get_border_total() * 2),
+      conky::rect<int>(text_start, text_size));
 #endif /* BUILD_GUI */
 
   llua_setup_info(&info, active_update_interval());

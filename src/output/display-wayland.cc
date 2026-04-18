@@ -690,8 +690,6 @@ bool display_output_wayland::main_loop_wait(double t) {
       window_resize(global_window, width, height); /* resize window */
 
       changed++;
-      /* update lua window globals */
-      llua_update_window_table(conky::rect<int>(text_start, text_size));
     }
 
 /* move window if it isn't in right position */
@@ -740,6 +738,10 @@ bool display_output_wayland::main_loop_wait(double t) {
                                          gap_y.get(*state), gap_x.get(*state));
       }
     }
+
+    /* update lua window globals */
+    llua_update_window_table(conky::vec2i(width, height),
+                             conky::rect<int>(text_start, text_size));
 
     clear_text(1);
     draw_stuff();

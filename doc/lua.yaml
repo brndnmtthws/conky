@@ -194,7 +194,7 @@ values:
       A string containing the version of the current Conky instance.
   - name: conky_window
     desc: |-
-      This table contains some information about Conky's window.
+      This table contains read-only information about Conky's window.
       The following table describes the values contained:
 
       | Key                 | Value                                                                           |
@@ -202,8 +202,11 @@ values:
       | drawable            | **Deprecated.** Window's drawable (Xlib Drawable). Use `conky_surface()` instead.|
       | visual              | **Deprecated.** Window's visual (Xlib Visual). Use `conky_surface()` instead.   |
       | display             | **Deprecated.** Window's display (Xlib Display). Use `conky_surface()` instead. |
-      | width               | Window width (in pixels).                                                       |
-      | height              | Window height (in pixels).                                                      |
+      | width               | Window width in layout points (pt; logical).                                    |
+      | height              | Window height in layout points (pt; logical).                                   |
+      | pixel_size.x        | Window width in device pixels (px; physical).                                   |
+      | pixel_size.y        | Window height in device pixels (px; physical).                                  |
+      | scale               | Scaling factor of the buffer (dpi; pixel_size / size).                          |
       | border_inner_margin | Window's inner border margin (in pixels).                                       |
       | border_outer_margin | Window's outer border margin (in pixels).                                       |
       | border_width        | Window's border width (in pixels).                                              |
