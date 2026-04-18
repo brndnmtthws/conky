@@ -26,8 +26,16 @@
  *
  */
 
+#include "xmms2.h"
+
+#include <xmmsclient/xmmsclient.h>
+#include <type_traits>
+
 #include "../../conky.h"
+#include "../../content/specials.h"
+#include "../../content/text_object.h"
 #include "../../logging.h"
+#include "parse/variables.hh"
 
 xmmsc_connection_t *xmms2_conn;
 
@@ -347,74 +355,85 @@ int update_xmms2(void) {
   return 0;
 }
 
-void print_xmms2_tracknr(struct text_object *obj, char *p,
-                         unsigned int p_max_size) {
-  (void)obj;
-  if (info.xmms2.tracknr != -1) {
-    snprintf(p, p_max_size, "%i", info.xmms2.tracknr);
-  }
+using namespace conky::text_object;
+
+template <auto Member>
+variable_definition xmms2_var(const char *name) {
+  return {name, [](text_object *obj, const construct_context &) {
+    obj->callbacks.print = [](text_object *, char *p, unsigned int s) {
+      using T = std::decay_t<decltype(info.xmms2.*Member)>;
+      if constexpr (std::is_floating_point_v<T>) {
+        snprintf(p, s, "%2.1f", info.xmms2.*Member);
+      } else {
+        conky::text_object::format_variable(p, s, info.xmms2.*Member);
+      }
+    };
+    obj->callbacks.free = &free_xmms2;
+  }, &update_xmms2};
 }
 
-void print_xmms2_elapsed(struct text_object *obj, char *p,
-                         unsigned int p_max_size) {
-  (void)obj;
-  snprintf(p, p_max_size, "%02d:%02d", info.xmms2.elapsed / 60000,
-           (info.xmms2.elapsed / 1000) % 60);
-}
-
-void print_xmms2_duration(struct text_object *obj, char *p,
-                          unsigned int p_max_size) {
-  (void)obj;
-  snprintf(p, p_max_size, "%02d:%02d", info.xmms2.duration / 60000,
-           (info.xmms2.duration / 1000) % 60);
-}
-
-double xmms2_barval(struct text_object *obj) {
-  (void)obj;
-
-  return info.xmms2.progress;
-}
-
-void print_xmms2_smart(struct text_object *obj, char *p,
-                       unsigned int p_max_size) {
-  (void)obj;
-  int artist_len = strlen(info.xmms2.artist);
-  int title_len = strlen(info.xmms2.title);
-  if (artist_len < 2 && title_len < 2) {
-    snprintf(p, p_max_size, "%s", info.xmms2.url);
-  } else if (artist_len < 1) {
-    snprintf(p, p_max_size, "%s", info.xmms2.title);
-  } else {
-    snprintf(p, p_max_size, "%s - %s", info.xmms2.artist, info.xmms2.title);
-  }
-}
-
-#define XMMS2_PRINT_GENERATOR(name, fmt)                    \
-  void print_xmms2_##name(struct text_object *obj, char *p, \
-                          unsigned int p_max_size) {        \
-    (void)obj;                                              \
-    snprintf(p, p_max_size, fmt, info.xmms2.name);          \
-  }
-
-XMMS2_PRINT_GENERATOR(artist, "%s")
-XMMS2_PRINT_GENERATOR(album, "%s")
-XMMS2_PRINT_GENERATOR(title, "%s")
-XMMS2_PRINT_GENERATOR(genre, "%s")
-XMMS2_PRINT_GENERATOR(comment, "%s")
-XMMS2_PRINT_GENERATOR(url, "%s")
-XMMS2_PRINT_GENERATOR(status, "%s")
-XMMS2_PRINT_GENERATOR(date, "%s")
-XMMS2_PRINT_GENERATOR(bitrate, "%i")
-XMMS2_PRINT_GENERATOR(id, "%u")
-XMMS2_PRINT_GENERATOR(size, "%2.1f")
-XMMS2_PRINT_GENERATOR(playlist, "%s")
-XMMS2_PRINT_GENERATOR(timesplayed, "%i")
-XMMS2_PRINT_GENERATOR(percent, "%i")
-
-#undef XMMS2_PRINT_GENERATOR
-
-int if_xmms2_connected(struct text_object *obj) {
-  (void)obj;
-
-  return info.xmms2.conn_state == CONN_OK;
-}
+// clang-format off
+CONKY_REGISTER_VARIABLES(
+    xmms2_var<&xmms2_s::artist>("xmms2_artist"),
+    xmms2_var<&xmms2_s::album>("xmms2_album"),
+    xmms2_var<&xmms2_s::title>("xmms2_title"),
+    xmms2_var<&xmms2_s::genre>("xmms2_genre"),
+    xmms2_var<&xmms2_s::comment>("xmms2_comment"),
+    xmms2_var<&xmms2_s::url>("xmms2_url"),
+    xmms2_var<&xmms2_s::status>("xmms2_status"),
+    xmms2_var<&xmms2_s::date>("xmms2_date"),
+    xmms2_var<&xmms2_s::bitrate>("xmms2_bitrate"),
+    xmms2_var<&xmms2_s::id>("xmms2_id"),
+    xmms2_var<&xmms2_s::size>("xmms2_size"),
+    xmms2_var<&xmms2_s::playlist>("xmms2_playlist"),
+    xmms2_var<&xmms2_s::timesplayed>("xmms2_timesplayed"),
+    xmms2_var<&xmms2_s::percent>("xmms2_percent"),
+    {"xmms2_tracknr", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = [](text_object *, char *p, unsigned int s) {
+        if (info.xmms2.tracknr != -1) { snprintf(p, s, "%i", info.xmms2.tracknr); }
+      };
+      obj->callbacks.free = &free_xmms2;
+    }, &update_xmms2},
+    {"xmms2_elapsed", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = [](text_object *, char *p, unsigned int s) {
+        snprintf(p, s, "%02d:%02d", info.xmms2.elapsed / 60000,
+                 (info.xmms2.elapsed / 1000) % 60);
+      };
+      obj->callbacks.free = &free_xmms2;
+    }, &update_xmms2},
+    {"xmms2_duration", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = [](text_object *, char *p, unsigned int s) {
+        snprintf(p, s, "%02d:%02d", info.xmms2.duration / 60000,
+                 (info.xmms2.duration / 1000) % 60);
+      };
+      obj->callbacks.free = &free_xmms2;
+    }, &update_xmms2},
+    {"xmms2_smart", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = [](text_object *, char *p, unsigned int s) {
+        int artist_len = strlen(info.xmms2.artist);
+        int title_len = strlen(info.xmms2.title);
+        if (artist_len < 2 && title_len < 2) {
+          snprintf(p, s, "%s", info.xmms2.url);
+        } else if (artist_len < 1) {
+          snprintf(p, s, "%s", info.xmms2.title);
+        } else {
+          snprintf(p, s, "%s - %s", info.xmms2.artist, info.xmms2.title);
+        }
+      };
+      obj->callbacks.free = &free_xmms2;
+    }, &update_xmms2},
+    {"xmms2_bar", [](text_object *obj, const construct_context &ctx) {
+      scan_bar(obj, ctx.arg, 1);
+      obj->callbacks.barval = [](text_object *) -> double {
+        return info.xmms2.progress;
+      };
+      obj->callbacks.free = &free_xmms2;
+    }, &update_xmms2},
+    {"if_xmms2_connected", [](text_object *obj, const construct_context &) {
+      obj->callbacks.iftest = [](text_object *) -> int {
+        return info.xmms2.conn_state == CONN_OK;
+      };
+      obj->callbacks.free = &free_xmms2;
+    }, &update_xmms2, {}, obj_flags::cond},
+)
+// clang-format on

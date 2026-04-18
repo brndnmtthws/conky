@@ -67,7 +67,6 @@
 #ifdef BUILD_ICONV
 #include "data/iconv_tools.h"
 #endif /* BUILD_ICONV */
-#include "data/audio/mixer.h"
 #include "data/network/mail.h"
 #include "data/network/mboxscan.h"
 #include "data/network/net_stat.h"
@@ -95,18 +94,9 @@
 #ifdef BUILD_RSS
 #include "data/network/rss.h"
 #endif /* BUILD_RSS */
-#ifdef BUILD_AUDACIOUS
-#include "data/audio/audacious.h"
-#endif /* BUILD_AUDACIOUS */
-#ifdef BUILD_CMUS
-#include "data/audio/cmus.h"
-#endif /* BUILD_CMUS */
 #ifdef BUILD_JOURNAL
 #include "data/os/journal.h"
 #endif /* BUILD_JOURNAL */
-#ifdef BUILD_PULSEAUDIO
-#include "data/audio/pulseaudio.h"
-#endif /* BUILD_PULSEAUDIO */
 #ifdef BUILD_INTEL_BACKLIGHT
 #include "data/hardware/intel_backlight.h"
 #endif /* BUILD_INTEL_BACKLIGHT */
@@ -613,22 +603,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(mboxscan, nullptr) parse_mboxscan_arg(obj, arg);
   obj->callbacks.print = &print_mboxscan;
   obj->callbacks.free = &free_mboxscan;
-#ifdef HAVE_SOUNDCARD_H
-  END OBJ(mixer, 0) parse_mixer_arg(obj, arg);
-  obj->callbacks.percentage = &mixer_percentage;
-  END OBJ(mixerl, 0) parse_mixer_arg(obj, arg);
-  obj->callbacks.percentage = &mixerl_percentage;
-  END OBJ(mixerr, 0) parse_mixer_arg(obj, arg);
-  obj->callbacks.percentage = &mixerr_percentage;
-  END OBJ(mixerbar, 0) scan_mixer_bar(obj, arg);
-  obj->callbacks.barval = &mixer_barval;
-  END OBJ(mixerlbar, 0) scan_mixer_bar(obj, arg);
-  obj->callbacks.barval = &mixerl_barval;
-  END OBJ(mixerrbar, 0) scan_mixer_bar(obj, arg);
-  obj->callbacks.barval = &mixerr_barval;
-  END OBJ_IF(if_mixer_mute, 0) parse_mixer_arg(obj, arg);
-  obj->callbacks.iftest = &check_mixer_muted;
-#endif /* HAVE_SOUNDCARD_H */
 #ifdef BUILD_GUI
   END OBJ(monitor, nullptr) obj->callbacks.print = &print_monitor;
   END OBJ(monitor_number, nullptr) obj->callbacks.print = &print_monitor_number;
@@ -771,185 +745,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
     arg = scan_bar(obj, arg + cnt, 100);
   obj->callbacks.barval = &smapi_bat_barval;
 #endif /* BUILD_IBM */
-#ifdef BUILD_MPD
-#define mpd_set_maxlen(name)                       \
-  if (arg) {                                       \
-    int i;                                         \
-    sscanf(arg, "%d", &i);                         \
-    if (i > 0)                                     \
-      obj->data.i = i + 1;                         \
-    else                                           \
-      LOG_ERROR(#name ": invalid length argument"); \
-  }
-  END OBJ(mpd_artist, nullptr) mpd_set_maxlen(mpd_artist);
-  obj->callbacks.print = &print_mpd_artist;
-  END OBJ(mpd_albumartist, nullptr) mpd_set_maxlen(mpd_albumartist);
-  obj->callbacks.print = &print_mpd_albumartist;
-  END OBJ(mpd_title, nullptr) mpd_set_maxlen(mpd_title);
-  obj->callbacks.print = &print_mpd_title;
-  END OBJ(mpd_date, nullptr) mpd_set_maxlen(mpd_date);
-  obj->callbacks.print = &print_mpd_date;
-  END OBJ(mpd_comment, nullptr) mpd_set_maxlen(mpd_comment);
-  obj->callbacks.print = &print_mpd_comment;
-  END OBJ(mpd_random, nullptr) obj->callbacks.print = &print_mpd_random;
-  END OBJ(mpd_repeat, nullptr) obj->callbacks.print = &print_mpd_repeat;
-  END OBJ(mpd_elapsed, nullptr) obj->callbacks.print = &print_mpd_elapsed;
-  END OBJ(mpd_length, nullptr) obj->callbacks.print = &print_mpd_length;
-  END OBJ(mpd_track, nullptr) mpd_set_maxlen(mpd_track);
-  obj->callbacks.print = &print_mpd_track;
-  END OBJ(mpd_name, nullptr) mpd_set_maxlen(mpd_name);
-  obj->callbacks.print = &print_mpd_name;
-  END OBJ(mpd_file, nullptr) mpd_set_maxlen(mpd_file);
-  obj->callbacks.print = &print_mpd_file;
-  END OBJ(mpd_percent, nullptr) obj->callbacks.percentage = &mpd_percentage;
-  END OBJ(mpd_album, nullptr) mpd_set_maxlen(mpd_album);
-  obj->callbacks.print = &print_mpd_album;
-  END OBJ(mpd_vol, nullptr) obj->callbacks.print = &print_mpd_vol;
-  END OBJ(mpd_bitrate, nullptr) obj->callbacks.print = &print_mpd_bitrate;
-  END OBJ(mpd_status, nullptr) obj->callbacks.print = &print_mpd_status;
-  END OBJ(mpd_bar, nullptr) scan_bar(obj, arg, 1);
-  obj->callbacks.barval = &mpd_barval;
-  END OBJ(mpd_smart, nullptr) mpd_set_maxlen(mpd_smart);
-  obj->callbacks.print = &print_mpd_smart;
-  END OBJ_IF(if_mpd_playing, nullptr) obj->callbacks.iftest =
-      &check_mpd_playing;
-#undef mpd_set_maxlen
-#endif /* BUILD_MPD */
-#ifdef BUILD_MOC
-  END OBJ(moc_state, nullptr) obj->callbacks.print = &print_moc_state;
-  END OBJ(moc_file, nullptr) obj->callbacks.print = &print_moc_file;
-  END OBJ(moc_title, nullptr) obj->callbacks.print = &print_moc_title;
-  END OBJ(moc_artist, nullptr) obj->callbacks.print = &print_moc_artist;
-  END OBJ(moc_song, nullptr) obj->callbacks.print = &print_moc_song;
-  END OBJ(moc_album, nullptr) obj->callbacks.print = &print_moc_album;
-  END OBJ(moc_totaltime, nullptr) obj->callbacks.print = &print_moc_totaltime;
-  END OBJ(moc_timeleft, nullptr) obj->callbacks.print = &print_moc_timeleft;
-  END OBJ(moc_totalsec, nullptr) obj->callbacks.print = &print_moc_totalsec;
-  END OBJ(moc_curtime, nullptr) obj->callbacks.print = &print_moc_curtime;
-  END OBJ(moc_cursec, nullptr) obj->callbacks.print = &print_moc_cursec;
-  END OBJ(moc_bitrate, nullptr) obj->callbacks.print = &print_moc_bitrate;
-  END OBJ(moc_avgbitrate, nullptr) obj->callbacks.print = &print_moc_avgbitrate;
-  END OBJ(moc_rate, nullptr) obj->callbacks.print = &print_moc_rate;
-  END OBJ(moc_percent, nullptr) obj->callbacks.percentage = &moc_percentage;
-  END OBJ(moc_bar, nullptr) scan_bar(obj, arg, 1);
-  obj->callbacks.barval = &moc_barval;
-#endif /* BUILD_MOC */
-#ifdef BUILD_CMUS
-  END OBJ(cmus_state, 0) obj->callbacks.print = &print_cmus_state;
-  END OBJ(cmus_file, 0) obj->callbacks.print = &print_cmus_file;
-  END OBJ(cmus_title, 0) obj->callbacks.print = &print_cmus_title;
-  END OBJ(cmus_artist, 0) obj->callbacks.print = &print_cmus_artist;
-  END OBJ(cmus_album, 0) obj->callbacks.print = &print_cmus_album;
-  END OBJ(cmus_totaltime, 0) obj->callbacks.print = &print_cmus_totaltime;
-  END OBJ(cmus_timeleft, 0) obj->callbacks.print = &print_cmus_timeleft;
-  END OBJ(cmus_curtime, 0) obj->callbacks.print = &print_cmus_curtime;
-  END OBJ(cmus_random, 0) obj->callbacks.print = &print_cmus_random;
-  END OBJ(cmus_state, 0) obj->callbacks.print = &print_cmus_state;
-  END OBJ(cmus_file, 0) obj->callbacks.print = &print_cmus_file;
-  END OBJ(cmus_title, 0) obj->callbacks.print = &print_cmus_title;
-  END OBJ(cmus_artist, 0) obj->callbacks.print = &print_cmus_artist;
-  END OBJ(cmus_album, 0) obj->callbacks.print = &print_cmus_album;
-  END OBJ(cmus_totaltime, 0) obj->callbacks.print = &print_cmus_totaltime;
-  END OBJ(cmus_timeleft, 0) obj->callbacks.print = &print_cmus_timeleft;
-  END OBJ(cmus_curtime, 0) obj->callbacks.print = &print_cmus_curtime;
-  END OBJ(cmus_random, 0) obj->callbacks.print = &print_cmus_random;
-  END OBJ(cmus_repeat, 0) obj->callbacks.print = &print_cmus_repeat;
-  END OBJ(cmus_aaa, 0) obj->callbacks.print = &print_cmus_aaa;
-  END OBJ(cmus_track, 0) obj->callbacks.print = &print_cmus_track;
-  END OBJ(cmus_genre, 0) obj->callbacks.print = &print_cmus_genre;
-  END OBJ(cmus_date, 0) obj->callbacks.print = &print_cmus_date;
-  END OBJ(cmus_progress, 0) scan_bar(obj, arg, 1);
-  obj->callbacks.barval = &cmus_progress;
-  END OBJ(cmus_percent, 0) obj->callbacks.percentage = &cmus_percent;
-#endif /* BUILD_CMUS */
-#ifdef BUILD_XMMS2
-  END OBJ(xmms2_artist, &update_xmms2) obj->callbacks.print =
-      &print_xmms2_artist;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ(xmms2_album, &update_xmms2) obj->callbacks.print = &print_xmms2_album;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ(xmms2_title, &update_xmms2) obj->callbacks.print = &print_xmms2_title;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ(xmms2_genre, &update_xmms2) obj->callbacks.print = &print_xmms2_genre;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ(xmms2_comment, &update_xmms2) obj->callbacks.print =
-      &print_xmms2_comment;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ(xmms2_url, &update_xmms2) obj->callbacks.print = &print_xmms2_url;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ(xmms2_tracknr, &update_xmms2) obj->callbacks.print =
-      &print_xmms2_tracknr;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ(xmms2_bitrate, &update_xmms2) obj->callbacks.print =
-      &print_xmms2_bitrate;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ(xmms2_date, &update_xmms2) obj->callbacks.print = &print_xmms2_date;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ(xmms2_id, &update_xmms2) obj->callbacks.print = &print_xmms2_id;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ(xmms2_duration, &update_xmms2) obj->callbacks.print =
-      &print_xmms2_duration;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ(xmms2_elapsed, &update_xmms2) obj->callbacks.print =
-      &print_xmms2_elapsed;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ(xmms2_size, &update_xmms2) obj->callbacks.print = &print_xmms2_size;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ(xmms2_status, &update_xmms2) obj->callbacks.print =
-      &print_xmms2_status;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ(xmms2_percent, &update_xmms2) obj->callbacks.print =
-      &print_xmms2_percent;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ(xmms2_bar, &update_xmms2) scan_bar(obj, arg, 1);
-  obj->callbacks.barval = &xmms2_barval;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ(xmms2_smart, &update_xmms2) obj->callbacks.print = &print_xmms2_smart;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ(xmms2_playlist, &update_xmms2) obj->callbacks.print =
-      &print_xmms2_playlist;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ(xmms2_timesplayed, &update_xmms2) obj->callbacks.print =
-      &print_xmms2_timesplayed;
-  obj->callbacks.free = &free_xmms2;
-  END OBJ_IF(if_xmms2_connected, &update_xmms2) obj->callbacks.iftest =
-      &if_xmms2_connected;
-  obj->callbacks.free = &free_xmms2;
-#endif /* BUILD_XMMS2 */
-#ifdef BUILD_AUDACIOUS
-  END OBJ(audacious_status, 0) obj->callbacks.print = &print_audacious_status;
-  END OBJ_ARG(audacious_title, 0, "audacious_title needs an argument")
-      sscanf(arg, "%d", &obj->data.i);
-  if (obj->data.i > 0) {
-    ++obj->data.i;
-  } else {
-    CRIT_ERR_FREE(obj, free_at_crash,
-                  "audacious_title: invalid length argument");
-  }
-  obj->callbacks.print = &print_audacious_title;
-  END OBJ(audacious_length, 0) obj->callbacks.print = &print_audacious_length;
-  END OBJ(audacious_length_seconds, 0) obj->callbacks.print =
-      &print_audacious_length_seconds;
-  END OBJ(audacious_position, 0) obj->callbacks.print =
-      &print_audacious_position;
-  END OBJ(audacious_position_seconds, 0) obj->callbacks.print =
-      &print_audacious_position_seconds;
-  END OBJ(audacious_bitrate, 0) obj->callbacks.print = &print_audacious_bitrate;
-  END OBJ(audacious_frequency, 0) obj->callbacks.print =
-      &print_audacious_frequency;
-  END OBJ(audacious_channels, 0) obj->callbacks.print =
-      &print_audacious_channels;
-  END OBJ(audacious_filename, 0) obj->callbacks.print =
-      &print_audacious_filename;
-  END OBJ(audacious_playlist_length, 0) obj->callbacks.print =
-      &print_audacious_playlist_length;
-  END OBJ(audacious_playlist_position, 0) obj->callbacks.print =
-      &print_audacious_playlist_position;
-  END OBJ(audacious_main_volume, 0) obj->callbacks.print =
-      &print_audacious_main_volume;
-  END OBJ(audacious_bar, 0) scan_bar(obj, arg, 1);
-  obj->callbacks.barval = &audacious_barval;
-#endif /* BUILD_AUDACIOUS */
 #ifdef BUILD_CURL
   END OBJ_ARG(curl, 0, "curl needs arguments: <uri> <interval in minutes>")
       curl_parse_arg(obj, arg);
@@ -1146,44 +941,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_journal;
   obj->callbacks.free = &free_journal;
 #endif /* BUILD_JOURNAL */
-#ifdef BUILD_PULSEAUDIO
-  END OBJ_IF(if_pa_sink_muted, 0) obj->callbacks.iftest = &puau_muted;
-  obj->callbacks.free = &free_pulseaudio;
-  init_pulseaudio(obj);
-  END OBJ(pa_sink_description, 0) obj->callbacks.print =
-      &print_puau_sink_description;
-  obj->callbacks.free = &free_pulseaudio;
-  init_pulseaudio(obj);
-  END OBJ(pa_sink_active_port_name, 0) obj->callbacks.print =
-      &print_puau_sink_active_port_name;
-  obj->callbacks.free = &free_pulseaudio;
-  init_pulseaudio(obj);
-  END OBJ(pa_sink_active_port_description, 0) obj->callbacks.print =
-      &print_puau_sink_active_port_description;
-  obj->callbacks.free = &free_pulseaudio;
-  init_pulseaudio(obj);
-  END OBJ(pa_sink_volume, 0) obj->callbacks.percentage = &puau_vol;
-  obj->callbacks.free = &free_pulseaudio;
-  init_pulseaudio(obj);
-  END OBJ(pa_sink_volumebar, 0) scan_bar(obj, arg, 1);
-  init_pulseaudio(obj);
-  obj->callbacks.barval = &puau_volumebarval;
-  obj->callbacks.free = &free_pulseaudio;
-  END OBJ(pa_card_active_profile, 0) obj->callbacks.print =
-      &print_puau_card_active_profile;
-  obj->callbacks.free = &free_pulseaudio;
-  init_pulseaudio(obj);
-  END OBJ(pa_card_name, 0) obj->callbacks.print = &print_puau_card_name;
-  obj->callbacks.free = &free_pulseaudio;
-  init_pulseaudio(obj);
-  END OBJ_IF(if_pa_source_running, 0) obj->callbacks.iftest =
-      &puau_source_running;
-  obj->callbacks.free = &free_pulseaudio;
-  init_pulseaudio(obj);
-  END OBJ_IF(if_pa_source_muted, 0) obj->callbacks.iftest = &puau_source_muted;
-  obj->callbacks.free = &free_pulseaudio;
-  init_pulseaudio(obj);
-#endif /* BUILD_PULSEAUDIO */
 #ifdef BUILD_INTEL_BACKLIGHT
   END OBJ(intel_backlight, 0) obj->callbacks.print = &print_intel_backlight;
   obj->callbacks.free = &free_intel_backlight;

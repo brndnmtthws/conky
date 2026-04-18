@@ -80,14 +80,6 @@ struct text_object;
 #include "data/hardware/hddtemp.h"
 #endif /* BUILD_HDDTEMP */
 
-#ifdef BUILD_MOC
-#include "data/audio/moc.h"
-#endif /* BUILD_MOC */
-
-#ifdef BUILD_MPD
-#include "data/audio/mpd.h"
-#endif /* BUILD_MPD */
-
 #ifdef BUILD_MYSQL
 #include "data/mysql.h"
 #endif /* BUILD_MYSQL */

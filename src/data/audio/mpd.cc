@@ -26,10 +26,13 @@
  *
  */
 
-#include "mpd.h"
 #include <cmath>
 #include <mutex>
+#include <type_traits>
+
 #include "../../conky.h"
+#include "content/specials.h"
+#include "parse/variables.hh"
 #include "libmpdclient.h"
 #include "../../logging.h"
 #include "../timeinfo.h"
@@ -333,28 +336,6 @@ static inline void format_media_player_time(char *buf, const int size,
   }
 }
 
-void print_mpd_elapsed(struct text_object *obj, char *p,
-                       unsigned int p_max_size) {
-  (void)obj;
-  format_media_player_time(p, p_max_size, get_mpd().elapsed);
-}
-
-void print_mpd_length(struct text_object *obj, char *p,
-                      unsigned int p_max_size) {
-  (void)obj;
-  format_media_player_time(p, p_max_size, get_mpd().length);
-}
-
-uint8_t mpd_percentage(struct text_object *obj) {
-  (void)obj;
-  return round_to_positive_int(get_mpd().progress * 100.0f);
-}
-
-double mpd_barval(struct text_object *obj) {
-  (void)obj;
-  return get_mpd().progress;
-}
-
 void print_mpd_smart(struct text_object *obj, char *p,
                      unsigned int p_max_size) {
   const mpd_result &mpd_info = get_mpd();
@@ -379,32 +360,84 @@ void print_mpd_smart(struct text_object *obj, char *p,
   }
 }
 
-int check_mpd_playing(struct text_object *obj) {
-  (void)obj;
-  return get_mpd().is_playing;
+using namespace conky::text_object;
+
+/// MPD variable with optional maxlen argument. Sets print to print_mpd_field<Member>.
+template <auto Member, bool HasMaxLen = true>
+variable_definition mpd_var(const char *name) {
+  return {name, [](text_object *obj, const construct_context &ctx) {
+    if (HasMaxLen && ctx.arg) {
+      int i;
+      sscanf(ctx.arg, "%d", &i);
+      if (i <= 0) {
+        LOG_ERROR("'{}': invalid length argument", ctx.arg);
+        return;
+      }
+      obj->data.i = i + 1;
+    }
+    obj->callbacks.print = [](text_object *obj, char *p, unsigned int p_max_size) {
+      if (obj->data.i && static_cast<unsigned int>(obj->data.i) < p_max_size) {
+        p_max_size = obj->data.i;
+      }
+      const auto &val = get_mpd().*Member;
+      if constexpr (std::is_same_v<std::decay_t<decltype(val)>, std::string>) {
+        snprintf(p, p_max_size, "%s", val.c_str());
+      } else {
+        snprintf(p, p_max_size, "%d", val);
+      }
+    };
+  }};
 }
 
-#define MPD_PRINT_GENERATOR(name, fmt, acc)                    \
-  void print_mpd_##name(struct text_object *obj, char *p,      \
-                        unsigned int p_max_size) {             \
-    if (obj->data.i && (unsigned int)obj->data.i < p_max_size) \
-      p_max_size = obj->data.i;                                \
-    snprintf(p, p_max_size, fmt, get_mpd().name acc);          \
-  }
-
-MPD_PRINT_GENERATOR(album, "%s", .c_str())
-MPD_PRINT_GENERATOR(albumartist, "%s", .c_str())
-MPD_PRINT_GENERATOR(artist, "%s", .c_str())
-MPD_PRINT_GENERATOR(bitrate, "%d", )
-MPD_PRINT_GENERATOR(comment, "%s", .c_str())
-MPD_PRINT_GENERATOR(date, "%s", .c_str())
-MPD_PRINT_GENERATOR(file, "%s", .c_str())
-MPD_PRINT_GENERATOR(name, "%s", .c_str())
-MPD_PRINT_GENERATOR(random, "%s", .c_str())
-MPD_PRINT_GENERATOR(repeat, "%s", .c_str())
-MPD_PRINT_GENERATOR(status, "%s", .c_str())
-MPD_PRINT_GENERATOR(title, "%s", .c_str())
-MPD_PRINT_GENERATOR(track, "%s", .c_str())
-MPD_PRINT_GENERATOR(vol, "%d", )
-
-#undef MPD_PRINT_GENERATOR
+// clang-format off
+CONKY_REGISTER_VARIABLES(
+    mpd_var<&mpd_result::artist>("mpd_artist"),
+    mpd_var<&mpd_result::albumartist>("mpd_albumartist"),
+    mpd_var<&mpd_result::title>("mpd_title"),
+    mpd_var<&mpd_result::date>("mpd_date"),
+    mpd_var<&mpd_result::comment>("mpd_comment"),
+    mpd_var<&mpd_result::track>("mpd_track"),
+    mpd_var<&mpd_result::name>("mpd_name"),
+    mpd_var<&mpd_result::file>("mpd_file"),
+    mpd_var<&mpd_result::album>("mpd_album"),
+    {"mpd_smart", [](text_object *obj, const construct_context &ctx) {
+      if (ctx.arg) {
+        int i; sscanf(ctx.arg, "%d", &i);
+        if (i > 0) { obj->data.i = i + 1; }
+        else { LOG_ERROR("mpd_smart: invalid length argument"); }
+      }
+      obj->callbacks.print = &print_mpd_smart;
+    }},
+    mpd_var<&mpd_result::random, false>("mpd_random"),
+    mpd_var<&mpd_result::repeat, false>("mpd_repeat"),
+    {"mpd_elapsed", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = [](text_object *, char *p, unsigned int s) {
+        format_media_player_time(p, s, get_mpd().elapsed);
+      };
+    }},
+    {"mpd_length", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = [](text_object *, char *p, unsigned int s) {
+        format_media_player_time(p, s, get_mpd().length);
+      };
+    }},
+    {"mpd_percent", [](text_object *obj, const construct_context &) {
+      obj->callbacks.percentage = [](text_object *) -> uint8_t {
+        return round_to_positive_int(get_mpd().progress * 100.0f);
+      };
+    }},
+    mpd_var<&mpd_result::vol, false>("mpd_vol"),
+    mpd_var<&mpd_result::bitrate, false>("mpd_bitrate"),
+    mpd_var<&mpd_result::status, false>("mpd_status"),
+    {"mpd_bar", [](text_object *obj, const construct_context &ctx) {
+      scan_bar(obj, ctx.arg, 1);
+      obj->callbacks.barval = [](text_object *) -> double {
+        return get_mpd().progress;
+      };
+    }},
+    {"if_mpd_playing", [](text_object *obj, const construct_context &) {
+      obj->callbacks.iftest = [](text_object *) -> int {
+        return get_mpd().is_playing;
+      };
+    }, nullptr, {}, obj_flags::cond},
+)
+// clang-format on

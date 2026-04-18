@@ -27,14 +27,15 @@
  *
  */
 
-#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-#include "../../conky.h"
-#include "../../logging.h"
-#include "../../content/specials.h"
-#include "../../content/text_object.h"
+
+#include "content/specials.h"
+#include "content/text_object.h"
+#include "parse/variables.hh"
+
+using namespace conky::text_object;
 
 #ifdef HAVE_SOUNDCARD_H
 #if defined(__linux__)
@@ -102,50 +103,51 @@ static int mixer_get_left(int i) { return mixer_get(i) >> 8; }
 static int mixer_get_right(int i) { return mixer_get(i) & 0xFF; }
 int mixer_is_mute(int i) { return !mixer_get(i); }
 
-#define mixer_to_255(i, x) x
+using namespace conky::text_object;
 
-void parse_mixer_arg(struct text_object *obj, const char *arg) {
-  obj->data.l = mixer_init(arg);
+using mixer_channel_fn = int (*)(int);
+
+template <mixer_channel_fn channel>
+variable_definition mixer_perc_var(const char *name) {
+  return {name, [](text_object *obj, const construct_context &ctx) {
+    obj->data.l = mixer_init(ctx.arg);
+    obj->callbacks.percentage = [](text_object *obj) -> uint8_t {
+      return channel(obj->data.l);
+    };
+  }};
 }
 
-uint8_t mixer_percentage(struct text_object *obj) {
-  return mixer_get_avg(obj->data.l);
+template <mixer_channel_fn channel>
+variable_definition mixer_bar_var(const char *name) {
+  return {name, [](text_object *obj, const construct_context &ctx) {
+    char buf1[64];
+    int n;
+    if (ctx.arg && sscanf(ctx.arg, "%63s %n", buf1, &n) >= 1) {
+      obj->data.i = mixer_init(buf1);
+      scan_bar(obj, ctx.arg + n, 100);
+    } else {
+      obj->data.i = mixer_init(nullptr);
+      scan_bar(obj, ctx.arg, 100);
+    }
+    obj->callbacks.barval = [](text_object *obj) -> double {
+      return channel(obj->data.i);
+    };
+  }};
 }
 
-uint8_t mixerl_percentage(struct text_object *obj) {
-  return mixer_get_left(obj->data.l);
-}
-
-uint8_t mixerr_percentage(struct text_object *obj) {
-  return mixer_get_right(obj->data.l);
-}
-
-int check_mixer_muted(struct text_object *obj) {
-  if (!mixer_is_mute(obj->data.l)) return 0;
-  return 1;
-}
-
-void scan_mixer_bar(struct text_object *obj, const char *arg) {
-  char buf1[64];
-  int n;
-
-  if (arg && sscanf(arg, "%63s %n", buf1, &n) >= 1) {
-    obj->data.i = mixer_init(buf1);
-    scan_bar(obj, arg + n, 100);
-  } else {
-    obj->data.i = mixer_init(nullptr);
-    scan_bar(obj, arg, 100);
-  }
-}
-
-double mixer_barval(struct text_object *obj) {
-  return mixer_to_255(obj->data.i, mixer_get_avg(obj->data.i));
-}
-
-double mixerl_barval(struct text_object *obj) {
-  return mixer_to_255(obj->data.i, mixer_get_left(obj->data.i));
-}
-
-double mixerr_barval(struct text_object *obj) {
-  return mixer_to_255(obj->data.i, mixer_get_right(obj->data.i));
-}
+// clang-format off
+CONKY_REGISTER_VARIABLES(
+    mixer_perc_var<mixer_get_avg>("mixer"),
+    mixer_perc_var<mixer_get_left>("mixerl"),
+    mixer_perc_var<mixer_get_right>("mixerr"),
+    mixer_bar_var<mixer_get_avg>("mixerbar"),
+    mixer_bar_var<mixer_get_left>("mixerlbar"),
+    mixer_bar_var<mixer_get_right>("mixerrbar"),
+    {"if_mixer_mute", [](text_object *obj, const construct_context &ctx) {
+      obj->data.l = mixer_init(ctx.arg);
+      obj->callbacks.iftest = [](text_object *obj) -> int {
+        return mixer_is_mute(obj->data.l) ? 1 : 0;
+      };
+    }, nullptr, {}, obj_flags::cond},
+)
+// clang-format on
