@@ -26,6 +26,7 @@
 #include "config.h"
 
 #include <limits>
+#include <memory>
 #include <string>
 #include <type_traits>
 
@@ -83,6 +84,8 @@ class display_output_wayland : public display_output_base {
   virtual void set_font(unsigned int);
   virtual void free_fonts(bool);
   virtual void load_fonts(bool);
+
+  virtual std::weak_ptr<conky::draw_surface> drawing_surface();
 
   // Wayland-specific
 };

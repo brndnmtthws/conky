@@ -1,2 +1,4 @@
 *.cc
 cmake_install.cmake
+
+!libcairo_xlib.cc

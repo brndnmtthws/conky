@@ -697,7 +697,7 @@ if(BUILD_WAYLAND)
 
   pkg_check_modules(CAIRO REQUIRED cairo)
   set(conky_libs ${conky_libs} ${CAIRO_LINK_LIBRARIES})
-  set(conky_includes ${conky_includes} ${CAIRO_INCLUDE_DIR})
+  set(conky_includes ${conky_includes} ${CAIRO_INCLUDE_DIRS})
 
   pkg_check_modules(PANGO REQUIRED pango)
   set(conky_libs ${conky_libs} ${PANGO_LINK_LIBRARIES})
@@ -732,6 +732,8 @@ if(BUILD_LUA_CAIRO)
     pkg_check_modules(CAIROXLIB REQUIRED cairo-xlib)
     set(luacairo_libs ${CAIROXLIB_LINK_LIBRARIES} ${luacairo_libs})
     set(luacairo_includes ${CAIROXLIB_INCLUDE_DIRS} ${luacairo_includes})
+    set(conky_libs ${conky_libs} ${luacairo_libs})
+    set(conky_includes ${conky_includes} ${luacairo_includes})
   endif(BUILD_LUA_CAIRO_XLIB)
 
   find_program(APP_PATCH patch)

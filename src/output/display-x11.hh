@@ -26,6 +26,7 @@
 #include "config.h"
 
 #include <limits>
+#include <memory>
 #include <string>
 #include <type_traits>
 
@@ -82,7 +83,18 @@ class display_output_x11 : public display_output_base {
   virtual void free_fonts(bool);
   virtual void load_fonts(bool);
 
+  virtual std::weak_ptr<conky::draw_surface> drawing_surface();
+
+#ifdef BUILD_LUA_CAIRO_XLIB
+  /// (Re)create the cairo xlib surface for the current drawable/geometry.
+  void update_surface();
+#endif /* BUILD_LUA_CAIRO_XLIB */
+
   // X11-specific
+ private:
+#ifdef BUILD_LUA_CAIRO_XLIB
+  std::shared_ptr<conky::draw_surface> current_surface;
+#endif /* BUILD_LUA_CAIRO_XLIB */
 };
 
 }  // namespace conky

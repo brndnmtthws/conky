@@ -167,6 +167,28 @@ values:
     desc: |-
       Sets Conky's update interval (in seconds) to
       'number'.
+  - name: conky_surface()
+    desc: |-
+      Returns the current `cairo_surface_t` for the active display output,
+      or `nil` if no graphical surface is available. This is the preferred,
+      backend-agnostic way to obtain a drawing surface for use with Cairo.
+
+      The returned surface is only valid for the current draw cycle. Do not
+      cache it across frames; call `conky_surface()` each time your draw
+      hook is invoked.
+
+      Example usage:
+
+      ```lua
+      require('cairo')
+      function conky_draw()
+        local surface = conky_surface()
+        if not surface then return end
+        local cr = cairo_create(surface)
+        -- draw ...
+        cairo_destroy(cr)
+      end
+      ```
   - name: conky_version
     desc: |-
       A string containing the version of the current Conky instance.
@@ -177,9 +199,9 @@ values:
 
       | Key                 | Value                                                                           |
       |---------------------|---------------------------------------------------------------------------------|
-      | drawable            | Window's drawable (Xlib Drawable), requires Lua extras enabled at compile time. |
-      | visual              | Window's visual (Xlib Visual), requires Lua extras enabled at compile time.     |
-      | display             | Window's display (Xlib Display), requires Lua extras enabled at compile time.   |
+      | drawable            | **Deprecated.** Window's drawable (Xlib Drawable). Use `conky_surface()` instead.|
+      | visual              | **Deprecated.** Window's visual (Xlib Visual). Use `conky_surface()` instead.   |
+      | display             | **Deprecated.** Window's display (Xlib Display). Use `conky_surface()` instead. |
       | width               | Window width (in pixels).                                                       |
       | height              | Window height (in pixels).                                                      |
       | border_inner_margin | Window's inner border margin (in pixels).                                       |
@@ -190,8 +212,9 @@ values:
       | text_width          | The width of the text drawing region.                                           |
       | text_height         | The height of the text drawing region.                                          |
 
-      NOTE: This table is only defined when X support is
-      enabled.
+      NOTE: This table is only defined when a GUI output is
+      active. The `drawable`, `visual`, and `display` fields are
+      X11-specific and deprecated.
   - name: ret_scale_x,ret_scale_y:cairo_draw_image(file, cs, x, y, scale_x, scale_y)
     desc: |-
       Renders an image onto a cairo_surface_t, using imlib2. Returns the amount the image was scaled by

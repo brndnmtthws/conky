@@ -25,6 +25,7 @@
  */
 
 #include "config.h"
+#include "display-output.hh"
 
 #include "display-x11.hh"
 
@@ -50,6 +51,10 @@
 #include <X11/extensions/XInput2.h>
 #undef COUNT
 #include <X11/Xresource.h>
+
+#ifdef BUILD_LUA_CAIRO_XLIB
+#include <cairo-xlib.h>
+#endif /* BUILD_LUA_CAIRO_XLIB */
 
 #include <cstdint>
 #include <iostream>
@@ -236,6 +241,9 @@ bool display_output_x11::detect() {
 
 bool display_output_x11::initialize() {
   X11_create_window();
+#ifdef BUILD_LUA_CAIRO_XLIB
+  update_surface();
+#endif /* BUILD_LUA_CAIRO_XLIB */
   return true;
 }
 
@@ -321,6 +329,9 @@ bool display_output_x11::main_loop_wait(double t) {
         changed++;
         /* update lua window globals */
         llua_update_window_table(rect<int>(text_start, text_size));
+#ifdef BUILD_LUA_CAIRO_XLIB
+        update_surface();
+#endif /* BUILD_LUA_CAIRO_XLIB */
       }
 
       /* move window if it isn't in right position */
@@ -1113,6 +1124,25 @@ void display_output_x11::load_fonts(bool utf8) {
       }
     }
   }
+}
+
+#ifdef BUILD_LUA_CAIRO_XLIB
+void display_output_x11::update_surface() {
+  current_surface.reset(
+      cairo_xlib_surface_create(display, window.drawable, window.visual,
+                                window.geometry.width(),
+                                window.geometry.height()),
+      cairo_surface_destroy);
+}
+#endif /* BUILD_LUA_CAIRO_XLIB */
+
+std::weak_ptr<conky::draw_surface> display_output_x11::drawing_surface() {
+#ifdef BUILD_LUA_CAIRO_XLIB
+  if (!current_surface && display && window.drawable) { update_surface(); }
+  return current_surface;
+#else
+  return {};
+#endif /* BUILD_LUA_CAIRO_XLIB */
 }
 
 }  // namespace conky

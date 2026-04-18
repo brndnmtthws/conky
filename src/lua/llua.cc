@@ -32,6 +32,8 @@
 #include "build.h"
 #include "llua.h"
 
+#include "../output/display-output.hh"
+
 #ifdef BUILD_GUI
 #include "../output/gui.h"
 
@@ -179,6 +181,22 @@ static int llua_conky_set_update_interval(lua_State *L) {
   return 0; /* number of results */
 }
 
+static int llua_conky_surface(lua_State *L) {
+  auto *output = display_output();
+  if (output == nullptr) {
+    lua_pushnil(L);
+    return 1;
+  }
+  auto weak = output->drawing_surface();
+  auto surface = weak.lock();
+  if (!surface) {
+    lua_pushnil(L);
+    return 1;
+  }
+  tolua_pushusertype(L, surface.get(), "cairo_surface_t");
+  return 1;
+}
+
 void llua_init() {
   std::string libs(PACKAGE_LIBDIR "/lib?.so;");
   std::string old_path, new_path;
@@ -250,9 +268,13 @@ void llua_init() {
   lua_pushcfunction(lua_L, &llua_conky_set_update_interval);
   lua_setglobal(lua_L, "conky_set_update_interval");
 
-#if defined(BUILD_X11)
+  lua_pushcfunction(lua_L, &llua_conky_surface);
+  lua_setglobal(lua_L, "conky_surface");
+
   /* register tolua++ user types */
   tolua_open(lua_L);
+  tolua_usertype(lua_L, "cairo_surface_t");
+#if defined(BUILD_X11)
   tolua_usertype(lua_L, "Drawable");
   tolua_usertype(lua_L, "Visual");
   tolua_usertype(lua_L, "Display");

@@ -248,22 +248,26 @@ values:
   - name: lua_draw_hook_post
     desc: |-
       This function, if defined, will be called by Conky through
-      each iteration after drawing to the window. Requires X support. Takes
-      any number of optional arguments. Use this hook for drawing things on
-      top of what Conky draws. Conky puts 'conky_' in front of function_name
-      to prevent accidental calls to the wrong function unless you place
-      'conky_' in front of it yourself.
+      each iteration after drawing to the window. Requires a graphical
+      output (X11 or Wayland). Takes any number of optional arguments.
+      Use this hook for drawing things on top of what Conky draws.
+      Conky puts 'conky_' in front of function_name to prevent accidental
+      calls to the wrong function unless you place 'conky_' in front of
+      it yourself. Use `conky_surface()` inside the hook to obtain the
+      current drawing surface.
     args:
       - function_name
       - [function arguments]
   - name: lua_draw_hook_pre
     desc: |-
       This function, if defined, will be called by Conky through
-      each iteration before drawing to the window. Requires X support. Takes
-      any number of optional arguments. Use this hook for drawing things on
-      top of what Conky draws. Conky puts 'conky_' in front of function_name
-      to prevent accidental calls to the wrong function unless you place
-      'conky_' in front of it yourself.
+      each iteration before drawing to the window. Requires a graphical
+      output (X11 or Wayland). Takes any number of optional arguments.
+      Use this hook for drawing things on top of what Conky draws.
+      Conky puts 'conky_' in front of function_name to prevent accidental
+      calls to the wrong function unless you place 'conky_' in front of
+      it yourself. Use `conky_surface()` inside the hook to obtain the
+      current drawing surface.
     args:
       - function_name
       - [function arguments]

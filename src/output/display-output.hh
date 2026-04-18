@@ -26,6 +26,7 @@
 #include <string.h>
 #include <cmath>
 #include <limits>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -34,11 +35,21 @@
 #include "../logging.h"
 #include "../lua/luamm.hh"
 
+typedef struct _cairo_surface cairo_surface_t;
+
 namespace conky {
 
 bool initialize_display_outputs();
 
 bool shutdown_display_outputs();
+
+/**
+ * @brief Surface being drawn to.
+ *
+ * This alias provides a renderer agnostic name to simplify any potential future
+ * changes or support for different rasterizers.
+ */
+using draw_surface = cairo_surface_t;
 
 /*
  * A base class for all display outputs.
@@ -125,6 +136,11 @@ class display_output_base {
   virtual void gotoxy(int /*x*/, int /*y*/) {}
 
   virtual void flush() {}
+
+  virtual std::weak_ptr<draw_surface> drawing_surface() {
+    // Non-graphical outputs always return null.
+    return std::weak_ptr<draw_surface>();
+  }
 
   friend bool conky::initialize_display_outputs();
   friend bool conky::shutdown_display_outputs();
