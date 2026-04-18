@@ -275,12 +275,12 @@ endif(OS_DARWIN)
 
 # Optional sources
 if(HAVE_SOUNDCARD_H)
-  set(mixer data/audio/mixer.cc data/audio/mixer.h)
+  set(mixer data/audio/mixer.cc)
   set(optional_sources ${optional_sources} ${mixer})
 endif(HAVE_SOUNDCARD_H)
 
 if(BUILD_AUDACIOUS)
-  set(audacious data/audio/audacious.cc data/audio/audacious.h)
+  set(audacious data/audio/audacious.cc)
   set(optional_sources ${optional_sources} ${audacious})
 endif(BUILD_AUDACIOUS)
 
@@ -290,7 +290,7 @@ if(BUILD_IBM)
 endif(BUILD_IBM)
 
 if(BUILD_MPD)
-  set(mpd data/audio/mpd.cc data/audio/mpd.h data/audio/libmpdclient.cc data/audio/libmpdclient.h)
+  set(mpd data/audio/mpd.cc data/audio/libmpdclient.cc data/audio/libmpdclient.h)
   set(optional_sources ${optional_sources} ${mpd})
 endif(BUILD_MPD)
 
@@ -300,12 +300,12 @@ if(BUILD_MYSQL)
 endif(BUILD_MYSQL)
 
 if(BUILD_MOC)
-  set(moc data/audio/moc.cc data/audio/moc.h)
+  set(moc data/audio/moc.cc)
   set(optional_sources ${optional_sources} ${moc})
 endif(BUILD_MOC)
 
 if(BUILD_CMUS)
-  set(cmus data/audio/cmus.cc data/audio/cmus.h)
+  set(cmus data/audio/cmus.cc)
   set(optional_sources ${optional_sources} ${cmus})
 endif(BUILD_CMUS)
 
@@ -497,7 +497,7 @@ if(BUILD_NCURSES)
 endif(BUILD_NCURSES)
 
 if(BUILD_PULSEAUDIO)
-  set(pulseaudio data/audio/pulseaudio.cc data/audio/pulseaudio.h)
+  set(pulseaudio data/audio/pulseaudio.cc)
   set(optional_sources ${optional_sources} ${pulseaudio})
 endif(BUILD_PULSEAUDIO)
 

@@ -1,9 +1,9 @@
 #ifndef CONKY_PARSE_VARIABLES_HH
 #define CONKY_PARSE_VARIABLES_HH
 
-#include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <type_traits>
 #include <initializer_list>
 #include <string_view>
 #include <unordered_map>
@@ -11,10 +11,10 @@
 #include "content/text_object.h"
 #include "macros.h"
 
-// Forward declarations — defined in conky.cc / common.cc
-int spaced_print(char *, int, const char *, int, ...);
-void format_seconds(char *buf, unsigned int n, long seconds);
-int extract_variable_text_internal(struct text_object *, const char *);
+// Forward declaration of external functions. Don't include for these.
+int spaced_print(char *, int, const char *, int, ...); // conky.cc
+void format_seconds(char *, unsigned int, long); // common.cc
+int extract_variable_text_internal(struct text_object *, const char *); // core.cc
 
 namespace conky::text_object {
 
@@ -85,48 +85,30 @@ const variable_definition *find_variable(std::string_view name);
 /// Backing function for the register_variable macro.
 int register_variable_impl(std::initializer_list<variable_definition> entries);
 
-
-/// Creates a variable_definition whose print callback invokes a static
-/// accessor function and formats the result into the output buffer.
+/// Converts a typed value to its human-readable string representation
+/// and writes it into a fixed-size char buffer.
 ///
-/// Template parameters:
-///   Value       - return type of the accessor (deduced). Determines the
-///                 printf format used to render the value. Supported types:
-///                   const char* / char*        -> "%s"
-///                   std::string / string_view  -> "%.*s" (precision = size)
-///                   bool                       -> "yes" / "no"
-///                   floating point             -> "%.2f"
-///                   unsigned integral          -> "%llu"
-///                   signed integral            -> "%lld"
-///                   std::chrono::duration      -> format_seconds()
-///                 A static_assert fires for unsupported types.
-///   accessor    - a non-capturing function pointer Value(*)() that returns
-///                 the current value to print. Because it is a non-type
-///                 template parameter, the generated construct and print
-///                 lambdas remain non-capturing and decay to function
-///                 pointers — satisfying construct_fn and obj_cb::print.
-///   Width       - minimum column width (default 0). When non-zero, output
-///                 is padded via spaced_print() instead of snprintf().
+/// The value is first formatted into target via snprintf, then padded
+/// in-place by pad_buffer if options.min_length > 0.
 ///
-/// Runtime parameters:
-///   name            - the variable name used for registry lookup (e.g. "cpu")
-///   update_cb       - periodic data-fetch callback, nullptr if none
-///   update_interval - fetch period, default 1s (ignored when update_cb is null)
+/// Termination: a single null byte is always written. On truncation,
+/// the string is cut at max_length - 1. The buffer is not zeroed
+/// beyond the null terminator.
 ///
-/// In C++17 a lambda cannot be a non-type template parameter directly.
-/// The print_variable / print_variable_w macros bridge this by wrapping
-/// the user-supplied lambda in a local struct's static member function,
-/// whose address *is* a valid NTTP.
-/// In C++20 stateless lambdas can be passed as template arguments and those
-/// macros can be removed and lambdas passed directly as template arguments.
+/// Type → format mapping:
+///   const char* / char*       → "%s" (nullptr writes empty string)
+///   std::string               → "%.*s" with size() precision
+///   std::string_view          → "%.*s" with size() precision
+///   bool                      → "yes" / "no"
+///   floating point            → "%.2f"
+///   unsigned integral         → "%llu"
+///   signed integral           → "%lld"
+///   std::chrono::duration     → format_seconds() (days/h:mm:ss)
 ///
-/// You'll likely want to use print_variable[_w] macros defined below over
-/// calling this function directly.
-template <typename Value, Value (*accessor)(), int Width = 0>
-constexpr variable_definition print_variable_impl(const char *name,
-                                   update_fn update_cb = nullptr,
-                                   std::chrono::milliseconds update_interval = std::chrono::milliseconds{1000}) {
-  // This function seems huge, but it produces a static data blob. Only compile times suffer :)
+/// Any other type triggers a static_assert at compile time.
+template <int MinLength = 0, typename Value>
+void format_variable(char *target, std::size_t target_capacity, Value value) {
+  if (target == nullptr || target_capacity == 0) { return; }
 
   constexpr bool is_duration =
       std::is_same_v<Value, std::chrono::nanoseconds> ||
@@ -144,47 +126,71 @@ constexpr variable_definition print_variable_impl(const char *name,
                 std::is_floating_point_v<Value> ||
                 std::is_integral_v<Value> ||
                 is_duration,
-                "print_variable: unsupported return type from getter; instantiate variable_definition directly or extend print_variable_impl if type is general enough");
+                "to_string_buffer_spaced: unsupported Value type");
 
+  // Format value into target
+  if constexpr (is_duration) {
+    auto secs = std::chrono::duration_cast<std::chrono::seconds>(value).count();
+    format_seconds(target, target_capacity, static_cast<long>(secs));
+  } else if constexpr (std::is_same_v<Value, bool>) {
+    snprintf(target, target_capacity, "%s", value ? "yes" : "no");
+  } else if constexpr (std::is_same_v<Value, std::string> ||
+                       std::is_same_v<Value, std::string_view>) {
+    snprintf(target, target_capacity, "%.*s",
+             static_cast<int>(value.size()), value.data());
+  } else if constexpr (std::is_same_v<Value, const char *> ||
+                       std::is_same_v<Value, char *>) {
+    if (value == nullptr) { *target = 0; return; }
+    snprintf(target, target_capacity, "%s", value);
+  } else if constexpr (std::is_floating_point_v<Value>) {
+    snprintf(target, target_capacity, "%.2f", static_cast<double>(value));
+  } else if constexpr (std::is_unsigned_v<Value>) {
+    snprintf(target, target_capacity, "%llu", static_cast<unsigned long long>(value));
+  } else if constexpr (std::is_integral_v<Value>) {
+    snprintf(target, target_capacity, "%lld", static_cast<long long>(value));
+  }
+
+  if constexpr (MinLength != 0) {
+    spaced_print(target, target_capacity, "%s", MinLength, target);
+  }
+}
+
+/// Creates a variable_definition whose print callback invokes a static
+/// accessor function and formats the result into the output buffer.
+///
+/// Template parameters:
+///   Value       - return type of the accessor (deduced). Formatting is
+///                 handled by conky::to_string_buffer_n (see string-util.hh
+///                 for supported types, format mapping, and guarantees).
+///   accessor    - a non-capturing function pointer Value(*)() that returns
+///                 the current value to print. Because it is a non-type
+///                 template parameter, the generated construct and print
+///                 lambdas remain non-capturing and decay to function
+///                 pointers — satisfying construct_fn and obj_cb::print.
+///   MinLength   - minimum column width (default 0). Passed through to
+///                 conky::to_string_buffer_n as the min_length argument.
+///
+/// Runtime parameters:
+///   name            - the variable name used for registry lookup (e.g. "cpu")
+///   update_cb       - periodic data-fetch callback, nullptr if none
+///   update_interval - fetch period, default 1s (ignored when update_cb is null)
+///
+/// In C++17 a lambda cannot be a non-type template parameter directly.
+/// The print_variable / print_variable_w macros bridge this by wrapping
+/// the user-supplied lambda in a local struct's static member function,
+/// whose address *is* a valid NTTP.
+/// In C++20 stateless lambdas can be passed as template arguments and those
+/// macros can be removed and lambdas passed directly as template arguments.
+///
+/// You'll likely want to use print_variable[_w] macros defined below over
+/// calling this function directly.
+template <int MinLength = 0, typename Value, Value (*accessor)()>
+constexpr variable_definition print_variable_impl(const char *name,
+                                   update_fn update_cb = nullptr,
+                                   std::chrono::milliseconds update_interval = std::chrono::milliseconds{1000}) {
   return {name, [](::text_object *obj, const construct_context &) {
       obj->callbacks.print = [](::text_object *, char *p, unsigned int s) {
-        auto value = accessor();
-        if constexpr (is_duration) {
-          auto secs = std::chrono::duration_cast<std::chrono::seconds>(value).count();
-          format_seconds(p, s, static_cast<long>(secs));
-          return;
-        } else if constexpr (std::is_same_v<Value, bool>) {
-          if constexpr (Width == 0) {
-            snprintf(p, s, "%s", value ? "yes" : "no");
-          } else {
-            spaced_print(p, s, "%s", std::max(Width, 3), value ? "yes" : "no");
-          }
-          return;
-        } else if constexpr (std::is_same_v<Value, std::string> ||
-                             std::is_same_v<Value, std::string_view>) {
-          if constexpr (Width == 0) {
-            snprintf(p, s, "%.*s", static_cast<int>(value.size()), value.data());
-          } else {
-            spaced_print(p, s, "%.*s", Width, static_cast<int>(value.size()), value.data());
-          }
-          return;
-        }
-        if constexpr (std::is_same_v<Value, const char *> || std::is_same_v<Value, char *>) {
-          if (value == nullptr) { *p = 0; return; }
-        }
-        constexpr const char *format = [] {
-          if constexpr (std::is_same_v<Value, const char *> || std::is_same_v<Value, char *>) { return "%s"; }
-          else if constexpr (std::is_floating_point_v<Value>) { return "%.2f"; }
-          else if constexpr (std::is_unsigned_v<Value>) { return "%llu"; }
-          else if constexpr (std::is_integral_v<Value>) { return "%lld"; }
-          else { return ""; } // unreachable
-        }();
-
-        if constexpr (Width == 0) {
-          snprintf(p, s, format, value);
-        } else {
-          spaced_print(p, s, format, Width, value);
-        }
+        format_variable<MinLength>(p, s, accessor());
       };
     },
     update_cb, update_interval
@@ -231,7 +237,7 @@ constexpr variable_definition arg_object_variable(const char *name) {
       static auto call() { return lambda(); }                                   \
     };                                                                          \
     return conky::text_object::print_variable_impl<                             \
-        decltype(W_::call()), &W_::call, width>(name, ##__VA_ARGS__);           \
+        width, decltype(W_::call()), &W_::call>(name, ##__VA_ARGS__);           \
   })()
 #define print_variable(name, lambda, ...)                                       \
   print_variable_w(0, name, lambda, ##__VA_ARGS__)
