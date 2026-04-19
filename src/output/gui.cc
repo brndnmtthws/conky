@@ -234,7 +234,24 @@ conky::range_config_setting<int> own_window_argb_value = conky::deprecated(
     conky::range_config_setting<int>("own_window_argb_value", 0, 255, 255,
                                      false),
     "Use own_window_colour with alpha instead (e.g. '#80000000').");
-#endif /* BUILD_ARGB || BUILD_WAYLAND */
+
+Colour get_background_colour_preference(lua::state &l) {
+  // TODO: anything other than background_colour is deprecated.
+  // Simplify this dance in 5 years and remove other options completely.
+  Colour background = background_colour.get(l);
+#ifdef BUILD_ARGB
+  if (own_window_argb_value.get(l) < 0xff) {
+    background.alpha = own_window_argb_value.get(l);
+  }
+#endif /* BUILD_ARGB */
+  if (set_transparent.get(l)) {
+    background.alpha = 0;
+  }
+
+  return background;
+}
+#endif /* OWN_WINDOW || BUILD_WAYLAND */
+
 priv::own_window_setting own_window;
 
 /******************** </SETTINGS> ************************/

@@ -234,11 +234,12 @@ extern conky::simple_config_setting<uint16_t, window_hints_traits>
 
 #if defined(OWN_WINDOW) || defined(BUILD_WAYLAND)
 extern priv::colour_setting background_colour;
-extern conky::simple_config_setting<bool> set_transparent;
-#endif /* OWN_WINDOW || BUILD_WAYLAND */
 
-#if defined(BUILD_ARGB) || defined(BUILD_WAYLAND)
-extern conky::range_config_setting<int> own_window_argb_value;
-#endif /* BUILD_ARGB || BUILD_WAYLAND */
+Colour get_background_colour_preference(lua::state &l);
+
+inline uint8_t get_background_alpha_preference(lua::state &l) {
+  return get_background_colour_preference(l).alpha;
+}
+#endif /* OWN_WINDOW || BUILD_WAYLAND */
 
 #endif /* _CONKY_GUI_H_ */

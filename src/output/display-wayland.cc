@@ -945,13 +945,7 @@ void display_output_wayland::clear_text(int exposures) {
   auto cr = window->cr.get();
   cairo_save(cr);
 
-  Colour color;
-  if (set_transparent.get(*state)) {
-    color.alpha = 0;
-  } else {
-    color = background_colour.get(*state);
-    color.alpha = own_window_argb_value.get(*state);
-  }
+  Colour color = get_background_colour_preference(*state);
 
   cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
   cairo_paint(cr);

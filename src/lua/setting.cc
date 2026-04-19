@@ -115,7 +115,6 @@ const std::vector<std::string> settings_ordering{
     "own_window_title",
     "own_window_type",
     "own_window_hints",
-    "own_window_argb_value",
     "own_window_colour",
     "own_window",
     "double_buffer",

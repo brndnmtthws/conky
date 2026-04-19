@@ -390,19 +390,6 @@ static Window find_desktop_window(Window root) {
 const int argb8888_color_depth = 32;
 
 #ifdef OWN_WINDOW
-#ifdef BUILD_ARGB
-namespace {
-/* helper function for set_transparent_background() */
-void do_set_background_alpha(conky_x11_window *window, uint8_t alpha) {
-  Colour colour = background_colour.get(*state);
-  colour.alpha = alpha;
-  unsigned long xcolor =
-      colour.to_x11_color(display, screen, window->opacity < 0xff, true);
-  XSetWindowBackground(display, window->window, xcolor);
-}
-}  // namespace
-#endif /* BUILD_ARGB */
-
 /* if no argb visual is configured sets background to ParentRelative for the
    Window and all parents, else real transparency is used */
 void set_transparent_background(conky_x11_window *window) {
@@ -410,7 +397,10 @@ void set_transparent_background(conky_x11_window *window) {
 #ifdef BUILD_ARGB
   if (window->opacity < 0xff && window->color_depth == argb8888_color_depth) {
     // real transparency
-    do_set_background_alpha(window, window->opacity);
+    Colour colour = get_background_colour_preference(*state);
+    unsigned long xcolor =
+        colour.to_x11_color(display, screen, window->opacity < 0xff, true);
+    XSetWindowBackground(display, window->window, xcolor);
     return;
   }
 #endif /* BUILD_ARGB */
@@ -493,17 +483,9 @@ void x11_init_window(lua::state &l, bool own) {
     int flags = CWOverrideRedirect | CWBackingStore;
     window.color_depth = CopyFromParent;
 
-    // TODO: anything other than background_colour is deprecated.
-    // Simplify this dance in 5 years and remove other options completely.
-    uint8_t background_alpha = background_colour.get(l).alpha;
-#ifdef BUILD_ARGB
-    if (own_window_argb_value.get(l) < 0xff) {
-      background_alpha = own_window_argb_value.get(l);
-    }
-#endif /* BUILD_ARGB */
-    if (set_transparent.get(l)) {
-      background_alpha = 0;
-      window.opacity = 0;
+    uint8_t background_alpha = get_background_alpha_preference(l);
+    if (background_alpha == 0) {
+        window.opacity = 0;
     }
 
 #ifdef BUILD_ARGB
