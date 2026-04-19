@@ -24,6 +24,7 @@
 #define SETTING_HH
 
 #include <limits>
+#include <optional>
 #include <string>
 #include <type_traits>
 
@@ -145,11 +146,11 @@ class config_setting_base {
   static int config__newindex(lua::state *l);
   static void make_conky_config(lua::state &l);
 
-  // copying is a REALLY bad idea
   config_setting_base(const config_setting_base &) = delete;
   config_setting_base &operator=(const config_setting_base &) = delete;
 
  protected:
+  config_setting_base(config_setting_base &&other) noexcept;
   /*
    * Set the setting, if the value is sane
    * stack on entry: | ... potential_new_value old_value |
@@ -168,6 +169,7 @@ class config_setting_base {
  public:
   const std::string name;
   const size_t seq_no;
+  std::optional<std::string> deprecation_msg;
 
   static bool seq_compare(const config_setting_base *a,
                           const config_setting_base *b) {
@@ -189,6 +191,13 @@ class config_setting_base {
 };
 }  // namespace priv
 
+/// Mark a config setting as deprecated. Returns the setting by move.
+template <typename T>
+T deprecated(T setting, const char *msg) {
+  setting.deprecation_msg = msg;
+  return setting;
+}
+
 // If you need some very exotic setting, derive it from this class. Otherwise,
 // scroll down.
 template <typename T>
@@ -196,6 +205,7 @@ class config_setting_template : public priv::config_setting_base {
  public:
   explicit config_setting_template(const std::string &name_)
       : config_setting_base(name_) {}
+  config_setting_template(config_setting_template &&) = default;
 
   // get the value of the setting as a C++ type
   T get(lua::state &l);
@@ -253,6 +263,7 @@ class simple_config_setting : public config_setting_template<T> {
       : Base(std::string(name_)),
         default_value(default_value_),
         modifiable(modifiable_) {}
+  simple_config_setting(simple_config_setting &&) = default;
 
  protected:
   const T default_value;
@@ -344,6 +355,7 @@ class range_config_setting : public simple_config_setting<T, Traits> {
       : Base(name_, default_value_, modifiable_), min(min_), max(max_) {
     assert(min <= Base::default_value && Base::default_value <= max);
   }
+  range_config_setting(range_config_setting &&) = default;
 
  protected:
   virtual std::pair<typename Traits::Type, bool> do_convert(lua::state &l,

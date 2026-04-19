@@ -169,6 +169,13 @@ config_setting_base::config_setting_base(std::string name_)
   }
 }
 
+config_setting_base::config_setting_base(config_setting_base &&other) noexcept
+    : name(std::move(other.name)),
+      seq_no(other.seq_no),
+      deprecation_msg(std::move(other.deprecation_msg)) {
+  (*settings)[name] = this;
+}
+
 void config_setting_base::lua_set(lua::state &l) {
   std::lock_guard<lua::state> guard(l);
   lua::stack_sentry s(l, -1);
@@ -193,6 +200,12 @@ void config_setting_base::process_setting(lua::state &l, bool init) {
 
   config_setting_base *ptr = get_setting(l, -3);
   if (ptr == nullptr) { return; }
+
+  if (init && ptr->deprecation_msg.has_value() && !l.isnil(-2)) {
+    NORM_ERR("WARNING: '%s' is deprecated and will be removed in a future "
+             "release. %s",
+             ptr->name.c_str(), ptr->deprecation_msg->c_str());
+  }
 
   ptr->lua_setter(l, init);
   l.pushvalue(-2);
