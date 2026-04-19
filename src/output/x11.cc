@@ -106,8 +106,6 @@ xcb_errors_context_t *xcb_errors_ctx;
 /* Window stuff */
 struct conky_x11_window window;
 
-bool have_argb_visual = false;
-
 /* local prototypes */
 static Window find_desktop_window(Window *p_root, Window *p_desktop);
 static Window find_desktop_window_impl(Window win, int w, int h);
@@ -389,35 +387,35 @@ static Window find_desktop_window(Window root) {
   return desktop;
 }
 
+const int argb8888_color_depth = 32;
+
 #ifdef OWN_WINDOW
 #ifdef BUILD_ARGB
 namespace {
 /* helper function for set_transparent_background() */
-void do_set_background(Window win, uint8_t alpha) {
+void do_set_background_alpha(conky_x11_window *window, uint8_t alpha) {
   Colour colour = background_colour.get(*state);
   colour.alpha = alpha;
   unsigned long xcolor =
-      colour.to_x11_color(display, screen, have_argb_visual, true);
-  XSetWindowBackground(display, win, xcolor);
+      colour.to_x11_color(display, screen, window->opacity < 0xff, true);
+  XSetWindowBackground(display, window->window, xcolor);
 }
 }  // namespace
 #endif /* BUILD_ARGB */
 
 /* if no argb visual is configured sets background to ParentRelative for the
    Window and all parents, else real transparency is used */
-void set_transparent_background(Window win) {
+void set_transparent_background(conky_x11_window *window) {
+  Window win = window->window;
 #ifdef BUILD_ARGB
-  if (have_argb_visual) {
+  if (window->opacity < 0xff && window->color_depth == argb8888_color_depth) {
     // real transparency
-    do_set_background(win, set_transparent.get(*state)
-                               ? 0
-                               : own_window_argb_value.get(*state));
+    do_set_background_alpha(window, window->opacity);
     return;
   }
 #endif /* BUILD_ARGB */
-
   // pseudo transparency
-  if (set_transparent.get(*state)) {
+  if (window->opacity == 0) {
     Window parent = win;
     unsigned int i;
 
@@ -432,15 +430,12 @@ void set_transparent_background(Window win) {
     }
     return;
   }
-
-#ifdef BUILD_ARGB
-  do_set_background(win, 0);
-#endif /* BUILD_ARGB */
 }
 #endif /* OWN_WINDOW */
 
 #ifdef BUILD_ARGB
-static int get_argb_visual(Visual **visual, int *depth) {
+
+static bool try_set_argb_visual(conky_x11_window *window) {
   /* code from gtk project, gdk_screen_get_rgba_visual */
   XVisualInfo visual_template;
   XVisualInfo *visual_list;
@@ -450,22 +445,22 @@ static int get_argb_visual(Visual **visual, int *depth) {
   visual_list =
       XGetVisualInfo(display, VisualScreenMask, &visual_template, &nxvisuals);
   for (i = 0; i < nxvisuals; i++) {
-    if (visual_list[i].depth == 32 && (visual_list[i].red_mask == 0xff0000 &&
-                                       visual_list[i].green_mask == 0x00ff00 &&
-                                       visual_list[i].blue_mask == 0x0000ff)) {
-      *visual = visual_list[i].visual;
-      *depth = visual_list[i].depth;
-      DBGP("Found ARGB Visual");
+    if (visual_list[i].depth == argb8888_color_depth &&
+        (visual_list[i].red_mask == 0xff0000 &&
+         visual_list[i].green_mask == 0x00ff00 &&
+         visual_list[i].blue_mask == 0x0000ff)) {
+      window->visual = visual_list[i].visual;
+      window->color_depth = argb8888_color_depth;
+      window->colourmap = XCreateColormap(display, DefaultRootWindow(display),
+                                          window->visual, AllocNone);
       XFree(visual_list);
-      return 1;
+      return true;
     }
   }
-
   // no argb visual available
-  DBGP("No ARGB Visual found");
-  XFree(visual_list);
 
-  return 0;
+  XFree(visual_list);
+  return false;
 }
 #endif /* BUILD_ARGB */
 
@@ -490,21 +485,38 @@ void x11_init_window(lua::state &l, bool own) {
   window.desktop = find_desktop_window(window.root);
 
   window.visual = DefaultVisual(display, screen);
+  window.opacity = 0xff;
   window.colourmap = DefaultColormap(display, screen);
 
 #ifdef OWN_WINDOW
   if (own) {
-    int depth = 0, flags = CWOverrideRedirect | CWBackingStore;
-    Visual *visual = nullptr;
+    int flags = CWOverrideRedirect | CWBackingStore;
+    window.color_depth = CopyFromParent;
 
-    depth = CopyFromParent;
-    visual = CopyFromParent;
+    // TODO: anything other than background_colour is deprecated.
+    // Simplify this dance in 5 years and remove other options completely.
+    uint8_t background_alpha = background_colour.get(l).alpha;
 #ifdef BUILD_ARGB
-    if (use_argb_visual.get(l) && (get_argb_visual(&visual, &depth) != 0)) {
-      have_argb_visual = true;
-      window.visual = visual;
-      window.colourmap = XCreateColormap(display, DefaultRootWindow(display),
-                                         window.visual, AllocNone);
+    if (own_window_argb_value.get(l) < 0xff) {
+      background_alpha = own_window_argb_value.get(l);
+    }
+#endif /* BUILD_ARGB */
+    if (set_transparent.get(l)) {
+      background_alpha = 0;
+      window.opacity = 0;
+    }
+
+#ifdef BUILD_ARGB
+    bool wants_alpha = background_alpha < 0xff;
+    if (wants_alpha && try_set_argb_visual(&window)) {
+      window.opacity = background_alpha;
+    } else if (wants_alpha) {
+      if (background_alpha != 0) {
+        NORM_ERR("ARGB visual not supported (no compositor?); only full background transparency is supported: window will be opaque");
+      } else {
+        window.opacity = 0;
+        NORM_ERR("ARGB visual not supported (no compositor?); window will use fallback");
+      }
     }
 #endif /* BUILD_ARGB */
 
@@ -546,7 +558,7 @@ void x11_init_window(lua::state &l, bool own) {
                                     0,
                                     0};
       flags |= CWBackPixel;
-      if (have_argb_visual) {
+      if (window.opacity < 0xff) {
         attrs.colormap = window.colourmap;
         flags &= ~CWBackPixel;
         flags |= CWBorderPixel | CWColormap;
@@ -555,7 +567,7 @@ void x11_init_window(lua::state &l, bool own) {
       /* Parent is desktop window (which might be a child of root) */
       window.window = XCreateWindow(
           display, window.desktop, window.geometry.x(), window.geometry.y(), b,
-          b, 0, depth, InputOutput, visual, flags, &attrs);
+          b, 0, window.color_depth, InputOutput, window.visual, flags, &attrs);
 
       XLowerWindow(display, window.window);
       XSetClassHint(display, window.window, &classHint);
@@ -587,7 +599,7 @@ void x11_init_window(lua::state &l, bool own) {
       Atom xa;
 
       flags |= CWBackPixel;
-      if (have_argb_visual) {
+      if (window.opacity < 0xff) {
         attrs.colormap = window.colourmap;
         flags &= ~CWBackPixel;
         flags |= CWBorderPixel | CWColormap;
@@ -598,8 +610,8 @@ void x11_init_window(lua::state &l, bool own) {
       }
       /* Parent is root window so WM can take control */
       window.window = XCreateWindow(display, window.root, window.geometry.x(),
-                                    window.geometry.y(), b, b, 0, depth,
-                                    InputOutput, visual, flags, &attrs);
+                                    window.geometry.y(), b, b, 0, window.color_depth,
+                                    InputOutput, window.visual, flags, &attrs);
 
       uint16_t hints = own_window_hints.get(l);
 

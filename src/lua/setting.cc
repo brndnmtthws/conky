@@ -45,6 +45,11 @@ using settings_vector = std::vector<priv::config_setting_base *>;
  */
 settings_map *settings;
 
+/// Settings that have been removed. Maps old name to an explanation message.
+const std::unordered_map<std::string, std::string> removed_settings = {
+    {"own_window_argb_visual", "ARGB is now always enabled when available. Control opacity with `own_window_colour` (e.g. '#8000')."},
+};
+
 /*
  * Returns the setting record corresponding to the value at the specified index.
  * If the value is not valid, returns nullptr and prints an error.
@@ -59,7 +64,13 @@ priv::config_setting_base *get_setting(lua::state &l, int index) {
   const std::string &name = l.tostring(index);
   auto iter = settings->find(name);
   if (iter == settings->end()) {
-    NORM_ERR("Unknown setting '%s'", name.c_str());
+    auto removed = removed_settings.find(name);
+    if (removed != removed_settings.end()) {
+      NORM_ERR("Setting '%s' has been removed. %s", name.c_str(),
+               removed->second.c_str());
+    } else {
+      NORM_ERR("Unknown setting '%s'", name.c_str());
+    }
     return nullptr;
   }
 
@@ -105,7 +116,6 @@ const std::vector<std::string> settings_ordering{
     "own_window_type",
     "own_window_hints",
     "own_window_argb_value",
-    "own_window_argb_visual",
     "own_window_colour",
     "own_window",
     "double_buffer",

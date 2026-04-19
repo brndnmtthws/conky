@@ -412,27 +412,27 @@ values:
     desc: Boolean, draw conky in own window instead of drawing on root window.
   - name: own_window_argb_value
     desc: |-
-      When ARGB visuals are enabled, this use this to modify the
-      alpha value used. Valid range is 0-255, where 0 is 0% opacity, and 255
-      is 100% opacity.
+      **Deprecated.** Use [`own_window_colour`](#own_window_colour) with an alpha
+      channel instead (e.g. `'#8000'` for 50% opacity).
+
+      Sets the background opacity. Valid range is 0-255, where 0 is fully
+      transparent and 255 is fully opaque. Overrides the alpha channel of
+      `own_window_colour` when set to a value below 255.
     default: 255
     args:
       - integer_number
-  - name: own_window_argb_visual
-    desc: |-
-      Boolean, use ARGB visual? ARGB can be used for real transparency, note
-      that a composite manager is required on X11.
-      This option will not work as desired (in most cases) in conjunction with
-      ['own_window_type override'](#own_window_type).
   - name: own_window_class
     desc: Manually set the WM_CLASS name.
     default: Conky
   - name: own_window_colour
     desc: |-
-      If [own_window_transparent](#own_window_transparent) no, set a specified background
-      colour. Takes either a hex value (e.g. '#ffffff'),
-      a shorthand hex value (e.g. '#fff'), or a valid RGB name
-      (see `/usr/lib/X11/rgb.txt`).
+      Set the background colour of the window. Takes a hex value with
+      optional alpha (e.g. `'#fff'`, `'#8000'`, `'#8fff'`), or a valid
+      RGB name (see `/usr/lib/X11/rgb.txt`).
+
+      The alpha channel controls background opacity. For example, `'#0000'`
+      is fully transparent and `'#f000'` is fully opaque black.
+      Semi-transparent backgrounds require a compositor on X11.
     default: black
     args:
       - color
@@ -465,8 +465,10 @@ values:
     default: 'conky (<hostname>)'
   - name: own_window_transparent
     desc: |-
-      Make conky window transparent. If [`own_window_argb_visual`](#own_window_argb_visual) is enabled,
-      sets background opacity to 0%.
+      **Deprecated.** Use [`own_window_colour`](#own_window_colour) with alpha 0
+      instead (e.g. `'#0000'`).
+
+      Sets background opacity to 0%, making the background fully transparent.
     default: 'false'
   - name: own_window_type
     desc: |-
@@ -500,6 +502,9 @@ values:
         will not work with DEs which draw desktop icons via custom
         panels/windows as those will cover conky.
         [`own_window_hints`](#own_window_hints) are ignored for `override` windows.
+        Semi-transparent backgrounds do not work with `override` windows
+        because compositors typically do not composite override-redirect
+        windows. Full transparency (alpha 0) may work via pseudo-transparency.
 
       To make conky mount on root window, set [`own_window`](#own_window) to `false`.
     default: normal

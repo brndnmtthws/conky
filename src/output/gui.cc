@@ -230,9 +230,6 @@ conky::simple_config_setting<bool> set_transparent = conky::deprecated(
 #endif /* OWN_WINDOW || BUILD_WAYLAND */
 
 #if defined(BUILD_ARGB) || defined(BUILD_WAYLAND)
-conky::simple_config_setting<bool> use_argb_visual = conky::deprecated(
-    conky::simple_config_setting<bool>("own_window_argb_visual", false, false),
-    "ARGB is now always enabled when available.");
 conky::range_config_setting<int> own_window_argb_value = conky::deprecated(
     conky::range_config_setting<int>("own_window_argb_value", 0, 255, 255,
                                      false),

@@ -191,7 +191,7 @@ static void X11_create_window() {
                   window.geometry.y());
     }
 
-    set_transparent_background(window.window);
+    set_transparent_background(&window);
   }
 #endif
 
@@ -303,7 +303,7 @@ bool display_output_x11::main_loop_wait(double t) {
         draw_stuff(); /* redraw everything in our newly sized window */
         XResizeWindow(display, window.window, window.geometry.width(),
                       window.geometry.height()); /* resize window */
-        set_transparent_background(window.window);
+        set_transparent_background(&window);
 #ifdef BUILD_XDBE
         /* swap buffers */
         xdbe_swap_buffers();
@@ -630,7 +630,7 @@ bool handle_event<x_event_handler::REPARENT>(conky::display_output_x11 *surface,
                                              bool *consumed, void **cookie) {
   if (ev.type != ReparentNotify) return false;
 
-  if (own_window.get(*state)) { set_transparent_background(window.window); }
+  if (own_window.get(*state)) { set_transparent_background(&window); }
   // Invalidate cached top parent -- window tree changed.
   window_top_parent = None;
   return true;
@@ -703,7 +703,7 @@ bool handle_event<x_event_handler::PROPERTY_NOTIFY>(
     return true;
   }
 
-  if (!have_argb_visual) {
+  if (window.opacity == 0xff) {
     Atom _XROOTPMAP_ID = XInternAtom(display, "_XROOTPMAP_ID", True);
     Atom _XROOTMAP_ID = XInternAtom(display, "_XROOTMAP_ID", True);
     if (ev.xproperty.atom == _XROOTPMAP_ID ||
@@ -844,12 +844,10 @@ void display_output_x11::cleanup() {
 void display_output_x11::set_foreground_color(Colour c) {
   current_color = c;
 #ifdef BUILD_ARGB
-  if (have_argb_visual) {
-    current_color.alpha = own_window_argb_value.get(*state);
-  }
+  current_color.alpha = window.opacity;
 #endif /* BUILD_ARGB */
   XSetForeground(display, window.gc,
-                 current_color.to_x11_color(display, screen, have_argb_visual));
+                 current_color.to_x11_color(display, screen, window.opacity < 0xff));
 }
 
 int display_output_x11::calc_text_width(const char *s) {
@@ -878,7 +876,7 @@ void display_output_x11::draw_string_at(int x, int y, const char *s, int w) {
     XColor c{};
     XftColor c2{};
 
-    c.pixel = current_color.to_x11_color(display, screen, have_argb_visual);
+    c.pixel = current_color.to_x11_color(display, screen, window.opacity < 0xff);
     // query color on custom colormap
     XQueryColor(display, window.colourmap, &c);
 

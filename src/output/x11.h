@@ -54,9 +54,6 @@
 #include "../geometry.h"
 #include "gui.h"
 
-/* true if use_argb_visual=true and argb visual was found*/
-extern bool have_argb_visual;
-
 #define ATOM(a) XInternAtom(display, #a, False)
 
 /// @brief Display where conky is placed
@@ -75,6 +72,21 @@ struct conky_x11_window {
   Visual *visual;
   Colormap colourmap;
   GC gc;
+  
+  /// Background opacity of the window (0-255).
+  /// 
+  /// This is set directly by lua settings - read them directly from
+  /// backend-agnostic code.
+  uint8_t opacity;
+  /// Window buffer color depth.
+  /// 
+  /// Value `32` means X11 supports ARGB8888 (has a compositor).
+  /// Value `24` means only full background transparency is supported (no compositor).
+  /// Value `0` means `CopyFromParent`, i.e. default value, which is always `24`.
+  /// 
+  /// It can be something other than those 3 values (e.g. monochrome displays),
+  /// but that's exceedingly rare.
+  uint8_t color_depth;
 
   // Mask containing all events captured by conky
   int64_t event_mask;
@@ -101,7 +113,7 @@ void update_x11_workarea();
 void init_x11();
 void destroy_window(void);
 void create_gc(void);
-void set_transparent_background(Window win);
+void set_transparent_background(conky_x11_window *win);
 void get_x11_desktop_info(Display *current_display, Atom atom);
 /// @brief Sets reserved area atoms for the conky window to avoid other windows
 /// covering it.

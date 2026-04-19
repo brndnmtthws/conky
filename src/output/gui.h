@@ -238,7 +238,6 @@ extern conky::simple_config_setting<bool> set_transparent;
 #endif /* OWN_WINDOW || BUILD_WAYLAND */
 
 #if defined(BUILD_ARGB) || defined(BUILD_WAYLAND)
-extern conky::simple_config_setting<bool> use_argb_visual;
 extern conky::range_config_setting<int> own_window_argb_value;
 #endif /* BUILD_ARGB || BUILD_WAYLAND */
 
