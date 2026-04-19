@@ -33,13 +33,14 @@ unsigned long Colour::to_x11_color(Display *display, int screen,
   }
 
   pixel &= 0xffffff;
-#ifdef BUILD_ARGB
+
   if (transparency) {
-    if (premultiply)
+    if (premultiply) {
       pixel = (red * alpha / 255) << 16 | (green * alpha / 255) << 8 |
               (blue * alpha / 255);
+    }
     pixel |= ((unsigned long)alpha << 24);
   }
-#endif /* BUILD_ARGB */
+
   return pixel;
 }

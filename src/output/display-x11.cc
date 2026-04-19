@@ -843,9 +843,7 @@ void display_output_x11::cleanup() {
 
 void display_output_x11::set_foreground_color(Colour c) {
   current_color = c;
-#ifdef BUILD_ARGB
   current_color.alpha = window.opacity;
-#endif /* BUILD_ARGB */
   XSetForeground(display, window.gc,
                  current_color.to_x11_color(display, screen, window.opacity < 0xff));
 }

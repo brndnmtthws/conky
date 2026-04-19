@@ -394,7 +394,7 @@ const int argb8888_color_depth = 32;
    Window and all parents, else real transparency is used */
 void set_transparent_background(conky_x11_window *window) {
   Window win = window->window;
-#ifdef BUILD_ARGB
+
   if (window->opacity < 0xff && window->color_depth == argb8888_color_depth) {
     // real transparency
     Colour colour = get_background_colour_preference(*state);
@@ -403,7 +403,7 @@ void set_transparent_background(conky_x11_window *window) {
     XSetWindowBackground(display, window->window, xcolor);
     return;
   }
-#endif /* BUILD_ARGB */
+
   // pseudo transparency
   if (window->opacity == 0) {
     Window parent = win;
@@ -422,8 +422,6 @@ void set_transparent_background(conky_x11_window *window) {
   }
 }
 #endif /* OWN_WINDOW */
-
-#ifdef BUILD_ARGB
 
 static bool try_set_argb_visual(conky_x11_window *window) {
   /* code from gtk project, gdk_screen_get_rgba_visual */
@@ -452,7 +450,6 @@ static bool try_set_argb_visual(conky_x11_window *window) {
   XFree(visual_list);
   return false;
 }
-#endif /* BUILD_ARGB */
 
 void destroy_window() {
 #ifdef BUILD_XFT
@@ -484,12 +481,8 @@ void x11_init_window(lua::state &l, bool own) {
     window.color_depth = CopyFromParent;
 
     uint8_t background_alpha = get_background_alpha_preference(l);
-    if (background_alpha == 0) {
-        window.opacity = 0;
-    }
-
-#ifdef BUILD_ARGB
     bool wants_alpha = background_alpha < 0xff;
+
     if (wants_alpha && try_set_argb_visual(&window)) {
       window.opacity = background_alpha;
     } else if (wants_alpha) {
@@ -500,7 +493,6 @@ void x11_init_window(lua::state &l, bool own) {
         NORM_ERR("ARGB visual not supported (no compositor?); window will use fallback");
       }
     }
-#endif /* BUILD_ARGB */
 
     int b = border_inner_margin.get(l) + border_width.get(l) +
             border_outer_margin.get(l);

@@ -205,9 +205,6 @@ else()
     "Xfixes support requires X11")
 endif(OS_DARWIN)
 
-dependent_option(BUILD_ARGB "Build ARGB (real transparency) support" true
-  "BUILD_X11;OWN_WINDOW" false
-  "ARGB support requires X11 and OWN_WINDOW enabled, not needed on Wayland")
 dependent_option(BUILD_XINERAMA "Build Xinerama support" true
   "BUILD_X11" false
   "Xinerama support requires X11")
