@@ -423,7 +423,19 @@ void set_transparent_background(conky_x11_window *window) {
 }
 #endif /* OWN_WINDOW */
 
+static bool has_compositor() {
+  // Check for a running compositor via the ICCCM _NET_WM_CM_Sn selection.
+  // A compositor owns this selection on the screen it manages.
+  char atom_name[32];
+  snprintf(atom_name, sizeof(atom_name), "_NET_WM_CM_S%d", screen);
+  Atom cm_atom = XInternAtom(display, atom_name, False);
+  return XGetSelectionOwner(display, cm_atom) != None;
+}
+
 static bool try_set_argb_visual(conky_x11_window *window) {
+  // ARGB visuals are useless without a compositor to blend the alpha.
+  if (!has_compositor()) { return false; }
+
   /* code from gtk project, gdk_screen_get_rgba_visual */
   XVisualInfo visual_template;
   XVisualInfo *visual_list;
