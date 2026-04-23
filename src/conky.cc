@@ -507,7 +507,11 @@ int spaced_print(char *buf, int size, const char *format, int width, ...) {
  * - i.e., unsigned values between 0 and 100
  * - respect the value of pad_percents */
 int percent_print(char *buf, int size, unsigned value) {
-  return spaced_print(buf, size, "%u", pad_percents.get(*state), value);
+  int width = pad_percents.get(*state);
+  if(width == 0){
+    width = 3;
+  }
+  return spaced_print(buf, size, "%u", width, value);
 }
 
 /* converts from bytes to human readable format (K, M, G, T)
