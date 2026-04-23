@@ -747,6 +747,9 @@ void llua_update_window_table(conky::vec2i window_size,
   }
 #endif
 
+  llua_set_number("width", window_size.x());
+  llua_set_number("height", window_size.y());
+
   lua_newtable(lua_L);
   llua_set_number("x", static_cast<int>(window_size.x() * scale_x));
   llua_set_number("y", static_cast<int>(window_size.y() * scale_y));
