@@ -69,7 +69,6 @@
 #endif /* BUILD_ICONV */
 #include "data/network/mail.h"
 #include "data/network/mboxscan.h"
-#include "data/network/net_stat.h"
 #include "logging.h"
 #include "lua/llua.h"
 #include "output/nc.h"
@@ -224,47 +223,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 
 #endif /* __linux__ */
 
-#ifdef BUILD_WLAN
-  END OBJ(wireless_essid, &update_net_stats) obj->data.opaque =
-      get_net_stat(arg, obj, free_at_crash);
-  parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_wireless_essid;
-  END OBJ(wireless_channel, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_wireless_channel;
-  END OBJ(wireless_freq, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_wireless_frequency;
-  END OBJ(wireless_mode, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_wireless_mode;
-  END OBJ(wireless_bitrate, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_wireless_bitrate;
-  END OBJ(wireless_ap, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_wireless_ap;
-  END OBJ(wireless_link_qual, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_wireless_link_qual;
-  END OBJ(wireless_link_qual_max, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_wireless_link_qual_max;
-  END OBJ(wireless_link_qual_perc, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_wireless_link_qual_perc;
-  END OBJ(wireless_link_bar, &update_net_stats)
-      parse_net_stat_bar_arg(obj, arg, free_at_crash);
-  obj->callbacks.barval = &wireless_link_barval;
-#endif /* BUILD_WLAN */
-
-#if (defined(__FreeBSD__) || defined(__linux__) || defined(__DragonFly__) || \
-     (defined(__APPLE__) && defined(__MACH__)))
-  END OBJ_IF_ARG(if_up, nullptr, "if_up needs an argument")
-      parse_if_up_arg(obj, arg);
-  obj->callbacks.iftest = &interface_up;
-  obj->callbacks.free = &free_if_up;
-#endif
 #if defined(__OpenBSD__)
   END OBJ_ARG(obsd_sensors_temp, 0, "obsd_sensors_temp: needs an argument")
       parse_obsd_sensor(obj, arg);
@@ -331,17 +289,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #endif /* BUILD_GUI */
   END OBJ(conky_version, nullptr) obj_be_plain_text(obj, VERSION);
   END OBJ(conky_build_arch, nullptr) obj_be_plain_text(obj, BUILD_ARCH);
-  END OBJ(downspeed, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_downspeed;
-  END OBJ(downspeedf, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_downspeedf;
-#ifdef BUILD_GUI
-  END OBJ(downspeedgraph, &update_net_stats)
-      parse_net_stat_graph_arg(obj, arg, free_at_crash);
-  obj->callbacks.graphval = &downspeedgraphval;
-#endif /* BUILD_GUI */
   END OBJ(else, nullptr) obj_be_ifblock_else(ifblock_opaque, obj);
   obj->callbacks.iftest = &gen_false_iftest;
   END OBJ(endif, nullptr) obj_be_ifblock_endif(ifblock_opaque, obj);
@@ -481,9 +428,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       arg != nullptr ? strtol(arg, nullptr, 10) : 1;
   obj->callbacks.print = &new_hr;
 #endif /* BUILD_GUI */
-  END OBJ(nameserver, &update_dns_data) parse_nameserver_arg(obj, arg);
-  obj->callbacks.print = &print_nameserver;
-  obj->callbacks.free = &free_dns_data;
   END OBJ(offset, nullptr) obj->data.l =
       arg != nullptr ? strtol(arg, nullptr, 10) : 1;
   obj->callbacks.print = &new_offset;
@@ -500,20 +444,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(tab, nullptr) scan_tab(obj, arg);
   obj->callbacks.print = &new_tab;
 #endif /* BUILD_GUI */
-  END OBJ(addr, &update_net_stats) parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_addr;
-  END
-#ifdef __linux__
-      OBJ(addrs, &update_net_stats) parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_addrs;
-#ifdef BUILD_IPV6
-  END OBJ(v6addrs, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_v6addrs;
-#endif /* BUILD_IPV6 */
-  END
-#endif /* __linux__ */
-      OBJ_ARG(tail, nullptr, "tail needs arguments")
+  END OBJ_ARG(tail, nullptr, "tail needs arguments")
           init_tailhead("tail", arg, obj, free_at_crash);
   obj->callbacks.print = &print_tail;
   obj->callbacks.free = &free_tailhead;
@@ -646,29 +577,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(iconv_stop, 0) init_iconv_stop();
   obj->callbacks.print = &print_iconv_stop;
 #endif
-  END OBJ(totaldown, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_totaldown;
-  END OBJ(totalup, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_totalup;
   END OBJ(alignr, nullptr) obj->data.l =
       arg != nullptr ? strtol(arg, nullptr, 10) : 1;
   obj->callbacks.print = &new_alignr;
   END OBJ(alignc, nullptr) obj->data.l =
       arg != nullptr ? strtol(arg, nullptr, 10) : 0;
   obj->callbacks.print = &new_alignc;
-  END OBJ(upspeed, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_upspeed;
-  END OBJ(upspeedf, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_upspeedf;
-#ifdef BUILD_GUI
-  END OBJ(upspeedgraph, &update_net_stats)
-      parse_net_stat_graph_arg(obj, arg, free_at_crash);
-  obj->callbacks.graphval = &upspeedgraphval;
-#endif
 #if defined(__linux__)
   END OBJ(user_names, &update_users) obj->callbacks.print = &print_user_names;
   obj->callbacks.free = &free_user_names;
