@@ -48,6 +48,7 @@
 // #include <assert.h>
 #include <time.h>
 #include <unordered_map>
+static constexpr int LINUX_BUF_LEN = 512;
 #include "../../lua/setting.hh"
 #include "../top.h"
 
@@ -180,7 +181,7 @@ int update_meminfo(void) {
   static int reported = 0;
 
   /* unsigned int a; */
-  char buf[256];
+  char buf[LINUX_BUF_LEN];
 
   /* With multi-threading, calculations that require
    * multiple steps to reach a final result can cause havok
@@ -504,7 +505,7 @@ void update_net_interfaces(FILE *net_dev_fp, bool is_first_update,
 
     /* quit only after all non-header lines from /proc/net/dev parsed */
     // FIXME: arbitrary size chosen to keep code simple.
-    char buf[256];
+    char buf[LINUX_BUF_LEN];
     if (fgets(buf, 255, net_dev_fp) == nullptr) { break; }
     p = buf;
     /* change char * p to first non-space character, which is the beginning
@@ -787,7 +788,7 @@ int update_net_stats(void) {
   static bool is_first_update = true;
 
   // FIXME: arbitrary size chosen to keep code simple.
-  char buf[256];
+  char buf[LINUX_BUF_LEN];
   double time_between_updates;
 
   /* get delta */
@@ -926,7 +927,7 @@ void determine_longstat_file(void) {
 void get_cpu_count(void) {
   FILE *stat_fp;
   static int reported = 0;
-  char buf[256];
+  char buf[LINUX_BUF_LEN];
   char *str1, *str2, *token, *subtoken;
   char *saveptr1, *saveptr2;
   int subtoken1 = -1;
@@ -978,7 +979,7 @@ int update_stat(void) {
   FILE *stat_fp;
   static int reported = 0;
   struct cpu_info *cpu = nullptr;
-  char buf[256];
+  char buf[LINUX_BUF_LEN];
   int i;
   unsigned int idx;
   double curtmp;
@@ -2047,8 +2048,8 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
     strncpy(charging_state, "unknown", 64);
 
     while (!feof(sysfs_bat_fp[idx])) {
-      char buf[256];
-      if (fgets(buf, 256, sysfs_bat_fp[idx]) == nullptr) break;
+      char buf[LINUX_BUF_LEN];
+      if (fgets(buf, LINUX_BUF_LEN, sysfs_bat_fp[idx]) == nullptr) break;
 
       /* let's just hope units are ok */
       if (strncmp(buf, "POWER_SUPPLY_PRESENT=1", 22) == 0)
@@ -2194,9 +2195,9 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat,
     strncpy(charging_state, "unknown", 8);
 
     while (!feof(acpi_bat_fp[idx])) {
-      char buf[256];
+      char buf[LINUX_BUF_LEN];
 
-      if (fgets(buf, 256, acpi_bat_fp[idx]) == nullptr) { break; }
+      if (fgets(buf, LINUX_BUF_LEN, acpi_bat_fp[idx]) == nullptr) { break; }
 
       /* let's just hope units are ok */
       if (strncmp(buf, "present:", 8) == 0) {
@@ -2440,8 +2441,8 @@ int _get_battery_perct(const char *bat) {
   if (sysfs_bat_fp[idx] != nullptr) {
     /* SYSFS */
     while (!feof(sysfs_bat_fp[idx])) {
-      char buf[256];
-      if (fgets(buf, 256, sysfs_bat_fp[idx]) == nullptr) break;
+      char buf[LINUX_BUF_LEN];
+      if (fgets(buf, LINUX_BUF_LEN, sysfs_bat_fp[idx]) == nullptr) break;
 
       if (strncmp(buf, "POWER_SUPPLY_CHARGE_NOW=", 24) == 0) {
         sscanf(buf, "POWER_SUPPLY_CHARGE_NOW=%d", &remaining_capacity);
@@ -2484,9 +2485,9 @@ int _get_battery_perct(const char *bat) {
     fseek(acpi_bat_fp[idx], 0, SEEK_SET);
 
     while (!feof(acpi_bat_fp[idx])) {
-      char buf[256];
+      char buf[LINUX_BUF_LEN];
 
-      if (fgets(buf, 256, acpi_bat_fp[idx]) == nullptr) { break; }
+      if (fgets(buf, LINUX_BUF_LEN, acpi_bat_fp[idx]) == nullptr) { break; }
 
       if (buf[0] == 'r') {
         sscanf(buf, "remaining capacity: %d", &remaining_capacity);
@@ -2759,7 +2760,7 @@ int update_diskio(void) {
 
   /* read reads and writes from all disks (minor = 0), including cd-roms
    * and floppies, and sum them up */
-  while (fgets(buf, 512, fp)) {
+  while (fgets(buf, LINUX_BUF_LEN, fp)) {
     col_count = sscanf(buf, "%u %u %s %*u %*u %u %*u %*u %*u %u", &major,
                        &minor, devbuf, &reads, &writes);
     /* ignore subdevices (they have only 3 matching entries in their line)
