@@ -144,7 +144,22 @@ struct process *get_process_by_name(std::string_view name) {
 
   return nullptr;
 }
-bool is_process_running(std::string_view name) {
+
+static int update_top();
+
+/// Default implementation: checks the process list, rebuilding it if needed.
+/// This works on all platforms but triggers a full process scan+sort.
+/// Platform-specific overrides (e.g. Linux /proc scan) should provide a
+/// lighter implementation.
+__attribute__((weak)) bool is_process_running(std::string_view name) {
+  if (get_process_by_name(name) != nullptr) { return true; }
+  // Process list may be stale or empty if no $top variable is in the
+  // config (since update_top only runs as a periodic callback when $top
+  // registers it). Rebuild inline here so if_running works standalone.
+  // This is the same cost as the periodic callback — one full scan per
+  // tick — just triggered from the render path instead of the update
+  // phase. Platform-specific overrides can avoid this entirely.
+  update_top();
   return get_process_by_name(name) != nullptr;
 }
 

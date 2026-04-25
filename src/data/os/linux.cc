@@ -3252,6 +3252,32 @@ bool is_conky_already_running(void) {
   return instances > 1;
 }
 
+/// Linux override: scans /proc directly instead of requiring the full
+/// process table sort from update_top. Falls back to the process list
+/// if it's already built (e.g. $top is in the config).
+bool is_process_running(std::string_view name) {
+  if (get_process_by_name(name) != nullptr) { return true; }
+  DIR *dir = opendir("/proc");
+  if (dir == nullptr) { return false; }
+  struct dirent *entry;
+  while ((entry = readdir(dir)) != nullptr) {
+    if (!isdigit(static_cast<unsigned char>(entry->d_name[0]))) { continue; }
+    auto path = process_directory / entry->d_name / "cmdline";
+    FILE *fp = fopen(path.c_str(), "r");
+    if (fp == nullptr) { continue; }
+    char cmdline[256];
+    size_t len = fread(cmdline, 1, sizeof(cmdline) - 1, fp);
+    fclose(fp);
+    if (len == 0) { continue; }
+    cmdline[len] = '\0';
+    if (name == cmdline) { closedir(dir); return true; }
+    const char *base = strrchr(cmdline, '/');
+    if (base != nullptr && name == base + 1) { closedir(dir); return true; }
+  }
+  closedir(dir);
+  return false;
+}
+
 using namespace conky::text_object;
 
 // clang-format off
