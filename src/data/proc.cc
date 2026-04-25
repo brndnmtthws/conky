@@ -391,8 +391,8 @@ void print_cmdline_to_pid(struct text_object *obj, char *p,
       auto path = process_directory / entry->d_name / "cmdline";
 
       auto contents = readfile(path, false);
-      if (contents) {
-        for (std::size_t i = 0; i < contents->size() - 1; i++) {
+      if (contents && !contents->empty()) {
+        for (std::size_t i = 0; i + 1 < contents->size(); i++) {
           if ((*contents)[i] == 0) { (*contents)[i] = ' '; }
         }
         if (strstr(contents->c_str(), obj->data.s) != nullptr) {
