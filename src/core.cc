@@ -85,7 +85,6 @@
 #include "data/network/read_tcpip.h"
 #include "data/tailhead.h"
 #include "data/timeinfo.h"
-#include "data/top.h"
 #include "data/user.h"
 #include "data/users.h"
 #ifdef BUILD_CURL
@@ -501,21 +500,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(tab, nullptr) scan_tab(obj, arg);
   obj->callbacks.print = &new_tab;
 #endif /* BUILD_GUI */
-  END
-      /* we have four different types of top (top, top_mem, top_time and
-       * top_io). To avoid having almost-same code four times, we have this
-       * special handler. */
-      /* XXX: maybe fiddle them apart later, as print_top() does
-       * nothing else than just that, using an ugly switch(). */
-      if (strncmp(s, "top", 3) == EQUAL) {
-    if (parse_top_args(s, arg, obj) != 0) {
-      obj->cb_handle = create_cb_handle(update_top);
-    } else {
-      free(obj);
-      return nullptr;
-    }
-  }
-  else OBJ(addr, &update_net_stats) parse_net_stat_arg(obj, arg, free_at_crash);
+  END OBJ(addr, &update_net_stats) parse_net_stat_arg(obj, arg, free_at_crash);
   obj->callbacks.print = &print_addr;
   END
 #ifdef __linux__

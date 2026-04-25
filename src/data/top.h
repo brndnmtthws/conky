@@ -136,10 +136,6 @@ struct process *get_process_by_name(std::string_view name);
  */
 bool is_process_running(std::string_view name);
 
-int parse_top_args(const char *s, const char *arg, struct text_object *obj);
-
-int update_top(void);
-
 void get_top_info(void);
 
 extern struct process *first_process;

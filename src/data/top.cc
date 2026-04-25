@@ -34,6 +34,9 @@
 
 #include "../logging.h"
 #include "../prioqueue.h"
+#include "parse/variables.hh"
+
+using namespace conky::text_object;
 
 /* hash table size - always a power of 2 */
 #define HTABSIZE 256
@@ -570,100 +573,95 @@ static void free_top(struct text_object *obj) {
   free_and_zero(obj->data.opaque);
 }
 
-int parse_top_args(const char *s, const char *arg, struct text_object *obj) {
-  struct top_data *td;
+struct top_field_entry {
+  const char *name;
+  print_cb print;
+};
+
+static constexpr top_field_entry top_fields[] = {
+    {"name", &print_top_name},     {"cpu", &print_top_cpu},
+    {"pid", &print_top_pid},       {"mem", &print_top_mem},
+    {"time", &print_top_time},     {"mem_res", &print_top_mem_res},
+    {"mem_vsize", &print_top_mem_vsize},
+    {"uid", &print_top_uid},       {"user", &print_top_user},
+#ifdef BUILD_IOSTATS
+    {"io_read", &print_top_read_bytes},
+    {"io_write", &print_top_write_bytes},
+    {"io_perc", &print_top_io_perc},
+#endif
+};
+
+static bool parse_top_field(text_object *obj, const char *arg,
+                            create_status *status) {
+  auto *td = static_cast<struct top_data *>(obj->data.opaque);
   char buf[64];
   int n;
 
-  if (arg == nullptr) {
-    LOG_ERROR("top needs arguments");
-    return 0;
-  }
-
-  obj->data.opaque = td =
-      static_cast<struct top_data *>(malloc(sizeof(struct top_data)));
-  memset(td, 0, sizeof(struct top_data));
-
-  if (s[3] == 0) {
-    td->list = info.cpu;
-    top_cpu = 1;
-  } else if (strcmp(&s[3], "_mem") == EQUAL) {
-    td->list = info.memu;
-    top_mem = 1;
-  } else if (strcmp(&s[3], "_time") == EQUAL) {
-    td->list = info.time;
-    top_time = 1;
-#ifdef BUILD_IOSTATS
-  } else if (strcmp(&s[3], "_io") == EQUAL) {
-    td->list = info.io;
-    top_io = 1;
-#endif /* BUILD_IOSTATS */
-  } else {
-#ifdef BUILD_IOSTATS
-    LOG_ERROR("must be top, top_mem, top_time or top_io");
-#else  /* BUILD_IOSTATS */
-    LOG_ERROR("must be top, top_mem or top_time");
-#endif /* BUILD_IOSTATS */
-    free_and_zero(obj->data.opaque);
-    return 0;
-  }
-
-  td->s = strndup(arg, text_buffer_size.get(*state));
-
-  if (sscanf(arg, "%63s %i", buf, &n) == 2) {
-    if (strcmp(buf, "name") == EQUAL) {
-      obj->callbacks.print = &print_top_name;
-    } else if (strcmp(buf, "cpu") == EQUAL) {
-      obj->callbacks.print = &print_top_cpu;
-    } else if (strcmp(buf, "pid") == EQUAL) {
-      obj->callbacks.print = &print_top_pid;
-    } else if (strcmp(buf, "mem") == EQUAL) {
-      obj->callbacks.print = &print_top_mem;
-    } else if (strcmp(buf, "time") == EQUAL) {
-      obj->callbacks.print = &print_top_time;
-    } else if (strcmp(buf, "mem_res") == EQUAL) {
-      obj->callbacks.print = &print_top_mem_res;
-    } else if (strcmp(buf, "mem_vsize") == EQUAL) {
-      obj->callbacks.print = &print_top_mem_vsize;
-    } else if (strcmp(buf, "uid") == EQUAL) {
-      obj->callbacks.print = &print_top_uid;
-    } else if (strcmp(buf, "user") == EQUAL) {
-      obj->callbacks.print = &print_top_user;
-#ifdef BUILD_IOSTATS
-    } else if (strcmp(buf, "io_read") == EQUAL) {
-      obj->callbacks.print = &print_top_read_bytes;
-    } else if (strcmp(buf, "io_write") == EQUAL) {
-      obj->callbacks.print = &print_top_write_bytes;
-    } else if (strcmp(buf, "io_perc") == EQUAL) {
-      obj->callbacks.print = &print_top_io_perc;
-#endif /* BUILD_IOSTATS */
-    } else {
-      LOG_ERROR("invalid type arg for top");
-#ifdef BUILD_IOSTATS
-      LOG_ERROR(
-          "must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize, "
-          "io_read, io_write, io_perc");
-#else  /* BUILD_IOSTATS */
-      LOG_ERROR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize");
-#endif /* BUILD_IOSTATS */
-      free_and_zero(td->s);
-      free_and_zero(obj->data.opaque);
-      return 0;
-    }
-    if (n < 1 || n > MAX_SP) {
-      LOG_ERROR("invalid num arg for top, must be between 1 and {}", MAX_SP);
-      free_and_zero(td->s);
-      free_and_zero(obj->data.opaque);
-      return 0;
-    }
-    td->num = n - 1;
-
-  } else {
+  if (sscanf(arg, "%63s %i", buf, &n) != 2) {
     LOG_ERROR("invalid argument count for top");
+    *status = create_status::invalid_argument;
+    return false;
+  }
+  for (const auto &f : top_fields) {
+    if (strcmp(buf, f.name) == EQUAL) {
+      if (n < 1 || n > MAX_SP) {
+        LOG_ERROR("invalid num arg for top. Must be between 1 and {}.", MAX_SP);
+        *status = create_status::invalid_argument;
+        return false;
+      }
+      td->num = n - 1;
+      obj->callbacks.print = f.print;
+      obj->callbacks.free = &free_top;
+      return true;
+    }
+  }
+  LOG_ERROR("invalid type arg for top");
+  *status = create_status::invalid_argument;
+  return false;
+}
+
+static void construct_top(text_object *obj, const construct_context &ctx,
+                          process **list, int &flag) {
+  auto *td = static_cast<struct top_data *>(malloc(sizeof(struct top_data)));
+  memset(td, 0, sizeof(struct top_data));
+  obj->data.opaque = td;
+  td->list = list;
+  flag = 1;
+  td->s = strndup(ctx.arg, text_buffer_size.get(*state));
+  if (!parse_top_field(obj, ctx.arg, ctx.status)) {
     free_and_zero(td->s);
     free_and_zero(obj->data.opaque);
-    return 0;
   }
-  obj->callbacks.free = &free_top;
-  return 1;
 }
+
+// clang-format off
+CONKY_REGISTER_VARIABLES(
+    {"top", [](text_object *obj, const construct_context &ctx) {
+      construct_top(obj, ctx, info.cpu, top_cpu);
+    }, &update_top, {}, obj_flags::arg},
+    {"top_mem", [](text_object *obj, const construct_context &ctx) {
+      construct_top(obj, ctx, info.memu, top_mem);
+    }, &update_top, {}, obj_flags::arg},
+    {"top_time", [](text_object *obj, const construct_context &ctx) {
+      construct_top(obj, ctx, info.time, top_time);
+    }, &update_top, {}, obj_flags::arg},
+#ifdef BUILD_IOSTATS
+    {"top_io", [](text_object *obj, const construct_context &ctx) {
+      construct_top(obj, ctx, info.io, top_io);
+    }, &update_top, {}, obj_flags::arg},
+#endif
+    {"running_processes", [](text_object *obj, const construct_context &) {
+      top_running = 1;
+      obj->callbacks.print = [](text_object *, char *p, unsigned int s) {
+        spaced_print(p, s, "%hu", 4, info.run_procs);
+      };
+    }, &update_top},
+    {"if_running", [](text_object *obj, const construct_context &ctx) {
+      obj->data.s = strndup(ctx.arg ? ctx.arg : "", text_buffer_size.get(*state));
+      obj->callbacks.iftest = [](text_object *obj) -> int {
+        return is_process_running(obj->data.s) ? 1 : 0;
+      };
+      obj->callbacks.free = &gen_free_opaque;
+    }, nullptr, {}, obj_flags::arg | obj_flags::cond},
+)
+// clang-format on

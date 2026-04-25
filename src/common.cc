@@ -583,11 +583,6 @@ int if_existing_iftest(struct text_object *obj) {
   return result;
 }
 
-int if_running_iftest(struct text_object *obj) {
-  if (!is_process_running(obj->data.s)) { return 0; }
-  return 1;
-}
-
 #ifndef __OpenBSD__
 void print_acpitemp(struct text_object *obj, char *p, unsigned int p_max_size) {
   temp_print(p, p_max_size, get_acpi_temperature(obj->data.i), TEMP_CELSIUS, 1);
@@ -951,12 +946,6 @@ CONKY_REGISTER_VARIABLES(
 
     // --- processes ---
     print_variable_w(4,"processes", [] { return info.procs; }, &update_total_processes),
-    {"running_processes", [](text_object *obj, const construct_context &) {
-      top_running = 1;
-      obj->callbacks.print = [](text_object *, char *p, unsigned int s) {
-        spaced_print(p, s, "%hu", 4, info.run_procs);
-      };
-    }, &update_top},
     print_variable_w(4,"threads", [] { return info.threads; }, &update_threads),
     print_variable_w(4,"running_threads", [] { return info.run_threads; },
 #if defined(__linux__)
@@ -1133,20 +1122,6 @@ CONKY_REGISTER_VARIABLES(
       obj->callbacks.iftest = &if_existing_iftest;
       obj->callbacks.free = &gen_free_opaque;
     }, nullptr, {}, obj_flags::arg | obj_flags::cond},
-    {"if_running", [](text_object *obj, const construct_context &ctx) {
-#if defined(__linux__) || defined(__FreeBSD__)
-      top_running = 1;
-#endif
-      obj->data.s = strndup(ctx.arg ? ctx.arg : "", text_buffer_size.get(*state));
-      obj->callbacks.iftest = &if_running_iftest;
-      obj->callbacks.free = &gen_free_opaque;
-    },
-#if defined(__linux__) || defined(__FreeBSD__)
-    &update_top,
-#else
-    nullptr,
-#endif
-    {}, obj_flags::arg | obj_flags::cond},
     {"if_updatenr", [](text_object *obj, const construct_context &ctx) {
       obj->data.i = ctx.arg != nullptr ? strtol(ctx.arg, nullptr, 10) : 0;
       if (obj->data.i == 0) {
