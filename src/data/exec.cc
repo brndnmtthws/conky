@@ -35,6 +35,7 @@
 #include <cmath>
 #include <cstdio>
 #include <mutex>
+#include <string>
 #include "../conky.h"
 #include "../core.h"
 #include "../logging.h"
@@ -225,7 +226,23 @@ static inline double get_barnum(const char *buf) {
 void fill_p(const char *buffer, struct text_object *obj, char *p,
             unsigned int p_max_size) {
   if (obj->parse) {
-    evaluate(buffer, p, p_max_size);
+    size_t current_hash = std::hash<std::string>{}(buffer);
+
+    if (obj->last_execp_hash == 0 || current_hash != obj->last_execp_hash) {
+      if (obj->sub) {
+        free_text_objects(obj->sub);
+        free(obj->sub);
+      }
+
+      obj->sub =
+          static_cast<struct text_object *>(malloc(sizeof(struct text_object)));
+      if (obj->sub) { memset(obj->sub, 0, sizeof(struct text_object)); }
+      if (obj->sub) { extract_variable_text_internal(obj->sub, buffer); }
+
+      obj->last_execp_hash = current_hash;
+    }
+
+    if (obj->sub) { generate_text_internal(p, p_max_size, *obj->sub); }
   } else {
     snprintf(p, p_max_size, "%s", buffer);
   }
