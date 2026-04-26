@@ -121,6 +121,8 @@ struct text_object {
   } data;
 
   void *special_data;
+
+  size_t last_execp_hash; /* caching-hash for execp content*/
   long line;
   bool parse;  /* if true then data.s should still be parsed */
   bool thread; /* if true then data.s should be set by a separate thread */
