@@ -95,7 +95,8 @@ if(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
   target_link_libraries(conky-cairo_imlib2_helper
     ${luacairo_libs}
     ${luaimlib2_libs}
-    toluapp_lib_static)
+    toluapp_lib_static
+    spdlog::spdlog)
   set(lua_libs ${lua_libs} conky-cairo_imlib2_helper)
 endif(BUILD_LUA_CAIRO AND BUILD_LUA_IMLIB2)
 

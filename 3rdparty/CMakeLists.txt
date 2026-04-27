@@ -2,3 +2,4 @@
 add_subdirectory(Vc)
 
 add_subdirectory(toluapp)
+add_subdirectory(spdlog)

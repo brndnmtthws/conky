@@ -2188,7 +2188,7 @@ void set_current_config() {
 
 /* : means that character before that takes an argument */
 const char *getopt_string =
-    "vVqdDSs:t:u:i:hc:p:"
+    "vVqdDLSs:t:u:i:hc:p:"
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
     defined(__HAIKU__) || defined(__NetBSD__) || defined(__OpenBSD__)
     "U"
@@ -2208,7 +2208,8 @@ const char *getopt_string =
 const struct option longopts[] = {
     {"help", 0, nullptr, 'h'},          {"version", 0, nullptr, 'v'},
     {"short-version", 0, nullptr, 'V'}, {"quiet", 0, nullptr, 'q'},
-    {"debug", 0, nullptr, 'D'},         {"config", 1, nullptr, 'c'},
+    {"debug", 0, nullptr, 'D'},         {"concise", 0, nullptr, 'L'},
+    {"config", 1, nullptr, 'c'},
 #ifdef BUILD_BUILTIN_CONFIG
     {"print-config", 0, nullptr, 'C'},
 #endif

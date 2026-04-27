@@ -36,6 +36,9 @@
 #include "config.h"
 #include "i18n.h"
 
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
+#include <spdlog/spdlog.h>
+
 class fork_throw : public std::runtime_error {
  public:
   fork_throw() : std::runtime_error("Fork happened") {}
@@ -63,6 +66,8 @@ class obj_create_error : public std::runtime_error {
 };
 
 void clean_up(void);
+
+// Legacy logging functions (to be replaced by conky::log::* in future commits)
 
 template <typename... Args>
 inline void gettextize_format(const char *format, Args &&...args) {
@@ -120,5 +125,29 @@ extern int global_debug_level;
   } while (0)
 #define DBGP(...) __DBGP(0, __VA_ARGS__)
 #define DBGP2(...) __DBGP(1, __VA_ARGS__)
+
+// New spdlog-based logging (fmt syntax, with source location)
+
+namespace conky::log {
+void init_logger();
+void log_more();
+void log_less();
+void set_quiet();
+}  // namespace conky::log
+
+// syslog.h defines LOG_DEBUG, LOG_INFO, LOG_WARNING etc. as integers
+#undef LOG_TRACE
+#undef LOG_DEBUG
+#undef LOG_INFO
+#undef LOG_WARNING
+#undef LOG_ERROR
+#undef LOG_CRITICAL
+
+#define LOG_TRACE(...) SPDLOG_TRACE(__VA_ARGS__)
+#define LOG_DEBUG(...) SPDLOG_DEBUG(__VA_ARGS__)
+#define LOG_INFO(...) SPDLOG_INFO(__VA_ARGS__)
+#define LOG_WARNING(...) SPDLOG_WARN(__VA_ARGS__)
+#define LOG_ERROR(...) SPDLOG_ERROR(__VA_ARGS__)
+#define LOG_CRITICAL(...) SPDLOG_CRITICAL(__VA_ARGS__)
 
 #endif /* _LOGGING_H */

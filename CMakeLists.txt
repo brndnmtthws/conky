@@ -53,6 +53,7 @@ set(conky_sources ${CMAKE_BINARY_DIR}/config.h ${CMAKE_BINARY_DIR}/build.h)
 add_subdirectory(3rdparty)
 set(conky_libs ${conky_libs} toluapp_lib_static)
 set(conky_libs ${conky_libs} Vc)
+set(conky_libs ${conky_libs} spdlog::spdlog)
 set(conky_includes ${conky_includes} "${CMAKE_SOURCE_DIR}/3rdparty/Vc")
 
 # Finally, add some code

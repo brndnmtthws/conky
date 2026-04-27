@@ -105,6 +105,7 @@ execute_process(
 
 set(conky_sources
   ${conky_sources}
+  logging.cc
   c++wrap.cc
   c++wrap.hh
   lua/colour-settings.cc
@@ -319,10 +320,11 @@ if(BUILD_XMMS2)
 endif(BUILD_XMMS2)
 
 if(BUILD_PORT_MONITORS)
-  add_library(tcp-portmon 
+  add_library(tcp-portmon
     data/network/libtcp-portmon.cc
     data/network/libtcp-portmon.h
   )
+  target_link_libraries(tcp-portmon PRIVATE spdlog::spdlog)
   set(conky_libs ${conky_libs} tcp-portmon)
   set(port_monitors
     data/network/tcp-portmon.cc

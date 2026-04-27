@@ -286,7 +286,7 @@ option(BUILD_ICONV "Enable iconv support" false)
 
 option(BUILD_CMUS "Enable support for cmus music player" true)
 
-option(BUILD_JOURNAL "Enable support for reading from the systemd journal"
+option(BUILD_JOURNAL "Enable systemd journal support (reading and logging)"
   false)
 
 option(BUILD_PULSEAUDIO
