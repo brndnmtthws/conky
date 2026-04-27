@@ -61,23 +61,32 @@ class exec_cb : public conky::callback<std::string, std::string> {
 /**
  * Flags used to identify the different types of exec commands during
  * parsing by scan_exec_arg(). These can be used individually or combined.
- * For example, to parse an ${execgraph} object, we pass EF_EXEC | EF_GRAPH
- * as the last argument to scan_exec_arg().
+ * For example, to parse an ${execigraph} object, we pass
+ * exec_flag::interval | exec_flag::graph as the last argument to
+ * scan_exec_arg().
  */
-enum {
-  EF_EXEC = (1 << 0),
-  EF_EXECI = (1 << 1),
-  EF_BAR = (1 << 2),
-  EF_GRAPH = (1 << 3),
-  EF_GAUGE = (1 << 4)
+enum class exec_flag : unsigned int {
+  none = 0,
+  interval = (1 << 0),
+  bar = (1 << 1),
+  graph = (1 << 2),
+  gauge = (1 << 3)
 };
 
-void scan_exec_arg(struct text_object *, const char *, unsigned int);
+inline exec_flag operator|(exec_flag a, exec_flag b) {
+  return static_cast<exec_flag>(static_cast<unsigned>(a) |
+                                    static_cast<unsigned>(b));
+}
+
+inline bool operator&(exec_flag a, exec_flag b) {
+  return (static_cast<unsigned>(a) & static_cast<unsigned>(b)) != 0;
+}
+
+void scan_exec_arg(struct text_object *, const char *,
+                   exec_flag = exec_flag::none);
 void register_exec(struct text_object *);
-void register_execi(struct text_object *);
 void print_exec(struct text_object *, char *, unsigned int);
 double execbarval(struct text_object *);
 void free_exec(struct text_object *);
-void free_execi(struct text_object *);
 
 #endif /* _EXEC_H */

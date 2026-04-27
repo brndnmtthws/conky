@@ -918,88 +918,88 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_catp;
   obj->callbacks.free = &gen_free_opaque;
   END OBJ_ARG(exec, nullptr, "exec needs arguments: <command>")
-      scan_exec_arg(obj, arg, EF_EXEC);
+      scan_exec_arg(obj, arg);
   obj->parse = false;
   obj->thread = false;
   register_exec(obj);
   obj->callbacks.print = &print_exec;
   obj->callbacks.free = &free_exec;
   END OBJ_ARG(execi, nullptr, "execi needs arguments: <interval> <command>")
-      scan_exec_arg(obj, arg, EF_EXECI);
+      scan_exec_arg(obj, arg, exec_flag::interval);
   obj->parse = false;
   obj->thread = false;
-  register_execi(obj);
+  register_exec(obj);
   obj->callbacks.print = &print_exec;
-  obj->callbacks.free = &free_execi;
+  obj->callbacks.free = &free_exec;
   END OBJ_ARG(execp, nullptr, "execp needs arguments: <command>")
-      scan_exec_arg(obj, arg, EF_EXEC);
+      scan_exec_arg(obj, arg);
   obj->parse = true;
   obj->thread = false;
   register_exec(obj);
   obj->callbacks.print = &print_exec;
   obj->callbacks.free = &free_exec;
   END OBJ_ARG(execpi, nullptr, "execpi needs arguments: <interval> <command>")
-      scan_exec_arg(obj, arg, EF_EXECI);
+      scan_exec_arg(obj, arg, exec_flag::interval);
   obj->parse = true;
   obj->thread = false;
-  register_execi(obj);
+  register_exec(obj);
   obj->callbacks.print = &print_exec;
-  obj->callbacks.free = &free_execi;
+  obj->callbacks.free = &free_exec;
   END OBJ_ARG(execbar, nullptr,
               "execbar needs arguments: [height],[width] <command>")
-      scan_exec_arg(obj, arg, EF_EXEC | EF_BAR);
+      scan_exec_arg(obj, arg, exec_flag::bar);
   register_exec(obj);
   obj->callbacks.barval = &execbarval;
   obj->callbacks.free = &free_exec;
   END OBJ_ARG(execibar, nullptr,
               "execibar needs arguments: <interval> [height],[width] <command>")
-      scan_exec_arg(obj, arg, EF_EXECI | EF_BAR);
-  register_execi(obj);
+      scan_exec_arg(obj, arg, exec_flag::interval | exec_flag::bar);
+  register_exec(obj);
   obj->callbacks.barval = &execbarval;
-  obj->callbacks.free = &free_execi;
+  obj->callbacks.free = &free_exec;
 #ifdef BUILD_GUI
   END OBJ_ARG(execgauge, nullptr,
               "execgauge needs arguments: [height],[width] <command>")
-      scan_exec_arg(obj, arg, EF_EXEC | EF_GAUGE);
+      scan_exec_arg(obj, arg, exec_flag::gauge);
   register_exec(obj);
   obj->callbacks.gaugeval = &execbarval;
   obj->callbacks.free = &free_exec;
   END OBJ_ARG(
       execigauge, nullptr,
       "execigauge needs arguments: <interval> [height],[width] <command>")
-      scan_exec_arg(obj, arg, EF_EXECI | EF_GAUGE);
-  register_execi(obj);
+      scan_exec_arg(obj, arg, exec_flag::interval | exec_flag::gauge);
+  register_exec(obj);
   obj->callbacks.gaugeval = &execbarval;
-  obj->callbacks.free = &free_execi;
+  obj->callbacks.free = &free_exec;
   END OBJ_ARG(execgraph, nullptr,
               "execgraph needs arguments: <command> [height],[width] [color1] "
               "[color2] [scale] [-t|-l]")
-      scan_exec_arg(obj, arg, EF_EXEC | EF_GRAPH);
+      scan_exec_arg(obj, arg, exec_flag::graph);
   register_exec(obj);
   obj->callbacks.graphval = &execbarval;
   obj->callbacks.free = &free_exec;
   END OBJ_ARG(execigraph, nullptr,
               "execigraph needs arguments: <interval> <command> "
               "[height],[width] [color1] [color2] [scale] [-t|-l]")
-      scan_exec_arg(obj, arg, EF_EXECI | EF_GRAPH);
-  register_execi(obj);
+      scan_exec_arg(obj, arg, exec_flag::interval | exec_flag::graph);
+  register_exec(obj);
   obj->callbacks.graphval = &execbarval;
-  obj->callbacks.free = &free_execi;
+  obj->callbacks.free = &free_exec;
 #endif /* BUILD_GUI */
   END OBJ_ARG(texeci, nullptr, "texeci needs arguments: <interval> <command>")
-      scan_exec_arg(obj, arg, EF_EXECI);
+      scan_exec_arg(obj, arg, exec_flag::interval);
   obj->parse = false;
   obj->thread = true;
-  register_execi(obj);
+  register_exec(obj);
   obj->callbacks.print = &print_exec;
-  obj->callbacks.free = &free_execi;
+  obj->callbacks.free = &free_exec;
   END OBJ_ARG(texecpi, nullptr, "texecpi needs arguments: <interval> <command>")
-      scan_exec_arg(obj, arg, EF_EXECI);
+      scan_exec_arg(obj, arg, exec_flag::interval);
   obj->parse = true;
   obj->thread = true;
-  register_execi(obj);
+  register_exec(obj);
   obj->callbacks.print = &print_exec;
-  obj->callbacks.free = &free_execi;
+  obj->callbacks.free = &free_exec;
   END OBJ(fs_bar, &update_fs_stats) init_fs_bar(obj, arg);
   obj->callbacks.barval = &fs_barval;
   END OBJ(fs_bar_free, &update_fs_stats) init_fs_bar(obj, arg);
