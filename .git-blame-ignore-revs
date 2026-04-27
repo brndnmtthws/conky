@@ -66,3 +66,7 @@ cbebe447078e28c50957d568303f42d6b8aae126
 # addressed the bugs caused by the move, to separate renames from changes.
 342f07b8ca101e0c4ef5c75346033c4df241d16d
 ae8f1fa8472d6c3a31b4a09be4d19568a3f3f23e
+
+### Replace NORM_ERR/DBGP/DBGP2 with LOG_* macros
+# Mass conversion of legacy logging to spdlog-based LOG_* macros
+28f2dcdf10c087efc17a97d0e89ab0514227418e

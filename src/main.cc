@@ -346,7 +346,6 @@ int main(int argc, char **argv) {
 
     switch (c) {
       case 'D':
-        global_debug_level++;
         conky::log::log_more();
         break;
       case 'L':

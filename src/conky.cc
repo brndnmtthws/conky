@@ -175,9 +175,6 @@ const char builtin_config_magic[] = "==builtin==";
 // #define SIGNAL_BLOCKING
 #undef SIGNAL_BLOCKING
 
-/* debugging level, used by logging.h */
-int global_debug_level = 0;
-
 void clean_up(void);
 
 /* disable inotify auto reload feature if desired */

@@ -30,8 +30,6 @@
 #ifndef _LOGGING_H
 #define _LOGGING_H
 
-#include <cinttypes>  // correct formatting for int types
-#include <cstdio>
 #include <stdexcept>
 #include "config.h"
 #include "i18n.h"
@@ -48,24 +46,6 @@ struct fmt::formatter<std::filesystem::path> : fmt::formatter<std::string> {
   }
 };
 
-// Legacy logging functions (to be replaced by conky::log::* in future commits)
-
-template <typename... Args>
-inline void gettextize_format(const char *format, Args &&...args) {
-  fprintf(stderr, _(format), args...);
-}
-
-// explicit specialization for no arguments to avoid the
-// "format not a string literal and no format arguments" warning
-inline void gettextize_format(const char *format) { fputs(_(format), stderr); }
-
-template <typename... Args>
-void NORM_ERR(const char *format, Args &&...args) {
-  fprintf(stderr, PACKAGE_NAME ": ");
-  gettextize_format(format, args...);
-  fputs("\n", stderr);
-}
-
 namespace conky {
 
 class error : public std::runtime_error {
@@ -80,22 +60,6 @@ struct bad_command_arguments_error : public std::runtime_error {
       : std::runtime_error(msg), command(command) {}
 };
 }  // namespace conky
-
-/* debugging output */
-extern int global_debug_level;
-
-#define __DBGP(level, ...)                                               \
-  do {                                                                   \
-    if (global_debug_level > level) {                                    \
-      fprintf(stderr, "DEBUG(%d) [" __FILE__ ":%d]: ", level, __LINE__); \
-      gettextize_format(__VA_ARGS__);                                    \
-      fputs("\n", stderr);                                               \
-    }                                                                    \
-  } while (0)
-#define DBGP(...) __DBGP(0, __VA_ARGS__)
-#define DBGP2(...) __DBGP(1, __VA_ARGS__)
-
-// New spdlog-based logging (fmt syntax, with source location)
 
 namespace conky::log {
 void init_logger();
