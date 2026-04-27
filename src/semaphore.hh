@@ -66,7 +66,7 @@ class semaphore {
       if (ret == DISPATCH_EAGAIN) {
         return false;
       } else if (errno != EINTR) {
-        abort();
+        std::terminate();
       }
     }
     return true;
@@ -105,7 +105,7 @@ class semaphore {
       if (errno == EAGAIN)
         return false;
       else if (errno != EINTR)
-        abort();
+        std::terminate();
     }
     return true;
   }

@@ -178,6 +178,8 @@ const char builtin_config_magic[] = "==builtin==";
 /* debugging level, used by logging.h */
 int global_debug_level = 0;
 
+void clean_up(void);
+
 /* disable inotify auto reload feature if desired */
 static conky::simple_config_setting<bool> disable_auto_reload(
     "disable_auto_reload", false, false);
@@ -2050,6 +2052,11 @@ void clean_up(void) {
 
   conky::cleanup_config_settings(*state);
   state.reset();
+}
+
+void handle_terminate() {
+  clean_up();
+  std::abort();
 }
 
 static void set_default_configurations() {

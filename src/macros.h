@@ -17,8 +17,10 @@
 #endif  // defined(__clang__) || defined(__GNUC__)
 
 // Assertion with custom error message.
-#define assert_print(cond, error) \
-  (LIKELY(cond) ? static_cast<void>(0) : CRIT_ERR(error))
+#define assert_print(cond, error)               \
+  do {                                          \
+    if (UNLIKELY(!(cond))) { CRIT_ERR(error); } \
+  } while (0)
 
 // Assumptions are contracts which are expected to be upheld by the developer
 // 100% of the time. They help the compiler significantly optimize code, but
@@ -60,7 +62,10 @@
 #define UNREACHABLE() (unreachable_impl())
 #endif /* compiler selection */
 #else  /* DEBUG */
-#define UNREACHABLE() (CRIT_ERR("reached unreachable"))
+#define UNREACHABLE()              \
+  do {                             \
+    CRIT_ERR("reached unreachable"); \
+  } while (0)
 #endif /* NDEBUG */
 
 #endif /* _CONKY_MACROS_H_ */

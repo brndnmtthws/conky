@@ -300,8 +300,12 @@ inline void reset_optind() {
 #endif
 }
 
+void clean_up(void);     // defined in conky.cc
+void handle_terminate(); // defined in conky.cc
+
 int main(int argc, char **argv) {
   conky::log::init_logger();
+  std::set_terminate(&handle_terminate);
 
 #ifdef BUILD_I18N
   setlocale(LC_ALL, "");

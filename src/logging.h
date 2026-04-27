@@ -65,8 +65,6 @@ class obj_create_error : public std::runtime_error {
   obj_create_error(const std::string &msg) : std::runtime_error(msg) {}
 };
 
-void clean_up(void);
-
 // Legacy logging functions (to be replaced by conky::log::* in future commits)
 
 template <typename... Args>
@@ -85,30 +83,31 @@ void NORM_ERR(const char *format, Args &&...args) {
   fputs("\n", stderr);
 }
 
-/* critical error with additional cleanup */
-template <typename... Args>
-__attribute__((noreturn)) inline void CRIT_ERR_FREE(void *memtofree1,
-                                                    void *memtofree2,
-                                                    const char *format,
-                                                    Args &&...args) {
-  NORM_ERR(format, args...);
-  free(memtofree1);
-  free(memtofree2);
-  clean_up();
-  exit(EXIT_FAILURE);
-}
-
-/* critical error */
-template <typename... Args>
-__attribute__((noreturn)) inline void CRIT_ERR(const char *format,
-                                               Args &&...args) {
-  CRIT_ERR_FREE(nullptr, nullptr, format, args...);
-}
-
 namespace conky {
+
+namespace _priv_error_print {
+template <typename... Args>
+inline std::string alloc_printf(const char *format, Args &&...args) {
+  auto size = std::snprintf(nullptr, 0, format, args...);
+  char output[size + 1];
+  std::snprintf(output, sizeof(output), format, args...);
+  return std::string(&output[0]);
+}
+inline std::string alloc_printf(const char *format) {
+  return std::string(format);
+}
+} // namespace conky::_priv_error_print
+
 class error : public std::runtime_error {
  public:
   error(const std::string &msg) : std::runtime_error(msg) {}
+};
+
+struct bad_command_arguments_error : public std::runtime_error {
+  std::string command;
+
+  bad_command_arguments_error(const char *command, const std::string &msg)
+      : std::runtime_error(msg), command(command) {}
 };
 }  // namespace conky
 
@@ -149,5 +148,45 @@ void set_quiet();
 #define LOG_WARNING(...) SPDLOG_WARN(__VA_ARGS__)
 #define LOG_ERROR(...) SPDLOG_ERROR(__VA_ARGS__)
 #define LOG_CRITICAL(...) SPDLOG_CRITICAL(__VA_ARGS__)
+
+/// Critical error (developer fault) - logs and terminates with core dump.
+#define CRIT_ERR(...)                                                    \
+  do {                                                                   \
+    auto _msg = conky::_priv_error_print::alloc_printf(__VA_ARGS__);     \
+    LOG_CRITICAL("{}", _msg);                                            \
+    std::terminate();                                                    \
+  } while (0)
+
+/// User error (bad input/config) - logs and throws.
+#define USER_ERR(...)                                                    \
+  do {                                                                   \
+    auto _msg = conky::_priv_error_print::alloc_printf(__VA_ARGS__);     \
+    LOG_ERROR("{}", _msg);                                               \
+    throw conky::error(_msg);                                            \
+  } while (0)
+
+/// System error (missing feature/support) - logs and throws.
+#define SYSTEM_ERR(...)                                                  \
+  do {                                                                   \
+    auto _msg = conky::_priv_error_print::alloc_printf(__VA_ARGS__);     \
+    LOG_ERROR("{}", _msg);                                               \
+    throw conky::error(_msg);                                            \
+  } while (0)
+
+/// Invalid command arguments - logs and throws.
+#define COMMAND_ARG_ERR(Command, ...)                                    \
+  do {                                                                   \
+    auto _msg = conky::_priv_error_print::alloc_printf(__VA_ARGS__);     \
+    LOG_ERROR("{}", _msg);                                               \
+    throw conky::bad_command_arguments_error(Command, _msg);             \
+  } while (0)
+
+/// Critical error with additional cleanup.
+#define CRIT_ERR_FREE(memtofree1, memtofree2, ...) \
+  do {                                             \
+    free(memtofree1);                              \
+    free(memtofree2);                              \
+    SYSTEM_ERR(__VA_ARGS__);                       \
+  } while (0)
 
 #endif /* _LOGGING_H */
