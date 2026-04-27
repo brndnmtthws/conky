@@ -787,7 +787,7 @@ void process_surface_events(conky::display_output_x11 *surface,
   int pending = XPending(display);
   if (pending == 0) return;
 
-  DBGP2("Processing %d X11 events...", pending);
+  // DBGP2("Processing %d X11 events...", pending);
 
   /* handle X events */
   while (XPending(display) != 0) {
@@ -810,7 +810,7 @@ void process_surface_events(conky::display_output_x11 *surface,
     }
   }
 
-  DBGP2("Done processing %d events.", pending);
+  // DBGP2("Done processing %d events.", pending);
 }
 
 void display_output_x11::sigterm_cleanup() {
