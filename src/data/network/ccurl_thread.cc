@@ -77,7 +77,7 @@ size_t curl_internal::write_cb(void *ptr, size_t size, size_t nmemb,
 }
 
 curl_internal::curl_internal(const std::string &url) : curl(curl_easy_init()) {
-  if (!curl) throw std::runtime_error("curl_easy_init() failed");
+  if (!curl) { SYSTEM_ERR("failed to initialize curl session"); }
 
   curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);
   curl_easy_setopt(curl, CURLOPT_HEADERDATA, this);

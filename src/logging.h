@@ -38,6 +38,7 @@
 
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #include <spdlog/spdlog.h>
+#include <spdlog/fmt/fmt.h>
 
 class fork_throw : public std::runtime_error {
  public:
@@ -84,19 +85,6 @@ void NORM_ERR(const char *format, Args &&...args) {
 }
 
 namespace conky {
-
-namespace _priv_error_print {
-template <typename... Args>
-inline std::string alloc_printf(const char *format, Args &&...args) {
-  auto size = std::snprintf(nullptr, 0, format, args...);
-  char output[size + 1];
-  std::snprintf(output, sizeof(output), format, args...);
-  return std::string(&output[0]);
-}
-inline std::string alloc_printf(const char *format) {
-  return std::string(format);
-}
-} // namespace conky::_priv_error_print
 
 class error : public std::runtime_error {
  public:
@@ -150,43 +138,32 @@ void set_quiet();
 #define LOG_CRITICAL(...) SPDLOG_CRITICAL(__VA_ARGS__)
 
 /// Critical error (developer fault) - logs and terminates with core dump.
-#define CRIT_ERR(...)                                                    \
-  do {                                                                   \
-    auto _msg = conky::_priv_error_print::alloc_printf(__VA_ARGS__);     \
-    LOG_CRITICAL("{}", _msg);                                            \
-    std::terminate();                                                    \
+#define CRIT_ERR(...)          \
+  do {                         \
+    LOG_CRITICAL(__VA_ARGS__); \
+    std::terminate();          \
   } while (0)
 
 /// User error (bad input/config) - logs and throws.
-#define USER_ERR(...)                                                    \
-  do {                                                                   \
-    auto _msg = conky::_priv_error_print::alloc_printf(__VA_ARGS__);     \
-    LOG_ERROR("{}", _msg);                                               \
-    throw conky::error(_msg);                                            \
+#define USER_ERR(...)                                    \
+  do {                                                   \
+    LOG_ERROR(__VA_ARGS__);                              \
+    throw conky::error(fmt::format(__VA_ARGS__));        \
   } while (0)
 
 /// System error (missing feature/support) - logs and throws.
-#define SYSTEM_ERR(...)                                                  \
-  do {                                                                   \
-    auto _msg = conky::_priv_error_print::alloc_printf(__VA_ARGS__);     \
-    LOG_ERROR("{}", _msg);                                               \
-    throw conky::error(_msg);                                            \
+#define SYSTEM_ERR(...)                                  \
+  do {                                                   \
+    LOG_ERROR(__VA_ARGS__);                              \
+    throw conky::error(fmt::format(__VA_ARGS__));        \
   } while (0)
 
 /// Invalid command arguments - logs and throws.
 #define COMMAND_ARG_ERR(Command, ...)                                    \
   do {                                                                   \
-    auto _msg = conky::_priv_error_print::alloc_printf(__VA_ARGS__);     \
-    LOG_ERROR("{}", _msg);                                               \
-    throw conky::bad_command_arguments_error(Command, _msg);             \
-  } while (0)
-
-/// Critical error with additional cleanup.
-#define CRIT_ERR_FREE(memtofree1, memtofree2, ...) \
-  do {                                             \
-    free(memtofree1);                              \
-    free(memtofree2);                              \
-    SYSTEM_ERR(__VA_ARGS__);                       \
+    LOG_ERROR(__VA_ARGS__);                                              \
+    throw conky::bad_command_arguments_error(Command,                    \
+                                             fmt::format(__VA_ARGS__));  \
   } while (0)
 
 #endif /* _LOGGING_H */

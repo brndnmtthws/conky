@@ -205,7 +205,7 @@ void get_fs_type(const char *path, char *result) {
     fseek(mtab, 0, SEEK_SET);
     slash = strrchr(search_path, '/');
     if (slash == nullptr) {
-      CRIT_ERR("invalid path '%s'", path);
+      USER_ERR("invalid path '{}'", path);
     } else {
       if (strlen(slash) == 1) /* trailing slash */
         *(slash) = '\0';

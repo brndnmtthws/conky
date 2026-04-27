@@ -91,14 +91,16 @@ void init_tailhead(const char *type, const char *arg, struct text_object *obj,
   args = sscanf(arg, "%s %d %d", tmp.get(), &ht->wantedlines, &ht->max_uses);
   if (args < 2 || args > 3) {
     free_tailhead(obj);
-    CRIT_ERR_FREE(
-        obj, free_at_crash,
-        "%s needs a file as 1st and a number of lines as 2nd argument", type);
+    free(obj);
+    free(free_at_crash);
+    COMMAND_ARG_ERR(type,
+        "{} needs a file as 1st and a number of lines as 2nd argument", type);
   }
   if (ht->max_uses < 1) {
     free_tailhead(obj);
-    CRIT_ERR_FREE(obj, free_at_crash,
-                  "invalid arg for %s, next_check must be larger than 0", type);
+    free(obj);
+    free(free_at_crash);
+    COMMAND_ARG_ERR(type, "invalid arg for {}, next_check must be larger than 0", type);
   }
   if (ht->wantedlines > 0 && ht->wantedlines <= MAX_HEADTAIL_LINES) {
     ht->logfile = to_real_path(tmp.get());
@@ -106,9 +108,10 @@ void init_tailhead(const char *type, const char *arg, struct text_object *obj,
     ht->current_use = 0;
   } else {
     free_tailhead(obj);
-    CRIT_ERR_FREE(
-        obj, free_at_crash,
-        "invalid arg for %s, number of lines must be between 1 and %d", type,
+    free(obj);
+    free(free_at_crash);
+    COMMAND_ARG_ERR(type,
+        "invalid arg for {}, number of lines must be between 1 and {}", type,
         MAX_HEADTAIL_LINES);
   }
   obj->data.opaque = ht;
@@ -179,7 +182,7 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
       }
       ht->buffer = strdup(p);
     } else {
-      CRIT_ERR("$%s can't find information about %s", type,
+      SYSTEM_ERR("${} can't find information about '{}'", type,
                ht->logfile.c_str());
     }
   }

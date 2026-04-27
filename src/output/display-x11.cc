@@ -1092,7 +1092,7 @@ void display_output_x11::load_fonts(bool utf8) {
         continue;
       }
 
-      CRIT_ERR("can't load Xft font '%s'", "courier-12");
+      SYSTEM_ERR("can't load Xft font '{}'", "courier-12");
 
       continue;
     }
@@ -1109,7 +1109,7 @@ void display_output_x11::load_fonts(bool utf8) {
         xfont.fontset = XCreateFontSet(display, "fixed", &missing, &missingnum,
                                        &missingdrawn);
         if (xfont.fontset == nullptr) {
-          CRIT_ERR("can't load font '%s'", "fixed");
+          SYSTEM_ERR("can't load font '{}'", "fixed");
         }
       }
     }
@@ -1118,7 +1118,7 @@ void display_output_x11::load_fonts(bool utf8) {
         (xfont.font = XLoadQueryFont(display, font.name.c_str())) == nullptr) {
       NORM_ERR("can't load font '%s'", font.name.c_str());
       if ((xfont.font = XLoadQueryFont(display, "fixed")) == nullptr) {
-        CRIT_ERR("can't load font '%s'", "fixed");
+        SYSTEM_ERR("can't load font '{}'", "fixed");
       }
     }
   }

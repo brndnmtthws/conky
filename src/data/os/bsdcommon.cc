@@ -105,14 +105,14 @@ void bsdcommon::get_cpu_count(float **cpu_usage, unsigned int *cpu_count) {
     // [1, 2, ... ] - CPU0, CPU1, ...
     *cpu_usage = (float*)calloc(ncpu + 1, sizeof(float));
     if (*cpu_usage == nullptr) {
-      CRIT_ERR("calloc of cpu_usage");
+      SYSTEM_ERR("failed to allocate cpu_usage array");
     }
   }
 
   if (cpu_loads == nullptr) {
     cpu_loads = (struct cpu_load*)calloc(ncpu + 1, sizeof(struct cpu_load));
     if (cpu_loads == nullptr) {
-      CRIT_ERR("calloc of cpu_loads");
+      SYSTEM_ERR("failed to allocate cpu_loads array");
     }
   }
 }

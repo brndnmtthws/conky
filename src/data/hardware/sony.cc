@@ -64,8 +64,8 @@ void get_sony_fanspeed(struct text_object *obj, char *p_client_buffer,
       if (sscanf(line, "%u", &speed)) { break; }
     }
   } else {
-    CRIT_ERR(
-        "can't open '%s': %s\nEnable sony support or remove "
+    SYSTEM_ERR(
+        "can't open '{}': {}\nEnable sony support or remove "
         "sony* from your " PACKAGE_NAME " config file.",
         fan, strerror(errno));
   }

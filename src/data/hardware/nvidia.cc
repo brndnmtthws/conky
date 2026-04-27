@@ -1154,8 +1154,8 @@ double get_nvidia_barval(struct text_object *obj) {
         if (strcmp(nvs->token, "memTransferRate") != 0) {
           // Just in case error for silly devs
           CRIT_ERR(
-              "%s: attribute is 'ATTR_FREQS_STRING' but token is not "
-              "\"memTransferRate\" (arg: '%s')",
+              "{}: attribute is 'ATTR_FREQS_STRING' but token is not "
+              "\"memTransferRate\" (arg: '{}')",
               nvs->command, nvs->arg);
           return 0;
         }
@@ -1174,7 +1174,7 @@ double get_nvidia_barval(struct text_object *obj) {
         break;
 
       default:  // Throw error if unsupported args are used
-        CRIT_ERR("%s: invalid argument specified: '%s'", nvs->command,
+        COMMAND_ARG_ERR(nvs->command, "{}: invalid argument specified: '{}'", nvs->command,
                  nvs->arg);
     }
   }

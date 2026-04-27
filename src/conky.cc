@@ -1867,7 +1867,7 @@ void main_loop() {
 #ifdef SIGNAL_BLOCKING
     /* block signals.  we will inspect for pending signals later */
     if (sigprocmask(SIG_BLOCK, &newmask, &oldmask) < 0) {
-      CRIT_ERR("unable to sigprocmask()");
+      SYSTEM_ERR("unable to sigprocmask() to block signals");
     }
 #endif
 
@@ -1894,7 +1894,7 @@ void main_loop() {
 #ifdef SIGNAL_BLOCKING
     /* unblock signals of interest and let handler fly */
     if (sigprocmask(SIG_SETMASK, &oldmask, nullptr) < 0) {
-      CRIT_ERR("unable to sigprocmask()");
+      SYSTEM_ERR("unable to sigprocmask() to restore signal mask");
     }
 #endif
 
@@ -2267,7 +2267,7 @@ void initialisation(int argc, char **argv) {
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null", O_RDONLY,
                      "kvm_open")) == nullptr) {
-    CRIT_ERR("cannot read kvm");
+    SYSTEM_ERR("cannot open kvm (kvm_open failed)");
   }
 #endif
 
@@ -2295,7 +2295,7 @@ void initialisation(int argc, char **argv) {
       case 'm':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is a wrong xinerama-head index", optarg);
+          USER_ERR("'{}' is not a valid xinerama-head index", optarg);
         }
         head_index.lua_set(*state);
         break;
@@ -2331,7 +2331,7 @@ void initialisation(int argc, char **argv) {
       case 'u':
         state->pushnumber(strtod(optarg, &conv_end));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is an invalid update interval", optarg);
+          USER_ERR("'{}' is not a valid update interval", optarg);
         }
         update_interval.lua_set(*state);
         break;
@@ -2339,7 +2339,7 @@ void initialisation(int argc, char **argv) {
       case 'i':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is an invalid number of update times", optarg);
+          USER_ERR("'{}' is not a valid number of update times", optarg);
         }
         total_run_times.lua_set(*state);
         break;
@@ -2347,7 +2347,7 @@ void initialisation(int argc, char **argv) {
       case 'x':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is an invalid value for the X-position", optarg);
+          USER_ERR("'{}' is not a valid value for the X-position", optarg);
         }
         gap_x.lua_set(*state);
         break;
@@ -2355,7 +2355,7 @@ void initialisation(int argc, char **argv) {
       case 'y':
         state->pushinteger(strtol(optarg, &conv_end, 10));
         if (*conv_end != 0) {
-          CRIT_ERR("'%s' is a wrong value for the Y-position", optarg);
+          USER_ERR("'{}' is not a valid value for the Y-position", optarg);
         }
         gap_y.lua_set(*state);
         break;
@@ -2417,7 +2417,7 @@ void initialisation(int argc, char **argv) {
   memset(tmpstring2, 0, text_buffer_size.get(*state));
 
   if (!conky::initialize_display_outputs()) {
-    CRIT_ERR("initialize_display_outputs() failed.");
+    SYSTEM_ERR("initialize_display_outputs() failed");
   }
 #ifdef BUILD_GUI
   /* setup lua window globals */

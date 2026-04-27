@@ -50,7 +50,7 @@ PRSS::PRSS(const std::string &xml_data)
                     PARSE_OPTIONS),
       xmlFreeDoc);
 
-  if (!doc) throw std::runtime_error("Unable to parse rss data");
+  if (!doc) { SYSTEM_ERR("unable to parse rss data"); }
 
   prss_parse_doc(this, doc.get());
 }

@@ -187,7 +187,7 @@ static int x11_error_handler(Display *d, XErrorEvent *err) {
 }
 
 __attribute__((noreturn)) static int x11_ioerror_handler(Display *d) {
-  CRIT_ERR("X IO Error: Display %lx\n", reinterpret_cast<uint64_t>(d));
+  SYSTEM_ERR("X IO Error: Display {:#x}", reinterpret_cast<uint64_t>(d));
 }
 
 /// @brief Function to get virtual root windows of screen.
@@ -245,13 +245,11 @@ void init_x11() {
                            ? dispstr.c_str()
                            : nullptr;
     if ((display = XOpenDisplay(disp)) == nullptr) {
-      std::string err =
-          std::string("can't open display: ") + XDisplayName(disp);
 #ifdef BUILD_WAYLAND
-      NORM_ERR(err.c_str());
+      LOG_ERROR("can't open display: {}", XDisplayName(disp));
       return;
 #else  /* BUILD_WAYLAND */
-      throw std::runtime_error(err);
+      SYSTEM_ERR("can't open display: {}", XDisplayName(disp));
 #endif /* BUILD_WAYLAND */
     }
   }

@@ -365,7 +365,7 @@ int main(int argc, char **argv) {
       case 'q':
         conky::log::set_quiet();
         if (freopen("/dev/null", "w", stderr) == nullptr) {
-          CRIT_ERR("could not open /dev/null as stderr!");
+          SYSTEM_ERR("could not open /dev/null as stderr");
         }
         break;
       case 'h':

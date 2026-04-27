@@ -101,13 +101,16 @@ class audacious_cb : public conky::callback<aud_result> {
   audacious_cb(uint32_t period) : Base(period, false, Tuple()) {
 #ifdef NEW_AUDACIOUS_FOUND
     DBusGConnection *connection = dbus_g_bus_get(DBUS_BUS_SESSION, nullptr);
-    if (!connection)
-      throw std::runtime_error("unable to establish dbus connection");
+    if (!connection) {
+      SYSTEM_ERR("can't connect to D-Bus session bus");
+    }
 
     session = dbus_g_proxy_new_for_name(connection, AUDACIOUS_DBUS_SERVICE,
                                         AUDACIOUS_DBUS_PATH,
                                         AUDACIOUS_DBUS_INTERFACE);
-    if (!session) throw std::runtime_error("unable to create dbus proxy");
+    if (!session) {
+      SYSTEM_ERR("can't create D-Bus proxy for {}", AUDACIOUS_DBUS_SERVICE);
+    }
 #else
     session = 0;
 #endif /* NEW_AUDACIOUS_FOUND */
@@ -132,6 +135,7 @@ void audacious_cb::work() {
 
   do {
     if (!audacious_remote_is_running(session)) {
+      LOG_DEBUG("audacious is not running");
       tmp.status = AS_NOT_RUNNING;
       break;
     }
@@ -151,6 +155,8 @@ void audacious_cb::work() {
     if (psong) {
       tmp.title = psong;
       g_free(psong);
+    } else {
+      LOG_DEBUG("no song title at playlist position {}", tmp.playlist_position);
     }
 
     /* Current song length */
@@ -170,6 +176,8 @@ void audacious_cb::work() {
     if (pfilename) {
       tmp.filename = pfilename;
       g_free(pfilename);
+    } else {
+      LOG_DEBUG("no filename at playlist position {}", tmp.playlist_position);
     }
 
     /* Length of the Playlist (number of songs) */

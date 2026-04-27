@@ -66,9 +66,10 @@ void init_journal(const char *type, const char *arg, struct text_object *obj,
   args = sscanf(arg, "%d %6s", &j->wantedlines, tmp.get());
   if (args < 1 || args > 2) {
     free_journal(obj);
-    CRIT_ERR_FREE(
-        obj, free_at_crash,
-        "%s a number of lines as 1st argument and optionally a journal "
+    free(obj);
+    free(free_at_crash);
+    COMMAND_ARG_ERR(type,
+        "{} needs a number of lines as 1st argument and optionally a journal "
         "type as 2nd argument",
         type);
   }
@@ -82,9 +83,10 @@ void init_journal(const char *type, const char *arg, struct text_object *obj,
 #endif /* SD_JOURNAL_CURRENT_USER */
       } else {
         free_journal(obj);
-        CRIT_ERR_FREE(obj, free_at_crash,
-                      "invalid arg for %s, type must be 'system' or 'user'",
-                      type);
+        free(obj);
+        free(free_at_crash);
+        COMMAND_ARG_ERR(type, "invalid arg for {}, type must be 'system' or 'user'",
+                 type);
       }
     } else {
       NORM_ERR("You should type a 'user' or 'system' as an argument");
@@ -92,9 +94,10 @@ void init_journal(const char *type, const char *arg, struct text_object *obj,
 
   } else {
     free_journal(obj);
-    CRIT_ERR_FREE(
-        obj, free_at_crash,
-        "invalid arg for %s, number of lines must be between 1 and %d", type,
+    free(obj);
+    free(free_at_crash);
+    COMMAND_ARG_ERR(type,
+        "invalid arg for {}, number of lines must be between 1 and {}", type,
         MAX_JOURNAL_LINES);
   }
   obj->data.opaque = j;

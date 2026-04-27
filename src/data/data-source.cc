@@ -50,12 +50,12 @@ data_sources_t *data_sources;
 
 data_source_base &get_data_source(lua::state *l) {
   if (l->gettop() != 1) {
-    throw std::runtime_error("Wrong number of parameters");
+    CRIT_ERR("wrong number of parameters for data source getter");
   }
 
   l->rawgetfield(lua::REGISTRYINDEX, priv::data_source_metatable);
   if (!l->getmetatable(-2) || !l->rawequal(-1, -2)) {
-    throw std::runtime_error("Invalid parameter");
+    CRIT_ERR("invalid parameter for data source getter");
   }
 
   return *static_cast<data_source_base *>(l->touserdata(1));
@@ -99,8 +99,7 @@ void do_register_data_source(const std::string &name,
 
   bool inserted = data_sources->insert({name, fn}).second;
   if (!inserted) {
-    throw std::logic_error("Data source with name '" + name +
-                           "' already registered");
+    CRIT_ERR("data source '{}' already registered", name);
   }
 }
 

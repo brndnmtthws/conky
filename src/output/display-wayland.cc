@@ -565,9 +565,9 @@ bool display_output_wayland::initialize() {
   wl_display_roundtrip(global_display);
   if (wl_globals.layer_shell == nullptr) {
     // TODO: Implement OWN_WINDOW and XDG Shell support
-    CRIT_ERR(
-        "Compositor doesn't support wlr-layer-shell-unstable-v1. Can't run "
-        "conky.");
+    SYSTEM_ERR(
+        "compositor doesn't support wlr-layer-shell-unstable-v1, can't run "
+        "conky");
   }
 
   struct wl_surface *surface =
@@ -606,14 +606,14 @@ bool display_output_wayland::main_loop_wait(double t) {
   errno = 0;
   while (wl_display_prepare_read(global_display) != 0) {
     if (wl_display_dispatch_pending(global_display) == -1) {
-      CRIT_ERR("wayland error: %s", strerror(errno));
+      SYSTEM_ERR("wayland dispatch error: {}", strerror(errno));
     }
   }
 
   errno = 0;
   if (wl_display_flush(global_display) < 0 && errno != EAGAIN) {
     wl_display_cancel_read(global_display);
-    CRIT_ERR("wayland error: %s", strerror(errno));
+    SYSTEM_ERR("wayland flush error: {}", strerror(errno));
   }
 
   if (t < 0.0) { t = 0.0; }
@@ -626,7 +626,7 @@ bool display_output_wayland::main_loop_wait(double t) {
     ep[0].data.ptr = nullptr;
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, wl_display_get_fd(global_display),
                   &ep[0]) == -1) {
-      CRIT_ERR("unable to setup epoll for display fd");
+      SYSTEM_ERR("unable to setup epoll for wayland display fd");
       return false;
     }
     configured_epoll = true;
@@ -636,7 +636,7 @@ bool display_output_wayland::main_loop_wait(double t) {
   int ep_count = epoll_wait(epoll_fd, ep, ARRAY_LENGTH(ep), ms);
 
   if (ep_count > 0) {
-    if (ep[0].events & (EPOLLERR | EPOLLHUP)) { CRIT_ERR("output closed"); }
+    if (ep[0].events & (EPOLLERR | EPOLLHUP)) { SYSTEM_ERR("wayland output closed unexpectedly"); }
   }
 
   int read_status = 0;

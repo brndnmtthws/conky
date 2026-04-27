@@ -93,8 +93,8 @@ void get_ibm_acpi_fan(struct text_object *obj, char *p,
       if (sscanf(line, "speed: %u", &speed)) { break; }
     }
   } else {
-    CRIT_ERR(
-        "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
+    SYSTEM_ERR(
+        "can't open '{}': {}\nYou are not using the IBM ACPI. Remove "
         "ibm* from your " PACKAGE_NAME " config file.",
         fan, strerror(errno));
   }
@@ -144,8 +144,8 @@ int get_ibm_acpi_temps(void) {
       }
     }
   } else {
-    CRIT_ERR(
-        "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
+    SYSTEM_ERR(
+        "can't open '{}': {}\nYou are not using the IBM ACPI. Remove "
         "ibm* from your " PACKAGE_NAME " config file.",
         thermal, strerror(errno));
   }
@@ -191,8 +191,8 @@ void get_ibm_acpi_volume(struct text_object *obj, char *p,
       if (sscanf(line, "mute: %s", mute)) { break; }
     }
   } else {
-    CRIT_ERR(
-        "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
+    SYSTEM_ERR(
+        "can't open '{}': {}\nYou are not using the IBM ACPI. Remove "
         "ibm* from your " PACKAGE_NAME " config file.",
         volume, strerror(errno));
   }
@@ -235,8 +235,8 @@ void get_ibm_acpi_brightness(struct text_object *obj, char *p,
       if (sscanf(line, "level: %u", &brightness)) { break; }
     }
   } else {
-    CRIT_ERR(
-        "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
+    SYSTEM_ERR(
+        "can't open '{}': {}\nYou are not using the IBM ACPI. Remove "
         "ibm* from your " PACKAGE_NAME " config file.",
         filename, strerror(errno));
   }
@@ -275,8 +275,8 @@ void get_ibm_acpi_thinklight(struct text_object *obj, char *p,
       if (sscanf(line, "status: %s", thinklight)) { break; }
     }
   } else {
-    CRIT_ERR(
-        "can't open '%s': %s\nYou are not using the IBM "
+    SYSTEM_ERR(
+        "can't open '{}': {}\nYou are not using the IBM "
         "ACPI. Remove ibm* from your " PACKAGE_NAME " config file.",
         filename, strerror(errno));
   }

@@ -173,8 +173,7 @@ config_setting_base::config_setting_base(std::string name_)
     : name(std::move(name_)), seq_no(get_next_seq_no()) {
   bool inserted = settings->insert({name, this}).second;
   if (!inserted) {
-    throw std::logic_error("Setting with name '" + name +
-                           "' already registered");
+    CRIT_ERR("setting '{}' already registered", name);
   }
 }
 
@@ -281,13 +280,13 @@ void set_config_settings(lua::state &l) {
   l.getglobal("conky");
   {
     if (l.type(-1) != lua::TTABLE) {
-      throw std::runtime_error("conky must be a table");
+      USER_ERR("'conky' must be a table in config");
     }
 
     l.rawgetfield(-1, "config");
     {
       if (l.type(-1) != lua::TTABLE) {
-        throw std::runtime_error("conky.config must be a table");
+        USER_ERR("'conky.config' must be a table in config");
       }
 
       priv::config_setting_base::make_conky_config(l);
