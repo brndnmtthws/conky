@@ -27,6 +27,7 @@
  */
 
 #include "../../conky.h"
+#include "../../logging.h"
 
 xmmsc_connection_t *xmms2_conn;
 
@@ -99,8 +100,7 @@ void connection_lost(void *p) {
   struct information *ptr = (struct information *)p;
   ptr->xmms2.conn_state = CONN_NO;
 
-  fprintf(stderr, "XMMS2 connection failed. %s\n",
-          xmmsc_get_last_error(xmms2_conn));
+  LOG_ERROR("xmms2 connection failed. {}", xmmsc_get_last_error(xmms2_conn));
 
   xmms_alloc(ptr);
   strncpy(ptr->xmms2.status, "Disconnected", text_buffer_size.get(*state) - 1);
@@ -119,7 +119,7 @@ int handle_curent_id(xmmsv_t *value, void *p) {
   int intval;
 
   if (xmmsv_get_error(value, &errbuf)) {
-    fprintf(stderr, "XMMS2 server error. %s\n", errbuf);
+    LOG_ERROR("xmms2 server error. {}", errbuf);
     return TRUE;
   }
 
@@ -129,7 +129,7 @@ int handle_curent_id(xmmsv_t *value, void *p) {
     val = xmmsc_result_get_value(res);
 
     if (xmmsv_get_error(val, &errbuf)) {
-      fprintf(stderr, "XMMS2 server error. %s\n", errbuf);
+      LOG_ERROR("xmms2 server error. {}", errbuf);
       return TRUE;
     }
 
@@ -199,7 +199,7 @@ int handle_playtime(xmmsv_t *value, void *p) {
   const char *errbuf;
 
   if (xmmsv_get_error(value, &errbuf)) {
-    fprintf(stderr, "XMMS2 server error. %s\n", errbuf);
+    LOG_ERROR("xmms2 server error. {}", errbuf);
     return TRUE;
   }
 
@@ -218,7 +218,7 @@ int handle_playback_state_change(xmmsv_t *value, void *p) {
   const char *errbuf;
 
   if (xmmsv_get_error(value, &errbuf)) {
-    fprintf(stderr, "XMMS2 server error. %s\n", errbuf);
+    LOG_ERROR("xmms2 server error. {}", errbuf);
     return TRUE;
   }
 
@@ -251,7 +251,7 @@ int handle_playlist_loaded(xmmsv_t *value, void *p) {
   const char *c, *errbuf;
 
   if (xmmsv_get_error(value, &errbuf)) {
-    fprintf(stderr, "XMMS2 server error. %s\n", errbuf);
+    LOG_ERROR("xmms2 server error. {}", errbuf);
     return TRUE;
   }
 
@@ -272,7 +272,7 @@ int handle_medialib_changed(xmmsv_t *value, void *p) {
   int current_id;
 
   if (xmmsv_get_error(value, &errbuf)) {
-    fprintf(stderr, "XMMS2 server error. %s\n", errbuf);
+    LOG_ERROR("xmms2 server error. {}", errbuf);
     return TRUE;
   }
 
@@ -293,8 +293,7 @@ int update_xmms2(void) {
 
     /* did init fail? */
     if (xmms2_conn == nullptr) {
-      fprintf(stderr, "XMMS2 init failed. %s\n",
-              xmmsc_get_last_error(xmms2_conn));
+      LOG_ERROR("xmms2 init failed (xmmsc_init returned null)");
       return 0;
     }
 
@@ -310,8 +309,7 @@ int update_xmms2(void) {
     char *path = getenv("XMMS_PATH");
 
     if (!xmmsc_connect(xmms2_conn, path)) {
-      fprintf(stderr, "XMMS2 connection failed. %s\n",
-              xmmsc_get_last_error(xmms2_conn));
+      LOG_ERROR("xmms2 connection failed. {}", xmmsc_get_last_error(xmms2_conn));
       current_info->xmms2.conn_state = CONN_NO;
       return 0;
     }

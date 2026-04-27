@@ -144,15 +144,15 @@ void curl_internal::do_work() {
         case 304:
           break;
         default:
-          NORM_ERR("curl: no data from server, got HTTP status %ld",
+          LOG_ERROR("curl: no data from server, got HTTP status {}",
                    http_status_code);
           break;
       }
     } else {
-      NORM_ERR("curl: no HTTP status from server");
+      LOG_ERROR("curl: no HTTP status from server");
     }
   } else {
-    NORM_ERR("curl: could not retrieve data from server");
+    LOG_ERROR("curl request failed: {}", curl_easy_strerror(res));
   }
 }
 }  // namespace priv
@@ -197,7 +197,7 @@ void curl_parse_arg(struct text_object *obj, const char *arg) {
   char *space;
 
   if (strlen(arg) < 1) {
-    NORM_ERR("wrong number of arguments for $curl");
+    LOG_ERROR("wrong number of arguments for $curl, expected: url [interval_minutes]");
     return;
   }
 
@@ -224,7 +224,7 @@ void curl_print(struct text_object *obj, char *p, unsigned int p_max_size) {
   struct curl_data *cd = static_cast<struct curl_data *>(obj->data.opaque);
 
   if (!cd) {
-    NORM_ERR("error processing Curl data");
+    LOG_ERROR("error processing curl data");
     return;
   }
   ccurl_process_info(p, p_max_size, cd->uri, cd->interval);

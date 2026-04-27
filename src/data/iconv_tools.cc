@@ -92,7 +92,7 @@ void iconv_convert(size_t *a, char *buff_in, char *p, size_t p_max_size) {
     bytes =
         iconv(*iconv_cd[iconv_selected - 1], &ptr, &dummy1, &outptr, &dummy2);
     if (bytes == -1) {
-      NORM_ERR("Iconv codeset conversion failed");
+      LOG_ERROR("iconv codeset conversion failed: {}", strerror(errno));
       break;
     }
   }
@@ -124,7 +124,7 @@ void init_iconv_start(struct text_object *obj, void *free_at_crash,
 
     new_iconv = iconv_open(iconv_to, iconv_from);
     if (new_iconv == (iconv_t)(-1)) {
-      NORM_ERR("Can't convert from %s to %s.", iconv_from, iconv_to);
+      LOG_ERROR("can't convert from {} to {}", iconv_from, iconv_to);
     } else {
       obj->data.i = register_iconv(&new_iconv);
       iconv_converting = 1;

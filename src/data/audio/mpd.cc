@@ -167,7 +167,7 @@ void mpd_cb::work() {
     }
 
     if (conn->error != 0) {
-      NORM_ERR("MPD error: %s\n", conn->errorStr);
+      LOG_ERROR("mpd error: {}", conn->errorStr);
       mpd_closeConnection(conn);
       conn = nullptr;
 
@@ -177,7 +177,7 @@ void mpd_cb::work() {
 
     mpd_sendStatusCommand(conn);
     if ((status = mpd_getStatus(conn)) == nullptr) {
-      NORM_ERR("MPD error: %s\n", conn->errorStr);
+      LOG_ERROR("mpd error: {}", conn->errorStr);
       mpd_closeConnection(conn);
       conn = nullptr;
 

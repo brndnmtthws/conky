@@ -640,7 +640,7 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root) {
       (*obj->callbacks.print)(obj, p, p_max_size);
     } else if (obj->callbacks.iftest != nullptr) {
       if ((*obj->callbacks.iftest)(obj) == 0) {
-        DBGP2("jumping");
+        LOG_TRACE("ifblock condition false, skipping to else/endif");
         if (obj->ifblock_next != nullptr) { obj = obj->ifblock_next; }
       }
     } else if (obj->callbacks.barval != nullptr) {
@@ -684,7 +684,7 @@ void evaluate(const char *text, char *p, int p_max_size) {
    */
   extract_variable_text_internal(&subroot, text);
   generate_text_internal(p, p_max_size, subroot);
-  DBGP2("evaluated '%s' to '%s'", text, p);
+  LOG_TRACE("evaluated '{}' to '{}'", text, p);
 
   free_text_objects(&subroot);
 }
@@ -724,9 +724,7 @@ static void generate_text() {
           p[k] = '\n';
           j = 0;
         } else {
-          NORM_ERR(
-              "The end of the text_buffer is reached, increase "
-              "\"text_buffer_size\"");
+          LOG_WARNING("text_buffer end reached (size {}), increase \"text_buffer_size\"", tbs);
         }
       } else {
         j++;
@@ -1824,9 +1822,9 @@ void get_system_details() {
 #endif
 
   if (info.system.wm_name != nullptr) {
-    NORM_ERR("'%s' %s session running", info.system.wm_name, session_ty);
+    LOG_INFO("'{}' {} session running", info.system.wm_name, session_ty);
   } else {
-    NORM_ERR("unknown %s session running", session_ty);
+    LOG_INFO("unknown {} session running", session_ty);
   }
 }
 
@@ -1867,7 +1865,7 @@ void main_loop() {
 #ifdef SIGNAL_BLOCKING
     /* block signals.  we will inspect for pending signals later */
     if (sigprocmask(SIG_BLOCK, &newmask, &oldmask) < 0) {
-      SYSTEM_ERR("unable to sigprocmask() to block signals");
+      SYSTEM_ERR("unable to block signals: {}", strerror(errno));
     }
 #endif
 
@@ -1894,13 +1892,13 @@ void main_loop() {
 #ifdef SIGNAL_BLOCKING
     /* unblock signals of interest and let handler fly */
     if (sigprocmask(SIG_SETMASK, &oldmask, nullptr) < 0) {
-      SYSTEM_ERR("unable to sigprocmask() to restore signal mask");
+      SYSTEM_ERR("unable to restore signal mask: {}", strerror(errno));
     }
 #endif
 
     if (g_sighup_pending != 0) {
       g_sighup_pending = 0;
-      NORM_ERR("received SIGUSR1. reloading the config file.");
+      LOG_INFO("received SIGUSR1, reloading config file '{}'", current_config);
 
       reload_config();
     }
@@ -1908,7 +1906,7 @@ void main_loop() {
     if (g_sigusr2_pending != 0) {
       g_sigusr2_pending = 0;
       // refresh view;
-      NORM_ERR("received SIGUSR2. refreshing.");
+      LOG_INFO("received SIGUSR2, refreshing");
       update_text();
       draw_stuff();
       for (auto output : display_outputs()) output->flush();
@@ -1916,7 +1914,7 @@ void main_loop() {
 
     if (g_sigterm_pending != 0) {
       g_sigterm_pending = 0;
-      NORM_ERR("received SIGHUP, SIGINT, or SIGTERM to terminate. bye!");
+      LOG_INFO("received termination signal, shutting down");
       terminate = 1;
       for (auto output : display_outputs()) output->sigterm_cleanup();
     }
@@ -1947,7 +1945,7 @@ void main_loop() {
           if (ev->wd == inotify_config_wd &&
               (ev->mask & IN_MODIFY || ev->mask & IN_IGNORED)) {
             /* current_config should be reloaded */
-            NORM_ERR("'%s' modified, reloading...", current_config.c_str());
+            LOG_INFO("'{}' modified, reloading", current_config);
             reload_config();
             if (ev->mask & IN_IGNORED) {
               /* for some reason we get IN_IGNORED here
@@ -1987,10 +1985,8 @@ static void reload_config() {
   struct stat sb {};
   if ((stat(current_config.c_str(), &sb) != 0) ||
       (!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
-    NORM_ERR(_("Config file '%s' is gone, continuing with config from "
-               "memory.\nIf you recreate this file sent me a SIGUSR1 to tell "
-               "me about it. ( kill -s USR1 %d )"),
-             current_config.c_str(), getpid());
+    LOG_WARNING("config file '{}' is gone, continuing with config from memory (send SIGUSR1 after recreating: kill -s USR1 {})",
+             current_config, getpid());
     return;
   }
   clean_up();
@@ -2098,7 +2094,7 @@ static void set_default_configurations() {
 }
 
 void load_config_file() {
-  DBGP(_("reading contents from config file '%s'"), current_config.c_str());
+  LOG_DEBUG("reading contents from config file '{}'", current_config);
 
   lua::state &l = *state;
   lua::stack_sentry s(l);
@@ -2115,21 +2111,15 @@ void load_config_file() {
     }
 #endif
   } catch (lua::syntax_error &e) {
-#define SYNTAX_ERR_READ_CONF "Syntax error (%s) while reading config file. "
 #ifdef BUILD_OLD_CONFIG
-    NORM_ERR(_(SYNTAX_ERR_READ_CONF), e.what());
-    NORM_ERR(_("Assuming it's in old syntax and attempting conversion."));
+    LOG_WARNING("syntax error ({}) while reading config file '{}'", e.what(), current_config);
+    LOG_INFO("assuming old config syntax and attempting conversion");
     // the strchr thingy skips the first line (#! /usr/bin/lua)
     l.loadstring(strchr(convertconf, '\n'));
     l.pushstring(current_config.c_str());
     l.call(1, 1);
 #else
-    char *syntaxerr;
-    if (asprintf(&syntaxerr, _(SYNTAX_ERR_READ_CONF), e.what())) {
-      std::string syntaxerrobj(syntaxerr);
-      free(syntaxerr);
-      throw conky::error(syntaxerrobj);
-    }
+    throw conky::error(fmt::format("syntax error ({}) while reading config file", e.what()));
 #endif
   }
   l.call(0, 0);
@@ -2180,12 +2170,11 @@ void set_current_config() {
 
   /* No readable config found */
   if (current_config.empty()) {
-#define NOCFGFILEFOUND "no personal or system-wide config file found"
 #ifdef BUILD_BUILTIN_CONFIG
     current_config = builtin_config_magic;
-    NORM_ERR(NOCFGFILEFOUND ", using builtin default");
+    LOG_WARNING("no personal or system-wide config file found, using builtin default");
 #else
-    throw conky::error(NOCFGFILEFOUND);
+    throw conky::error("no personal or system-wide config file found");
 #endif
   }
 
@@ -2387,8 +2376,7 @@ void initialisation(int argc, char **argv) {
 
     switch (pid) {
       case -1:
-        NORM_ERR(PACKAGE_NAME ": couldn't fork() to background: %s",
-                 strerror(errno));
+        LOG_ERROR("couldn't fork to background: {}", strerror(errno));
         break;
 
       case 0:
@@ -2413,7 +2401,7 @@ void initialisation(int argc, char **argv) {
   memset(tmpstring2, 0, text_buffer_size.get(*state));
 
   if (!conky::initialize_display_outputs()) {
-    SYSTEM_ERR("initialize_display_outputs() failed");
+    SYSTEM_ERR("no usable display output found");
   }
 #ifdef BUILD_GUI
   /* setup lua window globals */
@@ -2438,7 +2426,7 @@ void initialisation(int argc, char **argv) {
       sigaction(SIGUSR2, &act, &oact) < 0 ||
       sigaction(SIGHUP, &act, &oact) < 0 ||
       sigaction(SIGTERM, &act, &oact) < 0) {
-    NORM_ERR("error setting signal handler: %s", strerror(errno));
+    LOG_ERROR("error setting signal handler: {}", strerror(errno));
   }
 
   llua_startup_hook();

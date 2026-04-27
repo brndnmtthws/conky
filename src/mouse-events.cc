@@ -296,9 +296,7 @@ size_t fixed_valuator_index(Display *display, XIDeviceInfo *device,
                       reinterpret_cast<unsigned char **>(&value)) == 0) {
       if (num_items == 0) break;
       if (type_return != XA_INTEGER) {
-        NORM_ERR(
-            "invalid '%s' option value, expected a single integer; value will "
-            "be ignored",
+        LOG_WARNING("invalid '{}' option value, expected a single integer; value will be ignored",
             atom_names[*valuator]);
         XFree(value);
         break;
@@ -335,9 +333,7 @@ bool fixed_valuator_relative(Display *display, XIDeviceInfo *device,
                       reinterpret_cast<unsigned char **>(&value_return)) == 0) {
       if (num_items == 0) break;
       if (type_return != XA_ATOM) {
-        NORM_ERR(
-            "invalid '%s' option value, expected an atom (string); value will "
-            "be ignored",
+        LOG_WARNING("invalid '{}' option value, expected an atom (string); value will be ignored",
             atom_names[*valuator >> 1]);
         XFree(value_return);
         break;
@@ -353,11 +349,8 @@ bool fixed_valuator_relative(Display *display, XIDeviceInfo *device,
       if (strcmp(reinterpret_cast<char *>(value), "relative") == 0) {
         relative = true;
       } else if (strcmp(reinterpret_cast<char *>(value), "absolute") != 0) {
-        NORM_ERR(
-            "unknown '%s' option value: '%s', expected 'absolute' or "
-            "'relative'; "
-            "value will be ignored",
-            atom_names[*valuator >> 1]);
+        LOG_WARNING("unknown '{}' option value: '{}', expected 'absolute' or 'relative'; value will be ignored",
+            atom_names[*valuator >> 1], value);
         XFree(value);
         break;
       }

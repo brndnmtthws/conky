@@ -151,7 +151,7 @@ static int push_ifblock(struct ifblock_stack_obj **ifblock_stack_top,
       *ifblock_stack_top = stackobj;
       break;
     default:
-      CRIT_ERR("push_ifblock() misuse detected!");
+      CRIT_ERR("ifblock stack corrupted: unexpected push");
   }
   return 0;
 }

@@ -167,7 +167,7 @@ int check_mount(struct text_object *obj) {
     }
     fclose(mtab);
   } else {
-    NORM_ERR("Could not open mtab");
+    LOG_ERROR("could not open mtab: {}", strerror(errno));
   }
   return ret;
 }
@@ -339,7 +339,7 @@ char *save_set_string(char *x, char *y) {
 }
 
 void update_gateway_info_failure(const char *reason) {
-  if (reason != nullptr) { perror(reason); }
+  if (reason != nullptr) { LOG_ERROR("{}: {}", reason, strerror(errno)); }
   // 2 pointers to 1 location causes a crash when we try to free them both
   std::unique_lock<std::mutex> lock(gw_info.mutex);
   free_and_zero(gw_info.iface);
@@ -1095,7 +1095,7 @@ int update_cpu_usage(void) {
   struct timespec tc = {0L, 100L * 1000000L};
   update_stat();
   if (-1 == (nanosleep(&tc, NULL))) {
-    NORM_ERR("update_cpu_usage(): nanosleep() failed");
+    LOG_ERROR("cpu usage sampling sleep interrupted");
     return 0;
   }
   update_stat();
@@ -1170,7 +1170,7 @@ static int get_first_file_in_a_directory(const char *dir, char *s,
   n = scandir(dir, &namelist, no_dots, alphasort);
   if (n < 0) {
     if (!reported || !*reported) {
-      NORM_ERR("scandir for %s: %s", dir, strerror(errno));
+      LOG_ERROR("scandir for '{}': {}", dir, strerror(errno));
       if (reported) { *reported = 1; }
     }
     return 0;
@@ -1211,7 +1211,7 @@ static void get_dev_path(const char *dir, const char *dev, char *out_buf) {
   /* "k10temp" name case, need to search hwmon*->name to find a match */
   n = scandir(dir, &namelist, no_dots, alphasort);
   if (n < 0) {
-    NORM_ERR("scandir for %s: %s", dir, strerror(errno));
+    LOG_ERROR("scandir for '{}': {}", dir, strerror(errno));
     goto not_found;
   }
   if (n == 0) goto not_found;
@@ -1282,7 +1282,7 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
       get_dev_path(dir, dev, buf);
       /* Not found */
       if (buf[0] == '\0') {
-        NORM_ERR("can't parse device \"%s\"", dev);
+        LOG_ERROR("can't parse device \"{}\"", dev);
         return -1;
       }
       dev = buf;
@@ -1298,7 +1298,7 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
     type = "temp";
   }
 
-  DBGP("%s: dir=%s dev=%s type=%s n=%d\n", __func__, dir, dev, type, n);
+  LOG_DEBUG("open_sysfs_sensor: dir={} dev={} type={} n={}", dir, dev, type, n);
   /* construct path */
   snprintf(path, 255, "%s%s/%s%d_input", dir, dev, type, n);
 
@@ -1311,8 +1311,8 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
     snprintf(path, 255, "%s%s/%s%d_input", dir, dev, type, n);
     fd = open(path, O_RDONLY);
     if (fd < 0) {
-      NORM_ERR(
-          "can't open '%s': %s\nplease check your device or remove this "
+      LOG_ERROR(
+          "can't open '{}': {}\nplease check your device or remove this "
           "var from " PACKAGE_NAME,
           path, strerror(errno));
     }
@@ -1346,7 +1346,7 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
     /* should read until n == 0 but I doubt that kernel will give these
      * in multiple pieces. :) */
     if (divn < 0) {
-      NORM_ERR("open_sysfs_sensor(): can't read from sysfs");
+      LOG_ERROR("can't read sysfs sensor divisor from {}", path);
     } else {
       divbuf[divn] = '\0';
       *divisor = strtol(divbuf, nullptr, 10);
@@ -1372,7 +1372,7 @@ static double get_sysfs_info(int *fd, int divisor, char *devtype, char *type) {
     /* should read until n == 0 but I doubt that kernel will give these
      * in multiple pieces. :) */
     if (n < 0) {
-      NORM_ERR("get_sysfs_info(): read from %s failed\n", devtype);
+      LOG_ERROR("can't read sysfs '{}': {}", devtype, strerror(errno));
     } else {
       buf[n] = '\0';
       val = strtol(buf, nullptr, 10);
@@ -1382,7 +1382,7 @@ static double get_sysfs_info(int *fd, int divisor, char *devtype, char *type) {
   close(*fd);
   /* open file */
   *fd = open(devtype, O_RDONLY);
-  if (*fd < 0) { NORM_ERR("can't open '%s': %s", devtype, strerror(errno)); }
+  if (*fd < 0) { LOG_ERROR("can't open '{}': {}", devtype, strerror(errno)); }
 
   /* My dirty hack for computing CPU value
    * Filedil, from forums.gentoo.org */
@@ -1454,7 +1454,7 @@ static void parse_sysfs_sensor(struct text_object *obj, const char *arg,
     obj_be_plain_text(obj, "fail");
     return;
   }
-  DBGP("parsed %s args: '%s' '%s' %d %f %f\n", type, buf1, buf2, n, factor,
+  LOG_DEBUG("parsed {} args: '{}' '{}' {} {} {}", type, buf1, buf2, n, factor,
        offset);
   sf = (struct sysfs *)malloc(sizeof(struct sysfs));
   memset(sf, 0, sizeof(struct sysfs));
@@ -1546,7 +1546,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
   // open the CPU information file
   f = open_file("/proc/cpuinfo", &reported);
   if (!f) {
-    perror(PACKAGE_NAME ": Failed to access '/proc/cpuinfo' at get_freq()");
+    LOG_ERROR("failed to access '/proc/cpuinfo' at get_freq: {}", strerror(errno));
     return 0;
   }
 
@@ -1654,9 +1654,7 @@ static char get_voltage(char *p_client_buffer, size_t client_buffer_size,
     }
     fclose(f);
   } else {
-    fprintf(stderr, PACKAGE_NAME ": Failed to access '%s' at ",
-            current_freq_file);
-    perror("get_voltage()");
+    LOG_ERROR("failed to access '{}' at get_voltage: {}", current_freq_file, strerror(errno));
     return 0;
   }
 
@@ -1676,9 +1674,7 @@ static char get_voltage(char *p_client_buffer, size_t client_buffer_size,
     }
     fclose(f);
   } else {
-    fprintf(stderr, PACKAGE_NAME ": Failed to access '%s' at ",
-            current_freq_file);
-    perror("get_voltage()");
+    LOG_ERROR("failed to access '{}' at get_voltage: {}", current_freq_file, strerror(errno));
     return 0;
   }
   snprintf(p_client_buffer, client_buffer_size, p_format,
@@ -1723,7 +1719,7 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
     return;
   }
   memset(buf, 0, sizeof(buf));
-  if (fscanf(fp, "%*s %99s", buf) <= 0) perror("fscanf()");
+  if (fscanf(fp, "%*s %99s", buf) <= 0) LOG_ERROR("fscanf: {}", strerror(errno));
   fclose(fp);
 
   snprintf(p_client_buffer, client_buffer_size, "%s", buf);
@@ -1801,7 +1797,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
       return;
     }
     memset(buf, 0, sizeof(buf));
-    if (fscanf(fp, "%*s %99s", buf) <= 0) perror("fscanf()");
+    if (fscanf(fp, "%*s %99s", buf) <= 0) LOG_ERROR("fscanf: {}", strerror(errno));
     fclose(fp);
 
     snprintf(p_client_buffer, client_buffer_size, "%s", buf);
@@ -1836,7 +1832,7 @@ int open_acpi_temperature(const char *name) {
   }
 
   fd = open(path, O_RDONLY);
-  if (fd < 0) { NORM_ERR("can't open '%s': %s", path, strerror(errno)); }
+  if (fd < 0) { LOG_ERROR("can't open '{}': {}", path, strerror(errno)); }
 
   return fd;
 }
@@ -1867,7 +1863,7 @@ double get_acpi_temperature(int fd) {
 
     n = read(fd, buf, MAXTHERMZONELEN - 1);
     if (n < 0) {
-      NORM_ERR("can't read fd %d: %s", fd, strerror(errno));
+      LOG_ERROR("can't read fd {}: {}", fd, strerror(errno));
     } else {
       buf[n] = '\0';
       sscanf(buf, "%lf", &last_acpi_temp);
@@ -3050,7 +3046,7 @@ static void process_parse_stat(struct process *process) {
               state, &process->user_time, &process->kernel_time, &nice_val,
               &process->vsize, &process->rss);
   if (rc < 6) {
-    NORM_ERR("scanning data for %s failed, got only %d fields", procname, rc);
+    LOG_ERROR("scanning data for {} failed, got only {} fields", procname, rc);
     return;
   }
 
@@ -3222,7 +3218,7 @@ bool is_conky_already_running(void) {
   int instances = 0;
 
   if (!(dir = opendir("/proc"))) {
-    NORM_ERR("can't open /proc: %s\n", strerror(errno));
+    LOG_ERROR("can't open /proc: {}", strerror(errno));
     return false;
   }
 

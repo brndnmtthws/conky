@@ -39,6 +39,14 @@
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/fmt.h>
+#include <filesystem>
+
+template <>
+struct fmt::formatter<std::filesystem::path> : fmt::formatter<std::string> {
+  auto format(const std::filesystem::path &p, fmt::format_context &ctx) const {
+    return fmt::formatter<std::string>::format(p.string(), ctx);
+  }
+};
 
 // Legacy logging functions (to be replaced by conky::log::* in future commits)
 

@@ -51,10 +51,10 @@ void print_uid_name(struct text_object *obj, char *p, unsigned int p_max_size) {
     if (pw != nullptr) {
       snprintf(p, p_max_size, "%s", pw->pw_name);
     } else {
-      NORM_ERR("The uid %d doesn't exist", uid);
+      LOG_WARNING("uid {} does not exist", uid);
     }
   } else {
-    NORM_ERR("$uid_name didn't receive a uid as argument");
+    LOG_ERROR("$uid_name did not receive a uid as argument");
   }
 }
 
@@ -73,9 +73,9 @@ void print_gid_name(struct text_object *obj, char *p, unsigned int p_max_size) {
     if (grp != nullptr) {
       snprintf(p, p_max_size, "%s", grp->gr_name);
     } else {
-      NORM_ERR("The gid %d doesn't exist", gid);
+      LOG_WARNING("gid {} does not exist", gid);
     }
   } else {
-    NORM_ERR("$gid_name didn't receive a gid as argument");
+    LOG_ERROR("$gid_name did not receive a gid as argument");
   }
 }

@@ -58,7 +58,7 @@ bool display_output_console::detect() {
       && !out_to_ncurses.get(*state)
 #endif
   ) {
-    DBGP2("Display output '%s' enabled in config.", name.c_str());
+    LOG_DEBUG("display output '{}' enabled in config", name);
     return true;
   }
   return false;

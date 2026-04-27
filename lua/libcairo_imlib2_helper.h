@@ -37,18 +37,18 @@ void cairo_place_image(const char *file, cairo_t *cr, int x, int y,
   cairo_surface_t *result;
 
   if (!file) {
-    NORM_ERR("cairoimagehelper: File is NULL\n");
+    LOG_ERROR("file argument is null");
     return;
   }
 
   if (!cr) {
-    NORM_ERR("cairoimagehelper: cairo_t is NULL\n");
+    LOG_ERROR("cairo context is null");
     return;
   }
 
   image = (Imlib_Image *)imlib_load_image(file);
   if (!image) {
-    NORM_ERR("cairoimagehelper: Couldn't load %s\n", file);
+    LOG_ERROR("can't load image '{}'", file);
     return;
   }
 
@@ -57,7 +57,7 @@ void cairo_place_image(const char *file, cairo_t *cr, int x, int y,
   h = imlib_image_get_height();
 
   if ((w <= 0) && (h <= 0)) {
-    NORM_ERR("cairoimagehelper: %s has 0 size\n", file);
+    LOG_ERROR("image '{}' has 0 size", file);
     return;
   }
 
@@ -66,7 +66,7 @@ void cairo_place_image(const char *file, cairo_t *cr, int x, int y,
   /* create temporary image */
   premul = imlib_create_image(width, height);
   if (!premul) {
-    NORM_ERR("cairoimagehelper: Couldn't create premul image for %s\n", file);
+    LOG_ERROR("can't create premultiplied image for '{}'", file);
     return;
   }
 
@@ -111,23 +111,23 @@ void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
   double scaled_w, scaled_h;
 
   if (!file) {
-    NORM_ERR("cairoimagehelper: File is NULL\n");
+    LOG_ERROR("file argument is null");
     return;
   }
 
   if (!cs) {
-    NORM_ERR("cairoimagehelper: Surface is NULL\n");
+    LOG_ERROR("cairo surface is null");
     return;
   }
 
   if ((scale_x <= 0.0) && (scale_y <= 0.0)) {
-    NORM_ERR("cairoimagehelper: Image Scale is 0, %s\n", file);
+    LOG_ERROR("image scale is 0 for '{}'", file);
     return;
   }
 
   Imlib_Image *image = (Imlib_Image *)imlib_load_image(file);
   if (!image) {
-    NORM_ERR("cairoimagehelper: Couldn't load %s\n", file);
+    LOG_ERROR("can't load image '{}'", file);
     return;
   }
 
@@ -136,7 +136,7 @@ void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
   h = imlib_image_get_height();
 
   if ((w <= 0) && (h <= 0)) {
-    NORM_ERR("cairoimagehelper: %s has 0 size\n", file);
+    LOG_ERROR("image '{}' has 0 size", file);
     return;
   }
 
@@ -144,7 +144,7 @@ void cairo_draw_image(const char *file, cairo_surface_t *cs, int x, int y,
   scaled_h = *return_scale_h = scale_y * (double)h;
 
   if ((scaled_w <= 0.0) && (scaled_h <= 0.0)) {
-    NORM_ERR("cairoimagehelper: %s scaled image has 0 size\n", file);
+    LOG_ERROR("scaled image '{}' has 0 size ({}x{})", file, scaled_w, scaled_h);
     return;
   }
 

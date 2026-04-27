@@ -202,7 +202,7 @@ int update_apcupsd() {
     snprintf(portbuf, 8, "%d", apcupsd.port);
     res = getaddrinfo(apcupsd.host, portbuf, &hints, &ai);
     if (res != 0) {
-      NORM_ERR("APCUPSD getaddrinfo: %s", gai_strerror(res));
+      LOG_ERROR("apcupsd getaddrinfo: {}", gai_strerror(res));
       break;
     }
     for (rp = ai; rp != nullptr; rp = rp->ai_next) {
@@ -226,7 +226,7 @@ int update_apcupsd() {
     // no waiting to become writeable is really needed
     if (send(sock, &sz, sizeof(sz), 0) != sizeof(sz) ||
         send(sock, "status", 6, 0) != 6) {
-      perror("send");
+      LOG_ERROR("send: {}", strerror(errno));
       close(sock);
       break;
     }

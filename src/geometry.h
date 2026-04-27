@@ -645,4 +645,27 @@ using absolute_rect = rect<T, rect_kind::ABSOLUTE>;
 
 }  // namespace conky
 
+// fmt formatters for geometry types
+#include <spdlog/fmt/fmt.h>
+
+template <typename T, size_t Length>
+struct fmt::formatter<conky::vec<T, Length>> : fmt::formatter<T> {
+  auto format(const conky::vec<T, Length> &v, fmt::format_context &ctx) const {
+    fmt::format_to(ctx.out(), "(");
+    for (size_t i = 0; i < Length; i++) {
+      if (i > 0) fmt::format_to(ctx.out(), ", ");
+      fmt::formatter<T>::format(v.at(i), ctx);
+    }
+    return fmt::format_to(ctx.out(), ")");
+  }
+};
+
+template <typename T, conky::rect_kind Kind>
+struct fmt::formatter<conky::rect<T, Kind>> : fmt::formatter<T> {
+  auto format(const conky::rect<T, Kind> &r, fmt::format_context &ctx) const {
+    return fmt::format_to(ctx.out(), "rect({}x{} @ {}, {})",
+                          r.width(), r.height(), r.x(), r.y());
+  }
+};
+
 #endif /* _CONKY_GEOMETRY_H_ */

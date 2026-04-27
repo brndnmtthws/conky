@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include <utmp.h>
 #include "../conky.h"
+#include "../logging.h"
 
 #define BUFLEN 512
 
@@ -93,7 +94,10 @@ static void tty_user_time(char *ptr, char *tty) {
   setutent();
   strncpy(line.ut_line, tty, UT_LINESIZE);
   usr = getutline(&line);
-  if (usr == nullptr) { return; }
+  if (usr == nullptr) {
+    LOG_DEBUG("no utmp entry found for tty '{}'", tty);
+    return;
+  }
 
   log_in = usr->ut_time;
 
@@ -106,12 +110,15 @@ static void tty_user_time(char *ptr, char *tty) {
 static void users_alloc(struct information *ptr) {
   if (ptr->users.names == nullptr) {
     ptr->users.names = (char *)malloc(text_buffer_size.get(*state));
+    if (!ptr->users.names) { LOG_ERROR("failed to allocate user names buffer"); }
   }
   if (ptr->users.terms == nullptr) {
     ptr->users.terms = (char *)malloc(text_buffer_size.get(*state));
+    if (!ptr->users.terms) { LOG_ERROR("failed to allocate user terms buffer"); }
   }
   if (ptr->users.times == nullptr) {
     ptr->users.times = (char *)malloc(text_buffer_size.get(*state));
+    if (!ptr->users.times) { LOG_ERROR("failed to allocate user times buffer"); }
   }
 }
 
@@ -130,6 +137,7 @@ static void update_user_time(char *tty) {
     current_info->users.ctime = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.ctime, temp, text_buffer_size.get(*state));
   } else {
+    LOG_WARNING("failed to get user time for tty, using fallback");
     free_and_zero(current_info->users.ctime);
     current_info->users.ctime = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.ctime, "broken", text_buffer_size.get(*state));
@@ -147,6 +155,7 @@ int update_users(void) {
     current_info->users.names = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.names, temp, text_buffer_size.get(*state));
   } else {
+    LOG_WARNING("no user names found in utmp, using fallback");
     free_and_zero(current_info->users.names);
     current_info->users.names = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.names, "broken", text_buffer_size.get(*state));
@@ -165,6 +174,7 @@ int update_users(void) {
     current_info->users.terms = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.terms, temp, text_buffer_size.get(*state));
   } else {
+    LOG_WARNING("no user terms found in utmp, using fallback");
     free_and_zero(current_info->users.terms);
     current_info->users.terms = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.terms, "broken", text_buffer_size.get(*state));
@@ -175,6 +185,7 @@ int update_users(void) {
     current_info->users.times = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.times, temp, text_buffer_size.get(*state));
   } else {
+    LOG_WARNING("no user times found in utmp, using fallback");
     free_and_zero(current_info->users.times);
     current_info->users.times = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.times, "broken", text_buffer_size.get(*state));

@@ -71,7 +71,7 @@ static void __free_hddtemp_info(hdd_info *hdi) {
 }
 
 static void free_hddtemp_info(void) {
-  DBGP("free_hddtemp_info() called");
+  LOG_TRACE("freeing hddtemp data");
   if (!hdd_info_head.next) return;
   __free_hddtemp_info(hdd_info_head.next);
   hdd_info_head.next = nullptr;
@@ -80,7 +80,7 @@ static void free_hddtemp_info(void) {
 static void add_hddtemp_info(char *dev, short temp, char unit) {
   hdd_info *hdi = &hdd_info_head;
 
-  DBGP("add_hddtemp_info(%s, %d, %c) being called", dev, temp, unit);
+  LOG_DEBUG("add_hddtemp_info({}, {}, {}) being called", dev, temp, unit);
   while (hdi->next) hdi = hdi->next;
 
   hdi->next = new hdd_info;
@@ -103,7 +103,7 @@ static char *fetch_hddtemp_output(void) {
 
   if ((i = getaddrinfo(hddtemp_host.get(*state).c_str(),
                        hddtemp_port.get(*state).c_str(), &hints, &result))) {
-    NORM_ERR("getaddrinfo(): %s", gai_strerror(i));
+    LOG_ERROR("hddtemp DNS lookup failed for {}:{}: {}", hddtemp_host.get(*state).c_str(), hddtemp_port.get(*state).c_str(), gai_strerror(i));
     return nullptr;
   }
 
@@ -114,7 +114,7 @@ static char *fetch_hddtemp_output(void) {
     close(sockfd);
   }
   if (!rp) {
-    NORM_ERR("could not connect to hddtemp host");
+    LOG_ERROR("could not connect to hddtemp at {}:{}", hddtemp_host.get(*state), hddtemp_port.get(*state));
     goto GET_OUT;
   }
 
@@ -127,7 +127,7 @@ static char *fetch_hddtemp_output(void) {
       buf = (char *)realloc(buf, buflen);
     }
   }
-  if (rlen < 0) perror("recv");
+  if (rlen < 0) LOG_ERROR("recv: {}", strerror(errno));
 
   buf[offset] = '\0';
 

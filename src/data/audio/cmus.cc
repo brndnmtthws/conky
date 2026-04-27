@@ -68,6 +68,7 @@ void cmus_cb::work() {
 
   fp = popen("cmus-remote -Q 2>/dev/null", "r");
   if (!fp) {
+    LOG_ERROR("failed to run 'cmus-remote -Q'");
     cmus.state = "Can't run 'cmus-remote -Q'";
   } else {
     while (1) {

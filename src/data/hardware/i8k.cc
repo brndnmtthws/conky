@@ -57,21 +57,21 @@ int update_i8k(void) {
   FILE *fp;
 
   if ((fp = fopen(PROC_I8K, "r")) == nullptr) {
-    NORM_ERR(
-        "/proc/i8k doesn't exist! use insmod to make sure the kernel driver is "
-        "loaded...");
+    LOG_ERROR(
+        "/proc/i8k doesn't exist, use insmod to make sure the kernel driver is "
+        "loaded");
     return 1;
   }
 
   if (!i8k_procbuf) { i8k_procbuf = (char *)malloc(128 * sizeof(char)); }
   memset(&i8k_procbuf[0], 0, 128);
   if (fread(&i8k_procbuf[0], sizeof(char), 128, fp) == 0) {
-    NORM_ERR("something wrong with /proc/i8k...");
+    LOG_ERROR("failed to read /proc/i8k: {}", strerror(errno));
   }
 
   fclose(fp);
 
-  DBGP("read `%s' from /proc/i8k\n", i8k_procbuf);
+  LOG_DEBUG("read '{}' from /proc/i8k", i8k_procbuf);
 
   i8k.version = strtok(&i8k_procbuf[0], I8K_DELIM);
   i8k.bios = strtok(nullptr, I8K_DELIM);

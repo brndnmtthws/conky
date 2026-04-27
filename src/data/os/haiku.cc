@@ -30,6 +30,7 @@
 #include <OS.h>
 
 #include "../../conky.h"
+#include "../../logging.h"
 #include "haiku.h"
 #include "../network/net_stat.h"
 #include "../top.h"
@@ -53,7 +54,7 @@ int update_meminfo() {
   system_info si;
 
   if (get_system_info(&si) != B_OK) {
-    fprintf(stderr, "Cannot get_system_info\n");
+    LOG_ERROR("cannot get_system_info");
     return 1;
   }
 
@@ -90,7 +91,7 @@ void get_cpu_count(void) {
   system_info si;
 
   if (get_system_info(&si) != B_OK) {
-    fprintf(stderr, "Cannot get_system_info\n");
+    LOG_ERROR("cannot get_system_info");
     info.cpu_count = 0;
     return;
   }

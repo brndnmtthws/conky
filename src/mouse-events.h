@@ -116,7 +116,7 @@ inline std::optional<mouse_button_t> x11_mouse_button_code(
     case 9:
       return mouse_button_t::FORWARD;
     default:
-      DBGP("X11 button %d is not mapped", x11_mouse_button);
+      LOG_TRACE("X11 button {} is not mapped", x11_mouse_button);
       return std::nullopt;
   }
 }

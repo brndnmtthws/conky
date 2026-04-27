@@ -169,10 +169,8 @@ static int x11_error_handler(Display *d, XErrorEvent *err) {
     code_allocated = true;
   }
 
-  DBGP(
-      "X %s Error:\n"
-      "Display: %lx, XID: %li, Serial: %lu\n"
-      "%s",
+  LOG_DEBUG(
+      "X {} error: display {:#x}, XID {}, serial {} -- {}",
       error_name, reinterpret_cast<uint64_t>(err->display),
       static_cast<int64_t>(err->resourceid), err->serial, code_description);
 
@@ -237,7 +235,7 @@ inline Window DefaultVRootWindow(Display *display) {
 
 /* X11 initializer */
 void init_x11() {
-  DBGP("enter init_x11()");
+  LOG_TRACE("initializing X11 display");
   if (display == nullptr) {
     const std::string &dispstr = display_name.get(*state);
     // passing nullptr to XOpenDisplay should open the default display
@@ -279,12 +277,12 @@ void init_x11() {
     }
   }
 #endif /* HAVE_XCB_ERRORS */
-  DBGP("leave init_x11()");
+  LOG_TRACE("X11 display initialized");
 }
 
 void deinit_x11() {
   if (display) {
-    DBGP("deinit_x11()");
+    LOG_TRACE("closing X11 display");
     XCloseDisplay(display);
     display = nullptr;
   }
@@ -339,15 +337,13 @@ void update_x11_workarea() {
   int heads = 0;
   XineramaScreenInfo *si = XineramaQueryScreens(display, &heads);
   if (si == nullptr) {
-    NORM_ERR(
-        "warning: XineramaQueryScreen returned nullptr, ignoring head "
-        "settings");
+    LOG_WARNING("XineramaQueryScreens returned nullptr, ignoring head settings");
     return; /* queryscreens failed? */
   }
 
   int i = head_index.get(*state);
   if (i < 0 || i >= heads) {
-    NORM_ERR("warning: invalid head index, ignoring head settings");
+    LOG_WARNING("invalid head index {}, valid range 0-{}", i, heads - 1);
     return;
   }
 
@@ -356,8 +352,7 @@ void update_x11_workarea() {
   workarea.set_size(ps->width, ps->height);
   XFree(si);
 
-  DBGP("Fixed xinerama area to: %d %d %d %d", workarea[0], workarea[1],
-       workarea[2], workarea[3]);
+  LOG_DEBUG("fixed xinerama area to {}", workarea);
 #endif
 }
 
@@ -377,10 +372,10 @@ static Window find_desktop_window(Window root) {
       find_desktop_window_impl(desktop, workarea.width(), workarea.height());
 
   if (desktop != root) {
-    NORM_ERR("desktop window (0x%lx) is subwindow of root window (0x%lx)",
-             desktop, root);
+    LOG_DEBUG("desktop window {:#x} is subwindow of root window {:#x}",
+              desktop, root);
   } else {
-    NORM_ERR("desktop window (0x%lx) is root window", desktop);
+    LOG_DEBUG("desktop window {:#x} is root window", desktop);
   }
   return desktop;
 }
@@ -470,13 +465,13 @@ void destroy_window() {
 }
 
 void x11_init_window(lua::state &l, bool own) {
-  DBGP("enter x11_init_window()");
+  LOG_DEBUG("creating X11 window");
   // own is unused if OWN_WINDOW is not defined
   (void)own;
 
   window.root = VRootWindow(display, screen);
   if (window.root == None) {
-    DBGP2("no desktop window found");
+    LOG_DEBUG("no desktop window found");
     return;
   }
   window.desktop = find_desktop_window(window.root);
@@ -497,10 +492,10 @@ void x11_init_window(lua::state &l, bool own) {
       window.opacity = background_alpha;
     } else if (wants_alpha) {
       if (background_alpha != 0) {
-        NORM_ERR("ARGB visual not supported (no compositor?); only full background transparency is supported: window will be opaque");
+        LOG_WARNING("ARGB visual not available (no compositor?), window will be opaque");
       } else {
         window.opacity = 0;
-        NORM_ERR("ARGB visual not supported (no compositor?); window will use fallback");
+        LOG_WARNING("ARGB visual not available (no compositor?), using pseudo-transparency fallback");
       }
     }
 
@@ -556,7 +551,7 @@ void x11_init_window(lua::state &l, bool own) {
       XLowerWindow(display, window.window);
       XSetClassHint(display, window.window, &classHint);
 
-      NORM_ERR("window type - override");
+      LOG_INFO("window type - override");
     } else { /* own_window_type.get(l) != TYPE_OVERRIDE */
 
       /* A window managed by the window manager.
@@ -617,7 +612,7 @@ void x11_init_window(lua::state &l, bool own) {
         int major_version;
         int minor_version;
         if (XShapeQueryVersion(display, &major_version, &minor_version) == 0) {
-          NORM_ERR("Input shapes are not supported");
+          LOG_WARNING("input shapes are not supported");
         } else {
           if (own_window.get(*state) &&
               (own_window_type.get(*state) != window_type::NORMAL ||
@@ -657,24 +652,24 @@ void x11_init_window(lua::state &l, bool own) {
         switch (own_window_type.get(l)) {
           case window_type::DESKTOP:
             prop = ATOM(_NET_WM_WINDOW_TYPE_DESKTOP);
-            NORM_ERR("window type - desktop");
+            LOG_INFO("window type - desktop");
             break;
           case window_type::DOCK:
             prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
-            NORM_ERR("window type - dock");
+            LOG_INFO("window type - dock");
             break;
           case window_type::PANEL:
             prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
-            NORM_ERR("window type - panel");
+            LOG_INFO("window type - panel");
             break;
           case window_type::UTILITY:
             prop = ATOM(_NET_WM_WINDOW_TYPE_UTILITY);
-            NORM_ERR("window type - utility");
+            LOG_INFO("window type - utility");
             break;
           case window_type::NORMAL:
           default:
             prop = ATOM(_NET_WM_WINDOW_TYPE_NORMAL);
-            NORM_ERR("window type - normal");
+            LOG_INFO("window type - normal");
             break;
         }
         XChangeProperty(display, window.window, xa, XA_ATOM, 32,
@@ -686,7 +681,7 @@ void x11_init_window(lua::state &l, bool own) {
 
       /* Window decorations */
       if (TEST_HINT(hints, window_hints::UNDECORATED)) {
-        DBGP("hint - undecorated");
+        LOG_DEBUG("hint - undecorated");
         xa = ATOM(_MOTIF_WM_HINTS);
         if (xa != None) {
           long prop[5] = {2, 0, 0, 0, 0};
@@ -697,7 +692,7 @@ void x11_init_window(lua::state &l, bool own) {
 
       /* Below other windows */
       if (TEST_HINT(hints, window_hints::BELOW)) {
-        DBGP("hint - below");
+        LOG_DEBUG("hint - below");
         xa = ATOM(_WIN_LAYER);
         if (xa != None) {
           long prop = 0;
@@ -719,7 +714,7 @@ void x11_init_window(lua::state &l, bool own) {
 
       /* Above other windows */
       if (TEST_HINT(hints, window_hints::ABOVE)) {
-        DBGP("hint - above");
+        LOG_DEBUG("hint - above");
         xa = ATOM(_WIN_LAYER);
         if (xa != None) {
           long prop = 6;
@@ -741,7 +736,7 @@ void x11_init_window(lua::state &l, bool own) {
 
       /* Sticky */
       if (TEST_HINT(hints, window_hints::STICKY)) {
-        DBGP("hint - sticky");
+        LOG_DEBUG("hint - sticky");
         xa = ATOM(_NET_WM_DESKTOP);
         if (xa != None) {
           CARD32 xa_prop = 0xFFFFFFFF;
@@ -763,7 +758,7 @@ void x11_init_window(lua::state &l, bool own) {
 
       /* Skip taskbar */
       if (TEST_HINT(hints, window_hints::SKIP_TASKBAR)) {
-        DBGP("hint - skip taskbar");
+        LOG_DEBUG("hint - skip taskbar");
         xa = ATOM(_NET_WM_STATE);
         if (xa != None) {
           Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_TASKBAR);
@@ -776,7 +771,7 @@ void x11_init_window(lua::state &l, bool own) {
 
       /* Skip pager */
       if (TEST_HINT(hints, window_hints::SKIP_PAGER)) {
-        DBGP("hint - skip pager");
+        LOG_DEBUG("hint - skip pager");
         xa = ATOM(_NET_WM_STATE);
         if (xa != None) {
           Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_PAGER);
@@ -788,7 +783,7 @@ void x11_init_window(lua::state &l, bool own) {
       }
     }
 
-    NORM_ERR("drawing to created window (0x%lx)", window.window);
+    LOG_INFO("drawing to created window {:#x}", window.window);
     XMapWindow(display, window.window);
   } else
 #endif /* OWN_WINDOW */
@@ -801,7 +796,7 @@ void x11_init_window(lua::state &l, bool own) {
       window.geometry.set_size(attrs.width, attrs.height);
     }
 
-    NORM_ERR("drawing to desktop window");
+    LOG_INFO("drawing to desktop window");
   }
 
   /* Drawable is same as window. This may be changed by double buffering. */
@@ -821,14 +816,14 @@ void x11_init_window(lua::state &l, bool own) {
     if (!XQueryExtension(display, "XInputExtension", &window.xi_opcode,
                          &_ignored, &_ignored)) {
       // events will still ~work but let the user know why they're buggy
-      NORM_ERR("XInput extension is not supported by X11!");
+      LOG_WARNING("XInput extension is not supported by X11");
       break;
     }
 
     int major = 2, minor = 0;
     int retval = XIQueryVersion(display, &major, &minor);
     if (retval != 0) {
-      NORM_ERR("Error: XInput 2.0 is not supported!");
+      LOG_WARNING("XInput 2.0 is not supported (supported version {}.{})", major, minor);
       break;
     }
 
@@ -885,7 +880,7 @@ void x11_init_window(lua::state &l, bool own) {
   XSelectInput(display, window.window, input_mask);
 
   window_created = 1;
-  DBGP("leave x11_init_window()");
+  LOG_TRACE("X11 window created");
 }
 
 static Window find_desktop_window_impl(Window win, int w, int h) {
@@ -1145,8 +1140,8 @@ void set_struts() {
 
     if (unsupported) {
       // feel free to add any special support
-      NORM_ERR(
-          "WM/DE you're using (%s) doesn't support WM_STRUT hints (well); "
+      LOG_WARNING(
+          "WM/DE '{}' doesn't support WM_STRUT hints well, "
           "reserved area functionality might not work correctly",
           info.system.wm_name);
     }
@@ -1346,9 +1341,8 @@ void set_struts() {
     }
   }
 
-  DBGP(
-      "Reserved space: left=%d, right=%d, top=%d, "
-      "bottom=%d",
+  LOG_DEBUG(
+      "reserved space: left={}, right={}, top={}, bottom={}",
       sizes[0], sizes[1], sizes[2], sizes[3]);
 
   XChangeProperty(display, window.window, atom, XA_CARDINAL, 32,
@@ -1358,10 +1352,10 @@ void set_struts() {
   atom = ATOM(_NET_WM_STRUT_PARTIAL);
   if (atom == None) return;
 
-  DBGP(
-      "Reserved space edges: left_start_y=%d, left_end_y=%d, "
-      "right_start_y=%d, right_end_y=%d, top_start_x=%d, "
-      "top_end_x=%d, bottom_start_x=%d, bottom_end_x=%d",
+  LOG_DEBUG(
+      "reserved space edges: left_start_y={}, left_end_y={}, "
+      "right_start_y={}, right_end_y={}, top_start_x={}, "
+      "top_end_x={}, bottom_start_x={}, bottom_end_x={}",
       sizes[4], sizes[5], sizes[6], sizes[7], sizes[8], sizes[9], sizes[10],
       sizes[11]);
 
@@ -1674,7 +1668,7 @@ Window query_x11_window_at_pos(Display *display, conky::vec2i pos, int device_id
   (void) device_id;
   Window root = DefaultVRootWindow(display);
 
-  
+
   Window root_return;
   Window last = None;
 

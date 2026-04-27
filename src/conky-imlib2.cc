@@ -127,10 +127,7 @@ void cimlib_add_image(const char *args) {
   memset(cur, 0, sizeof(struct image_list_s));
 
   if (sscanf(args, "%1023s", cur->name) == 0) {
-    NORM_ERR(
-        "Invalid args for $image.  Format is: '<path to image> (-p"
-        "x,y) (-s WxH) (-n) (-f interval)' (got '%s')",
-        args);
+    LOG_ERROR("invalid args for $image, format is '<path to image> (-p x,y) (-s WxH) (-n) (-f interval)' (got '{}')", args);
     delete[] cur;
     return;
   }
@@ -172,7 +169,7 @@ void cimlib_add_image(const char *args) {
     }
   }
   if (cur->flush_interval < 0) {
-    NORM_ERR("Imlib2: flush interval should be >= 0");
+    LOG_WARNING("flush interval should be >= 0, got {}", cur->flush_interval);
     cur->flush_interval = 0;
   }
 
@@ -196,15 +193,13 @@ static void cimlib_draw_image(struct image_list_s *cur, int *clip_x,
 
   image = imlib_load_image(cur->name);
   if (image == nullptr) {
-    if (rep == 0) { NORM_ERR("Unable to load image '%s'", cur->name); }
+    if (rep == 0) { LOG_ERROR("unable to load image '{}'", cur->name); }
     rep = 1;
     return;
   }
   rep = 0; /* reset so disappearing images are reported */
 
-  DBGP(
-      "Drawing image '%s' at (%i,%i) scaled to %ix%i, "
-      "caching interval set to %i (with -n opt %i)",
+  LOG_DEBUG("drawing image '{}' at ({},{}) scaled to {}x{}, cache interval {} (no_cache {})",
       cur->name, cur->x, cur->y, cur->w, cur->h, cur->flush_interval,
       cur->no_cache);
 
@@ -260,7 +255,7 @@ void cimlib_render(int x, int y, int width, int height, uint32_t flush_interval,
     imlib_set_cache_size(0);
     imlib_set_cache_size(size);
     cimlib_cache_flush_last = now;
-    DBGP("Flushing Imlib2 cache (%li)\n", now);
+    LOG_DEBUG("flushing imlib2 cache ({})", now);
   }
 
   /* take all the little rectangles to redraw and merge them into

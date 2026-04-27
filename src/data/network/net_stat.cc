@@ -536,7 +536,7 @@ int interface_up(struct text_object *obj) {
   strncpy(ifr.ifr_name, dev, IFNAMSIZ);
   if (ioctl(fd, SIOCGIFFLAGS, &ifr) != 0) {
     /* if device does not exist, treat like not up */
-    if (errno != ENODEV && errno != ENXIO) { perror("SIOCGIFFLAGS"); }
+    if (errno != ENODEV && errno != ENXIO) { LOG_ERROR("SIOCGIFFLAGS: {}", strerror(errno)); }
     goto END_FALSE;
   }
 
@@ -551,7 +551,7 @@ int interface_up(struct text_object *obj) {
   if (if_up_strictness.get(*state) == IFUP_LINK) { goto END_TRUE; }
 
   if (ioctl(fd, SIOCGIFADDR, &ifr) != 0) {
-    perror("SIOCGIFADDR");
+    LOG_ERROR("SIOCGIFADDR: {}", strerror(errno));
     goto END_FALSE;
   }
   if ((reinterpret_cast<struct sockaddr_in *>(&(ifr.ifr_addr)))

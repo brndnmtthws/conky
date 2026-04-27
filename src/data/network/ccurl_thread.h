@@ -68,7 +68,7 @@ class curl_callback : public conky::callback<Result, std::string, Keys...>,
 
  protected:
   virtual void work() {
-    DBGP("reading curl data from '%s'", std::get<0>(Base1::tuple).c_str());
+    LOG_DEBUG("reading curl data from '{}'", std::get<0>(Base1::tuple).c_str());
     do_work();
   }
 

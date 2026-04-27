@@ -60,7 +60,7 @@ bool bsdcommon::init_kvm() {
 
   kd = kvm_open(nullptr, nullptr, nullptr, KVM_NO_FILES, kvm_errbuf);
   if (kd == nullptr) {
-    NORM_ERR("opening kvm :%s", kvm_errbuf);
+    LOG_ERROR("can't open kvm: {}", kvm_errbuf);
     return false;
   }
 
@@ -82,7 +82,7 @@ void bsdcommon::get_cpu_count(float **cpu_usage, unsigned int *cpu_count) {
   size_t len = sizeof(ncpu);
 
   if (sysctl(mib, 2, &ncpu, &len, nullptr, 0) != 0) {
-    NORM_ERR("error getting kern.ncpu, defaulting to 1");
+    LOG_WARNING("error getting kern.ncpu, defaulting to 1");
     ncpu = 1;
   }
 
@@ -140,7 +140,7 @@ void bsdcommon::update_cpu_usage(float **cpu_usage, unsigned int *cpu_count) {
 
   size = sizeof(cp_time0);
   if (sysctl(mib_cpu0, 2, &cp_time0, &size, nullptr, 0) != 0) {
-      NORM_ERR("unable to get cpu time for cpu0");
+      LOG_ERROR("unable to get cpu time for cpu0");
       return;
   }
 
@@ -163,7 +163,7 @@ void bsdcommon::update_cpu_usage(float **cpu_usage, unsigned int *cpu_count) {
     mib_cpun[2] = i;
     size = sizeof(cp_timen);
     if (sysctl(mib_cpun, 3, &cp_timen, &size, nullptr, 0) != 0) {
-      NORM_ERR("unable to get cpu time for cpu%d", i);
+      LOG_ERROR("unable to get cpu time for cpu{}", i);
       return;
     }
 
@@ -207,7 +207,7 @@ BSD_COMMON_PROC_STRUCT *bsdcommon::get_processes(short unsigned int *procs) {
 #endif
 
  if (ps == nullptr) {
-    NORM_ERR("unable to get proceses");
+    LOG_ERROR("unable to get processes");
     return nullptr;
   }
 
@@ -221,7 +221,7 @@ static bool is_process_running(BSD_COMMON_PROC_STRUCT *p) {
 #elif defined(__OpenBSD__)
   return p->p_stat == SRUN;
 #else
-  #error Not supported BSD system 
+  #error Not supported BSD system
 #endif
 }
 
@@ -250,7 +250,7 @@ static bool is_top_process(BSD_COMMON_PROC_STRUCT *p) {
 #if defined(__NetBSD__) || defined(__OpenBSD__)
   return !((p->p_flag & P_SYSTEM)) && p->p_comm[0] != 0;
 #else
-  #error Not supported BSD system 
+  #error Not supported BSD system
 #endif
 }
 
@@ -258,7 +258,7 @@ static int32_t get_pid(BSD_COMMON_PROC_STRUCT *p) {
 #if defined(__NetBSD__) || defined(__OpenBSD__)
   return p->p_pid;
 #else
-  #error Not supported BSD system 
+  #error Not supported BSD system
 #endif
 }
 
@@ -300,7 +300,7 @@ static void proc_from_bsdproc(struct process *proc, BSD_COMMON_PROC_STRUCT *p) {
   proc->rss = (p->p_vm_rssize * getpagesize());
   proc->total_cpu_time = to_conky_time(p->p_rtime_sec, p->p_rtime_usec);
 #else
-  #error Not supported BSD system 
+  #error Not supported BSD system
 #endif
 
   if (proc->previous_user_time == ULONG_MAX) {
@@ -366,7 +366,7 @@ static bool is_process(BSD_COMMON_PROC_STRUCT *p, const char *name) {
 #if defined(__NetBSD__) || defined(__OpenBSD__)
   return p->p_comm[0] != 0 && strcmp(p->p_comm, name) == 0;
 #else
-  #error Not supported BSD system 
+  #error Not supported BSD system
 #endif
 }
 
@@ -450,7 +450,7 @@ void bsdcommon::update_meminfo(struct information &info) {
 
   len = sizeof(meminfo);
   if (sysctl(mib, 2, &meminfo, &len, NULL, 0) == -1 ) {
-    NORM_ERR("unable to get meminfo");
+    LOG_ERROR("unable to get meminfo");
     return;
   }
 

@@ -405,7 +405,7 @@ unique_display_t nvidia_display_setting::get_nvdisplay() {
   if (!nvdisplay.empty()) {
     unique_display_t nvd(XOpenDisplay(nvdisplay.c_str()), &close_nvdisplay);
     if (!nvd) {
-      NORM_ERR(nullptr, NULL, "can't open nvidia display: %s",
+      LOG_ERROR("can't open nvidia display: {}",
                XDisplayName(nvdisplay.c_str()));
     }
     return nvd;
@@ -704,14 +704,9 @@ static inline int get_nvidia_target_count(Display *dpy, TARGET_ID tid) {
 
   if (num_tgts < 1 && tid == TARGET_GPU) {
     // Print error and exit if there's no NVIDIA's GPU
-    NORM_ERR(nullptr, NULL,
-             "%s:"
-             "\n          Trying to query Nvidia target failed (using the "
-             "proprietary drivers)."
-             "\n          Are you sure they are installed correctly and a "
-             "Nvidia GPU is in use?"
-             "\n          (display: %d,Nvidia target_count: %d)",
-             __func__, dpy, num_tgts);
+    LOG_ERROR("trying to query nvidia target failed (using the proprietary drivers), "
+             "are you sure they are installed correctly and a nvidia GPU is in use? "
+             "(target_count: {})", num_tgts);
   }
 
   return num_tgts;
@@ -726,10 +721,9 @@ static int cache_nvidia_value(TARGET_ID tid, ATTR_ID aid, Display *dpy,
       if (!dpy || !XNVCTRLQueryTargetAttribute(
                       dpy, translate_nvidia_target[tid], gid, 0,
                       translate_nvidia_attribute[aid], value)) {
-        NORM_ERR(
-            "%s: Something went wrong running nvidia query (arg: %s tid: %d, "
-            "aid: %d)",
-            __func__, arg, tid, aid);
+        LOG_ERROR(
+            "nvidia query failed (arg: {}, tid: {}, aid: {})",
+            arg, static_cast<int>(tid), static_cast<int>(aid));
         return -1;
       }
       ac_value[gid].memtotal = *value;
@@ -741,10 +735,9 @@ static int cache_nvidia_value(TARGET_ID tid, ATTR_ID aid, Display *dpy,
       if (!dpy || !XNVCTRLQueryTargetAttribute(
                       dpy, translate_nvidia_target[tid], gid, 0,
                       translate_nvidia_attribute[aid], value)) {
-        NORM_ERR(
-            "%s: Something went wrong running nvidia query (arg: %s, tid: "
-            "%d, aid: %d)",
-            __func__, arg, tid, aid);
+        LOG_ERROR(
+            "nvidia query failed (arg: {}, tid: {}, aid: {})",
+            arg, static_cast<int>(tid), static_cast<int>(aid));
         return -1;
       }
       ac_value[gid].gputempthreshold = *value;
@@ -771,10 +764,9 @@ static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid, int gid,
     if (!dpy ||
         !XNVCTRLQueryTargetAttribute(dpy, translate_nvidia_target[tid], gid, 0,
                                      translate_nvidia_attribute[aid], &value)) {
-      NORM_ERR(
-          "%s: Something went wrong running nvidia query (arg: %s, tid: %d, "
-          "aid: %d)",
-          __func__, arg, tid, aid);
+      LOG_ERROR(
+          "nvidia query failed (arg: {}, tid: {}, aid: {})",
+          arg, static_cast<int>(tid), static_cast<int>(aid));
       return -1;
     }
   }
@@ -798,11 +790,9 @@ static char *get_nvidia_string(TARGET_ID tid, ATTR_ID aid, int gid,
   if (!dpy || !XNVCTRLQueryTargetStringAttribute(
                   dpy, translate_nvidia_target[tid], gid, 0,
                   translate_nvidia_attribute[aid], &str)) {
-    NORM_ERR(
-        "%s: Something went wrong running nvidia string query (arg, tid: %d, "
-        "aid: "
-        "%d, GPU %d)",
-        __func__, arg, tid, aid, gid);
+    LOG_ERROR(
+        "nvidia string query failed (tid: {}, aid: {}, GPU {})",
+        static_cast<int>(tid), static_cast<int>(aid), gid);
     return nullptr;
   }
   return str;
@@ -968,12 +958,12 @@ void print_nvidia_value(struct text_object *obj, char *p,
   Display *dpy = nvdpy ? nvdpy.get() : display;
 
   if (!dpy) {
-    NORM_ERR("%s: no display set (try setting nvidia_display)", __func__);
+    LOG_ERROR("no display set (try setting nvidia_display)");
     return;
   }
 
   if (!XNVCTRLQueryExtension(dpy, &event_base, &error_base)) {
-    NORM_ERR("%s: NV-CONTROL X extension not present", __func__);
+    LOG_ERROR("NV-CONTROL X extension not present");
     return;
   }
 
@@ -1072,12 +1062,12 @@ double get_nvidia_barval(struct text_object *obj) {
   Display *dpy = nvdpy ? nvdpy.get() : display;
 
   if (!dpy) {
-    NORM_ERR("%s: no display set (try setting nvidia_display)", __func__);
+    LOG_ERROR("no display set (try setting nvidia_display)");
     return 0;
   }
 
   if (!XNVCTRLQueryExtension(dpy, &event_base, &error_base)) {
-    NORM_ERR("%s: NV-CONTROL X extension not present", __func__);
+    LOG_ERROR("NV-CONTROL X extension not present");
     return 0;
   }
 
@@ -1111,8 +1101,8 @@ double get_nvidia_barval(struct text_object *obj) {
         value = temp2 - temp1;
         break;
       case ATTR_FAN_SPEED:  // fanspeed: Warn user we are using fanlevel
-        NORM_ERR(
-            "%s: invalid argument specified: '%s' (using 'fanlevel' instead).",
+        LOG_WARNING(
+            "{}: invalid argument specified: '{}' (using 'fanlevel' instead)",
             nvs->command, nvs->arg);
         /* falls through */
       case ATTR_FAN_LEVEL:  // fanlevel

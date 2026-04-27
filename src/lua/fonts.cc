@@ -61,7 +61,7 @@ void set_font() {
 }
 
 void setup_fonts() {
-  DBGP2("setting up fonts");
+  LOG_DEBUG("setting up fonts");
   for (auto output : display_outputs()) output->setup_fonts();
   set_font();
 }
@@ -81,7 +81,7 @@ void free_fonts(bool utf8) {
 }
 
 void load_fonts(bool utf8) {
-  DBGP2("loading fonts");
+  LOG_DEBUG("loading fonts");
   for (auto output : display_outputs()) output->load_fonts(utf8);
 }
 

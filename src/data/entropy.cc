@@ -31,6 +31,7 @@
 #include <time.h>
 #include "config.h"
 #include "../conky.h"
+#include "../logging.h"
 #include "../content/text_object.h"
 
 /* check for OS and include appropriate headers */
@@ -63,6 +64,9 @@ static _entropy entropy;
 int update_entropy() {
   get_entropy_avail(&entropy.avail);
   get_entropy_poolsize(&entropy.poolsize);
+  if (entropy.poolsize == 0) {
+    LOG_WARNING("entropy pool size is zero, metrics will be unavailable");
+  }
   return 0;
 }
 

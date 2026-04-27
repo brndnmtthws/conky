@@ -31,7 +31,6 @@
 #define CONKY_PROC_H
 
 #define PROCDIR "/proc"
-#define READERR "Can't read '%s'"
 #define READSIZE 128
 
 void print_pid_chroot(struct text_object *obj, char *p,

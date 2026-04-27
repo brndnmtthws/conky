@@ -35,6 +35,7 @@
 #include <unistd.h>
 #include "config.h"
 #include "../../conky.h"
+#include "../../logging.h"
 #include "../../content/text_object.h"
 
 #ifdef __x86_64__
@@ -119,7 +120,10 @@ void get_cpu_clock_speed(char *str1, unsigned int p_max_size) {
   tc.tv_nsec = TICKZ * 1000000L;
 
   x = rdtsc();
-  if (-1 == (nanosleep(&tc, NULL))) { return; }
+  if (-1 == (nanosleep(&tc, NULL))) {
+    LOG_ERROR("nanosleep failed during cpu clock measurement");
+    return;
+  }
   z = rdtsc();
 
   snprintf(str1, p_max_size, "%ju MHz", ((z - x) / 100000U));

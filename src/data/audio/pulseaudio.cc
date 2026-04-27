@@ -116,7 +116,7 @@ void pa_server_sink_info_callback(pa_context *c, const pa_server_info *i,
     pa_operation *op;
     if (!(op = pa_context_get_sink_info_by_name(c, pdr->sink_name.c_str(),
                                                 pa_sink_info_callback, pdr))) {
-      NORM_ERR("pa_context_get_sink_info_by_index() failed");
+      LOG_ERROR("failed to query pulseaudio sink info");
       return;
     }
     pa_operation_unref(op);
@@ -164,7 +164,7 @@ void context_state_cb(pa_context *c, void *userdata) {
 
 #define PULSEAUDIO_OP(command, error_msg) \
   if (!(op = command)) {                  \
-    NORM_ERR(error_msg);                  \
+    LOG_ERROR(error_msg);                 \
     return;                               \
   }                                       \
   pa_operation_unref(op);
@@ -197,7 +197,7 @@ void subscribe_cb(pa_context *c, pa_subscription_event_type_t t, uint32_t index,
         pa_operation *op;
         PULSEAUDIO_OP(pa_context_get_card_info_by_index(
                           c, index, pa_card_info_callback, res),
-                      "pa_context_get_card_info_by_index() failed")
+                      "failed to query pulseaudio card info")
       }
       break;
 
@@ -205,7 +205,7 @@ void subscribe_cb(pa_context *c, pa_subscription_event_type_t t, uint32_t index,
       pa_operation *op;
       PULSEAUDIO_OP(
           pa_context_get_server_info(c, pa_server_sink_info_callback, res),
-          "pa_context_get_server_info() failed");
+          "failed to query pulseaudio server info");
     } break;
   }
 }
@@ -233,11 +233,11 @@ void init_pulseaudio(struct text_object *obj) {
 
   // Create a mainloop API and connection to the default server
   pulseaudio->mainloop = pa_threaded_mainloop_new();
-  if (!pulseaudio->mainloop) NORM_ERR("Cannot create pulseaudio mainloop");
+  if (!pulseaudio->mainloop) LOG_ERROR("cannot create pulseaudio mainloop");
 
   pulseaudio->mainloop_api = pa_threaded_mainloop_get_api(pulseaudio->mainloop);
 
-  if (!pulseaudio->mainloop_api) NORM_ERR("Cannot get mainloop api");
+  if (!pulseaudio->mainloop_api) LOG_ERROR("cannot get mainloop api");
 
   pulseaudio->context = pa_context_new(pulseaudio->mainloop_api, "Conky Infos");
 
@@ -275,7 +275,7 @@ void init_pulseaudio(struct text_object *obj) {
       pa_sink_info_callback, &pulseaudio->result));
 
   if (pulseaudio->result.sink_name.empty()) {
-    NORM_ERR("Incorrect pulseaudio sink information.");
+    LOG_ERROR("incorrect pulseaudio sink information");
     return;
   }
 
@@ -286,7 +286,7 @@ void init_pulseaudio(struct text_object *obj) {
       pa_source_info_callback, &pulseaudio->result));
 
   if (pulseaudio->result.source_name.empty()) {
-    NORM_ERR("Incorrect pulseaudio source information.");
+    LOG_ERROR("incorrect pulseaudio source information");
     return;
   }
   if (pulseaudio->result.sink_card != (uint32_t)-1)
@@ -305,7 +305,7 @@ void init_pulseaudio(struct text_object *obj) {
                                      PA_SUBSCRIPTION_MASK_SERVER |
                                      PA_SUBSCRIPTION_MASK_CARD),
             nullptr, NULL))) {
-    NORM_ERR("pa_context_subscribe() failed");
+    LOG_ERROR("failed to subscribe to pulseaudio events");
     return;
   }
   pa_operation_unref(op);

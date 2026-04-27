@@ -158,7 +158,7 @@ static inline int parse_rss_2_0(PRSS *res, xmlNodePtr root) {
   xmlNodePtr n;
   int items = 0;
 
-  DBGP("parsing rss 2.0 or <1 doc");
+  LOG_DEBUG("parsing rss 2.0 or <1 doc");
 
   while (channel && (channel->type != XML_ELEMENT_NODE ||
                      strcmp((const char *)channel->name, "channel"))) {
@@ -186,7 +186,7 @@ static inline int parse_rss_1_0(PRSS *res, xmlNodePtr root) {
   int items = 0;
   xmlNodePtr n;
 
-  DBGP("parsing rss 1.0 doc");
+  LOG_DEBUG("parsing rss 1.0 doc");
 
   for (n = root->children; n; n = n->next) {
     if (n->type == XML_ELEMENT_NODE) {

@@ -27,6 +27,7 @@
 
 #include "libtcp-portmon.h"
 
+#include "../../logging.h"
 #include <cstdio>
 #include <cstring>
 #include <unordered_map>
@@ -331,7 +332,7 @@ void process_file(tcp_port_monitor_collection_t *p_collection,
                     local_addr, &conn.local_port, remote_addr,
                     &conn.remote_port, (unsigned long *)&state,
                     (unsigned long *)&uid, (unsigned long *)&inode) != 7) {
-      std::fprintf(stderr, "%s: bad file format\n", file);
+      LOG_ERROR("{}: bad file format", file);
     }
     /** TCP_ESTABLISHED equals 1, but is not (always??) included **/
     // if ((inode == 0) || (state != TCP_ESTABLISHED)) {

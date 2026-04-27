@@ -55,7 +55,7 @@ void print_mysql(struct text_object *obj, char *p, unsigned int p_max_size) {
   MYSQL_RES *res = nullptr;
 
   if (conn == nullptr) {
-    NORM_ERR("Can't initialize MySQL");
+    LOG_ERROR("can't initialize mysql");
     mysql_library_end();
     return;
   }
@@ -63,18 +63,18 @@ void print_mysql(struct text_object *obj, char *p, unsigned int p_max_size) {
                           user.get(*state).c_str(),
                           password.get(*state).c_str(), db.get(*state).c_str(),
                           port.get(*state), nullptr, 0)) {
-    NORM_ERR("MySQL: %s", mysql_error(conn));
+    LOG_ERROR("mysql connection failed: {}", mysql_error(conn));
     mysql_finish(conn, res);
     return;
   }
   if (mysql_query(conn, obj->data.s)) {
-    NORM_ERR("MySQL: %s", mysql_error(conn));
+    LOG_ERROR("mysql query failed: {}", mysql_error(conn));
     mysql_finish(conn, res);
     return;
   }
   res = mysql_use_result(conn);
   if (res == nullptr) {
-    NORM_ERR("MySQL: %s", mysql_error(conn));
+    LOG_ERROR("mysql result failed: {}", mysql_error(conn));
     mysql_finish(conn, res);
     return;
   }
@@ -82,7 +82,7 @@ void print_mysql(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (row) {
     snprintf(p, p_max_size, "%s", row[0]);
   } else {
-    NORM_ERR("MySQL: '%s' returned no results", obj->data.s);
+    LOG_WARNING("mysql query '{}' returned no results", obj->data.s);
   }
   mysql_finish(conn, res);
 }

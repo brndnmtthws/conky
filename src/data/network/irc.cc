@@ -51,7 +51,7 @@ void ev_connected(irc_session_t *session, const char *, const char *,
                   const char **, unsigned int) {
   struct ctx *ctxptr = (struct ctx *)irc_get_ctx(session);
   if (irc_cmd_join(session, ctxptr->chan, nullptr) != 0) {
-    NORM_ERR("irc: %s", irc_strerror(irc_errno(session)));
+    LOG_ERROR("irc: {}", irc_strerror(irc_errno(session)));
   }
 }
 
@@ -71,7 +71,7 @@ void addmessage(struct ctx *ctxptr, char *nick, const char *text) {
       lastmsg = lastmsg->next;
       msgcnt++;
       if (msgcnt < 0) {
-        NORM_ERR("irc: too many messages, discarding the last one.");
+        LOG_WARNING("irc: too many messages, discarding the last one");
         free(newmsg->text);
         free(newmsg);
         return;
@@ -141,7 +141,7 @@ void *ircclient(void *ptr) {
   ircobj->session = irc_create_session(&callbacks);
   server = strtok(ircobj->arg, " ");
   ctxptr->chan = strtok(nullptr, " ");
-  if (!ctxptr->chan) { NORM_ERR("irc: %s", IRCSYNTAX); }
+  if (!ctxptr->chan) { LOG_ERROR("irc: {}", IRCSYNTAX); }
   str_max_msg_lines = strtok(nullptr, " ");
   if (str_max_msg_lines) {
     ctxptr->max_msg_lines = strtol(str_max_msg_lines, nullptr, 10);
@@ -166,13 +166,13 @@ void *ircclient(void *ptr) {
     if (err != 0) { err = irc_errno(ircobj->session); }
   }
 #endif /* BUILD_IPV6 */
-  if (err != 0) { NORM_ERR("irc: %s", irc_strerror(err)); }
+  if (err != 0) { LOG_ERROR("irc: {}", irc_strerror(err)); }
   if (irc_run(ircobj->session) != 0) {
     int ircerror = irc_errno(ircobj->session);
     if (irc_is_connected(ircobj->session)) {
-      NORM_ERR("irc: %s", irc_strerror(ircerror));
+      LOG_ERROR("irc: {}", irc_strerror(ircerror));
     } else {
-      NORM_ERR("irc: disconnected");
+      LOG_WARNING("irc: disconnected");
     }
   }
   free(ircobj->arg);

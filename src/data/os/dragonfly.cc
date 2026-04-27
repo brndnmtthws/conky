@@ -68,12 +68,12 @@ static int getsysctl(const char *name, void *ptr, size_t len) {
   size_t nlen = len;
 
   if (sysctlbyname(name, ptr, &nlen, nullptr, 0) == -1) {
-    fprintf(stderr, "getsysctl(): %s failed '%s'\n", name, strerror(errno));
+    LOG_ERROR("sysctl '{}' failed: {}", name, strerror(errno));
     return -1;
   }
 
   if (nlen != len && errno == ENOMEM) {
-    fprintf(stderr, "getsysctl(): %s failed %zu != %zu\n", name, nlen, len);
+    LOG_ERROR("sysctl '{}' size mismatch: got {}, expected {}", name, nlen, len);
     return -1;
   }
 
@@ -85,9 +85,9 @@ static int swapmode(unsigned long *retavail, unsigned long *retfree) {
   size_t len = sizeof(int);
 
   if (sysctlbyname("vm.swap_size", &total, &len, nullptr, 0) == -1)
-    perror("vm_swap_usage(): vm.swap_size");
+    LOG_ERROR("can't read vm.swap_size: {}", strerror(errno));
   else if (sysctlbyname("vm.swap_anon_use", &used, &len, nullptr, 0) == -1)
-    perror("vm_swap_usage(): vm.swap_anon_use");
+    LOG_ERROR("can't read vm.swap_anon_use: {}", strerror(errno));
   else {
     int size = getpagesize();
 
@@ -113,7 +113,7 @@ int update_uptime(void) {
     time(&now);
     info.uptime = now - boottime.tv_sec;
   } else {
-    fprintf(stderr, "Could not get uptime\n");
+    LOG_ERROR("can't get uptime");
     info.uptime = 0;
   }
 
@@ -139,15 +139,15 @@ int update_meminfo(void) {
   int pagesize = getpagesize();
 
   if (GETSYSCTL("vm.stats.vm.v_page_count", total_pages)) {
-    fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_page_count\"\n");
+    LOG_ERROR("can't read sysctl 'vm.stats.vm.v_page_count'");
   }
 
   if (GETSYSCTL("vm.stats.vm.v_free_count", free_pages)) {
-    fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_free_count\"\n");
+    LOG_ERROR("can't read sysctl 'vm.stats.vm.v_free_count'");
   }
 
   if (GETSYSCTL("vm.stats.vm.v_inactive_count", inactive_pages)) {
-    fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_inactive_count\"\n");
+    LOG_ERROR("can't read sysctl 'vm.stats.vm.v_inactive_count'");
   }
 
   info.memmax = total_pages * (pagesize >> 10);
@@ -237,14 +237,12 @@ static int kern_proc_all_n() {
   size_t len = 0;
 
   if (sysctlbyname("kern.proc.all_lwp", nullptr, &len, NULL, 0) == -1) {
-    perror("kern.proc.all_lwp");
+    LOG_ERROR("kern.proc.all_lwp: {}", strerror(errno));
     return -1;
   }
 
   if (len % sizeof(struct kinfo_proc)) {
-    fprintf(stderr,
-            "kern_proc(): "
-            "len %% sizeof(struct kinfo_proc) != 0");
+    LOG_ERROR("len %% sizeof(struct kinfo_proc) != 0");
     return -1;
   }
 
@@ -258,12 +256,12 @@ static struct kinfo_proc *kern_proc_all(size_t proc_n) {
 
     if (kp) {
       if (sysctlbyname("kern.proc.all_lwp", kp, &len, nullptr, 0) == -1)
-        perror("kern_proc(): kern.proc.all_lwp");
+        LOG_ERROR("kern.proc.all_lwp: {}", strerror(errno));
       else
         return kp;
       free(kp);
     } else
-      perror("malloc");
+      LOG_ERROR("allocation failed: {}", strerror(errno));
   }
   return nullptr;
 }
@@ -274,7 +272,7 @@ void get_cpu_count(void) {
   if (GETSYSCTL("hw.ncpu", cpu_count) == 0) {
     info.cpu_count = cpu_count;
   } else {
-    fprintf(stderr, "Cannot get hw.ncpu\n");
+    LOG_ERROR("can't get hw.ncpu");
     info.cpu_count = 0;
   }
 
@@ -328,8 +326,7 @@ int update_cpu_usage(void) {
     if (percpu) {
       if (sysctlbyname("kern.cputime", percpu, &percpu_n, nullptr, 0) == -1 &&
           errno != ENOMEM) {
-        printf("update_cpu_usage(): with %d cpu(s) ", info.cpu_count);
-        perror("kern.cputime");
+        LOG_ERROR("kern.cputime with {} cpu(s): {}", info.cpu_count, strerror(errno));
       } else {
         struct kinfo_cputime total;
         cputime_pcpu_statistics(&percpu[0], &total, info.cpu_count);
@@ -368,7 +365,7 @@ double get_acpi_temperature(int fd) {
   (void)fd;
 
   if (GETSYSCTL("hw.acpi.thermal.tz0.temperature", temp)) {
-    fprintf(stderr, "Cannot read sysctl \"hw.acpi.thermal.tz0.temperature\"\n");
+    LOG_ERROR("can't read sysctl 'hw.acpi.thermal.tz0.temperature'");
     return 0.0;
   }
 
@@ -378,16 +375,16 @@ double get_acpi_temperature(int fd) {
 static void get_battery_stats(int *battime, int *batcapacity, int *batstate,
                               int *ac) {
   if (battime && GETSYSCTL("hw.acpi.battery.time", *battime)) {
-    fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.time\"\n");
+    LOG_ERROR("can't read sysctl 'hw.acpi.battery.time'");
   }
   if (batcapacity && GETSYSCTL("hw.acpi.battery.life", *batcapacity)) {
-    fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.life\"\n");
+    LOG_ERROR("can't read sysctl 'hw.acpi.battery.life'");
   }
   if (batstate && GETSYSCTL("hw.acpi.battery.state", *batstate)) {
-    fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.state\"\n");
+    LOG_ERROR("can't read sysctl 'hw.acpi.battery.state'");
   }
   if (ac && GETSYSCTL("hw.acpi.acline", *ac)) {
-    fprintf(stderr, "Cannot read sysctl \"hw.acpi.acline\"\n");
+    LOG_ERROR("can't read sysctl 'hw.acpi.acline'");
   }
 }
 
@@ -398,11 +395,11 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item) {
   get_battery_stats(&battime, &batcapacity, &batstate, &ac);
 
   if (batstate != 1 && batstate != 2 && batstate != 0 && batstate != 7)
-    fprintf(stderr, "Unknown battery state %d!\n", batstate);
+    LOG_WARNING("unknown battery state {}", batstate);
   else if (batstate != 1 && ac == 0)
-    fprintf(stderr, "Battery charging while not on AC!\n");
+    LOG_WARNING("battery charging while not on AC");
   else if (batstate == 1 && ac == 1)
-    fprintf(stderr, "Battery discharing while on AC!\n");
+    LOG_WARNING("battery discharging while on AC");
 
   switch (item) {
     case BATTERY_TIME:
@@ -420,7 +417,7 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item) {
                  batcapacity);
       break;
     default:
-      fprintf(stderr, "Unknown requested battery stat %d\n", item);
+      LOG_WARNING("unknown requested battery stat {}", item);
   }
 }
 
@@ -428,16 +425,16 @@ static int check_bat(const char *bat) {
   int batnum, numbatts;
   char *endptr;
   if (GETSYSCTL("hw.acpi.battery.units", numbatts)) {
-    fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.units\"\n");
+    LOG_ERROR("can't read sysctl 'hw.acpi.battery.units'");
     return -1;
   }
   if (numbatts <= 0) {
-    fprintf(stderr, "No battery unit detected\n");
+    LOG_ERROR("no battery unit detected");
     return -1;
   }
   if (!bat || (batnum = strtol(bat, &endptr, 10)) < 0 || bat == endptr ||
       batnum > numbatts) {
-    fprintf(stderr, "Wrong battery unit %s requested\n", bat ? bat : "");
+    LOG_ERROR("wrong battery unit '{}' requested", bat ? bat : "");
     return -1;
   }
   return batnum;
@@ -450,11 +447,11 @@ int get_battery_perct(const char *bat) {
 
   if ((battio.unit = batnum = check_bat(bat)) < 0) return 0;
   if ((acpifd = open("/dev/acpi", O_RDONLY)) < 0) {
-    fprintf(stderr, "Can't open ACPI device\n");
+    LOG_ERROR("can't open ACPI device");
     return 0;
   }
   if (ioctl(acpifd, ACPIIO_BATT_GET_BIF, &battio) == -1) {
-    fprintf(stderr, "Unable to get info for battery unit %d\n", batnum);
+    LOG_ERROR("unable to get info for battery unit {}", batnum);
     return 0;
   }
   close(acpifd);
@@ -486,7 +483,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
   if (!p_client_buffer || client_buffer_size <= 0) { return; }
 
   if (GETSYSCTL("hw.acpi.acline", state)) {
-    fprintf(stderr, "Cannot read sysctl \"hw.acpi.acline\"\n");
+    LOG_ERROR("can't read sysctl 'hw.acpi.acline'");
     return;
   }
 

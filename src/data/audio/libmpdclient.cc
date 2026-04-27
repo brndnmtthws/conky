@@ -35,6 +35,7 @@
 
 #include "libmpdclient.h"
 #include "../../conky.h"
+#include "../../logging.h"
 
 #include <fcntl.h>
 #include <sys/param.h>
@@ -507,7 +508,7 @@ static void mpd_executeCommand(mpd_Connection *connection,
   } while (commandLen > 0);
 
   if (commandLen > 0) {
-    perror("");
+    LOG_ERROR("timeout sending command \"{}\": {}", command, strerror(errno));
     snprintf(connection->errorStr, MPD_ERRORSTR_MAX_LENGTH,
              "timeout sending command \"%s\"", command);
     connection->error = MPD_ERROR_TIMEOUT;

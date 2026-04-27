@@ -229,7 +229,7 @@ std::pair<char *, size_t> scan_command(const char *s) {
         _ptr != s) {
       _size = _ptr - s - 1;
     } else {
-      NORM_ERR("mismatched double-quote in execgraph object");
+      LOG_ERROR("mismatched double-quote in execgraph object");
       return {nullptr, 0};
     }
 
@@ -650,7 +650,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
   if (s->graph_width != s->graph_allocated) {
     auto *graph = static_cast<double *>(
         realloc(s->graph, s->graph_width * sizeof(double)));
-    DBGP("reallocing graph from %d to %d", s->graph_allocated, s->graph_width);
+    LOG_TRACE("reallocating graph from {} to {}", s->graph_allocated, s->graph_width);
     if (s->graph == nullptr) {
       /* initialize */
       std::fill_n(graph, s->graph_width, 0.0);
@@ -661,7 +661,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
         std::fill(graph + s->graph_allocated, graph + s->graph_width, 0.0);
       }
     } else {
-      DBGP("reallocing FAILED");
+      LOG_ERROR("graph realloc failed for width {}", s->graph_width);
       graph = s->graph;
       s->graph_width = s->graph_allocated;
     }

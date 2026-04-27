@@ -144,7 +144,7 @@ void free_tztime(struct text_object *obj) {
   {                                                                \
     int __v;                                                       \
     if ((__v = asprintf(bufp, __VA_ARGS__)) == -1) {               \
-      fprintf(stderr, "%s: memory allocation failed\n", __func__); \
+      LOG_ERROR("memory allocation failed");                       \
       exit(__v);                                                   \
     }                                                              \
   }
@@ -161,7 +161,7 @@ static void do_format_time(struct text_object *obj, char *p,
        hidestring;
 
   if (!times_in_seconds.get(*state)) {
-    NORM_ERR("Enable \"times_in_seconds\" to use $format_time");
+    LOG_ERROR("enable \"times_in_seconds\" to use $format_time");
     return;
   }
 
@@ -242,7 +242,7 @@ static void do_format_time(struct text_object *obj, char *p,
                   }
                 } else {
                   currentchar--;
-                  NORM_ERR(
+                  LOG_ERROR(
                       "$format_time needs a digit behind 'S' to specify "
                       "precision");
                 }
@@ -254,7 +254,7 @@ static void do_format_time(struct text_object *obj, char *p,
                 output_length++;
                 break;
               default:
-                NORM_ERR("$format_time doesn't have a special char '%c'",
+                LOG_ERROR("$format_time doesn't have a special char '{}'",
                          *currentchar);
             }
           } else if (*currentchar == '(') {
@@ -293,7 +293,7 @@ static void do_format_time(struct text_object *obj, char *p,
                       p_max_size - output_length + strlen(temp));
               output_length += strlen(temp);
             } else {
-              NORM_ERR("The format string for $format_time is too long");
+              LOG_WARNING("the format string for $format_time is too long");
             }
             free(temp);
           }
@@ -304,12 +304,12 @@ static void do_format_time(struct text_object *obj, char *p,
       }
       p[output_length] = 0;
     } else {
-      NORM_ERR(
-          "$format_time needs a output-format starting with a \"-char as 2nd "
+      LOG_ERROR(
+          "$format_time needs an output-format starting with a \"-char as 2nd "
           "argument");
     }
   } else {
-    NORM_ERR("$format_time didn't receive a time in seconds as first argument");
+    LOG_ERROR("$format_time did not receive a time in seconds as first argument");
   }
 }
 

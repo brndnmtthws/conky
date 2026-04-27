@@ -28,6 +28,7 @@
  */
 
 #include "exec.h"
+#include <cerrno>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -121,7 +122,7 @@ static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
     close(parentend);
 
     // by dupping childend, the returned fd will have close-on-exec turned off
-    if (fcntl(childend, F_DUPFD, 0) == -1) { perror("fcntl()"); }
+    if (fcntl(childend, F_DUPFD, 0) == -1) { LOG_ERROR("failed to dup child fd: {}", strerror(errno)); }
     close(childend);
 
     execl("/bin/sh", "sh", "-c", remove_excess_quotes(command),
@@ -200,15 +201,15 @@ static inline double get_barnum(const char *buf) {
   double barnum;
 
   if (sscanf(buf, "%lf", &barnum) != 1) {
-    NORM_ERR(
+    LOG_ERROR(
         "reading exec value failed (perhaps it's not the "
         "correct format?)");
     return 0.0;
   }
   if (barnum > 100.0 || barnum < 0.0) {
-    NORM_ERR(
-        "your exec value is not between 0 and 100, "
-        "therefore it will be ignored");
+    LOG_WARNING(
+        "exec value is not between 0 and 100, "
+        "it will be ignored");
     return 0.0;
   }
 
@@ -274,7 +275,7 @@ void scan_exec_arg(struct text_object *obj, const char *arg, exec_flag flags) {
 
     /* store the interval in ed->interval */
     if (sscanf(arg, "%f %n", &ed->interval, &n) <= 0) {
-      NORM_ERR("missing execi interval: ${execi* <interval> command}");
+      LOG_ERROR("missing execi interval: ${{execi* <interval> command}}");
       delete ed;
       ed = nullptr;
       return;
@@ -296,7 +297,7 @@ void scan_exec_arg(struct text_object *obj, const char *arg, exec_flag flags) {
     scan_graph(obj, cmd + skip, 100, FALSE);
     cmd = buf;
     if (cmd == nullptr) {
-      NORM_ERR("error parsing arguments to execgraph object");
+      LOG_ERROR("error parsing execgraph arguments: '{}'", arg ? arg : "(null)");
     }
 #endif /* BUILD_GUI */
   }
@@ -325,7 +326,7 @@ void register_exec(struct text_object *obj) {
     obj->exec_handle = new conky::callback_handle<exec_cb>(
         conky::register_cb<exec_cb>(period, !obj->thread, ed->cmd));
   } else {
-    DBGP("unable to register execi callback");
+    LOG_DEBUG("unable to register execi callback");
   }
 }
 

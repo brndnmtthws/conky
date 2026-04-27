@@ -126,14 +126,13 @@ struct lua_traits<T, false, false, true> {
       if (i->first == val) return {i->second, true};
     }
 
-    std::string msg = "Invalid value '" + val + "' for setting '" + name +
-                      "'. Valid values are: ";
+    std::string msg = "invalid value '" + val + "' for setting '" + name +
+                      "', valid values are: ";
     for (auto i = map.begin(); i != map.end(); ++i) {
       if (i != map.begin()) msg += ", ";
       msg += "'" + i->first + "'";
     }
-    msg += ".";
-    NORM_ERR("%s", msg.c_str());
+    LOG_ERROR("{}", msg);
 
     return {T(), false};
   }
@@ -291,10 +290,10 @@ simple_config_setting<T, Traits>::do_convert(lua::state &l, int index) {
   if (l.isnil(index)) return {default_value, true};
 
   if (l.type(index) != Traits::type) {
-    NORM_ERR(
-        "Invalid value of type '%s' for setting '%s'. "
-        "Expected value of type '%s'.",
-        l.type_name(l.type(index)), Base::name.c_str(),
+    LOG_ERROR(
+        "invalid value of type '{}' for setting '{}', "
+        "expected type '{}'",
+        l.type_name(l.type(index)), Base::name,
         l.type_name(Traits::type));
     return {default_value, false};
   }
@@ -308,7 +307,7 @@ void simple_config_setting<T, Traits>::lua_setter(lua::state &l, bool init) {
 
   bool ok = true;
   if (!init && !modifiable) {
-    NORM_ERR("Setting '%s' is not modifiable", Base::name.c_str());
+    LOG_ERROR("setting '{}' is not modifiable", Base::name);
     ok = false;
   }
 
@@ -362,7 +361,7 @@ class range_config_setting : public simple_config_setting<T, Traits> {
                                                             int index) {
     auto ret = Base::do_convert(l, index);
     if (ret.second && !between(ret.first, min, max)) {
-      NORM_ERR("Value is out of range for setting '%s'", Base::name.c_str());
+      LOG_ERROR("value {} is out of range for setting '{}' (expected {}-{})", ret.first, Base::name, min, max);
       // we ignore out-of-range values. an alternative would be to clamp them.
       // do we want to do that?
       ret.second = false;

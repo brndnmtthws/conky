@@ -43,6 +43,7 @@
  */
 
 #include "../../conky.h"  // for struct info
+#include "../../logging.h"
 #include "darwin.h"
 #include "darwin_top_helpers.h"
 
@@ -296,14 +297,14 @@ static int helper_get_proc_list(struct kinfo_proc **p) {
   err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, nullptr,
                &length, nullptr, 0);
   if (err != 0) {
-    perror(nullptr);
+    LOG_ERROR("sysctl failed to get process list size: {}", strerror(errno));
     return (-1);
   }
 
   /* Allocate buffer */
   *p = static_cast<kinfo_proc *>(malloc(length));
   if (p == nullptr) {
-    perror(nullptr);
+    LOG_ERROR("failed to allocate process list buffer: {}", strerror(errno));
     return (-1);
   }
 
@@ -311,7 +312,7 @@ static int helper_get_proc_list(struct kinfo_proc **p) {
   err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, *p, &length,
                nullptr, 0);
   if (err != 0) {
-    perror(nullptr);
+    LOG_ERROR("sysctl failed to get process list: {}", strerror(errno));
     return (-1);
   }
 
@@ -354,7 +355,7 @@ static int swapmode(unsigned long *retavail, unsigned long *retfree) {
     *retfree = swapUsage.xsu_avail / 1024;
     *retavail = swapUsage.xsu_total / 1024;
   } else {
-    perror("sysctl");
+    LOG_ERROR("sysctl: {}", strerror(errno));
     return (-1);
   }
 
@@ -376,7 +377,7 @@ int update_uptime() {
     time(&now);
     info.uptime = now - boottime.tv_sec;
   } else {
-    fprintf(stderr, "could not get uptime\n");
+    LOG_ERROR("could not get uptime");
     info.uptime = 0;
   }
 
@@ -400,7 +401,7 @@ int check_mount(struct text_object *obj) {
   num_mounts = getmntinfo(&mounts, MNT_WAIT);
 
   if (num_mounts < 0) {
-    NORM_ERR("could not get mounts using getmntinfo");
+    LOG_ERROR("could not get mounts using getmntinfo");
     return 0;
   }
 
@@ -902,7 +903,7 @@ void get_cpu_count() {
   if (GETSYSCTL("hw.activecpu", cpu_count) == 0) {
     info.cpu_count = cpu_count;
   } else {
-    fprintf(stderr, "Cannot get hw.activecpu\n");
+    LOG_ERROR("cannot get hw.activecpu");
     info.cpu_count = 0;
   }
 
@@ -1343,7 +1344,7 @@ int get_sip_status() {
   if (csr_get_active_config ==
       nullptr) /*  check if weakly linked symbol exists    */
   {
-    NORM_ERR("$sip_status will not work on this version of macOS\n");
+    LOG_WARNING("$sip_status will not work on this version of macOS");
     return 0;
   }
 
@@ -1386,7 +1387,7 @@ void print_sip_status(struct text_object *obj, char *p, unsigned int p_max_size)
       nullptr) /*  check if weakly linked symbol exists    */
   {
     snprintf(p, p_max_size, "%s", "unsupported");
-    NORM_ERR("$sip_status will not work on this version of macOS\n");
+    LOG_WARNING("$sip_status will not work on this version of macOS");
     return;
   }
 
@@ -1457,13 +1458,12 @@ void print_sip_status(struct text_object *obj, char *p, unsigned int p_max_size)
         break;
       default:
         snprintf(p, p_max_size, "%s", "unsupported");
-        NORM_ERR(
-            "print_sip_status: unsupported argument passed to $sip_status");
+        LOG_ERROR("unsupported argument '{}' passed to $sip_status", obj->data.s);
         break;
     }
   } else { /* bad argument */
     snprintf(p, p_max_size, "%s", "unsupported");
-    NORM_ERR("print_sip_status: unsupported argument passed to $sip_status");
+    LOG_ERROR("unsupported argument '{}' passed to $sip_status", obj->data.s);
   }
 }
 
@@ -1503,13 +1503,12 @@ void print_sip_status(struct text_object *obj, char *p, int p_max_size) {
         break;
       default:
         snprintf(p, p_max_size, "%s", "unsupported");
-        NORM_ERR(
-            "print_sip_status: unsupported argument passed to $sip_status");
+        LOG_ERROR("unsupported argument '{}' passed to $sip_status", obj->data.s);
         break;
     }
   } else { /* bad argument */
     snprintf(p, p_max_size, "%s", "unsupported");
-    NORM_ERR("print_sip_status: unsupported argument passed to $sip_status");
+    LOG_ERROR("unsupported argument '{}' passed to $sip_status", obj->data.s);
   }
 }
 

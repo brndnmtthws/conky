@@ -44,7 +44,6 @@
 // #include "../conky-imlib2.h"
 // #endif /* BUILD_IMLIB2 */
 #ifndef OWN_WINDOW
-#include <iostream>
 #endif
 
 /* workarea where window / text is aligned (from _NET_WORKAREA on X11) */
@@ -80,8 +79,7 @@ void own_window_setting::lua_setter(lua::state &l, bool init) {
   if (init) {
     if (do_convert(l, -1).first) {
 #ifndef OWN_WINDOW
-      std::cerr << "Support for the own_window setting has been "
-                   "disabled during compilation\n";
+      LOG_WARNING("own_window support disabled at compile time, ignoring setting");
       l.pop();
       l.pushboolean(false);
 #endif

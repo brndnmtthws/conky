@@ -89,7 +89,7 @@ void init_journal(const char *type, const char *arg, struct text_object *obj,
                  type);
       }
     } else {
-      NORM_ERR("You should type a 'user' or 'system' as an argument");
+      LOG_WARNING("you should specify 'user' or 'system' as an argument");
     }
 
   } else {
@@ -178,16 +178,16 @@ void print_journal(struct text_object *obj, char *p, unsigned int p_max_size) {
   uint64_t timestamp;
 
   if (sd_journal_open(&jh, j->flags) != 0) {
-    NORM_ERR("unable to open journal");
+    LOG_ERROR("unable to open journal");
     goto out;
   }
 
   if (sd_journal_seek_tail(jh) < 0) {
-    NORM_ERR("unable to seek to end of journal");
+    LOG_ERROR("unable to seek to end of journal");
     goto out;
   }
   if (sd_journal_previous_skip(jh, j->wantedlines) < 0) {
-    NORM_ERR("unable to seek back %d lines", j->wantedlines);
+    LOG_ERROR("unable to seek back {} lines", j->wantedlines);
     goto out;
   }
 

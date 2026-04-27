@@ -249,7 +249,7 @@ display_output_wayland::display_output_wayland()
 
 bool display_output_wayland::detect() {
   if (out_to_wayland.get(*state)) {
-    DBGP2("Wayland display output '%s' enabled in config.", name.c_str());
+    LOG_DEBUG("wayland display output '{}' enabled in config", name);
     return true;
   }
   return false;
@@ -550,12 +550,12 @@ static const wl_seat_listener seat_listener = {
 bool display_output_wayland::initialize() {
   epoll_fd = epoll_create1(0);
   if (epoll_fd < 0) {
-    perror("conky: epoll_create");
+    LOG_ERROR("epoll_create failed: {}", strerror(errno));
     return false;
   }
   global_display = wl_display_connect(NULL);
   if (!global_display) {
-    perror("conky: wl_display_connect");
+    LOG_ERROR("wl_display_connect failed: {}", strerror(errno));
     return false;
   }
 
@@ -649,7 +649,7 @@ bool display_output_wayland::main_loop_wait(double t) {
   if (read_status == 0) {
     int num = wl_display_dispatch_pending(global_display);
     (void)num;
-    DBGP2("dispatched %d Wayland events", num);
+    LOG_TRACE("dispatched {} Wayland events", num);
   }
 
   wl_display_flush(global_display);
@@ -704,8 +704,7 @@ bool display_output_wayland::main_loop_wait(double t) {
     if (changed != 0) {
       int anchor = 0;
 
-      DBGP("%s", _(PACKAGE_NAME ": defining struts\n"));
-      fflush(stderr);
+      LOG_DEBUG("defining struts");
 
       alignment text_align = text_alignment.get(*state);
       switch (vertical_alignment(text_align)) {
@@ -1078,13 +1077,13 @@ static struct wl_shm_pool *make_shm_pool(struct wl_shm *shm, int size,
 
   fd = os_create_anonymous_file(size);
   if (fd < 0) {
-    fprintf(stderr, "creating a buffer file for %d B failed: %m\n", size);
+    LOG_ERROR("creating a buffer file for {}B failed: {}", size, strerror(errno));
     return NULL;
   }
 
   *data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   if (*data == MAP_FAILED) {
-    fprintf(stderr, "mmap failed: %m\n");
+    LOG_ERROR("mmap failed for {}B buffer: {}", size, strerror(errno));
     close(fd);
     return NULL;
   }
@@ -1192,7 +1191,8 @@ void window_allocate_buffer(struct window *window) {
   pool = shm_pool_create(
       window->shm, data_length_for_shm_surface(&window->rectangle, scale));
   if (!pool) {
-    NORM_ERR("could not allocate shm pool");
+    LOG_ERROR("could not allocate shm pool for {}x{} window",
+              window->rectangle.width(), window->rectangle.height());
     return;
   }
 

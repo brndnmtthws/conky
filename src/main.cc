@@ -324,9 +324,7 @@ int main(int argc, char **argv) {
   struct curl_global_initializer {
     curl_global_initializer() {
       if (curl_global_init(CURL_GLOBAL_ALL)) {
-        NORM_ERR(
-            "curl_global_init() failed, you may not be able to use curl "
-            "variables");
+        LOG_WARNING("failed to initialize curl, curl variables may not work");
       }
     }
     ~curl_global_initializer() { curl_global_cleanup(); }
@@ -337,7 +335,7 @@ int main(int argc, char **argv) {
   /* handle command line parameters that don't change configs */
 #ifdef BUILD_X11
   if (!setlocale(LC_CTYPE, "")) {
-    NORM_ERR("Can't set the specified locale!\nCheck LANG, LC_CTYPE, LC_ALL.");
+    LOG_WARNING("can't set the specified locale, check LANG, LC_CTYPE, LC_ALL");
   }
 #endif /* BUILD_X11 */
   opterr = 0;
@@ -401,7 +399,7 @@ int main(int argc, char **argv) {
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
     defined(__HAIKU__) || defined(__NetBSD__) || defined(__OpenBSD__)
   if (unique_process && is_conky_already_running()) {
-    NORM_ERR("already running");
+    LOG_INFO("another conky instance is already running");
     return 0;
   }
 #endif /* Linux || FreeBSD || Haiku || NetBSD || OpenBSD */

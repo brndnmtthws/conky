@@ -106,16 +106,16 @@ int get_match_type(const char *expr) {
   return 0
 
 int lcompare(long a, enum match_type mtype, long b) {
-  DBGP2("comparing longs '%ld' and '%ld'", a, b);
+  LOG_TRACE("comparing longs '{}' and '{}'", a, b);
   COMPARE((a - b), mtype);
 }
 int dcompare(double a, enum match_type mtype, double b) {
-  DBGP2("comparing doubles '%.lf' and '%.lf'", a, b);
+  LOG_TRACE("comparing doubles '{}' and '{}'", a, b);
   COMPARE((a - b), mtype);
 }
 
 int scompare(const char *a, enum match_type mtype, const char *b) {
-  DBGP2("comparing strings '%s' and '%s'", a, b);
+  LOG_TRACE("comparing strings '{}' and '{}'", a, b);
   COMPARE(strcmp(a, b), mtype);
 }
 
@@ -163,7 +163,7 @@ char *arg_to_string(const char *arg) {
 double arg_to_double(const char *arg) {
   double d;
   if (sscanf(arg, "%lf", &d) != 1) {
-    NORM_ERR("converting '%s' to double failed", arg);
+    LOG_ERROR("converting '{}' to double failed", arg);
     return 0.0;
   }
   return d;
@@ -171,7 +171,7 @@ double arg_to_double(const char *arg) {
 long arg_to_long(const char *arg) {
   long l;
   if (sscanf(arg, "%ld", &l) != 1) {
-    NORM_ERR("converting '%s' to long failed", arg);
+    LOG_ERROR("converting '{}' to long failed", arg);
     return 0;
   }
   return l;
@@ -188,7 +188,7 @@ int compare(const char *expr) {
   mtype = get_match_type(expr);
 
   if ((idx <= 0) || mtype == -1) {
-    NORM_ERR("failed to parse compare string '%s'", expr);
+    LOG_ERROR("failed to parse compare string '{}'", expr);
     return -2;
   }
 
@@ -199,14 +199,14 @@ int compare(const char *expr) {
   type1 = get_arg_type(expr_dup);
   type2 = get_arg_type(expr_dup + idx + 1);
   if (type1 == ARG_BAD || type2 == ARG_BAD) {
-    NORM_ERR("Bad arguments: '%s' and '%s'", expr_dup, (expr_dup + idx + 1));
+    LOG_ERROR("bad compare arguments: '{}' and '{}'", expr_dup, (expr_dup + idx + 1));
     free(expr_dup);
     return -2;
   }
   if (type1 == ARG_LONG && type2 == ARG_DOUBLE) { type1 = ARG_DOUBLE; }
   if (type1 == ARG_DOUBLE && type2 == ARG_LONG) { type2 = ARG_DOUBLE; }
   if (type1 != type2) {
-    NORM_ERR("trying to compare args '%s' and '%s' of different type", expr_dup,
+    LOG_ERROR("cannot compare arguments '{}' and '{}' of different types", expr_dup,
              (expr_dup + idx + 1));
     free(expr_dup);
     return -2;
@@ -246,11 +246,11 @@ int check_if_match(struct text_object *obj) {
 
   generate_text_internal(expression.get(), max_user_text.get(*state),
                          *obj->sub);
-  DBGP("parsed arg into '%s'", expression.get());
+  LOG_DEBUG("parsed if_match arg into '{}'", expression.get());
 
   val = compare(expression.get());
   if (val == -2) {
-    NORM_ERR("compare failed for expression '%s'", expression.get());
+    LOG_ERROR("compare failed for expression '{}'", expression.get());
   } else if (val == 0) {
     result = 0;
   }

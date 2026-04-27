@@ -288,9 +288,9 @@ void get_ibm_acpi_thinklight(struct text_object *obj, char *p,
 void parse_ibm_temps_arg(struct text_object *obj, const char *arg) {
   if (!isdigit(arg[0]) || strlen(arg) > 1 || atoi(&arg[0]) >= 8) {
     obj->data.l = 0;
-    NORM_ERR(
-        "Invalid temperature sensor! Sensor number must be 0 to 7. "
-        "Using 0 (CPU temp sensor).");
+    LOG_WARNING(
+        "invalid ibm_temps sensor '{}': must be 0-7, "
+        "falling back to 0 (CPU)", arg);
   } else
     obj->data.l = atoi(arg);
 }

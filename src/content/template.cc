@@ -147,14 +147,14 @@ static char *handle_template(const char *tmpl, const char *args) {
     for (i = 0; i < argcnt; i++) {
       char *tmp;
       tmp = backslash_escape(argsp[i], nullptr, 0);
-      DBGP2("%s: substituted arg '%s' to '%s'", tmpl, argsp[i], tmp);
+      LOG_TRACE("{}: substituted arg '{}' to '{}'", tmpl, argsp[i], tmp);
       argsp[i] = tmp;
     }
   }
 
   eval_text = backslash_escape(_template[template_idx].get(*state).c_str(),
                                argsp, argcnt);
-  DBGP("substituted %s, output is '%s'", tmpl, eval_text);
+  LOG_DEBUG("substituted {}, output is '{}'", tmpl, eval_text);
   free(args_dup);
   for (i = 0; i < argcnt; i++) { free(argsp[i]); }
   free(argsp);
@@ -231,7 +231,7 @@ char *find_and_replace_templates(const char *inbuf) {
       free(tmpl_out);
       o = outbuf + strlen(outbuf);
     } else {
-      NORM_ERR("failed to handle template '%s' with args '%s'", templ, args);
+      LOG_ERROR("failed to handle template '{}' with args '{}'", templ, args ? args : "(none)");
     }
   }
   *o = '\0';

@@ -32,6 +32,7 @@
 
 #include "config.h"
 #include "../../conky.h"
+#include "../../logging.h"
 #include "../../content/text_object.h"
 
 #if defined(__OpenBSD__)
@@ -80,11 +81,13 @@ void print_apm_adapter(struct text_object *obj, char *p,
 
   fd = open(APMDEV, O_RDONLY);
   if (fd < 0) {
+    LOG_ERROR("failed to open {}", APMDEV);
     snprintf(p, p_max_size, "%s", "ERR");
     return;
   }
 
   if (!apm_getinfo(fd, &info)) {
+    LOG_ERROR("ioctl failed on {}", APMDEV);
     close(fd);
     snprintf(p, p_max_size, "%s", "ERR");
     return;
@@ -119,11 +122,13 @@ void print_apm_battery_life(struct text_object *obj, char *p,
 
   fd = open(APMDEV, O_RDONLY);
   if (fd < 0) {
+    LOG_ERROR("failed to open {}", APMDEV);
     snprintf(p, p_max_size, "%s", "ERR");
     return;
   }
 
   if (!apm_getinfo(fd, &info)) {
+    LOG_ERROR("ioctl failed on {}", APMDEV);
     close(fd);
     snprintf(p, p_max_size, "%s", "ERR");
     return;
@@ -155,11 +160,13 @@ void print_apm_battery_time(struct text_object *obj, char *p,
 
   fd = open(APMDEV, O_RDONLY);
   if (fd < 0) {
+    LOG_ERROR("failed to open {}", APMDEV);
     snprintf(p, p_max_size, "%s", "ERR");
     return;
   }
 
   if (!apm_getinfo(fd, &info)) {
+    LOG_ERROR("ioctl failed on {}", APMDEV);
     close(fd);
     snprintf(p, p_max_size, "%s", "ERR");
     return;

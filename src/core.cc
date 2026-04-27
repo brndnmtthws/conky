@@ -174,7 +174,7 @@ void stock_parse_arg(struct text_object *obj, const char *arg) {
 
   obj->data.s = nullptr;
   if (sscanf(arg, "%7s %15s", stock, data) != 2) {
-    NORM_ERR("wrong number of arguments for $stock");
+    LOG_ERROR("wrong number of arguments for $stock (got '{}')", arg ? arg : "(null)");
     return;
   }
   if (!strcasecmp("ask", data)) {
@@ -342,8 +342,7 @@ void stock_parse_arg(struct text_object *obj, const char *arg) {
   } else if (!strcasecmp("dy", data)) {
     strncpy(data, "y", 3);
   } else {
-    NORM_ERR(
-        "\"%s\" is not supported by $stock. Supported: 1ytp, 200ma, 50ma, "
+    LOG_ERROR("\"{}\" is not supported by $stock. supported: 1ytp, 200ma, 50ma, "
         "52weeklow, 52weekhigh, 52weekrange, adv, ag, ahcrt, ask, askrt, "
         "asksize, bid, bidrt, bidsize, bookvalue, c200ma, c50ma, c52whigh, "
         "c52wlow, change, changert, cip, commission, cprt, dayshigh, dayslow, "
@@ -426,11 +425,11 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
        * a bit of paranoia. screen out funky paths
        * i hope no device will have a '.' in its name
        */
-      NORM_ERR("acpiacadapter: arg must not contain '/' or '.'");
+      LOG_ERROR("acpiacadapter arg must not contain '/' or '.', got '{}'", arg);
     } else
       obj->data.opaque = strdup(arg);
 #else
-    NORM_ERR("acpiacadapter: arg is only used on linux");
+    LOG_WARNING("acpiacadapter arg is only used on linux");
 #endif
   }
   obj->callbacks.print = &print_acpiacadapter;
@@ -443,8 +442,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) >
           info.cpu_count) {
     obj->data.i = 1;
-    /* NORM_ERR("freq: Invalid CPU number or you don't have that many CPUs! "
-      "Displaying the clock for CPU 1."); */
+    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1", arg ? arg : "(null)");
   } else {
     obj->data.i = strtol(&arg[0], nullptr, 10);
   }
@@ -455,8 +453,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) >
           info.cpu_count) {
     obj->data.i = 1;
-    /* NORM_ERR("freq_g: Invalid CPU number or you don't have that many "
-      "CPUs! Displaying the clock for CPU 1."); */
+    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1", arg ? arg : "(null)");
   } else {
     obj->data.i = strtol(&arg[0], nullptr, 10);
   }
@@ -468,8 +465,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) >
           info.cpu_count) {
     obj->data.i = 1;
-    /* NORM_ERR("cpugovernor: Invalid CPU number or you don't have that "
-      "many CPUs! Displaying the scaling governor for CPU 1."); */
+    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1", arg ? arg : "(null)");
   } else {
     obj->data.i = strtol(&arg[0], nullptr, 10);
   }
@@ -495,8 +491,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (!arg || strlen(arg) >= 3 || strtol(&arg[0], nullptr, 10) == 0 ||
       (unsigned int)strtol(&arg[0], nullptr, 10) > info.cpu_count) {
     obj->data.i = 1;
-    /* NORM_ERR("voltage_mv: Invalid CPU number or you don't have that many "
-      "CPUs! Displaying voltage for CPU 1."); */
+    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1", arg ? arg : "(null)");
   } else {
     obj->data.i = strtol(&arg[0], nullptr, 10);
   }
@@ -505,8 +500,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (!arg || strlen(arg) >= 3 || strtol(&arg[0], nullptr, 10) == 0 ||
       (unsigned int)strtol(&arg[0], nullptr, 10) > info.cpu_count) {
     obj->data.i = 1;
-    /* NORM_ERR("voltage_v: Invalid CPU number or you don't have that many "
-      "CPUs! Displaying voltage for CPU 1."); */
+    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1", arg ? arg : "(null)");
   } else {
     obj->data.i = strtol(&arg[0], nullptr, 10);
   }
@@ -670,7 +664,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   else if (strcmp(arg, "percent") == EQUAL) { obj->data.i = PB_BATT_PERCENT; }
   else if (strcmp(arg, "time") == EQUAL) { obj->data.i = PB_BATT_TIME; }
   else {
-    NORM_ERR("pb_battery: illegal argument '%s', defaulting to status", arg);
+    LOG_WARNING("illegal pb_battery argument '{}', defaulting to status", arg);
     obj->data.i = PB_BATT_STATUS;
   }
   obj->callbacks.print = get_powerbook_batt_info;
@@ -715,26 +709,26 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   SCAN_CPU(arg, obj->data.i);
   obj->callbacks.percentage = &cpu_percentage;
   obj->callbacks.free = &free_cpu;
-  DBGP2("Adding $cpu for CPU %d", obj->data.i);
+  LOG_TRACE("adding $cpu for CPU {}", obj->data.i);
 #ifdef BUILD_GUI
   END OBJ(cpugauge, &update_cpu_usage) get_cpu_count();
   SCAN_CPU(arg, obj->data.i);
   scan_gauge(obj, arg, 1);
   obj->callbacks.gaugeval = &cpu_barval;
   obj->callbacks.free = &free_cpu;
-  DBGP2("Adding $cpugauge for CPU %d", obj->data.i);
+  LOG_TRACE("adding $cpugauge for CPU {}", obj->data.i);
 #endif
   END OBJ(cpubar, &update_cpu_usage) get_cpu_count();
   SCAN_CPU(arg, obj->data.i);
   scan_bar(obj, arg, 1);
   obj->callbacks.barval = &cpu_barval;
   obj->callbacks.free = &free_cpu;
-  DBGP2("Adding $cpubar for CPU %d", obj->data.i);
+  LOG_TRACE("adding $cpubar for CPU {}", obj->data.i);
 #ifdef BUILD_GUI
   END OBJ(cpugraph, &update_cpu_usage) get_cpu_count();
   SCAN_CPU(arg, obj->data.i);
   scan_graph(obj, arg, 1, FALSE);
-  DBGP2("Adding $cpugraph for CPU %d", obj->data.i);
+  LOG_TRACE("adding $cpugraph for CPU {}", obj->data.i);
   obj->callbacks.graphval = &cpu_barval;
   obj->callbacks.free = &free_cpu;
   END OBJ(loadgraph, &update_load_average) scan_loadgraph_arg(obj, arg);
@@ -1608,7 +1602,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &gen_free_opaque;
   END OBJ_ARG(smapi_bat_bar, 0, "smapi_bat_bar needs an argument") int cnt;
   if (sscanf(arg, "%i %n", &obj->data.i, &cnt) <= 0) {
-    NORM_ERR("first argument to smapi_bat_bar must be an integer value");
+    LOG_ERROR("first argument to smapi_bat_bar must be an integer (got '{}')", arg ? arg : "(null)");
     obj->data.i = -1;
   } else
     arg = scan_bar(obj, arg + cnt, 100);
@@ -1622,7 +1616,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
     if (i > 0)                                     \
       obj->data.i = i + 1;                         \
     else                                           \
-      NORM_ERR(#name ": invalid length argument"); \
+      LOG_ERROR(#name ": invalid length argument"); \
   }
   END OBJ(mpd_artist, nullptr) mpd_set_maxlen(mpd_artist);
   obj->callbacks.print = &print_mpd_artist;
@@ -2051,7 +2045,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END {
     auto *buf = static_cast<char *>(malloc(text_buffer_size.get(*state)));
 
-    NORM_ERR("unknown variable '$%s'", s);
+    LOG_WARNING("unknown variable '${}'", s);
     snprintf(buf, text_buffer_size.get(*state), "${%s}", s);
     obj_be_plain_text(obj, buf);
     free(buf);
@@ -2119,10 +2113,10 @@ int extract_variable_text_internal(struct text_object *retval,
   s = orig_p = p;
 
   if (static_cast<int>(strcmp(p, const_p) != 0) != 0) {
-    DBGP2("replaced all templates in text: input is\n'%s'\noutput is\n'%s'",
+    LOG_TRACE("replaced all templates in text: input is\n'{}'\noutput is\n'{}'",
           const_p, p);
   } else {
-    DBGP2("no templates to replace");
+    LOG_TRACE("no templates to replace");
   }
 
   memset(retval, 0, sizeof(struct text_object));
@@ -2243,7 +2237,7 @@ int extract_variable_text_internal(struct text_object *retval,
   if (obj != nullptr) { append_object(retval, obj); }
 
   if (ifblock_stack_empty(&ifblock_opaque) == 0) {
-    NORM_ERR("one or more $endif's are missing");
+    LOG_WARNING("one or more $endif's are missing");
   }
 
   free(orig_p);

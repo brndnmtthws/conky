@@ -217,7 +217,7 @@ static void update_mail_count(struct local_mail_s *mail) {
     static int rep = 0;
 
     if (rep == 0) {
-      NORM_ERR("can't stat %s: %s", mail->mbox, strerror(errno));
+      LOG_ERROR("can't stat '{}': {}", mail->mbox, strerror(errno));
       rep = 1;
     }
     return;
@@ -241,7 +241,7 @@ static void update_mail_count(struct local_mail_s *mail) {
 
     dir = opendir(dirname.c_str());
     if (dir == nullptr) {
-      NORM_ERR("cannot open directory");
+      LOG_ERROR("cannot open directory");
       return;
     }
     dirent = readdir(dir);
@@ -251,7 +251,7 @@ static void update_mail_count(struct local_mail_s *mail) {
         mail->mail_count++;
         mailflags = strdup(dirent->d_name);
         if (mailflags == nullptr) {
-          NORM_ERR("malloc");
+          LOG_ERROR("malloc failed");
           return;
         }
         strncpy(mailflags, strrchr(dirent->d_name, ','),
@@ -297,7 +297,7 @@ static void update_mail_count(struct local_mail_s *mail) {
 
     dir = opendir(dirname.c_str());
     if (dir == nullptr) {
-      NORM_ERR("cannot open directory");
+      LOG_ERROR("cannot open directory");
       return;
     }
     dirent = readdir(dir);
@@ -477,9 +477,9 @@ std::unique_ptr<mail_param_ex> parse_mail_args(mail_type type,
 
   if (sscanf(arg, "%128s %128s %128s", host, user, pass) != 3) {
     if (type == POP3_TYPE) {
-      NORM_ERR("Scanning POP3 args failed");
+      LOG_ERROR("scanning POP3 args failed");
     } else if (type == IMAP_TYPE) {
-      NORM_ERR("Scanning IMAP args failed");
+      LOG_ERROR("scanning IMAP args failed");
     }
     return mail;
   }
@@ -564,10 +564,10 @@ void parse_imap_mail_args(struct text_object *obj, const char *arg) {
   if (arg == nullptr) {
     if ((global_mail == nullptr) && (rep == 0)) {
       // something is wrong, warn once then stop
-      NORM_ERR(
-          "There's a problem with your mail settings.  "
-          "Check that the global mail settings are properly defined"
-          " (line %li).",
+      LOG_ERROR(
+          "there's a problem with your mail settings, "
+          "check that the global mail settings are properly defined"
+          " (line {})",
           obj->line);
       rep = 1;
       return;
@@ -585,10 +585,10 @@ void parse_pop3_mail_args(struct text_object *obj, const char *arg) {
   if (arg == nullptr) {
     if ((global_mail == nullptr) && (rep == 0)) {
       // something is wrong, warn once then stop
-      NORM_ERR(
-          "There's a problem with your mail settings.  "
-          "Check that the global mail settings are properly defined"
-          " (line %li).",
+      LOG_ERROR(
+          "there's a problem with your mail settings, "
+          "check that the global mail settings are properly defined"
+          " (line {})",
           obj->line);
       rep = 1;
       return;
@@ -660,7 +660,7 @@ static void command(int sockfd, const std::string &cmd, char *response,
   if (send(sockfd, cmd.c_str(), cmd.length(), 0) == -1) {
     throw mail_fail("send: " + strerror_r(errno));
   }
-  DBGP2("command()  command: %s", cmd.c_str());
+  LOG_TRACE("sending: {}", cmd.c_str());
 
   while (1) {
     fetchtimeout.tv_sec = 60;  // 60 second timeout i guess
@@ -679,7 +679,7 @@ static void command(int sockfd, const std::string &cmd, char *response,
 
     total += numbytes;
     response[total] = '\0';
-    DBGP2("command() received: %s", response);
+    LOG_TRACE("received: {}", response);
 
     if (strstr(response, verify) != nullptr) { return; }
 
@@ -710,7 +710,7 @@ void imap_cb::unseen_command(unsigned long old_unseen,
       (result.unseen > old_unseen ||
        (result.messages > old_messages && result.unseen > 0)) &&
       system(get<MP_COMMAND>().c_str()) == -1) {
-    perror("system()");
+    LOG_ERROR("system: {}", strerror(errno));
   }
 }
 
@@ -757,7 +757,7 @@ void imap_cb::work() {
         try {
           command(sockfd, "a3 LOGOUT\r\n", recvbuf, "a3 OK");
         } catch (mail_fail &e) {
-          NORM_ERR("Error while communicating with IMAP server: %s", e.what());
+          LOG_ERROR("error communicating with IMAP server: {}", e.what());
         }
         close(sockfd);
         return;
@@ -776,7 +776,7 @@ void imap_cb::work() {
          */
         fetchtimeout.tv_sec = 1200;
         fetchtimeout.tv_usec = 0;
-        DBGP2("idling...");
+        LOG_TRACE("idling...");
         FD_ZERO(&fdset);
         FD_SET(sockfd, &fdset);
         FD_SET(donefd(), &fdset);
@@ -787,7 +787,7 @@ void imap_cb::work() {
             command(sockfd, "DONE\r\n", recvbuf, "a5 OK");
             command(sockfd, "a3 LOGOUT\r\n", recvbuf, "a3 OK");
           } catch (mail_fail &e) {
-            NORM_ERR("Error while communicating with IMAP server: %s",
+            LOG_ERROR("error communicating with IMAP server: {}",
                      e.what());
           }
           close(sockfd);
@@ -802,7 +802,7 @@ void imap_cb::work() {
         }
 
         recvbuf[numbytes] = '\0';
-        DBGP2("imap_thread() received: %s", recvbuf);
+        LOG_TRACE("imap received: {}", recvbuf);
         unsigned long messages, recent = 0;
         bool force_check = 0;
         if (strlen(recvbuf) > 2) {
@@ -877,9 +877,9 @@ void imap_cb::work() {
 
       ++fail;
       if (*e.what() != 0) {
-        NORM_ERR("Error while communicating with IMAP server: %s", e.what());
+        LOG_ERROR("error communicating with IMAP server: {}", e.what());
       }
-      NORM_ERR("Trying IMAP connection again for %s@%s (try %u/%u)",
+      LOG_WARNING("trying IMAP connection again for {}@{} (try {}/{})",
                get<MP_USER>().c_str(), get<MP_HOST>().c_str(), fail + 1,
                retries);
       sleep(fail); /* sleep more for the more failures we have */
@@ -939,7 +939,7 @@ void pop3_cb::work() {
 
       if (get<MP_COMMAND>().length() > 1 && result.unseen > old_unseen &&
           system(get<MP_COMMAND>().c_str()) == -1) {
-        perror("system()");
+        LOG_ERROR("system: {}", strerror(errno));
       }
       fail = 0;
       return;
@@ -950,9 +950,9 @@ void pop3_cb::work() {
 
       ++fail;
       if (*e.what() != 0) {
-        NORM_ERR("Error while communicating with POP3 server: %s", e.what());
+        LOG_ERROR("error communicating with POP3 server: {}", e.what());
       }
-      NORM_ERR("Trying POP3 connection again for %s@%s (try %u/%u)",
+      LOG_WARNING("trying POP3 connection again for {}@{} (try {}/{})",
                get<MP_USER>().c_str(), get<MP_HOST>().c_str(), fail + 1,
                retries);
       sleep(fail); /* sleep more for the more failures we have */

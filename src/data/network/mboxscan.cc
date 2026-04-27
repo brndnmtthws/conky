@@ -164,7 +164,7 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
 
   /* mbox still exists? and get stat-infos */
   if (stat(mbox_mail_spool, &statbuf) != 0) {
-    NORM_ERR("can't stat %s: %s", mbox_mail_spool, strerror(errno));
+    LOG_ERROR("can't stat '{}': {}", mbox_mail_spool, strerror(errno));
     output[0] = '\0'; /* delete any output */
     return;
   }

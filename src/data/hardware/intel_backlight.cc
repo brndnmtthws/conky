@@ -41,11 +41,11 @@ struct backlight {
 void open_backlight(struct backlight *bl) {
   bl->fp_max = fopen(FS_BRIGHTNESS_MAX, "r");
   if (bl->fp_max == NULL) {
-    NORM_ERR("Failed to open file: '" FS_BRIGHTNESS_MAX "'.");
+    LOG_ERROR("failed to open file: '{}'", FS_BRIGHTNESS_MAX);
   }
   bl->fp_current = fopen(FS_BRIGHTNESS_CURRENT, "r");
   if (bl->fp_current == NULL) {
-    NORM_ERR("Failed to open file: '" FS_BRIGHTNESS_CURRENT "'.");
+    LOG_ERROR("failed to open file: '{}'", FS_BRIGHTNESS_CURRENT);
   }
 }
 
@@ -56,7 +56,7 @@ void read_backlight(struct backlight *bl) {
     rewind(fp_max);
     fflush(fp_max);
     if (fscanf(fp_max, "%u", &(bl->max)) < 0) {
-      NORM_ERR("Failed to read maximum brightness.");
+      LOG_ERROR("failed to read maximum brightness");
     }
   } else {
     bl->max = 0;
@@ -66,7 +66,7 @@ void read_backlight(struct backlight *bl) {
     rewind(fp_current);
     fflush(fp_current);
     if (fscanf(fp_current, "%u", &(bl->current)) < 0) {
-      NORM_ERR("Failed to read current brightness.");
+      LOG_ERROR("failed to read current brightness");
     }
   } else {
     bl->current = 0;

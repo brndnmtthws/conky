@@ -203,7 +203,7 @@ static void X11_create_window() {
 #ifdef BUILD_XDAMAGE
   if (XDamageQueryExtension(display, &x11_stuff.event_base,
                             &x11_stuff.error_base) == 0) {
-    NORM_ERR("Xdamage extension unavailable");
+    LOG_WARNING("XDamage extension unavailable");
     x11_stuff.damage = 0;
   } else {
     x11_stuff.damage =
@@ -233,7 +233,7 @@ display_output_x11::display_output_x11() : display_output_base("x11") {
 
 bool display_output_x11::detect() {
   if (out_to_x.get(*state)) {
-    DBGP2("Display output '%s' enabled in config.", name.c_str());
+    LOG_DEBUG("display output '{}' enabled in config", name);
     return true;
   }
   return false;
@@ -274,7 +274,7 @@ bool display_output_x11::main_loop_wait(double t) {
 
     s = select(ConnectionNumber(display) + 1, &fdsr, nullptr, nullptr, &tv);
     if (s == -1) {
-      if (errno != EINTR) { NORM_ERR("can't select(): %s", strerror(errno)); }
+      if (errno != EINTR) { LOG_ERROR("can't select(): {}", strerror(errno)); }
     } else {
       /* timeout */
       if (s == 0) { update_text(); }
@@ -318,7 +318,8 @@ bool display_output_x11::main_loop_wait(double t) {
             window.drawable = window.back_buffer;
           } else {
             // this is probably reallllly bad
-            NORM_ERR("Failed to allocate back buffer");
+            LOG_ERROR("failed to allocate back buffer for window {:#x} ({}x{})",
+                      window.window, window.geometry.width(), window.geometry.height());
           }
           XSetForeground(display, window.gc, 0);
           XFillRectangle(display, window.drawable, window.gc, 0, 0,
@@ -787,7 +788,7 @@ void process_surface_events(conky::display_output_x11 *surface,
   int pending = XPending(display);
   if (pending == 0) return;
 
-  DBGP2("Processing %d X11 events...", pending);
+  LOG_TRACE("processing {} X11 events", pending);
 
   /* handle X events */
   while (XPending(display) != 0) {
@@ -810,7 +811,7 @@ void process_surface_events(conky::display_output_x11 *surface,
     }
   }
 
-  DBGP2("Done processing %d events.", pending);
+  LOG_TRACE("done processing {} events", pending);
 }
 
 void display_output_x11::sigterm_cleanup() {
@@ -1037,7 +1038,7 @@ void display_output_x11::setup_fonts(void) {
 
 void display_output_x11::set_font(unsigned int f) {
   if (f >= x_fonts.size()) {
-    DBGP("%d >= x_fonts.size()", f);
+    LOG_WARNING("font index {} out of range ({} loaded)", f, x_fonts.size());
     return;
   }
 #ifdef BUILD_XFT
@@ -1086,7 +1087,7 @@ void display_output_x11::load_fonts(bool utf8) {
 
       if (xfont.xftfont != nullptr) { continue; }
 
-      NORM_ERR("can't load Xft font '%s'", font.name.c_str());
+      LOG_WARNING("can't load Xft font '{}', trying fallback", font.name);
       if ((xfont.xftfont = XftFontOpenName(display, screen, "courier-12")) !=
           nullptr) {
         continue;
@@ -1105,7 +1106,7 @@ void display_output_x11::load_fonts(bool utf8) {
                                      &missingnum, &missingdrawn);
       XFreeStringList(missing);
       if (xfont.fontset == nullptr) {
-        NORM_ERR("can't load font '%s'", font.name.c_str());
+        LOG_WARNING("can't load fontset '{}', trying fallback", font.name);
         xfont.fontset = XCreateFontSet(display, "fixed", &missing, &missingnum,
                                        &missingdrawn);
         if (xfont.fontset == nullptr) {
@@ -1116,7 +1117,7 @@ void display_output_x11::load_fonts(bool utf8) {
     /* load normal font */
     if ((xfont.font == nullptr) &&
         (xfont.font = XLoadQueryFont(display, font.name.c_str())) == nullptr) {
-      NORM_ERR("can't load font '%s'", font.name.c_str());
+      LOG_WARNING("can't load font '{}', trying fallback", font.name);
       if ((xfont.font = XLoadQueryFont(display, "fixed")) == nullptr) {
         SYSTEM_ERR("can't load font '{}'", "fixed");
       }

@@ -57,7 +57,7 @@ const std::unordered_map<std::string, std::string> removed_settings = {
 priv::config_setting_base *get_setting(lua::state &l, int index) {
   lua::Type type = l.type(index);
   if (type != lua::TSTRING) {
-    NORM_ERR("invalid setting of type '%s'", l.type_name(type));
+    LOG_ERROR("invalid setting of type '{}'", l.type_name(type));
     return nullptr;
   }
 
@@ -66,10 +66,10 @@ priv::config_setting_base *get_setting(lua::state &l, int index) {
   if (iter == settings->end()) {
     auto removed = removed_settings.find(name);
     if (removed != removed_settings.end()) {
-      NORM_ERR("Setting '%s' has been removed. %s", name.c_str(),
-               removed->second.c_str());
+      LOG_WARNING("setting '{}' has been removed: {}", name,
+               removed->second);
     } else {
-      NORM_ERR("Unknown setting '%s'", name.c_str());
+      LOG_ERROR("unknown setting '{}'", name);
     }
     return nullptr;
   }
@@ -210,9 +210,8 @@ void config_setting_base::process_setting(lua::state &l, bool init) {
   if (ptr == nullptr) { return; }
 
   if (init && ptr->deprecation_msg.has_value() && !l.isnil(-2)) {
-    NORM_ERR("WARNING: '%s' is deprecated and will be removed in a future "
-             "release. %s",
-             ptr->name.c_str(), ptr->deprecation_msg->c_str());
+    LOG_WARNING("'{}' is deprecated and will be removed in a future "
+             "release: {}", ptr->name, *ptr->deprecation_msg);
   }
 
   ptr->lua_setter(l, init);

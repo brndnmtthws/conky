@@ -65,7 +65,7 @@ char *readfile(const char *filename, int *total_read, char showerror) {
     } while (bytes_read != 0);
     fclose(file);
   } else if (showerror != 0) {
-    NORM_ERR(READERR, filename);
+    LOG_ERROR("can't read '{}'", filename);
   }
   return buf;
 }
@@ -123,7 +123,7 @@ void pid_readlink(const char *file, char *p, unsigned int p_max_size) {
   if (readlink(file, buf.get(), p_max_size) >= 0) {
     snprintf(p, p_max_size, "%s", buf.get());
   } else {
-    NORM_ERR(READERR, file);
+    LOG_ERROR("can't read '{}'", file);
   }
 }
 
@@ -188,7 +188,7 @@ void print_pid_cmdline(struct text_object *obj, char *p,
       free(buf);
     }
   } else {
-    NORM_ERR("$pid_cmdline didn't receive a argument");
+    LOG_ERROR("$pid_cmdline did not receive an argument");
   }
 }
 
@@ -205,7 +205,7 @@ void print_pid_cwd(struct text_object *obj, char *p, unsigned int p_max_size) {
     buf[bytes_read] = 0;
     snprintf(p, p_max_size, "%s", buf.get());
   } else {
-    NORM_ERR(READERR, pathstream.str().c_str());
+    LOG_ERROR("can't read '{}'", pathstream.str().c_str());
   }
 }
 
@@ -313,7 +313,7 @@ void print_pid_nice(struct text_object *obj, char *p, unsigned int p_max_size) {
       free(buf);
     }
   } else {
-    NORM_ERR("$pid_nice didn't receive a argument");
+    LOG_ERROR("$pid_nice did not receive an argument");
   }
 }
 
@@ -368,7 +368,6 @@ void print_pid_openfiles(struct text_object *obj, char *p,
 void print_pid_parent(struct text_object *obj, char *p,
                       unsigned int p_max_size) {
 #define PARENT_ENTRY "PPid:\t"
-#define PARENTNOTFOUND "Can't find the process parent in '%s'"
   char *begin, *end, *buf = nullptr;
   int bytes_read;
   std::ostringstream pathstream;
@@ -386,7 +385,7 @@ void print_pid_parent(struct text_object *obj, char *p,
       if (end != nullptr) { *(end) = 0; }
       snprintf(p, p_max_size, "%s", begin);
     } else {
-      NORM_ERR(PARENTNOTFOUND, pathstream.str().c_str());
+      LOG_ERROR("can't find the process parent in '{}'", pathstream.str().c_str());
     }
     free(buf);
   }
@@ -415,14 +414,13 @@ void print_pid_priority(struct text_object *obj, char *p,
       free(buf);
     }
   } else {
-    NORM_ERR("$pid_priority didn't receive a argument");
+    LOG_ERROR("$pid_priority did not receive an argument");
   }
 }
 
 void print_pid_state(struct text_object *obj, char *p,
                      unsigned int p_max_size) {
 #define STATE_ENTRY "State:\t"
-#define STATENOTFOUND "Can't find the process state in '%s'"
   char *begin, *end, *buf = nullptr;
   int bytes_read;
   std::ostringstream pathstream;
@@ -444,7 +442,7 @@ void print_pid_state(struct text_object *obj, char *p,
       }
       snprintf(p, p_max_size, "%s", begin);
     } else {
-      NORM_ERR(STATENOTFOUND, pathstream.str().c_str());
+      LOG_ERROR("can't find the process state in '{}'", pathstream.str().c_str());
     }
     free(buf);
   }
@@ -468,7 +466,7 @@ void print_pid_state_short(struct text_object *obj, char *p,
       begin += strlen(STATE_ENTRY);
       if (*begin != 0) { snprintf(p, p_max_size, "%c", *begin); }
     } else {
-      NORM_ERR(STATENOTFOUND, pathstream.str().c_str());
+      LOG_ERROR("can't find the process state in '{}'", pathstream.str().c_str());
     }
     free(buf);
   }
@@ -571,15 +569,13 @@ void print_cmdline_to_pid(struct text_object *obj, char *p,
     }
     closedir(dir);
   } else {
-    NORM_ERR(READERR, PROCDIR);
+    LOG_ERROR("can't read '{}'", PROCDIR);
   }
 }
 
 void print_pid_threads(struct text_object *obj, char *p,
                        unsigned int p_max_size) {
 #define THREADS_ENTRY "Threads:\t"
-#define THREADSNOTFOUND \
-  "Can't find the number of the threads of the process in '%s'"
   char *begin, *end, *buf = nullptr;
   int bytes_read;
   std::ostringstream pathstream;
@@ -597,7 +593,7 @@ void print_pid_threads(struct text_object *obj, char *p,
       if (end != nullptr) { *(end) = 0; }
       snprintf(p, p_max_size, "%s", begin);
     } else {
-      NORM_ERR(THREADSNOTFOUND, pathstream.str().c_str());
+      LOG_ERROR("can't find the number of the threads of the process in '{}'", pathstream.str().c_str());
     }
     free(buf);
   }
@@ -660,7 +656,7 @@ void print_pid_time_kernelmode(struct text_object *obj, char *p,
       free(buf);
     }
   } else {
-    NORM_ERR("$pid_time_kernelmode didn't receive a argument");
+    LOG_ERROR("$pid_time_kernelmode did not receive an argument");
   }
 }
 
@@ -685,7 +681,7 @@ void print_pid_time_usermode(struct text_object *obj, char *p,
       free(buf);
     }
   } else {
-    NORM_ERR("$pid_time_usermode didn't receive a argument");
+    LOG_ERROR("$pid_time_usermode did not receive an argument");
   }
 }
 
@@ -710,7 +706,7 @@ void print_pid_time(struct text_object *obj, char *p, unsigned int p_max_size) {
       free(buf);
     }
   } else {
-    NORM_ERR("$pid_time didn't receive a argument");
+    LOG_ERROR("$pid_time did not receive an argument");
   }
 }
 
@@ -832,8 +828,8 @@ void print_pid_Xid(struct text_object *obj, char *p, int p_max_size,
         default:
           break;
       }
-      errorstring.append(" in '%s'");
-      NORM_ERR(errorstring.c_str(), pathstream.str().c_str());
+      errorstring.append(" in '{}'");
+      LOG_ERROR(errorstring.c_str(), pathstream.str().c_str());
     }
     free(buf);
   }
@@ -893,7 +889,7 @@ void internal_print_pid_vm(struct text_object *obj, char *p, int p_max_size,
       if (end != nullptr) { *(end) = 0; }
       snprintf(p, p_max_size, "%s", begin);
     } else {
-      NORM_ERR(errorstring, pathstream.str().c_str());
+      LOG_ERROR(errorstring, pathstream.str().c_str());
     }
     free(buf);
   }
@@ -964,7 +960,6 @@ void print_pid_vmpte(struct text_object *obj, char *p,
 }
 
 #define READ_ENTRY "read_bytes: "
-#define READNOTFOUND "Can't find the amount of bytes read in '%s'"
 void print_pid_read(struct text_object *obj, char *p, unsigned int p_max_size) {
   char *begin, *end, *buf = nullptr;
   int bytes_read;
@@ -982,14 +977,13 @@ void print_pid_read(struct text_object *obj, char *p, unsigned int p_max_size) {
       if (end != nullptr) { *(end) = 0; }
       snprintf(p, p_max_size, "%s", begin);
     } else {
-      NORM_ERR(READNOTFOUND, pathstream.str().c_str());
+      LOG_ERROR("can't find the amount of bytes read in '{}'", pathstream.str().c_str());
     }
     free(buf);
   }
 }
 
 #define WRITE_ENTRY "write_bytes: "
-#define WRITENOTFOUND "Can't find the amount of bytes written in '%s'"
 void print_pid_write(struct text_object *obj, char *p,
                      unsigned int p_max_size) {
   char *begin, *end, *buf = nullptr;
@@ -1008,7 +1002,7 @@ void print_pid_write(struct text_object *obj, char *p,
       if (end != nullptr) { *(end) = 0; }
       snprintf(p, p_max_size, "%s", begin);
     } else {
-      NORM_ERR(WRITENOTFOUND, pathstream.str().c_str());
+      LOG_ERROR("can't find the amount of bytes written in '{}'", pathstream.str().c_str());
     }
     free(buf);
   }

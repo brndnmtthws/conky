@@ -66,6 +66,7 @@ void moc_cb::work() {
 
   fp = popen("mocp -i", "r");
   if (fp == nullptr) {
+    LOG_ERROR("failed to run 'mocp -i'");
     moc.state = "Can't run 'mocp -i'";
   } else {
     while (1) {

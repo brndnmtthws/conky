@@ -36,9 +36,8 @@
 namespace conky {
 
 inline void log_missing(const char *name, const char *flag) {
-  DBGP(
-      "%s display output disabled. Enable by recompiling with '%s' "
-      "flag enabled.",
+  LOG_DEBUG(
+      "{} display output disabled, recompile with '{}' to enable",
       name, flag);
 }
 #ifndef BUILD_HTTP
@@ -93,14 +92,14 @@ bool initialize_display_outputs() {
   register_output<output_t::NCURSES>(outputs);
   register_output<output_t::CONSOLE>(outputs);  // global fallback - always works
 
-  for (auto out : outputs) { NORM_ERR("FOUND: %s", out->name.c_str()); }
+  for (auto out : outputs) { LOG_DEBUG("found display output '{}'", out->name); }
 
   int graphical_count = 0;
 
   for (auto output : outputs) {
-    DBGP2("Testing display output '%s'... ", output->name.c_str());
+    LOG_DEBUG("testing display output '{}'", output->name);
     if (output->detect()) {
-      DBGP2("Detected display output '%s'... ", output->name.c_str());
+      LOG_DEBUG("detected display output '{}'", output->name);
 
       if (graphical_count && output->graphical()) continue;
 
@@ -108,7 +107,7 @@ bool initialize_display_outputs() {
       active_display_outputs.push_back(output);
 
       if (output->initialize()) {
-        DBGP("Initialized display output '%s'... ", output->name.c_str());
+        LOG_DEBUG("initialized display output '{}'", output->name);
 
         output->is_active = true;
         if (output->graphical()) graphical_count++;
@@ -126,7 +125,7 @@ bool initialize_display_outputs() {
   }
   if (active_display_outputs.size()) return true;
 
-  std::cerr << "Unable to find a usable display output." << std::endl;
+  LOG_ERROR("unable to find a usable display output");
   return true;
 }
 

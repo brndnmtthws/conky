@@ -113,7 +113,7 @@ struct fs_stat *prepare_fs_stat(const char *s) {
   }
   /* new path */
   if (next == nullptr) {
-    NORM_ERR("too many fs stats");
+    LOG_WARNING("too many fs stats (max {}), ignoring '{}'", MAX_FS_STATS, s);
     return nullptr;
   }
   strncpy(next->path, s, DEFAULT_TEXT_BUFFER_SIZE);
@@ -156,7 +156,7 @@ static void update_fs_stat(struct fs_stat *fs) {
 #endif
   } else {
     if (fs->errored == 0) {
-      NORM_ERR("statfs '%s': %s", fs->path, strerror(errno));
+      LOG_ERROR("statfs '{}': {}", fs->path, strerror(errno));
       fs->errored = 1;
     }
     fs->size = 0;
@@ -175,7 +175,7 @@ void get_fs_type(const char *path, char *result) {
   if (statfs_func(path, &s) == 0) {
     strncpy(result, s.f_fstypename, DEFAULT_TEXT_BUFFER_SIZE);
   } else {
-    NORM_ERR("statfs '%s': %s", path, strerror(errno));
+    LOG_ERROR("statfs '{}': {}", path, strerror(errno));
   }
   return;
 #elif defined(__sun)
@@ -189,7 +189,7 @@ void get_fs_type(const char *path, char *result) {
   char *slash;
 
   if (mtab == nullptr) {
-    NORM_ERR("setmntent /proc/mounts: %s", strerror(errno));
+    LOG_ERROR("can't read /proc/mounts to determine fs type for '{}': {}", path, strerror(errno));
     strncpy(result, "unknown", DEFAULT_TEXT_BUFFER_SIZE);
     return;
   }

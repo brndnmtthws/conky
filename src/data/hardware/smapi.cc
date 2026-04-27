@@ -36,7 +36,7 @@ static int smapi_read_int(const char *path) {
   FILE *fp;
   int i = 0;
   if ((fp = fopen(path, "r"))) {
-    if (fscanf(fp, "%i\n", &i) < 0) perror("fscanf()");
+    if (fscanf(fp, "%i\n", &i) < 0) LOG_ERROR("fscanf: {}", strerror(errno));
     fclose(fp);
   }
   return i;
@@ -59,7 +59,7 @@ static char *smapi_read_str(const char *path) {
   FILE *fp;
   char str[256] = "failed";
   if ((fp = fopen(path, "r")) != nullptr) {
-    if (fscanf(fp, "%255s\n", str) < 0) perror("fscanf()");
+    if (fscanf(fp, "%255s\n", str) < 0) LOG_ERROR("fscanf: {}", strerror(errno));
     fclose(fp);
   }
   return strndup(str, text_buffer_size.get(*state));
@@ -91,7 +91,7 @@ static char *smapi_get_bat_val(const char *args) {
 
   if (sscanf(args, "%i %n", &idx, &cnt) <= 0 ||
       snprintf(fname, 127, "%s", (args + cnt)) < 0) {
-    NORM_ERR("smapi: wrong arguments, should be 'bat,<int>,<str>'");
+    LOG_ERROR("smapi: wrong arguments '{}', should be 'bat,<int>,<str>'", args);
     return nullptr;
   }
 
@@ -127,7 +127,7 @@ uint8_t smapi_bat_percentage(struct text_object *obj) {
               ? smapi_get_bat_int(idx, "remaining_percent")
               : 0;
   } else
-    NORM_ERR("argument to smapi_bat_perc must be an integer");
+    LOG_ERROR("argument to smapi_bat_perc must be an integer, got '{}'", obj->data.s ? obj->data.s : "(null)");
 
   return val;
 }
@@ -142,7 +142,7 @@ void print_smapi_bat_temp(struct text_object *obj, char *p,
     /* temperature is in milli degree celsius */
     temp_print(p, p_max_size, val / 1000, TEMP_CELSIUS, 1);
   } else
-    NORM_ERR("argument to smapi_bat_temp must be an integer");
+    LOG_ERROR("argument to smapi_bat_temp must be an integer, got '{}'", obj->data.s ? obj->data.s : "(null)");
 }
 
 void print_smapi_bat_power(struct text_object *obj, char *p,
@@ -155,7 +155,7 @@ void print_smapi_bat_power(struct text_object *obj, char *p,
     /* power_now is in mW, set to W with one digit precision */
     snprintf(p, p_max_size, "%.1f", ((double)val / 1000));
   } else
-    NORM_ERR("argument to smapi_bat_power must be an integer");
+    LOG_ERROR("argument to smapi_bat_power must be an integer, got '{}'", obj->data.s ? obj->data.s : "(null)");
 }
 
 double smapi_bat_barval(struct text_object *obj) {
@@ -169,6 +169,6 @@ int smapi_bat_installed(struct text_object *obj) {
   if (obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
     if (!smapi_bat_installed_internal(idx)) { return 0; }
   } else
-    NORM_ERR("argument to if_smapi_bat_installed must be an integer");
+    LOG_ERROR("argument to if_smapi_bat_installed must be an integer, got '{}'", obj->data.s ? obj->data.s : "(null)");
   return 1;
 }

@@ -133,7 +133,7 @@ void parse_ical_args(struct text_object *obj, const char *arg,
   if (!curc) {
     icalparser_free(parser);
     icalcomponent_free(allc);
-    NORM_ERR("No ical events available");
+    LOG_WARNING("no ical events available");
     return;
   }
   ll_start = add_event(nullptr, curc);

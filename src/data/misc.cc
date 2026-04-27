@@ -56,6 +56,7 @@ static inline void read_file(const char *data, char *buf, const int size) {
     buf[length] = '\0';
     if (length > 0 && buf[length - 1] == '\n') { buf[length - 1] = '\0'; }
   } else {
+    LOG_ERROR("failed to open file '{}'", data);
     buf[0] = '\0';
   }
 }

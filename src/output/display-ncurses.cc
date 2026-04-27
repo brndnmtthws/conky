@@ -95,7 +95,7 @@ display_output_ncurses::display_output_ncurses()
 
 bool display_output_ncurses::detect() {
   if (out_to_ncurses.get(*state)) {
-    DBGP2("Display output '%s' enabled in config.", name.c_str());
+    LOG_DEBUG("display output '{}' enabled in config", name);
     return true;
   }
   return false;

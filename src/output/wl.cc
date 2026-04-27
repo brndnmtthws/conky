@@ -31,6 +31,7 @@
 #include <cstring>
 
 #include "../conky.h"
+#include "../logging.h"
 #include "wl.h"
 
 #ifdef BUILD_WAYLAND
@@ -42,7 +43,7 @@ void out_to_wayland_setting::lua_setter(lua::state &l, bool init) {
   Base::lua_setter(l, init);
 
   if (init && do_convert(l, -1).first) {
-    // init
+    LOG_DEBUG("wayland output enabled");
   }
 
   ++s;

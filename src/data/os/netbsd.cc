@@ -71,7 +71,7 @@ int update_uptime() {
     time(&now);
     info.uptime = now - boottime.tv_sec;
   } else {
-    NORM_ERR("could not get uptime");
+    LOG_ERROR("could not get uptime");
     info.uptime = 0;
   }
 
@@ -101,11 +101,11 @@ int update_net_stats() {
   if (!nkd_init) {
     nkd = kvm_openfiles(nullptr, NULL, NULL, O_RDONLY, errbuf);
     if (nkd == nullptr) {
-      NORM_ERR("cannot kvm_openfiles: %s", errbuf);
-      NORM_ERR("maybe you need to setgid kmem this program?");
+      LOG_ERROR("cannot kvm_openfiles: {}", errbuf);
+      LOG_ERROR("maybe you need to setgid kmem this program?");
       return 1;
     } else if (kvm_nlist(nkd, namelist) != 0) {
-      NORM_ERR("cannot kvm_nlist");
+      LOG_ERROR("cannot kvm_nlist");
       return 1;
     } else {
       nkd_init = 1;
@@ -114,7 +114,7 @@ int update_net_stats() {
 
   if (kvm_read(nkd, (u_long)namelist[0].n_value, (void *)&ifhead,
                sizeof(ifhead)) < 0) {
-    NORM_ERR("cannot kvm_read");
+    LOG_ERROR("cannot kvm_read");
     return 1;
   }
 

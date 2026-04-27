@@ -128,7 +128,7 @@ int update_uptime(void) {
     time(&now);
     info.uptime = now - boottime.tv_sec;
   } else {
-    fprintf(stderr, "Could not get uptime\n");
+    LOG_ERROR("can't get uptime");
     info.uptime = 0;
   }
 
@@ -157,31 +157,31 @@ int update_meminfo(void) {
   int pagesize = getpagesize();
 
   if (GETSYSCTL("vm.stats.vm.v_page_count", total_pages)) {
-    fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_page_count\"\n");
+    LOG_ERROR("can't read sysctl 'vm.stats.vm.v_page_count'");
   }
 
   if (GETSYSCTL("vm.stats.vm.v_free_count", free_pages)) {
-    fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_free_count\"\n");
+    LOG_ERROR("can't read sysctl 'vm.stats.vm.v_free_count'");
   }
 
   if (GETSYSCTL("vm.stats.vm.v_inactive_count", inactive_pages)) {
-    fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_inactive_count\"\n");
+    LOG_ERROR("can't read sysctl 'vm.stats.vm.v_inactive_count'");
   }
 
   if (GETSYSCTL("vm.stats.vm.v_wire_count", wire_pages)) {
-    fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_wire_count\"\n");
+    LOG_ERROR("can't read sysctl 'vm.stats.vm.v_wire_count'");
   }
 
   if (GETSYSCTL("vm.stats.vm.v_active_count", active_pages)) {
-    fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_active_count\"\n");
+    LOG_ERROR("can't read sysctl 'vm.stats.vm.v_active_count'");
   }
 
   if (GETSYSCTL("vfs.bufspace", bufferspace)) {
-    fprintf(stderr, "Cannot read sysctl \"vfs.bufspace\"\n");
+    LOG_ERROR("can't read sysctl 'vfs.bufspace'");
   }
 
   if (GETSYSCTL("vm.stats.vm.v_laundry_count", laundry_pages)) {
-    fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_laundry_count\"\n");
+    LOG_ERROR("can't read sysctl 'vm.stats.vm.v_laundry_count'");
   }
 
   info.memmax = total_pages * (pagesize >> 10);
@@ -305,7 +305,7 @@ void get_cpu_count(void) {
   if (GETSYSCTL("hw.ncpu", cpu_count) == 0) {
     info.cpu_count = cpu_count;
   } else {
-    fprintf(stderr, "Cannot get hw.ncpu\n");
+    LOG_ERROR("can't get hw.ncpu");
     info.cpu_count = 0;
   }
 
@@ -345,7 +345,7 @@ int update_cpu_usage(void) {
   cp_time = (long int *)malloc(cp_len);
 
   if (sysctlbyname("kern.cp_time", cp_time, &cp_len, nullptr, 0) < 0) {
-    fprintf(stderr, "Cannot get kern.cp_time\n");
+    LOG_ERROR("can't get kern.cp_time");
   }
 
   total = 0;
@@ -373,7 +373,7 @@ int update_cpu_usage(void) {
    * drop extra values */
   if (sysctlbyname("kern.cp_times", cp_time, &cp_len, nullptr, 0) < 0 &&
       errno != ENOMEM) {
-    fprintf(stderr, "Cannot get kern.cp_times\n");
+    LOG_ERROR("can't get kern.cp_times");
   }
 
   for (i = 0; i < (int)info.cpu_count; i++) {
@@ -423,7 +423,7 @@ double get_acpi_temperature(int fd) {
   } else if (GETSYSCTL("dev.amdtemp.0.core0.sensor0", temp) == 0) {
     return KELVTOC(temp);
   }
-  fprintf(stderr, "Cannot get temperature from sysctl\n");
+  LOG_ERROR("can't get temperature from sysctl");
 
   return 0.0;
 }
@@ -456,17 +456,17 @@ static void get_battery_stats(int *battime, int *batcapacity, int *batstate,
 
   if (battery_present) {
     if (battime && GETSYSCTL("hw.acpi.battery.time", *battime)) {
-      NORM_ERR("Cannot read sysctl \"hw.acpi.battery.time\"");
+      LOG_ERROR("cannot read sysctl \"hw.acpi.battery.time\"");
     }
     if (batcapacity && GETSYSCTL("hw.acpi.battery.life", *batcapacity)) {
-      NORM_ERR("Cannot read sysctl \"hw.acpi.battery.life\"");
+      LOG_ERROR("cannot read sysctl \"hw.acpi.battery.life\"");
     }
     if (batstate && GETSYSCTL("hw.acpi.battery.state", *batstate)) {
-      NORM_ERR("Cannot read sysctl \"hw.acpi.battery.state\"");
+      LOG_ERROR("cannot read sysctl \"hw.acpi.battery.state\"");
     }
   }
   if (ac_present && ac && GETSYSCTL("hw.acpi.acline", *ac)) {
-    NORM_ERR("Cannot read sysctl \"hw.acpi.acline\"");
+    LOG_ERROR("cannot read sysctl \"hw.acpi.acline\"");
   }
 }
 
@@ -477,11 +477,11 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item) {
   get_battery_stats(&battime, &batcapacity, &batstate, &ac);
 
   if (batstate != 1 && batstate != 2 && batstate != 0 && batstate != 7)
-    fprintf(stderr, "Unknown battery state %d!\n", batstate);
+    LOG_WARNING("unknown battery state {}", batstate);
   else if (batstate != 1 && ac == 0)
-    fprintf(stderr, "Battery charging while not on AC!\n");
+    LOG_WARNING("battery charging while not on AC");
   else if (batstate == 1 && ac == 1)
-    fprintf(stderr, "Battery discharing while on AC!\n");
+    LOG_WARNING("battery discharging while on AC");
 
   switch (item) {
     case BATTERY_TIME:
@@ -499,7 +499,7 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item) {
                  batcapacity);
       break;
     default:
-      fprintf(stderr, "Unknown requested battery stat %d\n", item);
+      LOG_WARNING("unknown requested battery stat {}", item);
   }
 }
 
@@ -521,7 +521,7 @@ void get_battery_power_draw(char *buffer, unsigned int n, const char *bat) {
    * ref. acpi_battery(4)
    */
   if (GETSYSCTL("hw.acpi.battery.rate", rate)) {
-    fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.rate\"\n");
+    LOG_ERROR("can't read sysctl 'hw.acpi.battery.rate'");
   }
 
   if (rate > 0) { ret = (double)rate / (double)1000; }
@@ -549,7 +549,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
   if (!p_client_buffer || client_buffer_size <= 0) { return; }
 
   if (GETSYSCTL("hw.acpi.acline", state)) {
-    fprintf(stderr, "Cannot read sysctl \"hw.acpi.acline\"\n");
+    LOG_ERROR("can't read sysctl 'hw.acpi.acline'");
     return;
   }
 
@@ -630,7 +630,7 @@ void update_wifi_stats(void)
 			ifr.ifr_data = (void *) &wireq;
 
 			if (ioctl(s, SIOCGWAVELAN, (caddr_t) &ifr) < 0) {
-				perror("ioctl (getting wi status)");
+				LOG_ERROR("ioctl (getting wi status): {}", strerror(errno));
 				exit(1);
 			}
 
@@ -794,13 +794,13 @@ bool is_conky_already_running(void) {
 
   kd = kvm_openfiles(NULL, _PATH_DEVNULL, NULL, O_RDONLY, errbuf);
   if (kd == NULL) {
-    NORM_ERR("%s\n", errbuf);
+    LOG_ERROR("{}", errbuf);
     return false;
   }
 
   kp = kvm_getprocs(kd, KERN_PROC_ALL, 0, &entries);
   if ((kp == NULL && errno != ESRCH) || (kp != NULL && entries < 0)) {
-    NORM_ERR("%s\n", kvm_geterr(kd));
+    LOG_ERROR("{}", kvm_geterr(kd));
     goto cleanup;
   }
 

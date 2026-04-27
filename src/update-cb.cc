@@ -43,7 +43,7 @@ void callback_base::stop() {
     sem_start.post();
     if (pipefd.second >= 0) {
       if (write(pipefd.second, "X", 1) != 1) {
-        NORM_ERR("can't write 'X' to pipefd %d: %s", pipefd.second,
+        LOG_ERROR("can't write 'X' to pipefd {}: {}", pipefd.second,
                  strerror(errno));
       }
     }
