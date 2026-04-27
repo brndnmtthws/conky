@@ -1902,12 +1902,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       parse_scroll_arg(obj, arg, free_at_crash, s);
   obj->callbacks.print = &print_scroll;
   obj->callbacks.free = &free_scroll;
-  END OBJ(combine, nullptr) try {
+  END OBJ(combine, nullptr)
     parse_combine_arg(obj, arg);
-  } catch (combine_needs_2_args_error &e) {
-    free(obj);
-    throw obj_create_error(e.what());
-  }
   obj->callbacks.print = &print_combine;
   obj->callbacks.free = &free_combine;
 #ifdef BUILD_NVIDIA
@@ -2210,10 +2206,19 @@ int extract_variable_text_internal(struct text_object *retval,
 
         try {
           obj = construct_text_object(buf, arg, line, &ifblock_opaque, orig_p);
-        } catch (obj_create_error &e) {
-          free(buf);
+        } catch (std::exception &e) {
+          const char *cmd = buf;
+          if (auto *ce = dynamic_cast<conky::bad_command_arguments_error *>(&e)) {
+            cmd = ce->command.c_str();
+          }
+          LOG_ERROR("${{{}}}: {}", cmd, e.what());
+          obj = new_text_object_internal();
+          auto *fallback = static_cast<char *>(
+              malloc(text_buffer_size.get(*state)));
+          snprintf(fallback, text_buffer_size.get(*state), "${%s}", cmd);
+          obj_be_plain_text(obj, fallback);
+          free(fallback);
           free(orig_p);
-          throw;
         }
         if (obj != nullptr) { append_object(retval, obj); }
         free(buf);

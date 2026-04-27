@@ -2366,9 +2366,7 @@ void initialisation(int argc, char **argv) {
           sleep(startup_pause);
         }
         break;
-
-      case '?':
-        throw unknown_arg_throw();
+      // case '?' is handled by main.cc
     }
   }
 
@@ -2402,10 +2400,8 @@ void initialisation(int argc, char **argv) {
 
       default:
         /* parent process */
-        fprintf(stderr, PACKAGE_NAME ": forked to background, pid is %d\n",
-                pid);
-        fflush(stderr);
-        throw fork_throw();
+        LOG_INFO("forked to background, pid is {}", pid);
+        exit(EXIT_SUCCESS);
     }
   }
 

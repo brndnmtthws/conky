@@ -340,6 +340,7 @@ int main(int argc, char **argv) {
     NORM_ERR("Can't set the specified locale!\nCheck LANG, LC_CTYPE, LC_ALL.");
   }
 #endif /* BUILD_X11 */
+  opterr = 0;
   while (1) {
     int c = getopt_long(argc, argv, getopt_string, longopts, nullptr);
 
@@ -388,6 +389,11 @@ int main(int argc, char **argv) {
         break;
 #endif /* Linux || FreeBSD || Haiku || NetBSD || OpenBSD */
       case '?':
+        if (optopt != 0) {
+          LOG_ERROR("unknown option: '-{}'; try --help", static_cast<char>(optopt));
+        } else {
+          LOG_ERROR("unknown option: '{}'; try --help", argv[optind - 1]);
+        }
         return EXIT_FAILURE;
     }
   }
@@ -414,14 +420,6 @@ int main(int argc, char **argv) {
     first_pass = 0; /* don't ever call fork() again */
 
     main_loop();
-  } catch (fork_throw &e) {
-    return EXIT_SUCCESS;
-  } catch (unknown_arg_throw &e) {
-    return EXIT_FAILURE;
-  } catch (obj_create_error &e) {
-    std::cerr << e.what() << std::endl;
-    clean_up();
-    return EXIT_FAILURE;
   } catch (std::exception &e) {
     std::cerr << PACKAGE_NAME ": " << e.what() << std::endl;
     return EXIT_FAILURE;

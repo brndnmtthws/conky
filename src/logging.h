@@ -40,32 +40,6 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/fmt.h>
 
-class fork_throw : public std::runtime_error {
- public:
-  fork_throw() : std::runtime_error("Fork happened") {}
-  fork_throw(const std::string &msg) : std::runtime_error(msg) {}
-};
-
-class unknown_arg_throw : public std::runtime_error {
- public:
-  unknown_arg_throw() : std::runtime_error("Unknown argumunt given") {}
-  unknown_arg_throw(const std::string &msg) : std::runtime_error(msg) {}
-};
-
-class combine_needs_2_args_error : public std::runtime_error {
- public:
-  combine_needs_2_args_error()
-      : std::runtime_error("combine needs arguments: <text1> <text2>") {}
-  combine_needs_2_args_error(const std::string &msg)
-      : std::runtime_error(msg) {}
-};
-
-class obj_create_error : public std::runtime_error {
- public:
-  obj_create_error() : std::runtime_error("Failed to create object") {}
-  obj_create_error(const std::string &msg) : std::runtime_error(msg) {}
-};
-
 // Legacy logging functions (to be replaced by conky::log::* in future commits)
 
 template <typename... Args>

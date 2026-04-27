@@ -64,35 +64,34 @@ void parse_combine_arg(struct text_object *obj, const char *arg) {
       }
     }
   }
-  if (startvar[0] >= 0 && endvar[0] >= 0 && startvar[1] >= 0 &&
-      endvar[1] >= 0) {
-    cd =
-        static_cast<struct combine_data *>(malloc(sizeof(struct combine_data)));
-    memset(cd, 0, sizeof(struct combine_data));
-
-    cd->left = static_cast<char *>(malloc(endvar[0] - startvar[0] + 1));
-    cd->seperation = static_cast<char *>(malloc(startvar[1] - endvar[0] + 1));
-    cd->right = static_cast<char *>(malloc(endvar[1] - startvar[1] + 1));
-
-    strncpy(cd->left, arg + startvar[0], endvar[0] - startvar[0]);
-    cd->left[endvar[0] - startvar[0]] = 0;
-
-    strncpy(cd->seperation, arg + endvar[0], startvar[1] - endvar[0]);
-    cd->seperation[startvar[1] - endvar[0]] = 0;
-
-    strncpy(cd->right, arg + startvar[1], endvar[1] - startvar[1]);
-    cd->right[endvar[1] - startvar[1]] = 0;
-
-    obj->sub =
-        static_cast<struct text_object *>(malloc(sizeof(struct text_object)));
-    extract_variable_text_internal(obj->sub, cd->left);
-    obj->sub->sub =
-        static_cast<struct text_object *>(malloc(sizeof(struct text_object)));
-    extract_variable_text_internal(obj->sub->sub, cd->right);
-    obj->data.opaque = cd;
-  } else {
-    throw combine_needs_2_args_error();
+  if (startvar[0] < 0 || endvar[0] < 0 || startvar[1] < 0 || endvar[1] < 0) {
+    COMMAND_ARG_ERR("combine", "needs arguments: <text1> <text2>");
   }
+
+  cd =
+      static_cast<struct combine_data *>(malloc(sizeof(struct combine_data)));
+  memset(cd, 0, sizeof(struct combine_data));
+
+  cd->left = static_cast<char *>(malloc(endvar[0] - startvar[0] + 1));
+  cd->seperation = static_cast<char *>(malloc(startvar[1] - endvar[0] + 1));
+  cd->right = static_cast<char *>(malloc(endvar[1] - startvar[1] + 1));
+
+  strncpy(cd->left, arg + startvar[0], endvar[0] - startvar[0]);
+  cd->left[endvar[0] - startvar[0]] = 0;
+
+  strncpy(cd->seperation, arg + endvar[0], startvar[1] - endvar[0]);
+  cd->seperation[startvar[1] - endvar[0]] = 0;
+
+  strncpy(cd->right, arg + startvar[1], endvar[1] - startvar[1]);
+  cd->right[endvar[1] - startvar[1]] = 0;
+
+  obj->sub =
+      static_cast<struct text_object *>(malloc(sizeof(struct text_object)));
+  extract_variable_text_internal(obj->sub, cd->left);
+  obj->sub->sub =
+      static_cast<struct text_object *>(malloc(sizeof(struct text_object)));
+  extract_variable_text_internal(obj->sub->sub, cd->right);
+  obj->data.opaque = cd;
 }
 
 void print_combine(struct text_object *obj, char *p, unsigned int p_max_size) {
