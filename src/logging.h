@@ -66,7 +66,74 @@ void init_logger();
 void log_more();
 void log_less();
 void set_quiet();
+
+struct attribute {
+  std::string key;
+  std::string value;
+
+  template <typename T,
+            typename = std::enable_if_t<fmt::is_formattable<T>::value>>
+  attribute(std::string_view k, const T &v)
+      : key(k), value(fmt::to_string(v)) {}
+};
+
+using attribute_list = std::vector<attribute>;
+
+class span {
+  std::string m_name;
+
+ public:
+  explicit span(std::string name) : m_name(std::move(name)) {}
+
+  const std::string &name() const { return m_name; }
+};
+
+class span_guard {
+  bool m_active = false;
+
+ public:
+  span_guard() = default;
+  span_guard(span_guard &&other) noexcept : m_active(other.m_active) {
+    other.m_active = false;
+  }
+  span_guard(const span_guard &) = delete;
+  span_guard &operator=(const span_guard &) = delete;
+  span_guard &operator=(span_guard &&) = delete;
+  ~span_guard();
+
+  /// Activate this span guard, pushing a span onto the thread-local stack.
+  void open(spdlog::source_loc loc, std::string name,
+            std::initializer_list<attribute> attrs = {});
+
+  /// Explicitly end this span before scope exit.
+  void drop();
+};
+
+/// Returns the current span context formatted for log output.
+std::string current_span_context();
+
+/// Captures the current thread's span stack for cross-thread propagation.
+std::vector<span> capture_context();
+
+/// Installs a captured span stack into the current thread.
+void install_context(const std::vector<span> &ctx);
+
+/// Push per-message attributes (accumulated, cleared after log call).
+void push_msg_attrs(std::initializer_list<attribute> attrs);
+/// Clear all accumulated per-message attributes
+void clear_msg_attrs();
+
 }  // namespace conky::log
+
+#define LOG_SCOPE(name, ...)                                            \
+  ([&]() -> conky::log::span_guard {                                    \
+    conky::log::span_guard _guard;                                      \
+    if (spdlog::default_logger()->should_log(spdlog::level::debug))     \
+      _guard.open(                                                      \
+          spdlog::source_loc{__FILE__, __LINE__, __func__},             \
+          name, ##__VA_ARGS__);                                         \
+    return _guard;                                                      \
+  }())
 
 // syslog.h defines LOG_DEBUG, LOG_INFO, LOG_WARNING etc. as integers
 #undef LOG_TRACE
@@ -82,6 +149,49 @@ void set_quiet();
 #define LOG_WARNING(...) SPDLOG_WARN(__VA_ARGS__)
 #define LOG_ERROR(...) SPDLOG_ERROR(__VA_ARGS__)
 #define LOG_CRITICAL(...) SPDLOG_CRITICAL(__VA_ARGS__)
+
+#define _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(spdlog_macro, attrs, ...) \
+  do {                                                  \
+    if (spdlog::default_logger()->should_log(           \
+            spdlog::level::trace)) {                    \
+      conky::log::push_msg_attrs(attrs);                \
+      spdlog_macro(__VA_ARGS__);                        \
+      conky::log::clear_msg_attrs();                    \
+    } else {                                            \
+      spdlog_macro(__VA_ARGS__);                        \
+    }                                                   \
+  } while (0)
+
+#if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_TRACE
+#define LOG_TRACE_WITH(attrs, ...) _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(SPDLOG_TRACE, attrs, __VA_ARGS__)
+#else
+#define LOG_TRACE_WITH(attrs, ...) ((void)0)
+#endif
+#if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_DEBUG
+#define LOG_DEBUG_WITH(attrs, ...) _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(SPDLOG_DEBUG, attrs, __VA_ARGS__)
+#else
+#define LOG_DEBUG_WITH(attrs, ...) ((void)0)
+#endif
+#if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_INFO
+#define LOG_INFO_WITH(attrs, ...) _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(SPDLOG_INFO, attrs, __VA_ARGS__)
+#else
+#define LOG_INFO_WITH(attrs, ...) ((void)0)
+#endif
+#if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_WARN
+#define LOG_WARNING_WITH(attrs, ...) _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(SPDLOG_WARN, attrs, __VA_ARGS__)
+#else
+#define LOG_WARNING_WITH(attrs, ...) ((void)0)
+#endif
+#if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_ERROR
+#define LOG_ERROR_WITH(attrs, ...) _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(SPDLOG_ERROR, attrs, __VA_ARGS__)
+#else
+#define LOG_ERROR_WITH(attrs, ...) ((void)0)
+#endif
+#if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_CRITICAL
+#define LOG_CRITICAL_WITH(attrs, ...) _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(SPDLOG_CRITICAL, attrs, __VA_ARGS__)
+#else
+#define LOG_CRITICAL_WITH(attrs, ...) ((void)0)
+#endif
 
 /// Critical error (developer fault) - logs and terminates with core dump.
 #define CRIT_ERR(...)          \
