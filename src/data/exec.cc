@@ -243,7 +243,7 @@ void fill_p(const char *buffer, struct text_object *obj, char *p,
       if (obj->sub) { memset(obj->sub, 0, sizeof(struct text_object)); }
       if (obj->sub) { extract_variable_text_internal(obj->sub, buffer); }
 
-      obj->last_execp_hash = current_hash;
+      ed->last_execp_hash = current_hash;
     }
 
     if (obj->sub) { generate_text_internal(p, p_max_size, *obj->sub); }
