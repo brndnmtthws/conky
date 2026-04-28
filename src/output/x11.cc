@@ -235,7 +235,7 @@ inline Window DefaultVRootWindow(Display *display) {
 
 /* X11 initializer */
 void init_x11() {
-  LOG_TRACE("initializing X11 display");
+  auto _scope = LOG_SCOPE("init_x11");
   if (display == nullptr) {
     const std::string &dispstr = display_name.get(*state);
     // passing nullptr to XOpenDisplay should open the default display
@@ -277,12 +277,11 @@ void init_x11() {
     }
   }
 #endif /* HAVE_XCB_ERRORS */
-  LOG_TRACE("X11 display initialized");
 }
 
 void deinit_x11() {
   if (display) {
-    LOG_TRACE("closing X11 display");
+    auto _scope = LOG_SCOPE("deinit_x11");
     XCloseDisplay(display);
     display = nullptr;
   }
@@ -465,7 +464,7 @@ void destroy_window() {
 }
 
 void x11_init_window(lua::state &l, bool own) {
-  LOG_DEBUG("creating X11 window");
+  auto _scope = LOG_SCOPE("x11_init_window", {{"own", own}});
   // own is unused if OWN_WINDOW is not defined
   (void)own;
 
@@ -880,7 +879,6 @@ void x11_init_window(lua::state &l, bool own) {
   XSelectInput(display, window.window, input_mask);
 
   window_created = 1;
-  LOG_TRACE("X11 window created");
 }
 
 static Window find_desktop_window_impl(Window win, int w, int h) {

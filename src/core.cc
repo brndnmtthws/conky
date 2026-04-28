@@ -2095,6 +2095,7 @@ size_t remove_comments(char *string) {
 
 int extract_variable_text_internal(struct text_object *retval,
                                    const char *const_p) {
+  auto _scope = LOG_SCOPE("parse_variables");
   struct text_object *obj;
   char *p, *s, *orig_p;
   long line;

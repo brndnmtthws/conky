@@ -1596,6 +1596,7 @@ static void draw_text() {
 }
 
 void draw_stuff() {
+  auto _scope = LOG_SCOPE("draw");
   for (auto output : display_outputs()) output->begin_draw_stuff();
 
 #ifdef BUILD_GUI
@@ -1659,6 +1660,7 @@ int need_to_update;
 
 /* update_text() generates new text and clears old text area */
 void update_text() {
+  auto _scope = LOG_SCOPE("update_text");
 #ifdef BUILD_IMLIB2
   cimlib_cleanup();
 #endif /* BUILD_IMLIB2 */
@@ -1826,6 +1828,7 @@ void get_system_details() {
 }
 
 void main_loop() {
+  auto _scope = LOG_SCOPE("main_loop");
   int terminate = 0;
 #ifdef SIGNAL_BLOCKING
   sigset_t newmask, oldmask;
@@ -1979,6 +1982,7 @@ void main_loop() {
 
 /* reload the config file */
 static void reload_config() {
+  auto _scope = LOG_SCOPE("reload_config");
   struct stat sb {};
   if ((stat(current_config.c_str(), &sb) != 0) ||
       (!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
@@ -2091,6 +2095,7 @@ static void set_default_configurations() {
 }
 
 void load_config_file() {
+  auto _scope = LOG_SCOPE("load_config", {{"path", current_config.string()}});
   LOG_DEBUG("reading contents from config file '{}'", current_config);
 
   lua::state &l = *state;
@@ -2236,6 +2241,7 @@ void setup_inotify() {
 #endif /* HAVE_SYS_INOTIFY_H */
 }
 void initialisation(int argc, char **argv) {
+  auto _scope = LOG_SCOPE("init");
   struct sigaction act {
   }, oact{};
 
