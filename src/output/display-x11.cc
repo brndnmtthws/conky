@@ -310,9 +310,12 @@ bool display_output_x11::main_loop_wait(double t) {
 #else
         if (use_xpmdb.get(*state)) {
           XFreePixmap(display, window.back_buffer);
+          unsigned int depth = window.color_depth != 0
+                                  ? window.color_depth
+                                  : DefaultDepth(display, screen);
           window.back_buffer = XCreatePixmap(
               display, window.window, window.geometry.width(),
-              window.geometry.height(), DefaultDepth(display, screen));
+              window.geometry.height(), depth);
 
           if (window.back_buffer != None) {
             window.drawable = window.back_buffer;
@@ -321,7 +324,12 @@ bool display_output_x11::main_loop_wait(double t) {
             LOG_ERROR("failed to allocate back buffer for window {:#x} ({}x{})",
                       window.window, window.geometry.width(), window.geometry.height());
           }
-          XSetForeground(display, window.gc, 0);
+          unsigned long bg = 0;
+          if (window.color_depth == argb8888_color_depth) {
+            Colour c = get_background_colour_preference(*state);
+            bg = c.to_x11_color(display, screen, window.opacity < 0xff, true);
+          }
+          XSetForeground(display, window.gc, bg);
           XFillRectangle(display, window.drawable, window.gc, 0, 0,
                          window.geometry.width(), window.geometry.height());
         }
@@ -481,6 +489,9 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
         query_x11_top_parent(display, event_window) == window_top_parent;
     cursor_over_conky = same_window;
   }
+  LOG_TRACE_WITH(({"pos", data->pos_absolute}, {"geom", window.geometry}),
+                 "xi event: type={} inside_geom={} over_conky={}",
+                 data->evtype, inside_geometry, cursor_over_conky);
 
   // XInput reports events twice on some hardware (even by 'xinput --test-xi2')
   auto hash = std::make_tuple(data->serial, data->evtype, data->event);
@@ -506,6 +517,9 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   }
 
 #ifdef BUILD_MOUSE_EVENTS
+  // Events not over conky should always propagate to underlying windows.
+  if (!cursor_over_conky) { *consumed = false; }
+
   // query_result is not window.window in some cases.
   modifier_state_t mods = x11_modifier_state(data->mods.effective);
 
@@ -518,6 +532,9 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
     bool has_scroll_y = data->test_valuator(valuator_t::SCROLL_Y);
     bool is_move = has_move_x || has_move_y;
     bool is_scroll = has_scroll_x || has_scroll_y;
+    LOG_TRACE_WITH(({"move_x", has_move_x}, {"move_y", has_move_y},
+                    {"scroll_x", has_scroll_x}, {"scroll_y", has_scroll_y}),
+                   "xi motion: is_move={} is_scroll={}", is_move, is_scroll);
 
     if (is_move) {
       static bool cursor_inside = false;
@@ -555,6 +572,12 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
         scroll_direction = (vertical_value * increment) < 0.0
                                ? scroll_direction_t::UP
                                : scroll_direction_t::DOWN;
+        LOG_TRACE_WITH(({"vertical", vertical_value},
+                        {"increment", increment},
+                        {"product", vertical_value * increment}),
+                       "xi scroll dir={}",
+                       scroll_direction == scroll_direction_t::UP ? "UP"
+                                                                  : "DOWN");
       } else {
         auto horizontal = data->valuator_relative_value(valuator_t::SCROLL_X);
         double horizontal_value = horizontal.value_or(0.0);
@@ -575,6 +598,8 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
     }
   } else if (cursor_over_conky && (data->evtype == XI_ButtonPress ||
                                    data->evtype == XI_ButtonRelease)) {
+    LOG_TRACE("xi button: detail={} type={}",
+              data->detail, data->evtype == XI_ButtonPress ? "press" : "release");
     if (data->detail >= 4 && data->detail <= 7) {
       // Fallback: use button 4-7 as scroll if this device has no independent
       // scroll valuators (e.g. Xephyr aliases scroll and move axes).
@@ -582,6 +607,8 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
       bool has_scroll_valuators =
           data->device->valuator(valuator_t::SCROLL_X).index != SIZE_MAX ||
           data->device->valuator(valuator_t::SCROLL_Y).index != SIZE_MAX;
+      LOG_TRACE("xi button 4-7 fallback: has_scroll_valuators={}",
+                has_scroll_valuators);
       if (!has_scroll_valuators && data->evtype == XI_ButtonPress) {
         scroll_direction_t direction = x11_scroll_direction(data->detail);
         auto window_pos = data->pos_absolute - window.geometry.pos();
@@ -606,22 +633,27 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   *consumed = false;
 #endif /* BUILD_MOUSE_EVENTS */
 
+  LOG_TRACE("xi event pre-window-type: consumed={}", *consumed);
   if (!own_window.get(*state)) return true;
-  switch (own_window_type.get(*state)) {
-    case window_type::NORMAL:
-    case window_type::UTILITY:
-      // decorated normal windows always consume events
-      if (!TEST_HINT(own_window_hints.get(*state), window_hints::UNDECORATED)) {
+  if (cursor_over_conky) {
+    switch (own_window_type.get(*state)) {
+      case window_type::NORMAL:
+      case window_type::UTILITY:
+        // decorated normal windows always consume events
+        if (!TEST_HINT(own_window_hints.get(*state),
+                       window_hints::UNDECORATED)) {
+          *consumed = true;
+        }
+        break;
+      case window_type::DESKTOP:
+        // assume conky is always on bottom; nothing to propagate events to
         *consumed = true;
-      }
-      break;
-    case window_type::DESKTOP:
-      // assume conky is always on bottom; nothing to propagate events to
-      *consumed = true;
-    default:
-      break;
+      default:
+        break;
+    }
   }
 
+  LOG_TRACE("xi event final: consumed={}", *consumed);
   return true;
 }
 

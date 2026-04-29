@@ -379,8 +379,6 @@ static Window find_desktop_window(Window root) {
   return desktop;
 }
 
-const int argb8888_color_depth = 32;
-
 #ifdef OWN_WINDOW
 /* if no argb visual is configured sets background to ParentRelative for the
    Window and all parents, else real transparency is used */
@@ -392,6 +390,10 @@ void set_transparent_background(conky_x11_window *window) {
     Colour colour = get_background_colour_preference(*state);
     unsigned long xcolor =
         colour.to_x11_color(display, screen, window->opacity < 0xff, true);
+    LOG_DEBUG("ARGB background: colour=({},{},{},{}) xcolor=0x{:08x} "
+              "opacity={}",
+              colour.red, colour.green, colour.blue, colour.alpha, xcolor,
+              window->opacity);
     XSetWindowBackground(display, window->window, xcolor);
     return;
   }
@@ -421,12 +423,18 @@ static bool has_compositor() {
   char atom_name[32];
   snprintf(atom_name, sizeof(atom_name), "_NET_WM_CM_S%d", screen);
   Atom cm_atom = XInternAtom(display, atom_name, False);
-  return XGetSelectionOwner(display, cm_atom) != None;
+  Window owner = XGetSelectionOwner(display, cm_atom);
+  bool found = owner != None;
+  LOG_DEBUG("compositor {}", found ? "detected" : "not detected");
+  return found;
 }
 
 static bool try_set_argb_visual(conky_x11_window *window) {
   // ARGB visuals are useless without a compositor to blend the alpha.
-  if (!has_compositor()) { return false; }
+  if (!has_compositor()) {
+    LOG_DEBUG("skipping ARGB visual: no compositor");
+    return false;
+  }
 
   /* code from gtk project, gdk_screen_get_rgba_visual */
   XVisualInfo visual_template;
@@ -445,11 +453,14 @@ static bool try_set_argb_visual(conky_x11_window *window) {
       window->color_depth = argb8888_color_depth;
       window->colourmap = XCreateColormap(display, DefaultRootWindow(display),
                                           window->visual, AllocNone);
+      LOG_DEBUG("using ARGB visual (depth=32, id=0x{:x})",
+                visual_list[i].visualid);
       XFree(visual_list);
       return true;
     }
   }
   // no argb visual available
+  LOG_DEBUG("no ARGB visual found ({} visuals checked)", nxvisuals);
 
   XFree(visual_list);
   return false;
@@ -486,6 +497,8 @@ void x11_init_window(lua::state &l, bool own) {
 
     uint8_t background_alpha = get_background_alpha_preference(l);
     bool wants_alpha = background_alpha < 0xff;
+    LOG_DEBUG("background alpha={:#x} wants_alpha={}", background_alpha,
+              wants_alpha);
 
     if (wants_alpha && try_set_argb_visual(&window)) {
       window.opacity = background_alpha;
@@ -1378,9 +1391,14 @@ void xpmdb_swap_buffers(void) {
   if (use_xpmdb.get(*state)) {
     XCopyArea(display, window.back_buffer, window.window, window.gc, 0, 0,
               window.geometry.width(), window.geometry.height(), 0, 0);
-    XSetForeground(display, window.gc, 0);
-    XFillRectangle(display, window.drawable, window.gc, 0, 0, window.geometry.width(),
-                   window.geometry.height());
+    unsigned long bg = 0;
+    if (window.color_depth == argb8888_color_depth) {
+      Colour c = get_background_colour_preference(*state);
+      bg = c.to_x11_color(display, screen, window.opacity < 0xff, true);
+    }
+    XSetForeground(display, window.gc, bg);
+    XFillRectangle(display, window.drawable, window.gc, 0, 0,
+                   window.geometry.width(), window.geometry.height());
     XFlush(display);
   }
 }
