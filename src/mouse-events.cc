@@ -232,7 +232,7 @@ device_info *device_info::from_xi_id(xi_device_id device_id, Display *display) {
   if (num_devices == 0) return nullptr;
 
   int master;
-  
+
   if(device->use == XIMasterPointer){
     master = device->deviceid;
   }
@@ -309,11 +309,17 @@ size_t fixed_valuator_index(Display *display, XIDeviceInfo *device,
   return *valuator;
 }
 
-/// Allows override of valuator value type in `xorg.conf` in case they're wrong
-/// for some device (happens with VMs and some devices/setups).
+/// Allows override of valuator value type via X device properties in case
+/// they're wrong for some device (happens with VMs and some devices/setups).
+///
+/// Scroll valuators always accumulate regardless of XIValuatorClassInfo::mode,
+/// so they default to absolute.
+/// See: https://www.x.org/releases/X11R7.7/doc/inputproto/XI2proto.txt
+/// (section "XIScrollClass")
 bool fixed_valuator_relative(Display *display, XIDeviceInfo *device,
                              valuator_t valuator,
-                             XIValuatorClassInfo *class_info) {
+                             XIValuatorClassInfo *class_info,
+                             bool is_scroll) {
   const std::array<const char *, 2> atom_names = {
       "ConkyValuatorMoveMode",
       "ConkyValuatorScrollMode",
@@ -358,6 +364,12 @@ bool fixed_valuator_relative(Display *display, XIDeviceInfo *device,
       return relative;
     }
   } while (true);
+
+  // Scroll valuators accumulate; XIValuatorClassInfo::mode is unreliable
+  // for them (libinput reports XIModeRelative despite absolute values).
+  // This is because X11 was designed from ground up to make relative sense.
+  if (is_scroll) return false;
+
   return class_info->mode == XIModeRelative;
 }
 
@@ -401,6 +413,11 @@ void device_info::init_xi_device(
     else if (si->scroll_type == XIScrollTypeHorizontal)
       target = valuator_t::SCROLL_X;
 
+    LOG_DEBUG("xi scroll class: number={} type={} increment={}",
+              si->number,
+              si->scroll_type == XIScrollTypeVertical ? "vertical" : "horizontal",
+              si->increment);
+
     // Only set if not already claimed and doesn't conflict with a move axis.
     // Some devices (e.g. Xephyr) alias scroll and move to the same valuator;
     // movement deltas would be misinterpreted as scroll.
@@ -427,21 +444,36 @@ void device_info::init_xi_device(
     }
     if (valuator == valuator_t::UNKNOWN) { continue; }
 
+    // Scroll valuators with XIScrollClassInfo always accumulate — scroll
+    // is derived from value deltas divided by increment.
+    // See: https://www.x.org/releases/X11R7.7/doc/inputproto/XI2proto.txt
+    // (section "XIScrollClass")
+    // Only consult fixed_valuator_relative for non-scroll axes.
+    auto it = scroll_increments.find(class_info->number);
+    bool is_scroll = it != scroll_increments.end();
+
     auto info = conky_valuator_info{
         .index = static_cast<size_t>(class_info->number),
         .min = class_info->min,
         .max = class_info->max,
         .value = class_info->value,
-        .relative =
-            fixed_valuator_relative(display, device, valuator, class_info),
+        .relative = fixed_valuator_relative(display, device, valuator,
+                                             class_info, is_scroll),
     };
 
-    // Store scroll increment if this valuator has an associated XIScrollClass.
-    auto it = scroll_increments.find(class_info->number);
-    if (it != scroll_increments.end()) { info.increment = it->second; }
+    if (is_scroll) { info.increment = it->second; }
 
     this->valuators[*valuator] = info;
   }
+
+  LOG_DEBUG("xi device '{}' valuators: move_x={} move_y={} scroll_x={} "
+            "scroll_y={} scroll_y_increment={}",
+            device->name,
+            this->valuators[*valuator_t::MOVE_X].index,
+            this->valuators[*valuator_t::MOVE_Y].index,
+            this->valuators[*valuator_t::SCROLL_X].index,
+            this->valuators[*valuator_t::SCROLL_Y].index,
+            this->valuators[*valuator_t::SCROLL_Y].increment);
 
   if (std::holds_alternative<xi_device_id>(source)) {
     XIFreeDeviceInfo(device);
@@ -510,6 +542,12 @@ xi_event_data *xi_event_data::read_cookie(Display *display, const void *data) {
       // possible but unrealistic with 32-bit values.
       result->valuators_relative[v] = current - valuator_info.value;
     }
+    LOG_TRACE_WITH(({"index", valuator_info.index},
+                    {"current", current},
+                    {"prev", valuator_info.value},
+                    {"relative", valuator_info.relative}),
+                   "xi valuator[{}] delta={}", v,
+                   result->valuators_relative[v]);
     valuator_info.value = current;
   }
 
