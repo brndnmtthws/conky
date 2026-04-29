@@ -310,9 +310,12 @@ bool display_output_x11::main_loop_wait(double t) {
 #else
         if (use_xpmdb.get(*state)) {
           XFreePixmap(display, window.back_buffer);
+          unsigned int depth = window.color_depth != 0
+                                  ? window.color_depth
+                                  : DefaultDepth(display, screen);
           window.back_buffer = XCreatePixmap(
               display, window.window, window.geometry.width(),
-              window.geometry.height(), DefaultDepth(display, screen));
+              window.geometry.height(), depth);
 
           if (window.back_buffer != None) {
             window.drawable = window.back_buffer;
@@ -321,7 +324,12 @@ bool display_output_x11::main_loop_wait(double t) {
             LOG_ERROR("failed to allocate back buffer for window {:#x} ({}x{})",
                       window.window, window.geometry.width(), window.geometry.height());
           }
-          XSetForeground(display, window.gc, 0);
+          unsigned long bg = 0;
+          if (window.color_depth == argb8888_color_depth) {
+            Colour c = get_background_colour_preference(*state);
+            bg = c.to_x11_color(display, screen, window.opacity < 0xff, true);
+          }
+          XSetForeground(display, window.gc, bg);
           XFillRectangle(display, window.drawable, window.gc, 0, 0,
                          window.geometry.width(), window.geometry.height());
         }
