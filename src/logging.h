@@ -74,7 +74,7 @@ struct attribute {
   template <typename T,
             typename = std::enable_if_t<fmt::is_formattable<T>::value>>
   attribute(std::string_view k, const T &v)
-      : key(k), value(fmt::to_string(v)) {}
+      : key(k), value(fmt::format("{}", v)) {}
 };
 
 using attribute_list = std::vector<attribute>;
@@ -150,11 +150,12 @@ void clear_msg_attrs();
 #define LOG_ERROR(...) SPDLOG_ERROR(__VA_ARGS__)
 #define LOG_CRITICAL(...) SPDLOG_CRITICAL(__VA_ARGS__)
 
+#define _LOG_STRIP_PARENS(...) __VA_ARGS__
 #define _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(spdlog_macro, attrs, ...) \
   do {                                                  \
     if (spdlog::default_logger()->should_log(           \
             spdlog::level::trace)) {                    \
-      conky::log::push_msg_attrs(attrs);                \
+      conky::log::push_msg_attrs({_LOG_STRIP_PARENS attrs}); \
       spdlog_macro(__VA_ARGS__);                        \
       conky::log::clear_msg_attrs();                    \
     } else {                                            \
