@@ -61,6 +61,8 @@ extern Display *display;
 /// @brief Screen with conky
 extern int screen;
 
+constexpr int argb8888_color_depth = 32;
+
 struct conky_x11_window {
   /// XID of x11 root window
   Window root;
