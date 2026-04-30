@@ -1115,11 +1115,11 @@ void get_battery_short_status(char * /*buffer*/, unsigned int /*n*/,
   printf("get_battery_short_status: STUB\n");
 }
 
-int get_entropy_avail(const unsigned int *val) {
+int get_entropy_avail(unsigned int *val) {
   (void)val;
   return 1;
 }
-int get_entropy_poolsize(const unsigned int *val) {
+int get_entropy_poolsize(unsigned int *val) {
   (void)val;
   return 1;
 }

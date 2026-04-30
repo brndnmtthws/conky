@@ -17,9 +17,6 @@
 
 #include "bsdcommon.h"
 
-int get_entropy_avail(unsigned int *);
-int get_entropy_poolsize(unsigned int *);
-
 bool is_conky_already_running();
 
 #endif /*NETBSD_H_*/

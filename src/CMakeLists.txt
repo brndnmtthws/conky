@@ -20,7 +20,8 @@
 
 include_directories(${conky_includes})
 
-# always include the binary dir
+# always include the source and binary dirs
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 if(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
@@ -30,6 +31,7 @@ endif(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
 
 set(conky_target_includes
   ${conky_includes}
+  ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR})
 
 if(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
@@ -135,7 +137,6 @@ set(conky_sources
   data/network/mail.cc
   data/network/mail.h
   data/misc.cc
-  data/misc.h
   data/network/net_stat.cc
   data/network/net_stat.h
   content/template.cc
@@ -163,7 +164,6 @@ set(conky_sources
   prioqueue.cc
   prioqueue.h
   data/proc.cc
-  data/proc.h
   data/user.cc
   data/user.h
   lua/luamm.cc
@@ -186,6 +186,8 @@ set(conky_sources
   update-cb.hh
   logging.h
   semaphore.hh
+  parse/variables.cc
+  parse/variables.hh
 )
 
 # Platform specific sources
@@ -196,9 +198,7 @@ if(OS_LINUX)
     data/users.cc
     data/users.h
     data/hardware/sony.cc
-    data/hardware/sony.h
     data/hardware/i8k.cc
-    data/hardware/i8k.h
   )
   set(optional_sources ${optional_sources} ${linux_sources})
 endif(OS_LINUX)
@@ -237,7 +237,7 @@ endif(OS_OPENBSD)
 
 # These below are not actually supported.  No idea what their status is.
 if(OS_SOLARIS)
-  set(solaris_sources data/os/solaris.cc data/os/solaris.h)
+  set(solaris_sources data/os/solaris.cc)
   set(optional_sources ${optional_sources} ${solaris_sources})
 endif(OS_SOLARIS)
 
@@ -275,22 +275,22 @@ endif(OS_DARWIN)
 
 # Optional sources
 if(HAVE_SOUNDCARD_H)
-  set(mixer data/audio/mixer.cc data/audio/mixer.h)
+  set(mixer data/audio/mixer.cc)
   set(optional_sources ${optional_sources} ${mixer})
 endif(HAVE_SOUNDCARD_H)
 
 if(BUILD_AUDACIOUS)
-  set(audacious data/audio/audacious.cc data/audio/audacious.h)
+  set(audacious data/audio/audacious.cc)
   set(optional_sources ${optional_sources} ${audacious})
 endif(BUILD_AUDACIOUS)
 
 if(BUILD_IBM)
-  set(ibm data/hardware/ibm.cc data/hardware/ibm.h data/hardware/smapi.cc data/hardware/smapi.h)
+  set(ibm data/hardware/ibm.cc data/hardware/smapi.cc data/hardware/smapi.h)
   set(optional_sources ${optional_sources} ${ibm})
 endif(BUILD_IBM)
 
 if(BUILD_MPD)
-  set(mpd data/audio/mpd.cc data/audio/mpd.h data/audio/libmpdclient.cc data/audio/libmpdclient.h)
+  set(mpd data/audio/mpd.cc data/audio/libmpdclient.cc data/audio/libmpdclient.h)
   set(optional_sources ${optional_sources} ${mpd})
 endif(BUILD_MPD)
 
@@ -300,12 +300,12 @@ if(BUILD_MYSQL)
 endif(BUILD_MYSQL)
 
 if(BUILD_MOC)
-  set(moc data/audio/moc.cc data/audio/moc.h)
+  set(moc data/audio/moc.cc)
   set(optional_sources ${optional_sources} ${moc})
 endif(BUILD_MOC)
 
 if(BUILD_CMUS)
-  set(cmus data/audio/cmus.cc data/audio/cmus.h)
+  set(cmus data/audio/cmus.cc)
   set(optional_sources ${optional_sources} ${cmus})
 endif(BUILD_CMUS)
 
@@ -413,8 +413,8 @@ if(BUILD_WAYLAND)
       )
       message(STATUS "PROTOCOL '${name}' file: ${PROTOCOL_FILE}")
     endif()
-    
-    
+
+
     add_custom_command(
       OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${name}-client-protocol.h"
       COMMAND ${Wayland_SCANNER} client-header "${PROTOCOL_FILE}" "${name}-client-protocol.h")
@@ -426,7 +426,7 @@ if(BUILD_WAYLAND)
     unset(PROTOCOL_FILE)
     unset(WL_PROTOCOL_PATHS)
   endmacro()
-  
+
   add_protocol(xdg-shell)
   add_protocol(wlr-layer-shell v1)
 
@@ -497,7 +497,7 @@ if(BUILD_NCURSES)
 endif(BUILD_NCURSES)
 
 if(BUILD_PULSEAUDIO)
-  set(pulseaudio data/audio/pulseaudio.cc data/audio/pulseaudio.h)
+  set(pulseaudio data/audio/pulseaudio.cc)
   set(optional_sources ${optional_sources} ${pulseaudio})
 endif(BUILD_PULSEAUDIO)
 

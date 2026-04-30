@@ -31,7 +31,6 @@
 #ifdef __linux__
 #include <conky.h>
 #include <content/text_object.h>
-#include <data/proc.h>
 #include <sys/prctl.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -49,6 +48,8 @@
 #include <thread>
 #include <vector>
 
+#include "test_variable.hh"
+
 using namespace Catch::Matchers;
 
 namespace {
@@ -57,18 +58,6 @@ void ensure_lua_state() {
   state = std::make_unique<lua::state>();
   conky::export_symbols(*state);
 }
-
-struct sub_text_object {
-  struct text_object root {};
-  struct text_object obj {};
-
-  explicit sub_text_object(const char *text) {
-    obj_be_plain_text(&obj, text);
-    append_object(&root, &obj);
-  }
-
-  ~sub_text_object() { free(obj.data.s); }
-};
 
 struct thread_group {
   std::atomic<bool> running{true};
@@ -178,18 +167,15 @@ bool parse_proc_stat_times(const std::string &stat, unsigned long int *utime,
 
 TEST_CASE("cmdline_to_pid finds the current process",
           "[proc][cmdline_to_pid]") {
+  ensure_lua_state();
+
   std::string cmdline = read_cmdline();
   REQUIRE_FALSE(cmdline.empty());
 
-  struct text_object obj {};
-  obj.data.s = strdup(cmdline.c_str());
+  test_variable var("cmdline_to_pid", cmdline.c_str());
+  REQUIRE(var);
 
-  char buf[32]{};
-  print_cmdline_to_pid(&obj, buf, sizeof(buf));
-
-  free(obj.data.s);
-
-  REQUIRE(std::string(buf) == std::to_string(getpid()));
+  REQUIRE(var.print() == std::to_string(getpid()));
 }
 
 TEST_CASE("pid_time handles comm with spaces", "[proc][pid_time]") {
@@ -211,14 +197,10 @@ TEST_CASE("pid_time handles comm with spaces", "[proc][pid_time]") {
   double expected = static_cast<double>(utime + stime) / 100.0;
 
   std::string pid_str = std::to_string(getpid());
-  sub_text_object sub(pid_str.c_str());
-  struct text_object obj {};
-  obj.sub = &sub.root;
+  test_variable var("pid_time", pid_str.c_str());
+  REQUIRE(var);
 
-  char buf[64]{};
-  print_pid_time(&obj, buf, sizeof(buf));
-
-  double actual = std::stod(buf);
+  double actual = std::stod(var.print());
   REQUIRE_THAT(actual, WithinAbs(expected, 0.01));
 }
 
@@ -238,14 +220,10 @@ TEST_CASE("pid_time_kernelmode uses system time",
   double expected = static_cast<double>(stime) / 100.0;
 
   std::string pid_str = std::to_string(getpid());
-  sub_text_object sub(pid_str.c_str());
-  struct text_object obj {};
-  obj.sub = &sub.root;
+  test_variable var("pid_time_kernelmode", pid_str.c_str());
+  REQUIRE(var);
 
-  char buf[64]{};
-  print_pid_time_kernelmode(&obj, buf, sizeof(buf));
-
-  double actual = std::stod(buf);
+  double actual = std::stod(var.print());
   REQUIRE_THAT(actual, WithinAbs(expected, 0.01));
 }
 
@@ -264,14 +242,10 @@ TEST_CASE("pid_time_usermode uses user time", "[proc][pid_time_usermode]") {
   double expected = static_cast<double>(utime) / 100.0;
 
   std::string pid_str = std::to_string(getpid());
-  sub_text_object sub(pid_str.c_str());
-  struct text_object obj {};
-  obj.sub = &sub.root;
+  test_variable var("pid_time_usermode", pid_str.c_str());
+  REQUIRE(var);
 
-  char buf[64]{};
-  print_pid_time_usermode(&obj, buf, sizeof(buf));
-
-  double actual = std::stod(buf);
+  double actual = std::stod(var.print());
   REQUIRE_THAT(actual, WithinAbs(expected, 0.01));
 }
 
@@ -282,11 +256,10 @@ TEST_CASE("pid_thread_list does not overflow small buffers",
   thread_group group(4);
 
   std::string pid_str = std::to_string(getpid());
-  sub_text_object sub(pid_str.c_str());
-  struct text_object obj {};
-  obj.sub = &sub.root;
+  test_variable var("pid_thread_list", pid_str.c_str());
+  REQUIRE(var);
 
-  constexpr size_t k_buf_size = 8;
+  constexpr unsigned int k_buf_size = 8;
   constexpr char k_sentinel = 'Z';
   std::array<char, k_buf_size + 4> buffer{};
   buffer.fill('X');
@@ -294,7 +267,7 @@ TEST_CASE("pid_thread_list does not overflow small buffers",
     buffer[i] = k_sentinel;
   }
 
-  print_pid_thread_list(&obj, buffer.data(), k_buf_size);
+  var.obj->callbacks.print(var.obj, buffer.data(), k_buf_size);
 
   REQUIRE(memchr(buffer.data(), '\0', k_buf_size) != nullptr);
   for (size_t i = k_buf_size; i < buffer.size(); ++i) {
@@ -311,32 +284,26 @@ TEST_CASE("pid_environ reads values from /proc environ",
 
   std::string pid_str = std::to_string(getpid());
   std::string arg = pid_str + " PATH";
-  sub_text_object sub(arg.c_str());
-  struct text_object obj {};
-  obj.sub = &sub.root;
+  test_variable var("pid_environ", arg.c_str());
+  REQUIRE(var);
 
-  std::vector<char> buf(strlen(expected) + 1);
-  print_pid_environ(&obj, buf.data(), static_cast<unsigned int>(buf.size()));
-
-  REQUIRE(std::string(buf.data()) == expected);
+  std::string result = var.print(strlen(expected) + 1);
+  REQUIRE(result == expected);
 }
 
 TEST_CASE("pid_state_short returns the short state",
           "[proc][pid_state_short]") {
   ensure_lua_state();
 
-  std::string state = read_status_value("State:");
-  REQUIRE_FALSE(state.empty());
+  std::string pstate = read_status_value("State:");
+  REQUIRE_FALSE(pstate.empty());
 
   std::string pid_str = std::to_string(getpid());
-  sub_text_object sub(pid_str.c_str());
-  struct text_object obj {};
-  obj.sub = &sub.root;
+  test_variable var("pid_state_short", pid_str.c_str());
+  REQUIRE(var);
 
-  char buf[8]{};
-  print_pid_state_short(&obj, buf, sizeof(buf));
-
-  REQUIRE(buf[0] == state[0]);
+  std::string result = var.print();
+  REQUIRE(result[0] == pstate[0]);
 }
 
 TEST_CASE("pid_vm values map to correct status entries", "[proc][pid_vm]") {
@@ -359,20 +326,17 @@ TEST_CASE("pid_vm values map to correct status entries", "[proc][pid_vm]") {
   REQUIRE_FALSE(vmexe.empty());
 
   std::string pid_str = std::to_string(child);
-  sub_text_object sub(pid_str.c_str());
-  struct text_object obj {};
-  obj.sub = &sub.root;
 
-  char buf[64]{};
-  print_pid_vmrss(&obj, buf, sizeof(buf));
-  REQUIRE(std::string(buf) == vmrss);
+  test_variable var_rss("pid_vmrss", pid_str.c_str());
+  REQUIRE(var_rss);
+  REQUIRE(var_rss.print() == vmrss);
 
-  memset(buf, 0, sizeof(buf));
-  print_pid_vmstk(&obj, buf, sizeof(buf));
-  REQUIRE(std::string(buf) == vmstk);
+  test_variable var_stk("pid_vmstk", pid_str.c_str());
+  REQUIRE(var_stk);
+  REQUIRE(var_stk.print() == vmstk);
 
-  memset(buf, 0, sizeof(buf));
-  print_pid_vmexe(&obj, buf, sizeof(buf));
-  REQUIRE(std::string(buf) == vmexe);
+  test_variable var_exe("pid_vmexe", pid_str.c_str());
+  REQUIRE(var_exe);
+  REQUIRE(var_exe.print() == vmexe);
 }
 #endif

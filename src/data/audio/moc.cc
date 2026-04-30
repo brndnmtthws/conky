@@ -21,8 +21,10 @@
  */
 
 #include "../../conky.h"
-#include "../../logging.h"
+#include "../../content/specials.h"
 #include "../../content/text_object.h"
+#include "../../logging.h"
+#include "../../parse/variables.hh"
 
 #include <cmath>
 #include <cstdio>
@@ -48,6 +50,34 @@ struct moc_result {
   std::string bitrate;
   std::string avgbitrate;
   std::string rate;
+};
+
+enum class moc_field {
+  state, file, title, artist, song, album, totaltime, timeleft,
+  totalsec, curtime, cursec, bitrate, avgbitrate, rate
+};
+
+struct moc_field_info {
+  const char *key;                  // "State:" prefix from mocp -i output
+  std::string moc_result::*member;
+  const char *fallback;
+};
+
+static constexpr moc_field_info moc_fields[] = {
+    {"State:", &moc_result::state, "??"},
+    {"File:", &moc_result::file, "no file"},
+    {"Title:", &moc_result::title, "no title"},
+    {"Artist:", &moc_result::artist, "no artist"},
+    {"SongTitle:", &moc_result::song, "no song"},
+    {"Album:", &moc_result::album, "no album"},
+    {"TotalTime:", &moc_result::totaltime, "0:00"},
+    {"TimeLeft:", &moc_result::timeleft, "0:00"},
+    {"TotalSec:", &moc_result::totalsec, "0"},
+    {"CurrentTime:", &moc_result::curtime, "0:00"},
+    {"CurrentSec:", &moc_result::cursec, "0"},
+    {"Bitrate:", &moc_result::bitrate, "0kbps"},
+    {"AvgBitrate:", &moc_result::avgbitrate, "0kbps"},
+    {"Rate:", &moc_result::rate, "0kHz"},
 };
 
 class moc_cb : public conky::callback<moc_result> {
@@ -94,35 +124,12 @@ void moc_cb::work() {
        * AvgBitrate: 233kbps
        * Rate: 44kHz
        **/
-      /* Match each line with their lengths, then store where data starts. */
-      if (strncmp(line, "State:", 6) == 0) {
-        moc.state = line + 7;
-      } else if (strncmp(line, "File:", 5) == 0) {
-        moc.file = line + 6;
-      } else if (strncmp(line, "Title:", 6) == 0) {
-        moc.title = line + 7;
-      } else if (strncmp(line, "Artist:", 7) == 0) {
-        moc.artist = line + 8;
-      } else if (strncmp(line, "SongTitle:", 10) == 0) {
-        moc.song = line + 11;
-      } else if (strncmp(line, "Album:", 6) == 0) {
-        moc.album = line + 7;
-      } else if (strncmp(line, "TotalTime:", 10) == 0) {
-        moc.totaltime = line + 11;
-      } else if (strncmp(line, "TimeLeft:", 9) == 0) {
-        moc.timeleft = line + 10;
-      } else if (strncmp(line, "TotalSec:", 9) == 0) {
-        moc.totalsec = line + 10;
-      } else if (strncmp(line, "CurrentTime:", 12) == 0) {
-        moc.curtime = line + 13;
-      } else if (strncmp(line, "CurrentSec:", 11) == 0) {
-        moc.cursec = line + 12;
-      } else if (strncmp(line, "Bitrate:", 8) == 0) {
-        moc.bitrate = line + 9;
-      } else if (strncmp(line, "AvgBitrate:", 11) == 0) {
-        moc.avgbitrate = line + 12;
-      } else if (strncmp(line, "Rate:", 5) == 0) {
-        moc.rate = line + 6;
+      for (const auto &f : moc_fields) {
+        auto len = strlen(f.key);
+        if (strncmp(line, f.key, len) == 0) {
+          moc.*f.member = line + len + 1;
+          break;
+        }
       }
     }
   }
@@ -134,56 +141,58 @@ void moc_cb::work() {
 }
 }  // namespace
 
-#define MOC_PRINT_GENERATOR(type, alt)                                        \
-  void print_moc_##type(struct text_object *obj, char *p,                     \
-                        unsigned int p_max_size) {                            \
-    (void)obj;                                                                \
-    uint32_t period = std::max(                                               \
-        lround(music_player_interval.get(*state) / active_update_interval()), \
-        1l);                                                                  \
-    const moc_result &moc =                                                   \
-        conky::register_cb<moc_cb>(period)->get_result_copy();                \
-    snprintf(p, p_max_size, "%s",                                             \
-             (moc.type.length() ? moc.type.c_str() : (alt)));                 \
-  }
+using namespace conky::text_object;
 
-MOC_PRINT_GENERATOR(state, "??")
-MOC_PRINT_GENERATOR(file, "no file")
-MOC_PRINT_GENERATOR(title, "no title")
-MOC_PRINT_GENERATOR(artist, "no artist")
-MOC_PRINT_GENERATOR(song, "no song")
-MOC_PRINT_GENERATOR(album, "no album")
-MOC_PRINT_GENERATOR(totaltime, "0:00")
-MOC_PRINT_GENERATOR(timeleft, "0:00")
-MOC_PRINT_GENERATOR(totalsec, "0")
-MOC_PRINT_GENERATOR(curtime, "0:00")
-MOC_PRINT_GENERATOR(cursec, "0")
-MOC_PRINT_GENERATOR(bitrate, "0kbps")
-MOC_PRINT_GENERATOR(avgbitrate, "0kbps")
-MOC_PRINT_GENERATOR(rate, "0kHz")
-
-#undef MOC_PRINT_GENERATOR
-
-double moc_barval(struct text_object * obj) {
-  (void)obj;
-  uint32_t period = std::max(
-      lround(music_player_interval.get(*state) / active_update_interval()),
-      1l);
-  const moc_result &moc = conky::register_cb<moc_cb>(period)->get_result_copy();
-  double progress;
-
-  int totalsec = atoi(moc.totalsec.c_str());
-  int cursec = atoi(moc.cursec.c_str());
-
-  if(totalsec == 0) {
-    progress = 0.0;
-  } else {
-    progress = ((double)cursec) / ((double)totalsec);
-  }
-
-  return progress;
+template <moc_field F>
+variable_definition moc_var(const char *name) {
+  return {name, [](text_object *obj, const construct_context &) {
+    obj->callbacks.print = [](text_object *, char *p, unsigned int s) {
+      constexpr auto &info = moc_fields[static_cast<int>(F)];
+      uint32_t period = std::max(
+          lround(music_player_interval.get(*state) / active_update_interval()), 1l);
+      const auto moc = conky::register_cb<moc_cb>(period)->get_result_copy();
+      const auto &val = moc.*info.member;
+      snprintf(p, s, "%s", val.length() ? val.c_str() : info.fallback);
+    };
+  }};
 }
 
-uint8_t moc_percentage(struct text_object *obj){
-  return round_to_positive_int(100.0f * moc_barval(obj));
-}
+// clang-format off
+CONKY_REGISTER_VARIABLES(
+    moc_var<moc_field::state>("moc_state"),
+    moc_var<moc_field::file>("moc_file"),
+    moc_var<moc_field::title>("moc_title"),
+    moc_var<moc_field::artist>("moc_artist"),
+    moc_var<moc_field::song>("moc_song"),
+    moc_var<moc_field::album>("moc_album"),
+    moc_var<moc_field::totaltime>("moc_totaltime"),
+    moc_var<moc_field::timeleft>("moc_timeleft"),
+    moc_var<moc_field::totalsec>("moc_totalsec"),
+    moc_var<moc_field::curtime>("moc_curtime"),
+    moc_var<moc_field::cursec>("moc_cursec"),
+    moc_var<moc_field::bitrate>("moc_bitrate"),
+    moc_var<moc_field::avgbitrate>("moc_avgbitrate"),
+    moc_var<moc_field::rate>("moc_rate"),
+    {"moc_percent", [](text_object *obj, const construct_context &) {
+      obj->callbacks.percentage = [](text_object *) -> uint8_t {
+        uint32_t period = std::max(
+            lround(music_player_interval.get(*state) / active_update_interval()), 1l);
+        const auto moc = conky::register_cb<moc_cb>(period)->get_result_copy();
+        int totalsec = atoi(moc.totalsec.c_str());
+        int cursec = atoi(moc.cursec.c_str());
+        return totalsec == 0 ? 0 : round_to_positive_int(100.0f * cursec / totalsec);
+      };
+    }},
+    {"moc_bar", [](text_object *obj, const construct_context &ctx) {
+      scan_bar(obj, ctx.arg, 1);
+      obj->callbacks.barval = [](text_object *) -> double {
+        uint32_t period = std::max(
+            lround(music_player_interval.get(*state) / active_update_interval()), 1l);
+        const auto moc = conky::register_cb<moc_cb>(period)->get_result_copy();
+        int totalsec = atoi(moc.totalsec.c_str());
+        int cursec = atoi(moc.cursec.c_str());
+        return totalsec == 0 ? 0.0 : static_cast<double>(cursec) / totalsec;
+      };
+    }},
+)
+// clang-format on

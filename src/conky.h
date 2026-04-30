@@ -80,14 +80,6 @@ struct text_object;
 #include "data/hardware/hddtemp.h"
 #endif /* BUILD_HDDTEMP */
 
-#ifdef BUILD_MOC
-#include "data/audio/moc.h"
-#endif /* BUILD_MOC */
-
-#ifdef BUILD_MPD
-#include "data/audio/mpd.h"
-#endif /* BUILD_MPD */
-
 #ifdef BUILD_MYSQL
 #include "data/mysql.h"
 #endif /* BUILD_MYSQL */
@@ -103,9 +95,6 @@ struct text_object;
 #ifdef BUILD_APCUPSD
 #include "data/hardware/apcupsd.h"
 #endif /* BUILD_APCUPSD */
-
-/* sony support */
-#include "data/hardware/sony.h"
 
 /* A size for temporary, static buffers to use when
  * one doesn't know what to choose. Defaults to 256.  */
@@ -392,8 +381,6 @@ inline bool wm_is(conky::info::window_manager single) {
 void evaluate(const char *text, char *p, int p_max_size);
 
 void parse_conky_vars(struct text_object *, const char *, char *, int);
-
-void extract_object_args_to_sub(struct text_object *, const char *);
 
 void generate_text_internal(char *, int, struct text_object);
 

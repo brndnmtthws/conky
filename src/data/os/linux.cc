@@ -25,6 +25,7 @@
  */
 
 #include "linux.h"
+
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
@@ -33,13 +34,15 @@
 #include <sys/sysinfo.h>
 #include <sys/types.h>
 #include <clocale>
-#include "../../common.h"
-#include "../../conky.h"
-#include "../hardware/diskio.h"
-#include "../../logging.h"
-#include "../network/net_stat.h"
-#include "../proc.h"
-#include "../../content/temphelper.h"
+
+#include "common.h"
+#include "conky.h"
+#include "data/hardware/diskio.h"
+#include "logging.h"
+#include "data/network/net_stat.h"
+#include "content/temphelper.h"
+#include "parse/variables.hh"
+
 #ifndef HAVE_CLOCK_GETTIME
 #include <sys/time.h>
 #endif
@@ -718,7 +721,8 @@ void update_ipv6_net_stats() {
     }
   }
 
-  if ((file = fopen(PROCDIR "/net/if_inet6", "r")) == nullptr) { return; }
+  auto path = process_directory / "net/if_inet6";
+  if ((file = fopen(path.c_str(), "r")) == nullptr) { return; }
 
   while (fscanf(file, "%32s %*02x %02x %02x %*02x %20s\n", v6addr, &netmask,
                 &scope, devname) != EOF) {
@@ -3247,3 +3251,111 @@ bool is_conky_already_running(void) {
   closedir(dir);
   return instances > 1;
 }
+
+/// Linux override: scans /proc directly instead of requiring the full
+/// process table sort from update_top. Falls back to the process list
+/// if it's already built (e.g. $top is in the config).
+bool is_process_running(std::string_view name) {
+  if (get_process_by_name(name) != nullptr) { return true; }
+  DIR *dir = opendir("/proc");
+  if (dir == nullptr) { return false; }
+  struct dirent *entry;
+  while ((entry = readdir(dir)) != nullptr) {
+    if (!isdigit(static_cast<unsigned char>(entry->d_name[0]))) { continue; }
+    auto path = process_directory / entry->d_name / "cmdline";
+    FILE *fp = fopen(path.c_str(), "r");
+    if (fp == nullptr) { continue; }
+    char cmdline[256];
+    size_t len = fread(cmdline, 1, sizeof(cmdline) - 1, fp);
+    fclose(fp);
+    if (len == 0) { continue; }
+    cmdline[len] = '\0';
+    if (name == cmdline) { closedir(dir); return true; }
+    const char *base = strrchr(cmdline, '/');
+    if (base != nullptr && name == base + 1) { closedir(dir); return true; }
+  }
+  closedir(dir);
+  return false;
+}
+
+using namespace conky::text_object;
+
+// clang-format off
+CONKY_REGISTER_VARIABLES(
+    {"disk_protect", [](text_object *obj, const construct_context &ctx) {
+      obj->data.s = strndup(dev_name(ctx.arg).c_str(), text_buffer_size.get(*state));
+      obj->callbacks.print = &print_disk_protect_queue;
+      obj->callbacks.free = &gen_free_opaque;
+    }, nullptr, {}, obj_flags::arg},
+    {"ioscheduler", [](text_object *obj, const construct_context &ctx) {
+      obj->data.s = strndup(dev_name(ctx.arg).c_str(), text_buffer_size.get(*state));
+      obj->callbacks.print = &print_ioscheduler;
+      obj->callbacks.free = &gen_free_opaque;
+    }, nullptr, {}, obj_flags::arg},
+    {"laptop_mode", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = &print_laptop_mode;
+    }},
+    {"distribution", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = &print_distribution;
+    }},
+    {"pb_battery", [](text_object *obj, const construct_context &ctx) {
+      if (strcmp(ctx.arg, "status") == EQUAL) {
+        obj->data.i = PB_BATT_STATUS;
+      } else if (strcmp(ctx.arg, "percent") == EQUAL) {
+        obj->data.i = PB_BATT_PERCENT;
+      } else if (strcmp(ctx.arg, "time") == EQUAL) {
+        obj->data.i = PB_BATT_TIME;
+      } else {
+        LOG_ERROR("pb_battery: unrecognized argument '{}', defaulting to status", ctx.arg);
+        obj->data.i = PB_BATT_STATUS;
+      }
+      obj->callbacks.print = get_powerbook_batt_info;
+    }, nullptr, {}, obj_flags::arg},
+
+    {"cpugovernor", [](text_object *obj, const construct_context &ctx) {
+      get_cpu_count();
+      if (ctx.arg == nullptr || strlen(ctx.arg) >= 3 ||
+          strtol(&ctx.arg[0], nullptr, 10) == 0 ||
+          static_cast<unsigned int>(strtol(&ctx.arg[0], nullptr, 10)) > info.cpu_count) {
+        obj->data.i = 1;
+      } else {
+        obj->data.i = strtol(&ctx.arg[0], nullptr, 10);
+      }
+      obj->callbacks.print = &print_cpugovernor;
+    }},
+
+    {"i2c", [](text_object *obj, const construct_context &ctx) {
+      parse_i2c_sensor(obj, ctx.arg);
+      obj->callbacks.print = &print_sysfs_sensor;
+      obj->callbacks.free = &free_sysfs_sensor;
+    }, nullptr, {}, obj_flags::arg},
+    {"platform", [](text_object *obj, const construct_context &ctx) {
+      parse_platform_sensor(obj, ctx.arg);
+      obj->callbacks.print = &print_sysfs_sensor;
+      obj->callbacks.free = &free_sysfs_sensor;
+    }, nullptr, {}, obj_flags::arg},
+    {"hwmon", [](text_object *obj, const construct_context &ctx) {
+      parse_hwmon_sensor(obj, ctx.arg);
+      obj->callbacks.print = &print_sysfs_sensor;
+      obj->callbacks.free = &free_sysfs_sensor;
+    }, nullptr, {}, obj_flags::arg},
+
+    {"gw_iface", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = &print_gateway_iface;
+      obj->callbacks.free = &free_gateway_info;
+    }, &update_gateway_info},
+    {"if_gw", [](text_object *obj, const construct_context &) {
+      obj->callbacks.iftest = &gateway_exists;
+      obj->callbacks.free = &free_gateway_info;
+    }, &update_gateway_info, {}, obj_flags::cond},
+    {"gw_ip", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = &print_gateway_ip;
+      obj->callbacks.free = &free_gateway_info;
+    }, &update_gateway_info},
+    {"iface", [](text_object *obj, const construct_context &ctx) {
+      obj->data.s = strndup(ctx.arg ? ctx.arg : "", text_buffer_size.get(*state));
+      obj->callbacks.print = &print_gateway_iface2;
+      obj->callbacks.free = &gen_free_opaque;
+    }, &update_gateway_info2},
+)
+// clang-format on

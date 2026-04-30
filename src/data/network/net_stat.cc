@@ -34,11 +34,14 @@
 #include <unistd.h>
 #include <cerrno>
 #include <cstring>
-#include "../../conky.h"
-#include "../../logging.h"
+#include "conky.h"
+#include "content/specials.h"
+#include "content/text_object.h"
+#include "logging.h"
 #include "net/if.h"
-#include "../../content/specials.h"
-#include "../../content/text_object.h"
+#include "parse/variables.hh"
+
+using namespace conky::text_object;
 #if defined(__sun)
 #include <sys/sockio.h>
 #endif
@@ -203,70 +206,9 @@ void parse_net_stat_bar_arg(struct text_object *obj, const char *arg,
   }
 }
 
-void print_downspeed(struct text_object *obj, char *p,
-                     unsigned int p_max_size) {
-  auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
-
-  if (ns == nullptr) { return; }
-
-  human_readable(ns->recv_speed, p, p_max_size);
-}
-
-void print_downspeedf(struct text_object *obj, char *p,
-                      unsigned int p_max_size) {
-  auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
-
-  if (ns == nullptr) { return; }
-
-  spaced_print(p, p_max_size, "%.1f", 8, ns->recv_speed / 1024.0);
-}
-
-void print_upspeed(struct text_object *obj, char *p, unsigned int p_max_size) {
-  auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
-
-  if (ns == nullptr) { return; }
-
-  human_readable(ns->trans_speed, p, p_max_size);
-}
-
-void print_upspeedf(struct text_object *obj, char *p, unsigned int p_max_size) {
-  auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
-
-  if (ns == nullptr) { return; }
-
-  spaced_print(p, p_max_size, "%.1f", 8, ns->trans_speed / 1024.0);
-}
-
-void print_totaldown(struct text_object *obj, char *p,
-                     unsigned int p_max_size) {
-  auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
-
-  if (ns == nullptr) { return; }
-
-  human_readable(ns->recv, p, p_max_size);
-}
-
-void print_totalup(struct text_object *obj, char *p, unsigned int p_max_size) {
-  auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
-
-  if (ns == nullptr) { return; }
-
-  human_readable(ns->trans, p, p_max_size);
-}
-
-void print_addr(struct text_object *obj, char *p, unsigned int p_max_size) {
-  auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
-
-  if (ns == nullptr) { return; }
-
-  if ((ns->addr.sa_data[2] & 255) == 0 && (ns->addr.sa_data[3] & 255) == 0 &&
-      (ns->addr.sa_data[4] & 255) == 0 && (ns->addr.sa_data[5] & 255) == 0) {
-    snprintf(p, p_max_size, "%s", "No Address");
-  } else {
-    snprintf(p, p_max_size, "%u.%u.%u.%u", ns->addr.sa_data[2] & 255,
-             ns->addr.sa_data[3] & 255, ns->addr.sa_data[4] & 255,
-             ns->addr.sa_data[5] & 255);
-  }
+/// Extracts net_stat* from obj->data.opaque with null check.
+static inline net_stat *get_ns(text_object *obj) {
+  return static_cast<net_stat *>(obj->data.opaque);
 }
 
 #ifdef __linux__
@@ -359,17 +301,6 @@ void parse_net_stat_graph_arg(struct text_object *obj, const char *arg,
  * @param[in] obj struct containing a member data, which is a struct
  *                containing a void * to a net_stat struct
  **/
-double downspeedgraphval(struct text_object *obj) {
-  auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
-
-  return (ns != nullptr ? ns->recv_speed : 0);
-}
-
-double upspeedgraphval(struct text_object *obj) {
-  auto *ns = static_cast<struct net_stat *>(obj->data.opaque);
-
-  return (ns != nullptr ? ns->trans_speed : 0);
-}
 #endif /* BUILD_GUI */
 
 #ifdef BUILD_WLAN
@@ -388,90 +319,6 @@ void print_wireless_essid(struct text_object *obj, char *p,
   }
 
   snprintf(p, p_max_size, "%s", ns->essid);
-}
-void print_wireless_mode(struct text_object *obj, char *p,
-                         unsigned int p_max_size) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
-
-  if (!ns) return;
-
-  snprintf(p, p_max_size, "%s", ns->mode);
-}
-void print_wireless_channel(struct text_object *obj, char *p,
-                            unsigned int p_max_size) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
-
-  if (!ns) return;
-
-  if (ns->channel != 0) {
-    snprintf(p, p_max_size, "%i", ns->channel);
-  } else {
-    snprintf(p, p_max_size, "%s", "/");
-  }
-}
-void print_wireless_frequency(struct text_object *obj, char *p,
-                              unsigned int p_max_size) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
-
-  if (!ns) return;
-
-  if (ns->freq[0] != 0) {
-    snprintf(p, p_max_size, "%s", ns->freq);
-  } else {
-    snprintf(p, p_max_size, "/");
-  }
-}
-void print_wireless_bitrate(struct text_object *obj, char *p,
-                            unsigned int p_max_size) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
-
-  if (!ns) return;
-
-  snprintf(p, p_max_size, "%s", ns->bitrate);
-}
-void print_wireless_ap(struct text_object *obj, char *p,
-                       unsigned int p_max_size) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
-
-  if (!ns) return;
-
-  snprintf(p, p_max_size, "%s", ns->ap);
-}
-void print_wireless_link_qual(struct text_object *obj, char *p,
-                              unsigned int p_max_size) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
-
-  if (!ns) return;
-
-  spaced_print(p, p_max_size, "%d", 4, ns->link_qual);
-}
-void print_wireless_link_qual_max(struct text_object *obj, char *p,
-                                  unsigned int p_max_size) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
-
-  if (!ns) return;
-
-  spaced_print(p, p_max_size, "%d", 4, ns->link_qual_max);
-}
-void print_wireless_link_qual_perc(struct text_object *obj, char *p,
-                                   unsigned int p_max_size) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
-
-  if (!ns) return;
-
-  if (ns->link_qual_max > 0) {
-    spaced_print(p, p_max_size, "%.0f", 5,
-                 (double)ns->link_qual / ns->link_qual_max * 100);
-  } else {
-    spaced_print(p, p_max_size, "unk", 5);
-  }
-}
-double wireless_link_barval(struct text_object *obj) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
-
-  if (!ns) return 0;
-
-  return (double)ns->link_qual / ns->link_qual_max;
 }
 #endif /* BUILD_WLAN */
 
@@ -623,9 +470,173 @@ void parse_nameserver_arg(struct text_object *obj, const char *arg) {
   obj->data.l = arg != nullptr ? strtol(arg, nullptr, 10) : 0;
 }
 
-void print_nameserver(struct text_object *obj, char *p,
-                      unsigned int p_max_size) {
-  if (dns_data.nscount > obj->data.l) {
-    snprintf(p, p_max_size, "%s", dns_data.ns_list[obj->data.l]);
-  }
+/// Factory: parse_net_stat_arg + type-dispatched print from net_stat member.
+template <auto Member>
+variable_definition net_var(const char *name) {
+  return {name, [](text_object *obj, const construct_context &ctx) {
+    parse_net_stat_arg(obj, ctx.arg, ctx.free_at_crash);
+    obj->callbacks.print = [](text_object *obj, char *p, unsigned int s) {
+      auto *ns = get_ns(obj);
+      if (!ns) return;
+      using T = std::decay_t<decltype(ns->*Member)>;
+      if constexpr (std::is_array_v<T>) {
+        snprintf(p, s, "%s", ns->*Member);
+      } else if constexpr (std::is_floating_point_v<T>) {
+        human_readable(ns->*Member, p, s);
+      } else if constexpr (std::is_integral_v<T>) {
+        spaced_print(p, s, "%d", 4, ns->*Member);
+      }
+    };
+  }, &update_net_stats};
 }
+
+/// Factory: parse_net_stat_arg + human_readable for long long fields.
+template <auto Member>
+variable_definition net_hr_var(const char *name) {
+  return {name, [](text_object *obj, const construct_context &ctx) {
+    parse_net_stat_arg(obj, ctx.arg, ctx.free_at_crash);
+    obj->callbacks.print = [](text_object *obj, char *p, unsigned int s) {
+      auto *ns = get_ns(obj);
+      if (ns) { human_readable(ns->*Member, p, s); }
+    };
+  }, &update_net_stats};
+}
+
+// clang-format off
+CONKY_REGISTER_VARIABLES(
+    {"addr", [](text_object *obj, const construct_context &ctx) {
+      parse_net_stat_arg(obj, ctx.arg, ctx.free_at_crash);
+      obj->callbacks.print = [](text_object *obj, char *p, unsigned int s) {
+        auto *ns = get_ns(obj);
+        if (!ns) return;
+        if ((ns->addr.sa_data[2] & 255) == 0 && (ns->addr.sa_data[3] & 255) == 0 &&
+            (ns->addr.sa_data[4] & 255) == 0 && (ns->addr.sa_data[5] & 255) == 0) {
+          snprintf(p, s, "No Address");
+        } else {
+          snprintf(p, s, "%u.%u.%u.%u", ns->addr.sa_data[2] & 255,
+                   ns->addr.sa_data[3] & 255, ns->addr.sa_data[4] & 255,
+                   ns->addr.sa_data[5] & 255);
+        }
+      };
+    }, &update_net_stats},
+    net_hr_var<&net_stat::recv_speed>("downspeed"),
+    {"downspeedf", [](text_object *obj, const construct_context &ctx) {
+      parse_net_stat_arg(obj, ctx.arg, ctx.free_at_crash);
+      obj->callbacks.print = [](text_object *obj, char *p, unsigned int s) {
+        auto *ns = get_ns(obj);
+        if (ns) { spaced_print(p, s, "%.1f", 8, ns->recv_speed / 1024.0); }
+      };
+    }, &update_net_stats},
+    net_hr_var<&net_stat::trans_speed>("upspeed"),
+    {"upspeedf", [](text_object *obj, const construct_context &ctx) {
+      parse_net_stat_arg(obj, ctx.arg, ctx.free_at_crash);
+      obj->callbacks.print = [](text_object *obj, char *p, unsigned int s) {
+        auto *ns = get_ns(obj);
+        if (ns) { spaced_print(p, s, "%.1f", 8, ns->trans_speed / 1024.0); }
+      };
+    }, &update_net_stats},
+    net_hr_var<&net_stat::recv>("totaldown"),
+    net_hr_var<&net_stat::trans>("totalup"),
+#ifdef __linux__
+    {"addrs", [](text_object *obj, const construct_context &ctx) {
+      parse_net_stat_arg(obj, ctx.arg, ctx.free_at_crash);
+      obj->callbacks.print = &print_addrs;
+    }, &update_net_stats},
+#ifdef BUILD_IPV6
+    {"v6addrs", [](text_object *obj, const construct_context &ctx) {
+      parse_net_stat_arg(obj, ctx.arg, ctx.free_at_crash);
+      obj->callbacks.print = &print_v6addrs;
+    }, &update_net_stats},
+#endif
+#endif
+#ifdef BUILD_GUI
+    {"downspeedgraph", [](text_object *obj, const construct_context &ctx) {
+      parse_net_stat_graph_arg(obj, ctx.arg, ctx.free_at_crash);
+      obj->callbacks.graphval = [](text_object *obj) -> double {
+        auto *ns = get_ns(obj);
+        return ns ? ns->recv_speed : 0;
+      };
+    }, &update_net_stats},
+    {"upspeedgraph", [](text_object *obj, const construct_context &ctx) {
+      parse_net_stat_graph_arg(obj, ctx.arg, ctx.free_at_crash);
+      obj->callbacks.graphval = [](text_object *obj) -> double {
+        auto *ns = get_ns(obj);
+        return ns ? ns->trans_speed : 0;
+      };
+    }, &update_net_stats},
+#endif
+    {"nameserver", [](text_object *obj, const construct_context &ctx) {
+      parse_nameserver_arg(obj, ctx.arg);
+      obj->callbacks.print = [](text_object *obj, char *p, unsigned int s) {
+        if (dns_data.nscount > obj->data.l) {
+          snprintf(p, s, "%s", dns_data.ns_list[obj->data.l]);
+        }
+      };
+      obj->callbacks.free = &free_dns_data;
+    }, &update_dns_data},
+)
+
+#ifdef BUILD_WLAN
+CONKY_REGISTER_VARIABLES(
+    {"wireless_essid", [](text_object *obj, const construct_context &ctx) {
+      obj->data.opaque = get_net_stat(ctx.arg, obj, ctx.free_at_crash);
+      parse_net_stat_arg(obj, ctx.arg, ctx.free_at_crash);
+      obj->callbacks.print = &print_wireless_essid;
+    }, &update_net_stats},
+    {"wireless_channel", [](text_object *obj, const construct_context &ctx) {
+      parse_net_stat_arg(obj, ctx.arg, ctx.free_at_crash);
+      obj->callbacks.print = [](text_object *obj, char *p, unsigned int s) {
+        auto *ns = get_ns(obj);
+        if (!ns) return;
+        if (ns->channel != 0) { snprintf(p, s, "%i", ns->channel); }
+        else { snprintf(p, s, "/"); }
+      };
+    }, &update_net_stats},
+    {"wireless_freq", [](text_object *obj, const construct_context &ctx) {
+      parse_net_stat_arg(obj, ctx.arg, ctx.free_at_crash);
+      obj->callbacks.print = [](text_object *obj, char *p, unsigned int s) {
+        auto *ns = get_ns(obj);
+        if (!ns) return;
+        snprintf(p, s, "%s", ns->freq[0] ? ns->freq : "/");
+      };
+    }, &update_net_stats},
+    net_var<&net_stat::mode>("wireless_mode"),
+    net_var<&net_stat::bitrate>("wireless_bitrate"),
+    net_var<&net_stat::ap>("wireless_ap"),
+    net_var<&net_stat::link_qual>("wireless_link_qual"),
+    net_var<&net_stat::link_qual_max>("wireless_link_qual_max"),
+    {"wireless_link_qual_perc", [](text_object *obj, const construct_context &ctx) {
+      parse_net_stat_arg(obj, ctx.arg, ctx.free_at_crash);
+      obj->callbacks.print = [](text_object *obj, char *p, unsigned int s) {
+        auto *ns = get_ns(obj);
+        if (!ns) return;
+        if (ns->link_qual_max > 0) {
+          spaced_print(p, s, "%.0f", 5,
+                       static_cast<double>(ns->link_qual) / ns->link_qual_max * 100);
+        } else {
+          spaced_print(p, s, "unk", 5);
+        }
+      };
+    }, &update_net_stats},
+    {"wireless_link_bar", [](text_object *obj, const construct_context &ctx) {
+      parse_net_stat_bar_arg(obj, ctx.arg, ctx.free_at_crash);
+      obj->callbacks.barval = [](text_object *obj) -> double {
+        auto *ns = get_ns(obj);
+        if (!ns || ns->link_qual_max == 0) return 0;
+        return static_cast<double>(ns->link_qual) / ns->link_qual_max;
+      };
+    }, &update_net_stats},
+)
+#endif
+
+#if (defined(__FreeBSD__) || defined(__linux__) || defined(__DragonFly__) || \
+     (defined(__APPLE__) && defined(__MACH__)))
+CONKY_REGISTER_VARIABLES(
+    {"if_up", [](text_object *obj, const construct_context &ctx) {
+      parse_if_up_arg(obj, ctx.arg);
+      obj->callbacks.iftest = &interface_up;
+      obj->callbacks.free = &free_if_up;
+    }, nullptr, {}, obj_flags::arg | obj_flags::cond},
+)
+#endif
+// clang-format on

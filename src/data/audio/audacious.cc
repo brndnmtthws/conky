@@ -26,10 +26,13 @@
 #include <cmath>
 
 #include <mutex>
-#include "audacious.h"
-#include "../../conky.h"
-#include "../../logging.h"
-#include "../../update-cb.hh"
+
+#include "conky.h"
+#include "content/specials.h"
+#include "parse/variables.hh"
+#include "update-cb.hh"
+
+using namespace conky::text_object;
 
 #include <glib.h>
 #ifdef NEW_AUDACIOUS_FOUND
@@ -200,22 +203,10 @@ aud_result get_res() {
 }
 }  // namespace
 
-void print_audacious_status(struct text_object *, char *p,
-                            unsigned int p_max_size) {
-  const aud_result &res = get_res();
-  snprintf(p, p_max_size, "%s", as_message[res.status]);
-}
-
 void print_audacious_title(struct text_object *obj, char *p,
                            unsigned int p_max_size) {
   snprintf(p, std::min((unsigned int)obj->data.i, p_max_size), "%s",
            get_res().title.c_str());
-}
-
-void print_audacious_filename(struct text_object *obj, char *p,
-                              unsigned int p_max_size) {
-  snprintf(p, p_max_size, "%s",
-           get_res().filename.c_str());
 }
 
 double audacious_barval(struct text_object *) {
@@ -223,56 +214,46 @@ double audacious_barval(struct text_object *) {
   return (double)res.position / res.length;
 }
 
-void print_audacious_length(struct text_object *, char *p,
-                            unsigned int p_max_size) {
-  const aud_result &res = get_res();
-  int sec = res.length / 1000;
-  snprintf(p, p_max_size, "%d:%.2d", sec / 60, sec % 60);
-}
-
-void print_audacious_length_seconds(struct text_object *, char *p,
-                                    unsigned int p_max_size) {
-  snprintf(p, p_max_size, "%d", get_res().length);
-}
-
-void print_audacious_position(struct text_object *, char *p,
-                              unsigned int p_max_size) {
-  const aud_result &res = get_res();
-  int sec = res.position / 1000;
-  snprintf(p, p_max_size, "%d:%.2d", sec / 60, sec % 60);
-}
-
-void print_audacious_position_seconds(struct text_object *, char *p,
-                                      unsigned int p_max_size) {
-  snprintf(p, p_max_size, "%d", get_res().position);
-}
-
-void print_audacious_bitrate(struct text_object *, char *p,
-                             unsigned int p_max_size) {
-  snprintf(p, p_max_size, "%d", get_res().bitrate);
-}
-
-void print_audacious_frequency(struct text_object *, char *p,
-                               unsigned int p_max_size) {
-  snprintf(p, p_max_size, "%d", get_res().frequency);
-}
-
-void print_audacious_channels(struct text_object *, char *p,
-                              unsigned int p_max_size) {
-  snprintf(p, p_max_size, "%d", get_res().channels);
-}
-
-void print_audacious_playlist_length(struct text_object *, char *p,
-                                     unsigned int p_max_size) {
-  snprintf(p, p_max_size, "%d", get_res().playlist_length);
-}
-
-void print_audacious_playlist_position(struct text_object *, char *p,
-                                       unsigned int p_max_size) {
-  snprintf(p, p_max_size, "%d", get_res().playlist_position + 1);
-}
-
-void print_audacious_main_volume(struct text_object *, char *p,
-                                 unsigned int p_max_size) {
-  snprintf(p, p_max_size, "%d", get_res().main_volume);
-}
+// clang-format off
+CONKY_REGISTER_VARIABLES(
+    print_variable("audacious_status", [] { return as_message[get_res().status]; }),
+    {"audacious_title", [](text_object *obj, const construct_context &ctx) {
+      if (ctx.arg) {
+        int i;
+        sscanf(ctx.arg, "%d", &i);
+        if (i > 0) { obj->data.i = i + 1; }
+        else { *ctx.status = create_status::invalid_argument; return; }
+      }
+      obj->callbacks.print = &print_audacious_title;
+    }, nullptr, {}, obj_flags::arg},
+    print_variable("audacious_filename", [] { return std::string_view(get_res().filename); }),
+    {"audacious_length", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = [](text_object *, char *p, unsigned int s) {
+        int sec = get_res().length / 1000;
+        snprintf(p, s, "%d:%.2d", sec / 60, sec % 60);
+      };
+    }},
+    print_variable("audacious_length_seconds", [] { return get_res().length; }),
+    {"audacious_position", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = [](text_object *, char *p, unsigned int s) {
+        int sec = get_res().position / 1000;
+        snprintf(p, s, "%d:%.2d", sec / 60, sec % 60);
+      };
+    }},
+    print_variable("audacious_position_seconds", [] { return get_res().position; }),
+    print_variable("audacious_bitrate", [] { return get_res().bitrate; }),
+    print_variable("audacious_frequency", [] { return get_res().frequency; }),
+    print_variable("audacious_channels", [] { return get_res().channels; }),
+    print_variable("audacious_playlist_length", [] { return get_res().playlist_length; }),
+    {"audacious_playlist_position", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = [](text_object *, char *p, unsigned int s) {
+        snprintf(p, s, "%d", get_res().playlist_position + 1);
+      };
+    }},
+    print_variable("audacious_main_volume", [] { return get_res().main_volume; }),
+    {"audacious_bar", [](text_object *obj, const construct_context &ctx) {
+      scan_bar(obj, ctx.arg, 1);
+      obj->callbacks.barval = &audacious_barval;
+    }},
+)
+// clang-format on

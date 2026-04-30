@@ -28,16 +28,19 @@
  *
  */
 
-#include "ibm.h"
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "config.h"
 #include "../../conky.h"
 #include "../../logging.h"
 #include "../../content/temphelper.h"
+#include "parse/variables.hh"
+
+using namespace conky::text_object;
 
 static int ibm_acpi_temps[8];
 
@@ -299,3 +302,24 @@ void print_ibm_temps(struct text_object *obj, char *p,
                      unsigned int p_max_size) {
   temp_print(p, p_max_size, ibm_acpi_temps[obj->data.l], TEMP_CELSIUS, 1);
 }
+
+// clang-format off
+CONKY_REGISTER_VARIABLES(
+    {"ibm_fan", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = &get_ibm_acpi_fan;
+    }},
+    {"ibm_temps", [](text_object *obj, const construct_context &ctx) {
+      parse_ibm_temps_arg(obj, ctx.arg);
+      obj->callbacks.print = &print_ibm_temps;
+    }, &get_ibm_acpi_temps, {}, obj_flags::arg},
+    {"ibm_volume", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = &get_ibm_acpi_volume;
+    }},
+    {"ibm_brightness", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = &get_ibm_acpi_brightness;
+    }},
+    {"ibm_thinklight", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = &get_ibm_acpi_thinklight;
+    }},
+)
+// clang-format on

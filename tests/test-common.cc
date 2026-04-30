@@ -208,15 +208,15 @@ TEST_CASE("mem_percentage and mem_barval return correct values") {
   SECTION("for memmax == 0") {
     info.memmax = 0;
 
-    REQUIRE(mem_percentage(nullptr) == 0);
-    REQUIRE(mem_barval(nullptr) == 0);
+    REQUIRE(mem_percentage() == 0);
+    REQUIRE(mem_barval() == 0);
   }
 
   SECTION("for memmax > 0") {
     info.memmax = 24;
 
-    REQUIRE(mem_percentage(nullptr) == 25);
-    REQUIRE_THAT(mem_barval(nullptr), WithinRel(0.25, 0.005));
+    REQUIRE(mem_percentage() == 25);
+    REQUIRE_THAT(mem_barval(), WithinRel(0.25, 0.005));
   }
 }
 
@@ -225,12 +225,12 @@ TEST_CASE("mem_with_buffers_barval returns correct value") {
 
   SECTION("for memmax == 0") {
     info.memmax = 0;
-    REQUIRE(mem_with_buffers_barval(nullptr) == 0);
+    REQUIRE(mem_with_buffers_barval() == 0);
   }
 
   SECTION("for memmax > 0") {
     info.memmax = 24;
-    REQUIRE_THAT(mem_with_buffers_barval(nullptr), WithinRel(0.25, 0.005));
+    REQUIRE_THAT(mem_with_buffers_barval(), WithinRel(0.25, 0.005));
   }
 }
 
@@ -240,14 +240,14 @@ TEST_CASE("swap_percentage and swap_barval return correct values") {
   SECTION("for swapmax == 0") {
     info.swapmax = 0;
 
-    REQUIRE(swap_percentage(nullptr) == 0);
-    REQUIRE(swap_barval(nullptr) == 0);
+    REQUIRE(swap_percentage() == 0);
+    REQUIRE(swap_barval() == 0);
   }
 
   SECTION("for swapmax > 0") {
     info.swapmax = 24;
 
-    REQUIRE(swap_percentage(nullptr) == 25);
-    REQUIRE_THAT(swap_barval(nullptr), WithinRel(0.25, 0.005));
+    REQUIRE(swap_percentage() == 25);
+    REQUIRE_THAT(swap_barval(), WithinRel(0.25, 0.005));
   }
 }

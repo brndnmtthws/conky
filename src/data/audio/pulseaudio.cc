@@ -27,18 +27,63 @@
  *
  */
 
-#include "pulseaudio.h"
 #include <math.h>
+#include <pulse/pulseaudio.h>
 #include <unistd.h>
-#include "../../common.h"
-#include "config.h"
-#include "../../conky.h"
-#include "../../core.h"
-#include "../../logging.h"
-#include "../../content/specials.h"
-#include "../../content/text_object.h"
+#include <string>
 
-struct pulseaudio_default_results get_result_copy();
+#include "common.h"
+#include "conky.h"
+#include "content/specials.h"
+#include "content/text_object.h"
+#include "logging.h"
+#include "parse/variables.hh"
+
+using namespace conky::text_object;
+
+struct pulseaudio_default_results {
+  std::string sink_name;
+  std::string sink_description;
+  std::string sink_active_port_name;
+  std::string sink_active_port_description;
+  uint32_t sink_card;
+  int sink_mute;
+  uint32_t sink_index;
+  unsigned int sink_volume;
+
+  std::string source_name;
+  pa_source_state source_state;
+  int source_mute;
+
+  std::string card_active_profile_description;
+  std::string card_name;
+  uint32_t card_index;
+};
+
+enum pulseaudio_state {
+  PULSE_CONTEXT_INITIALIZING,
+  PULSE_CONTEXT_READY,
+  PULSE_CONTEXT_FINISHED
+};
+
+class pulseaudio_c {
+ public:
+  pa_threaded_mainloop *mainloop;
+  pa_mainloop_api *mainloop_api;
+  pa_context *context;
+  volatile enum pulseaudio_state cstate;
+  int ninits;
+  struct pulseaudio_default_results result;
+  pulseaudio_c()
+      : mainloop(nullptr),
+        mainloop_api(nullptr),
+        context(nullptr),
+        cstate(PULSE_CONTEXT_INITIALIZING),
+        ninits(0),
+        result({std::string(), std::string(), std::string(), std::string(), 0,
+                0, 0, 0, std::string(), PA_SOURCE_SUSPENDED, 0, std::string(),
+                std::string(), 0}){};
+};
 
 const struct pulseaudio_default_results pulseaudio_result0 = {
     std::string(),
@@ -343,50 +388,59 @@ struct pulseaudio_default_results get_pulseaudio(struct text_object *obj) {
   return pulseaudio_result0;
 }
 
-uint8_t puau_vol(struct text_object *obj) {
-  return get_pulseaudio(obj).sink_volume;
+template <auto Member>
+variable_definition puau_print_var(const char *name) {
+  return {name, [](text_object *obj, const construct_context &) {
+    init_pulseaudio(obj);
+    obj->callbacks.print = [](text_object *obj, char *p, unsigned int s) {
+      snprintf(p, s, "%s", (get_pulseaudio(obj).*Member).c_str());
+    };
+    obj->callbacks.free = &free_pulseaudio;
+  }};
 }
 
-int puau_muted(struct text_object *obj) {
-  return get_pulseaudio(obj).sink_mute;
-}
-
-int puau_source_running(struct text_object *obj) {
-  return get_pulseaudio(obj).source_state == PA_SOURCE_RUNNING;
-}
-
-int puau_source_muted(struct text_object *obj) {
-  return get_pulseaudio(obj).source_mute;
-}
-
-void print_puau_sink_description(struct text_object *obj, char *p,
-                                 unsigned int p_max_size) {
-  snprintf(p, p_max_size, "%s", get_pulseaudio(obj).sink_description.c_str());
-}
-
-void print_puau_sink_active_port_name(struct text_object *obj, char *p,
-                                      unsigned int p_max_size) {
-  snprintf(p, p_max_size, "%s",
-           get_pulseaudio(obj).sink_active_port_name.c_str());
-}
-
-void print_puau_sink_active_port_description(struct text_object *obj, char *p,
-                                             unsigned int p_max_size) {
-  snprintf(p, p_max_size, "%s",
-           get_pulseaudio(obj).sink_active_port_description.c_str());
-}
-
-void print_puau_card_active_profile(struct text_object *obj, char *p,
-                                    unsigned int p_max_size) {
-  snprintf(p, p_max_size, "%s",
-           get_pulseaudio(obj).card_active_profile_description.c_str());
-}
-
-void print_puau_card_name(struct text_object *obj, char *p,
-                          unsigned int p_max_size) {
-  snprintf(p, p_max_size, "%s", get_pulseaudio(obj).card_name.c_str());
-}
-
-double puau_volumebarval(struct text_object *obj) {
-  return get_pulseaudio(obj).sink_volume / 100.0f;
-}
+// clang-format off
+CONKY_REGISTER_VARIABLES(
+    puau_print_var<&pulseaudio_default_results::sink_description>("pa_sink_description"),
+    puau_print_var<&pulseaudio_default_results::sink_active_port_name>("pa_sink_active_port_name"),
+    puau_print_var<&pulseaudio_default_results::sink_active_port_description>("pa_sink_active_port_description"),
+    puau_print_var<&pulseaudio_default_results::card_active_profile_description>("pa_card_active_profile"),
+    puau_print_var<&pulseaudio_default_results::card_name>("pa_card_name"),
+    {"pa_sink_volume", [](text_object *obj, const construct_context &) {
+      init_pulseaudio(obj);
+      obj->callbacks.percentage = [](text_object *obj) -> uint8_t {
+        return get_pulseaudio(obj).sink_volume;
+      };
+      obj->callbacks.free = &free_pulseaudio;
+    }},
+    {"pa_sink_volumebar", [](text_object *obj, const construct_context &ctx) {
+      scan_bar(obj, ctx.arg, 1);
+      init_pulseaudio(obj);
+      obj->callbacks.barval = [](text_object *obj) -> double {
+        return get_pulseaudio(obj).sink_volume / 100.0;
+      };
+      obj->callbacks.free = &free_pulseaudio;
+    }},
+    {"if_pa_sink_muted", [](text_object *obj, const construct_context &) {
+      init_pulseaudio(obj);
+      obj->callbacks.iftest = [](text_object *obj) -> int {
+        return get_pulseaudio(obj).sink_mute;
+      };
+      obj->callbacks.free = &free_pulseaudio;
+    }, nullptr, {}, obj_flags::cond},
+    {"if_pa_source_running", [](text_object *obj, const construct_context &) {
+      init_pulseaudio(obj);
+      obj->callbacks.iftest = [](text_object *obj) -> int {
+        return get_pulseaudio(obj).source_state == PA_SOURCE_RUNNING;
+      };
+      obj->callbacks.free = &free_pulseaudio;
+    }, nullptr, {}, obj_flags::cond},
+    {"if_pa_source_muted", [](text_object *obj, const construct_context &) {
+      init_pulseaudio(obj);
+      obj->callbacks.iftest = [](text_object *obj) -> int {
+        return get_pulseaudio(obj).source_mute;
+      };
+      obj->callbacks.free = &free_pulseaudio;
+    }, nullptr, {}, obj_flags::cond},
+)
+// clang-format on

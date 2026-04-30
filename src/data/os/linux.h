@@ -25,40 +25,19 @@
 #ifndef _LINUX_H
 #define _LINUX_H
 
-#include "../../common.h"
+#include <filesystem>
 
-void print_disk_protect_queue(struct text_object *, char *, unsigned int);
+#include "config.h"
 
-void print_ioscheduler(struct text_object *, char *, unsigned int);
-void print_laptop_mode(struct text_object *, char *, unsigned int);
-void print_cpugovernor(struct text_object *, char *, unsigned int);
-
-int update_gateway_info(void);
-int update_gateway_info2(void);
-void free_gateway_info(struct text_object *obj);
-int gateway_exists(struct text_object *);
-void print_gateway_iface(struct text_object *, char *, unsigned int);
-void print_gateway_iface2(struct text_object *, char *, unsigned int);
-void print_gateway_ip(struct text_object *, char *, unsigned int);
-void print_battery_status(struct text_object *, char *, unsigned int);
-
-enum { PB_BATT_STATUS, PB_BATT_PERCENT, PB_BATT_TIME };
-void get_powerbook_batt_info(struct text_object *, char *, unsigned int);
-
-void parse_i2c_sensor(struct text_object *, const char *);
-void parse_hwmon_sensor(struct text_object *, const char *);
-void parse_platform_sensor(struct text_object *, const char *);
-void print_sysfs_sensor(struct text_object *, char *, unsigned int);
-void free_sysfs_sensor(struct text_object *);
-
-int get_entropy_avail(unsigned int *);
-int get_entropy_poolsize(unsigned int *);
-
-int update_stat(void);
-
-void print_distribution(struct text_object *, char *, unsigned int);
+const std::filesystem::path process_directory{"/proc"};
 
 bool is_conky_already_running(void);
+
+int update_gateway_info(void);
+
+enum { PB_BATT_STATUS, PB_BATT_PERCENT, PB_BATT_TIME };
+
+int update_stat(void);
 
 extern char e_iface[64];
 extern char interfaces_arr[MAX_NET_INTERFACES][64];

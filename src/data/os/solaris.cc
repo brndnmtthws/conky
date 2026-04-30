@@ -50,7 +50,6 @@
 #include <assert.h>
 
 #include "../network/net_stat.h"
-#include "solaris.h"
 
 static kstat_ctl_t *kstat;
 static time_t kstat_updated;

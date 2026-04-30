@@ -85,9 +85,14 @@ jobs:
       - name: Install gcc
         if: matrix.compiler == 'gcc'
         run: |
-          sudo apt-get install -yqq --no-install-recommends \
-            gcc \
-            g++
+          # GCC 13+ required for C++17 NTTP with internal linkage (GCC bug 96645)
+          if [[ "${{ matrix.os }}" == "ubuntu-22.04" ]]; then
+            sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+            sudo apt-get update -qq
+            sudo apt-get install -yqq --no-install-recommends gcc-13 g++-13
+          else
+            sudo apt-get install -yqq --no-install-recommends gcc g++
+          fi
       - name: Checkout
         uses: actions/checkout@v5
       - name: Install sccache
@@ -109,8 +114,13 @@ jobs:
           [[ "${{ matrix.compiler }}" == "clang"* ]] && CC=clang
           [[ "${{ matrix.compiler }}" == "clang"* ]] && CXX=clang++
 
-          [[ "${{ matrix.compiler }}" == "gcc"* ]] && CC=gcc
-          [[ "${{ matrix.compiler }}" == "gcc"* ]] && CXX=g++
+          if [[ "${{ matrix.compiler }}" == "gcc"* ]]; then
+            if [[ "${{ matrix.os }}" == "ubuntu-22.04" ]]; then
+              CC=gcc-13; CXX=g++-13
+            else
+              CC=gcc; CXX=g++
+            fi
+          fi
 
 
           # Enable librsvg by default, disable for older versions of Ubuntu

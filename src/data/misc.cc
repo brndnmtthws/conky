@@ -28,17 +28,16 @@
  *
  */
 
-#include <ctype.h>
-#include <stdio.h>
-#include <string.h>
+#include <cctype>
+#include <cstdio>
+#include <cstring>
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include "../conky.h"
-#include "../core.h"
-#include "../logging.h"
-#include "../content/specials.h"
-#include "../content/text_object.h"
+
+#include "conky.h"
+#include "content/text_object.h"
+#include "parse/variables.hh"
+
+using namespace conky::text_object;
 
 static inline void read_file(const char *data, char *buf, const int size) {
   FILE *fp;
@@ -130,8 +129,42 @@ void strip_trailing_whitespace(struct text_object *obj, char *p,
   }
 }
 
-long long int apply_base_multiplier(const char *s, long long int num) {
-  long long int base = 1024LL;
-  if (*s && (0 == (strcmp(s, "si")))) { base = 1000LL; }
-  return (num * base);
-}
+// clang-format off
+CONKY_REGISTER_VARIABLES(
+    {"cat", [](text_object *obj, const construct_context &ctx) {
+      obj->data.s = strndup(ctx.arg ? ctx.arg : "", text_buffer_size.get(*state));
+      obj->callbacks.print = &print_cat;
+      obj->callbacks.free = &gen_free_opaque;
+    }},
+    {"catp", [](text_object *obj, const construct_context &ctx) {
+      obj->data.s = strndup(ctx.arg ? ctx.arg : "", text_buffer_size.get(*state));
+      obj->callbacks.print = &print_catp;
+      obj->callbacks.free = &gen_free_opaque;
+    }},
+    {"startcase", [](text_object *obj, const construct_context &ctx) {
+      obj->data.s = strndup(ctx.arg ? ctx.arg : "", text_buffer_size.get(*state));
+      obj->callbacks.print = &print_startcase;
+      obj->callbacks.free = &gen_free_opaque;
+    }},
+    {"start_case", [](text_object *obj, const construct_context &ctx) {
+      obj->data.s = strndup(ctx.arg ? ctx.arg : "", text_buffer_size.get(*state));
+      obj->callbacks.print = &print_startcase;
+      obj->callbacks.free = &gen_free_opaque;
+    }},
+    {"lowercase", [](text_object *obj, const construct_context &ctx) {
+      obj->data.s = strndup(ctx.arg ? ctx.arg : "", text_buffer_size.get(*state));
+      obj->callbacks.print = &print_lowercase;
+      obj->callbacks.free = &gen_free_opaque;
+    }},
+    {"uppercase", [](text_object *obj, const construct_context &ctx) {
+      obj->data.s = strndup(ctx.arg ? ctx.arg : "", text_buffer_size.get(*state));
+      obj->callbacks.print = &print_uppercase;
+      obj->callbacks.free = &gen_free_opaque;
+    }},
+    {"rstrip", [](text_object *obj, const construct_context &ctx) {
+      obj->data.s = strndup(ctx.arg ? ctx.arg : "", text_buffer_size.get(*state));
+      obj->callbacks.print = &strip_trailing_whitespace;
+      obj->callbacks.free = &gen_free_opaque;
+    }},
+)
+// clang-format on

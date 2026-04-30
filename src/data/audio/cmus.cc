@@ -22,7 +22,9 @@
 
 #include "../../conky.h"
 #include "../../logging.h"
+#include "content/specials.h"
 #include "../../content/text_object.h"
+#include "parse/variables.hh"
 
 #include <math.h>
 #include <stdio.h>
@@ -140,79 +142,96 @@ void cmus_cb::work() {
 }
 }  // namespace
 
-#define CMUS_PRINT_GENERATOR(type, alt)                                       \
-  void print_cmus_##type(struct text_object *obj, char *p,                    \
-                         unsigned int p_max_size) {                           \
-    (void)obj;                                                                \
-    uint32_t period = std::max(                                               \
-        lround(music_player_interval.get(*state) / active_update_interval()), \
-        1l);                                                                  \
-    const cmus_result &cmus =                                                 \
-        conky::register_cb<cmus_cb>(period)->get_result_copy();               \
-    snprintf(p, p_max_size, "%s",                                             \
-             (cmus.type.length() ? cmus.type.c_str() : alt));                 \
-  }
+enum class cmus_field { state, file, title, artist, album, random, repeat, aaa, track, genre, date };
 
-CMUS_PRINT_GENERATOR(state, "Off")
-CMUS_PRINT_GENERATOR(file, "no file")
-CMUS_PRINT_GENERATOR(title, "no title")
-CMUS_PRINT_GENERATOR(artist, "no artist")
-CMUS_PRINT_GENERATOR(album, "no album")
-CMUS_PRINT_GENERATOR(random, "")
-CMUS_PRINT_GENERATOR(repeat, "")
-CMUS_PRINT_GENERATOR(aaa, "all")
-CMUS_PRINT_GENERATOR(track, "no track")
-CMUS_PRINT_GENERATOR(genre, "")
-CMUS_PRINT_GENERATOR(date, "")
+struct cmus_field_info {
+  std::string cmus_result::*member;
+  const char *fallback;
+};
 
-uint8_t cmus_percent(struct text_object *obj) {
-  (void)obj;
-  uint32_t period = std::max(
-      lround(music_player_interval.get(*state) / active_update_interval()), 1l);
-  const cmus_result &cmus =
-      conky::register_cb<cmus_cb>(period)->get_result_copy();
-  return static_cast<uint8_t>(round(cmus.progress * 100.0f));
+static constexpr cmus_field_info cmus_fields[] = {
+    {&cmus_result::state, "Off"},
+    {&cmus_result::file, "no file"},
+    {&cmus_result::title, "no title"},
+    {&cmus_result::artist, "no artist"},
+    {&cmus_result::album, "no album"},
+    {&cmus_result::random, ""},
+    {&cmus_result::repeat, ""},
+    {&cmus_result::aaa, "all"},
+    {&cmus_result::track, "no track"},
+    {&cmus_result::genre, ""},
+    {&cmus_result::date, ""},
+};
+
+using namespace conky::text_object;
+
+template <cmus_field F>
+variable_definition cmus_var(const char *name) {
+  return {name, [](text_object *obj, const construct_context &) {
+    obj->callbacks.print = [](text_object *, char *p, unsigned int s) {
+      constexpr auto &info = cmus_fields[static_cast<int>(F)];
+      uint32_t period = std::max(
+          lround(music_player_interval.get(*state) / active_update_interval()), 1l);
+      const auto cmus = conky::register_cb<cmus_cb>(period)->get_result_copy();
+      const auto &val = cmus.*info.member;
+      snprintf(p, s, "%s", val.length() ? val.c_str() : info.fallback);
+    };
+  }};
 }
 
-double cmus_progress(struct text_object *obj) {
-  (void)obj;
-  uint32_t period = std::max(
-      lround(music_player_interval.get(*state) / active_update_interval()), 1l);
-  const cmus_result &cmus =
-      conky::register_cb<cmus_cb>(period)->get_result_copy();
-  return static_cast<double>(cmus.progress);
-}
-
-void print_cmus_totaltime(struct text_object *obj, char *p,
-                          unsigned int p_max_size) {
-  (void)obj;
-  uint32_t period = std::max(
-      lround(music_player_interval.get(*state) / active_update_interval()), 1l);
-  const cmus_result &cmus =
-      conky::register_cb<cmus_cb>(period)->get_result_copy();
-  format_seconds_short(p, p_max_size,
-                       strtol(cmus.totaltime.c_str(), nullptr, 10));
-}
-
-void print_cmus_timeleft(struct text_object *obj, char *p,
-                         unsigned int p_max_size) {
-  (void)obj;
-  uint32_t period = std::max(
-      lround(music_player_interval.get(*state) / active_update_interval()), 1l);
-  const cmus_result &cmus =
-      conky::register_cb<cmus_cb>(period)->get_result_copy();
-  format_seconds_short(p, p_max_size, static_cast<long>(cmus.timeleft));
-}
-
-void print_cmus_curtime(struct text_object *obj, char *p,
-                        unsigned int p_max_size) {
-  (void)obj;
-  uint32_t period = std::max(
-      lround(music_player_interval.get(*state) / active_update_interval()), 1l);
-  const cmus_result &cmus =
-      conky::register_cb<cmus_cb>(period)->get_result_copy();
-  format_seconds_short(p, p_max_size,
-                       strtol(cmus.curtime.c_str(), nullptr, 10));
-}
-
-#undef CMUS_PRINT_GENERATOR
+// clang-format off
+CONKY_REGISTER_VARIABLES(
+    cmus_var<cmus_field::state>("cmus_state"),
+    cmus_var<cmus_field::file>("cmus_file"),
+    cmus_var<cmus_field::title>("cmus_title"),
+    cmus_var<cmus_field::artist>("cmus_artist"),
+    cmus_var<cmus_field::album>("cmus_album"),
+    {"cmus_totaltime", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = [](text_object *, char *p, unsigned int s) {
+        uint32_t period = std::max(
+            lround(music_player_interval.get(*state) / active_update_interval()), 1l);
+        const auto cmus = conky::register_cb<cmus_cb>(period)->get_result_copy();
+        format_seconds_short(p, s, strtol(cmus.totaltime.c_str(), nullptr, 10));
+      };
+    }},
+    {"cmus_timeleft", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = [](text_object *, char *p, unsigned int s) {
+        uint32_t period = std::max(
+            lround(music_player_interval.get(*state) / active_update_interval()), 1l);
+        const auto cmus = conky::register_cb<cmus_cb>(period)->get_result_copy();
+        format_seconds_short(p, s, static_cast<long>(cmus.timeleft));
+      };
+    }},
+    {"cmus_curtime", [](text_object *obj, const construct_context &) {
+      obj->callbacks.print = [](text_object *, char *p, unsigned int s) {
+        uint32_t period = std::max(
+            lround(music_player_interval.get(*state) / active_update_interval()), 1l);
+        const auto cmus = conky::register_cb<cmus_cb>(period)->get_result_copy();
+        format_seconds_short(p, s, strtol(cmus.curtime.c_str(), nullptr, 10));
+      };
+    }},
+    cmus_var<cmus_field::random>("cmus_random"),
+    cmus_var<cmus_field::repeat>("cmus_repeat"),
+    cmus_var<cmus_field::aaa>("cmus_aaa"),
+    cmus_var<cmus_field::track>("cmus_track"),
+    cmus_var<cmus_field::genre>("cmus_genre"),
+    cmus_var<cmus_field::date>("cmus_date"),
+    {"cmus_progress", [](text_object *obj, const construct_context &ctx) {
+      scan_bar(obj, ctx.arg, 1);
+      obj->callbacks.barval = [](text_object *) -> double {
+        uint32_t period = std::max(
+            lround(music_player_interval.get(*state) / active_update_interval()), 1l);
+        const auto cmus = conky::register_cb<cmus_cb>(period)->get_result_copy();
+        return static_cast<double>(cmus.progress);
+      };
+    }},
+    {"cmus_percent", [](text_object *obj, const construct_context &) {
+      obj->callbacks.percentage = [](text_object *) -> uint8_t {
+        uint32_t period = std::max(
+            lround(music_player_interval.get(*state) / active_update_interval()), 1l);
+        const auto cmus = conky::register_cb<cmus_cb>(period)->get_result_copy();
+        return static_cast<uint8_t>(round(cmus.progress * 100.0f));
+      };
+    }},
+)
+// clang-format on
