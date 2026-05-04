@@ -11,14 +11,3 @@ updates:
       actions:
         patterns:
           - '*'
-
-  # Maintain dependencies for web docs/npm
-  - package-ecosystem: 'npm'
-    directory: '/web'
-    schedule:
-      interval: 'weekly'
-    groups:
-      web-deps:
-        patterns:
-          # Group all the web deps together to keep the PR spam down
-          - '*'
