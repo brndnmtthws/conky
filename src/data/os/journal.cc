@@ -77,10 +77,8 @@ void init_journal(const char *type, const char *arg, struct text_object *obj,
     if (args > 1) {
       if (strcmp(tmp.get(), "system") == 0) {
         j->flags |= SD_JOURNAL_SYSTEM;
-#ifdef SD_JOURNAL_CURRENT_USER  // not present in older version of systemd
       } else if (strcmp(tmp.get(), "user") == 0) {
         j->flags |= SD_JOURNAL_CURRENT_USER;
-#endif /* SD_JOURNAL_CURRENT_USER */
       } else {
         free_journal(obj);
         free(obj);
@@ -144,7 +142,7 @@ bool read_log(size_t *read, size_t *length, time_t *time, uint64_t *timestamp,
     *read = p_max_size - 1;
     return false;
   }
-  p[*read++] = ' ';
+  p[(*read)++] = ' ';
 
   if (print_field(jh, "_HOSTNAME", ' ', read, p, p_max_size) < 0) return false;
 
@@ -157,13 +155,13 @@ bool read_log(size_t *read, size_t *length, time_t *time, uint64_t *timestamp,
     *read = p_max_size - 1;
     return false;
   }
-  p[*read++] = ':';
+  p[(*read)++] = ':';
 
   if (p_max_size < *read) {
     *read = p_max_size - 1;
     return false;
   }
-  p[*read++] = ' ';
+  p[(*read)++] = ' ';
 
   if (print_field(jh, "MESSAGE", '\n', read, p, p_max_size) < 0) return false;
   return true;
