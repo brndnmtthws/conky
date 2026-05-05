@@ -27,13 +27,12 @@
  *
  */
 
-#include <ctype.h>
 #include <string.h>
 #include <systemd/sd-journal.h>
 #include <time.h>
 #include <unistd.h>
 #include <memory>
-#include "../../common.h"
+#include "../../buffer.hh"
 #include "config.h"
 #include "../../conky.h"
 #include "../../logging.h"
@@ -102,7 +101,7 @@ void init_journal(const char *type, const char *arg, struct text_object *obj,
 }
 
 static int print_field(sd_journal *jh, const char *field, char spacer,
-                       size_t *read, char *p, unsigned int p_max_size) {
+                       conky::buffer_writer &out) {
   const void *get;
   size_t length;
   size_t fieldlen = strlen(field) + 1;
@@ -110,90 +109,64 @@ static int print_field(sd_journal *jh, const char *field, char spacer,
   int ret = sd_journal_get_data(jh, field, &get, &length);
   if (ret == -ENOENT) goto out;
 
-  if (ret < 0 || length + *read > p_max_size) return -1;
+  if (ret < 0 || length - fieldlen > out.remaining()) return -1;
 
-  memcpy(p + *read, (const char *)get + fieldlen, length - fieldlen);
-  *read += length - fieldlen;
+  out.append((const char *)get + fieldlen, length - fieldlen);
 
 out:
-  if (spacer) {
-    if (p_max_size < *read) {
-      *read = p_max_size - 1;
-    } else {
-      p[(*read)++] = spacer;
-    }
-  }
+  if (spacer && !out.append(spacer)) return -1;
   return length ? length - fieldlen : 0;
 }
 
-bool read_log(size_t *read, size_t *length, time_t *time, uint64_t *timestamp,
-              sd_journal *jh, char *p, unsigned int p_max_size) {
+bool read_log(sd_journal *jh, conky::buffer_writer &out) {
   struct tm tm;
-  if (sd_journal_get_realtime_usec(jh, timestamp) < 0) return false;
-  *time = *timestamp / 1000000;
-  localtime_r(time, &tm);
+  uint64_t timestamp;
+  time_t time;
+  size_t length;
 
-  if ((*length =
-           strftime(p + *read, p_max_size - *read, "%b %d %H:%M:%S", &tm)) <= 0)
+  if (sd_journal_get_realtime_usec(jh, &timestamp) < 0) return false;
+  time = timestamp / 1000000;
+  localtime_r(&time, &tm);
+
+  if ((length = strftime(out.cursor(), out.remaining(), "%b %d %H:%M:%S",
+                         &tm)) <= 0)
     return false;
-  *read += *length;
+  out.advance(length);
 
-  if (p_max_size < *read) {
-    *read = p_max_size - 1;
-    return false;
-  }
-  p[(*read)++] = ' ';
+  if (!out.append(' ')) return false;
 
-  if (print_field(jh, "_HOSTNAME", ' ', read, p, p_max_size) < 0) return false;
-
-  if (print_field(jh, "SYSLOG_IDENTIFIER", '[', read, p, p_max_size) < 0)
-    return false;
-
-  if (print_field(jh, "_PID", ']', read, p, p_max_size) < 0) return false;
-
-  if (p_max_size < *read) {
-    *read = p_max_size - 1;
-    return false;
-  }
-  p[(*read)++] = ':';
-
-  if (p_max_size < *read) {
-    *read = p_max_size - 1;
-    return false;
-  }
-  p[(*read)++] = ' ';
-
-  if (print_field(jh, "MESSAGE", '\n', read, p, p_max_size) < 0) return false;
+  if (print_field(jh, "_HOSTNAME", ' ', out) < 0) return false;
+  if (print_field(jh, "SYSLOG_IDENTIFIER", '[', out) < 0) return false;
+  if (print_field(jh, "_PID", ']', out) < 0) return false;
+  if (!out.append(':')) return false;
+  if (!out.append(' ')) return false;
+  if (print_field(jh, "MESSAGE", '\n', out) < 0) return false;
   return true;
 }
 
 void print_journal(struct text_object *obj, char *p, unsigned int p_max_size) {
   journal *j = (journal *)obj->data.opaque;
   sd_journal *jh = nullptr;
-  size_t read = 0;
-  size_t length;
-  time_t time;
-  uint64_t timestamp;
+  conky::buffer_writer out(p_max_size, p);
 
   if (sd_journal_open(&jh, j->flags) != 0) {
     LOG_ERROR("unable to open journal");
-    goto out;
+    goto done;
   }
 
   if (sd_journal_seek_tail(jh) < 0) {
     LOG_ERROR("unable to seek to end of journal");
-    goto out;
+    goto done;
   }
   if (sd_journal_previous_skip(jh, j->wantedlines) < 0) {
     LOG_ERROR("unable to seek back {} lines", j->wantedlines);
-    goto out;
+    goto done;
   }
 
-  while (read_log(&read, &length, &time, &timestamp, jh, p, p_max_size) &&
-         sd_journal_next(jh))
+  while (read_log(jh, out) && sd_journal_next(jh))
     ;
 
-out:
+done:
   if (jh) sd_journal_close(jh);
-  p[read] = '\0';
+  out.terminate();
 }
