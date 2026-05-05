@@ -37,14 +37,11 @@
 #include "../../logging.h"
 #include "../../content/text_object.h"
 
-constexpr int MAX_JOURNAL_LINES = 200;
-
-class journal {
- public:
+struct journal {
   int wanted_lines;
   int flags;
 
-  journal() : wanted_lines(0), flags(SD_JOURNAL_LOCAL_ONLY) {}
+  journal() : wanted_lines(1), flags(SD_JOURNAL_LOCAL_ONLY) {}
 };
 
 void free_journal(struct text_object *obj) {
@@ -56,40 +53,38 @@ void free_journal(struct text_object *obj) {
 void init_journal(const char *type, const char *arg, struct text_object *obj,
                   void *free_at_crash) {
   unsigned int argc;
-  journal *options = new journal;
+  journal *options = new journal();
 
-  char type_arg[7] = {};
-  argc = sscanf(arg, "%d %6s", &options->wanted_lines, type_arg);
-  if (argc < 1 || argc > 2) {
+  char type_arg[8] = {};
+  char ignored[2] = {};
+  argc = sscanf(arg, "%d %7s %1s", &options->wanted_lines, type_arg, ignored);
+  if (argc > 2) {
     free_journal(obj);
     free(obj);
     free(free_at_crash);
     COMMAND_ARG_ERR(type,
-        "{} needs a number of lines as 1st argument and optionally a journal "
-        "type as 2nd argument",
-        type);
+        "too many arguments provided; expected: [line_count=1] [type='local']");
   }
-  
-  if (options->wanted_lines <= 0 || options->wanted_lines > MAX_JOURNAL_LINES) {
-    free_journal(obj);
-    free(obj);
-    free(free_at_crash);
-    COMMAND_ARG_ERR(type,
-        "invalid arg for {}, number of lines must be between 1 and {}", type,
-        MAX_JOURNAL_LINES);
+
+  if (options->wanted_lines < 0) {
+    LOG_WARNING("invalid line count {}; clamping to 1", options->wanted_lines);
+    options->wanted_lines = 1;
   }
 
   if (argc >= 2) {
-    if (strcmp(type_arg, "system") == 0) {
+    if (strcmp(type_arg, "local") == 0) {
+      options->flags |= SD_JOURNAL_LOCAL_ONLY; /* no-op */
+    } else if (strcmp(type_arg, "runtime") == 0) {
+      options->flags |= SD_JOURNAL_RUNTIME_ONLY;
+    } else if (strcmp(type_arg, "system") == 0) {
       options->flags |= SD_JOURNAL_SYSTEM;
-    }  else if (strcmp(type_arg, "user") == 0) {
+    } else if (strcmp(type_arg, "user") == 0) {
       options->flags |= SD_JOURNAL_CURRENT_USER;
     } else {
       free_journal(obj);
       free(obj);
       free(free_at_crash);
-      COMMAND_ARG_ERR(type, "invalid arg for {}, type must be 'system' or 'user'",
-                      type);
+      COMMAND_ARG_ERR(type, "type must be one of: 'local', 'runtime', 'system', 'user'");
     }
   }
 
@@ -147,16 +142,25 @@ void print_journal(struct text_object *obj, char *p, unsigned int p_max_size) {
     LOG_ERROR("unable to open journal");
     return;
   }
-  auto handle = std::unique_ptr<sd_journal, decltype(&sd_journal_close)>(
-      raw, sd_journal_close);
+  auto handle = std::unique_ptr<sd_journal, decltype(&sd_journal_close)>(raw, sd_journal_close);
 
-  if (sd_journal_seek_tail(handle.get()) < 0) {
-    LOG_ERROR("unable to seek to end of journal");
-    return;
-  }
-  if (sd_journal_previous_skip(handle.get(), conf->wanted_lines) < 0) {
-    LOG_ERROR("unable to seek back {} lines", conf->wanted_lines);
-    return;
+  if (conf->wanted_lines == 0) {
+    if (sd_journal_seek_head(handle.get()) < 0) {
+      LOG_ERROR("unable to seek to start of journal");
+      return;
+    }
+    if (sd_journal_next(handle.get()) <= 0) {
+      return;
+    }
+  } else {
+    if (sd_journal_seek_tail(handle.get()) < 0) {
+      LOG_ERROR("unable to seek to end of journal");
+      return;
+    }
+    if (sd_journal_previous_skip(handle.get(), conf->wanted_lines) < 0) {
+      LOG_ERROR("unable to seek back {} lines", conf->wanted_lines);
+      return;
+    }
   }
 
   while (read_log(handle.get(), out) && sd_journal_next(handle.get()))
