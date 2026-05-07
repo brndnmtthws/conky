@@ -30,8 +30,7 @@
 #ifndef _JOURNAL_H
 #define _JOURNAL_H
 
-void free_journal(struct text_object *);
-void init_journal(const char *, const char *, struct text_object *, void *);
+void init_journal(const char *, const char *, struct text_object *);
 void print_journal(struct text_object *, char *, unsigned int);
 
 #endif /* _JOURNAL_H */

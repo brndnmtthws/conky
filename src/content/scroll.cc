@@ -159,9 +159,6 @@ void parse_scroll_arg(struct text_object *obj, const char *arg,
 #ifdef BUILD_GUI
     free(obj->next);
 #endif
-    free(free_at_crash2);
-    free(obj);
-    free(free_at_crash);
     COMMAND_ARG_ERR("scroll", "scroll needs arguments: [left|right|wait] <length> [<step>] "
              "[interval] <text>");
   }

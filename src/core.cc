@@ -376,6 +376,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
                                           void *free_at_crash) {
   // struct text_object *obj = new_text_object();
   struct text_object *obj = new_text_object_internal();
+  std::unique_ptr<text_object, decltype(&free)> obj_guard(obj, free);
 
   obj->line = line;
 
@@ -386,11 +387,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #define __OBJ_IF obj_be_ifblock_if(ifblock_opaque, obj)
 #define __OBJ_ARG(...)                              \
   if (!arg) {                                       \
-    auto _cmd_name = std::string(s);                \
-    free(s);                                        \
-    free(obj);                                      \
-    free(free_at_crash);                            \
-    COMMAND_ARG_ERR(_cmd_name.c_str(), __VA_ARGS__);\
+    COMMAND_ARG_ERR(s, __VA_ARGS__);                \
   }
 
 /* defines to be used below */
@@ -1059,7 +1056,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
     if (parse_top_args(s, arg, obj) != 0) {
       obj->cb_handle = create_cb_handle(update_top);
     } else {
-      free(obj);
+      obj_guard.reset();
       return nullptr;
     }
   }
@@ -1077,13 +1074,11 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END
 #endif /* __linux__ */
       OBJ_ARG(tail, nullptr, "tail needs arguments")
-          init_tailhead("tail", arg, obj, free_at_crash);
+          init_tailhead("tail", arg, obj);
   obj->callbacks.print = &print_tail;
-  obj->callbacks.free = &free_tailhead;
   END OBJ_ARG(head, nullptr, "head needs arguments")
-      init_tailhead("head", arg, obj, free_at_crash);
+      init_tailhead("head", arg, obj);
   obj->callbacks.print = &print_head;
-  obj->callbacks.free = &free_tailhead;
   END OBJ_ARG(lines, nullptr, "lines needs an argument") obj->data.s =
       STRNDUP_ARG;
   obj->callbacks.print = &print_lines;
@@ -1509,8 +1504,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ_IF(if_updatenr, nullptr) obj->data.i =
       arg != nullptr ? strtol(arg, nullptr, 10) : 0;
   if (obj->data.i == 0) {
-    free(obj);
-    free(free_at_crash);
     COMMAND_ARG_ERR("if_updatenr", "if_updatenr needs a number above 0 as argument");
   }
   set_updatereset(obj->data.i > get_updatereset() ? obj->data.i
@@ -1760,8 +1753,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (obj->data.i > 0) {
     ++obj->data.i;
   } else {
-    free(obj);
-    free(free_at_crash);
     COMMAND_ARG_ERR("audacious_title", "audacious_title: invalid length argument");
   }
   obj->callbacks.print = &print_audacious_title;
@@ -1819,8 +1810,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (arg != nullptr) {
     obj->data.s = STRNDUP_ARG;
   } else {
-    free(obj);
-    free(free_at_crash);
     COMMAND_ARG_ERR("lua_bar", "lua_bar needs arguments: <height>,<width> <function name> "
              "[function parameters]");
   }
@@ -1836,8 +1825,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (buf != nullptr) {
     obj->data.s = buf;
   } else {
-    free(obj);
-    free(free_at_crash);
     COMMAND_ARG_ERR("lua_graph", "lua_graph needs arguments: <function name> [height],[width] "
              "[gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
   }
@@ -1849,8 +1836,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (arg != nullptr) {
     obj->data.s = STRNDUP_ARG;
   } else {
-    free(obj);
-    free(free_at_crash);
     COMMAND_ARG_ERR("lua_gauge", "lua_gauge needs arguments: <height>,<width> <function name> "
              "[function parameters]");
   }
@@ -1905,8 +1890,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
                                                              obj, arg,
                                                              text_node_t::
                                                                  NONSPECIAL)) {
-    free(obj);
-    free(free_at_crash);
     COMMAND_ARG_ERR("nvidia", "nvidia: invalid argument"
              " specified: '{}'",
              arg);
@@ -1917,8 +1900,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       nvidiabar, 0,
       "nvidiabar needs an argument") if (set_nvidia_query(obj, arg,
                                                           text_node_t::BAR)) {
-    free(obj);
-    free(free_at_crash);
     COMMAND_ARG_ERR("nvidiabar", "nvidiabar: invalid argument"
              " specified: '{}'",
              arg);
@@ -1930,8 +1911,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       "nvidiagraph needs an argument") if (set_nvidia_query(obj, arg,
                                                             text_node_t::
                                                                 GRAPH)) {
-    free(obj);
-    free(free_at_crash);
     COMMAND_ARG_ERR("nvidiagraph", "nvidiagraph: invalid argument"
              " specified: '{}'",
              arg);
@@ -1943,8 +1922,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       "nvidiagauge needs an argument") if (set_nvidia_query(obj, arg,
                                                             text_node_t::
                                                                 GAUGE)) {
-    free(obj);
-    free(free_at_crash);
     COMMAND_ARG_ERR("nvidiagauge", "nvidiagauge: invalid argument"
              " specified: '{}'",
              arg);
@@ -1957,8 +1934,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       apcupsd, &update_apcupsd,
       "apcupsd needs arguments: <host> <port>") if (apcupsd_scan_arg(arg) !=
                                                     0) {
-    free(obj);
-    free(free_at_crash);
     COMMAND_ARG_ERR("apcupsd", "apcupsd needs arguments: <host> <port>");
   }
   obj->callbacks.print = &gen_print_nothing;
@@ -1995,9 +1970,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #endif /* BUILD_APCUPSD */
 #ifdef BUILD_JOURNAL
   END OBJ_ARG(journal, 0, "journal needs arguments")
-      init_journal("journal", arg, obj, free_at_crash);
+      init_journal("journal", arg, obj);
   obj->callbacks.print = &print_journal;
-  obj->callbacks.free = &free_journal;
 #endif /* BUILD_JOURNAL */
 #ifdef BUILD_PULSEAUDIO
   END OBJ_IF(if_pa_sink_muted, 0) obj->callbacks.iftest = &puau_muted;
@@ -2059,6 +2033,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #undef __OBJ_ARG
 #undef END
 
+  obj_guard.release();
   return obj;
 }
 
@@ -2202,9 +2177,11 @@ int extract_variable_text_internal(struct text_object *retval,
         try {
           obj = construct_text_object(buf, arg, line, &ifblock_opaque, orig_p);
         } catch (std::exception &e) {
-          const char *cmd = buf;
+          const char *cmd = nullptr;
           if (auto *ce = dynamic_cast<conky::bad_command_arguments_error *>(&e)) {
             cmd = ce->command.c_str();
+          } else {
+            cmd = buf;
           }
           LOG_ERROR("${{{}}}: {}", cmd, e.what());
           obj = new_text_object_internal();
@@ -2213,7 +2190,6 @@ int extract_variable_text_internal(struct text_object *retval,
           snprintf(fallback, text_buffer_size.get(*state), "${%s}", cmd);
           obj_be_plain_text(obj, fallback);
           free(fallback);
-          free(orig_p);
         }
         if (obj != nullptr) { append_object(retval, obj); }
         free(buf);

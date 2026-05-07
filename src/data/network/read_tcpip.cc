@@ -65,8 +65,6 @@ void parse_read_tcpip_arg(struct text_object *obj, const char *arg,
     strncpy(rtd->host, "localhost", 10);
   }
   if (rtd->port < 1 || rtd->port > 65535) {
-    free(obj);
-    free(free_at_crash);
     COMMAND_ARG_ERR("read_tcp/read_udp",
         "read_tcp and read_udp need a port from 1 to 65535 as argument");
   }
@@ -93,8 +91,6 @@ void parse_tcp_ping_arg(struct text_object *obj, const char *arg,
       break;
     default:  // this point should never be reached
       free(hostname);
-      free(obj);
-      free(free_at_crash);
       COMMAND_ARG_ERR("tcp_ping", "tcp_ping: failed to read arguments");
   }
   if ((he = gethostbyname(hostname)) == nullptr) {
@@ -102,8 +98,6 @@ void parse_tcp_ping_arg(struct text_object *obj, const char *arg,
              hostname);
     if ((he = gethostbyname("localhost")) == nullptr) {
       free(hostname);
-      free(obj);
-      free(free_at_crash);
       SYSTEM_ERR("tcp_ping: resolving 'localhost' also failed");
     }
   }

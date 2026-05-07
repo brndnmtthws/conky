@@ -30,8 +30,7 @@
 #ifndef _TAILHEAD_H
 #define _TAILHEAD_H
 
-void free_tailhead(struct text_object *);
-void init_tailhead(const char *, const char *, struct text_object *, void *);
+void init_tailhead(const char *, const char *, struct text_object *);
 void print_head(struct text_object *, char *, unsigned int);
 void print_tail(struct text_object *, char *, unsigned int);
 

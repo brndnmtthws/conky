@@ -110,16 +110,10 @@ void parse_ical_args(struct text_object *obj, const char *arg,
 
   if (sscanf(arg, "%d %s", &num, filename) != 2) {
     free(filename);
-    free(obj);
-    free(free_at_crash);
-    free(free_at_crash2);
     COMMAND_ARG_ERR("ical", "wrong number of arguments for $ical");
   }
   file = fopen(filename, "r");
   if (!file) {
-    free(obj);
-    free(free_at_crash);
-    free(free_at_crash2);
     SYSTEM_ERR("can't read file '{}'", filename);
     free(filename);
     return;

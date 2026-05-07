@@ -110,14 +110,10 @@ void init_iconv_start(struct text_object *obj, void *free_at_crash,
   char iconv_to[ICONV_CODEPAGE_LENGTH];
 
   if (iconv_converting) {
-    free(obj);
-    free(free_at_crash);
     COMMAND_ARG_ERR("iconv_start", "you must stop your last iconv conversion before "
              "starting another");
   }
   if (sscanf(arg, "%s %s", iconv_from, iconv_to) != 2) {
-    free(obj);
-    free(free_at_crash);
     COMMAND_ARG_ERR("iconv_start", "invalid arguments for iconv_start, expected: <from_codepage> <to_codepage>");
   } else {
     iconv_t new_iconv;

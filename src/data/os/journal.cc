@@ -44,24 +44,18 @@ struct journal {
   journal() : wanted_lines(1), flags(SD_JOURNAL_LOCAL_ONLY) {}
 };
 
-void free_journal(struct text_object *obj) {
-  journal *conf = static_cast<journal *>(obj->data.opaque);
-  obj->data.opaque = nullptr;
-  delete conf;
+static void free_journal(struct text_object *obj) {
+  delete static_cast<journal *>(obj->data.opaque);
 }
 
-void init_journal(const char *type, const char *arg, struct text_object *obj,
-                  void *free_at_crash) {
+void init_journal(const char *type, const char *arg, struct text_object *obj) {
   unsigned int argc;
-  journal *options = new journal();
+  auto options = std::make_unique<journal>();
 
   char type_arg[8] = {};
   char ignored[2] = {};
   argc = sscanf(arg, "%d %7s %1s", &options->wanted_lines, type_arg, ignored);
   if (argc > 2) {
-    free_journal(obj);
-    free(obj);
-    free(free_at_crash);
     COMMAND_ARG_ERR(type,
         "too many arguments provided; expected: [line_count=1] [type='local']");
   }
@@ -81,14 +75,12 @@ void init_journal(const char *type, const char *arg, struct text_object *obj,
     } else if (strcmp(type_arg, "user") == 0) {
       options->flags |= SD_JOURNAL_CURRENT_USER;
     } else {
-      free_journal(obj);
-      free(obj);
-      free(free_at_crash);
       COMMAND_ARG_ERR(type, "type must be one of: 'local', 'runtime', 'system', 'user'");
     }
   }
 
-  obj->data.opaque = options;
+  obj->data.opaque = options.release();
+  obj->callbacks.free = &free_journal;
 }
 
 static bool print_field(sd_journal *handle, const char *field, char spacer,

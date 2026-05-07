@@ -523,8 +523,6 @@ void scan_cmdline_to_pid_arg(struct text_object *obj, const char *arg,
     }
     if (obj->data.s[i - 1] == ' ') { obj->data.s[i - 1] = 0; }
   } else {
-    free(obj);
-    free(free_at_crash);
     COMMAND_ARG_ERR("cmdline_to_pid", "cmdline_to_pid needs an argument: ${{cmdline_to_pid commandline}}");
   }
 }
