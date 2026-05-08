@@ -996,16 +996,16 @@ static inline void set_foreground_color(Colour c) {
 static inline void draw_graph_bars(special_node *current, std::unique_ptr<Colour[]>& tmpcolour, 
                             conky::vec2i& text_offset, int i, int &j, int w, 
                             int &colour_idx, int cur_x, int by, int h) {
-  double graphheight = current->graph[j] * (h - 1) / current->scale;
+  double graphheight = current->graph_data[j] * (h - 1) / current->scale;
   /* Check if graphheight is less than the minheight threshold, if so we must change it to the threshold */
   if(graphheight > 0 && current->minheight - graphheight > 0) {
-    current->graph[j] = current->minheight * current->scale / (h - 1);
+    current->graph_data[j] = current->minheight * current->scale / (h - 1);
   }
   if (current->colours_set) {
     if (current->tempgrad != 0) {
       set_foreground_color(tmpcolour[static_cast<int>(
           static_cast<float>(w - 2) -
-          current->graph[j] * (w - 2) /
+          current->graph_data[j] * (w - 2) /
               std::max(static_cast<float>(current->scale),
                         1.0F))]);
     } else {
@@ -1014,9 +1014,9 @@ static inline void draw_graph_bars(special_node *current, std::unique_ptr<Colour
   }
   /* Handle the case where y axis is to be inverted */
   int offsety1 = current->inverty ? by : by + h;
-  int offsety2 = current->inverty ? by +  current->graph[j] * (h - 1) / current->scale
+  int offsety2 = current->inverty ? by +  current->graph_data[j] * (h - 1) / current->scale
                           : round_to_positive_int(static_cast<double>(by) + h -
-                          current->graph[j] * (h - 1) /
+                          current->graph_data[j] * (h - 1) /
                           current->scale);
   /* this is mugfugly, but it works */
   if (display_output()) {
@@ -1300,8 +1300,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             if (w == 0) {
               w = text_start.x() + text_size.x() - cur_x - 1;
               current->graph_width = std::max(w - 1, 0);
-              if (current->graph_width != current->graph_allocated) {
-                w = current->graph_allocated + 1;
+              if (current->graph_width != static_cast<int>(current->graph_data.size())) {
+                w = static_cast<int>(current->graph_data.size()) + 1;
               }
             }
             if (w < 0) { w = 0; }
@@ -1315,7 +1315,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             if (display_output()) display_output()->set_line_style(1, true);
 
             /* in case we don't have a graph yet */
-            if (current->graph != nullptr) {
+            if (!current->graph_data.empty()) {
               std::unique_ptr<Colour[]> tmpcolour;
 
               if (current->colours_set) {
@@ -2000,12 +2000,9 @@ static void reload_config() {
 void free_specials(special_node *&current) {
   if (current != nullptr) {
     free_specials(current->next);
-    if (current->type == text_node_t::GRAPH) { free(current->graph); }
     delete current;
     current = nullptr;
   }
-
-  clear_stored_graphs();
 }
 
 void clean_up(void) {

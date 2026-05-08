@@ -44,7 +44,6 @@ constexpr double default_width = 0;
 constexpr double default_height = 25;
 
 struct graph {
-  int id;
   char flags;
   int width, height;
   bool colours_set;
@@ -58,8 +57,16 @@ static std::pair<struct graph, bool> test_parse(const char *s) {
   bool result = scan_graph(&obj, s, default_scale,FALSE);
   auto g = static_cast<struct graph *>(obj.special_data);
   struct graph graph = *g;
-  free(g);
+  obj.callbacks.free(&obj);
   return {graph, result};
+}
+
+static void free_specials_list() {
+  while (specials != nullptr) {
+    auto *next = specials->next;
+    delete specials;
+    specials = next;
+  }
 }
 
 std::string unquote(const std::string &s) {
@@ -187,6 +194,51 @@ TEST_CASE("scan_graph correctly parses input strings") {
       auto [g, success] = test_parse("21,340 -t red blue 0.5");
       REQUIRE(g.tempgrad == true);
     }
+  }
+}
+
+TEST_CASE("graph slot reuse across draw cycles") {
+  state = std::make_unique<lua::state>();
+  conky::export_symbols(*state);
+
+  SECTION("graph data persists when same text_object reuses a slot") {
+    struct text_object obj = {};
+    scan_graph(&obj, "2,10", 0.0, FALSE);
+
+    char buf[64];
+
+    special_count = 0;
+    new_graph(&obj, buf, sizeof(buf), 1.0);
+
+    special_count = 0;
+    new_graph(&obj, buf, sizeof(buf), 2.0);
+
+    REQUIRE(specials->graph_data[0] == 2.0);
+    REQUIRE(specials->graph_data[1] == 1.0);
+
+    obj.callbacks.free(&obj);
+    free_specials_list();
+  }
+
+  SECTION("graph data is cleared when a different text_object reuses the slot") {
+    struct text_object obj1 = {}, obj2 = {};
+    scan_graph(&obj1, "2,10", 0.0, FALSE);
+    scan_graph(&obj2, "2,10", 0.0, FALSE);
+
+    char buf[64];
+
+    special_count = 0;
+    new_graph(&obj1, buf, sizeof(buf), 1.0);
+
+    special_count = 0;
+    new_graph(&obj2, buf, sizeof(buf), 2.0);
+
+    REQUIRE(specials->graph_data[0] == 2.0);
+    REQUIRE(specials->graph_data[1] == 0.0);  // cleared, not 1.0
+
+    obj1.callbacks.free(&obj1);
+    obj2.callbacks.free(&obj2);
+    free_specials_list();
   }
 }
 

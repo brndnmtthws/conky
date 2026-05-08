@@ -48,6 +48,7 @@ settings_map *settings;
 /// Settings that have been removed. Maps old name to an explanation message.
 const std::unordered_map<std::string, std::string> removed_settings = {
     {"own_window_argb_visual", "ARGB is now always enabled when available. Control opacity with `own_window_colour` (e.g. '#8000')."},
+    {"store_graph_data_explicitly", "Graph data is now always stored directly in the node; this setting has no effect."},
 };
 
 /*

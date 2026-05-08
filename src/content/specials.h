@@ -30,6 +30,7 @@
 #define _SPECIALS_H
 
 #include <tuple>
+#include <vector>
 #include "colours.hh"
 
 /* special stuff in text_buffer */
@@ -71,11 +72,11 @@ struct special_node {
   short height;
   short width;
   double arg;
-  double *graph;
+  std::vector<double> graph_data;
+  size_t graph_owner; /* address of owning text_object; detects slot reuse */
   double scale; /* maximum value */
   short show_scale;
   int graph_width;
-  int graph_allocated;
   int scaled; /* auto adjust maximum */
   int scale_log;
   bool colours_set;
@@ -126,8 +127,6 @@ void new_alignr(struct text_object *, char *, unsigned int);
 void new_alignc(struct text_object *, char *, unsigned int);
 void new_goto(struct text_object *, char *, unsigned int);
 void new_tab(struct text_object *, char *, unsigned int);
-
-void clear_stored_graphs();
 
 struct special_node *new_special(char *buf, enum text_node_t t);
 
