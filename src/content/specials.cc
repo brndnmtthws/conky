@@ -39,6 +39,7 @@
 #include <sys/param.h>
 #endif /* HAVE_SYS_PARAM_H */
 #include <algorithm>
+#include <functional>
 #include <sstream>
 #include "../common.h"
 #include "../conky.h"
@@ -107,6 +108,7 @@ struct graph {
   char speedgraph;  /* If the current graph is a speed graph */
   char invertflag;  /* If the axis needs to be inverted */
   int minheight;    /* Clamp values below this threshold to this threshold */
+  size_t data_hash;            /* identifies the data source for slot reuse */
   std::vector<double> history; /* pre-allocated at scan time when width known */
 };
 
@@ -260,7 +262,8 @@ static void free_graph(struct text_object *obj) {
  * @param[in]  speedGraph if graph is network speed graph or not
  * @return whether parsing was successful
  **/
-bool scan_graph(struct text_object *obj, const char *argstr, double defscale, char speedGraph) {
+bool scan_graph(struct text_object *obj, const char *argstr, double defscale,
+                char speedGraph, graph_data_key key) {
   char first_colour_name[1024] = {'\0'};
   char last_colour_name[1024] = {'\0'};
 
@@ -410,6 +413,13 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale, ch
   sscanf(argstr, "%lf", &g->scale);
 
 done:
+  if (std::holds_alternative<std::string>(key)) {
+    g->data_hash = std::hash<std::string>{}(std::get<std::string>(key));
+  } else if (std::holds_alternative<size_t>(key)) {
+    g->data_hash = std::get<size_t>(key);
+  } else {
+    g->data_hash = reinterpret_cast<size_t>(obj);
+  }
   /* pre-allocate history at scan time when width is known to avoid
    * reallocation on first draw */
   if (g->width > 0) {
@@ -618,10 +628,9 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
   s->width = dpi_scale(g->width);
   if (s->width != 0) { s->graph_width = s->width; }
 
-  size_t owner = reinterpret_cast<size_t>(obj);
-  if (s->graph_owner != owner) {
+  if (s->data_hash != g->data_hash) {
     s->graph_data.clear();
-    s->graph_owner = owner;
+    s->data_hash = g->data_hash;
   }
 
   /* on first use, take the pre-allocated storage from the scan-time struct

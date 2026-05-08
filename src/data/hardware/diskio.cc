@@ -173,9 +173,12 @@ void print_diskio_write(struct text_object *obj, char *p,
 #ifdef BUILD_GUI
 void parse_diskiograph_arg(struct text_object *obj, const char *arg) {
   auto [buf, skip] = scan_command(arg);
-  scan_graph(obj, arg + skip, 0, FALSE);
+  const char *dev = dev_name(buf);
+  scan_graph(obj, arg + skip, 0, FALSE,
+             dev != nullptr ? graph_data_key{fmt::format("diskio:{}", dev)}
+                            : graph_parent_obj_key);
 
-  obj->data.opaque = prepare_diskio_stat(dev_name(buf));
+  obj->data.opaque = prepare_diskio_stat(dev);
   free_and_zero(buf);
 }
 

@@ -294,7 +294,9 @@ void scan_exec_arg(struct text_object *obj, const char *arg, exec_flag flags) {
     cmd = scan_gauge(obj, cmd, 100);
   } else if (flags & exec_flag::graph) {
     auto [buf, skip] = scan_command(cmd);
-    scan_graph(obj, cmd + skip, 100, FALSE);
+    scan_graph(obj, cmd + skip, 100, FALSE,
+               buf != nullptr ? graph_data_key{fmt::format("exec:{}", buf)}
+                              : graph_parent_obj_key);
     cmd = buf;
     if (cmd == nullptr) {
       LOG_ERROR("error parsing execgraph arguments: '{}'", arg ? arg : "(null)");

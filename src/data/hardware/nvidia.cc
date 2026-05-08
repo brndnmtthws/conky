@@ -458,7 +458,10 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
       break;
     case text_node_t::GRAPH: {
       auto [buf, skip] = scan_command(arg);
-      scan_graph(obj, arg + skip, 100, FALSE);
+      scan_graph(obj, arg + skip, 100, FALSE,
+                 buf != nullptr
+                     ? graph_data_key{fmt::format("nvidia:{}:{}", nvs->target_id, buf)}
+                     : graph_parent_obj_key);
       arg = buf;
     } break;
     case text_node_t::GAUGE:

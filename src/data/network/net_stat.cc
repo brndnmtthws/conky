@@ -334,7 +334,15 @@ void parse_net_stat_graph_arg(struct text_object *obj, const char *arg,
                               void *free_at_crash) {
   /* scan arguments and get interface name back */
   auto [buf, skip] = scan_command(arg);
-  scan_graph(obj, arg + skip, 0, TRUE);
+
+  graph_data_key key = graph_parent_obj_key;
+  if (buf == nullptr) {
+    key = fmt::format("net:{}", DEFAULTNETDEV);
+  } else if (strcmp("$gw_iface", buf) != 0 && strcmp("${gw_iface}", buf) != 0) {
+    key = fmt::format("net:{}", buf);
+  } /* gw_iface resolves dynamically; fall back to obj-address keying */
+
+  scan_graph(obj, arg + skip, 0, TRUE, key);
 
   // default to DEFAULTNETDEV
   if (buf != nullptr) {
