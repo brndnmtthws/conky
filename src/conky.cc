@@ -44,6 +44,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include <fcntl.h>
@@ -1717,8 +1718,8 @@ void get_system_details() {
   }
 
   info.system.wm_name = getenv("XDG_CURRENT_DESKTOP");
-  // Per spec, XDG_CURRENT_DESKTOP is a semicolon separated list. In practice,
-  // nearly all WM/DEs simply define a single name.
+  // Per spec, XDG_CURRENT_DESKTOP is a colon-separated list (e.g.
+  // "ubuntu:GNOME" on Ubuntu). The first matching token wins.
   // Others below are non-standard:
   if (info.system.wm_name == nullptr) {
     info.system.wm_name = getenv("XDG_SESSION_DESKTOP");
@@ -1731,6 +1732,17 @@ void get_system_details() {
   }
 
 #ifdef ENABLE_RUNTIME_TWEAKS
+  std::vector<std::string_view> wm_name_tokens;
+  if (info.system.wm_name != nullptr) {
+    std::string_view rest{info.system.wm_name};
+    while (!rest.empty()) {
+      auto sep = rest.find(':');
+      wm_name_tokens.push_back(rest.substr(0, sep));
+      if (sep == std::string_view::npos) { break; }
+      rest.remove_prefix(sep + 1);
+    }
+  }
+
   const auto is_wayland = [&]() {
 #ifndef BUILD_WAYLAND
     return info.system.session == conky::info::display_session::wayland;
@@ -1741,7 +1753,10 @@ void get_system_details() {
   };
 
   const auto is_session = [&](auto &&...names) {
-    return ((std::strcmp(info.system.wm_name, names) == 0) || ...);
+    for (const auto &token : wm_name_tokens) {
+      if (((token == std::string_view{names}) || ...)) { return true; }
+    }
+    return false;
   };
 
   // Only add is_wayland guard for WM/DE that will never support another display
