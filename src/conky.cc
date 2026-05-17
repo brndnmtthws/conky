@@ -673,7 +673,7 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root) {
 }
 
 void evaluate(const char *text, char *p, int p_max_size) {
-  struct text_object subroot {};
+  struct text_object subroot{};
 
   /**
    * Consider expressions like: ${execp echo '${execp echo hi}'}
@@ -722,7 +722,10 @@ static void generate_text() {
           p[k] = '\n';
           j = 0;
         } else {
-          LOG_WARNING("text_buffer end reached (size {}), increase \"text_buffer_size\"", tbs);
+          LOG_WARNING(
+              "text_buffer end reached (size {}), increase "
+              "\"text_buffer_size\"",
+              tbs);
         }
       } else {
         j++;
@@ -863,7 +866,8 @@ void update_text_area() {
     last_font_height = font_height();
     for_each_line(text_buffer, text_size_updater);
 
-    text_size = text_size.max(conky::vec2i(text_size.x() + 1, dpi_scale(minimum_height.get(*state))));
+    text_size = text_size.max(
+        conky::vec2i(text_size.x() + 1, dpi_scale(minimum_height.get(*state))));
     int mw = dpi_scale(maximum_width.get(*state));
     if (mw > 0) text_size = text_size.min(conky::vec2i(mw, text_size.y()));
   }
@@ -994,12 +998,15 @@ static inline void set_foreground_color(Colour c) {
   for (auto output : display_outputs()) output->set_foreground_color(c);
 }
 
-static inline void draw_graph_bars(special_node *current, std::unique_ptr<Colour[]>& tmpcolour, 
-                            conky::vec2i& text_offset, int i, int &j, int w, 
-                            int &colour_idx, int cur_x, int by, int h) {
+static inline void draw_graph_bars(special_node *current,
+                                   std::unique_ptr<Colour[]> &tmpcolour,
+                                   conky::vec2i &text_offset, int i, int &j,
+                                   int w, int &colour_idx, int cur_x, int by,
+                                   int h) {
   double graphheight = current->graph_data[j] * (h - 1) / current->scale;
-  /* Check if graphheight is less than the minheight threshold, if so we must change it to the threshold */
-  if(graphheight > 0 && current->minheight - graphheight > 0) {
+  /* Check if graphheight is less than the minheight threshold, if so we must
+   * change it to the threshold */
+  if (graphheight > 0 && current->minheight - graphheight > 0) {
     current->graph_data[j] = current->minheight * current->scale / (h - 1);
   }
   if (current->colours_set) {
@@ -1007,18 +1014,18 @@ static inline void draw_graph_bars(special_node *current, std::unique_ptr<Colour
       set_foreground_color(tmpcolour[static_cast<int>(
           static_cast<float>(w - 2) -
           current->graph_data[j] * (w - 2) /
-              std::max(static_cast<float>(current->scale),
-                        1.0F))]);
+              std::max(static_cast<float>(current->scale), 1.0F))]);
     } else {
       set_foreground_color(tmpcolour[colour_idx++]);
     }
   }
   /* Handle the case where y axis is to be inverted */
   int offsety1 = current->inverty ? by : by + h;
-  int offsety2 = current->inverty ? by +  current->graph_data[j] * (h - 1) / current->scale
-                          : round_to_positive_int(static_cast<double>(by) + h -
-                          current->graph_data[j] * (h - 1) /
-                          current->scale);
+  int offsety2 = current->inverty
+                     ? by + current->graph_data[j] * (h - 1) / current->scale
+                     : round_to_positive_int(static_cast<double>(by) + h -
+                                             current->graph_data[j] * (h - 1) /
+                                                 current->scale);
   /* this is mugfugly, but it works */
   if (display_output()) {
     display_output()->draw_line(
@@ -1301,7 +1308,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
             if (w == 0) {
               w = text_start.x() + text_size.x() - cur_x - 1;
               current->graph_width = std::max(w - 1, 0);
-              if (current->graph_width != static_cast<int>(current->graph_data.size())) {
+              if (current->graph_width !=
+                  static_cast<int>(current->graph_data.size())) {
                 w = static_cast<int>(current->graph_data.size()) + 1;
               }
             }
@@ -1326,16 +1334,15 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
                 delete factory;
               }
               colour_idx = 0;
-              if(current->invertx){
+              if (current->invertx) {
                 for (i = 0; i <= w - 2; i++) {
-                  draw_graph_bars(current, tmpcolour, text_offset, 
-                  i, j, w, colour_idx, cur_x, by, h);
+                  draw_graph_bars(current, tmpcolour, text_offset, i, j, w,
+                                  colour_idx, cur_x, by, h);
                 }
-              }
-              else{
+              } else {
                 for (i = w - 2; i > -1; i--) {
-                  draw_graph_bars(current, tmpcolour, text_offset, 
-                  i, j, w, colour_idx, cur_x, by, h);
+                  draw_graph_bars(current, tmpcolour, text_offset, i, j, w,
+                                  colour_idx, cur_x, by, h);
                 }
               }
             }
@@ -1396,8 +1403,9 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 #ifdef BUILD_MATH
             if (show_graph_scale.get(*state) && (current->show_scale == 1)) {
               if (current->colours_set) {
-                  // Set the foreground colour to the first colour, ensures the scale text is always drawn in the same colour
-                  set_foreground_color(current->first_colour);
+                // Set the foreground colour to the first colour, ensures the
+                // scale text is always drawn in the same colour
+                set_foreground_color(current->first_colour);
               }
               int tmp_x = cur_x;
               int tmp_y = cur_y;
@@ -1752,72 +1760,86 @@ void get_system_details() {
 #endif
   };
 
-  const auto is_session = [&](auto &&...names) {
-    for (const auto &token : wm_name_tokens) {
-      if (((token == std::string_view{names}) || ...)) { return true; }
-    }
-    return false;
+  const auto is_session = [](std::string_view token, auto &&...names) {
+    return ((token == std::string_view{names}) || ...);
   };
 
   // Only add is_wayland guard for WM/DE that will never support another display
   // session protocol. e.g. Budgie will (or has) switch(ed) to Wayland at some
   // point, but older versions may use X11, so it needs to be detected for both
   // X11 and Wayland.
-  if (info.system.wm_name == nullptr) {
-    goto unknown_session;
-  } else if (is_session("GNOME")) {
-    info.system.wm = conky::info::window_manager::mutter;
-  } else if (is_session("GNOME Classic", "metacity")) {
-    info.system.wm = conky::info::window_manager::metacity;
-  } else if (is_session("MATE")) {
-    info.system.wm = conky::info::window_manager::marco;
-  } else if (is_session("XFCE", "XFCE4")) {
-    info.system.wm = conky::info::window_manager::xfwm;
-  } else if (is_session("KDE", "Plasma", "KDE Plasma")) {
-    info.system.wm = conky::info::window_manager::kwin;
-  } else if (is_session("LXDE", "LXQt")) {
-    info.system.wm = conky::info::window_manager::openbox;
-  } else if (is_session("Unity")) {
-    info.system.wm = conky::info::window_manager::compiz;
-  } else if (is_session("Cinnamon")) {
-    info.system.wm = conky::info::window_manager::mutter;  // Muffin → Mutter
-  } else if (!is_wayland() && is_session("Openbox")) {
-    // Openbox doesn't set any session name env variables; must be set manually
-    info.system.wm = conky::info::window_manager::openbox;
-  } else if (!is_wayland() && is_session("Fluxbox")) {
-    // Fluxbox doesn't set any session name env variables; must be set manually 
-    info.system.wm = conky::info::window_manager::fluxbox;
-  } else if (!is_wayland() && (is_session("i3", "i3wm"))) {
-    info.system.wm = conky::info::window_manager::i3;
-  } else if (is_wayland() && is_session("Hyprland")) {
-    info.system.wm = conky::info::window_manager::hyprland;
-  } else if (is_wayland() && is_session("Sway")) {
-    info.system.wm = conky::info::window_manager::sway;
-  } else if (!is_wayland() && is_session("bspwm")) {
-    info.system.wm = conky::info::window_manager::bspwm;
-  } else if (is_session("awesome")) {
-    // some talks about adding Wayland support
-    info.system.wm = conky::info::window_manager::awesome;
-  } else if (!is_wayland() && is_session("dwm")) {
-    info.system.wm = conky::info::window_manager::dwm;
-  } else if (!is_wayland() && is_session("herbstluftwm")) {
-    info.system.wm = conky::info::window_manager::herbstluftwm;
-  } else if (!is_wayland() && is_session("qtile")) {
-    info.system.wm = conky::info::window_manager::qtile;
-  } else if (!is_wayland() && is_session("windowmaker")) {
-    info.system.wm = conky::info::window_manager::windowmaker;
-  } else if (is_wayland() && is_session("Wayfire")) {
-    info.system.wm = conky::info::window_manager::wayfire;
-  } else if (is_wayland() && is_session("River")) {
-    info.system.wm = conky::info::window_manager::river;
-  } else if (is_session("Budgie")) {
-    info.system.wm = conky::info::window_manager::mutter;  // Budgie → Mutter
-  } else if (is_session("Deepin")) {
-    info.system.wm = conky::info::window_manager::dde;
-  } else if (is_session("Enlightenment", "E17")) {
-    info.system.wm = conky::info::window_manager::enlightenment;
-  } else {
-  unknown_session:
+  const auto detect_session = [&](std::string_view token) {
+    if (is_session(token, "GNOME")) {
+      info.system.wm = conky::info::window_manager::mutter;
+    } else if (is_session(token, "GNOME Classic", "metacity")) {
+      info.system.wm = conky::info::window_manager::metacity;
+    } else if (is_session(token, "MATE")) {
+      info.system.wm = conky::info::window_manager::marco;
+    } else if (is_session(token, "XFCE", "XFCE4")) {
+      info.system.wm = conky::info::window_manager::xfwm;
+    } else if (is_session(token, "KDE", "Plasma", "KDE Plasma")) {
+      info.system.wm = conky::info::window_manager::kwin;
+    } else if (is_session(token, "LXDE", "LXQt")) {
+      info.system.wm = conky::info::window_manager::openbox;
+    } else if (is_session(token, "Unity")) {
+      info.system.wm = conky::info::window_manager::compiz;
+    } else if (is_session(token, "Cinnamon")) {
+      // Muffin → Mutter
+      info.system.wm = conky::info::window_manager::mutter;
+    } else if (!is_wayland() && is_session(token, "Openbox")) {
+      // Openbox doesn't set any session name env variables; must be set
+      // manually
+      info.system.wm = conky::info::window_manager::openbox;
+    } else if (!is_wayland() && is_session(token, "Fluxbox")) {
+      // Fluxbox doesn't set any session name env variables; must be set
+      // manually
+      info.system.wm = conky::info::window_manager::fluxbox;
+    } else if (!is_wayland() && (is_session(token, "i3", "i3wm"))) {
+      info.system.wm = conky::info::window_manager::i3;
+    } else if (is_wayland() && is_session(token, "Hyprland")) {
+      info.system.wm = conky::info::window_manager::hyprland;
+    } else if (is_wayland() && is_session(token, "Sway")) {
+      info.system.wm = conky::info::window_manager::sway;
+    } else if (!is_wayland() && is_session(token, "bspwm")) {
+      info.system.wm = conky::info::window_manager::bspwm;
+    } else if (is_session(token, "awesome")) {
+      // some talks about adding Wayland support
+      info.system.wm = conky::info::window_manager::awesome;
+    } else if (!is_wayland() && is_session(token, "dwm")) {
+      info.system.wm = conky::info::window_manager::dwm;
+    } else if (!is_wayland() && is_session(token, "herbstluftwm")) {
+      info.system.wm = conky::info::window_manager::herbstluftwm;
+    } else if (!is_wayland() && is_session(token, "qtile")) {
+      info.system.wm = conky::info::window_manager::qtile;
+    } else if (!is_wayland() && is_session(token, "windowmaker")) {
+      info.system.wm = conky::info::window_manager::windowmaker;
+    } else if (is_wayland() && is_session(token, "Wayfire")) {
+      info.system.wm = conky::info::window_manager::wayfire;
+    } else if (is_wayland() && is_session(token, "River")) {
+      info.system.wm = conky::info::window_manager::river;
+    } else if (is_session(token, "Budgie")) {
+      // Budgie → Mutter
+      info.system.wm = conky::info::window_manager::mutter;
+    } else if (is_session(token, "Deepin")) {
+      info.system.wm = conky::info::window_manager::dde;
+    } else if (is_session(token, "Enlightenment", "E17")) {
+      info.system.wm = conky::info::window_manager::enlightenment;
+    } else {
+      return false;
+    }
+
+    return true;
+  };
+
+  bool detected_session = false;
+  for (const auto &token : wm_name_tokens) {
+    if (detect_session(token)) {
+      detected_session = true;
+      break;
+    }
+  }
+
+  if (!detected_session) {
     info.system.wm_name = "unknown";
     info.system.wm = conky::info::window_manager::unknown;
 
@@ -1998,11 +2020,13 @@ void main_loop() {
 /* reload the config file */
 static void reload_config() {
   auto _scope = LOG_SCOPE("reload_config");
-  struct stat sb {};
+  struct stat sb{};
   if ((stat(current_config.c_str(), &sb) != 0) ||
       (!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
-    LOG_WARNING("config file '{}' is gone, continuing with config from memory (send SIGUSR1 after recreating: kill -s USR1 {})",
-             current_config, getpid());
+    LOG_WARNING(
+        "config file '{}' is gone, continuing with config from memory (send "
+        "SIGUSR1 after recreating: kill -s USR1 {})",
+        current_config, getpid());
     return;
   }
   clean_up();
@@ -2126,14 +2150,16 @@ void load_config_file() {
 #endif
   } catch (lua::syntax_error &e) {
 #ifdef BUILD_OLD_CONFIG
-    LOG_WARNING("syntax error ({}) while reading config file '{}'", e.what(), current_config);
+    LOG_WARNING("syntax error ({}) while reading config file '{}'", e.what(),
+                current_config);
     LOG_INFO("assuming old config syntax and attempting conversion");
     // the strchr thingy skips the first line (#! /usr/bin/lua)
     l.loadstring(strchr(convertconf, '\n'));
     l.pushstring(current_config.c_str());
     l.call(1, 1);
 #else
-    throw conky::error(fmt::format("syntax error ({}) while reading config file", e.what()));
+    throw conky::error(
+        fmt::format("syntax error ({}) while reading config file", e.what()));
 #endif
   }
   l.call(0, 0);
@@ -2163,7 +2189,7 @@ inline void reset_optind() {
 
 void set_current_config() {
   /* load current_config, CONFIG_FILE or SYSTEM_CONFIG_FILE */
-  struct stat s {};
+  struct stat s{};
 
   if (current_config.empty()) {
     /* Try to use personal config file first */
@@ -2186,7 +2212,8 @@ void set_current_config() {
   if (current_config.empty()) {
 #ifdef BUILD_BUILTIN_CONFIG
     current_config = builtin_config_magic;
-    LOG_WARNING("no personal or system-wide config file found, using builtin default");
+    LOG_WARNING(
+        "no personal or system-wide config file found, using builtin default");
 #else
     throw conky::error("no personal or system-wide config file found");
 #endif
@@ -2199,8 +2226,9 @@ void set_current_config() {
 /* : means that character before that takes an argument */
 const char *getopt_string =
     "vVqdDLSs:t:u:i:hc:p:"
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
-    defined(__HAIKU__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(__linux__) || defined(__FreeBSD__) ||        \
+    defined(__FreeBSD_kernel__) || defined(__HAIKU__) || \
+    defined(__NetBSD__) || defined(__OpenBSD__)
     "U"
 #endif /* Linux || FreeBSD || Haiku || NetBSD || OpenBSD */
 #ifdef BUILD_X11
@@ -2215,31 +2243,37 @@ const char *getopt_string =
 #endif
     ;
 
-const struct option longopts[] = {
-    {"help", 0, nullptr, 'h'},          {"version", 0, nullptr, 'v'},
-    {"short-version", 0, nullptr, 'V'}, {"quiet", 0, nullptr, 'q'},
-    {"debug", 0, nullptr, 'D'},         {"concise", 0, nullptr, 'L'},
-    {"config", 1, nullptr, 'c'},
+const struct option longopts[] = {{"help", 0, nullptr, 'h'},
+                                  {"version", 0, nullptr, 'v'},
+                                  {"short-version", 0, nullptr, 'V'},
+                                  {"quiet", 0, nullptr, 'q'},
+                                  {"debug", 0, nullptr, 'D'},
+                                  {"concise", 0, nullptr, 'L'},
+                                  {"config", 1, nullptr, 'c'},
 #ifdef BUILD_BUILTIN_CONFIG
-    {"print-config", 0, nullptr, 'C'},
+                                  {"print-config", 0, nullptr, 'C'},
 #endif
-    {"daemonize", 0, nullptr, 'd'},
+                                  {"daemonize", 0, nullptr, 'd'},
 #ifdef BUILD_X11
-    {"alignment", 1, nullptr, 'a'},     {"display", 1, nullptr, 'X'},
-    {"xinerama-head", 1, nullptr, 'm'}, {"font", 1, nullptr, 'f'},
+                                  {"alignment", 1, nullptr, 'a'},
+                                  {"display", 1, nullptr, 'X'},
+                                  {"xinerama-head", 1, nullptr, 'm'},
+                                  {"font", 1, nullptr, 'f'},
 #ifdef OWN_WINDOW
-    {"own-window", 0, nullptr, 'o'},
+                                  {"own-window", 0, nullptr, 'o'},
 #endif
-    {"double-buffer", 0, nullptr, 'b'}, {"window-id", 1, nullptr, 'w'},
+                                  {"double-buffer", 0, nullptr, 'b'},
+                                  {"window-id", 1, nullptr, 'w'},
 #endif /* BUILD_X11 */
-    {"text", 1, nullptr, 't'},          {"interval", 1, nullptr, 'u'},
-    {"pause", 1, nullptr, 'p'},
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
-    defined(__HAIKU__) || defined(__NetBSD__) || defined(__OpenBSD__)
-    {"unique", 0, nullptr, 'U'},
+                                  {"text", 1, nullptr, 't'},
+                                  {"interval", 1, nullptr, 'u'},
+                                  {"pause", 1, nullptr, 'p'},
+#if defined(__linux__) || defined(__FreeBSD__) ||        \
+    defined(__FreeBSD_kernel__) || defined(__HAIKU__) || \
+    defined(__NetBSD__) || defined(__OpenBSD__)
+                                  {"unique", 0, nullptr, 'U'},
 #endif /* Linux || FreeBSD || Haiku || NetBSD || OpenBSD */
-    {nullptr, 0, nullptr, 0}
-};
+                                  {nullptr, 0, nullptr, 0}};
 
 void setup_inotify() {
 #ifdef HAVE_SYS_INOTIFY_H
@@ -2254,8 +2288,7 @@ void setup_inotify() {
 }
 void initialisation(int argc, char **argv) {
   auto _scope = LOG_SCOPE("init");
-  struct sigaction act {
-  }, oact{};
+  struct sigaction act{}, oact{};
 
   clear_net_stats();
   set_default_configurations();
@@ -2370,7 +2403,7 @@ void initialisation(int argc, char **argv) {
           sleep(startup_pause);
         }
         break;
-      // case '?' is handled by main.cc
+        // case '?' is handled by main.cc
     }
   }
 
