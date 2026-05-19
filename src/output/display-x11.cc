@@ -44,9 +44,6 @@
 #ifdef BUILD_IMLIB2
 #include "../conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
-#ifdef BUILD_MOUSE_EVENTS
-#include "../mouse-events.h"
-#endif /* BUILD_MOUSE_EVENTS */
 #include <X11/extensions/XI2.h>
 #include <X11/extensions/XInput2.h>
 #undef COUNT
@@ -69,6 +66,7 @@
 #include "../geometry.h"
 #include "../logging.h"
 #include "../lua/llua.h"
+#include "../mouse-events.h"
 #include "gui.h"
 
 #include "../lua/x11-settings.h"
