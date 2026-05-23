@@ -1,0 +1,118 @@
+[settings]
+experimental = true
+locked = true
+
+[tools]
+bun = "1.3.14"
+cmake = "4.3.3"
+lefthook = "2.1.8"
+ninja = "1.13.2"
+uv = "0.11.16"
+
+[hooks]
+enter = "mise i -q"
+
+[tasks.doctor]
+description = "Check developer tools and common native build dependencies"
+run = '''
+missing=0
+
+for cmd in cmake ninja uv pkg-config gperf clang clang-format; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    echo "missing command: $cmd"
+    missing=1
+  fi
+done
+
+if command -v pkg-config >/dev/null 2>&1; then
+  for module in cairo freetype2 libcurl ncurses imlib2 librsvg-2.0 libxml-2.0 x11 xft xinerama xfixes xi; do
+    if ! pkg-config --exists "$module"; then
+      echo "missing pkg-config module: $module"
+      missing=1
+    fi
+  done
+
+  lua_found=0
+  for module in lua lua5.5 lua5.4 lua5.3 lua-5.5 lua-5.4 lua-5.3; do
+    if pkg-config --exists "$module"; then
+      lua_found=1
+      break
+    fi
+  done
+  if [ "$lua_found" -eq 0 ]; then
+    echo "missing pkg-config module: lua"
+    missing=1
+  fi
+fi
+
+if [ "$missing" -ne 0 ]; then
+  cat <<'EOF'
+
+Install native dependencies, then rerun `mise run doctor`.
+
+macOS:
+  brew install curl freetype gettext gperf imlib2 lcov librsvg libxfixes libxft libxi libxinerama libxml2 lua pkg-config
+
+Debian/Ubuntu:
+  See .github/workflows/build-and-test-linux.yaml for the full apt package list used by CI.
+EOF
+  exit 1
+fi
+
+echo "developer environment looks ready"
+'''
+
+[tasks.python-deps]
+description = "Verify Python development dependencies through uv"
+run = "uv run --with-requirements requirements-dev.txt python -c 'import jinja2, yaml'"
+
+[tasks.install-hooks]
+description = "Install Git hooks with lefthook"
+run = "lefthook install"
+
+[tasks.configure]
+description = "Configure the maintainer build with CMake and Ninja"
+run = "cmake -S . -B build -G Ninja -DMAINTAINER_MODE=ON -DBUILD_WAYLAND=OFF -DBUILD_RSS=ON -DBUILD_CURL=ON"
+
+[tasks.build]
+description = "Build Conky"
+depends = ["configure"]
+run = "cmake --build build"
+
+[tasks.test]
+description = "Run the CTest suite"
+depends = ["build"]
+run = "ctest --test-dir build --output-on-failure"
+
+[tasks.format]
+description = "Format C and C++ sources"
+depends = ["configure"]
+run = "cmake --build build --target clang-format"
+
+[tasks.check-format]
+description = "Check C and C++ formatting"
+depends = ["configure"]
+run = "cmake --build build --target check-clang-format"
+
+[tasks.web-install]
+description = "Install website dependencies"
+dir = "web"
+run = "bun install --frozen-lockfile"
+
+[tasks.web-dev]
+description = "Run the website development server"
+depends = ["web-install"]
+dir = "web"
+run = "bun run dev"
+
+[tasks.web-build]
+description = "Build the website"
+depends = ["web-install"]
+dir = "web"
+run = "bun run build"
+
+[tasks.web-lint]
+description = "Lint the website"
+depends = ["web-install"]
+dir = "web"
+run = "bun run lint"
