@@ -5,6 +5,10 @@ publish = "out"
 
 [build.environment]
 BUN_VERSION = "1.3.14"
+# Netlify's dependency installer uses mise for its own Ruby/Python/Go shims.
+# Keep the repository's strict mise.lock enforcement for contributors without
+# applying it to Netlify's global tool installation phase.
+MISE_OVERRIDE_CONFIG_FILENAMES = "netlify-mise.toml"
 
 # Include the doc dir in the build ignore command.
 ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF . ../doc/"
