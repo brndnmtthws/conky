@@ -751,7 +751,11 @@ static void generate_text() {
   double time = get_time();
   next_update_time += ui;
   if (next_update_time < time || next_update_time > time + ui) {
-    next_update_time = time - fmod(time, ui) + ui;
+    /* Re-anchor to the next wall-clock boundary (expressed in monotonic time)
+     * so displayed clocks tick on the real second. fmod(get_realtime(), ui) is
+     * how far we are past the last wall boundary; subtract it from monotonic
+     * `time` to get that boundary, then add one interval. */
+    next_update_time = time - fmod(get_realtime(), ui) + ui;
   }
   last_update_time = current_update_time;
   total_updates++;
@@ -1853,7 +1857,10 @@ void main_loop() {
   get_system_details();
 
   last_update_time = 0.0;
-  next_update_time = get_time() - fmod(get_time(), active_update_interval());
+  /* Align the update grid to wall-clock (not monotonic) second boundaries so
+   * displayed clocks don't lag by the monotonic/realtime phase offset. This is
+   * <= now, so the first update still fires immediately. */
+  next_update_time = get_time() - fmod(get_realtime(), active_update_interval());
   info.looped = 0;
   while (terminate == 0 && (total_run_times.get(*state) == 0 ||
                             info.looped < total_run_times.get(*state))) {
