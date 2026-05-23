@@ -10,7 +10,7 @@ ninja = "1.13.2"
 uv = "0.11.16"
 
 [hooks]
-enter = "mise i -q"
+enter = "mise i -q && lefthook install >/dev/null"
 
 [tasks.doctor]
 description = "Check developer tools and common native build dependencies"
