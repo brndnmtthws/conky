@@ -1,6 +1,8 @@
 ARG IMAGE=registry.gitlab.com/brndnmtthws-oss/conky
 FROM ${IMAGE}/builder/fedora-33-base:latest
 
+ARG BUN_VERSION=1.3.14
+ARG BUN_LINUX_X64_SHA256=951ee2aee855f08595aeec6225226a298d3fea83a3dcd6465c09cbccdf7e848f
 ENV BUN_INSTALL=/root/.bun
 ENV PATH="${BUN_INSTALL}/bin:${PATH}"
 
@@ -11,6 +13,12 @@ RUN dnf -y -q install \
   libcxx-devel \
   libcxxabi-devel \
   llvm \
+  unzip \
   && dnf clean all \
-  && curl -fsSL https://bun.sh/install | bash -s -- bun-v1.3.14 \
+  && curl -fsSLo /tmp/bun.zip "https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/bun-linux-x64.zip" \
+  && echo "${BUN_LINUX_X64_SHA256}  /tmp/bun.zip" | sha256sum -c - \
+  && unzip -q /tmp/bun.zip -d /tmp \
+  && mkdir -p "${BUN_INSTALL}/bin" \
+  && mv /tmp/bun-linux-x64/bun "${BUN_INSTALL}/bin/bun" \
+  && rm -rf /tmp/bun.zip /tmp/bun-linux-x64 \
   && bun add --global lcov-summary

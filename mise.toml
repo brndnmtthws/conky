@@ -97,7 +97,7 @@ run = "cmake --build build --target check-clang-format"
 [tasks.web-install]
 description = "Install website dependencies"
 dir = "web"
-run = "bun install"
+run = "bun install --frozen-lockfile"
 
 [tasks.web-dev]
 description = "Run the website development server"
