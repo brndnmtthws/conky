@@ -141,6 +141,17 @@ double get_time() {
   return tv.tv_sec + (tv.tv_nsec * 1e-9);
 }
 
+/* Wall-clock (CLOCK_REALTIME) time in seconds. get_time() uses a monotonic
+ * clock for robust interval timing, but its second boundaries are offset from
+ * wall-clock seconds by an arbitrary, slowly drifting amount. Use this to
+ * align the update schedule to real-second boundaries so that displayed clocks
+ * (e.g. ${time}) tick on the wall second instead of lagging by that offset. */
+double get_realtime() {
+  struct timespec tv {};
+  clock_gettime(CLOCK_REALTIME, &tv);
+  return tv.tv_sec + (tv.tv_nsec * 1e-9);
+}
+
 #if defined(_POSIX_C_SOURCE) && !defined(__OpenBSD__) && !defined(__HAIKU__)
 std::filesystem::path to_real_path(const std::string &source) {
   wordexp_t p;
