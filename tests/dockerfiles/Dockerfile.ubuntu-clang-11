@@ -1,6 +1,9 @@
 ARG IMAGE=registry.gitlab.com/brndnmtthws-oss/conky
 FROM ${IMAGE}/builder/ubuntu-base:latest
 
+ENV BUN_INSTALL=/root/.bun
+ENV PATH="${BUN_INSTALL}/bin:${PATH}"
+
 RUN wget -q https://apt.llvm.org/llvm-snapshot.gpg.key \
   && apt-key add llvm-snapshot.gpg.key \
   && add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main' \
@@ -10,15 +13,14 @@ RUN wget -q https://apt.llvm.org/llvm-snapshot.gpg.key \
   clang-format-11 \
   clang-tidy-11 \
   clang-tools-11 \
+  curl \
   gcovr \
   libc++-11-dev \
   libc++abi-11-dev \
   lld-11 \
   lldb-11 \
   llvm-11 \
-  nodejs \
-  npm \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
-  && npm install -g lcov-summary \
-  && npm cache clean --force
+  && curl -fsSL https://bun.sh/install | bash -s -- bun-v1.3.14 \
+  && bun add --global lcov-summary

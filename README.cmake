@@ -1,5 +1,10 @@
 Hello, there.
 
+The preferred contributor bootstrap path is `mise install` followed by
+`mise run doctor`, `mise run configure`, `mise run build`, and `mise run test`.
+The direct CMake flow below remains useful when you want to run CMake manually
+or customize build options.
+
 Using CMake to build Conky is pretty easy, and here is how I do it:
 
 1. From the top level source dir, create a build working dir, and cd into it

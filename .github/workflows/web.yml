@@ -21,14 +21,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Use Node.js runtime for Next.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 20
       - name: Use Bun package manager
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.3.10
+          bun-version: 1.3.14
       - run: bun install --frozen-lockfile
         working-directory: web
       - run: bun run lint

@@ -1,13 +1,16 @@
 ARG IMAGE=registry.gitlab.com/brndnmtthws-oss/conky
 FROM ${IMAGE}/builder/fedora-33-base:latest
 
+ENV BUN_INSTALL=/root/.bun
+ENV PATH="${BUN_INSTALL}/bin:${PATH}"
+
 RUN dnf -y -q install \
   clang \
+  curl \
   gcovr \
   libcxx-devel \
   libcxxabi-devel \
   llvm \
-  npm \
   && dnf clean all \
-  && npm install -g lcov-summary \
-  && npm cache clean --force
+  && curl -fsSL https://bun.sh/install | bash -s -- bun-v1.3.14 \
+  && bun add --global lcov-summary

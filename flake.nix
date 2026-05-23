@@ -44,7 +44,7 @@
                 ++ [
                   alejandra # for beautifying flake
                   lefthook # for git hooks
-                  nodejs # for web/ stuff
+                  bun # for web/ stuff
                   # for docs
                   (python3.withPackages (ps: with ps; [jinja2]))
                 ];

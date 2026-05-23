@@ -135,8 +135,7 @@ void parse_scroll_arg(struct text_object *obj, const char *arg,
   int n1 = 0, n2 = 0;
   char dirarg[6];
 
-  sd = static_cast<struct scroll_data *>(malloc(sizeof(struct scroll_data)));
-  memset(sd, 0, sizeof(struct scroll_data));
+  sd = new scroll_data{};
 
   sd->resetcolor = get_current_text_color();
   sd->step = 1;
@@ -155,12 +154,14 @@ void parse_scroll_arg(struct text_object *obj, const char *arg,
   }
 
   if ((arg == nullptr) || sscanf(arg + n1, "%u %n", &sd->show, &n2) <= 0) {
-    free(sd);
+    delete sd;
 #ifdef BUILD_GUI
     free(obj->next);
 #endif
-    COMMAND_ARG_ERR("scroll", "scroll needs arguments: [left|right|wait] <length> [<step>] "
-             "[interval] <text>");
+    COMMAND_ARG_ERR(
+        "scroll",
+        "scroll needs arguments: [left|right|wait] <length> [<step>] "
+        "[interval] <text>");
   }
   n1 += n2;
 
@@ -335,5 +336,6 @@ void free_scroll(struct text_object *obj) {
   free_and_zero(sd->text);
   free_text_objects(obj->sub);
   free_and_zero(obj->sub);
-  free_and_zero(obj->data.opaque);
+  delete sd;
+  obj->data.opaque = nullptr;
 }
