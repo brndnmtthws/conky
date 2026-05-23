@@ -1861,10 +1861,12 @@ void get_system_details() {
   }
 #endif
 
-  if (info.system.wm_name != nullptr) {
-    LOG_INFO("'{}' {} session running", info.system.wm_name, session_ty);
-  } else {
-    LOG_INFO("unknown {} session running", session_ty);
+  if (session_ty != nullptr) {
+    if (info.system.wm_name != nullptr) {
+      LOG_INFO("'{}' {} session running", info.system.wm_name, session_ty);
+    } else {
+      LOG_INFO("unknown {} session running", session_ty);
+    }
   }
 }
 
