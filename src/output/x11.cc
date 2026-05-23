@@ -1399,6 +1399,14 @@ void xdbe_swap_buffers() {
     XSetForeground(display, window.gc, bg);
     XFillRectangle(display, window.drawable, window.gc, 0, 0,
                    window.geometry.width(), window.geometry.height());
+
+    /* Force the swap to be processed now. Under Xwayland a swap left in the
+     * output buffer can be coalesced/reordered with later requests by the
+     * compositor, which momentarily re-presents the previous frame (a visible
+     * "frame repeat", e.g. the clock's seconds briefly bouncing back). A plain
+     * XFlush only queues the request and is not enough; XSync blocks until the
+     * server has processed it, giving a clean, ordered present. */
+    XSync(display, False);
   }
 }
 #else
