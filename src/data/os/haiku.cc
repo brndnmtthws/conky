@@ -31,9 +31,9 @@
 
 #include "../../conky.h"
 #include "../../logging.h"
-#include "haiku.h"
 #include "../network/net_stat.h"
 #include "../top.h"
+#include "haiku.h"
 
 static short cpu_setup = 0;
 
@@ -98,7 +98,9 @@ void get_cpu_count(void) {
   info.cpu_count = si.cpu_count;
 
   info.cpu_usage = (float *)malloc((info.cpu_count + 1) * sizeof(float));
-  if (info.cpu_usage == nullptr) { SYSTEM_ERR("failed to allocate cpu_usage array"); }
+  if (info.cpu_usage == nullptr) {
+    SYSTEM_ERR("failed to allocate cpu_usage array");
+  }
 }
 
 int update_cpu_usage() {
@@ -118,7 +120,9 @@ int update_cpu_usage() {
 
   if (!prev_cpuinfo) {
     prev_cpuinfo = (cpu_info *)malloc(malloc_cpu_size);
-    if (prev_cpuinfo == nullptr) { SYSTEM_ERR("failed to allocate prev_cpuinfo array"); }
+    if (prev_cpuinfo == nullptr) {
+      SYSTEM_ERR("failed to allocate prev_cpuinfo array");
+    }
     memset(prev_cpuinfo, 0, malloc_cpu_size);
   }
 
@@ -146,8 +150,7 @@ int update_cpu_usage() {
   return 1;
 }
 
-void free_cpu(struct text_object *) { /* no-op */
-}
+void free_cpu(struct text_object *) { /* no-op */ }
 
 int update_load_average() {
   // TODO
@@ -262,10 +265,9 @@ bool is_conky_already_running(void) {
   int32 instances = 0;
 
   while (get_next_team_info(&team_cookie, &team_info) >= B_OK) {
-    while (get_next_thread_info(team_info.team, &thread_cookie, &thread_info) >= B_OK) {
-      if (!strcmp("conky", thread_info.name)) {
-        ++instances;
-      }
+    while (get_next_thread_info(team_info.team, &thread_cookie, &thread_info) >=
+           B_OK) {
+      if (!strcmp("conky", thread_info.name)) { ++instances; }
     }
   }
   return instances > 1;

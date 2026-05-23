@@ -57,12 +57,12 @@
 #include <mutex>
 
 #include "../../conky.h"
-#include "../hardware/diskio.h"
-#include "freebsd.h"
-#include "../../logging.h"
-#include "../network/net_stat.h"
 #include "../../content/text_object.h"
+#include "../../logging.h"
+#include "../hardware/diskio.h"
+#include "../network/net_stat.h"
 #include "../top.h"
+#include "freebsd.h"
 
 #define GETSYSCTL(name, var) getsysctl(name, &(var), sizeof(var))
 #define KELVTOC(x) ((x - 2732) / 10.0)
@@ -310,7 +310,9 @@ void get_cpu_count(void) {
   }
 
   info.cpu_usage = (float *)malloc((info.cpu_count + 1) * sizeof(float));
-  if (info.cpu_usage == nullptr) { SYSTEM_ERR("failed to allocate cpu_usage array"); }
+  if (info.cpu_usage == nullptr) {
+    SYSTEM_ERR("failed to allocate cpu_usage array");
+  }
 }
 
 struct cpu_info {
@@ -397,8 +399,7 @@ int update_cpu_usage(void) {
   return 0;
 }
 
-void free_cpu(struct text_object *) { /* no-op */
-}
+void free_cpu(struct text_object *) { /* no-op */ }
 
 int update_load_average(void) {
   double v[3];
@@ -432,8 +433,7 @@ double get_acpi_temperature(int fd) {
 // not exist. On the contrary, if a non-leaf entry *does exist*, then EISDIR
 // errno is returned, meaning it exists, but it is an array/directory with
 // more elements hanging from it.
-static int sysctl_mib_exists(const char *mib)
-{
+static int sysctl_mib_exists(const char *mib) {
   size_t len;
   void *p = NULL;
   sysctlbyname(mib, p, &len, NULL, 0);
@@ -446,12 +446,12 @@ static void get_battery_stats(int *battime, int *batcapacity, int *batstate,
   int ac_present = sysctl_mib_exists("hw.acpi.acline");
 
   if (!battery_present && !ac_present) {
-	  // According to acpi(4), hw.acpi.acline is optional and only present
-	  // if supported by the hardware. If no battery and acline is detected,
-	  // for sure we are running on an AC line.
-	  *ac = 1;
-	  *batstate = 7;
-	  return;
+    // According to acpi(4), hw.acpi.acline is optional and only present
+    // if supported by the hardware. If no battery and acline is detected,
+    // for sure we are running on an AC line.
+    *ac = 1;
+    *batstate = 7;
+    return;
   }
 
   if (battery_present) {
@@ -805,9 +805,7 @@ bool is_conky_already_running(void) {
   }
 
   for (int i = 0; i < entries && instances < 2; ++i) {
-    if (!strcmp("conky", kp[i].ki_comm)) {
-        ++instances;
-    }
+    if (!strcmp("conky", kp[i].ki_comm)) { ++instances; }
   }
 
 cleanup:

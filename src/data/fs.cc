@@ -34,9 +34,9 @@
 #include <cctype>
 #include <cerrno>
 #include "../conky.h"
-#include "../logging.h"
 #include "../content/specials.h"
 #include "../content/text_object.h"
+#include "../logging.h"
 
 #ifdef HAVE_SYS_STATFS_H
 #include <sys/statfs.h>
@@ -63,7 +63,7 @@
 
 #if !defined(HAVE_STRUCT_STATFS_F_FSTYPENAME) && !defined(__OpenBSD__) &&  \
     !defined(__FreeBSD__) && !defined(__DragonFly__) && !defined(__sun) && \
-    !defined(__HAIKU__) && !(defined(__APPLE__) && defined(__MACH__)) && \
+    !defined(__HAIKU__) && !(defined(__APPLE__) && defined(__MACH__)) &&   \
     !defined(__NetBSD__)
 #include <mntent.h>
 #endif
@@ -124,14 +124,14 @@ struct fs_stat *prepare_fs_stat(const char *s) {
 }
 
 #if defined(__APPLE__)
-  #define statfs_func statfs
-  #define statfs_struct statfs
+#define statfs_func statfs
+#define statfs_struct statfs
 #elif defined(__NetBSD__)
-  #define statfs_func statvfs
-  #define statfs_struct statvfs
+#define statfs_func statvfs
+#define statfs_struct statvfs
 #else
-  #define statfs_func statfs64
-  #define statfs_struct statfs64
+#define statfs_func statfs64
+#define statfs_struct statfs64
 #endif /* defined(__APPLE__) */
 
 static void update_fs_stat(struct fs_stat *fs) {
@@ -144,7 +144,7 @@ static void update_fs_stat(struct fs_stat *fs) {
     fs->free = (long long)s.f_bfree * s.f_frsize;
     (void)strncpy(fs->type, s.f_basetype, sizeof(fs->type));
 #else
-  struct statfs_struct s {};
+  struct statfs_struct s{};
 
   if (statfs_func(fs->path, &s) == 0) {
     fs->size = static_cast<long long>(s.f_blocks) * s.f_bsize;
@@ -171,7 +171,7 @@ void get_fs_type(const char *path, char *result) {
     defined(__OpenBSD__) || defined(__DragonFly__) || defined(__HAIKU__) || \
     (defined(__APPLE__) && defined(__MACH__)) || defined(__NetBSD__)
 
-  struct statfs_struct s {};
+  struct statfs_struct s{};
   if (statfs_func(path, &s) == 0) {
     strncpy(result, s.f_fstypename, DEFAULT_TEXT_BUFFER_SIZE);
   } else {
@@ -189,7 +189,8 @@ void get_fs_type(const char *path, char *result) {
   char *slash;
 
   if (mtab == nullptr) {
-    LOG_ERROR("can't read /proc/mounts to determine fs type for '{}': {}", path, strerror(errno));
+    LOG_ERROR("can't read /proc/mounts to determine fs type for '{}': {}", path,
+              strerror(errno));
     strncpy(result, "unknown", DEFAULT_TEXT_BUFFER_SIZE);
     return;
   }
@@ -199,8 +200,7 @@ void get_fs_type(const char *path, char *result) {
   // find our path in the mtab
   search_path = strdup(path);
   do {
-    while ((match = strcmp(search_path, me->mnt_dir)) && getmntent(mtab))
-      ;
+    while ((match = strcmp(search_path, me->mnt_dir)) && getmntent(mtab));
     if (!match) break;
     fseek(mtab, 0, SEEK_SET);
     slash = strrchr(search_path, '/');

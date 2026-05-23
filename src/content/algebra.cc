@@ -32,9 +32,9 @@
 #include <cstdlib>
 #include <cstring>
 #include <memory>
-#include "config.h"
 #include "../conky.h"
 #include "../logging.h"
+#include "config.h"
 
 /* find the operand in the given expression
  * returns the index of the first op character or -1 on error
@@ -44,7 +44,7 @@ int find_match_op(const char *expr) {
 
   /* if first operand is a string, skip it */
   if (expr[idx] == '"') {
-    for (idx=1; expr[idx] && expr[idx] != '"'; idx++);
+    for (idx = 1; expr[idx] && expr[idx] != '"'; idx++);
     idx++;
   }
 
@@ -199,15 +199,16 @@ int compare(const char *expr) {
   type1 = get_arg_type(expr_dup);
   type2 = get_arg_type(expr_dup + idx + 1);
   if (type1 == ARG_BAD || type2 == ARG_BAD) {
-    LOG_ERROR("bad compare arguments: '{}' and '{}'", expr_dup, (expr_dup + idx + 1));
+    LOG_ERROR("bad compare arguments: '{}' and '{}'", expr_dup,
+              (expr_dup + idx + 1));
     free(expr_dup);
     return -2;
   }
   if (type1 == ARG_LONG && type2 == ARG_DOUBLE) { type1 = ARG_DOUBLE; }
   if (type1 == ARG_DOUBLE && type2 == ARG_LONG) { type2 = ARG_DOUBLE; }
   if (type1 != type2) {
-    LOG_ERROR("cannot compare arguments '{}' and '{}' of different types", expr_dup,
-             (expr_dup + idx + 1));
+    LOG_ERROR("cannot compare arguments '{}' and '{}' of different types",
+              expr_dup, (expr_dup + idx + 1));
     free(expr_dup);
     return -2;
   }

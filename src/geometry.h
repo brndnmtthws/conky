@@ -432,15 +432,11 @@ struct rect {
 
   /// @brief Rectangle width.
   /// @return width of this rectangle.
-  inline T width() const {
-    return size().x();
-  }
+  inline T width() const { return size().x(); }
 
   /// @brief Rectangle height.
   /// @return height of this rectangle.
-  inline T height() const {
-    return size().y();
-  }
+  inline T height() const { return size().y(); }
 
   /// @brief Returns rectangle component at `index`.
   /// @param index component index.
@@ -663,8 +659,8 @@ struct fmt::formatter<conky::vec<T, Length>> : fmt::formatter<T> {
 template <typename T, conky::rect_kind Kind>
 struct fmt::formatter<conky::rect<T, Kind>> : fmt::formatter<T> {
   auto format(const conky::rect<T, Kind> &r, fmt::format_context &ctx) const {
-    return fmt::format_to(ctx.out(), "rect({}x{} @ {}, {})",
-                          r.width(), r.height(), r.x(), r.y());
+    return fmt::format_to(ctx.out(), "rect({}x{} @ {}, {})", r.width(),
+                          r.height(), r.x(), r.y());
   }
 };
 

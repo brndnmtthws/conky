@@ -21,8 +21,8 @@
  */
 
 #include "../../conky.h"
-#include "../../logging.h"
 #include "../../content/text_object.h"
+#include "../../logging.h"
 
 #include <cmath>
 #include <cstdio>
@@ -164,18 +164,17 @@ MOC_PRINT_GENERATOR(rate, "0kHz")
 
 #undef MOC_PRINT_GENERATOR
 
-double moc_barval(struct text_object * obj) {
+double moc_barval(struct text_object *obj) {
   (void)obj;
   uint32_t period = std::max(
-      lround(music_player_interval.get(*state) / active_update_interval()),
-      1l);
+      lround(music_player_interval.get(*state) / active_update_interval()), 1l);
   const moc_result &moc = conky::register_cb<moc_cb>(period)->get_result_copy();
   double progress;
 
   int totalsec = atoi(moc.totalsec.c_str());
   int cursec = atoi(moc.cursec.c_str());
 
-  if(totalsec == 0) {
+  if (totalsec == 0) {
     progress = 0.0;
   } else {
     progress = ((double)cursec) / ((double)totalsec);
@@ -184,6 +183,6 @@ double moc_barval(struct text_object * obj) {
   return progress;
 }
 
-uint8_t moc_percentage(struct text_object *obj){
+uint8_t moc_percentage(struct text_object *obj) {
   return round_to_positive_int(100.0f * moc_barval(obj));
 }

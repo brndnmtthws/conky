@@ -35,10 +35,10 @@
 #include <cerrno>
 #include <cstring>
 #include "../../conky.h"
-#include "../../logging.h"
-#include "net/if.h"
 #include "../../content/specials.h"
 #include "../../content/text_object.h"
+#include "../../logging.h"
+#include "net/if.h"
 #if defined(__sun)
 #include <sys/sockio.h>
 #endif
@@ -528,7 +528,7 @@ void free_if_up(struct text_object *obj) { free_and_zero(obj->data.opaque); }
 /* We should check if this is ok with OpenBSD and NetBSD as well. */
 int interface_up(struct text_object *obj) {
   int fd;
-  struct ifreq ifr {};
+  struct ifreq ifr{};
   auto *dev = static_cast<char *>(obj->data.opaque);
 
   if (dev == nullptr) { return 0; }
@@ -544,7 +544,9 @@ int interface_up(struct text_object *obj) {
   strncpy(ifr.ifr_name, dev, IFNAMSIZ);
   if (ioctl(fd, SIOCGIFFLAGS, &ifr) != 0) {
     /* if device does not exist, treat like not up */
-    if (errno != ENODEV && errno != ENXIO) { LOG_ERROR("SIOCGIFFLAGS: {}", strerror(errno)); }
+    if (errno != ENODEV && errno != ENXIO) {
+      LOG_ERROR("SIOCGIFFLAGS: {}", strerror(errno));
+    }
     goto END_FALSE;
   }
 

@@ -29,10 +29,10 @@
 
 #include <inttypes.h>
 #include <time.h>
-#include "config.h"
 #include "../conky.h"
-#include "../logging.h"
 #include "../content/text_object.h"
+#include "../logging.h"
+#include "config.h"
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)

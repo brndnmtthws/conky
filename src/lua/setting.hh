@@ -293,8 +293,7 @@ simple_config_setting<T, Traits>::do_convert(lua::state &l, int index) {
     LOG_ERROR(
         "invalid value of type '{}' for setting '{}', "
         "expected type '{}'",
-        l.type_name(l.type(index)), Base::name,
-        l.type_name(Traits::type));
+        l.type_name(l.type(index)), Base::name, l.type_name(Traits::type));
     return {default_value, false};
   }
 
@@ -361,7 +360,8 @@ class range_config_setting : public simple_config_setting<T, Traits> {
                                                             int index) {
     auto ret = Base::do_convert(l, index);
     if (ret.second && !between(ret.first, min, max)) {
-      LOG_ERROR("value {} is out of range for setting '{}' (expected {}-{})", ret.first, Base::name, min, max);
+      LOG_ERROR("value {} is out of range for setting '{}' (expected {}-{})",
+                ret.first, Base::name, min, max);
       // we ignore out-of-range values. an alternative would be to clamp them.
       // do we want to do that?
       ret.second = false;

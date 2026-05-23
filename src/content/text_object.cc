@@ -29,9 +29,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "config.h"
 #include "../conky.h"
 #include "../logging.h"
+#include "config.h"
 
 void gen_free_opaque(struct text_object *obj) {
   free_and_zero(obj->data.opaque);
@@ -72,7 +72,9 @@ int append_object(struct text_object *root, struct text_object *obj) {
 
   /* update pointers of the list to append to */
   if (end != nullptr) {
-    if (end->next != nullptr) { CRIT_ERR("text_object list leak: non-null end->next reassigned"); }
+    if (end->next != nullptr) {
+      CRIT_ERR("text_object list leak: non-null end->next reassigned");
+    }
     end->next = obj;
   } else {
     root->next = obj;

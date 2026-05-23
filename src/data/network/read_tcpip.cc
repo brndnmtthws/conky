@@ -37,8 +37,8 @@
 #include <cstdlib>
 #include <string>
 #include "../../conky.h"
-#include "../../logging.h"
 #include "../../content/text_object.h"
+#include "../../logging.h"
 
 #ifndef SOCK_CLOEXEC
 #define SOCK_CLOEXEC O_CLOEXEC
@@ -65,7 +65,8 @@ void parse_read_tcpip_arg(struct text_object *obj, const char *arg,
     strncpy(rtd->host, "localhost", 10);
   }
   if (rtd->port < 1 || rtd->port > 65535) {
-    COMMAND_ARG_ERR("read_tcp/read_udp",
+    COMMAND_ARG_ERR(
+        "read_tcp/read_udp",
         "read_tcp and read_udp need a port from 1 to 65535 as argument");
   }
 
@@ -95,7 +96,7 @@ void parse_tcp_ping_arg(struct text_object *obj, const char *arg,
   }
   if ((he = gethostbyname(hostname)) == nullptr) {
     LOG_WARNING("tcp_ping: problem resolving '{}', using 'localhost' instead",
-             hostname);
+                hostname);
     if ((he = gethostbyname("localhost")) == nullptr) {
       free(hostname);
       SYSTEM_ERR("tcp_ping: resolving 'localhost' also failed");
@@ -110,8 +111,7 @@ void parse_tcp_ping_arg(struct text_object *obj, const char *arg,
 }
 
 void print_tcp_ping(struct text_object *obj, char *p, unsigned int p_max_size) {
-  struct timeval tv1 {
-  }, tv2{}, timeout{};
+  struct timeval tv1{}, tv2{}, timeout{};
   auto *addr = static_cast<struct sockaddr_in *>(obj->data.opaque);
   int addrlen = sizeof(struct sockaddr);
   int sock = socket(addr->sin_family, SOCK_STREAM | SOCK_CLOEXEC, IPPROTO_TCP);
@@ -136,7 +136,8 @@ void print_tcp_ping(struct text_object *obj, char *p, unsigned int p_max_size) {
         gettimeofday(&tv2, nullptr);
         usecdiff =
             ((tv2.tv_sec - tv1.tv_sec) * 1000000) + tv2.tv_usec - tv1.tv_usec;
-        if (getsockopt(sock, SOL_SOCKET, SO_ERROR, &ret, &len) == 0 && ret == 0) {
+        if (getsockopt(sock, SOL_SOCKET, SO_ERROR, &ret, &len) == 0 &&
+            ret == 0) {
           snprintf(p, p_max_size, "%llu", (usecdiff / 1000U));
         } else {
 #define TCP_PING_FAILED "down"
@@ -158,9 +159,9 @@ void print_read_tcpip(struct text_object *obj, char *p, int p_max_size,
                       int protocol) {
   int sock, received;
   fd_set readfds;
-  struct timeval tv {};
+  struct timeval tv{};
   auto *rtd = static_cast<struct read_tcpip_data *>(obj->data.opaque);
-  struct addrinfo hints {};
+  struct addrinfo hints{};
   struct addrinfo *airesult, *rp;
   char portbuf[8];
 
@@ -174,7 +175,7 @@ void print_read_tcpip(struct text_object *obj, char *p, int p_max_size,
   snprintf(portbuf, 8, "%u", rtd->port);
   if (getaddrinfo(rtd->host, portbuf, &hints, &airesult) != 0) {
     LOG_ERROR("{}: problem resolving the hostname",
-             protocol == IPPROTO_TCP ? "read_tcp" : "read_udp");
+              protocol == IPPROTO_TCP ? "read_tcp" : "read_udp");
     return;
   }
   for (rp = airesult; rp != nullptr; rp = rp->ai_next) {
@@ -190,7 +191,7 @@ void print_read_tcpip(struct text_object *obj, char *p, int p_max_size,
       LOG_ERROR("read_tcp: couldn't create a connection");
     } else {
       LOG_ERROR("read_udp: couldn't listen");  // other error because udp is
-                                              // connectionless
+                                               // connectionless
     }
     return;
   }

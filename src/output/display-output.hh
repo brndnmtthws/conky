@@ -73,7 +73,7 @@ class display_output_base {
   bool is_active = false;
   bool is_graphical = false;
 
-  explicit display_output_base(const std::string &name) : name(name){};
+  explicit display_output_base(const std::string &name) : name(name) {};
 
   virtual ~display_output_base() {}
 

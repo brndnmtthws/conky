@@ -107,7 +107,7 @@ static kstat_named_t *get_kstat(const char *module, int inst, const char *name,
   ksp = kstat_lookup(kstat, (char *)module, inst, (char *)name);
   if (ksp == nullptr) {
     LOG_ERROR("cannot lookup kstat {}:{}:{}:{} {}", module, inst, name, stat,
-             strerror(errno));
+              strerror(errno));
     pthread_mutex_unlock(&kstat_mtx);
     return nullptr;
   }
@@ -120,7 +120,7 @@ static kstat_named_t *get_kstat(const char *module, int inst, const char *name,
       return knp;
     } else {
       LOG_ERROR("kstat {}:{}:{}:{} has unexpected type {}", module, inst, name,
-               stat, ksp->ks_type);
+                stat, ksp->ks_type);
       pthread_mutex_unlock(&kstat_mtx);
       return nullptr;
     }
@@ -341,8 +341,7 @@ int update_cpu_usage(void) {
   return 0;
 }
 
-void free_cpu(struct text_object *) { /* no-op */
-}
+void free_cpu(struct text_object *) { /* no-op */ }
 
 void update_proc_entry(struct process *p) {
   psinfo_t proc;

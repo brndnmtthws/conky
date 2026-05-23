@@ -35,11 +35,11 @@
 #include <clocale>
 #include "../../common.h"
 #include "../../conky.h"
-#include "../hardware/diskio.h"
+#include "../../content/temphelper.h"
 #include "../../logging.h"
+#include "../hardware/diskio.h"
 #include "../network/net_stat.h"
 #include "../proc.h"
-#include "../../content/temphelper.h"
 #ifndef HAVE_CLOCK_GETTIME
 #include <sys/time.h>
 #endif
@@ -1102,8 +1102,7 @@ int update_cpu_usage(void) {
   return 0;
 }
 
-void free_cpu(struct text_object *) { /* no-op */
-}
+void free_cpu(struct text_object *) { /* no-op */ }
 
 // fscanf() that reads floats with points even if you are using a locale where
 // floats are with commas
@@ -1455,7 +1454,7 @@ static void parse_sysfs_sensor(struct text_object *obj, const char *arg,
     return;
   }
   LOG_DEBUG("parsed {} args: '{}' '{}' {} {} {}", type, buf1, buf2, n, factor,
-       offset);
+            offset);
   sf = (struct sysfs *)malloc(sizeof(struct sysfs));
   memset(sf, 0, sizeof(struct sysfs));
   sf->fd = open_sysfs_sensor(path, (*buf1) ? buf1 : 0, buf2, n, &sf->arg,
@@ -1546,7 +1545,8 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
   // open the CPU information file
   f = open_file("/proc/cpuinfo", &reported);
   if (!f) {
-    LOG_ERROR("failed to access '/proc/cpuinfo' at get_freq: {}", strerror(errno));
+    LOG_ERROR("failed to access '/proc/cpuinfo' at get_freq: {}",
+              strerror(errno));
     return 0;
   }
 
@@ -1654,7 +1654,8 @@ static char get_voltage(char *p_client_buffer, size_t client_buffer_size,
     }
     fclose(f);
   } else {
-    LOG_ERROR("failed to access '{}' at get_voltage: {}", current_freq_file, strerror(errno));
+    LOG_ERROR("failed to access '{}' at get_voltage: {}", current_freq_file,
+              strerror(errno));
     return 0;
   }
 
@@ -1674,7 +1675,8 @@ static char get_voltage(char *p_client_buffer, size_t client_buffer_size,
     }
     fclose(f);
   } else {
-    LOG_ERROR("failed to access '{}' at get_voltage: {}", current_freq_file, strerror(errno));
+    LOG_ERROR("failed to access '{}' at get_voltage: {}", current_freq_file,
+              strerror(errno));
     return 0;
   }
   snprintf(p_client_buffer, client_buffer_size, p_format,
@@ -1719,7 +1721,8 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size) {
     return;
   }
   memset(buf, 0, sizeof(buf));
-  if (fscanf(fp, "%*s %99s", buf) <= 0) LOG_ERROR("fscanf: {}", strerror(errno));
+  if (fscanf(fp, "%*s %99s", buf) <= 0)
+    LOG_ERROR("fscanf: {}", strerror(errno));
   fclose(fp);
 
   snprintf(p_client_buffer, client_buffer_size, "%s", buf);
@@ -1797,7 +1800,8 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
       return;
     }
     memset(buf, 0, sizeof(buf));
-    if (fscanf(fp, "%*s %99s", buf) <= 0) LOG_ERROR("fscanf: {}", strerror(errno));
+    if (fscanf(fp, "%*s %99s", buf) <= 0)
+      LOG_ERROR("fscanf: {}", strerror(errno));
     fclose(fp);
 
     snprintf(p_client_buffer, client_buffer_size, "%s", buf);
@@ -2380,24 +2384,20 @@ void get_battery_power_draw(char *buffer, unsigned int n, const char *bat) {
 
   snprintf(path, 255, SYSFS_BATTERY_BASE_PATH "/%s/current_now", bat);
   fp = open_file(path, &reported_other);
-  if (fp == nullptr)
-    return;
+  if (fp == nullptr) return;
   ret = fgets(value, 256, fp);
   fclose(fp);
 
-  if (ret == nullptr)
-    return;
+  if (ret == nullptr) return;
   double result = strtol(value, NULL, 10) * 1e-6;
 
   snprintf(path, 255, SYSFS_BATTERY_BASE_PATH "/%s/voltage_now", bat);
   fp = open_file(path, &reported_other);
-  if (fp == nullptr)
-    return;
+  if (fp == nullptr) return;
   ret = fgets(value, 256, fp);
   fclose(fp);
 
-  if (fp == nullptr)
-    return;
+  if (fp == nullptr) return;
   result *= strtol(value, NULL, 10) * 1e-6;
   snprintf(buffer, n, "%.1f", result);
 }
@@ -2828,11 +2828,10 @@ void print_distribution(struct text_object * /*obj*/, char *p,
   // Alternatives that are already handled by above file:
   // /etc/lsb-release - Debian/Ubuntu only, LSB spec
   // /etc/redhat-release - single string
-  // /etc/centos-release - single string e.g. "CentOS Linux release 7.9.2009 (Core)"
-  // /etc/fedora-release - single string
-  // /etc/debian_version - version only
-  // /etc/alpine-release - version only
-  // /etc/arch-release - single string: "Arch Linux"
+  // /etc/centos-release - single string e.g. "CentOS Linux release 7.9.2009
+  // (Core)" /etc/fedora-release - single string /etc/debian_version - version
+  // only /etc/alpine-release - version only /etc/arch-release - single string:
+  // "Arch Linux"
 
   // 2) Fallback: parse /proc/version
   // This file doesn't necessarily have distribution name in it (e.g. on Arch).
@@ -3225,21 +3224,15 @@ bool is_conky_already_running(void) {
   while ((ent = readdir(dir)) != NULL) {
     char *endptr = ent->d_name;
     long lpid = strtol(ent->d_name, &endptr, 10);
-    if (*endptr != '\0') {
-      continue;
-    }
+    if (*endptr != '\0') { continue; }
 
     snprintf(buf, sizeof(buf), "/proc/%ld/stat", lpid);
     FILE *fp = fopen(buf, "r");
-    if (!fp) {
-      continue;
-    }
+    if (!fp) { continue; }
 
     if (fgets(buf, sizeof(buf), fp) != NULL) {
       char *conky = strstr(buf, "(conky)");
-      if (conky) {
-        instances++;
-      }
+      if (conky) { instances++; }
     }
     fclose(fp);
   }

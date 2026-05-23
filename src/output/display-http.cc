@@ -85,7 +85,8 @@ class out_to_http_setting : public conky::simple_config_setting<bool> {
       if (http_port.get(*state) == 10080) {
         LOG_WARNING(
             "port {} is blocked by browsers like Firefox and Chromium, "
-            "you may want to change http_port", http_port.get(*state));
+            "you may want to change http_port",
+            http_port.get(*state));
       }
       httpd =
           MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, http_port.get(*state),

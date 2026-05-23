@@ -28,20 +28,20 @@
  */
 
 #include "exec.h"
-#include <cerrno>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <cerrno>
 #include <cmath>
 #include <cstdio>
 #include <mutex>
 #include <string>
 #include "../conky.h"
-#include "../core.h"
-#include "../logging.h"
 #include "../content/specials.h"
 #include "../content/text_object.h"
+#include "../core.h"
+#include "../logging.h"
 #include "../update-cb.hh"
 
 struct exec_data {
@@ -122,7 +122,9 @@ static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
     close(parentend);
 
     // by dupping childend, the returned fd will have close-on-exec turned off
-    if (fcntl(childend, F_DUPFD, 0) == -1) { LOG_ERROR("failed to dup child fd: {}", strerror(errno)); }
+    if (fcntl(childend, F_DUPFD, 0) == -1) {
+      LOG_ERROR("failed to dup child fd: {}", strerror(errno));
+    }
     close(childend);
 
     execl("/bin/sh", "sh", "-c", remove_excess_quotes(command),
@@ -299,7 +301,8 @@ void scan_exec_arg(struct text_object *obj, const char *arg, exec_flag flags) {
                               : graph_parent_obj_key);
     cmd = buf;
     if (cmd == nullptr) {
-      LOG_ERROR("error parsing execgraph arguments: '{}'", arg ? arg : "(null)");
+      LOG_ERROR("error parsing execgraph arguments: '{}'",
+                arg ? arg : "(null)");
     }
 #endif /* BUILD_GUI */
   }

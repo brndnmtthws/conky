@@ -42,8 +42,8 @@
 #include <filesystem>
 #include <memory>
 
-#include "content/colours.hh"
 #include "common.h" /* at least for struct dns_data */
+#include "content/colours.hh"
 #include "lua/luamm.hh"
 
 #if defined(HAS_MCHECK_H)

@@ -1,7 +1,7 @@
 #include "catch2/catch.hpp"
 
-#include <content/algebra.h>
 #include <config.h>
+#include <content/algebra.h>
 
 TEST_CASE("GetMatchTypeTest - ValidOperators") {
   REQUIRE(get_match_type("a==b") == OP_EQ);

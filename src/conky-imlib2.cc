@@ -24,9 +24,9 @@
 #include "conky-imlib2.h"
 
 #include "common.h"
-#include "output/display-output.hh"
-#include "logging.h"
 #include "content/text_object.h"
+#include "logging.h"
+#include "output/display-output.hh"
 
 #include <Imlib2.h>
 #include <climits>
@@ -127,7 +127,10 @@ void cimlib_add_image(const char *args) {
   memset(cur, 0, sizeof(struct image_list_s));
 
   if (sscanf(args, "%1023s", cur->name) == 0) {
-    LOG_ERROR("invalid args for $image, format is '<path to image> (-p x,y) (-s WxH) (-n) (-f interval)' (got '{}')", args);
+    LOG_ERROR(
+        "invalid args for $image, format is '<path to image> (-p x,y) (-s WxH) "
+        "(-n) (-f interval)' (got '{}')",
+        args);
     delete[] cur;
     return;
   }
@@ -199,7 +202,9 @@ static void cimlib_draw_image(struct image_list_s *cur, int *clip_x,
   }
   rep = 0; /* reset so disappearing images are reported */
 
-  LOG_DEBUG("drawing image '{}' at ({},{}) scaled to {}x{}, cache interval {} (no_cache {})",
+  LOG_DEBUG(
+      "drawing image '{}' at ({},{}) scaled to {}x{}, cache interval {} "
+      "(no_cache {})",
       cur->name, cur->x, cur->y, cur->w, cur->h, cur->flush_interval,
       cur->no_cache);
 

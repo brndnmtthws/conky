@@ -33,15 +33,15 @@
 #include <string.h>
 
 #if defined(__NetBSD__)
-  #include <uvm/uvm_extern.h>
-  #include <uvm/uvm_param.h>
+#include <uvm/uvm_extern.h>
+#include <uvm/uvm_param.h>
 #elif defined(__OpenBSD__)
-  #include <sys/proc.h>
-  #include <sys/sched.h>
-  #include <sys/swap.h>
-  #include <sys/vmmeter.h>
+#include <sys/proc.h>
+#include <sys/sched.h>
+#include <sys/swap.h>
+#include <sys/vmmeter.h>
 #else
-  #error Not supported BSD system
+#error Not supported BSD system
 #endif
 
 #include "../top.h"
@@ -54,9 +54,7 @@ static bool cpu_initialised = false;
 static struct bsdcommon::cpu_load *cpu_loads = nullptr;
 
 bool bsdcommon::init_kvm() {
-  if (kvm_initialised) {
-      return true;
-  }
+  if (kvm_initialised) { return true; }
 
   kd = kvm_open(nullptr, nullptr, nullptr, KVM_NO_FILES, kvm_errbuf);
   if (kd == nullptr) {
@@ -69,9 +67,7 @@ bool bsdcommon::init_kvm() {
 }
 
 void bsdcommon::deinit_kvm() {
-  if (!kvm_initialised || kd == nullptr) {
-    return;
-  }
+  if (!kvm_initialised || kd == nullptr) { return; }
 
   kvm_close(kd);
 }
@@ -103,14 +99,14 @@ void bsdcommon::get_cpu_count(float **cpu_usage, unsigned int *cpu_count) {
   if (*cpu_usage == nullptr) {
     // [0] - Total CPU
     // [1, 2, ... ] - CPU0, CPU1, ...
-    *cpu_usage = (float*)calloc(ncpu + 1, sizeof(float));
+    *cpu_usage = (float *)calloc(ncpu + 1, sizeof(float));
     if (*cpu_usage == nullptr) {
       SYSTEM_ERR("failed to allocate cpu_usage array");
     }
   }
 
   if (cpu_loads == nullptr) {
-    cpu_loads = (struct cpu_load*)calloc(ncpu + 1, sizeof(struct cpu_load));
+    cpu_loads = (struct cpu_load *)calloc(ncpu + 1, sizeof(struct cpu_load));
     if (cpu_loads == nullptr) {
       SYSTEM_ERR("failed to allocate cpu_loads array");
     }
@@ -127,7 +123,7 @@ void bsdcommon::update_cpu_usage(float **cpu_usage, unsigned int *cpu_count) {
   int mib_cpu0[2] = {CTL_KERN, KERN_CPTIME};
   int mib_cpun[3] = {CTL_KERN, KERN_CPTIME2, 0};
 #else
-  #error Not supported BSD system
+#error Not supported BSD system
 #endif
 
   size_t size = 0;
@@ -140,13 +136,11 @@ void bsdcommon::update_cpu_usage(float **cpu_usage, unsigned int *cpu_count) {
 
   size = sizeof(cp_time0);
   if (sysctl(mib_cpu0, 2, &cp_time0, &size, nullptr, 0) != 0) {
-      LOG_ERROR("unable to get cpu time for cpu0");
-      return;
+    LOG_ERROR("unable to get cpu time for cpu0");
+    return;
   }
 
-  for (int j = 0; j < CPUSTATES; ++j) {
-    total += cp_time0[j];
-  }
+  for (int j = 0; j < CPUSTATES; ++j) { total += cp_time0[j]; }
   used = total - cp_time0[CP_IDLE];
 
   if ((total - cpu_loads[0].old_total) != 0) {
@@ -169,12 +163,10 @@ void bsdcommon::update_cpu_usage(float **cpu_usage, unsigned int *cpu_count) {
 
     total = 0;
     used = 0;
-    for (int j = 0; j < CPUSTATES; ++j) {
-      total += cp_timen[j];
-    }
+    for (int j = 0; j < CPUSTATES; ++j) { total += cp_timen[j]; }
     used = total - cp_timen[CP_IDLE];
 
-    const int n = i + 1; // [0] is the total CPU, must shift by 1
+    const int n = i + 1;  // [0] is the total CPU, must shift by 1
     if ((total - cpu_loads[n].old_total) != 0) {
       const float diff_used = (float)(used - cpu_loads[n].old_used);
       const float diff_total = (float)(total - cpu_loads[n].old_total);
@@ -189,24 +181,20 @@ void bsdcommon::update_cpu_usage(float **cpu_usage, unsigned int *cpu_count) {
 }
 
 BSD_COMMON_PROC_STRUCT *bsdcommon::get_processes(short unsigned int *procs) {
-  if (!init_kvm()) {
-    return nullptr;
-  }
+  if (!init_kvm()) { return nullptr; }
 
   int n_processes = 0;
 #if defined(__NetBSD__)
-  BSD_COMMON_PROC_STRUCT *ps = kvm_getproc2(kd, KERN_PROC_ALL, 0,
-                                            sizeof(BSD_COMMON_PROC_STRUCT),
-                                            &n_processes);
- #elif defined(__OpenBSD__)
-  BSD_COMMON_PROC_STRUCT *ps = kvm_getprocs(kd, KERN_PROC_ALL, 0,
-                                            sizeof(BSD_COMMON_PROC_STRUCT),
-                                            &n_processes);
+  BSD_COMMON_PROC_STRUCT *ps = kvm_getproc2(
+      kd, KERN_PROC_ALL, 0, sizeof(BSD_COMMON_PROC_STRUCT), &n_processes);
+#elif defined(__OpenBSD__)
+  BSD_COMMON_PROC_STRUCT *ps = kvm_getprocs(
+      kd, KERN_PROC_ALL, 0, sizeof(BSD_COMMON_PROC_STRUCT), &n_processes);
 #else
-  #error Not supported BSD system
+#error Not supported BSD system
 #endif
 
- if (ps == nullptr) {
+  if (ps == nullptr) {
     LOG_ERROR("unable to get processes");
     return nullptr;
   }
@@ -221,26 +209,20 @@ static bool is_process_running(BSD_COMMON_PROC_STRUCT *p) {
 #elif defined(__OpenBSD__)
   return p->p_stat == SRUN;
 #else
-  #error Not supported BSD system
+#error Not supported BSD system
 #endif
 }
 
 void bsdcommon::get_number_of_running_processes(short unsigned int *run_procs) {
-  if (!init_kvm()) {
-    return;
-  }
+  if (!init_kvm()) { return; }
 
   short unsigned int nprocs = 0;
-  BSD_COMMON_PROC_STRUCT* ps = get_processes(&nprocs);
-  if (ps == nullptr) {
-    return;
-  }
+  BSD_COMMON_PROC_STRUCT *ps = get_processes(&nprocs);
+  if (ps == nullptr) { return; }
 
   short unsigned int ctr = 0;
   for (int i = 0; i < nprocs; ++i) {
-    if (is_process_running(&ps[i])) {
-      ++ctr;
-    }
+    if (is_process_running(&ps[i])) { ++ctr; }
   }
 
   *run_procs = ctr;
@@ -250,7 +232,7 @@ static bool is_top_process(BSD_COMMON_PROC_STRUCT *p) {
 #if defined(__NetBSD__) || defined(__OpenBSD__)
   return !((p->p_flag & P_SYSTEM)) && p->p_comm[0] != 0;
 #else
-  #error Not supported BSD system
+#error Not supported BSD system
 #endif
 }
 
@@ -258,7 +240,7 @@ static int32_t get_pid(BSD_COMMON_PROC_STRUCT *p) {
 #if defined(__NetBSD__) || defined(__OpenBSD__)
   return p->p_pid;
 #else
-  #error Not supported BSD system
+#error Not supported BSD system
 #endif
 }
 
@@ -300,7 +282,7 @@ static void proc_from_bsdproc(struct process *proc, BSD_COMMON_PROC_STRUCT *p) {
   proc->rss = (p->p_vm_rssize * getpagesize());
   proc->total_cpu_time = to_conky_time(p->p_rtime_sec, p->p_rtime_usec);
 #else
-  #error Not supported BSD system
+#error Not supported BSD system
 #endif
 
   if (proc->previous_user_time == ULONG_MAX) {
@@ -334,29 +316,21 @@ static void proc_from_bsdproc(struct process *proc, BSD_COMMON_PROC_STRUCT *p) {
 }
 
 void bsdcommon::update_top_info() {
-  if (!init_kvm()) {
-    return;
-  }
+  if (!init_kvm()) { return; }
 
   struct process *proc = nullptr;
   short unsigned int nprocs = 0;
 
   BSD_COMMON_PROC_STRUCT *ps = get_processes(&nprocs);
-  if (ps == nullptr) {
-    return;
-  }
+  if (ps == nullptr) { return; }
 
   for (int i = 0; i < nprocs; ++i) {
     BSD_COMMON_PROC_STRUCT *p = &ps[i];
 
-    if (!is_top_process(p)) {
-      continue;
-    }
+    if (!is_top_process(p)) { continue; }
 
     proc = get_process(get_pid(p));
-    if (!proc) {
-      continue;
-    }
+    if (!proc) { continue; }
 
     proc_from_bsdproc(proc, p);
   }
@@ -366,30 +340,24 @@ static bool is_process(BSD_COMMON_PROC_STRUCT *p, const char *name) {
 #if defined(__NetBSD__) || defined(__OpenBSD__)
   return p->p_comm[0] != 0 && strcmp(p->p_comm, name) == 0;
 #else
-  #error Not supported BSD system
+#error Not supported BSD system
 #endif
 }
 
 bool bsdcommon::is_conky_already_running() {
-  if (!init_kvm()) {
-    return false;
-  }
+  if (!init_kvm()) { return false; }
 
   struct process *proc = nullptr;
   short unsigned int nprocs = 0;
   int instances = 0;
 
   BSD_COMMON_PROC_STRUCT *ps = get_processes(&nprocs);
-  if (ps == nullptr) {
-    return false;
-  }
+  if (ps == nullptr) { return false; }
 
   for (int i = 0; i < nprocs && instances < 2; ++i) {
     BSD_COMMON_PROC_STRUCT *p = &ps[i];
 
-    if (is_process(p, "conky")) {
-      ++instances;
-    }
+    if (is_process(p, "conky")) { ++instances; }
   }
 
   return instances > 1;
@@ -445,11 +413,11 @@ void bsdcommon::update_meminfo(struct information &info) {
   int mib[2] = {CTL_VM, VM_METER};
   struct vmtotal meminfo;
 #else
-  #error Not supported BSD system.
+#error Not supported BSD system.
 #endif
 
   len = sizeof(meminfo);
-  if (sysctl(mib, 2, &meminfo, &len, NULL, 0) == -1 ) {
+  if (sysctl(mib, 2, &meminfo, &len, NULL, 0) == -1) {
     LOG_ERROR("unable to get meminfo");
     return;
   }
@@ -457,7 +425,8 @@ void bsdcommon::update_meminfo(struct information &info) {
 // TODO(gmb): Try to fill all memory related fields.
 #if defined(__NetBSD__)
   info.memmax = to_conky_size(meminfo.npages, meminfo.pagesize);
-  info.memfree = info.memeasyfree = to_conky_size(meminfo.free, meminfo.pagesize);
+  info.memfree = info.memeasyfree =
+      to_conky_size(meminfo.free, meminfo.pagesize);
   info.mem = info.memmax - info.memfree;
 
   info.swapmax = to_conky_size(meminfo.swpages, meminfo.pagesize);
@@ -481,6 +450,6 @@ void bsdcommon::update_meminfo(struct information &info) {
     info.swapfree = 0;
   }
 #else
-  #error Not supported BSD system.
+#error Not supported BSD system.
 #endif
 }

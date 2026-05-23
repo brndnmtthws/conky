@@ -110,15 +110,21 @@ static void tty_user_time(char *ptr, char *tty) {
 static void users_alloc(struct information *ptr) {
   if (ptr->users.names == nullptr) {
     ptr->users.names = (char *)malloc(text_buffer_size.get(*state));
-    if (!ptr->users.names) { LOG_ERROR("failed to allocate user names buffer"); }
+    if (!ptr->users.names) {
+      LOG_ERROR("failed to allocate user names buffer");
+    }
   }
   if (ptr->users.terms == nullptr) {
     ptr->users.terms = (char *)malloc(text_buffer_size.get(*state));
-    if (!ptr->users.terms) { LOG_ERROR("failed to allocate user terms buffer"); }
+    if (!ptr->users.terms) {
+      LOG_ERROR("failed to allocate user terms buffer");
+    }
   }
   if (ptr->users.times == nullptr) {
     ptr->users.times = (char *)malloc(text_buffer_size.get(*state));
-    if (!ptr->users.times) { LOG_ERROR("failed to allocate user times buffer"); }
+    if (!ptr->users.times) {
+      LOG_ERROR("failed to allocate user times buffer");
+    }
   }
 }
 

@@ -52,11 +52,11 @@
 #include <dev/acpica/acpiio.h>
 
 #include "../../conky.h"
-#include "../hardware/diskio.h"
-#include "dragonfly.h"
 #include "../../logging.h"
+#include "../hardware/diskio.h"
 #include "../network/net_stat.h"
 #include "../top.h"
+#include "dragonfly.h"
 
 #define GETSYSCTL(name, var) getsysctl(name, &(var), sizeof(var))
 #define KELVTOC(x) ((x - 2732) / 10.0)
@@ -73,7 +73,8 @@ static int getsysctl(const char *name, void *ptr, size_t len) {
   }
 
   if (nlen != len && errno == ENOMEM) {
-    LOG_ERROR("sysctl '{}' size mismatch: got {}, expected {}", name, nlen, len);
+    LOG_ERROR("sysctl '{}' size mismatch: got {}, expected {}", name, nlen,
+              len);
     return -1;
   }
 
@@ -277,7 +278,9 @@ void get_cpu_count(void) {
   }
 
   info.cpu_usage = (float *)malloc((info.cpu_count + 1) * sizeof(float));
-  if (info.cpu_usage == nullptr) { SYSTEM_ERR("failed to allocate cpu_usage array"); }
+  if (info.cpu_usage == nullptr) {
+    SYSTEM_ERR("failed to allocate cpu_usage array");
+  }
 }
 
 struct cpu_info {
@@ -326,7 +329,8 @@ int update_cpu_usage(void) {
     if (percpu) {
       if (sysctlbyname("kern.cputime", percpu, &percpu_n, nullptr, 0) == -1 &&
           errno != ENOMEM) {
-        LOG_ERROR("kern.cputime with {} cpu(s): {}", info.cpu_count, strerror(errno));
+        LOG_ERROR("kern.cputime with {} cpu(s): {}", info.cpu_count,
+                  strerror(errno));
       } else {
         struct kinfo_cputime total;
         cputime_pcpu_statistics(&percpu[0], &total, info.cpu_count);
@@ -345,8 +349,7 @@ int update_cpu_usage(void) {
   return 0;
 }
 
-void free_cpu(struct text_object *) { /* no-op */
-}
+void free_cpu(struct text_object *) { /* no-op */ }
 
 int update_load_average(void) {
   double v[3];

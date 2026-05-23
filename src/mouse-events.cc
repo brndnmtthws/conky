@@ -179,7 +179,7 @@ void push_table_value(lua_State *L, std::string key, mouse_button_t button) {
 
 /* Class methods */
 mouse_event::mouse_event(mouse_event_t type)
-    : type(type), time(current_time_ms()){};
+    : type(type), time(current_time_ms()) {};
 
 void mouse_event::push_lua_table(lua_State *L) const {
   lua_newtable(L);
@@ -233,15 +233,13 @@ device_info *device_info::from_xi_id(xi_device_id device_id, Display *display) {
 
   int master;
 
-  if(device->use == XIMasterPointer){
+  if (device->use == XIMasterPointer) {
     master = device->deviceid;
-  }
-  else{
+  } else {
     master = device->attachment;
   }
 
-  device_info info =
-      device_info{device_id, master, std::string(device->name)};
+  device_info info = device_info{device_id, master, std::string(device->name)};
 
   size_t id = last_device_id++;
   info.init_xi_device(display, device);
@@ -296,7 +294,9 @@ size_t fixed_valuator_index(Display *display, XIDeviceInfo *device,
                       reinterpret_cast<unsigned char **>(&value)) == 0) {
       if (num_items == 0) break;
       if (type_return != XA_INTEGER) {
-        LOG_WARNING("invalid '{}' option value, expected a single integer; value will be ignored",
+        LOG_WARNING(
+            "invalid '{}' option value, expected a single integer; value will "
+            "be ignored",
             atom_names[*valuator]);
         XFree(value);
         break;
@@ -318,8 +318,7 @@ size_t fixed_valuator_index(Display *display, XIDeviceInfo *device,
 /// (section "XIScrollClass")
 bool fixed_valuator_relative(Display *display, XIDeviceInfo *device,
                              valuator_t valuator,
-                             XIValuatorClassInfo *class_info,
-                             bool is_scroll) {
+                             XIValuatorClassInfo *class_info, bool is_scroll) {
   const std::array<const char *, 2> atom_names = {
       "ConkyValuatorMoveMode",
       "ConkyValuatorScrollMode",
@@ -339,7 +338,9 @@ bool fixed_valuator_relative(Display *display, XIDeviceInfo *device,
                       reinterpret_cast<unsigned char **>(&value_return)) == 0) {
       if (num_items == 0) break;
       if (type_return != XA_ATOM) {
-        LOG_WARNING("invalid '{}' option value, expected an atom (string); value will be ignored",
+        LOG_WARNING(
+            "invalid '{}' option value, expected an atom (string); value will "
+            "be ignored",
             atom_names[*valuator >> 1]);
         XFree(value_return);
         break;
@@ -355,7 +356,9 @@ bool fixed_valuator_relative(Display *display, XIDeviceInfo *device,
       if (strcmp(reinterpret_cast<char *>(value), "relative") == 0) {
         relative = true;
       } else if (strcmp(reinterpret_cast<char *>(value), "absolute") != 0) {
-        LOG_WARNING("unknown '{}' option value: '{}', expected 'absolute' or 'relative'; value will be ignored",
+        LOG_WARNING(
+            "unknown '{}' option value: '{}', expected 'absolute' or "
+            "'relative'; value will be ignored",
             atom_names[*valuator >> 1], value);
         XFree(value);
         break;
@@ -413,10 +416,10 @@ void device_info::init_xi_device(
     else if (si->scroll_type == XIScrollTypeHorizontal)
       target = valuator_t::SCROLL_X;
 
-    LOG_DEBUG("xi scroll class: number={} type={} increment={}",
-              si->number,
-              si->scroll_type == XIScrollTypeVertical ? "vertical" : "horizontal",
-              si->increment);
+    LOG_DEBUG(
+        "xi scroll class: number={} type={} increment={}", si->number,
+        si->scroll_type == XIScrollTypeVertical ? "vertical" : "horizontal",
+        si->increment);
 
     // Only set if not already claimed and doesn't conflict with a move axis.
     // Some devices (e.g. Xephyr) alias scroll and move to the same valuator;
@@ -458,7 +461,7 @@ void device_info::init_xi_device(
         .max = class_info->max,
         .value = class_info->value,
         .relative = fixed_valuator_relative(display, device, valuator,
-                                             class_info, is_scroll),
+                                            class_info, is_scroll),
     };
 
     if (is_scroll) { info.increment = it->second; }
@@ -466,14 +469,14 @@ void device_info::init_xi_device(
     this->valuators[*valuator] = info;
   }
 
-  LOG_DEBUG("xi device '{}' valuators: move_x={} move_y={} scroll_x={} "
-            "scroll_y={} scroll_y_increment={}",
-            device->name,
-            this->valuators[*valuator_t::MOVE_X].index,
-            this->valuators[*valuator_t::MOVE_Y].index,
-            this->valuators[*valuator_t::SCROLL_X].index,
-            this->valuators[*valuator_t::SCROLL_Y].index,
-            this->valuators[*valuator_t::SCROLL_Y].increment);
+  LOG_DEBUG(
+      "xi device '{}' valuators: move_x={} move_y={} scroll_x={} "
+      "scroll_y={} scroll_y_increment={}",
+      device->name, this->valuators[*valuator_t::MOVE_X].index,
+      this->valuators[*valuator_t::MOVE_Y].index,
+      this->valuators[*valuator_t::SCROLL_X].index,
+      this->valuators[*valuator_t::SCROLL_Y].index,
+      this->valuators[*valuator_t::SCROLL_Y].increment);
 
   if (std::holds_alternative<xi_device_id>(source)) {
     XIFreeDeviceInfo(device);
@@ -542,12 +545,10 @@ xi_event_data *xi_event_data::read_cookie(Display *display, const void *data) {
       // possible but unrealistic with 32-bit values.
       result->valuators_relative[v] = current - valuator_info.value;
     }
-    LOG_TRACE_WITH(({"index", valuator_info.index},
-                    {"current", current},
-                    {"prev", valuator_info.value},
-                    {"relative", valuator_info.relative}),
-                   "xi valuator[{}] delta={}", v,
-                   result->valuators_relative[v]);
+    LOG_TRACE_WITH(
+        ({"index", valuator_info.index}, {"current", current},
+         {"prev", valuator_info.value}, {"relative", valuator_info.relative}),
+        "xi valuator[{}] delta={}", v, result->valuators_relative[v]);
     valuator_info.value = current;
   }
 

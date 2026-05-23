@@ -33,8 +33,8 @@
 
 #include "../../common.h"
 #include "../../conky.h"
-#include "../../logging.h"
 #include "../../content/text_object.h"
+#include "../../logging.h"
 
 #include <netdb.h>
 #include <netinet/in.h>
@@ -120,7 +120,7 @@ class mail_cb
   uint16_t retries;
 
   void resolve_host() {
-    struct addrinfo hints {};
+    struct addrinfo hints{};
     char portbuf[8];
 
     memset(&hints, 0, sizeof(struct addrinfo));
@@ -203,7 +203,7 @@ struct mail_param_ex *global_mail;
 }  // namespace
 
 static void update_mail_count(struct local_mail_s *mail) {
-  struct stat st {};
+  struct stat st{};
 
   if (mail == nullptr) { return; }
 
@@ -487,7 +487,7 @@ std::unique_ptr<mail_param_ex> parse_mail_args(mail_type type,
   // see if password needs prompting
   if (pass[0] == '*' && pass[1] == '\0') {
     int fp = fileno(stdin);
-    struct termios term {};
+    struct termios term{};
 
     tcgetattr(fp, &term);
     term.c_lflag &= ~ECHO;
@@ -652,7 +652,7 @@ void free_mail_obj(struct text_object *obj) {
 
 static void command(int sockfd, const std::string &cmd, char *response,
                     const char *verify) {
-  struct timeval fetchtimeout {};
+  struct timeval fetchtimeout{};
   fd_set fdset;
   ssize_t total = 0;
   int numbytes = 0;
@@ -722,7 +722,7 @@ void imap_cb::work() {
   bool has_idle = false;
 
   while (fail < retries) {
-    struct timeval fetchtimeout {};
+    struct timeval fetchtimeout{};
     int res;
     fd_set fdset;
 
@@ -787,8 +787,7 @@ void imap_cb::work() {
             command(sockfd, "DONE\r\n", recvbuf, "a5 OK");
             command(sockfd, "a3 LOGOUT\r\n", recvbuf, "a3 OK");
           } catch (mail_fail &e) {
-            LOG_ERROR("error communicating with IMAP server: {}",
-                     e.what());
+            LOG_ERROR("error communicating with IMAP server: {}", e.what());
           }
           close(sockfd);
           return;
@@ -880,8 +879,8 @@ void imap_cb::work() {
         LOG_ERROR("error communicating with IMAP server: {}", e.what());
       }
       LOG_WARNING("trying IMAP connection again for {}@{} (try {}/{})",
-               get<MP_USER>().c_str(), get<MP_HOST>().c_str(), fail + 1,
-               retries);
+                  get<MP_USER>().c_str(), get<MP_HOST>().c_str(), fail + 1,
+                  retries);
       sleep(fail); /* sleep more for the more failures we have */
     }
 
@@ -953,8 +952,8 @@ void pop3_cb::work() {
         LOG_ERROR("error communicating with POP3 server: {}", e.what());
       }
       LOG_WARNING("trying POP3 connection again for {}@{} (try {}/{})",
-               get<MP_USER>().c_str(), get<MP_HOST>().c_str(), fail + 1,
-               retries);
+                  get<MP_USER>().c_str(), get<MP_HOST>().c_str(), fail + 1,
+                  retries);
       sleep(fail); /* sleep more for the more failures we have */
     }
 

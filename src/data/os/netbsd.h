@@ -8,8 +8,8 @@
 #include <strings.h>
 #include <unistd.h>
 
-#include <sys/param.h>
 #include <sys/mount.h>
+#include <sys/param.h>
 #include <sys/statvfs.h>
 
 #include "../../common.h"

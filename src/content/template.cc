@@ -231,7 +231,8 @@ char *find_and_replace_templates(const char *inbuf) {
       free(tmpl_out);
       o = outbuf + strlen(outbuf);
     } else {
-      LOG_ERROR("failed to handle template '{}' with args '{}'", templ, args ? args : "(none)");
+      LOG_ERROR("failed to handle template '{}' with args '{}'", templ,
+                args ? args : "(none)");
     }
   }
   *o = '\0';

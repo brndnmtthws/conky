@@ -34,7 +34,6 @@
 #include "core.h"
 
 #include "build.h"
-#include "lua/colour-settings.hh"
 #include "content/colours.hh"
 #include "content/combine.h"
 #include "content/text_object.h"
@@ -45,6 +44,7 @@
 #include "data/hardware/i8k.h"
 #include "data/misc.h"
 #include "data/proc.h"
+#include "lua/colour-settings.hh"
 #ifdef BUILD_IMLIB2
 #include "conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
@@ -174,7 +174,8 @@ void stock_parse_arg(struct text_object *obj, const char *arg) {
 
   obj->data.s = nullptr;
   if (sscanf(arg, "%7s %15s", stock, data) != 2) {
-    LOG_ERROR("wrong number of arguments for $stock (got '{}')", arg ? arg : "(null)");
+    LOG_ERROR("wrong number of arguments for $stock (got '{}')",
+              arg ? arg : "(null)");
     return;
   }
   if (!strcasecmp("ask", data)) {
@@ -342,7 +343,8 @@ void stock_parse_arg(struct text_object *obj, const char *arg) {
   } else if (!strcasecmp("dy", data)) {
     strncpy(data, "y", 3);
   } else {
-    LOG_ERROR("\"{}\" is not supported by $stock. supported: 1ytp, 200ma, 50ma, "
+    LOG_ERROR(
+        "\"{}\" is not supported by $stock. supported: 1ytp, 200ma, 50ma, "
         "52weeklow, 52weekhigh, 52weekrange, adv, ag, ahcrt, ask, askrt, "
         "asksize, bid, bidrt, bidsize, bookvalue, c200ma, c50ma, c52whigh, "
         "c52wlow, change, changert, cip, commission, cprt, dayshigh, dayslow, "
@@ -385,10 +387,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (!strcmp(s, #a)) {  \
     obj->cb_handle = create_cb_handle(n);
 #define __OBJ_IF obj_be_ifblock_if(ifblock_opaque, obj)
-#define __OBJ_ARG(...)                              \
-  if (!arg) {                                       \
-    COMMAND_ARG_ERR(s, __VA_ARGS__);                \
-  }
+#define __OBJ_ARG(...) \
+  if (!arg) { COMMAND_ARG_ERR(s, __VA_ARGS__); }
 
 /* defines to be used below */
 #define OBJ(a, n) __OBJ_HEAD(a, n) {
@@ -433,13 +433,14 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &gen_free_opaque;
   END
 #endif /* !__OpenBSD__ */
-  OBJ(freq, nullptr) get_cpu_count();
+      OBJ(freq, nullptr) get_cpu_count();
   if ((arg == nullptr) || strlen(arg) >= 3 ||
       strtol(&arg[0], nullptr, 10) == 0 ||
       static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) >
           info.cpu_count) {
     obj->data.i = 1;
-    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1", arg ? arg : "(null)");
+    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1",
+                arg ? arg : "(null)");
   } else {
     obj->data.i = strtol(&arg[0], nullptr, 10);
   }
@@ -450,7 +451,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) >
           info.cpu_count) {
     obj->data.i = 1;
-    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1", arg ? arg : "(null)");
+    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1",
+                arg ? arg : "(null)");
   } else {
     obj->data.i = strtol(&arg[0], nullptr, 10);
   }
@@ -462,7 +464,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) >
           info.cpu_count) {
     obj->data.i = 1;
-    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1", arg ? arg : "(null)");
+    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1",
+                arg ? arg : "(null)");
   } else {
     obj->data.i = strtol(&arg[0], nullptr, 10);
   }
@@ -488,7 +491,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (!arg || strlen(arg) >= 3 || strtol(&arg[0], nullptr, 10) == 0 ||
       (unsigned int)strtol(&arg[0], nullptr, 10) > info.cpu_count) {
     obj->data.i = 1;
-    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1", arg ? arg : "(null)");
+    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1",
+                arg ? arg : "(null)");
   } else {
     obj->data.i = strtol(&arg[0], nullptr, 10);
   }
@@ -497,7 +501,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (!arg || strlen(arg) >= 3 || strtol(&arg[0], nullptr, 10) == 0 ||
       (unsigned int)strtol(&arg[0], nullptr, 10) > info.cpu_count) {
     obj->data.i = 1;
-    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1", arg ? arg : "(null)");
+    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1",
+                arg ? arg : "(null)");
   } else {
     obj->data.i = strtol(&arg[0], nullptr, 10);
   }
@@ -1236,7 +1241,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #ifdef BUILD_GUI
   END OBJ(memgraph, &update_meminfo) scan_graph(obj, arg, 1, FALSE, "mem");
   obj->callbacks.graphval = &mem_barval;
-  END OBJ(memwithbuffersgraph, &update_meminfo) scan_graph(obj, arg, 1, FALSE, "memwithbuffers");
+  END OBJ(memwithbuffersgraph, &update_meminfo)
+      scan_graph(obj, arg, 1, FALSE, "memwithbuffers");
   obj->callbacks.graphval = &mem_with_buffers_barval;
 #endif /* BUILD_GUI*/
 #ifdef HAVE_SOUNDCARD_H
@@ -1504,7 +1510,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ_IF(if_updatenr, nullptr) obj->data.i =
       arg != nullptr ? strtol(arg, nullptr, 10) : 0;
   if (obj->data.i == 0) {
-    COMMAND_ARG_ERR("if_updatenr", "if_updatenr needs a number above 0 as argument");
+    COMMAND_ARG_ERR("if_updatenr",
+                    "if_updatenr needs a number above 0 as argument");
   }
   set_updatereset(obj->data.i > get_updatereset() ? obj->data.i
                                                   : get_updatereset());
@@ -1595,20 +1602,21 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &gen_free_opaque;
   END OBJ_ARG(smapi_bat_bar, 0, "smapi_bat_bar needs an argument") int cnt;
   if (sscanf(arg, "%i %n", &obj->data.i, &cnt) <= 0) {
-    LOG_ERROR("first argument to smapi_bat_bar must be an integer (got '{}')", arg ? arg : "(null)");
+    LOG_ERROR("first argument to smapi_bat_bar must be an integer (got '{}')",
+              arg ? arg : "(null)");
     obj->data.i = -1;
   } else
     arg = scan_bar(obj, arg + cnt, 100);
   obj->callbacks.barval = &smapi_bat_barval;
 #endif /* BUILD_IBM */
 #ifdef BUILD_MPD
-#define mpd_set_maxlen(name)                       \
-  if (arg) {                                       \
-    int i;                                         \
-    sscanf(arg, "%d", &i);                         \
-    if (i > 0)                                     \
-      obj->data.i = i + 1;                         \
-    else                                           \
+#define mpd_set_maxlen(name)                        \
+  if (arg) {                                        \
+    int i;                                          \
+    sscanf(arg, "%d", &i);                          \
+    if (i > 0)                                      \
+      obj->data.i = i + 1;                          \
+    else                                            \
       LOG_ERROR(#name ": invalid length argument"); \
   }
   END OBJ(mpd_artist, nullptr) mpd_set_maxlen(mpd_artist);
@@ -1753,7 +1761,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (obj->data.i > 0) {
     ++obj->data.i;
   } else {
-    COMMAND_ARG_ERR("audacious_title", "audacious_title: invalid length argument");
+    COMMAND_ARG_ERR("audacious_title",
+                    "audacious_title: invalid length argument");
   }
   obj->callbacks.print = &print_audacious_title;
   END OBJ(audacious_length, 0) obj->callbacks.print = &print_audacious_length;
@@ -1810,8 +1819,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (arg != nullptr) {
     obj->data.s = STRNDUP_ARG;
   } else {
-    COMMAND_ARG_ERR("lua_bar", "lua_bar needs arguments: <height>,<width> <function name> "
-             "[function parameters]");
+    COMMAND_ARG_ERR("lua_bar",
+                    "lua_bar needs arguments: <height>,<width> <function name> "
+                    "[function parameters]");
   }
   obj->callbacks.barval = &lua_barval;
   obj->callbacks.free = &gen_free_opaque;
@@ -1827,8 +1837,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (buf != nullptr) {
     obj->data.s = buf;
   } else {
-    COMMAND_ARG_ERR("lua_graph", "lua_graph needs arguments: <function name> [height],[width] "
-             "[gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
+    COMMAND_ARG_ERR(
+        "lua_graph",
+        "lua_graph needs arguments: <function name> [height],[width] "
+        "[gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
   }
   obj->callbacks.graphval = &lua_barval;
   obj->callbacks.free = &gen_free_opaque;
@@ -1838,8 +1850,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   if (arg != nullptr) {
     obj->data.s = STRNDUP_ARG;
   } else {
-    COMMAND_ARG_ERR("lua_gauge", "lua_gauge needs arguments: <height>,<width> <function name> "
-             "[function parameters]");
+    COMMAND_ARG_ERR(
+        "lua_gauge",
+        "lua_gauge needs arguments: <height>,<width> <function name> "
+        "[function parameters]");
   }
   obj->callbacks.gaugeval = &lua_barval;
   obj->callbacks.free = &gen_free_opaque;
@@ -1883,8 +1897,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       parse_scroll_arg(obj, arg, free_at_crash, s);
   obj->callbacks.print = &print_scroll;
   obj->callbacks.free = &free_scroll;
-  END OBJ(combine, nullptr)
-    parse_combine_arg(obj, arg);
+  END OBJ(combine, nullptr) parse_combine_arg(obj, arg);
   obj->callbacks.print = &print_combine;
   obj->callbacks.free = &free_combine;
 #ifdef BUILD_NVIDIA
@@ -1892,9 +1905,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
                                                              obj, arg,
                                                              text_node_t::
                                                                  NONSPECIAL)) {
-    COMMAND_ARG_ERR("nvidia", "nvidia: invalid argument"
-             " specified: '{}'",
-             arg);
+    COMMAND_ARG_ERR("nvidia",
+                    "nvidia: invalid argument"
+                    " specified: '{}'",
+                    arg);
   }
   obj->callbacks.print = &print_nvidia_value;
   obj->callbacks.free = &free_nvidia;
@@ -1902,9 +1916,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       nvidiabar, 0,
       "nvidiabar needs an argument") if (set_nvidia_query(obj, arg,
                                                           text_node_t::BAR)) {
-    COMMAND_ARG_ERR("nvidiabar", "nvidiabar: invalid argument"
-             " specified: '{}'",
-             arg);
+    COMMAND_ARG_ERR("nvidiabar",
+                    "nvidiabar: invalid argument"
+                    " specified: '{}'",
+                    arg);
   }
   obj->callbacks.barval = &get_nvidia_barval;
   obj->callbacks.free = &free_nvidia;
@@ -1913,9 +1928,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       "nvidiagraph needs an argument") if (set_nvidia_query(obj, arg,
                                                             text_node_t::
                                                                 GRAPH)) {
-    COMMAND_ARG_ERR("nvidiagraph", "nvidiagraph: invalid argument"
-             " specified: '{}'",
-             arg);
+    COMMAND_ARG_ERR("nvidiagraph",
+                    "nvidiagraph: invalid argument"
+                    " specified: '{}'",
+                    arg);
   }
   obj->callbacks.graphval = &get_nvidia_barval;
   obj->callbacks.free = &free_nvidia;
@@ -1924,9 +1940,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       "nvidiagauge needs an argument") if (set_nvidia_query(obj, arg,
                                                             text_node_t::
                                                                 GAUGE)) {
-    COMMAND_ARG_ERR("nvidiagauge", "nvidiagauge: invalid argument"
-             " specified: '{}'",
-             arg);
+    COMMAND_ARG_ERR("nvidiagauge",
+                    "nvidiagauge: invalid argument"
+                    " specified: '{}'",
+                    arg);
   }
   obj->callbacks.gaugeval = &get_nvidia_barval;
   obj->callbacks.free = &free_nvidia;
@@ -1956,7 +1973,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(apcupsd_loadbar, &update_apcupsd) scan_bar(obj, arg, 100);
   obj->callbacks.barval = &apcupsd_loadbarval;
 #ifdef BUILD_GUI
-  END OBJ(apcupsd_loadgraph, &update_apcupsd) scan_graph(obj, arg, 100, FALSE, "apcupsd_load");
+  END OBJ(apcupsd_loadgraph, &update_apcupsd)
+      scan_graph(obj, arg, 100, FALSE, "apcupsd_load");
   obj->callbacks.graphval = &apcupsd_loadbarval;
   END OBJ(apcupsd_loadgauge, &update_apcupsd) scan_gauge(obj, arg, 100);
   obj->callbacks.gaugeval = &apcupsd_loadbarval;
@@ -2092,7 +2110,7 @@ int extract_variable_text_internal(struct text_object *retval,
 
   if (static_cast<int>(strcmp(p, const_p) != 0) != 0) {
     LOG_TRACE("replaced all templates in text: input is\n'{}'\noutput is\n'{}'",
-          const_p, p);
+              const_p, p);
   } else {
     LOG_TRACE("no templates to replace");
   }
@@ -2180,15 +2198,16 @@ int extract_variable_text_internal(struct text_object *retval,
           obj = construct_text_object(buf, arg, line, &ifblock_opaque, orig_p);
         } catch (std::exception &e) {
           const char *cmd = nullptr;
-          if (auto *ce = dynamic_cast<conky::bad_command_arguments_error *>(&e)) {
+          if (auto *ce =
+                  dynamic_cast<conky::bad_command_arguments_error *>(&e)) {
             cmd = ce->command.c_str();
           } else {
             cmd = buf;
           }
           LOG_ERROR("${{{}}}: {}", cmd, e.what());
           obj = new_text_object_internal();
-          auto *fallback = static_cast<char *>(
-              malloc(text_buffer_size.get(*state)));
+          auto *fallback =
+              static_cast<char *>(malloc(text_buffer_size.get(*state)));
           snprintf(fallback, text_buffer_size.get(*state), "${%s}", cmd);
           obj_be_plain_text(obj, fallback);
           free(fallback);

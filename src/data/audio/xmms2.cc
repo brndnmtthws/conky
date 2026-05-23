@@ -309,7 +309,8 @@ int update_xmms2(void) {
     char *path = getenv("XMMS_PATH");
 
     if (!xmmsc_connect(xmms2_conn, path)) {
-      LOG_ERROR("xmms2 connection failed. {}", xmmsc_get_last_error(xmms2_conn));
+      LOG_ERROR("xmms2 connection failed. {}",
+                xmmsc_get_last_error(xmms2_conn));
       current_info->xmms2.conn_state = CONN_NO;
       return 0;
     }

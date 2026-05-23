@@ -28,9 +28,9 @@
  */
 #include "gui.h"
 #include "../common.h"
-#include "config.h"
 #include "../conky.h"
 #include "../logging.h"
+#include "config.h"
 
 #ifdef BUILD_X11
 #include "../lua/x11-settings.h"
@@ -79,7 +79,8 @@ void own_window_setting::lua_setter(lua::state &l, bool init) {
   if (init) {
     if (do_convert(l, -1).first) {
 #ifndef OWN_WINDOW
-      LOG_WARNING("own_window support disabled at compile time, ignoring setting");
+      LOG_WARNING(
+          "own_window support disabled at compile time, ignoring setting");
       l.pop();
       l.pushboolean(false);
 #endif
@@ -238,9 +239,7 @@ Colour get_background_colour_preference(lua::state &l) {
   if (own_window_argb_value.get(l) < 0xff) {
     background.alpha = own_window_argb_value.get(l);
   }
-  if (set_transparent.get(l)) {
-    background.alpha = 0;
-  }
+  if (set_transparent.get(l)) { background.alpha = 0; }
 
   return background;
 }

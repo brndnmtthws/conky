@@ -145,7 +145,7 @@ void curl_internal::do_work() {
           break;
         default:
           LOG_ERROR("curl: no data from server, got HTTP status {}",
-                   http_status_code);
+                    http_status_code);
           break;
       }
     } else {
@@ -197,7 +197,9 @@ void curl_parse_arg(struct text_object *obj, const char *arg) {
   char *space;
 
   if (strlen(arg) < 1) {
-    LOG_ERROR("wrong number of arguments for $curl, expected: url [interval_minutes]");
+    LOG_ERROR(
+        "wrong number of arguments for $curl, expected: url "
+        "[interval_minutes]");
     return;
   }
 
