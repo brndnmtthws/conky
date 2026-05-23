@@ -100,6 +100,31 @@ Conky. Some resources from the Wiki include:
 - [Community Configs](https://github.com/brndnmtthws/conky/wiki/Community-Configurations)
 - [Frequently Asked Questions](https://github.com/brndnmtthws/conky/wiki/FAQ)
 
+## Development setup
+
+Conky uses [mise](https://mise.jdx.dev/) to pin developer tools such as CMake,
+Ninja, Bun, uv, and lefthook. After installing mise, bootstrap the toolchain
+from the repository root:
+
+```sh
+mise install
+mise run doctor
+```
+
+`mise run doctor` checks for native libraries that still come from your system
+package manager, such as X11, Cairo, Lua, Imlib2, librsvg, ncurses, and libxml2.
+Once it passes, use the mise tasks for the normal development loop:
+
+```sh
+mise run configure
+mise run build
+mise run test
+```
+
+If your shell has `mise activate` enabled, entering the repository runs
+`mise i -q` automatically. Tool downloads are locked by `mise.lock`; update the
+lockfile with `MISE_LOCKED=0 mise lock` after changing tool versions.
+
 ## License
 
 Conky is licensed under the terms of the [GPLv3](LICENSE) license.

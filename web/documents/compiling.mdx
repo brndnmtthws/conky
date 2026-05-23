@@ -4,7 +4,22 @@ description: How to compile Conky from source
 indexWeight: 0
 ---
 
-Building Conky with CMake is straightforward:
+For contributor builds, Conky uses [mise](https://mise.jdx.dev/) to install the
+pinned developer tools. From the repository root, run:
+
+```shell-session
+mise install
+mise run doctor
+mise run configure
+mise run build
+mise run test
+```
+
+`mise run doctor` checks for native libraries that still come from your system
+package manager, such as X11, Cairo, Lua, Imlib2, librsvg, ncurses, and libxml2.
+
+If you want to run CMake manually or customize build options, the direct CMake
+flow is:
 
 1. From the top-level source directory, create a build directory and change
    into it:

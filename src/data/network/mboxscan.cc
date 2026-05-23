@@ -32,9 +32,9 @@
 #include <cerrno>
 #include <memory>
 #include "../../conky.h"
+#include "../../content/text_object.h"
 #include "../../logging.h"
 #include "mail.h"
-#include "../../content/text_object.h"
 
 #define FROM_WIDTH 10
 #define SUBJECT_WIDTH 22
@@ -65,7 +65,7 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
   int force_rescan = 0;
   std::unique_ptr<char[]> buf_(new char[text_buffer_size.get(*state)]);
   char *buf = buf_.get();
-  struct stat statbuf {};
+  struct stat statbuf{};
   struct ring_list *curr = nullptr, *prev = nullptr, *startlist = nullptr;
   FILE *fp;
 
@@ -138,9 +138,9 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
     }
     if (strlen(mbox_mail_spool) < 1) {
       COMMAND_ARG_ERR("mboxscan",
-          "Usage: ${{mboxscan [-n <number of messages to print>] "
-          "[-fw <from width>] [-sw <subject width>] "
-          "[-t <delay in sec> mbox]}}");
+                      "Usage: ${{mboxscan [-n <number of messages to print>] "
+                      "[-fw <from width>] [-sw <subject width>] "
+                      "[-t <delay in sec> mbox]}}");
     }
 
     /* allowing $MAIL in the config */

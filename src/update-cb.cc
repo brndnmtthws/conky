@@ -44,7 +44,7 @@ void callback_base::stop() {
     if (pipefd.second >= 0) {
       if (write(pipefd.second, "X", 1) != 1) {
         LOG_ERROR("can't write 'X' to pipefd {}: {}", pipefd.second,
-                 strerror(errno));
+                  strerror(errno));
       }
     }
     thread->join();

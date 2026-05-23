@@ -79,7 +79,7 @@ struct special_node {
   double arg;
   std::vector<double> graph_data;
   size_t data_hash; /* identifies the data source; detects slot reuse */
-  double scale; /* maximum value */
+  double scale;     /* maximum value */
   short show_scale;
   int graph_width;
   int scaled; /* auto adjust maximum */

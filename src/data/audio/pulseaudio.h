@@ -96,7 +96,7 @@ class pulseaudio_c {
         ninits(0),
         result({std::string(), std::string(), std::string(), std::string(), 0,
                 0, 0, 0, std::string(), PA_SOURCE_SUSPENDED, 0, std::string(),
-                std::string(), 0}){};
+                std::string(), 0}) {};
 };
 
 #endif /* _PULSEAUDIO_H */

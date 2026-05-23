@@ -1,11 +1,11 @@
 #ifndef CONKY_BUFFER_HH
 #define CONKY_BUFFER_HH
 
+#include <spdlog/fmt/fmt.h>
 #include <cstring>
 #include <memory>
 #include <string_view>
 #include <utility>
-#include <spdlog/fmt/fmt.h>
 #include "logging.h"
 
 namespace conky {
@@ -13,7 +13,8 @@ namespace conky {
 /// Bounds-checked sequential writer into a fixed-capacity char buffer.
 ///
 /// Two modes:
-///   buffer_writer w(cap);           — allocates its own buffer; use release() to
+///   buffer_writer w(cap);           — allocates its own buffer; use release()
+///   to
 ///                                  transfer ownership as a unique_ptr
 ///   buffer_writer w(cap, buf);      — writes into caller-owned buf; use
 ///                                  terminate() to null-terminate in place
@@ -90,8 +91,9 @@ class buffer_writer {
   // buffer and taking it would allow use-after-free.
   std::unique_ptr<char[]> take() {
     if (!m_owned)
-      CRIT_ERR("take() called on a non-owning buffer_writer; "
-               "the buffer belongs to the caller and cannot be transferred");
+      CRIT_ERR(
+          "take() called on a non-owning buffer_writer; "
+          "the buffer belongs to the caller and cannot be transferred");
     terminate();
     m_owned = false;
     return std::unique_ptr<char[]>(std::exchange(m_buf, nullptr));

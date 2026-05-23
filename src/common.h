@@ -60,6 +60,7 @@ void free_all_processes(void);
 struct process *get_first_process(void);
 void get_cpu_count(void);
 double get_time(void);
+double get_realtime(void);
 
 /// @brief Handles environment variable expansion in paths and canonicalization.
 ///

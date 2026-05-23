@@ -32,9 +32,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../../conky.h"
-#include "../../logging.h"
 #include "../../content/temphelper.h"
 #include "../../content/text_object.h"
+#include "../../logging.h"
 
 struct _i8k {
   char *version;

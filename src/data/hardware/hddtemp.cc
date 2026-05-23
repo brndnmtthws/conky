@@ -35,9 +35,9 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include "../../conky.h"
-#include "../../logging.h"
 #include "../../content/temphelper.h"
 #include "../../content/text_object.h"
+#include "../../logging.h"
 
 #define BUFLEN 512
 
@@ -103,7 +103,9 @@ static char *fetch_hddtemp_output(void) {
 
   if ((i = getaddrinfo(hddtemp_host.get(*state).c_str(),
                        hddtemp_port.get(*state).c_str(), &hints, &result))) {
-    LOG_ERROR("hddtemp DNS lookup failed for {}:{}: {}", hddtemp_host.get(*state).c_str(), hddtemp_port.get(*state).c_str(), gai_strerror(i));
+    LOG_ERROR("hddtemp DNS lookup failed for {}:{}: {}",
+              hddtemp_host.get(*state).c_str(),
+              hddtemp_port.get(*state).c_str(), gai_strerror(i));
     return nullptr;
   }
 
@@ -114,7 +116,8 @@ static char *fetch_hddtemp_output(void) {
     close(sockfd);
   }
   if (!rp) {
-    LOG_ERROR("could not connect to hddtemp at {}:{}", hddtemp_host.get(*state), hddtemp_port.get(*state));
+    LOG_ERROR("could not connect to hddtemp at {}:{}", hddtemp_host.get(*state),
+              hddtemp_port.get(*state));
     goto GET_OUT;
   }
 

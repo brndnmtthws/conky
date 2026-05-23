@@ -23,8 +23,8 @@
 
 #include "apcupsd.h"
 #include "../../conky.h"
-#include "../../logging.h"
 #include "../../content/text_object.h"
+#include "../../logging.h"
 
 #include <netdb.h>
 #include <netinet/in.h>
@@ -186,7 +186,7 @@ int update_apcupsd() {
   }
 
   do {
-    struct addrinfo hints {};
+    struct addrinfo hints{};
     struct addrinfo *ai, *rp;
     int res;
     short sz = 0;

@@ -9,6 +9,9 @@
 
 ## Build, Test, and Development Commands
 
+- Preferred setup: run `mise install` to install the pinned developer tools from `mise.toml` (`cmake`, `ninja`, `uv`, `bun`, and `lefthook`). For contributors with `mise activate` enabled in their shell, the repo's enter hook runs `mise i -q` automatically. Use `mise run doctor` to check system-native dependencies; mise provides tools, but libraries such as X11, Cairo, Lua, Imlib2, librsvg, ncurses, and libxml2 still come from the OS package manager.
+- Preferred tasks: `mise run configure`, `mise run build`, `mise run test`, `mise run format`, and `mise run check-format` wrap the standard CMake/Ninja workflow. Use `mise run python-deps` to validate Python helpers through `uv` and `requirements-dev.txt` rather than installing Python directly.
+- Website tasks: use `mise run web-install`, `mise run web-dev`, `mise run web-build`, and `mise run web-lint` for the `web/` project. The website and JavaScript hook tooling should use Bun commands, including `bunx` for one-off package executables.
 - Configure: `cmake -S . -B build -G Ninja -DMAINTAINER_MODE=ON` sets up a debug-friendly out-of-tree build aligned with CI.
 - Compile: `cmake --build build` or `ninja -C build` builds all binaries and modules.
 - Test: `ctest --test-dir build --output-on-failure` runs the suite; narrow focus with `./build/tests/test-conky "<test-or-tag>"` (for example `"[linux]"`) or `./build/tests/test-conky --section "<section>"`.

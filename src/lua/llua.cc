@@ -32,9 +32,9 @@
 #include "../conky.h"
 #include "../geometry.h"
 #include "../logging.h"
+#include "../output/display-output.hh"
 #include "build.h"
 #include "llua.h"
-#include "../output/display-output.hh"
 
 #ifdef BUILD_GUI
 #include "../output/gui.h"
@@ -294,17 +294,16 @@ void llua_load(const char *script) {
   std::filesystem::path path;
   std::filesystem::path script_path(script);
 
-  path = to_real_path(script); // handles ~/some/path.lua
+  path = to_real_path(script);  // handles ~/some/path.lua
   if (!file_exists(path.c_str())) {
     if (!script_path.is_absolute()) {
       auto cfg_path = std::filesystem::path(to_real_path(XDG_CONFIG_FILE));
-      auto cfg_dir  = cfg_path.parent_path();
-  
+      auto cfg_dir = cfg_path.parent_path();
+
       // prepend the config directory to the script path
       auto full = cfg_dir / script_path;
       path = to_real_path(full.c_str());
-    }
-    else {
+    } else {
       // Already an absolute path
       path = to_real_path(script);
     }
@@ -430,7 +429,7 @@ static char *llua_do_call(const char *string, int retc) {
 
   if (lua_pcall(lua_L, argc, retc, 0) != 0) {
     LOG_ERROR("lua function '{}' execution failed: {}", func,
-             lua_tostring(lua_L, -1));
+              lua_tostring(lua_L, -1));
     lua_pop(lua_L, -1);
     return nullptr;
   }
@@ -471,9 +470,8 @@ static char *llua_getstring(const char *args) {
   func = llua_do_call(args, 1);
   if (func != nullptr) {
     if (lua_isstring(lua_L, -1) == 0) {
-      LOG_WARNING(
-          "lua function '{}' did not return a string, result discarded",
-          func);
+      LOG_WARNING("lua function '{}' did not return a string, result discarded",
+                  func);
     } else {
       ret = strdup(lua_tostring(lua_L, -1));
       lua_pop(lua_L, 1);
@@ -513,9 +511,8 @@ static int llua_getnumber(const char *args, double *ret) {
   func = llua_do_call(args, 1);
   if (func != nullptr) {
     if (lua_isnumber(lua_L, -1) == 0) {
-      LOG_WARNING(
-          "lua function '{}' did not return a number, result discarded",
-          func);
+      LOG_WARNING("lua function '{}' did not return a number, result discarded",
+                  func);
     } else {
       *ret = lua_tonumber(lua_L, -1);
       lua_pop(lua_L, 1);
@@ -643,9 +640,8 @@ bool llua_mouse_hook(const EventT &ev) {
       // TODO: (1.22.0) Force conky_ prefix on use_mouse_hook like llua_do_call
       // does
       // - keep only else case, remove ty_raw and make hook_name const.
-      LOG_WARNING(
-          "lua mouse hook '{}' is missing 'conky_' prefix",
-          raw_hook_name);
+      LOG_WARNING("lua mouse hook '{}' is missing 'conky_' prefix",
+                  raw_hook_name);
       hook_name = raw_hook_name;
       ty = ty_raw;
       lua_insert(lua_L, -2);
@@ -666,7 +662,7 @@ bool llua_mouse_hook(const EventT &ev) {
   bool result = false;
   if (lua_pcall(lua_L, 1, 1, 0) != LUA_OK) {
     LOG_ERROR("lua mouse hook '{}' execution failed: {}", hook_name,
-             lua_tostring(lua_L, -1));
+              lua_tostring(lua_L, -1));
     lua_pop(lua_L, 1);
   } else {
     result = lua_toboolean(lua_L, -1);
@@ -707,7 +703,7 @@ void llua_setup_window_table(conky::vec2i window_size,
   if (out_to_gui(*state)) {
     llua_set_number("width", window_size.x());
     llua_set_number("height", window_size.y());
-    
+
     llua_set_number("border_inner_margin", border_inner_margin.get(*state));
     llua_set_number("border_outer_margin", border_outer_margin.get(*state));
     llua_set_number("border_width", border_width.get(*state));

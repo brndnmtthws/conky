@@ -50,11 +50,11 @@
 #include <sstream>
 
 #include "../conky.h"
-#include "display-output.hh"
 #include "../geometry.h"
-#include "gui.h"
-#include "../lua/llua.h"
 #include "../logging.h"
+#include "../lua/llua.h"
+#include "display-output.hh"
+#include "gui.h"
 
 #include "../lua/fonts.h"
 
@@ -636,7 +636,9 @@ bool display_output_wayland::main_loop_wait(double t) {
   int ep_count = epoll_wait(epoll_fd, ep, ARRAY_LENGTH(ep), ms);
 
   if (ep_count > 0) {
-    if (ep[0].events & (EPOLLERR | EPOLLHUP)) { SYSTEM_ERR("wayland output closed unexpectedly"); }
+    if (ep[0].events & (EPOLLERR | EPOLLHUP)) {
+      SYSTEM_ERR("wayland output closed unexpectedly");
+    }
   }
 
   int read_status = 0;
@@ -952,7 +954,7 @@ void display_output_wayland::clear_text(int exposures) {
                         color.blue / 255.0, color.alpha / 255.0);
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
   cairo_rectangle(cr, 0, 0, window->rectangle.width(),
-                    window->rectangle.height());
+                  window->rectangle.height());
   cairo_fill(cr);
   cairo_restore(cr);
 }
@@ -975,8 +977,7 @@ int display_output_wayland::font_descent(unsigned int f) {
   return pango_fonts[f].metrics.descent;
 }
 
-void display_output_wayland::setup_fonts(void) { /* Nothing to do here */
-}
+void display_output_wayland::setup_fonts(void) { /* Nothing to do here */ }
 
 void display_output_wayland::set_font(unsigned int f) {
   assert(f < pango_fonts.size());
@@ -1077,7 +1078,8 @@ static struct wl_shm_pool *make_shm_pool(struct wl_shm *shm, int size,
 
   fd = os_create_anonymous_file(size);
   if (fd < 0) {
-    LOG_ERROR("creating a buffer file for {}B failed: {}", size, strerror(errno));
+    LOG_ERROR("creating a buffer file for {}B failed: {}", size,
+              strerror(errno));
     return NULL;
   }
 
@@ -1273,7 +1275,8 @@ void window_commit_buffer(struct window *window) {
   wl_surface_set_buffer_scale(global_window->surface,
                               global_window->pending_scale);
   wl_surface_attach(window->surface,
-                    get_buffer_from_cairo_surface(window->cairo_surface.get()), 0, 0);
+                    get_buffer_from_cairo_surface(window->cairo_surface.get()),
+                    0, 0);
   /* repaint all the pixels in the surface, change size to only repaint changed
    * area*/
   wl_surface_damage(window->surface, window->rectangle.x(),

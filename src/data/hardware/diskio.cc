@@ -32,12 +32,12 @@
 #include <cstdlib>
 #include <vector>
 #include "../../common.h"
-#include "config.h"
 #include "../../conky.h" /* text_buffer_size */
-#include "../../core.h"
-#include "../../logging.h"
 #include "../../content/specials.h"
 #include "../../content/text_object.h"
+#include "../../core.h"
+#include "../../logging.h"
+#include "config.h"
 
 /* this is the root of all per disk stats,
  * also containing the totals. */
@@ -54,7 +54,7 @@ void clear_diskio_stats() {
 }
 
 struct diskio_stat *prepare_diskio_stat(const char *s) {
-  struct stat sb {};
+  struct stat sb{};
   std::vector<char> stat_name(text_buffer_size.get(*state)),
       device_name(text_buffer_size.get(*state)),
       device_s(text_buffer_size.get(*state));

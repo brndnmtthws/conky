@@ -27,8 +27,8 @@
 #include <string>
 #include <type_traits>
 
-#include "display-output.hh"
 #include "../lua/luamm.hh"
+#include "display-output.hh"
 
 namespace conky {
 

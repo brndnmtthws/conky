@@ -68,8 +68,7 @@ void parse_combine_arg(struct text_object *obj, const char *arg) {
     COMMAND_ARG_ERR("combine", "needs arguments: <text1> <text2>");
   }
 
-  cd =
-      static_cast<struct combine_data *>(malloc(sizeof(struct combine_data)));
+  cd = static_cast<struct combine_data *>(malloc(sizeof(struct combine_data)));
   memset(cd, 0, sizeof(struct combine_data));
 
   cd->left = static_cast<char *>(malloc(endvar[0] - startvar[0] + 1));

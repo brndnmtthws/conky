@@ -34,10 +34,10 @@
 #include <cstring>
 #include <memory>
 #include "../common.h"
-#include "config.h"
 #include "../conky.h"
-#include "../logging.h"
 #include "../content/text_object.h"
+#include "../logging.h"
+#include "config.h"
 
 #define MAX_HEADTAIL_LINES 30
 #define DEFAULT_MAX_HEADTAIL_USES 2
@@ -87,20 +87,22 @@ void init_tailhead(const char *type, const char *arg, struct text_object *obj) {
   // XXX: Buffer overflow ?
   args = sscanf(arg, "%s %d %d", tmp.get(), &ht->wantedlines, &ht->max_uses);
   if (args < 2 || args > 3) {
-    COMMAND_ARG_ERR(type,
-        "{} needs a file as 1st and a number of lines as 2nd argument", type);
+    COMMAND_ARG_ERR(
+        type, "{} needs a file as 1st and a number of lines as 2nd argument",
+        type);
   }
   if (ht->max_uses < 1) {
-    COMMAND_ARG_ERR(type, "invalid arg for {}, next_check must be larger than 0", type);
+    COMMAND_ARG_ERR(
+        type, "invalid arg for {}, next_check must be larger than 0", type);
   }
   if (ht->wantedlines > 0 && ht->wantedlines <= MAX_HEADTAIL_LINES) {
     ht->logfile = to_real_path(tmp.get());
     ht->buffer = nullptr;
     ht->current_use = 0;
   } else {
-    COMMAND_ARG_ERR(type,
-        "invalid arg for {}, number of lines must be between 1 and {}", type,
-        MAX_HEADTAIL_LINES);
+    COMMAND_ARG_ERR(
+        type, "invalid arg for {}, number of lines must be between 1 and {}",
+        type, MAX_HEADTAIL_LINES);
   }
   obj->data.opaque = ht.release();
   obj->callbacks.free = &free_tailhead;
@@ -110,7 +112,7 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
                            unsigned int p_max_size) {
   int fd, i, endofstring = 0, linescounted = 0;
   FILE *fp;
-  struct stat st {};
+  struct stat st{};
   auto *ht = static_cast<struct headtail *>(obj->data.opaque);
 
   if (ht == nullptr) { return; }
@@ -172,7 +174,7 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
       ht->buffer = strdup(p);
     } else {
       SYSTEM_ERR("${} can't find information about '{}'", type,
-               ht->logfile.c_str());
+                 ht->logfile.c_str());
     }
   }
 }

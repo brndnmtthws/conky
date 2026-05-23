@@ -34,10 +34,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "config.h"
 #include "../../conky.h"
-#include "../../logging.h"
 #include "../../content/temphelper.h"
+#include "../../logging.h"
+#include "config.h"
 
 static int ibm_acpi_temps[8];
 
@@ -290,7 +290,8 @@ void parse_ibm_temps_arg(struct text_object *obj, const char *arg) {
     obj->data.l = 0;
     LOG_WARNING(
         "invalid ibm_temps sensor '{}': must be 0-7, "
-        "falling back to 0 (CPU)", arg);
+        "falling back to 0 (CPU)",
+        arg);
   } else
     obj->data.l = atoi(arg);
 }

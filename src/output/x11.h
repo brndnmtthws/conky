@@ -74,18 +74,19 @@ struct conky_x11_window {
   Visual *visual;
   Colormap colourmap;
   GC gc;
-  
+
   /// Background opacity of the window (0-255).
-  /// 
+  ///
   /// This is set directly by lua settings - read them directly from
   /// backend-agnostic code.
   uint8_t opacity;
   /// Window buffer color depth.
-  /// 
+  ///
   /// Value `32` means X11 supports ARGB8888 (has a compositor).
-  /// Value `24` means only full background transparency is supported (no compositor).
-  /// Value `0` means `CopyFromParent`, i.e. default value, which is always `24`.
-  /// 
+  /// Value `24` means only full background transparency is supported (no
+  /// compositor). Value `0` means `CopyFromParent`, i.e. default value, which
+  /// is always `24`.
+  ///
   /// It can be something other than those 3 values (e.g. monochrome displays),
   /// but that's exceedingly rare.
   uint8_t color_depth;
@@ -176,7 +177,8 @@ Window query_x11_top_parent(Display *display, Window child);
 /// @param y screen Y position contained by window
 /// @param device_id pointer device id to be queried
 /// @return a top-most window at provided screen coordinates, or root
-Window query_x11_window_at_pos(Display *display, conky::vec2i pos, int device_id);
+Window query_x11_window_at_pos(Display *display, conky::vec2i pos,
+                               int device_id);
 
 /// @brief Returns a list of windows overlapping provided screen coordinates.
 ///

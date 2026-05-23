@@ -31,10 +31,10 @@
 #include <sys/ioctl.h>
 #include <sys/malloc.h>
 #include <sys/param.h>
-#include <sys/resource.h>
 #include <sys/proc.h>
-#include <sys/sensors.h>
+#include <sys/resource.h>
 #include <sys/sched.h>
+#include <sys/sensors.h>
 #include <sys/socket.h>
 #include <sys/swap.h>
 #include <sys/sysctl.h>
@@ -59,12 +59,12 @@
 #include <net80211/ieee80211_ioctl.h>
 
 #include "../../conky.h"
-#include "../hardware/diskio.h"
-#include "../../logging.h"
-#include "../network/net_stat.h"
-#include "openbsd.h"
 #include "../../content/temphelper.h"
+#include "../../logging.h"
+#include "../hardware/diskio.h"
+#include "../network/net_stat.h"
 #include "../top.h"
+#include "openbsd.h"
 
 #define MAXSHOWDEVS 16
 
@@ -192,8 +192,7 @@ int update_cpu_usage() {
   return 1;
 }
 
-void free_cpu(struct text_object *) { /* no-op */
-}
+void free_cpu(struct text_object *) { /* no-op */ }
 
 int update_load_average() {
   double v[3];
@@ -242,7 +241,7 @@ int update_obsd_sensors() {
     // continue;
   }
   for (int t = 0; t < SENSOR_MAX_TYPES; t++) {
-    type = (enum sensor_type) t;
+    type = (enum sensor_type)t;
     mib[3] = type;
     for (numt = 0; numt < sensordev.maxnumt[type]; numt++) {
       mib[4] = numt;
@@ -428,9 +427,7 @@ cleanup:
 
 int update_diskio() { return 0; /* XXX: implement? hifi: not sure how */ }
 
-void get_top_info(void) {
-  bsdcommon::update_top_info();
-}
+void get_top_info(void) { bsdcommon::update_top_info(); }
 
 void get_battery_short_status(char *buffer, unsigned int n, const char *bat) {
   /* Not implemented */
@@ -448,4 +445,3 @@ int get_entropy_poolsize(unsigned int *val) { return 1; }
 bool is_conky_already_running() {
   return bsdcommon::is_conky_already_running();
 }
-

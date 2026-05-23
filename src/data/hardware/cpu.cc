@@ -33,10 +33,10 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include "config.h"
 #include "../../conky.h"
-#include "../../logging.h"
 #include "../../content/text_object.h"
+#include "../../logging.h"
+#include "config.h"
 
 #ifdef __x86_64__
 #define CPU_FEATURE(x, z) __asm__ __volatile__("cpuid" : "=a"(z) : "a"(x))

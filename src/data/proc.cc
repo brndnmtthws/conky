@@ -385,7 +385,8 @@ void print_pid_parent(struct text_object *obj, char *p,
       if (end != nullptr) { *(end) = 0; }
       snprintf(p, p_max_size, "%s", begin);
     } else {
-      LOG_ERROR("can't find the process parent in '{}'", pathstream.str().c_str());
+      LOG_ERROR("can't find the process parent in '{}'",
+                pathstream.str().c_str());
     }
     free(buf);
   }
@@ -442,7 +443,8 @@ void print_pid_state(struct text_object *obj, char *p,
       }
       snprintf(p, p_max_size, "%s", begin);
     } else {
-      LOG_ERROR("can't find the process state in '{}'", pathstream.str().c_str());
+      LOG_ERROR("can't find the process state in '{}'",
+                pathstream.str().c_str());
     }
     free(buf);
   }
@@ -466,7 +468,8 @@ void print_pid_state_short(struct text_object *obj, char *p,
       begin += strlen(STATE_ENTRY);
       if (*begin != 0) { snprintf(p, p_max_size, "%c", *begin); }
     } else {
-      LOG_ERROR("can't find the process state in '{}'", pathstream.str().c_str());
+      LOG_ERROR("can't find the process state in '{}'",
+                pathstream.str().c_str());
     }
     free(buf);
   }
@@ -523,7 +526,9 @@ void scan_cmdline_to_pid_arg(struct text_object *obj, const char *arg,
     }
     if (obj->data.s[i - 1] == ' ') { obj->data.s[i - 1] = 0; }
   } else {
-    COMMAND_ARG_ERR("cmdline_to_pid", "cmdline_to_pid needs an argument: ${{cmdline_to_pid commandline}}");
+    COMMAND_ARG_ERR(
+        "cmdline_to_pid",
+        "cmdline_to_pid needs an argument: ${{cmdline_to_pid commandline}}");
   }
 }
 
@@ -591,7 +596,8 @@ void print_pid_threads(struct text_object *obj, char *p,
       if (end != nullptr) { *(end) = 0; }
       snprintf(p, p_max_size, "%s", begin);
     } else {
-      LOG_ERROR("can't find the number of the threads of the process in '{}'", pathstream.str().c_str());
+      LOG_ERROR("can't find the number of the threads of the process in '{}'",
+                pathstream.str().c_str());
     }
     free(buf);
   }
@@ -975,7 +981,8 @@ void print_pid_read(struct text_object *obj, char *p, unsigned int p_max_size) {
       if (end != nullptr) { *(end) = 0; }
       snprintf(p, p_max_size, "%s", begin);
     } else {
-      LOG_ERROR("can't find the amount of bytes read in '{}'", pathstream.str().c_str());
+      LOG_ERROR("can't find the amount of bytes read in '{}'",
+                pathstream.str().c_str());
     }
     free(buf);
   }
@@ -1000,7 +1007,8 @@ void print_pid_write(struct text_object *obj, char *p,
       if (end != nullptr) { *(end) = 0; }
       snprintf(p, p_max_size, "%s", begin);
     } else {
-      LOG_ERROR("can't find the amount of bytes written in '{}'", pathstream.str().c_str());
+      LOG_ERROR("can't find the amount of bytes written in '{}'",
+                pathstream.str().c_str());
     }
     free(buf);
   }

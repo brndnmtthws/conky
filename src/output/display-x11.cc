@@ -44,9 +44,6 @@
 #ifdef BUILD_IMLIB2
 #include "../conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
-#ifdef BUILD_MOUSE_EVENTS
-#include "../mouse-events.h"
-#endif /* BUILD_MOUSE_EVENTS */
 #include <X11/extensions/XI2.h>
 #include <X11/extensions/XInput2.h>
 #undef COUNT
@@ -69,6 +66,7 @@
 #include "../geometry.h"
 #include "../logging.h"
 #include "../lua/llua.h"
+#include "../mouse-events.h"
 #include "gui.h"
 
 #include "../lua/x11-settings.h"
@@ -261,7 +259,7 @@ bool display_output_x11::main_loop_wait(double t) {
 
   if (XPending(display) == 0) {
     fd_set fdsr;
-    struct timeval tv {};
+    struct timeval tv{};
     int s;
     // t = next_update_time - get_time();
 
@@ -311,18 +309,19 @@ bool display_output_x11::main_loop_wait(double t) {
         if (use_xpmdb.get(*state)) {
           XFreePixmap(display, window.back_buffer);
           unsigned int depth = window.color_depth != 0
-                                  ? window.color_depth
-                                  : DefaultDepth(display, screen);
-          window.back_buffer = XCreatePixmap(
-              display, window.window, window.geometry.width(),
-              window.geometry.height(), depth);
+                                   ? window.color_depth
+                                   : DefaultDepth(display, screen);
+          window.back_buffer =
+              XCreatePixmap(display, window.window, window.geometry.width(),
+                            window.geometry.height(), depth);
 
           if (window.back_buffer != None) {
             window.drawable = window.back_buffer;
           } else {
             // this is probably reallllly bad
             LOG_ERROR("failed to allocate back buffer for window {:#x} ({}x{})",
-                      window.window, window.geometry.width(), window.geometry.height());
+                      window.window, window.geometry.width(),
+                      window.geometry.height());
           }
           unsigned long bg = 0;
           if (window.color_depth == argb8888_color_depth) {
@@ -480,8 +479,8 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   bool inside_geometry = window.geometry.contains(data->pos_absolute);
   bool cursor_over_conky = false;
   if (inside_geometry) {
-    Window event_window = query_x11_window_at_pos(
-        display, data->pos_absolute, data->device->master);
+    Window event_window = query_x11_window_at_pos(display, data->pos_absolute,
+                                                  data->device->master);
     if (window_top_parent == None) {
       window_top_parent = query_x11_top_parent(display, window.window);
     }
@@ -490,8 +489,8 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
     cursor_over_conky = same_window;
   }
   LOG_TRACE_WITH(({"pos", data->pos_absolute}, {"geom", window.geometry}),
-                 "xi event: type={} inside_geom={} over_conky={}",
-                 data->evtype, inside_geometry, cursor_over_conky);
+                 "xi event: type={} inside_geom={} over_conky={}", data->evtype,
+                 inside_geometry, cursor_over_conky);
 
   // XInput reports events twice on some hardware (even by 'xinput --test-xi2')
   auto hash = std::make_tuple(data->serial, data->evtype, data->event);
@@ -572,12 +571,11 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
         scroll_direction = (vertical_value * increment) < 0.0
                                ? scroll_direction_t::UP
                                : scroll_direction_t::DOWN;
-        LOG_TRACE_WITH(({"vertical", vertical_value},
-                        {"increment", increment},
-                        {"product", vertical_value * increment}),
-                       "xi scroll dir={}",
-                       scroll_direction == scroll_direction_t::UP ? "UP"
-                                                                  : "DOWN");
+        LOG_TRACE_WITH(
+            ({"vertical", vertical_value}, {"increment", increment},
+             {"product", vertical_value * increment}),
+            "xi scroll dir={}",
+            scroll_direction == scroll_direction_t::UP ? "UP" : "DOWN");
       } else {
         auto horizontal = data->valuator_relative_value(valuator_t::SCROLL_X);
         double horizontal_value = horizontal.value_or(0.0);
@@ -598,8 +596,8 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
     }
   } else if (cursor_over_conky && (data->evtype == XI_ButtonPress ||
                                    data->evtype == XI_ButtonRelease)) {
-    LOG_TRACE("xi button: detail={} type={}",
-              data->detail, data->evtype == XI_ButtonPress ? "press" : "release");
+    LOG_TRACE("xi button: detail={} type={}", data->detail,
+              data->evtype == XI_ButtonPress ? "press" : "release");
     if (data->detail >= 4 && data->detail <= 7) {
       // Fallback: use button 4-7 as scroll if this device has no independent
       // scroll valuators (e.g. Xephyr aliases scroll and move axes).
@@ -877,8 +875,9 @@ void display_output_x11::cleanup() {
 void display_output_x11::set_foreground_color(Colour c) {
   current_color = c;
   current_color.alpha = window.opacity;
-  XSetForeground(display, window.gc,
-                 current_color.to_x11_color(display, screen, window.opacity < 0xff));
+  XSetForeground(
+      display, window.gc,
+      current_color.to_x11_color(display, screen, window.opacity < 0xff));
 }
 
 int display_output_x11::calc_text_width(const char *s) {
@@ -907,7 +906,8 @@ void display_output_x11::draw_string_at(int x, int y, const char *s, int w) {
     XColor c{};
     XftColor c2{};
 
-    c.pixel = current_color.to_x11_color(display, screen, window.opacity < 0xff);
+    c.pixel =
+        current_color.to_x11_color(display, screen, window.opacity < 0xff);
     // query color on custom colormap
     XQueryColor(display, window.colourmap, &c);
 
@@ -1159,11 +1159,10 @@ void display_output_x11::load_fonts(bool utf8) {
 
 #ifdef BUILD_LUA_CAIRO_XLIB
 void display_output_x11::update_surface() {
-  current_surface.reset(
-      cairo_xlib_surface_create(display, window.drawable, window.visual,
-                                window.geometry.width(),
-                                window.geometry.height()),
-      cairo_surface_destroy);
+  current_surface.reset(cairo_xlib_surface_create(
+                            display, window.drawable, window.visual,
+                            window.geometry.width(), window.geometry.height()),
+                        cairo_surface_destroy);
 }
 #endif /* BUILD_LUA_CAIRO_XLIB */
 

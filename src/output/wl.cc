@@ -42,9 +42,7 @@ void out_to_wayland_setting::lua_setter(lua::state &l, bool init) {
 
   Base::lua_setter(l, init);
 
-  if (init && do_convert(l, -1).first) {
-    LOG_DEBUG("wayland output enabled");
-  }
+  if (init && do_convert(l, -1).first) { LOG_DEBUG("wayland output enabled"); }
 
   ++s;
 }

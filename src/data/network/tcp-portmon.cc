@@ -19,9 +19,9 @@
  */
 #include "tcp-portmon.h"
 #include "../../conky.h"
-#include "libtcp-portmon.h"
-#include "../../logging.h"
 #include "../../content/text_object.h"
+#include "../../logging.h"
+#include "libtcp-portmon.h"
 
 static tcp_port_monitor_collection_t *pmc = nullptr;
 
@@ -48,10 +48,12 @@ int tcp_portmon_init(struct text_object *obj, const char *arg) {
   }
   if ((port_begin < 1) || (port_begin > 65535) || (port_end < 1) ||
       (port_end > 65535)) {
-    COMMAND_ARG_ERR("tcp_portmon", "tcp_portmon: port values must be from 1 to 65535");
+    COMMAND_ARG_ERR("tcp_portmon",
+                    "tcp_portmon: port values must be from 1 to 65535");
   }
   if (port_begin > port_end) {
-    COMMAND_ARG_ERR("tcp_portmon", "tcp_portmon: starting port must be <= ending port");
+    COMMAND_ARG_ERR("tcp_portmon",
+                    "tcp_portmon: starting port must be <= ending port");
   }
   if (strncmp(itembuf, "count", 31) == EQUAL) {
     item = COUNT;
@@ -72,15 +74,17 @@ int tcp_portmon_init(struct text_object *obj, const char *arg) {
   } else if (strncmp(itembuf, "lservice", 31) == EQUAL) {
     item = LOCALSERVICE;
   } else {
-    COMMAND_ARG_ERR("tcp_portmon", "tcp_portmon: invalid item specified: '{}'", itembuf);
+    COMMAND_ARG_ERR("tcp_portmon", "tcp_portmon: invalid item specified: '{}'",
+                    itembuf);
   }
   if ((argc == 3) && (item != COUNT)) {
     COMMAND_ARG_ERR("tcp_portmon",
-        "tcp_portmon: 3 argument form valid only for \"count\" "
-        "item");
+                    "tcp_portmon: 3 argument form valid only for \"count\" "
+                    "item");
   }
   if ((argc == 4) && (connection_index < 0)) {
-    COMMAND_ARG_ERR("tcp_portmon", "tcp_portmon: connection index must be non-negative");
+    COMMAND_ARG_ERR("tcp_portmon",
+                    "tcp_portmon: connection index must be non-negative");
   }
   /* ok, args looks good. save the text object data */
   pmd = (tcp_port_monitor_data *)malloc(sizeof(struct tcp_port_monitor_data));

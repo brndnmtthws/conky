@@ -122,9 +122,9 @@ struct sorted_process {
 
 /**
  * @brief Returns process information for specified `name`.
- * 
+ *
  * @param name full command line or base name of the process.
- * @return struct process* containing usage details of a process. 
+ * @return struct process* containing usage details of a process.
  */
 struct process *get_process_by_name(std::string_view name);
 /**

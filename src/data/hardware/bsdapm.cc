@@ -30,10 +30,10 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#include "config.h"
 #include "../../conky.h"
-#include "../../logging.h"
 #include "../../content/text_object.h"
+#include "../../logging.h"
+#include "config.h"
 
 #if defined(__OpenBSD__)
 #include <machine/apmvar.h>
@@ -146,7 +146,7 @@ void print_apm_battery_life(struct text_object *obj, char *p,
   } else {
     out = "ERR";
   }
-  
+
   snprintf(p, p_max_size, "%s", out);
 }
 

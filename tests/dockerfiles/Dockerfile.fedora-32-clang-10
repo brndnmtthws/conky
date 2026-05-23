@@ -6,6 +6,4 @@ RUN dnf -y -q install \
   clang \
   libcxx-devel \
   libcxxabi-devel \
-  npm \
-  && dnf clean all \
-  && npm cache clean --force
+  && dnf clean all

@@ -47,7 +47,6 @@
 #include "../mouse-events.h"
 
 #include <algorithm>
-#include <vector>
 #include <array>
 #include <cstddef>
 #include <cstdio>
@@ -55,6 +54,7 @@
 #include <cstring>
 #include <numeric>
 #include <string>
+#include <vector>
 
 // #ifndef OWN_WINDOW
 // #include <iostream>
@@ -169,10 +169,10 @@ static int x11_error_handler(Display *d, XErrorEvent *err) {
     code_allocated = true;
   }
 
-  LOG_DEBUG(
-      "X {} error: display {:#x}, XID {}, serial {} -- {}",
-      error_name, reinterpret_cast<uint64_t>(err->display),
-      static_cast<int64_t>(err->resourceid), err->serial, code_description);
+  LOG_DEBUG("X {} error: display {:#x}, XID {}, serial {} -- {}", error_name,
+            reinterpret_cast<uint64_t>(err->display),
+            static_cast<int64_t>(err->resourceid), err->serial,
+            code_description);
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfree-nonheap-object"
@@ -306,7 +306,7 @@ void update_x11_resource_db(bool first_run) {
     }
 
     // https://github.com/dunst-project/dunst/blob/master/src/x11/x.c#L499
-    display->db = NULL; // should be new or deleted
+    display->db = NULL;  // should be new or deleted
     db = XrmGetStringDatabase((const char *)prop.value);
     XrmSetDatabase(display, db);
   }
@@ -336,7 +336,8 @@ void update_x11_workarea() {
   int heads = 0;
   XineramaScreenInfo *si = XineramaQueryScreens(display, &heads);
   if (si == nullptr) {
-    LOG_WARNING("XineramaQueryScreens returned nullptr, ignoring head settings");
+    LOG_WARNING(
+        "XineramaQueryScreens returned nullptr, ignoring head settings");
     return; /* queryscreens failed? */
   }
 
@@ -371,8 +372,8 @@ static Window find_desktop_window(Window root) {
       find_desktop_window_impl(desktop, workarea.width(), workarea.height());
 
   if (desktop != root) {
-    LOG_DEBUG("desktop window {:#x} is subwindow of root window {:#x}",
-              desktop, root);
+    LOG_DEBUG("desktop window {:#x} is subwindow of root window {:#x}", desktop,
+              root);
   } else {
     LOG_DEBUG("desktop window {:#x} is root window", desktop);
   }
@@ -390,10 +391,11 @@ void set_transparent_background(conky_x11_window *window) {
     Colour colour = get_background_colour_preference(*state);
     unsigned long xcolor =
         colour.to_x11_color(display, screen, window->opacity < 0xff, true);
-    LOG_DEBUG("ARGB background: colour=({},{},{},{}) xcolor=0x{:08x} "
-              "opacity={}",
-              colour.red, colour.green, colour.blue, colour.alpha, xcolor,
-              window->opacity);
+    LOG_DEBUG(
+        "ARGB background: colour=({},{},{},{}) xcolor=0x{:08x} "
+        "opacity={}",
+        colour.red, colour.green, colour.blue, colour.alpha, xcolor,
+        window->opacity);
     XSetWindowBackground(display, window->window, xcolor);
     return;
   }
@@ -471,7 +473,7 @@ void destroy_window() {
   if (window.xftdraw != nullptr) { XftDrawDestroy(window.xftdraw); }
 #endif /* BUILD_XFT */
   if (window.gc != nullptr) { XFreeGC(display, window.gc); }
-  memset(&window, 0, sizeof(struct conky_x11_window));
+  window = conky_x11_window{};
 }
 
 void x11_init_window(lua::state &l, bool own) {
@@ -504,10 +506,14 @@ void x11_init_window(lua::state &l, bool own) {
       window.opacity = background_alpha;
     } else if (wants_alpha) {
       if (background_alpha != 0) {
-        LOG_WARNING("ARGB visual not available (no compositor?), window will be opaque");
+        LOG_WARNING(
+            "ARGB visual not available (no compositor?), window will be "
+            "opaque");
       } else {
         window.opacity = 0;
-        LOG_WARNING("ARGB visual not available (no compositor?), using pseudo-transparency fallback");
+        LOG_WARNING(
+            "ARGB visual not available (no compositor?), using "
+            "pseudo-transparency fallback");
       }
     }
 
@@ -600,9 +606,9 @@ void x11_init_window(lua::state &l, bool own) {
         window.geometry.set_pos(conky::vec2i::Zero());
       }
       /* Parent is root window so WM can take control */
-      window.window = XCreateWindow(display, window.root, window.geometry.x(),
-                                    window.geometry.y(), b, b, 0, window.color_depth,
-                                    InputOutput, window.visual, flags, &attrs);
+      window.window = XCreateWindow(
+          display, window.root, window.geometry.x(), window.geometry.y(), b, b,
+          0, window.color_depth, InputOutput, window.visual, flags, &attrs);
 
       uint16_t hints = own_window_hints.get(l);
 
@@ -818,9 +824,7 @@ void x11_init_window(lua::state &l, bool own) {
 
   int64_t input_mask = ExposureMask | PropertyChangeMask;
 #ifdef OWN_WINDOW
-  if (own_window.get(l)) {
-    input_mask |= StructureNotifyMask;
-  }
+  if (own_window.get(l)) { input_mask |= StructureNotifyMask; }
   bool xinput_ok = false;
   // not a loop; substitutes goto with break - if checks fail
   do {
@@ -835,7 +839,8 @@ void x11_init_window(lua::state &l, bool own) {
     int major = 2, minor = 0;
     int retval = XIQueryVersion(display, &major, &minor);
     if (retval != 0) {
-      LOG_WARNING("XInput 2.0 is not supported (supported version {}.{})", major, minor);
+      LOG_WARNING("XInput 2.0 is not supported (supported version {}.{})",
+                  major, minor);
       break;
     }
 
@@ -1352,9 +1357,8 @@ void set_struts() {
     }
   }
 
-  LOG_DEBUG(
-      "reserved space: left={}, right={}, top={}, bottom={}",
-      sizes[0], sizes[1], sizes[2], sizes[3]);
+  LOG_DEBUG("reserved space: left={}, right={}, top={}, bottom={}", sizes[0],
+            sizes[1], sizes[2], sizes[3]);
 
   XChangeProperty(display, window.window, atom, XA_CARDINAL, 32,
                   PropModeReplace, reinterpret_cast<unsigned char *>(&sizes),
@@ -1703,10 +1707,10 @@ std::vector<Window> query_x11_windows(Display *display, bool eager) {
   return result;
 }
 
-Window query_x11_window_at_pos(Display *display, conky::vec2i pos, int device_id) {
-  (void) device_id;
+Window query_x11_window_at_pos(Display *display, conky::vec2i pos,
+                               int device_id) {
+  (void)device_id;
   Window root = DefaultVRootWindow(display);
-
 
   Window root_return;
   Window last = None;

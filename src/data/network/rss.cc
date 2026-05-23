@@ -52,7 +52,9 @@ class rss_cb : public curl_callback<std::shared_ptr<PRSS>> {
 
       std::unique_lock<std::mutex> lock(Base::result_mutex);
       Base::result = tmp;
-    } catch (std::runtime_error &e) { LOG_ERROR("rss parse failed: {}", e.what()); }
+    } catch (std::runtime_error &e) {
+      LOG_ERROR("rss parse failed: {}", e.what());
+    }
   }
 
  public:
@@ -168,7 +170,9 @@ void rss_scan_arg(struct text_object *obj, const char *arg) {
   argc = sscanf(arg, "%127s %f %63s %d %u", rd->uri, &rd->interval, rd->action,
                 &rd->act_par, &rd->nrspaces);
   if (argc < 3) {
-    LOG_ERROR("wrong number of arguments for $rss, expected: url interval action [param] [spaces]");
+    LOG_ERROR(
+        "wrong number of arguments for $rss, expected: url interval action "
+        "[param] [spaces]");
     free(rd);
     return;
   }

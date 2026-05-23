@@ -1,7 +1,7 @@
 #include "catch2/catch.hpp"
 
-#include <content/colours.hh>
 #include <config.h>
+#include <content/colours.hh>
 
 TEST_CASE("parse_color correctly parses colours", "[colours][parse_color]") {
   SECTION("parsing abbreviated hex color") {

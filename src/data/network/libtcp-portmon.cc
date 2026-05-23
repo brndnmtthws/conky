@@ -27,11 +27,11 @@
 
 #include "libtcp-portmon.h"
 
-#include "../../logging.h"
 #include <cstdio>
 #include <cstring>
 #include <unordered_map>
 #include <vector>
+#include "../../logging.h"
 
 /* -------------------------------------------------------------------
  * IMPLEMENTATION INTERFACE
