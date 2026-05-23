@@ -22,8 +22,8 @@
 
 #include <config.h>
 
-#include "data-source.hh"
 #include "../logging.h"
+#include "data-source.hh"
 
 #include <iostream>
 #include <sstream>
@@ -99,9 +99,7 @@ void do_register_data_source(const std::string &name,
   static data_source_constructor constructor;
 
   bool inserted = data_sources->insert({name, fn}).second;
-  if (!inserted) {
-    CRIT_ERR("data source '{}' already registered", name);
-  }
+  if (!inserted) { CRIT_ERR("data source '{}' already registered", name); }
 }
 
 disabled_data_source::disabled_data_source(lua::state *l,

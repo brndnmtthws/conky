@@ -32,14 +32,14 @@
 #define BSD_COMMON
 
 #if defined(__NetBSD__)
-  #include <sys/sysctl.h>
-  #define BSD_COMMON_PROC_STRUCT struct kinfo_proc2
+#include <sys/sysctl.h>
+#define BSD_COMMON_PROC_STRUCT struct kinfo_proc2
 #elif defined(__OpenBSD__)
-  #include <sys/types.h>
-  #include <sys/sysctl.h>
-  #define BSD_COMMON_PROC_STRUCT struct kinfo_proc
+#include <sys/sysctl.h>
+#include <sys/types.h>
+#define BSD_COMMON_PROC_STRUCT struct kinfo_proc
 #else
-  #error Not supported BSD system
+#error Not supported BSD system
 #endif
 
 #include <stdint.h>
@@ -47,24 +47,24 @@
 #include "../../conky.h"
 
 namespace bsdcommon {
-  struct cpu_load {
-    uint64_t old_used;
-    uint64_t old_total;
-  };
+struct cpu_load {
+  uint64_t old_used;
+  uint64_t old_total;
+};
 
-  bool init_kvm();
-  void deinit_kvm();
+bool init_kvm();
+void deinit_kvm();
 
-  void get_cpu_count(float **cpu_usage, unsigned int *cpu_count);
-  void update_cpu_usage(float **cpu_usage, unsigned int *cpu_count);
+void get_cpu_count(float **cpu_usage, unsigned int *cpu_count);
+void update_cpu_usage(float **cpu_usage, unsigned int *cpu_count);
 
-  BSD_COMMON_PROC_STRUCT* get_processes(short unsigned int *procs);
+BSD_COMMON_PROC_STRUCT *get_processes(short unsigned int *procs);
 
-  void get_number_of_running_processes(short unsigned int *run_procs);
-  void update_top_info();
-  bool is_conky_already_running();
+void get_number_of_running_processes(short unsigned int *run_procs);
+void update_top_info();
+bool is_conky_already_running();
 
-  void update_meminfo(struct information &info);
-}
+void update_meminfo(struct information &info);
+}  // namespace bsdcommon
 
 #endif /*BSDCOMMON_H_*/

@@ -21,8 +21,8 @@
  */
 
 #include "../../conky.h"
-#include "../../logging.h"
 #include "../../content/text_object.h"
+#include "../../logging.h"
 
 #include <math.h>
 #include <stdio.h>

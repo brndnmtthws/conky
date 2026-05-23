@@ -75,7 +75,7 @@ enum class exec_flag : unsigned int {
 
 inline exec_flag operator|(exec_flag a, exec_flag b) {
   return static_cast<exec_flag>(static_cast<unsigned>(a) |
-                                    static_cast<unsigned>(b));
+                                static_cast<unsigned>(b));
 }
 
 inline bool operator&(exec_flag a, exec_flag b) {

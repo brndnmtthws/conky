@@ -59,8 +59,8 @@ void ensure_lua_state() {
 }
 
 struct sub_text_object {
-  struct text_object root {};
-  struct text_object obj {};
+  struct text_object root{};
+  struct text_object obj{};
 
   explicit sub_text_object(const char *text) {
     obj_be_plain_text(&obj, text);
@@ -181,7 +181,7 @@ TEST_CASE("cmdline_to_pid finds the current process",
   std::string cmdline = read_cmdline();
   REQUIRE_FALSE(cmdline.empty());
 
-  struct text_object obj {};
+  struct text_object obj{};
   obj.data.s = strdup(cmdline.c_str());
 
   char buf[32]{};
@@ -212,7 +212,7 @@ TEST_CASE("pid_time handles comm with spaces", "[proc][pid_time]") {
 
   std::string pid_str = std::to_string(getpid());
   sub_text_object sub(pid_str.c_str());
-  struct text_object obj {};
+  struct text_object obj{};
   obj.sub = &sub.root;
 
   char buf[64]{};
@@ -239,7 +239,7 @@ TEST_CASE("pid_time_kernelmode uses system time",
 
   std::string pid_str = std::to_string(getpid());
   sub_text_object sub(pid_str.c_str());
-  struct text_object obj {};
+  struct text_object obj{};
   obj.sub = &sub.root;
 
   char buf[64]{};
@@ -265,7 +265,7 @@ TEST_CASE("pid_time_usermode uses user time", "[proc][pid_time_usermode]") {
 
   std::string pid_str = std::to_string(getpid());
   sub_text_object sub(pid_str.c_str());
-  struct text_object obj {};
+  struct text_object obj{};
   obj.sub = &sub.root;
 
   char buf[64]{};
@@ -283,7 +283,7 @@ TEST_CASE("pid_thread_list does not overflow small buffers",
 
   std::string pid_str = std::to_string(getpid());
   sub_text_object sub(pid_str.c_str());
-  struct text_object obj {};
+  struct text_object obj{};
   obj.sub = &sub.root;
 
   constexpr size_t k_buf_size = 8;
@@ -312,7 +312,7 @@ TEST_CASE("pid_environ reads values from /proc environ",
   std::string pid_str = std::to_string(getpid());
   std::string arg = pid_str + " PATH";
   sub_text_object sub(arg.c_str());
-  struct text_object obj {};
+  struct text_object obj{};
   obj.sub = &sub.root;
 
   std::vector<char> buf(strlen(expected) + 1);
@@ -330,7 +330,7 @@ TEST_CASE("pid_state_short returns the short state",
 
   std::string pid_str = std::to_string(getpid());
   sub_text_object sub(pid_str.c_str());
-  struct text_object obj {};
+  struct text_object obj{};
   obj.sub = &sub.root;
 
   char buf[8]{};
@@ -360,7 +360,7 @@ TEST_CASE("pid_vm values map to correct status entries", "[proc][pid_vm]") {
 
   std::string pid_str = std::to_string(child);
   sub_text_object sub(pid_str.c_str());
-  struct text_object obj {};
+  struct text_object obj{};
   obj.sub = &sub.root;
 
   char buf[64]{};

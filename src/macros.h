@@ -62,10 +62,8 @@
 #define UNREACHABLE() (unreachable_impl())
 #endif /* compiler selection */
 #else  /* DEBUG */
-#define UNREACHABLE()              \
-  do {                             \
-    CRIT_ERR("reached unreachable"); \
-  } while (0)
+#define UNREACHABLE() \
+  do { CRIT_ERR("reached unreachable"); } while (0)
 #endif /* NDEBUG */
 
 #endif /* _CONKY_MACROS_H_ */

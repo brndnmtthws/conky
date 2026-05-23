@@ -15,7 +15,8 @@ namespace {
 static constexpr size_t project_root_len =
     sizeof(__FILE__) - 1 - sizeof("src/logging.cc") + 1;
 
-// Used to avoid the nasty 1-2-4-8 initial growth for relatively small data (spans/attributes)
+// Used to avoid the nasty 1-2-4-8 initial growth for relatively small data
+// (spans/attributes)
 template <typename T>
 std::vector<T> make_reserved(size_t capacity) {
   std::vector<T> v;
@@ -30,7 +31,8 @@ static thread_local auto tl_spans = make_reserved<conky::log::span>(8);
 // Thread-local per-message attributes (set before log call, cleared after)
 static thread_local auto tl_msg_attrs = make_reserved<conky::log::attribute>(4);
 
-static std::string format_attrs(std::initializer_list<conky::log::attribute> attrs) {
+static std::string format_attrs(
+    std::initializer_list<conky::log::attribute> attrs) {
   std::string result = "{";
   size_t i = 0;
   for (const auto &a : attrs) {
@@ -89,8 +91,8 @@ void conky::log::install_context(const std::vector<span> &ctx) {
 // info+: no spans; debug: spans without attrs; trace: spans with attrs
 class span_formatter_flag : public spdlog::custom_flag_formatter {
  public:
-  void format(const spdlog::details::log_msg &msg,
-              const std::tm &, spdlog::memory_buf_t &dest) override {
+  void format(const spdlog::details::log_msg &msg, const std::tm &,
+              spdlog::memory_buf_t &dest) override {
     if (msg.level > spdlog::level::debug) return;
     auto ctx = conky::log::current_span_context();
     if (!ctx.empty()) {
@@ -108,8 +110,8 @@ class span_formatter_flag : public spdlog::custom_flag_formatter {
 // Only visible at trace level
 class msg_attr_formatter_flag : public spdlog::custom_flag_formatter {
  public:
-  void format(const spdlog::details::log_msg &msg,
-              const std::tm &, spdlog::memory_buf_t &dest) override {
+  void format(const spdlog::details::log_msg &msg, const std::tm &,
+              spdlog::memory_buf_t &dest) override {
     if (msg.level > spdlog::level::trace) return;
     if (tl_msg_attrs.empty()) return;
     std::string result = " {";
@@ -131,19 +133,21 @@ class msg_attr_formatter_flag : public spdlog::custom_flag_formatter {
 // Custom source location formatter that omits [file:line] when empty
 class source_loc_formatter_flag : public spdlog::custom_flag_formatter {
  public:
-  void format(const spdlog::details::log_msg &msg,
-              const std::tm &, spdlog::memory_buf_t &dest) override {
+  void format(const spdlog::details::log_msg &msg, const std::tm &,
+              spdlog::memory_buf_t &dest) override {
     if (msg.source.empty()) return;
     const char *file = msg.source.filename;
     if (strlen(file) > project_root_len) { file += project_root_len; }
     bool hide_func = !stderr_sink->should_log(spdlog::level::debug) ||
-        (strcmp(msg.source.funcname, "operator()") == 0 &&
-         msg.payload.size() >= 2 && msg.payload[0] == '>' && msg.payload[1] == '>');
+                     (strcmp(msg.source.funcname, "operator()") == 0 &&
+                      msg.payload.size() >= 2 && msg.payload[0] == '>' &&
+                      msg.payload[1] == '>');
     std::string result;
     if (hide_func) {
       result = fmt::format(" [{}:{}]", file, msg.source.line);
     } else {
-      result = fmt::format(" [{}:{}:{}]", file, msg.source.line, msg.source.funcname);
+      result = fmt::format(" [{}:{}:{}]", file, msg.source.line,
+                           msg.source.funcname);
     }
     dest.append(result.data(), result.data() + result.size());
   }
@@ -157,9 +161,7 @@ void conky::log::push_msg_attrs(std::initializer_list<attribute> attrs) {
   tl_msg_attrs.insert(tl_msg_attrs.end(), attrs.begin(), attrs.end());
 }
 
-void conky::log::clear_msg_attrs() {
-  tl_msg_attrs.clear();
-}
+void conky::log::clear_msg_attrs() { tl_msg_attrs.clear(); }
 
 void conky::log::init_logger() {
   std::vector<spdlog::sink_ptr> sinks;
@@ -202,6 +204,4 @@ void conky::log::log_less() {
   stderr_sink->set_level(static_cast<spdlog::level::level_enum>(lvl + 1));
 }
 
-void conky::log::set_quiet() {
-  stderr_sink->set_level(spdlog::level::off);
-}
+void conky::log::set_quiet() { stderr_sink->set_level(spdlog::level::off); }

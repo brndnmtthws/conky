@@ -34,8 +34,8 @@
 #include "config.h"
 #include "conky.h"
 #include "logging.h"
-#include "output/display-output.hh"
 #include "lua/lua-config.hh"
+#include "output/display-output.hh"
 
 #ifdef BUILD_X11
 #include "output/x11.h"
@@ -161,7 +161,8 @@ static void print_version() {
 #ifdef DEBUG
             << _("  * Debugging extensions\n")
 #endif
-#if defined BUILD_LUA_CAIRO || defined BUILD_LUA_IMLIB2 || BUILD_LUA_RSVG || BUILD_LUA_TEXT
+#if defined BUILD_LUA_CAIRO || defined BUILD_LUA_IMLIB2 || BUILD_LUA_RSVG || \
+    BUILD_LUA_TEXT
             << _("\n Lua bindings:\n")
 #endif
 #ifdef BUILD_LUA_CAIRO
@@ -193,8 +194,7 @@ static void print_version() {
 #ifdef BUILD_XFT
             << _("  * Xft\n")
 #endif /* BUILD_XFT */
-            << _("  * Xinput\n")
-            << _("  * ARGB visual\n")
+            << _("  * Xinput\n") << _("  * ARGB visual\n")
 #ifdef OWN_WINDOW
             << _("  * Own window\n")
 #endif
@@ -284,11 +284,13 @@ static void print_help(const char *prog_name) {
          " (and quit)\n"
          "   -p, --pause=SECS          pause for SECS seconds at startup "
          "before doing anything\n"
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
-    defined(__HAIKU__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(__linux__) || defined(__FreeBSD__) ||        \
+    defined(__FreeBSD_kernel__) || defined(__HAIKU__) || \
+    defined(__NetBSD__) || defined(__OpenBSD__)
          "   -U, --unique              only one conky process can be created\n"
 #endif /* Linux || FreeBSD || Haiku || NetBSD || OpenBSD */
-         , prog_name);
+         ,
+         prog_name);
 }
 
 inline void reset_optind() {
@@ -300,8 +302,8 @@ inline void reset_optind() {
 #endif
 }
 
-void clean_up(void);     // defined in conky.cc
-void handle_terminate(); // defined in conky.cc
+void clean_up(void);      // defined in conky.cc
+void handle_terminate();  // defined in conky.cc
 
 int main(int argc, char **argv) {
   conky::log::init_logger();
@@ -379,15 +381,17 @@ int main(int argc, char **argv) {
         window.window = strtol(optarg, nullptr, 0);
         break;
 #endif /* BUILD_X11 */
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
-    defined(__HAIKU__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(__linux__) || defined(__FreeBSD__) ||        \
+    defined(__FreeBSD_kernel__) || defined(__HAIKU__) || \
+    defined(__NetBSD__) || defined(__OpenBSD__)
       case 'U':
         unique_process = true;
         break;
 #endif /* Linux || FreeBSD || Haiku || NetBSD || OpenBSD */
       case '?':
         if (optopt != 0) {
-          LOG_ERROR("unknown option: '-{}'; try --help", static_cast<char>(optopt));
+          LOG_ERROR("unknown option: '-{}'; try --help",
+                    static_cast<char>(optopt));
         } else {
           LOG_ERROR("unknown option: '{}'; try --help", argv[optind - 1]);
         }
@@ -395,8 +399,9 @@ int main(int argc, char **argv) {
     }
   }
 
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
-    defined(__HAIKU__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(__linux__) || defined(__FreeBSD__) ||        \
+    defined(__FreeBSD_kernel__) || defined(__HAIKU__) || \
+    defined(__NetBSD__) || defined(__OpenBSD__)
   if (unique_process && is_conky_already_running()) {
     LOG_INFO("another conky instance is already running");
     return 0;
@@ -428,7 +433,7 @@ int main(int argc, char **argv) {
   bsdcommon::deinit_kvm();
 #endif
 
-//TODO(gmb): Move this to bsdcommon and remove external kd.
+// TODO(gmb): Move this to bsdcommon and remove external kd.
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   kvm_close(kd);
 #endif

@@ -37,8 +37,8 @@
 #include <cstring>
 #include <ctime>
 #include "../conky.h"
-#include "../logging.h"
 #include "../content/text_object.h"
+#include "../logging.h"
 
 #include <memory>
 
@@ -140,13 +140,13 @@ void free_tztime(struct text_object *obj) {
  * - exit conky on memory allocation failure
  * - XXX: no return value at all, otherwise this
  *        could be used globally */
-#define safe_asprintf(bufp, ...)                                   \
-  {                                                                \
-    int __v;                                                       \
-    if ((__v = asprintf(bufp, __VA_ARGS__)) == -1) {               \
-      LOG_ERROR("memory allocation failed");                       \
-      exit(__v);                                                   \
-    }                                                              \
+#define safe_asprintf(bufp, ...)                     \
+  {                                                  \
+    int __v;                                         \
+    if ((__v = asprintf(bufp, __VA_ARGS__)) == -1) { \
+      LOG_ERROR("memory allocation failed");         \
+      exit(__v);                                     \
+    }                                                \
   }
 
 // all chars after the ending " and between the seconds and the starting " are
@@ -255,7 +255,7 @@ static void do_format_time(struct text_object *obj, char *p,
                 break;
               default:
                 LOG_ERROR("$format_time doesn't have a special char '{}'",
-                         *currentchar);
+                          *currentchar);
             }
           } else if (*currentchar == '(') {
             for (temp = currentchar + 1; *temp != 0 && *temp != ')'; temp++) {
@@ -309,7 +309,8 @@ static void do_format_time(struct text_object *obj, char *p,
           "argument");
     }
   } else {
-    LOG_ERROR("$format_time did not receive a time in seconds as first argument");
+    LOG_ERROR(
+        "$format_time did not receive a time in seconds as first argument");
   }
 }
 

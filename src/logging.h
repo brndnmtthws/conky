@@ -35,8 +35,8 @@
 #include "i18n.h"
 
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
-#include <spdlog/spdlog.h>
 #include <spdlog/fmt/fmt.h>
+#include <spdlog/spdlog.h>
 #include <filesystem>
 
 template <>
@@ -125,14 +125,13 @@ void clear_msg_attrs();
 
 }  // namespace conky::log
 
-#define LOG_SCOPE(name, ...)                                            \
-  ([&]() -> conky::log::span_guard {                                    \
-    conky::log::span_guard _guard;                                      \
-    if (spdlog::default_logger()->should_log(spdlog::level::debug))     \
-      _guard.open(                                                      \
-          spdlog::source_loc{__FILE__, __LINE__, __func__},             \
-          name, ##__VA_ARGS__);                                         \
-    return _guard;                                                      \
+#define LOG_SCOPE(name, ...)                                              \
+  ([&]() -> conky::log::span_guard {                                      \
+    conky::log::span_guard _guard;                                        \
+    if (spdlog::default_logger()->should_log(spdlog::level::debug))       \
+      _guard.open(spdlog::source_loc{__FILE__, __LINE__, __func__}, name, \
+                  ##__VA_ARGS__);                                         \
+    return _guard;                                                        \
   }())
 
 // syslog.h defines LOG_DEBUG, LOG_INFO, LOG_WARNING etc. as integers
@@ -151,45 +150,57 @@ void clear_msg_attrs();
 #define LOG_CRITICAL(...) SPDLOG_CRITICAL(__VA_ARGS__)
 
 #define _LOG_STRIP_PARENS(...) __VA_ARGS__
-#define _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(spdlog_macro, attrs, ...) \
-  do {                                                  \
-    if (spdlog::default_logger()->should_log(           \
-            spdlog::level::trace)) {                    \
-      conky::log::push_msg_attrs({_LOG_STRIP_PARENS attrs}); \
-      spdlog_macro(__VA_ARGS__);                        \
-      conky::log::clear_msg_attrs();                    \
-    } else {                                            \
-      spdlog_macro(__VA_ARGS__);                        \
-    }                                                   \
+#define _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(spdlog_macro, attrs, \
+                                                          ...)                 \
+  do {                                                                         \
+    if (spdlog::default_logger()->should_log(spdlog::level::trace)) {          \
+      conky::log::push_msg_attrs({_LOG_STRIP_PARENS attrs});                   \
+      spdlog_macro(__VA_ARGS__);                                               \
+      conky::log::clear_msg_attrs();                                           \
+    } else {                                                                   \
+      spdlog_macro(__VA_ARGS__);                                               \
+    }                                                                          \
   } while (0)
 
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_TRACE
-#define LOG_TRACE_WITH(attrs, ...) _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(SPDLOG_TRACE, attrs, __VA_ARGS__)
+#define LOG_TRACE_WITH(attrs, ...)                                       \
+  _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(SPDLOG_TRACE, attrs, \
+                                                    __VA_ARGS__)
 #else
 #define LOG_TRACE_WITH(attrs, ...) ((void)0)
 #endif
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_DEBUG
-#define LOG_DEBUG_WITH(attrs, ...) _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(SPDLOG_DEBUG, attrs, __VA_ARGS__)
+#define LOG_DEBUG_WITH(attrs, ...)                                       \
+  _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(SPDLOG_DEBUG, attrs, \
+                                                    __VA_ARGS__)
 #else
 #define LOG_DEBUG_WITH(attrs, ...) ((void)0)
 #endif
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_INFO
-#define LOG_INFO_WITH(attrs, ...) _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(SPDLOG_INFO, attrs, __VA_ARGS__)
+#define LOG_INFO_WITH(attrs, ...)                                       \
+  _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(SPDLOG_INFO, attrs, \
+                                                    __VA_ARGS__)
 #else
 #define LOG_INFO_WITH(attrs, ...) ((void)0)
 #endif
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_WARN
-#define LOG_WARNING_WITH(attrs, ...) _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(SPDLOG_WARN, attrs, __VA_ARGS__)
+#define LOG_WARNING_WITH(attrs, ...)                                    \
+  _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(SPDLOG_WARN, attrs, \
+                                                    __VA_ARGS__)
 #else
 #define LOG_WARNING_WITH(attrs, ...) ((void)0)
 #endif
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_ERROR
-#define LOG_ERROR_WITH(attrs, ...) _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(SPDLOG_ERROR, attrs, __VA_ARGS__)
+#define LOG_ERROR_WITH(attrs, ...)                                       \
+  _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(SPDLOG_ERROR, attrs, \
+                                                    __VA_ARGS__)
 #else
 #define LOG_ERROR_WITH(attrs, ...) ((void)0)
 #endif
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_CRITICAL
-#define LOG_CRITICAL_WITH(attrs, ...) _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(SPDLOG_CRITICAL, attrs, __VA_ARGS__)
+#define LOG_CRITICAL_WITH(attrs, ...)                                       \
+  _LOG_MESSAGE_LEVEL_WITH_ATTRIBUTES_IMPLEMENTATION(SPDLOG_CRITICAL, attrs, \
+                                                    __VA_ARGS__)
 #else
 #define LOG_CRITICAL_WITH(attrs, ...) ((void)0)
 #endif
@@ -202,25 +213,25 @@ void clear_msg_attrs();
   } while (0)
 
 /// User error (bad input/config) - logs and throws.
-#define USER_ERR(...)                                    \
-  do {                                                   \
-    LOG_ERROR(__VA_ARGS__);                              \
-    throw conky::error(fmt::format(__VA_ARGS__));        \
+#define USER_ERR(...)                             \
+  do {                                            \
+    LOG_ERROR(__VA_ARGS__);                       \
+    throw conky::error(fmt::format(__VA_ARGS__)); \
   } while (0)
 
 /// System error (missing feature/support) - logs and throws.
-#define SYSTEM_ERR(...)                                  \
-  do {                                                   \
-    LOG_ERROR(__VA_ARGS__);                              \
-    throw conky::error(fmt::format(__VA_ARGS__));        \
+#define SYSTEM_ERR(...)                           \
+  do {                                            \
+    LOG_ERROR(__VA_ARGS__);                       \
+    throw conky::error(fmt::format(__VA_ARGS__)); \
   } while (0)
 
 /// Invalid command arguments - logs and throws.
-#define COMMAND_ARG_ERR(Command, ...)                                    \
-  do {                                                                   \
-    LOG_ERROR(__VA_ARGS__);                                              \
-    throw conky::bad_command_arguments_error(Command,                    \
-                                             fmt::format(__VA_ARGS__));  \
+#define COMMAND_ARG_ERR(Command, ...)                                   \
+  do {                                                                  \
+    LOG_ERROR(__VA_ARGS__);                                             \
+    throw conky::bad_command_arguments_error(Command,                   \
+                                             fmt::format(__VA_ARGS__)); \
   } while (0)
 
 #endif /* _LOGGING_H */

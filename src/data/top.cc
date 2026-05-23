@@ -644,7 +644,8 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj) {
           "must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize, "
           "io_read, io_write, io_perc");
 #else  /* BUILD_IOSTATS */
-      LOG_ERROR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize");
+      LOG_ERROR(
+          "must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize");
 #endif /* BUILD_IOSTATS */
       free_and_zero(td->s);
       free_and_zero(obj->data.opaque);

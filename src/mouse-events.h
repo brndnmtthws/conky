@@ -45,7 +45,7 @@ extern "C" {
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
 #undef COUNT  // define from X11/extensions/Xi.h
-#endif /* BUILD_X11 */
+#endif        /* BUILD_X11 */
 
 #include <lua.h>
 
@@ -141,7 +141,7 @@ struct mouse_positioned_event : public mouse_event {
 
   mouse_positioned_event(mouse_event_t type, vec2<size_t> pos,
                          vec2<size_t> pos_absolute)
-      : mouse_event(type), pos(pos), pos_absolute(pos_absolute){};
+      : mouse_event(type), pos(pos), pos_absolute(pos_absolute) {};
 
   void push_lua_data(lua_State *L) const;
 };
@@ -180,7 +180,7 @@ struct mouse_move_event : public mouse_positioned_event {
   mouse_move_event(vec2<size_t> pos, vec2<size_t> pos_absolute,
                    modifier_state_t mods = 0)
       : mouse_positioned_event{mouse_event_t::MOVE, pos, pos_absolute},
-        mods(mods){};
+        mods(mods) {};
 
   void push_lua_data(lua_State *L) const;
 };
@@ -225,7 +225,7 @@ struct mouse_scroll_event : public mouse_positioned_event {
                      scroll_direction_t direction, modifier_state_t mods = 0)
       : mouse_positioned_event{mouse_event_t::SCROLL, pos, pos_absolute},
         direction(direction),
-        mods(mods){};
+        mods(mods) {};
 
   void push_lua_data(lua_State *L) const;
 };
@@ -239,7 +239,7 @@ struct mouse_button_event : public mouse_positioned_event {
                      modifier_state_t mods = 0)
       : mouse_positioned_event{type, pos, pos_absolute},
         button(button),
-        mods(mods){};
+        mods(mods) {};
 
   void push_lua_data(lua_State *L) const;
 };
@@ -267,8 +267,8 @@ struct conky_valuator_info {
   double max = 0.0;
   double value = 0.0;
   bool relative = false;
-  /// Scroll increment from XIScrollClassInfo; sign defines direction convention.
-  /// Positive means increasing valuator value = down/right.
+  /// Scroll increment from XIScrollClassInfo; sign defines direction
+  /// convention. Positive means increasing valuator value = down/right.
   double increment = 1.0;
 };
 

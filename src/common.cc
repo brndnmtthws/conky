@@ -132,7 +132,7 @@ int update_uname() {
 }
 
 double get_time() {
-  struct timespec tv {};
+  struct timespec tv{};
 #ifdef _POSIX_MONOTONIC_CLOCK
   clock_gettime(CLOCK_MONOTONIC, &tv);
 #else
@@ -147,7 +147,7 @@ double get_time() {
  * align the update schedule to real-second boundaries so that displayed clocks
  * (e.g. ${time}) tick on the wall second instead of lagging by that offset. */
 double get_realtime() {
-  struct timespec tv {};
+  struct timespec tv{};
   clock_gettime(CLOCK_REALTIME, &tv);
   return tv.tv_sec + (tv.tv_nsec * 1e-9);
 }
@@ -257,7 +257,8 @@ std::string current_username() {
   const char *user = std::getenv("USER");
 
   if (!user) {
-    LOG_ERROR("can't determine current user (USER environment variable not set)");
+    LOG_ERROR(
+        "can't determine current user (USER environment variable not set)");
     return std::string();
   }
 
@@ -272,7 +273,10 @@ std::optional<std::filesystem::path> user_home(const std::string &username) {
 
   struct passwd *pw = getpwnam(username.c_str());
   if (!pw) {
-    LOG_DEBUG("can't determine HOME directory for user '{}' (neither w/ HOME nor getpwnam)", username);
+    LOG_DEBUG(
+        "can't determine HOME directory for user '{}' (neither w/ HOME nor "
+        "getpwnam)",
+        username);
     return std::nullopt;
   }
   return std::filesystem::path(pw->pw_dir);
@@ -286,7 +290,9 @@ std::string tilde_expand(const std::string &unexpanded) {
   if (unexpanded.length() == 1) {
     auto home = user_home();
     if (home->empty()) {
-      LOG_WARNING("can't expand '~' path because user_home couldn't locate home directory");
+      LOG_WARNING(
+          "can't expand '~' path because user_home couldn't locate home "
+          "directory");
       return unexpanded;
     }
     return home.value();
@@ -295,7 +301,9 @@ std::string tilde_expand(const std::string &unexpanded) {
   if (next == '/') {
     auto home = user_home();
     if (home->empty()) {
-      LOG_WARNING("can't expand '~' path because user_home couldn't locate home directory");
+      LOG_WARNING(
+          "can't expand '~' path because user_home couldn't locate home "
+          "directory");
       return unexpanded;
     }
     return home.value().string() + unexpanded.substr(1);
@@ -518,7 +526,10 @@ double loadgraphval(struct text_object *obj) {
 
 uint8_t cpu_percentage(struct text_object *obj) {
   if (static_cast<unsigned int>(obj->data.i) > info.cpu_count) {
-    USER_ERR("attempting to use more CPUs than you have (requested CPU {}, but only {} available)", obj->data.i, info.cpu_count);
+    USER_ERR(
+        "attempting to use more CPUs than you have (requested CPU {}, but only "
+        "{} available)",
+        obj->data.i, info.cpu_count);
   }
   if (info.cpu_usage != nullptr) {
     return round_to_positive_int(info.cpu_usage[obj->data.i] * 100.0);
@@ -528,7 +539,10 @@ uint8_t cpu_percentage(struct text_object *obj) {
 
 double cpu_barval(struct text_object *obj) {
   if (static_cast<unsigned int>(obj->data.i) > info.cpu_count) {
-    USER_ERR("attempting to use more CPUs than you have (requested CPU {}, but only {} available)", obj->data.i, info.cpu_count);
+    USER_ERR(
+        "attempting to use more CPUs than you have (requested CPU {}, but only "
+        "{} available)",
+        obj->data.i, info.cpu_count);
   }
   if (info.cpu_usage != nullptr) { return info.cpu_usage[obj->data.i]; }
   return 0.;
@@ -890,7 +904,8 @@ static size_t read_github_data_cb(char *data, size_t size, size_t nmemb,
           's' == *(ptr + 3) && z + 13 < sz) { /* "message": */
         if ('B' == *(ptr + 10) && 'a' == *(ptr + 11) &&
             'd' == *(ptr + 12)) { /* "Bad credentials" */
-          LOG_ERROR("github: bad credentials, generate a new token at {}", NEW_TOKEN);
+          LOG_ERROR("github: bad credentials, generate a new token at {}",
+                    NEW_TOKEN);
           snprintf(p, 80, "%s",
                    "GitHub: Bad credentials, generate a new token.");
           skip = 1U;
@@ -898,7 +913,10 @@ static size_t read_github_data_cb(char *data, size_t size, size_t nmemb,
         }
         if ('M' == *(ptr + 10) && 'i' == *(ptr + 11) &&
             's' == *(ptr + 12)) { /* Missing the 'notifications' scope. */
-          LOG_ERROR("github: missing 'notifications' scope, generate a new token at {}", NEW_TOKEN);
+          LOG_ERROR(
+              "github: missing 'notifications' scope, generate a new token at "
+              "{}",
+              NEW_TOKEN);
           snprintf(
               p, 80, "%s",
               "GitHub: Missing the notifications scope. Generate a new token.");
@@ -922,7 +940,10 @@ void print_github(struct text_object *obj, char *p, unsigned int p_max_size) {
   std::string token = github_token.get(*state);
 
   if (token.empty()) {
-    LOG_ERROR("${{github_notifications}} requires a token, generate one at {} and add github_token='TOKEN' to conky.config", NEW_TOKEN);
+    LOG_ERROR(
+        "${{github_notifications}} requires a token, generate one at {} and "
+        "add github_token='TOKEN' to conky.config",
+        NEW_TOKEN);
     snprintf(p, p_max_size, "%s",
              "GitHub notifications requires token, generate a new one.");
     return;

@@ -6,9 +6,9 @@
  * authors to the unified conky_surface() API.
  */
 
-#include <cairo.h>
-#include <cairo-xlib.h>
 #include <X11/Xlib.h>
+#include <cairo-xlib.h>
+#include <cairo.h>
 
 #include <cstdio>
 
@@ -16,17 +16,18 @@
 
 /* ---- deprecation helper ------------------------------------------------- */
 
-#define DEPRECATION_WARNING(func)                                          \
-  do {                                                                     \
-    static bool once = false;                                              \
-    if (!once) {                                                           \
-      once = true;                                                         \
-      fprintf(stderr,                                                      \
-        "conky: WARNING: " #func " is deprecated and will be "             \
-        "removed in a future release. Use conky_surface() instead."        \
-        "See: https://github.com/brndnmtthws/conky/wiki/Lua:-Evaluation"   \
-        "\n");                                                             \
-    }                                                                      \
+#define DEPRECATION_WARNING(func)                                              \
+  do {                                                                         \
+    static bool once = false;                                                  \
+    if (!once) {                                                               \
+      once = true;                                                             \
+      fprintf(stderr,                                                          \
+              "conky: WARNING: " #func                                         \
+              " is deprecated and will be "                                    \
+              "removed in a future release. Use conky_surface() instead."      \
+              "See: https://github.com/brndnmtthws/conky/wiki/Lua:-Evaluation" \
+              "\n");                                                           \
+    }                                                                          \
   } while (0)
 
 /* ---- argument checking helpers ------------------------------------------ */
@@ -66,31 +67,30 @@ static bool check_end(lua_State *L, int idx, const char *func) {
 }
 
 /* Validate single-arg surface getters. */
-#define CHECK_SURFACE_ONLY(func)                                     \
-  if (!check_arg(L, 1, "cairo_surface_t", #func) ||                 \
-      !check_end(L, 2, #func))                                      \
-    return 0
+#define CHECK_SURFACE_ONLY(func)                                             \
+  if (!check_arg(L, 1, "cairo_surface_t", #func) || !check_end(L, 2, #func)) \
+  return 0
 
 /* ---- helpers for repetitive getter patterns ----------------------------- */
 
 /* surface -> pointer getter (Display*, Screen*, Visual*) */
-#define DEFINE_SURFACE_PTR_GETTER(cfunc, tolua_type)                \
-  static int l_##cfunc(lua_State *L) {                              \
-    DEPRECATION_WARNING(cfunc);                                     \
-    CHECK_SURFACE_ONLY(cfunc);                                      \
-    auto *s = (cairo_surface_t *)tolua_tousertype(L, 1, 0);        \
-    tolua_pushusertype(L, (void *)cfunc(s), tolua_type);            \
-    return 1;                                                       \
+#define DEFINE_SURFACE_PTR_GETTER(cfunc, tolua_type)        \
+  static int l_##cfunc(lua_State *L) {                      \
+    DEPRECATION_WARNING(cfunc);                             \
+    CHECK_SURFACE_ONLY(cfunc);                              \
+    auto *s = (cairo_surface_t *)tolua_tousertype(L, 1, 0); \
+    tolua_pushusertype(L, (void *)cfunc(s), tolua_type);    \
+    return 1;                                               \
   }
 
 /* surface -> int getter (depth, width, height) */
-#define DEFINE_SURFACE_INT_GETTER(cfunc)                            \
-  static int l_##cfunc(lua_State *L) {                              \
-    DEPRECATION_WARNING(cfunc);                                     \
-    CHECK_SURFACE_ONLY(cfunc);                                      \
-    auto *s = (cairo_surface_t *)tolua_tousertype(L, 1, 0);        \
-    tolua_pushnumber(L, (lua_Number)cfunc(s));                      \
-    return 1;                                                       \
+#define DEFINE_SURFACE_INT_GETTER(cfunc)                    \
+  static int l_##cfunc(lua_State *L) {                      \
+    DEPRECATION_WARNING(cfunc);                             \
+    CHECK_SURFACE_ONLY(cfunc);                              \
+    auto *s = (cairo_surface_t *)tolua_tousertype(L, 1, 0); \
+    tolua_pushnumber(L, (lua_Number)cfunc(s));              \
+    return 1;                                               \
   }
 
 /* ---- binding functions -------------------------------------------------- */
@@ -98,12 +98,9 @@ static bool check_end(lua_State *L, int idx, const char *func) {
 static int l_cairo_xlib_surface_create(lua_State *L) {
   const char *fn = "cairo_xlib_surface_create";
   DEPRECATION_WARNING(cairo_xlib_surface_create);
-  if (!check_arg(L, 1, "Display", fn) ||
-      !check_arg(L, 2, "Drawable", fn) ||
-      !check_arg(L, 3, "Visual", fn) ||
-      !check_num(L, 4, fn) ||
-      !check_num(L, 5, fn) ||
-      !check_end(L, 6, fn))
+  if (!check_arg(L, 1, "Display", fn) || !check_arg(L, 2, "Drawable", fn) ||
+      !check_arg(L, 3, "Visual", fn) || !check_num(L, 4, fn) ||
+      !check_num(L, 5, fn) || !check_end(L, 6, fn))
     return 0;
 
   auto *dpy = (Display *)tolua_tousertype(L, 1, 0);
@@ -111,21 +108,17 @@ static int l_cairo_xlib_surface_create(lua_State *L) {
   auto *visual = (Visual *)tolua_tousertype(L, 3, 0);
   int w = (int)tolua_tonumber(L, 4, 0);
   int h = (int)tolua_tonumber(L, 5, 0);
-  tolua_pushusertype(
-      L, cairo_xlib_surface_create(dpy, drawable, visual, w, h),
-      "cairo_surface_t");
+  tolua_pushusertype(L, cairo_xlib_surface_create(dpy, drawable, visual, w, h),
+                     "cairo_surface_t");
   return 1;
 }
 
 static int l_cairo_xlib_surface_create_for_bitmap(lua_State *L) {
   const char *fn = "cairo_xlib_surface_create_for_bitmap";
   DEPRECATION_WARNING(cairo_xlib_surface_create_for_bitmap);
-  if (!check_arg(L, 1, "Display", fn) ||
-      !check_arg(L, 2, "Pixmap", fn) ||
-      !check_arg(L, 3, "Screen", fn) ||
-      !check_num(L, 4, fn) ||
-      !check_num(L, 5, fn) ||
-      !check_end(L, 6, fn))
+  if (!check_arg(L, 1, "Display", fn) || !check_arg(L, 2, "Pixmap", fn) ||
+      !check_arg(L, 3, "Screen", fn) || !check_num(L, 4, fn) ||
+      !check_num(L, 5, fn) || !check_end(L, 6, fn))
     return 0;
 
   auto *dpy = (Display *)tolua_tousertype(L, 1, 0);
@@ -142,10 +135,8 @@ static int l_cairo_xlib_surface_create_for_bitmap(lua_State *L) {
 static int l_cairo_xlib_surface_set_size(lua_State *L) {
   const char *fn = "cairo_xlib_surface_set_size";
   DEPRECATION_WARNING(cairo_xlib_surface_set_size);
-  if (!check_arg(L, 1, "cairo_surface_t", fn) ||
-      !check_num(L, 2, fn) ||
-      !check_num(L, 3, fn) ||
-      !check_end(L, 4, fn))
+  if (!check_arg(L, 1, "cairo_surface_t", fn) || !check_num(L, 2, fn) ||
+      !check_num(L, 3, fn) || !check_end(L, 4, fn))
     return 0;
 
   auto *s = (cairo_surface_t *)tolua_tousertype(L, 1, 0);
@@ -158,10 +149,8 @@ static int l_cairo_xlib_surface_set_drawable(lua_State *L) {
   const char *fn = "cairo_xlib_surface_set_drawable";
   DEPRECATION_WARNING(cairo_xlib_surface_set_drawable);
   if (!check_arg(L, 1, "cairo_surface_t", fn) ||
-      !check_arg(L, 2, "Drawable", fn) ||
-      !check_num(L, 3, fn) ||
-      !check_num(L, 4, fn) ||
-      !check_end(L, 5, fn))
+      !check_arg(L, 2, "Drawable", fn) || !check_num(L, 3, fn) ||
+      !check_num(L, 4, fn) || !check_end(L, 5, fn))
     return 0;
 
   auto *s = (cairo_surface_t *)tolua_tousertype(L, 1, 0);

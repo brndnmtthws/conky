@@ -56,8 +56,7 @@ void register_output<output_t::FILE>(display_outputs_t &outputs) {
 }
 
 display_output_file::display_output_file(const std::string &name_)
-    : display_output_base(name_) {
-}
+    : display_output_base(name_) {}
 
 bool display_output_file::detect() {
   if (static_cast<unsigned int>(!overwrite_file.get(*state).empty()) != 0u ||
@@ -81,13 +80,15 @@ void display_output_file::begin_draw_stuff() {
   if (static_cast<unsigned int>(!overwrite_file.get(*state).empty()) != 0u) {
     overwrite_fpointer = fopen(overwrite_file.get(*state).c_str(), "we");
     if (overwrite_fpointer == nullptr) {
-      LOG_ERROR("cannot overwrite '{}': {}", overwrite_file.get(*state), strerror(errno));
+      LOG_ERROR("cannot overwrite '{}': {}", overwrite_file.get(*state),
+                strerror(errno));
     }
   }
   if (static_cast<unsigned int>(!append_file.get(*state).empty()) != 0u) {
     append_fpointer = fopen(append_file.get(*state).c_str(), "ae");
     if (append_fpointer == nullptr) {
-      LOG_ERROR("cannot append to '{}': {}", append_file.get(*state), strerror(errno));
+      LOG_ERROR("cannot append to '{}': {}", append_file.get(*state),
+                strerror(errno));
     }
   }
 }

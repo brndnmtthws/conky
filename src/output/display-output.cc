@@ -36,9 +36,8 @@
 namespace conky {
 
 inline void log_missing(const char *name, const char *flag) {
-  LOG_DEBUG(
-      "{} display output disabled, recompile with '{}' to enable",
-      name, flag);
+  LOG_DEBUG("{} display output disabled, recompile with '{}' to enable", name,
+            flag);
 }
 #ifndef BUILD_HTTP
 template <>
@@ -83,16 +82,20 @@ bool initialize_display_outputs() {
   // Order of registration is important!
   // - Graphical outputs go before textual (e.g. X11 before NCurses).
   // - Optional outputs go before non-optional (e.g. Wayland before X11).
-  // - Newer outputs go before older (e.g. NCurses before (hypothetical) Curses).
+  // - Newer outputs go before older (e.g. NCurses before (hypothetical)
+  // Curses).
   // - Fallbacks go last (in group)
   register_output<output_t::WAYLAND>(outputs);
   register_output<output_t::X11>(outputs);
   register_output<output_t::HTTP>(outputs);
   register_output<output_t::FILE>(outputs);
   register_output<output_t::NCURSES>(outputs);
-  register_output<output_t::CONSOLE>(outputs);  // global fallback - always works
+  register_output<output_t::CONSOLE>(
+      outputs);  // global fallback - always works
 
-  for (auto out : outputs) { LOG_DEBUG("found display output '{}'", out->name); }
+  for (auto out : outputs) {
+    LOG_DEBUG("found display output '{}'", out->name);
+  }
 
   int graphical_count = 0;
 

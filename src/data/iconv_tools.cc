@@ -31,9 +31,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "config.h"
-#include "../logging.h"
 #include "../content/text_object.h"
+#include "../logging.h"
+#include "config.h"
 
 #define ICONV_CODEPAGE_LENGTH 20
 
@@ -46,7 +46,9 @@ int register_iconv(iconv_t *new_iconv) {
   iconv_cd = (void ***)realloc(iconv_cd, sizeof(iconv_t *) * (iconv_count + 1));
   if (!iconv_cd) { SYSTEM_ERR("failed to allocate iconv descriptor array"); }
   iconv_cd[iconv_count] = (void **)malloc(sizeof(iconv_t));
-  if (!iconv_cd[iconv_count]) { SYSTEM_ERR("failed to allocate iconv descriptor"); }
+  if (!iconv_cd[iconv_count]) {
+    SYSTEM_ERR("failed to allocate iconv descriptor");
+  }
   memcpy(iconv_cd[iconv_count], new_iconv, sizeof(iconv_t));
   iconv_count++;
   return iconv_count;
@@ -110,11 +112,14 @@ void init_iconv_start(struct text_object *obj, void *free_at_crash,
   char iconv_to[ICONV_CODEPAGE_LENGTH];
 
   if (iconv_converting) {
-    COMMAND_ARG_ERR("iconv_start", "you must stop your last iconv conversion before "
-             "starting another");
+    COMMAND_ARG_ERR("iconv_start",
+                    "you must stop your last iconv conversion before "
+                    "starting another");
   }
   if (sscanf(arg, "%s %s", iconv_from, iconv_to) != 2) {
-    COMMAND_ARG_ERR("iconv_start", "invalid arguments for iconv_start, expected: <from_codepage> <to_codepage>");
+    COMMAND_ARG_ERR("iconv_start",
+                    "invalid arguments for iconv_start, expected: "
+                    "<from_codepage> <to_codepage>");
   } else {
     iconv_t new_iconv;
 

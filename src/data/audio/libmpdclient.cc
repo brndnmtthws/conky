@@ -129,7 +129,7 @@ static int do_connect_fail(mpd_Connection *connection,
 
 static int uds_connect(mpd_Connection *connection, const char *host,
                        float timeout) {
-  struct sockaddr_un addr {};
+  struct sockaddr_un addr{};
 
   strncpy(addr.sun_path, host, sizeof(addr.sun_path) - 1);
   addr.sun_family = AF_UNIX;
@@ -164,7 +164,7 @@ static int mpd_connect(mpd_Connection *connection, const char *host, int port,
                        float timeout) {
   int error;
   char service[INTLEN + 1];
-  struct addrinfo hints {};
+  struct addrinfo hints{};
   struct addrinfo *res = nullptr;
   struct addrinfo *addrinfo = nullptr;
 
@@ -384,7 +384,7 @@ mpd_Connection *mpd_newConnection(const char *host, int port, float timeout) {
   char *output = nullptr;
   auto *connection =
       static_cast<mpd_Connection *>(malloc(sizeof(mpd_Connection)));
-  struct timeval tv {};
+  struct timeval tv{};
   fd_set fds;
 
   strncpy(connection->buffer, "", 1);
@@ -472,7 +472,7 @@ void mpd_closeConnection(mpd_Connection *connection) {
 static void mpd_executeCommand(mpd_Connection *connection,
                                const char *command) {
   int ret;
-  struct timeval tv {};
+  struct timeval tv{};
   fd_set fds;
   const char *commandPtr = command;
   int commandLen = strlen(command);
@@ -528,7 +528,7 @@ static void mpd_getNextReturnElement(mpd_Connection *connection) {
   char *name = nullptr;
   char *value = nullptr;
   fd_set fds;
-  struct timeval tv {};
+  struct timeval tv{};
   char *tok = nullptr;
   int readed;
   char *bufferCheck = nullptr;

@@ -108,7 +108,7 @@ struct graph {
   char speedgraph;  /* If the current graph is a speed graph */
   char invertflag;  /* If the axis needs to be inverted */
   int minheight;    /* Clamp values below this threshold to this threshold */
-  size_t data_hash;            /* identifies the data source for slot reuse */
+  size_t data_hash; /* identifies the data source for slot reuse */
   std::vector<double> history; /* pre-allocated at scan time when width known */
 };
 
@@ -236,8 +236,7 @@ std::pair<char *, size_t> scan_command(const char *s) {
     return {quoted_cmd, _size + 2};
   } else {
     size_t len;
-    for (len = 0; s[len] != '\0' && !isspace(s[len]); len++)
-      ;
+    for (len = 0; s[len] != '\0' && !isspace(s[len]); len++);
     return {strndup(s, len), len};
   }
 }
@@ -254,7 +253,8 @@ static void free_graph(struct text_object *obj) {
  * -t will set the tempgrad member to true, enabling temperature gradient colors
  * -x will set the invertx flag to true, inverting the x axis
  * -y will set the invertx flag to true, inverting the y axis
- * -m will set the minheight to value, this will clamp values below the threshold to the threshold
+ * -m will set the minheight to value, this will clamp values below the
+ * threshold to the threshold
  *
  * @param[out] obj  struct in which to save width, height and other options
  * @param[in]  args argument string to parse
@@ -280,9 +280,7 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale,
   g->tempgrad = FALSE;
   g->invertflag = FALSE;
   g->minheight = 0;
-  if (speedGraph) {
-    g->speedgraph = TRUE;
-  }
+  if (speedGraph) { g->speedgraph = TRUE; }
   if (argstr == nullptr) return false;
 
   /* set tempgrad to true if '-t' specified.
@@ -311,31 +309,32 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale,
   }
 
   /* set MINHEIGHT to specified value if '-m' specified.
-   * It doesn't matter where the argument is exactly. 
+   * It doesn't matter where the argument is exactly.
    * Accepted values are from [0-5] */
   const char *position = strstr(argstr, " " MINHEIGHT);
-  if ((position != nullptr) ||
-      strncmp(argstr, MINHEIGHT, strlen(MINHEIGHT)) == 0) {
-      int minheight = 0;
-      position += strlen(MINHEIGHT) + 1;
-      int size = strlen(argstr);
-      // Avoid whitespaces
-      while(*position == ' ' && position < argstr + size) {
-        position++;
-      }
-      // Get the numeric value start and end position
-      const char* numStart = position;
-      while (isdigit(*position)) {
-          position++;
-      }
-      // Convert the numeric value to an integer
-      std::string numStr(numStart, position);
-      if (!numStr.empty()) {
-          minheight = atoi(numStr.c_str());
-      }
-      // If specified value is greater than the max threshold
-      minheight = minheight > 5 ? 5 : minheight;
-      g->minheight = minheight;
+  if (position != nullptr) {
+    position += 1;
+  } else if (strncmp(argstr, MINHEIGHT, strlen(MINHEIGHT)) == 0) {
+    position = argstr;
+  }
+  if (position != nullptr) {
+    int minheight = 0;
+    int size = strlen(argstr);
+    position += strlen(MINHEIGHT);
+    // Avoid whitespaces
+    while (position < argstr + size && *position == ' ') { position++; }
+    // Get the numeric value start and end position
+    const char *numStart = position;
+    while (position < argstr + size &&
+           isdigit(static_cast<unsigned char>(*position))) {
+      position++;
+    }
+    // Convert the numeric value to an integer
+    std::string numStr(numStart, position);
+    if (!numStr.empty()) { minheight = atoi(numStr.c_str()); }
+    // If specified value is greater than the max threshold
+    minheight = minheight > 5 ? 5 : minheight;
+    g->minheight = minheight;
   }
 
   /* all the following functions try to interpret the beginning of a
@@ -356,12 +355,12 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale,
   last_colour_name[0] = '\0';
   g->scale = defscale;
 
-  /* [height],[width] [color1] [color2] 
-   * This could match as [height],[width] [scale] [-l | -t], 
+  /* [height],[width] [color1] [color2]
+   * This could match as [height],[width] [scale] [-l | -t],
    * therfore we ensure last_colour_name is not TEMPGRAD or LOGGRAPH */
   if (sscanf(argstr, "%d,%d %s %s", &g->height, &g->width, first_colour_name,
-             last_colour_name) == 4 && 
-             strchr(last_colour_name,'-') == NULL) {
+             last_colour_name) == 4 &&
+      strchr(last_colour_name, '-') == NULL) {
     apply_graph_colours(g, first_colour_name, last_colour_name);
     goto done;
   }
@@ -398,11 +397,11 @@ bool scan_graph(struct text_object *obj, const char *argstr, double defscale,
   last_colour_name[0] = '\0';
   g->scale = defscale;
 
-  /* [color1] [color2] 
-   * This could match as [scale] [-l | -t], 
+  /* [color1] [color2]
+   * This could match as [scale] [-l | -t],
    * therfore we ensure last_colour_name is not TEMPGRAD or LOGGRAPH */
   if (sscanf(argstr, "%s %s", first_colour_name, last_colour_name) == 2 &&
-             strchr(last_colour_name,'-') == NULL) { 
+      strchr(last_colour_name, '-') == NULL) {
     apply_graph_colours(g, first_colour_name, last_colour_name);
     goto done;
   }
@@ -422,9 +421,7 @@ done:
   }
   /* pre-allocate history at scan time when width is known to avoid
    * reallocation on first draw */
-  if (g->width > 0) {
-    g->history.resize(dpi_scale(g->width), 0.0);
-  }
+  if (g->width > 0) { g->history.resize(dpi_scale(g->width), 0.0); }
   return true;
 }
 #endif /* BUILD_GUI */
@@ -433,9 +430,7 @@ done:
  * Printing various special text objects
  */
 
-struct special_node *new_special_t_node() {
-  return new special_node{};
-}
+struct special_node *new_special_t_node() { return new special_node{}; }
 
 /**
  * expands the current global linked list specials to special_count elements
@@ -558,20 +553,21 @@ static void graph_append(struct special_node *graph, double f, char showaslog) {
   graph->graph_data[0] = f; /* add new data */
 
   if (graph->scaled != 0) {
-    double* currentmax = std::max_element(
-        graph->graph_data.data(), graph->graph_data.data() + graph->graph_data.size());
+    double *currentmax =
+        std::max_element(graph->graph_data.data(),
+                         graph->graph_data.data() + graph->graph_data.size());
     graph->scale = *currentmax;
     if (graph->speedgraph) {
-        if(maxspeedval < graph->scale){
-          maxspeedval = graph->scale;
-        }
-        graph->scale = maxspeedval;
-        /* If the currentmax is the maxspeedval and 
-         * currentmax location is at the last position
-         * Then we reset our maxspeedval */
-        if(*currentmax == maxspeedval && currentmax == (graph->graph_data.data() + graph->graph_data.size() - 1)) {
-          maxspeedval = 1e-47;
-        }
+      if (maxspeedval < graph->scale) { maxspeedval = graph->scale; }
+      graph->scale = maxspeedval;
+      /* If the currentmax is the maxspeedval and
+       * currentmax location is at the last position
+       * Then we reset our maxspeedval */
+      if (*currentmax == maxspeedval &&
+          currentmax ==
+              (graph->graph_data.data() + graph->graph_data.size() - 1)) {
+        maxspeedval = 1e-47;
+      }
     }
     if (graph->scale < 1e-47) {
       /* avoid NaN's when the graph is all-zero (e.g. before the first update)
@@ -660,15 +656,9 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
     s->scale = log10(s->scale + 1);
   }
 #endif
-  if ((g->invertflag & SF_INVERTX) != 0){
-    s->invertx = 1;
-  }
-  if ((g->invertflag & SF_INVERTY) != 0){
-    s->inverty = 1;
-  }
-  if (g->speedgraph) {
-    s->speedgraph = TRUE;
-  }
+  if ((g->invertflag & SF_INVERTX) != 0) { s->invertx = 1; }
+  if ((g->invertflag & SF_INVERTY) != 0) { s->inverty = 1; }
+  if (g->speedgraph) { s->speedgraph = TRUE; }
 
   graph_append(s, val, g->flags);
 
@@ -874,4 +864,3 @@ void new_tab(struct text_object *obj, char *p, unsigned int p_max_size) {
   s->width = dpi_scale(t->width);
   s->arg = dpi_scale(t->arg);
 }
-

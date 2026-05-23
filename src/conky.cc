@@ -1899,7 +1899,8 @@ void main_loop() {
   /* Align the update grid to wall-clock (not monotonic) second boundaries so
    * displayed clocks don't lag by the monotonic/realtime phase offset. This is
    * <= now, so the first update still fires immediately. */
-  next_update_time = get_time() - fmod(get_realtime(), active_update_interval());
+  next_update_time =
+      get_time() - fmod(get_realtime(), active_update_interval());
   info.looped = 0;
   while (terminate == 0 && (total_run_times.get(*state) == 0 ||
                             info.looped < total_run_times.get(*state))) {

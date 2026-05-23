@@ -48,8 +48,8 @@
 #include <sys/sysctl.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <uvm/uvm_param.h>
 #include <uvm/uvm_extern.h>
+#include <uvm/uvm_param.h>
 
 #include <net/if.h>
 #include <net/if_types.h>
@@ -185,12 +185,9 @@ int update_cpu_usage() {
   return 1;
 }
 
-void get_top_info(void) {
-  bsdcommon::update_top_info();
-}
+void get_top_info(void) { bsdcommon::update_top_info(); }
 
-void free_cpu(struct text_object *) { /* no-op */
-}
+void free_cpu(struct text_object *) { /* no-op */ }
 
 int update_load_average() {
   double v[3];
@@ -233,7 +230,7 @@ int get_entropy_poolsize(unsigned int *val) { return 1; }
 
 char get_freq(char *p_client_buffer, size_t client_buffer_size,
               const char *p_format, int divisor, unsigned int cpu) {
-  //TODO(gmb)
+  // TODO(gmb)
   return 1;
 }
 

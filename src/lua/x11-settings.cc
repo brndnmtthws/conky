@@ -77,7 +77,7 @@ bool use_xpmdb_setting::set_up(lua::state &l) {
   if (!out_to_x.get(l)) return false;
 
   unsigned int depth = window.color_depth != 0 ? window.color_depth
-                                                : DefaultDepth(display, screen);
+                                               : DefaultDepth(display, screen);
   window.back_buffer =
       XCreatePixmap(display, window.window, window.geometry.width() + 1,
                     window.geometry.height() + 1, depth);

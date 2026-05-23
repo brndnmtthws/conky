@@ -50,11 +50,14 @@ struct graph {
   Colour first_colour, last_colour;
   double scale;
   char tempgrad;
+  char speedgraph;
+  char invertflag;
+  int minheight;
 };
 
 static std::pair<struct graph, bool> test_parse(const char *s) {
   struct text_object obj;
-  bool result = scan_graph(&obj, s, default_scale,FALSE);
+  bool result = scan_graph(&obj, s, default_scale, FALSE);
   auto g = static_cast<struct graph *>(obj.special_data);
   struct graph graph = *g;
   obj.callbacks.free(&obj);
@@ -195,6 +198,24 @@ TEST_CASE("scan_graph correctly parses input strings") {
       REQUIRE(g.tempgrad == true);
     }
   }
+
+  SECTION("-m location") {
+    {
+      auto [g, success] = test_parse("-m 4 21,340 red blue 0.5");
+      REQUIRE(success);
+      REQUIRE(g.minheight == 4);
+    }
+    {
+      auto [g, success] = test_parse("-m4 21,340 red blue 0.5");
+      REQUIRE(success);
+      REQUIRE(g.minheight == 4);
+    }
+    {
+      auto [g, success] = test_parse("21,340 red blue 0.5 -m 4");
+      REQUIRE(success);
+      REQUIRE(g.minheight == 4);
+    }
+  }
 }
 
 TEST_CASE("graph slot reuse across draw cycles") {
@@ -220,7 +241,8 @@ TEST_CASE("graph slot reuse across draw cycles") {
     free_specials_list();
   }
 
-  SECTION("graph data is cleared when a different text_object reuses the slot") {
+  SECTION(
+      "graph data is cleared when a different text_object reuses the slot") {
     struct text_object obj1 = {}, obj2 = {};
     scan_graph(&obj1, "2,10", 0.0, FALSE);
     scan_graph(&obj2, "2,10", 0.0, FALSE);

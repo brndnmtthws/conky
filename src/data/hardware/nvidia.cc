@@ -94,11 +94,11 @@
 
 #include "nvidia.h"
 #include <X11/Xlib.h>
+#include "../../conky.h"
+#include "../../content/temphelper.h"
+#include "../../logging.h"
 #include "NVCtrl/NVCtrl.h"
 #include "NVCtrl/NVCtrlLib.h"
-#include "../../conky.h"
-#include "../../logging.h"
-#include "../../content/temphelper.h"
 
 // Current implementation uses X11 specific system utils
 #include "../../output/x11.h"
@@ -406,7 +406,7 @@ unique_display_t nvidia_display_setting::get_nvdisplay() {
     unique_display_t nvd(XOpenDisplay(nvdisplay.c_str()), &close_nvdisplay);
     if (!nvd) {
       LOG_ERROR("can't open nvidia display: {}",
-               XDisplayName(nvdisplay.c_str()));
+                XDisplayName(nvdisplay.c_str()));
     }
     return nvd;
   }
@@ -459,9 +459,9 @@ int set_nvidia_query(struct text_object *obj, const char *arg,
     case text_node_t::GRAPH: {
       auto [buf, skip] = scan_command(arg);
       scan_graph(obj, arg + skip, 100, FALSE,
-                 buf != nullptr
-                     ? graph_data_key{fmt::format("nvidia:{}:{}", nvs->target_id, buf)}
-                     : graph_parent_obj_key);
+                 buf != nullptr ? graph_data_key{fmt::format(
+                                      "nvidia:{}:{}", nvs->target_id, buf)}
+                                : graph_parent_obj_key);
       arg = buf;
     } break;
     case text_node_t::GAUGE:
@@ -707,9 +707,11 @@ static inline int get_nvidia_target_count(Display *dpy, TARGET_ID tid) {
 
   if (num_tgts < 1 && tid == TARGET_GPU) {
     // Print error and exit if there's no NVIDIA's GPU
-    LOG_ERROR("trying to query nvidia target failed (using the proprietary drivers), "
-             "are you sure they are installed correctly and a nvidia GPU is in use? "
-             "(target_count: {})", num_tgts);
+    LOG_ERROR(
+        "trying to query nvidia target failed (using the proprietary drivers), "
+        "are you sure they are installed correctly and a nvidia GPU is in use? "
+        "(target_count: {})",
+        num_tgts);
   }
 
   return num_tgts;
@@ -724,9 +726,8 @@ static int cache_nvidia_value(TARGET_ID tid, ATTR_ID aid, Display *dpy,
       if (!dpy || !XNVCTRLQueryTargetAttribute(
                       dpy, translate_nvidia_target[tid], gid, 0,
                       translate_nvidia_attribute[aid], value)) {
-        LOG_ERROR(
-            "nvidia query failed (arg: {}, tid: {}, aid: {})",
-            arg, static_cast<int>(tid), static_cast<int>(aid));
+        LOG_ERROR("nvidia query failed (arg: {}, tid: {}, aid: {})", arg,
+                  static_cast<int>(tid), static_cast<int>(aid));
         return -1;
       }
       ac_value[gid].memtotal = *value;
@@ -738,9 +739,8 @@ static int cache_nvidia_value(TARGET_ID tid, ATTR_ID aid, Display *dpy,
       if (!dpy || !XNVCTRLQueryTargetAttribute(
                       dpy, translate_nvidia_target[tid], gid, 0,
                       translate_nvidia_attribute[aid], value)) {
-        LOG_ERROR(
-            "nvidia query failed (arg: {}, tid: {}, aid: {})",
-            arg, static_cast<int>(tid), static_cast<int>(aid));
+        LOG_ERROR("nvidia query failed (arg: {}, tid: {}, aid: {})", arg,
+                  static_cast<int>(tid), static_cast<int>(aid));
         return -1;
       }
       ac_value[gid].gputempthreshold = *value;
@@ -767,9 +767,8 @@ static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid, int gid,
     if (!dpy ||
         !XNVCTRLQueryTargetAttribute(dpy, translate_nvidia_target[tid], gid, 0,
                                      translate_nvidia_attribute[aid], &value)) {
-      LOG_ERROR(
-          "nvidia query failed (arg: {}, tid: {}, aid: {})",
-          arg, static_cast<int>(tid), static_cast<int>(aid));
+      LOG_ERROR("nvidia query failed (arg: {}, tid: {}, aid: {})", arg,
+                static_cast<int>(tid), static_cast<int>(aid));
       return -1;
     }
   }
@@ -793,9 +792,8 @@ static char *get_nvidia_string(TARGET_ID tid, ATTR_ID aid, int gid,
   if (!dpy || !XNVCTRLQueryTargetStringAttribute(
                   dpy, translate_nvidia_target[tid], gid, 0,
                   translate_nvidia_attribute[aid], &str)) {
-    LOG_ERROR(
-        "nvidia string query failed (tid: {}, aid: {}, GPU {})",
-        static_cast<int>(tid), static_cast<int>(aid), gid);
+    LOG_ERROR("nvidia string query failed (tid: {}, aid: {}, GPU {})",
+              static_cast<int>(tid), static_cast<int>(aid), gid);
     return nullptr;
   }
   return str;
@@ -823,11 +821,9 @@ void cache_nvidia_string_value_update(nvidia_c_string *ac_string, char *token,
     ac_string[gid].memTransferRatemax = *value;
 
   } else if (strcmp(token, (char *)"perf") == 0) {
-    if (search == SEARCH_MIN &&
-        ac_string[gid].perfmin < 0) {
+    if (search == SEARCH_MIN && ac_string[gid].perfmin < 0) {
       ac_string[gid].perfmin = *value;
-    } else if (search == SEARCH_MAX &&
-               ac_string[gid].perfmax < 0) {
+    } else if (search == SEARCH_MAX && ac_string[gid].perfmax < 0) {
       ac_string[gid].perfmax = *value;
     }
   }
@@ -1167,8 +1163,8 @@ double get_nvidia_barval(struct text_object *obj) {
         break;
 
       default:  // Throw error if unsupported args are used
-        COMMAND_ARG_ERR(nvs->command, "{}: invalid argument specified: '{}'", nvs->command,
-                 nvs->arg);
+        COMMAND_ARG_ERR(nvs->command, "{}: invalid argument specified: '{}'",
+                        nvs->command, nvs->arg);
     }
   }
 

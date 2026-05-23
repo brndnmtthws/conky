@@ -26,10 +26,10 @@
 #include <cmath>
 
 #include <mutex>
-#include "audacious.h"
 #include "../../conky.h"
 #include "../../logging.h"
 #include "../../update-cb.hh"
+#include "audacious.h"
 
 #include <glib.h>
 #ifdef NEW_AUDACIOUS_FOUND
@@ -101,9 +101,7 @@ class audacious_cb : public conky::callback<aud_result> {
   audacious_cb(uint32_t period) : Base(period, false, Tuple()) {
 #ifdef NEW_AUDACIOUS_FOUND
     DBusGConnection *connection = dbus_g_bus_get(DBUS_BUS_SESSION, nullptr);
-    if (!connection) {
-      SYSTEM_ERR("can't connect to D-Bus session bus");
-    }
+    if (!connection) { SYSTEM_ERR("can't connect to D-Bus session bus"); }
 
     session = dbus_g_proxy_new_for_name(connection, AUDACIOUS_DBUS_SERVICE,
                                         AUDACIOUS_DBUS_PATH,
@@ -214,8 +212,7 @@ void print_audacious_title(struct text_object *obj, char *p,
 
 void print_audacious_filename(struct text_object *obj, char *p,
                               unsigned int p_max_size) {
-  snprintf(p, p_max_size, "%s",
-           get_res().filename.c_str());
+  snprintf(p, p_max_size, "%s", get_res().filename.c_str());
 }
 
 double audacious_barval(struct text_object *) {

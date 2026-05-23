@@ -35,10 +35,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "../conky.h"
-#include "../core.h"
-#include "../logging.h"
 #include "../content/specials.h"
 #include "../content/text_object.h"
+#include "../core.h"
+#include "../logging.h"
 
 static inline void read_file(const char *data, char *buf, const int size) {
   FILE *fp;
