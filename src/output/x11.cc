@@ -1384,6 +1384,21 @@ void xdbe_swap_buffers() {
     swap.swap_window = window.window;
     swap.swap_action = XdbeBackground;
     XdbeSwapBuffers(display, &swap, 1);
+
+    /* The XdbeBackground swap action is supposed to reset the back buffer to
+     * the window background, but some drivers don't honor it (notably under
+     * Xwayland and certain NVIDIA setups). When it's ignored the back buffer
+     * keeps last frame's pixels, so antialiased glyphs blend on top of
+     * themselves and fonts appear to thicken over time. Clear the back buffer
+     * explicitly, mirroring the XPMDB path below. */
+    unsigned long bg = 0;
+    if (window.color_depth == argb8888_color_depth) {
+      Colour c = get_background_colour_preference(*state);
+      bg = c.to_x11_color(display, screen, window.opacity < 0xff, true);
+    }
+    XSetForeground(display, window.gc, bg);
+    XFillRectangle(display, window.drawable, window.gc, 0, 0,
+                   window.geometry.width(), window.geometry.height());
   }
 }
 #else
