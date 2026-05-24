@@ -732,9 +732,10 @@ if(BUILD_LUA_CAIRO)
     pkg_check_modules(CAIROXLIB REQUIRED cairo-xlib)
     set(luacairo_libs ${CAIROXLIB_LINK_LIBRARIES} ${luacairo_libs})
     set(luacairo_includes ${CAIROXLIB_INCLUDE_DIRS} ${luacairo_includes})
-    set(conky_libs ${conky_libs} ${luacairo_libs})
-    set(conky_includes ${conky_includes} ${luacairo_includes})
   endif(BUILD_LUA_CAIRO_XLIB)
+
+  set(conky_libs ${conky_libs} ${luacairo_libs})
+  set(conky_includes ${conky_includes} ${luacairo_includes})
 
   find_program(APP_PATCH patch)
 
