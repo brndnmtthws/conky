@@ -825,11 +825,10 @@ values:
       filename: null
   - name: hwmonbar
     desc: |-
-      Same as hwmon, except if the first value returned is a value
-      between 0-100, it will use that number to draw a horizontal bar (use the
-      factor and offset to transform the raw value). The height and width
-      parameters are optional, and default to the default_bar_height and
-      default_bar_width config settings, respectively.
+      Same as hwmon, but displays the sensor reading as a horizontal bar. Use
+      factor and offset to scale the raw sysfs value into the 0-100 range
+      (e.g. millidegree temps need factor 0.001). Height and width default to
+      default_bar_height and default_bar_width respectively.
     args:
       - (height),(width)
       - (dev)
@@ -857,11 +856,10 @@ values:
       filename: null
   - name: i2cbar
     desc: |-
-      Same as i2c, except if the first value returned is a value between 0-100,
-      it will use that number to draw a horizontal bar (use the
-      factor and offset to transform the raw value). The height and width
-      parameters are optional, and default to the default_bar_height and
-      default_bar_width config settings, respectively.
+      Same as i2c, but displays the sensor reading as a horizontal bar. Use
+      factor and offset to scale the raw sysfs value into the 0-100 range.
+      Height and width default to default_bar_height and default_bar_width
+      respectively.
     args:
       - (height),(width)
       - (dev)
@@ -1877,17 +1875,18 @@ values:
       - (factor offset)
   - name: platformbar
     desc: |-
-      Same as platform, except if the first value returned is a value between
-      0-100, it will use that number to draw a horizontal bar (use the factor
-      and offset to transform the raw value). The height and width parameters
-      are optional, and default to the default_bar_height and default_bar_width
-      config settings, respectively.
+      Same as platform, but displays the sensor reading as a horizontal bar. Use
+      factor and offset to scale the raw sysfs value into the 0-100 range.
+      Height and width default to default_bar_height and default_bar_width
+      respectively.
     args:
       - (height),(width)
       - (dev)
       - type
       - n
       - (factor offset)
+    other:
+      filename: null
   - name: pop3_unseen
     desc: |-
       Displays the number of unseen messages in your global POP3

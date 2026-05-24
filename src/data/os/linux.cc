@@ -47,6 +47,7 @@
 #include <unistd.h>
 // #include <assert.h>
 #include <time.h>
+#include <algorithm>
 #include <unordered_map>
 #include "../../lua/setting.hh"
 #include "../top.h"
@@ -1510,17 +1511,10 @@ double sysfs_sensor_barval(struct text_object *obj) {
 
   r = r * sf->factor + sf->offset;
 
-  if (r > 100.0) {
-    DBGP("your sysfs bar value is higher than 100. Please adjust factor and "
-        "offset to avoid this");
-    r = 100.0;
-  } else if (r < 0.0) {
-    DBGP("your sysfs bar value is lower than 0. Please adjust factor and "
-        "offset to avoid this");
-    r = 0.0;
+  if (r < 0.0 || r > 100.0) {
+    LOG_WARNING("sysfs bar value {} out of [0, 100]; adjust factor/offset", r);
   }
-
-  return r;
+  return std::clamp(r, 0.0, 100.0);
 }
 
 void free_sysfs_sensor(struct text_object *obj) {
