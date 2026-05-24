@@ -1416,6 +1416,16 @@ void xdbe_swap_buffers() {
 #else
 void xpmdb_swap_buffers(void) {
   if (use_xpmdb.get(*state)) {
+    /* Present the whole window. The GC still carries the dirty-region clip set
+     * for drawing, so an unmodified XCopyArea would only refresh that region.
+     * Under a compositor (esp. Xwayland) the window's backing buffer can be
+     * reallocated between frames; copying just the dirty region then leaves the
+     * rest of the new buffer blank -- a whole-window blank flicker. Drop the
+     * clip so the full back buffer is always presented (XDBE's XdbeSwapBuffers
+     * already presents the whole window). The clip is re-established before the
+     * next draw, and the XPMDB path redraws the full text rect every frame, so
+     * clearing the whole back buffer below is safe. */
+    XSetClipMask(display, window.gc, None);
     XCopyArea(display, window.back_buffer, window.window, window.gc, 0, 0,
               window.geometry.width(), window.geometry.height(), 0, 0);
     unsigned long bg = 0;
@@ -1426,7 +1436,12 @@ void xpmdb_swap_buffers(void) {
     XSetForeground(display, window.gc, bg);
     XFillRectangle(display, window.drawable, window.gc, 0, 0,
                    window.geometry.width(), window.geometry.height());
-    XFlush(display);
+    /* Force the present to be processed now. Like the XDBE path, under Xwayland
+     * a present left in the output buffer (XFlush only queues the request) can
+     * be picked up by the compositor mid-update, momentarily showing an empty
+     * background frame -- a whole-window blank flicker. XSync blocks until the
+     * server has processed the XCopyArea, giving a clean, ordered present. */
+    XSync(display, False);
   }
 }
 #endif /* BUILD_XDBE */
