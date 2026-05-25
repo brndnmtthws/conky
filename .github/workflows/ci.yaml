@@ -24,9 +24,15 @@ jobs:
     permissions:
       pull-requests: read
     outputs:
-      non_web_doc: ${{ startsWith(github.ref, 'refs/tags/') && 'false' || steps.filter.outputs.non_web_doc }}
-      web_doc: ${{ startsWith(github.ref, 'refs/tags/') && 'false' || steps.filter.outputs.web_doc }}
-      release: ${{ startsWith(github.ref, 'refs/tags/') }}
+      linux: ${{ steps.detect.outputs.linux }}
+      macos: ${{ steps.detect.outputs.macos }}
+      docker: ${{ steps.detect.outputs.docker }}
+      web: ${{ steps.detect.outputs.web }}
+      nix: ${{ steps.detect.outputs.nix }}
+      appimage: ${{ steps.detect.outputs.appimage }}
+      release: ${{ steps.detect.outputs.release }}
+      ci_hygiene: ${{ steps.detect.outputs.ci_hygiene }}
+      shell_scripts_json: ${{ steps.detect.outputs.shell_scripts_json }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -38,19 +44,65 @@ jobs:
         id: filter
         with:
           base: ${{ github.event_name == 'push' && github.ref || '' }}
+          list-files: json
           filters: |
-            non_web_doc:
+            changed:
               - '**'
-              - '!web/**'
-              - '!doc/**'
-            web_doc:
-              - 'web/**'
-              - 'doc/**'
+      - name: Select CI jobs
+        id: detect
+        env:
+          CHANGED_FILES_JSON: ${{ steps.filter.outputs.changed_files || '[]' }}
+          RELEASE: ${{ startsWith(github.ref, 'refs/tags/') }}
+        run: |
+          release_arg=""
+          if [[ "${RELEASE}" == "true" ]]; then
+            release_arg="--release"
+          fi
+
+          python3 .github/scripts/detect-ci-jobs.py \
+            --changed-files-json "${CHANGED_FILES_JSON}" \
+            ${release_arg}
+
+  ci_hygiene:
+    name: CI hygiene
+    needs: changes
+    if: needs.changes.outputs.ci_hygiene == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install mise tools
+        uses: jdx/mise-action@v3
+      - name: Lint workflows
+        run: mise run actionlint
+      - name: Check Python CI scripts
+        run: |
+          uv run --with ruff ruff check .github/scripts/check-ci-results.py .github/scripts/detect-ci-jobs.py
+          uv run --with ty ty check .github/scripts/check-ci-results.py .github/scripts/detect-ci-jobs.py
+      - name: Test CI job detection
+        run: |
+          python3 .github/scripts/detect-ci-jobs.py \
+            --changed-files-json '[".github/workflows/ci.yaml", "mise.toml"]'
+          python3 .github/scripts/check-ci-results.py \
+            changes=success ci-hygiene=success linux=skipped
+      - name: Shellcheck changed shell scripts
+        if: needs.changes.outputs.shell_scripts_json != '[]'
+        env:
+          SHELL_SCRIPTS_JSON: ${{ needs.changes.outputs.shell_scripts_json }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+
+          shell_scripts = json.loads(os.environ["SHELL_SCRIPTS_JSON"])
+          subprocess.run(["shellcheck", *shell_scripts], check=True)
+          PY
 
   linux:
     name: Linux build and test
     needs: changes
-    if: needs.changes.outputs.non_web_doc == 'true'
+    if: needs.changes.outputs.linux == 'true'
     strategy:
       matrix:
         os:
@@ -188,7 +240,7 @@ jobs:
   macos:
     name: macOS build and test
     needs: changes
-    if: needs.changes.outputs.non_web_doc == 'true'
+    if: needs.changes.outputs.macos == 'true'
     env:
       HOMEBREW_NO_INSTALL_UPGRADE: 1
       HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
@@ -251,7 +303,7 @@ jobs:
   docker:
     name: Docker
     needs: changes
-    if: needs.changes.outputs.non_web_doc == 'true' || needs.changes.outputs.release == 'true'
+    if: needs.changes.outputs.docker == 'true'
     env:
       IMAGE_NAME: conky
       DOCKER_BUILDKIT: 1
@@ -281,7 +333,7 @@ jobs:
   web:
     name: Web CI
     needs: changes
-    if: needs.changes.outputs.web_doc == 'true'
+    if: needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -301,7 +353,7 @@ jobs:
   nix:
     name: Nix build
     needs: changes
-    if: github.event_name == 'pull_request' || needs.changes.outputs.non_web_doc == 'true'
+    if: needs.changes.outputs.nix == 'true'
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -325,7 +377,7 @@ jobs:
   appimage:
     name: Build AppImage
     needs: changes
-    if: github.event_name == 'pull_request' || needs.changes.outputs.non_web_doc == 'true' || needs.changes.outputs.release == 'true'
+    if: needs.changes.outputs.appimage == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -466,8 +518,10 @@ jobs:
 
   release:
     name: Create release
-    needs: appimage
-    if: startsWith(github.ref, 'refs/tags/')
+    needs:
+      - changes
+      - appimage
+    if: needs.changes.outputs.release == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
@@ -491,6 +545,7 @@ jobs:
     name: All checks passed
     needs:
       - changes
+      - ci_hygiene
       - linux
       - macos
       - docker
@@ -507,6 +562,7 @@ jobs:
         run: |
           python3 .github/scripts/check-ci-results.py \
             changes=${{ needs.changes.result }} \
+            ci-hygiene=${{ needs.ci_hygiene.result }} \
             linux=${{ needs.linux.result }} \
             macos=${{ needs.macos.result }} \
             docker=${{ needs.docker.result }} \
