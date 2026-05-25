@@ -4,6 +4,9 @@ pre-commit:
     actionlint:
       run: mise run actionlint
       glob: '.github/workflows/*.{yml,yaml}'
+    shellcheck:
+      run: shellcheck {staged_files}
+      glob: '*.{sh,bash}'
     web-linter:
       run: |
         bunx --bun eslint --fix {staged_files} \
