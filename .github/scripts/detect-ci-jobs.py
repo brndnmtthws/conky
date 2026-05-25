@@ -9,46 +9,49 @@ import json
 import os
 import sys
 from collections.abc import Iterable
-from pathlib import PurePosixPath
+
+# Patterns prefixed with "/" are anchored to the repository root.
+# Unprefixed patterns (e.g. "*.nix") match at any depth.
 
 CI_HYGIENE_FILES = {
-    "lefthook.yml",
-    "mise.lock",
-    "mise.toml",
+    "/lefthook.yml",
+    "/mise.lock",
+    "/mise.toml",
+    "/.github/**",
 }
-CI_HYGIENE_DIRS = {
-    ".github",
+CI_WORKFLOW_FILES = {
+    "/.github/workflows/ci.yaml",
 }
-CI_WORKFLOW = ".github/workflows/ci.yaml"
-DOCKER_PATTERNS = {
+DOCKER_FILES = {
     ".dockerignore",
     "Dockerfile",
     "Dockerfile.*",
-    ".github/scripts/docker-build.bash",
-    "docker/**",
+    "/.github/scripts/docker-build.bash",
+    "/docker/**",
 }
-SCCACHE_SCRIPT = ".github/scripts/setup-sccache.sh"
-APPIMAGE_PATTERNS = {
-    "appimage/**",
-    "requirements-dev.txt",
+CACHE_FILES = {
+    "/.github/scripts/setup-sccache.sh",
 }
-NIX_PATTERNS = {
-    "flake.lock",
-    "flake.nix",
-    "default.nix",
-    "nix/**",
+APPIMAGE_FILES = {
+    "/appimage/**",
+    "/requirements-dev.txt",
+}
+NIX_FILES = {
     "*.nix",
+    "/flake.lock",
+    "/flake.nix",
+    "/default.nix",
+    "/nix/**",
 }
-WEB_DOC_DIRS = {
-    "doc",
-    "web",
+WEB_DOC_FILES = {
+    "/doc/**",
+    "/web/**",
 }
-SHELL_SCRIPT_PATTERNS = {
+SHELL_SCRIPT_FILES = {
     "*.bash",
     "*.sh",
-    "**/*.bash",
-    "**/*.sh",
 }
+NON_NATIVE_FILES = CI_HYGIENE_FILES | WEB_DOC_FILES
 
 
 def parse_changed_files(raw: str) -> list[str]:
@@ -64,39 +67,22 @@ def parse_changed_files(raw: str) -> list[str]:
 
     return sorted(path for path in value if path)
 
-
-def first_part(path: str) -> str:
-    parts = PurePosixPath(path).parts
-    return parts[0] if parts else ""
-
-
-def starts_with_dir(path: str, directories: Iterable[str]) -> bool:
-    return any(path == directory or path.startswith(f"{directory}/") for directory in directories)
-
-
-def matches_any(path: str, patterns: Iterable[str]) -> bool:
-    return any(fnmatch.fnmatchcase(path, pattern) for pattern in patterns)
+def item_matches_any(path: str, patterns: Iterable[str]) -> bool:
+    for pattern in patterns:
+        if pattern.startswith("/"):
+            if fnmatch.fnmatchcase(path, pattern[1:]):
+                return True
+        elif fnmatch.fnmatchcase(path, pattern) or fnmatch.fnmatchcase(path, "*/" + pattern):
+            return True
+    return False
 
 
-def is_ci_hygiene(path: str) -> bool:
-    return path in CI_HYGIENE_FILES or starts_with_dir(path, CI_HYGIENE_DIRS)
+def matches_any(paths: Iterable[str], patterns: Iterable[str], *, invert: bool = False) -> bool:
+    return any(item_matches_any(path, patterns) ^ invert for path in paths)
 
 
-def is_web_doc(path: str) -> bool:
-    return first_part(path) in WEB_DOC_DIRS
-
-
-def is_native_or_unknown(path: str) -> bool:
-    if is_web_doc(path) or is_ci_hygiene(path):
-        return False
-
-    # Preserve the old paths-ignore behavior: anything that is not web/docs
-    # or CI metadata should take the conservative native/package path.
-    return True
-
-
-def classify(paths: list[str], release: bool) -> dict[str, bool | list[str]]:
-    shell_scripts = [path for path in paths if matches_any(path, SHELL_SCRIPT_PATTERNS)]
+def classify(paths: Iterable[str], release: bool) -> dict[str, bool | list[str]]:
+    shell_scripts = [path for path in paths if item_matches_any(path, SHELL_SCRIPT_FILES)]
 
     if release:
         return {
@@ -111,19 +97,19 @@ def classify(paths: list[str], release: bool) -> dict[str, bool | list[str]]:
             "shell_scripts": shell_scripts,
         }
 
-    ci_workflow = CI_WORKFLOW in paths
-    native = ci_workflow or any(is_native_or_unknown(path) for path in paths)
-    sccache = SCCACHE_SCRIPT in paths
+    ci_workflow = matches_any(paths, CI_WORKFLOW_FILES)
+    native = ci_workflow or matches_any(paths, NON_NATIVE_FILES, invert=True)
+    modifies_cache = matches_any(paths, CACHE_FILES)
 
     return {
-        "linux": native or sccache,
-        "macos": native or sccache,
-        "docker": native or any(matches_any(path, DOCKER_PATTERNS) for path in paths),
-        "web": ci_workflow or any(is_web_doc(path) for path in paths),
-        "nix": native or any(matches_any(path, NIX_PATTERNS) for path in paths),
-        "appimage": native or sccache or any(matches_any(path, APPIMAGE_PATTERNS) for path in paths),
+        "linux": native or modifies_cache,
+        "macos": native or modifies_cache,
+        "docker": native or matches_any(paths, DOCKER_FILES),
+        "web": ci_workflow or matches_any(paths, WEB_DOC_FILES),
+        "nix": native or matches_any(paths, NIX_FILES),
+        "appimage": native or modifies_cache or matches_any(paths, APPIMAGE_FILES),
         "release": False,
-        "ci_hygiene": any(is_ci_hygiene(path) for path in paths),
+        "ci_hygiene": matches_any(paths, CI_HYGIENE_FILES),
         "shell_scripts": shell_scripts,
     }
 
@@ -139,7 +125,16 @@ def write_output(name: str, value: str) -> None:
 
 
 def write_outputs(classification: dict[str, bool | list[str]]) -> None:
-    for job in ("linux", "macos", "docker", "web", "nix", "appimage", "release", "ci_hygiene"):
+    for job in (
+        "linux",
+        "macos",
+        "docker",
+        "web",
+        "nix",
+        "appimage",
+        "release",
+        "ci_hygiene",
+    ):
         write_output(job, str(classification[job]).lower())
 
     shell_scripts = classification["shell_scripts"]
