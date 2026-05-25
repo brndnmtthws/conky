@@ -826,9 +826,10 @@ values:
   - name: hwmonbar
     desc: |-
       Same as hwmon, but displays the sensor reading as a horizontal bar. Use
-      factor and offset to scale the raw sysfs value into the 0-100 range
-      (e.g. millidegree temps need factor 0.001). Height and width default to
-      default_bar_height and default_bar_width respectively.
+      factor and offset to scale the value reported by hwmon into the 0-100
+      range. Temperature values are already converted from millidegrees. Height
+      and width default to default_bar_height and default_bar_width
+      respectively.
     args:
       - (height),(width)
       - (dev)
@@ -857,9 +858,9 @@ values:
   - name: i2cbar
     desc: |-
       Same as i2c, but displays the sensor reading as a horizontal bar. Use
-      factor and offset to scale the raw sysfs value into the 0-100 range.
-      Height and width default to default_bar_height and default_bar_width
-      respectively.
+      factor and offset to scale the value reported by i2c into the 0-100 range.
+      Temperature values are already converted from millidegrees. Height and
+      width default to default_bar_height and default_bar_width respectively.
     args:
       - (height),(width)
       - (dev)
@@ -1876,8 +1877,9 @@ values:
   - name: platformbar
     desc: |-
       Same as platform, but displays the sensor reading as a horizontal bar. Use
-      factor and offset to scale the raw sysfs value into the 0-100 range.
-      Height and width default to default_bar_height and default_bar_width
+      factor and offset to scale the value reported by platform into the 0-100
+      range. Temperature values are already converted from millidegrees. Height
+      and width default to default_bar_height and default_bar_width
       respectively.
     args:
       - (height),(width)
