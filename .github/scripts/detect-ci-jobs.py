@@ -11,27 +11,13 @@ import sys
 from collections.abc import Iterable
 from pathlib import PurePosixPath
 
-ROOT_NATIVE_FILES = {
-    "CMakeLists.txt",
-}
-NATIVE_DIRS = {
-    "3rdparty",
-    "bin",
-    "cmake",
-    "data",
-    "extras",
-    "lua",
-    "src",
-    "tests",
-}
 CI_HYGIENE_FILES = {
     "lefthook.yml",
     "mise.lock",
     "mise.toml",
 }
 CI_HYGIENE_DIRS = {
-    ".github/scripts",
-    ".github/workflows",
+    ".github",
 }
 DOCKER_PATTERNS = {
     ".dockerignore",
@@ -91,16 +77,21 @@ def matches_any(path: str, patterns: Iterable[str]) -> bool:
     return any(fnmatch.fnmatchcase(path, pattern) for pattern in patterns)
 
 
-def is_native(path: str) -> bool:
-    return path in ROOT_NATIVE_FILES or first_part(path) in NATIVE_DIRS
-
-
 def is_ci_hygiene(path: str) -> bool:
     return path in CI_HYGIENE_FILES or starts_with_dir(path, CI_HYGIENE_DIRS)
 
 
 def is_web_doc(path: str) -> bool:
     return first_part(path) in WEB_DOC_DIRS
+
+
+def is_native_or_unknown(path: str) -> bool:
+    if is_web_doc(path) or is_ci_hygiene(path):
+        return False
+
+    # Preserve the old paths-ignore behavior: anything that is not web/docs
+    # or CI metadata should take the conservative native/package path.
+    return True
 
 
 def classify(paths: list[str], release: bool) -> dict[str, bool | list[str]]:
@@ -119,7 +110,7 @@ def classify(paths: list[str], release: bool) -> dict[str, bool | list[str]]:
             "shell_scripts": shell_scripts,
         }
 
-    native = any(is_native(path) for path in paths)
+    native = any(is_native_or_unknown(path) for path in paths)
     sccache = SCCACHE_SCRIPT in paths
 
     return {

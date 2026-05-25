@@ -43,7 +43,6 @@ jobs:
         uses: dorny/paths-filter@v4
         id: filter
         with:
-          base: ${{ github.event_name == 'push' && github.ref || '' }}
           list-files: json
           filters: |
             changed:
@@ -210,7 +209,6 @@ jobs:
             -DBUILD_ICAL=ON                      \
             -DBUILD_ICONV=ON                     \
             -DBUILD_IRC=ON                       \
-            -DBUILD_IRC=ON                       \
             -DBUILD_JOURNAL=ON                   \
             -DBUILD_LUA_CAIRO=ON                 \
             -DBUILD_LUA_CAIRO_XLIB=ON            \
@@ -268,7 +266,9 @@ jobs:
             lua                \
             ninja              \
             pkg-config         \
-            || true # Ignore errors
+            || (brew update && brew install --force \
+              curl freetype gettext gperf imlib2 lcov librsvg libxfixes libxft \
+              libxi libxinerama libxml2 lua ninja pkg-config)
       - name: Checkout
         uses: actions/checkout@v6
       - name: Configure sccache
@@ -391,8 +391,7 @@ jobs:
           - debug
           - release
     permissions:
-      contents: write
-      discussions: write
+      contents: read
     steps:
       - run: sudo apt-get -qq update
       - name: Install dependencies
@@ -451,10 +450,6 @@ jobs:
         run: |
           echo "${{ secrets.GPG_DEPLOY_KEY }}" > appimage/secret.gpg
           gpg --import appimage/secret.gpg
-      - name: Set clang version to 12 for ubuntu-20.04
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          echo "CLANG_VERSION=12" | tee -a "${GITHUB_ENV}"
       - name: Set clang version to 15 for ubuntu-22.04
         if: matrix.os == 'ubuntu-22.04'
         run: |
@@ -523,6 +518,9 @@ jobs:
       - appimage
     if: needs.changes.outputs.release == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      discussions: write
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v8
