@@ -1,0 +1,556 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SCCACHE_VERSION: '0.15.0'
+
+jobs:
+  changes:
+    name: Detect changed files
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      linux: ${{ steps.detect.outputs.linux }}
+      macos: ${{ steps.detect.outputs.macos }}
+      docker: ${{ steps.detect.outputs.docker }}
+      web: ${{ steps.detect.outputs.web }}
+      nix: ${{ steps.detect.outputs.nix }}
+      appimage: ${{ steps.detect.outputs.appimage }}
+      release: ${{ steps.detect.outputs.release }}
+      ci_hygiene: ${{ steps.detect.outputs.ci_hygiene }}
+      shell_scripts_json: ${{ steps.detect.outputs.shell_scripts_json }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Detect changed files
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          list-files: json
+          filters: |
+            changed:
+              - '**'
+      - name: Select CI jobs
+        id: detect
+        env:
+          CHANGED_FILES_JSON: ${{ steps.filter.outputs.changed_files || '[]' }}
+          RELEASE: ${{ startsWith(github.ref, 'refs/tags/') }}
+        run: |
+          release_arg=""
+          if [[ "${RELEASE}" == "true" ]]; then
+            release_arg="--release"
+          fi
+
+          python3 .github/scripts/detect-ci-jobs.py \
+            --changed-files-json "${CHANGED_FILES_JSON}" \
+            ${release_arg}
+
+  ci_hygiene:
+    name: CI hygiene
+    needs: changes
+    if: needs.changes.outputs.ci_hygiene == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install mise tools
+        uses: jdx/mise-action@v4
+      - name: Lint workflows
+        run: mise run actionlint
+      - name: Check Python CI scripts
+        run: |
+          uv run --with ruff ruff check .github/scripts/detect-ci-jobs.py
+          uv run --with ty ty check .github/scripts/detect-ci-jobs.py
+      - name: Test CI job detection
+        run: |
+          python3 .github/scripts/detect-ci-jobs.py \
+            --changed-files-json '[".github/workflows/ci.yaml", "mise.toml"]'
+      - name: Shellcheck changed shell scripts
+        if: needs.changes.outputs.shell_scripts_json != '[]'
+        env:
+          SHELL_SCRIPTS_JSON: ${{ needs.changes.outputs.shell_scripts_json }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+
+          shell_scripts = json.loads(os.environ["SHELL_SCRIPTS_JSON"])
+          subprocess.run(["shellcheck", *shell_scripts], check=True)
+          PY
+
+  linux:
+    name: Linux build and test
+    needs: changes
+    if: needs.changes.outputs.linux == 'true'
+    strategy:
+      matrix:
+        os:
+          - ubuntu-22.04
+          - ubuntu-24.04
+        x11: [ON, OFF]
+        wayland: [ON, OFF]
+        compiler:
+          - clang
+          - gcc
+    runs-on: ${{ matrix.os }}
+    steps:
+      - run: sudo apt-get -qq update
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -yqq --no-install-recommends \
+            audacious-dev \
+            cmake \
+            gawk \
+            gperf \
+            lcov \
+            libaudclient-dev \
+            libcairo2-dev \
+            libpango1.0-dev \
+            libcurl4-gnutls-dev \
+            libdbus-glib-1-dev \
+            libfreetype-dev \
+            libfreetype6-dev \
+            libstdc++6 \
+            libglib2.0-dev \
+            libical-dev \
+            libimlib2-dev \
+            libircclient-dev \
+            libiw-dev \
+            liblua5.3-dev \
+            libmicrohttpd-dev \
+            libmysqlclient-dev \
+            libpulse-dev \
+            librsvg2-dev \
+            libsystemd-dev \
+            libwayland-bin \
+            libwayland-dev \
+            libx11-dev \
+            libxdamage-dev \
+            libxext-dev \
+            libxft-dev \
+            libxinerama-dev \
+            libxml2-dev \
+            libxmmsclient-dev \
+            libxnvctrl-dev \
+            ncurses-dev \
+            ninja-build \
+            wayland-protocols
+      - name: Install clang and libc++
+        if: matrix.compiler == 'clang'
+        run: |
+          sudo apt-get install -yqq --no-install-recommends \
+            clang \
+            libc++-dev \
+            libc++abi-dev
+      - name: Install gcc
+        if: matrix.compiler == 'gcc'
+        run: |
+          sudo apt-get install -yqq --no-install-recommends \
+            gcc \
+            g++
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install sccache
+        run: .github/scripts/setup-sccache.sh
+      - name: Load cached compilation artifacts
+        id: compiler-cache
+        uses: actions/cache@v5
+        with:
+          path: '${{ env.SCCACHE_DIR }}'
+          key: sccache-${{ matrix.os }}-${{ matrix.x11 }}-${{ matrix.wayland }}-${{ matrix.compiler }}
+          restore-keys: |
+            sccache-${{ matrix.os }}-${{ matrix.x11 }}-${{ matrix.wayland }}-${{ matrix.compiler }}
+            sccache-${{ matrix.os }}-${{ matrix.x11 }}-${{ matrix.wayland }}
+            sccache-${{ matrix.os }}-${{ matrix.x11 }}
+            sccache-${{ matrix.os }}
+      - name: Configure with CMake
+        env:
+          MATRIX_COMPILER: ${{ matrix.compiler }}
+          MATRIX_OS: ${{ matrix.os }}
+        run: |
+          set -x # show the commands we're running
+          [[ "${MATRIX_COMPILER}" == clang* ]] && CC=clang
+          [[ "${MATRIX_COMPILER}" == clang* ]] && CXX=clang++
+
+          [[ "${MATRIX_COMPILER}" == gcc* ]] && CC=gcc
+          [[ "${MATRIX_COMPILER}" == gcc* ]] && CXX=g++
+
+          # Enable librsvg by default, disable for older versions of Ubuntu
+          # because we need librsvg>=2.52
+          RSVG_ENABLED=ON
+          [[ "${MATRIX_OS}" == ubuntu-20.04* ]] && RSVG_ENABLED=OFF
+
+          # Reset sccache statistics
+          sccache --zero-stats
+
+          cmake . -B build -G Ninja              \
+            -DBUILD_AUDACIOUS=ON                 \
+            -DBUILD_HTTP=ON                      \
+            -DBUILD_ICAL=ON                      \
+            -DBUILD_ICONV=ON                     \
+            -DBUILD_IRC=ON                       \
+            -DBUILD_JOURNAL=ON                   \
+            -DBUILD_LUA_CAIRO=ON                 \
+            -DBUILD_LUA_CAIRO_XLIB=ON            \
+            -DBUILD_LUA_IMLIB2=ON                \
+            -DBUILD_LUA_RSVG=${RSVG_ENABLED}     \
+            -DBUILD_LUA_TEXT=ON                  \
+            -DBUILD_MYSQL=ON                     \
+            -DBUILD_NVIDIA=ON                    \
+            -DBUILD_PULSEAUDIO=ON                \
+            -DBUILD_CURL=ON                      \
+            -DBUILD_RSS=ON                       \
+            -DBUILD_WLAN=ON                      \
+            -DBUILD_WAYLAND=${{ matrix.wayland }}\
+            -DBUILD_X11=${{ matrix.x11 }}        \
+            -DBUILD_XMMS2=ON                     \
+            -DCMAKE_C_COMPILER="${CC}"           \
+            -DCMAKE_CXX_COMPILER="${CXX}"        \
+            -DMAINTAINER_MODE=ON
+      - name: Compile
+        run: cmake --build build
+      - name: Show sccache stats
+        run: sccache --show-stats
+      - name: Test
+        working-directory: build
+        run: ctest --output-on-failure
+
+  macos:
+    name: macOS build and test
+    needs: changes
+    if: needs.changes.outputs.macos == 'true'
+    env:
+      HOMEBREW_NO_INSTALL_UPGRADE: 1
+      HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Install dependencies
+        run: |
+          # curl is already in the image
+          brew install --force --quiet \
+            freetype           \
+            gettext            \
+            gperf              \
+            imlib2             \
+            lcov               \
+            librsvg            \
+            libxfixes          \
+            libxft             \
+            libxi              \
+            libxinerama        \
+            libxml2            \
+            lua                \
+            ninja              \
+            pkg-config
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Configure sccache
+        run: .github/scripts/setup-sccache.sh
+      - name: Load cached compilation artifacts
+        id: compiler-cache
+        uses: actions/cache@v5
+        with:
+          path: '${{ env.SCCACHE_DIR }}'
+          key: sccache-${{ matrix.os }}
+          restore-keys: |
+            sccache-${{ matrix.os }}
+            sccache-
+      - name: Configure with CMake
+        run: |
+          # Reset sccache statistics
+          sccache --zero-stats
+
+          cmake . -B build -G Ninja            \
+          -DMAINTAINER_MODE=ON                 \
+          -DBUILD_WAYLAND=OFF                  \
+          -DBUILD_RSS=ON                       \
+          -DBUILD_CURL=ON
+      - name: Compile
+        run: cmake --build build
+      - name: Show sccache stats
+        run: sccache --show-stats
+      - name: Test
+        working-directory: build
+        run: ctest --output-on-failure
+
+  docker:
+    name: Docker
+    needs: changes
+    if: needs.changes.outputs.docker == 'true'
+    env:
+      IMAGE_NAME: conky
+      DOCKER_BUILDKIT: 1
+      DOCKERHUB_USERNAME: brndnmtthws
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        if: ${{ env.DOCKERHUB_TOKEN != '' }}
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push Docker image
+        env:
+          RELEASE: "${{ startsWith(github.ref, 'refs/tags/') && 'ON' || 'OFF' }}"
+          GITHUB_REF: ${{ github.ref }}
+        run: .github/scripts/docker-build.bash
+
+  web:
+    name: Web CI
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Use Bun package manager
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+        working-directory: web
+      - run: bun run lint
+        working-directory: web
+      - run: bun run build
+        working-directory: web
+      - run: bun run e2e:headless
+        working-directory: web
+
+  nix:
+    name: Nix build
+    needs: changes
+    if: needs.changes.outputs.nix == 'true'
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: nixbuild/nix-quick-install-action@v34
+      - name: Restore and cache Nix store
+        uses: nix-community/cache-nix-action@v7
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          gc-max-store-size: 1073741824
+          purge: true
+          purge-prefixes: cache-${{ runner.os }}-
+          purge-created: 0
+          purge-primary-key: never
+      - run: nix build
+      - run: nix flake check
+
+  appimage:
+    name: Build AppImage
+    needs: changes
+    if: needs.changes.outputs.appimage == 'true'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-22.04
+          - ubuntu-24.04
+        arch:
+          - x86_64
+        mode:
+          - debug
+          - release
+    permissions:
+      contents: read
+    steps:
+      - run: sudo apt-get -qq update
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -yqq --no-install-recommends \
+            audacious-dev \
+            cmake \
+            gawk \
+            gperf \
+            lcov \
+            libaudclient-dev \
+            libcairo2-dev \
+            libcurl4-gnutls-dev \
+            libdbus-glib-1-dev \
+            libfreetype-dev \
+            libfreetype6-dev \
+            libstdc++6 \
+            libfuse2 \
+            libglib2.0-dev \
+            libical-dev \
+            libimlib2-dev \
+            libircclient-dev \
+            libiw-dev \
+            liblua5.3-dev \
+            libmicrohttpd-dev \
+            libmysqlclient-dev \
+            libpulse-dev \
+            librsvg2-dev \
+            libsystemd-dev \
+            libwayland-bin \
+            libwayland-dev \
+            libx11-dev \
+            libxdamage-dev \
+            libxext-dev \
+            libxft-dev \
+            libxinerama-dev \
+            libxml2-dev \
+            libxmmsclient-dev \
+            libxnvctrl-dev \
+            ncurses-dev \
+            ninja-build \
+            pandoc \
+            wayland-protocols
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: 'requirements-dev.txt'
+      - run: pip install -r requirements-dev.txt
+      - name: Import GPG Deploy Key
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "${{ secrets.GPG_DEPLOY_KEY }}" > appimage/secret.gpg
+          gpg --import appimage/secret.gpg
+      - name: Set clang version to 15 for ubuntu-22.04
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          echo "CLANG_VERSION=15" | tee -a "${GITHUB_ENV}"
+      - name: Set clang version to 18 for ubuntu-24.04
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          echo "CLANG_VERSION=18" | tee -a "${GITHUB_ENV}"
+      - name: Install libc++, set CC and CXX env vars
+        run: |
+          sudo apt-get install -yqq --no-install-recommends \
+            "libc++-${CLANG_VERSION}-dev" \
+            "libc++abi-${CLANG_VERSION}-dev"
+          echo "CC=clang-${CLANG_VERSION}" | tee -a "${GITHUB_ENV}"
+          echo "CXX=clang++-${CLANG_VERSION}" | tee -a "${GITHUB_ENV}"
+
+      - name: Install sccache
+        if: startsWith(github.ref, 'refs/tags/') != true
+        run: .github/scripts/setup-sccache.sh
+      - name: Load cached compilation artifacts
+        if: startsWith(github.ref, 'refs/tags/') != true
+        id: compiler-cache
+        uses: actions/cache@v5
+        with:
+          path: '${{ env.SCCACHE_DIR }}'
+          key: sccache-${{ matrix.os }}-${{ matrix.arch }}
+          restore-keys: |
+            sccache-${{ matrix.os }}-${{ matrix.arch }}
+            sccache-${{ matrix.os }}
+            sccache-
+      - name: Build AppImage
+        run: ./appimage/build.sh --${{ matrix.mode }}
+        env:
+          RELEASE: "${{ startsWith(github.ref, 'refs/tags/') && 'ON' || 'OFF' }}"
+      - name: Show sccache stats
+        if: startsWith(github.ref, 'refs/tags/') != true
+        run: sccache --show-stats
+      - run: ./conky-x86_64.AppImage --version
+      - name: Set CONKY_VERSION
+        run: echo "CONKY_VERSION=$(./conky-x86_64.AppImage --short-version)" | tee -a "${GITHUB_ENV}"
+      - run: mv conky-x86_64.AppImage conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage
+      - run: mv conky-x86_64.AppImage.sha256 conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage.sha256
+      - name: Upload AppImage artifact
+        uses: actions/upload-artifact@v7
+        with:
+          path: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage'
+          name: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage'
+          if-no-files-found: error
+      - name: Upload AppImage checksum artifact
+        uses: actions/upload-artifact@v7
+        with:
+          path: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage.sha256'
+          name: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage.sha256'
+          if-no-files-found: error
+      - name: Upload man page artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: conky.1.gz
+          path: conky.1.gz
+          overwrite: true
+
+  release:
+    name: Create release
+    needs:
+      - changes
+      - appimage
+    if: needs.changes.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      discussions: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: ${{ github.workspace }}/artifacts
+
+      - name: Create Conky Release
+        id: create_release
+        uses: softprops/action-gh-release@v3
+        with:
+          draft: false
+          prerelease: false
+          discussion_category_name: General
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            ${{ github.workspace }}/artifacts/**/*
+
+  all-checks-passed:
+    name: All checks passed
+    needs:
+      - changes
+      - ci_hygiene
+      - linux
+      - macos
+      - docker
+      - web
+      - nix
+      - appimage
+      - release
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check required job results
+        run: |
+          if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+            exit 1
+          fi
