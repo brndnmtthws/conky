@@ -71,7 +71,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Install mise tools
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
       - name: Lint workflows
         run: mise run actionlint
       - name: Check Python CI scripts
@@ -248,8 +248,8 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          brew install --force \
-            curl               \
+          # curl is already in the image
+          brew install --force --quiet \
             freetype           \
             gettext            \
             gperf              \
@@ -263,10 +263,7 @@ jobs:
             libxml2            \
             lua                \
             ninja              \
-            pkg-config         \
-            || (brew update && brew install --force \
-              curl freetype gettext gperf imlib2 lcov librsvg libxfixes libxft \
-              libxi libxinerama libxml2 lua ninja pkg-config)
+            pkg-config
       - name: Checkout
         uses: actions/checkout@v6
       - name: Configure sccache
