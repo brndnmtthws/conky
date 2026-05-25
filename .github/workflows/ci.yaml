@@ -76,14 +76,12 @@ jobs:
         run: mise run actionlint
       - name: Check Python CI scripts
         run: |
-          uv run --with ruff ruff check .github/scripts/check-ci-results.py .github/scripts/detect-ci-jobs.py
-          uv run --with ty ty check .github/scripts/check-ci-results.py .github/scripts/detect-ci-jobs.py
+          uv run --with ruff ruff check .github/scripts/detect-ci-jobs.py
+          uv run --with ty ty check .github/scripts/detect-ci-jobs.py
       - name: Test CI job detection
         run: |
           python3 .github/scripts/detect-ci-jobs.py \
             --changed-files-json '[".github/workflows/ci.yaml", "mise.toml"]'
-          python3 .github/scripts/check-ci-results.py \
-            changes=success ci-hygiene=success linux=skipped
       - name: Shellcheck changed shell scripts
         if: needs.changes.outputs.shell_scripts_json != '[]'
         env:
@@ -554,17 +552,8 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
       - name: Check required job results
         run: |
-          python3 .github/scripts/check-ci-results.py \
-            changes=${{ needs.changes.result }} \
-            ci-hygiene=${{ needs.ci_hygiene.result }} \
-            linux=${{ needs.linux.result }} \
-            macos=${{ needs.macos.result }} \
-            docker=${{ needs.docker.result }} \
-            web=${{ needs.web.result }} \
-            nix=${{ needs.nix.result }} \
-            appimage=${{ needs.appimage.result }} \
-            release=${{ needs.release.result }}
+          if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+            exit 1
+          fi
