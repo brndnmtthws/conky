@@ -19,6 +19,7 @@ CI_HYGIENE_FILES = {
 CI_HYGIENE_DIRS = {
     ".github",
 }
+CI_WORKFLOW = ".github/workflows/ci.yaml"
 DOCKER_PATTERNS = {
     ".dockerignore",
     "Dockerfile",
@@ -110,14 +111,15 @@ def classify(paths: list[str], release: bool) -> dict[str, bool | list[str]]:
             "shell_scripts": shell_scripts,
         }
 
-    native = any(is_native_or_unknown(path) for path in paths)
+    ci_workflow = CI_WORKFLOW in paths
+    native = ci_workflow or any(is_native_or_unknown(path) for path in paths)
     sccache = SCCACHE_SCRIPT in paths
 
     return {
         "linux": native or sccache,
         "macos": native or sccache,
         "docker": native or any(matches_any(path, DOCKER_PATTERNS) for path in paths),
-        "web": any(is_web_doc(path) for path in paths),
+        "web": ci_workflow or any(is_web_doc(path) for path in paths),
         "nix": native or any(matches_any(path, NIX_PATTERNS) for path in paths),
         "appimage": native or sccache or any(matches_any(path, APPIMAGE_PATTERNS) for path in paths),
         "release": False,
