@@ -1,6 +1,9 @@
 pre-commit:
   parallel: true
   commands:
+    actionlint:
+      run: mise run actionlint
+      glob: '.github/workflows/*.{yml,yaml}'
     web-linter:
       run: |
         bunx --bun eslint --fix {staged_files} \
