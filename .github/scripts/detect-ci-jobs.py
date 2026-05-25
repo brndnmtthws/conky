@@ -125,10 +125,10 @@ def classify(paths: list[str], release: bool) -> dict[str, bool | list[str]]:
     return {
         "linux": native or sccache,
         "macos": native or sccache,
-        "docker": any(matches_any(path, DOCKER_PATTERNS) for path in paths),
+        "docker": native or any(matches_any(path, DOCKER_PATTERNS) for path in paths),
         "web": any(is_web_doc(path) for path in paths),
-        "nix": any(matches_any(path, NIX_PATTERNS) for path in paths),
-        "appimage": sccache or any(matches_any(path, APPIMAGE_PATTERNS) for path in paths),
+        "nix": native or any(matches_any(path, NIX_PATTERNS) for path in paths),
+        "appimage": native or sccache or any(matches_any(path, APPIMAGE_PATTERNS) for path in paths),
         "release": False,
         "ci_hygiene": any(is_ci_hygiene(path) for path in paths),
         "shell_scripts": shell_scripts,
