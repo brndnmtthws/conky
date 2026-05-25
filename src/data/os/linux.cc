@@ -47,6 +47,7 @@
 #include <unistd.h>
 // #include <assert.h>
 #include <time.h>
+#include <algorithm>
 #include <unordered_map>
 #include "../../lua/setting.hh"
 #include "../top.h"
@@ -1465,8 +1466,30 @@ static void parse_sysfs_sensor(struct text_object *obj, const char *arg,
   obj->data.opaque = sf;
 }
 
+static bool is_sysfs_sensor_type(const char *type) {
+  return strcmp(type, "fan") == 0 || strcmp(type, "in") == 0 ||
+         strcmp(type, "temp") == 0 || strcmp(type, "temp2") == 0 ||
+         strcmp(type, "tempf") == 0 || strcmp(type, "vol") == 0;
+}
+
+static const char *scan_sysfs_bar(struct text_object *obj, const char *arg) {
+  char maybe_dev[64], maybe_type[64];
+
+  if (arg != nullptr && sscanf(arg, " %63s %63s", maybe_dev, maybe_type) == 2 &&
+      is_sysfs_sensor_type(maybe_type)) {
+    scan_bar(obj, nullptr, 100);
+    return arg;
+  }
+
+  return scan_bar(obj, arg, 100);
+}
+
 #define PARSER_GENERATOR(name, path)                                     \
   void parse_##name##_sensor(struct text_object *obj, const char *arg) { \
+    parse_sysfs_sensor(obj, arg, path, #name);                           \
+  }                                                                      \
+  void parse_##name##_bar(struct text_object *obj, const char *arg) {    \
+    arg = scan_sysfs_bar(obj, arg);                                      \
     parse_sysfs_sensor(obj, arg, path, #name);                           \
   }
 
@@ -1494,6 +1517,22 @@ void print_sysfs_sensor(struct text_object *obj, char *p,
   } else {
     snprintf(p, p_max_size, "%.1f", r);
   }
+}
+
+double sysfs_sensor_barval(struct text_object *obj) {
+  double r;
+  struct sysfs *sf = (struct sysfs *)obj->data.opaque;
+
+  if (!sf || sf->fd < 0) return 0.0;
+
+  r = get_sysfs_info(&sf->fd, sf->arg, sf->devtype, sf->type);
+
+  r = r * sf->factor + sf->offset;
+
+  if (r < 0.0 || r > 100.0) {
+    LOG_WARNING("sysfs bar value {} out of [0, 100]; adjust factor/offset", r);
+  }
+  return std::clamp(r, 0.0, 100.0);
 }
 
 void free_sysfs_sensor(struct text_object *obj) {
