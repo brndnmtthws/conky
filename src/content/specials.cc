@@ -113,7 +113,7 @@ struct graph {
 };
 
 struct stippled_hr {
-  int height, arg;
+  int width, height, space;
 };
 
 struct tab {
@@ -665,12 +665,42 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size,
   if (out_to_stdout.get(*state)) { new_graph_in_shell(s, buf, buf_max_size); }
 }
 
+void scan_hr(struct text_object *obj, const char *arg) {
+  struct stippled_hr *sh;
+
+  sh = static_cast<struct stippled_hr *>(malloc(sizeof(struct stippled_hr)));
+  memset(sh, 0, sizeof(struct stippled_hr));
+
+  sh->space  = 0;
+  sh->width  = 0;
+  sh->height = 1;
+
+  if (arg != nullptr) {
+    if (sscanf(arg, "%d %d", &sh->height, &sh->width) != 2) {
+      sscanf(arg, "%d", &sh->height);
+    }
+  }
+
+  sh->height = std::max(1, sh->height);
+  obj->special_data = sh;
+}
+
 void new_hr(struct text_object *obj, char *p, unsigned int p_max_size) {
+  struct special_node *s = nullptr;
+  auto *sh = static_cast<struct stippled_hr *>(obj->special_data);
+
   if (display_output() == nullptr || !display_output()->graphical()) { return; }
 
   if (p_max_size == 0) { return; }
 
-  new_special(p, text_node_t::HORIZONTAL_LINE)->height = dpi_scale(obj->data.l);
+  s = new_special(p, text_node_t::HORIZONTAL_LINE);
+  s->width  = dpi_scale(sh->width);
+  s->height = dpi_scale(sh->height);
+}
+
+void free_hr(struct text_object *obj) {
+  auto *sh = static_cast<struct stippled_hr *>(obj->special_data);
+  free_and_zero(sh);
 }
 
 void scan_stippled_hr(struct text_object *obj, const char *arg) {
@@ -679,15 +709,19 @@ void scan_stippled_hr(struct text_object *obj, const char *arg) {
   sh = static_cast<struct stippled_hr *>(malloc(sizeof(struct stippled_hr)));
   memset(sh, 0, sizeof(struct stippled_hr));
 
-  sh->arg = stippled_borders.get(*state);
+  sh->space  = stippled_borders.get(*state);
+  sh->width  = 0;
   sh->height = 1;
 
   if (arg != nullptr) {
-    if (sscanf(arg, "%d %d", &sh->arg, &sh->height) != 2) {
-      sscanf(arg, "%d", &sh->height);
+    if (sscanf(arg, "%d %d %d", &sh->space, &sh->height, &sh->width) != 3) {
+      if (sscanf(arg, "%d %d", &sh->space, &sh->height) != 2) {
+        sscanf(arg, "%d", &sh->height);
+      }
     }
   }
-  if (sh->arg <= 0) { sh->arg = 1; }
+  sh->space  = std::max(1, sh->space);
+  sh->height = std::max(1, sh->height);
   obj->special_data = sh;
 }
 
@@ -702,8 +736,14 @@ void new_stippled_hr(struct text_object *obj, char *p,
 
   s = new_special(p, text_node_t::STIPPLED_HR);
 
+  s->width  = dpi_scale(sh->width);
   s->height = dpi_scale(sh->height);
-  s->arg = dpi_scale(sh->arg);
+  s->arg    = dpi_scale(sh->space);
+}
+
+void free_stippled_hr(struct text_object *obj) {
+  auto *sh = static_cast<struct stippled_hr *>(obj->special_data);
+  free_and_zero(sh);
 }
 #endif /* BUILD_GUI */
 

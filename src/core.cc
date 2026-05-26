@@ -1016,9 +1016,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(fs_used, &update_fs_stats) init_fs(obj, arg);
   obj->callbacks.print = &print_fs_used;
 #ifdef BUILD_GUI
-  END OBJ(hr, nullptr) obj->data.l =
-      arg != nullptr ? strtol(arg, nullptr, 10) : 1;
+  END OBJ(hr, nullptr) scan_hr(obj, arg);
   obj->callbacks.print = &new_hr;
+  obj->callbacks.free = &free_hr;
 #endif /* BUILD_GUI */
   END OBJ(nameserver, &update_dns_data) parse_nameserver_arg(obj, arg);
   obj->callbacks.print = &print_nameserver;
@@ -1462,10 +1462,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
           .to_argb32();
   obj->callbacks.print = &new_outline;
 #endif /* BUILD_GUI */
-  END OBJ(stippled_hr, nullptr)
 #ifdef BUILD_GUI
-      scan_stippled_hr(obj, arg);
+  END OBJ(stippled_hr, nullptr) scan_stippled_hr(obj, arg);
   obj->callbacks.print = &new_stippled_hr;
+  obj->callbacks.free = &free_stippled_hr;
 #endif /* BUILD_GUI */
   END OBJ(swap, &update_meminfo) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_swap;
