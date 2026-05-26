@@ -30,6 +30,12 @@
 #ifndef _ENTROPY_H
 #define _ENTROPY_H
 
+#include <cstdint>
+
+/// Platform-provided entropy queries (implemented per OS).
+int get_entropy_avail(unsigned int *val);
+int get_entropy_poolsize(unsigned int *val);
+
 int update_entropy(void);
 
 void print_entropy_avail(struct text_object *, char *, unsigned int);

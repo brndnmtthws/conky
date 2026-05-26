@@ -28,6 +28,7 @@
 
 #include "catch2/catch.hpp"
 
+#include <data/entropy.h>
 #include <data/os/linux.h>
 
 TEST_CASE("get_entropy_avail returns 0", "[get_entropy_avail]") {

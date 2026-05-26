@@ -66,4 +66,8 @@
   do { CRIT_ERR("reached unreachable"); } while (0)
 #endif /* NDEBUG */
 
+// Token concatenation with macro expansion.
+#define CONKY_CONCAT_(a, b) a##b
+#define CONKY_CONCAT(a, b) CONKY_CONCAT_(a, b)
+
 #endif /* _CONKY_MACROS_H_ */

@@ -20,10 +20,17 @@ add_executable(test-conky test-common.cc ${test_srcs})
 target_include_directories(test-conky PRIVATE
   ${CMAKE_SOURCE_DIR}/src
   ${CMAKE_BINARY_DIR})
-target_link_libraries(test-conky
-  PRIVATE Catch2
-  PUBLIC conky_core
-)
+if(APPLE)
+  target_link_libraries(test-conky
+    PRIVATE Catch2
+    PUBLIC -Wl,-force_load conky_core
+  )
+else()
+  target_link_libraries(test-conky
+    PRIVATE Catch2
+    PUBLIC -Wl,--whole-archive conky_core -Wl,--no-whole-archive
+  )
+endif()
 catch_discover_tests(test-conky)
 
 if(RUN_TESTS)

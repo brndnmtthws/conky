@@ -43,8 +43,6 @@
 
 extern kvm_t *kd;
 
-int get_entropy_avail(unsigned int *);
-int get_entropy_poolsize(unsigned int *);
 void print_sysctlbyname(struct text_object *, char *, unsigned int);
 
 bool is_conky_already_running(void);

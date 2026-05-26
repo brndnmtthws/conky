@@ -13,7 +13,4 @@
 #include <machine/apm_bios.h>
 #endif /* i386 || __i386__ */
 
-int get_entropy_avail(unsigned int *);
-int get_entropy_poolsize(unsigned int *);
-
 #endif /*DRAGONFLY_H_*/
