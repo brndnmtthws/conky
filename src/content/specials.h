@@ -121,9 +121,6 @@ void new_font(struct text_object *, char *, unsigned int);
 void new_graph(struct text_object *, char *, int, double);
 void new_hr(struct text_object *, char *, unsigned int);
 void new_stippled_hr(struct text_object *, char *, unsigned int);
-
-void free_hr(struct text_object *);
-void free_stippled_hr(struct text_object *);
 #endif /* BUILD_GUI */
 void new_gauge(struct text_object *, char *, unsigned int, double);
 void new_bar(struct text_object *, char *, unsigned int, double);

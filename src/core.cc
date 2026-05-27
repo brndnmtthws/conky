@@ -1018,7 +1018,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
 #ifdef BUILD_GUI
   END OBJ(hr, nullptr) scan_hr(obj, arg);
   obj->callbacks.print = &new_hr;
-  obj->callbacks.free = &free_hr;
 #endif /* BUILD_GUI */
   END OBJ(nameserver, &update_dns_data) parse_nameserver_arg(obj, arg);
   obj->callbacks.print = &print_nameserver;
@@ -1057,7 +1056,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ_ARG(hwmon, 0, "hwmon needs arguments") parse_hwmon_sensor(obj, arg);
   obj->callbacks.print = &print_sysfs_sensor;
   obj->callbacks.free = &free_sysfs_sensor;
-  END OBJ_ARG(hwmonbar, 0, "hwmonbar needs arguments") parse_hwmon_bar(obj, arg);
+  END OBJ_ARG(hwmonbar, 0, "hwmonbar needs arguments")
+      parse_hwmon_bar(obj, arg);
   obj->callbacks.barval = &sysfs_sensor_barval;
   obj->callbacks.free = &free_sysfs_sensor;
 #endif /* __linux__ */
@@ -1462,10 +1462,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
           .to_argb32();
   obj->callbacks.print = &new_outline;
 #endif /* BUILD_GUI */
+  END OBJ(stippled_hr, nullptr)
 #ifdef BUILD_GUI
-  END OBJ(stippled_hr, nullptr) scan_stippled_hr(obj, arg);
+      scan_stippled_hr(obj, arg);
   obj->callbacks.print = &new_stippled_hr;
-  obj->callbacks.free = &free_stippled_hr;
 #endif /* BUILD_GUI */
   END OBJ(swap, &update_meminfo) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_swap;
