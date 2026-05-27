@@ -68,6 +68,18 @@ echo "developer environment looks ready"
 description = "Verify Python development dependencies through uv"
 run = "uv run --with-requirements requirements-dev.txt python -c 'import jinja2, yaml'"
 
+[tasks."version:patch"]
+description = "Create a patch version bump PR"
+run = "uv run python .github/scripts/create-version-bump-pr.py patch"
+
+[tasks."version:minor"]
+description = "Create a minor version bump PR"
+run = "uv run python .github/scripts/create-version-bump-pr.py minor"
+
+[tasks."version:major"]
+description = "Create a major version bump PR"
+run = "uv run python .github/scripts/create-version-bump-pr.py major"
+
 [tasks.actionlint]
 description = "Lint GitHub Actions workflows"
 run = "actionlint"
