@@ -34,6 +34,8 @@
 #include <sys/socket.h> /* struct sockaddr */
 #include "config.h"
 
+#include <string>
+
 #ifdef BUILD_IPV6
 struct v6addr {
   struct in6_addr addr;
@@ -73,14 +75,14 @@ struct net_stat {
    * trans_speed */
   double net_rec[15], net_trans[15];
   // wireless extensions
-  char essid[35];
+  std::string essid;
   int channel;
   char freq[16];
   char bitrate[16];
-  char mode[16];
+  char mode[64];
   int link_qual;
   int link_qual_max;
-  char ap[18];
+  std::string ap;
 };
 
 extern struct net_stat netstats[];
