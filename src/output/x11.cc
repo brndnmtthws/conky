@@ -1388,11 +1388,44 @@ void xdbe_swap_buffers() {
     swap.swap_window = window.window;
     swap.swap_action = XdbeBackground;
     XdbeSwapBuffers(display, &swap, 1);
+
+    /* The XdbeBackground swap action is supposed to reset the back buffer to
+     * the window background, but some drivers don't honor it (notably under
+     * Xwayland and certain NVIDIA setups). When it's ignored the back buffer
+     * keeps last frame's pixels, so antialiased glyphs blend on top of
+     * themselves and fonts appear to thicken over time. Clear the back buffer
+     * explicitly, mirroring the XPMDB path below. */
+    unsigned long bg = 0;
+    if (window.color_depth == argb8888_color_depth) {
+      Colour c = get_background_colour_preference(*state);
+      bg = c.to_x11_color(display, screen, window.opacity < 0xff, true);
+    }
+    XSetForeground(display, window.gc, bg);
+    XFillRectangle(display, window.drawable, window.gc, 0, 0,
+                   window.geometry.width(), window.geometry.height());
+
+    /* Force the swap to be processed now. Under Xwayland a swap left in the
+     * output buffer can be coalesced/reordered with later requests by the
+     * compositor, which momentarily re-presents the previous frame (a visible
+     * "frame repeat", e.g. the clock's seconds briefly bouncing back). A plain
+     * XFlush only queues the request and is not enough; XSync blocks until the
+     * server has processed it, giving a clean, ordered present. */
+    XSync(display, False);
   }
 }
 #else
 void xpmdb_swap_buffers(void) {
   if (use_xpmdb.get(*state)) {
+    /* Present the whole window. The GC still carries the dirty-region clip set
+     * for drawing, so an unmodified XCopyArea would only refresh that region.
+     * Under a compositor (esp. Xwayland) the window's backing buffer can be
+     * reallocated between frames; copying just the dirty region then leaves the
+     * rest of the new buffer blank -- a whole-window blank flicker. Drop the
+     * clip so the full back buffer is always presented (XDBE's XdbeSwapBuffers
+     * already presents the whole window). The clip is re-established before the
+     * next draw, and the XPMDB path redraws the full text rect every frame, so
+     * clearing the whole back buffer below is safe. */
+    XSetClipMask(display, window.gc, None);
     XCopyArea(display, window.back_buffer, window.window, window.gc, 0, 0,
               window.geometry.width(), window.geometry.height(), 0, 0);
     unsigned long bg = 0;
@@ -1403,7 +1436,12 @@ void xpmdb_swap_buffers(void) {
     XSetForeground(display, window.gc, bg);
     XFillRectangle(display, window.drawable, window.gc, 0, 0,
                    window.geometry.width(), window.geometry.height());
-    XFlush(display);
+    /* Force the present to be processed now. Like the XDBE path, under Xwayland
+     * a present left in the output buffer (XFlush only queues the request) can
+     * be picked up by the compositor mid-update, momentarily showing an empty
+     * background frame -- a whole-window blank flicker. XSync blocks until the
+     * server has processed the XCopyArea, giving a clean, ordered present. */
+    XSync(display, False);
   }
 }
 #endif /* BUILD_XDBE */
