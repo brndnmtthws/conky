@@ -267,10 +267,11 @@ struct window {
   struct wl_surface *surface;
   struct zwlr_layer_surface_v1 *layer_surface;
   int scale, pending_scale;
-  std::shared_ptr<cairo_surface_t> cairo_surface;
-  std::shared_ptr<cairo_t> cr;
-  PangoLayout *layout;
-  PangoContext *pango_context;
+  int current_buffer;
+  std::shared_ptr<cairo_surface_t> cairo_surface[2];
+  std::shared_ptr<cairo_t> cr[2];
+  PangoLayout *layout[2];
+  PangoContext *pango_context[2];
 };
 
 struct {
@@ -805,8 +806,8 @@ void display_output_wayland::cleanup() {
 
 void display_output_wayland::set_foreground_color(Colour c) {
   current_color = c;
-  if (global_window->cr) {
-    cairo_set_source_rgba(global_window->cr.get(), current_color.red / 255.0,
+  if (global_window->cr[global_window->current_buffer]) {
+    cairo_set_source_rgba(global_window->cr[global_window->current_buffer].get(), current_color.red / 255.0,
                           current_color.green / 255.0,
                           current_color.blue / 255.0,
                           current_color.alpha / 255.0);
@@ -816,11 +817,11 @@ void display_output_wayland::set_foreground_color(Colour c) {
 int display_output_wayland::calc_text_width(const char *s) {
   struct window *window = global_window;
   size_t slen = strlen(s);
-  pango_layout_set_text(window->layout, s, slen);
+  pango_layout_set_text(window->layout[window->current_buffer], s, slen);
   PangoRectangle margin_rect;
-  pango_layout_set_font_description(window->layout,
+  pango_layout_set_font_description(window->layout[window->current_buffer],
                                     pango_fonts[selected_font].desc);
-  pango_layout_get_pixel_extents(window->layout, nullptr, &margin_rect);
+  pango_layout_get_pixel_extents(window->layout[window->current_buffer], nullptr, &margin_rect);
   return margin_rect.width;
 }
 
@@ -835,10 +836,10 @@ static void adjust_coords(int &x, int &y) {
 void display_output_wayland::draw_string_at(int x, int y, const char *s,
                                             int w) {
   struct window *window = global_window;
-  auto cr = window->cr.get();
+  auto cr = window->cr[window->current_buffer].get();
   y -= pango_fonts[selected_font].metrics.ascent;
   adjust_coords(x, y);
-  pango_layout_set_text(window->layout, s, strlen(s));
+  pango_layout_set_text(window->layout[window->current_buffer], s, strlen(s));
   cairo_save(cr);
   uint8_t r = current_color.red;
   uint8_t g = current_color.green;
@@ -846,13 +847,13 @@ void display_output_wayland::draw_string_at(int x, int y, const char *s,
   unsigned int a = pango_fonts[selected_font].font_alpha;
   cairo_set_source_rgba(cr, r / 255.0, g / 255.0, b / 255.0, a / 65535.);
   cairo_move_to(cr, x, y);
-  pango_cairo_show_layout(cr, window->layout);
+  pango_cairo_show_layout(cr, window->layout[window->current_buffer]);
   cairo_restore(cr);
 }
 
 void display_output_wayland::set_line_style(int w, bool solid) {
   struct window *window = global_window;
-  auto cr = window->cr.get();
+  auto cr = window->cr[window->current_buffer].get();
   static double dashes[2] = {1.0, 1.0};
   if (solid)
     cairo_set_dash(cr, nullptr, 0, 0);
@@ -863,7 +864,7 @@ void display_output_wayland::set_line_style(int w, bool solid) {
 
 void display_output_wayland::set_dashes(char *s) {
   struct window *window = global_window;
-  auto cr = window->cr.get();
+  auto cr = window->cr[window->current_buffer].get();
   size_t len = strlen(s);
   double *dashes = new double[len];
   for (size_t i = 0; i < len; i++) { dashes[i] = s[i]; }
@@ -873,7 +874,7 @@ void display_output_wayland::set_dashes(char *s) {
 
 void display_output_wayland::draw_line(int x1, int y1, int x2, int y2) {
   struct window *window = global_window;
-  auto cr = window->cr.get();
+  auto cr = window->cr[window->current_buffer].get();
   adjust_coords(x1, y1);
   adjust_coords(x2, y2);
   cairo_save(cr);
@@ -885,7 +886,7 @@ void display_output_wayland::draw_line(int x1, int y1, int x2, int y2) {
 
 std::weak_ptr<conky::draw_surface> display_output_wayland::drawing_surface() {
   if (!global_window) { return {}; }
-  return global_window->cairo_surface;
+  return global_window->cairo_surface[global_window->current_buffer];
 }
 
 template <bool Fill>
@@ -906,19 +907,19 @@ inline void do_rect(cairo_t *cr, int x, int y, int w, int h) {
 }
 
 void display_output_wayland::draw_rect(int x, int y, int w, int h) {
-  auto cr = global_window->cr.get();
+  auto cr = global_window->cr[global_window->current_buffer].get();
   do_rect<false>(cr, x, y, w, h);
 }
 
 void display_output_wayland::fill_rect(int x, int y, int w, int h) {
-  auto cr = global_window->cr.get();
+  auto cr = global_window->cr[global_window->current_buffer].get();
   do_rect<true>(cr, x, y, w, h);
 }
 
 void display_output_wayland::draw_arc(int x, int y, int w, int h, int a1,
                                       int a2) {
   struct window *window = global_window;
-  auto cr = window->cr.get();
+  auto cr = window->cr[window->current_buffer].get();
   adjust_coords(x, y);
   cairo_save(cr);
   cairo_translate(cr, x + w / 2. - 0.5, y + h / 2. - 0.5);
@@ -943,7 +944,7 @@ void display_output_wayland::end_draw_stuff() {
 
 void display_output_wayland::clear_text(int exposures) {
   struct window *window = global_window;
-  auto cr = window->cr.get();
+  auto cr = window->cr[window->current_buffer].get();
   cairo_save(cr);
 
   Colour color = get_background_colour_preference(*state);
@@ -982,7 +983,7 @@ void display_output_wayland::setup_fonts(void) { /* Nothing to do here */ }
 void display_output_wayland::set_font(unsigned int f) {
   assert(f < pango_fonts.size());
   if (pango_fonts.size() > f && pango_fonts[f].desc != nullptr) {
-    pango_layout_set_font_description(global_window->layout,
+    pango_layout_set_font_description(global_window->layout[global_window->current_buffer],
                                       pango_fonts[f].desc);
   }
 }
@@ -1025,7 +1026,7 @@ void display_output_wayland::load_fonts(bool utf8) {
     FcPatternDestroy(fc_pattern);
 
     PangoFont *pango_font = pango_context_load_font(
-        global_window->pango_context, pango_font_entry.desc);
+        global_window->pango_context[global_window->current_buffer], pango_font_entry.desc);
     PangoFontMetrics *font_metrics =
         pango_font_get_metrics(pango_font, nullptr);
     auto ascent = pango_font_metrics_get_ascent(font_metrics) / PANGO_SCALE;
@@ -1048,9 +1049,19 @@ struct shm_pool {
 struct shm_surface_data {
   struct wl_buffer *buffer;
   struct shm_pool *pool;
+  bool busy;
 };
 
 static const cairo_user_data_key_t shm_surface_data_key = {0};
+
+static void buffer_release(void *data, struct wl_buffer *wl_buffer) {
+  auto *surface_data = static_cast<struct shm_surface_data *>(data);
+  surface_data->busy = false;
+}
+
+static const struct wl_buffer_listener buffer_listener = {
+  buffer_release
+};
 
 struct wl_buffer *get_buffer_from_cairo_surface(cairo_surface_t *surface) {
   struct shm_surface_data *data;
@@ -1179,6 +1190,8 @@ static std::shared_ptr<conky::draw_surface> create_shm_surface_from_pool(
 
   data->buffer = wl_shm_pool_create_buffer(pool->pool, offset, scaled.x(),
                                            scaled.y(), stride, format);
+  data->busy = false;
+  wl_buffer_add_listener(data->buffer, &buffer_listener, data);
 
   return std::shared_ptr<conky::draw_surface>(surface, [](auto it) {
     if (it) cairo_surface_destroy(it);
@@ -1191,35 +1204,37 @@ void window_allocate_buffer(struct window *window) {
   int scale = window->pending_scale;
   struct shm_pool *pool;
   pool = shm_pool_create(
-      window->shm, data_length_for_shm_surface(&window->rectangle, scale));
+      window->shm, data_length_for_shm_surface(&window->rectangle, scale) * 2);
   if (!pool) {
     LOG_ERROR("could not allocate shm pool for {}x{} window",
               window->rectangle.width(), window->rectangle.height());
     return;
   }
+  for (int i = 0; i < 2; ++i) {
+    window->cairo_surface[i] = create_shm_surface_from_pool(
+        window->shm, &window->rectangle, pool, scale);
+    auto cs = window->cairo_surface[i].get();
+    cairo_surface_set_device_scale(cs, scale, scale);
 
-  window->cairo_surface = create_shm_surface_from_pool(
-      window->shm, &window->rectangle, pool, scale);
-  auto cs = window->cairo_surface.get();
-  cairo_surface_set_device_scale(cs, scale, scale);
+    if (!window->cairo_surface[i]) {
+      shm_pool_destroy(pool);
+      return;
+    }
 
-  if (!window->cairo_surface) {
-    shm_pool_destroy(pool);
-    return;
+    window->cr[i] = std::shared_ptr<cairo_t>(cairo_create(cs), [](auto it) {
+      if (it) cairo_destroy(it);
+    });
+    auto cr = window->cr[i].get();
+    window->layout[i] = pango_cairo_create_layout(cr);
+    window->pango_context[i] = pango_cairo_create_context(cr);
+
+    /* make sure we destroy the pool when the surface is destroyed */
+    struct shm_surface_data *data;
+    data = static_cast<struct shm_surface_data *>(
+        cairo_surface_get_user_data(cs, &shm_surface_data_key));
+    data->pool = (i == 1) ? pool : nullptr;
   }
-
-  window->cr = std::shared_ptr<cairo_t>(cairo_create(cs), [](auto it) {
-    if (it) cairo_destroy(it);
-  });
-  auto cr = window->cr.get();
-  window->layout = pango_cairo_create_layout(cr);
-  window->pango_context = pango_cairo_create_context(cr);
-
-  /* make sure we destroy the pool when the surface is destroyed */
-  struct shm_surface_data *data;
-  data = static_cast<struct shm_surface_data *>(
-      cairo_surface_get_user_data(cs, &shm_surface_data_key));
-  data->pool = pool;
+  window->current_buffer = 0;
 }
 
 struct window *window_create(struct wl_surface *surface, struct wl_shm *shm,
@@ -1234,22 +1249,34 @@ struct window *window_create(struct wl_surface *surface, struct wl_shm *shm,
 
   window->surface = surface;
   window->shm = shm;
-
-  window->cairo_surface = nullptr;
-  window->cr = nullptr;
-  window->layout = nullptr;
-  window->pango_context = nullptr;
+  for (int i = 0; i < 2; i++) {
+    window->cairo_surface[i] = nullptr;
+    window->cr[i] = nullptr;
+    window->layout[i] = nullptr;
+    window->pango_context[i] = nullptr;
+  }
 
   return window;
 }
 
 void window_free_buffer(struct window *window) {
-  window->cr = nullptr;
-  window->cairo_surface = nullptr;
-  g_object_unref(window->layout);
-  g_object_unref(window->pango_context);
-  window->layout = nullptr;
-  window->pango_context = nullptr;
+  for (int i = 0; i < 2; ++i) {
+    if (!window->cairo_surface[i]) continue;
+    auto *data = static_cast<struct shm_surface_data *>(
+        cairo_surface_get_user_data(
+            window->cairo_surface[i].get(), &shm_surface_data_key));
+    while (data && data->busy) {
+      wl_display_dispatch(global_display);
+    }
+  }
+  for (int i = 0; i < 2; ++i) {
+    window->cr[i] = nullptr;
+    window->cairo_surface[i] = nullptr;
+    if (window->layout[i]) g_object_unref(window->layout[i]);
+    if (window->pango_context[i]) g_object_unref(window->pango_context[i]);
+    window->layout[i] = nullptr;
+    window->pango_context[i] = nullptr;
+  }
 }
 
 void window_destroy(struct window *window) {
@@ -1271,11 +1298,11 @@ void window_resize(struct window *window, int width, int height) {
 }
 
 void window_commit_buffer(struct window *window) {
-  assert(window->cairo_surface != nullptr);
+  assert(window->cairo_surface[window->current_buffer] != nullptr);
   wl_surface_set_buffer_scale(global_window->surface,
                               global_window->pending_scale);
   wl_surface_attach(window->surface,
-                    get_buffer_from_cairo_surface(window->cairo_surface.get()),
+                    get_buffer_from_cairo_surface(window->cairo_surface[window->current_buffer].get()),
                     0, 0);
   /* repaint all the pixels in the surface, change size to only repaint changed
    * area*/
@@ -1283,6 +1310,18 @@ void window_commit_buffer(struct window *window) {
                     window->rectangle.y(), window->rectangle.width(),
                     window->rectangle.height());
   wl_surface_commit(window->surface);
+  auto current_surf = window->cairo_surface[window->current_buffer].get();
+  struct shm_surface_data *data = static_cast<struct shm_surface_data *>(
+    cairo_surface_get_user_data(current_surf, &shm_surface_data_key));
+  data->busy = true;
+  window->current_buffer = 1 - window->current_buffer;
+  auto next_surf = window->cairo_surface[window->current_buffer].get();
+  struct shm_surface_data *next_data = static_cast<struct shm_surface_data *>(
+    cairo_surface_get_user_data(next_surf, &shm_surface_data_key));
+  while (next_data->busy) {
+      wl_display_dispatch(global_display);
+  }
+  
 }
 
 void window_get_width_height(struct window *window, int *w, int *h) {
