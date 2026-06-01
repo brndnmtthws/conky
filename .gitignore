@@ -47,3 +47,4 @@ src/colour-names.hh
 
 # Built manual
 /conky.1.gz
+.codex/
