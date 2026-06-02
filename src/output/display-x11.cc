@@ -429,6 +429,14 @@ enum class x_event_handler {
   DAMAGE,
 };
 
+bool is_xi_button_event(const conky::xi_event_data &data) {
+  return data.evtype == XI_ButtonPress || data.evtype == XI_ButtonRelease;
+}
+
+bool is_xi_root_button_event(const conky::xi_event_data &data) {
+  return data.child == None && is_xi_button_event(data);
+}
+
 template <x_event_handler handler>
 bool handle_event(conky::display_output_x11 *surface, Display *display,
                   XEvent &ev, bool *consumed, void **cookie) {
@@ -623,10 +631,12 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
         type, data->pos, data->pos_absolute, button.value(), mods));
   }
   // Events not over conky are received via passive XISelectEvents on the root
-  // window; the X server already delivers them to their targets, so
-  // re-propagating via XSendEvent would create duplicates.
-  if (!cursor_over_conky) { *consumed = true; }
-#else /* !BUILD_MOUSE_EVENTS */
+  // window; the X server already delivers child-window events to their targets,
+  // so re-propagating those would create duplicates. Root-targeted button
+  // events still need the legacy propagation path for WMs that listen for root
+  // clicks.
+  if (!cursor_over_conky) { *consumed = !is_xi_root_button_event(*data); }
+#else  /* !BUILD_MOUSE_EVENTS */
   // Events over conky were intercepted by our window; propagate since we have
   // no handler. Events elsewhere are already delivered by the X server.
   if (cursor_over_conky) { *consumed = false; }
