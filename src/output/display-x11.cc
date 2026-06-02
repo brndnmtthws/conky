@@ -429,12 +429,13 @@ enum class x_event_handler {
   DAMAGE,
 };
 
-bool is_xi_button_event(const conky::xi_event_data &data) {
+static bool is_xi_button_event(const conky::xi_event_data &data) {
   return data.evtype == XI_ButtonPress || data.evtype == XI_ButtonRelease;
 }
 
-bool is_xi_root_button_event(const conky::xi_event_data &data) {
-  return data.child == None && is_xi_button_event(data);
+static bool is_xi_root_button_event(const conky::xi_event_data &data) {
+  return data.event == data.root && data.child == None &&
+         is_xi_button_event(data);
 }
 
 template <x_event_handler handler>
