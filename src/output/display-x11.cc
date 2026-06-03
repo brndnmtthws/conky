@@ -433,9 +433,16 @@ static bool is_xi_button_event(const conky::xi_event_data &data) {
   return data.evtype == XI_ButtonPress || data.evtype == XI_ButtonRelease;
 }
 
-static bool is_xi_root_button_event(const conky::xi_event_data &data) {
+static bool is_xi_root_button3_event(const conky::xi_event_data &data) {
   return data.event == data.root && data.child == None &&
-         is_xi_button_event(data);
+         is_xi_button_event(data) && data.detail == Button3;
+}
+
+static bool should_replay_off_conky_xi_event(const conky::xi_event_data &data) {
+  // Off-Conky child-window events are already delivered by the X server.
+  // Replaying them would duplicate input. Root Button3 events are the narrow
+  // compatibility case needed by WMs that use root right-click menus.
+  return is_xi_root_button3_event(data);
 }
 
 template <x_event_handler handler>
@@ -631,12 +638,9 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
     *consumed = llua_mouse_hook(mouse_button_event(
         type, data->pos, data->pos_absolute, button.value(), mods));
   }
-  // Events not over conky are received via passive XISelectEvents on the root
-  // window; the X server already delivers child-window events to their targets,
-  // so re-propagating those would create duplicates. Root-targeted button
-  // events still need the legacy propagation path for WMs that listen for root
-  // clicks.
-  if (!cursor_over_conky) { *consumed = !is_xi_root_button_event(*data); }
+  if (!cursor_over_conky) {
+    *consumed = !should_replay_off_conky_xi_event(*data);
+  }
 #else  /* !BUILD_MOUSE_EVENTS */
   // Events over conky were intercepted by our window; propagate since we have
   // no handler. Events elsewhere are already delivered by the X server.
