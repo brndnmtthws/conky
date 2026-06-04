@@ -638,14 +638,15 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
     *consumed = llua_mouse_hook(mouse_button_event(
         type, data->pos, data->pos_absolute, button.value(), mods));
   }
-  if (!cursor_over_conky) {
-    *consumed = !should_replay_off_conky_xi_event(*data);
-  }
 #else  /* !BUILD_MOUSE_EVENTS */
   // Events over conky were intercepted by our window; propagate since we have
   // no handler. Events elsewhere are already delivered by the X server.
   if (cursor_over_conky) { *consumed = false; }
 #endif /* BUILD_MOUSE_EVENTS */
+
+  if (!cursor_over_conky) {
+    *consumed = !should_replay_off_conky_xi_event(*data);
+  }
 
   LOG_TRACE("xi event pre-window-type: consumed={}", *consumed);
   if (!own_window.get(*state)) return true;
