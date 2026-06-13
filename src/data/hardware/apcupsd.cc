@@ -31,6 +31,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <cerrno>
+#include <cstddef>
+#include <cstdint>
 
 enum _apcupsd_items {
   APCUPSD_NAME,
@@ -98,6 +100,8 @@ static int net_recv_ex(int sock, void *buf, int size, struct timeval *tv) {
 // read whole buffer or fail
 //
 static int net_recv(int sock, void *buf, int size) {
+  if (size < 0) { return 0; }
+
   int todo = size;
   int off = 0;
   int len;
@@ -116,16 +120,17 @@ static int net_recv(int sock, void *buf, int size) {
 // get one response line
 //
 static int get_line(int sock, char line[], short linesize) {
+  if (linesize <= 0) { return -1; }
+
   // get the line length
-  short sz;
+  uint16_t sz;
   if (net_recv(sock, &sz, sizeof(sz)) == 0) { return -1; }
   sz = ntohs(sz);
   if (sz == 0) { return 0; }
 
   // get the line
-  while (sz >= linesize) {
-    // this is just a hack (being lazy), this should not happen anyway
-    net_recv(sock, line, linesize);
+  while (sz >= static_cast<uint16_t>(linesize)) {
+    if (net_recv(sock, line, linesize) == 0) { return 0; }
     sz -= linesize;
   }
   if (net_recv(sock, line, sz) == 0) { return 0; }
@@ -133,20 +138,30 @@ static int get_line(int sock, char line[], short linesize) {
   return sz;
 }
 
-#define FILL(NAME, FIELD, FIRST)                                               \
-  if (!strncmp(NAME, line, sizeof(NAME) - 1)) {                                \
-    strncpy(apc->items[FIELD], line + 11, APCUPSD_MAXSTR);                     \
-    /* remove trailing newline and assure termination */                       \
-    apc->items[FIELD][len - 11 > APCUPSD_MAXSTR ? APCUPSD_MAXSTR : len - 12] = \
-        0;                                                                     \
-    if (FIRST) {                                                               \
-      char *c;                                                                 \
-      for (c = apc->items[FIELD]; *c; ++c)                                     \
-        if (*c == ' ' && c > apc->items[FIELD] + 2) {                          \
-          *c = 0;                                                              \
-          break;                                                               \
-        }                                                                      \
-    }                                                                          \
+static void fill_item(PAPCUPSD_S apc, int field, const char *value,
+                      size_t value_len, bool first) {
+  if (value_len > APCUPSD_MAXSTR) { value_len = APCUPSD_MAXSTR; }
+
+  memcpy(apc->items[field], value, value_len);
+  if (value_len > 0 && apc->items[field][value_len - 1] == '\n') {
+    --value_len;
+  }
+  apc->items[field][value_len] = 0;
+
+  if (first) {
+    char *c;
+    for (c = apc->items[field]; *c; ++c) {
+      if (*c == ' ' && c > apc->items[field] + 2) {
+        *c = 0;
+        break;
+      }
+    }
+  }
+}
+
+#define FILL(NAME, FIELD, FIRST)                                            \
+  if (!strncmp(NAME, line, sizeof(NAME) - 1) && len > 11) {                 \
+    fill_item(apc, FIELD, line + 11, static_cast<size_t>(len - 11), FIRST); \
   }
 
 //
