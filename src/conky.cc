@@ -1191,9 +1191,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 
             /* if no width was specified, current->width is set to 0 */
             w = current->width;
-            if (w <= 0 || w > max_width) {
-              w = max_width;
-            }
+            if (w <= 0 || w > max_width) { w = max_width; }
 
             if (display_output()) {
               display_output()->set_line_style(h, true);
@@ -1215,9 +1213,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 
             /* if no width was specified, current->width is set to 0 */
             w = current->width;
-            if (w <= 0 || w > max_width) {
-              w = max_width;
-            }
+            if (w <= 0 || w > max_width) { w = max_width; }
 
             if (display_output()) {
               display_output()->set_line_style(h, false);

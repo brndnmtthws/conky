@@ -626,7 +626,7 @@ bool handle_event<x_event_handler::MOUSE_INPUT>(
   // window; the X server already delivers them to their targets, so
   // re-propagating via XSendEvent would create duplicates.
   if (!cursor_over_conky) { *consumed = true; }
-#else /* !BUILD_MOUSE_EVENTS */
+#else  /* !BUILD_MOUSE_EVENTS */
   // Events over conky were intercepted by our window; propagate since we have
   // no handler. Events elsewhere are already delivered by the X server.
   if (cursor_over_conky) { *consumed = false; }
