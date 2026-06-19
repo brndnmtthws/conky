@@ -35,7 +35,7 @@ jobs:
       shell_scripts_json: ${{ steps.detect.outputs.shell_scripts_json }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Detect changed files
@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Install mise tools
         uses: jdx/mise-action@v4
       - name: Lint workflows
@@ -167,7 +167,7 @@ jobs:
             gcc \
             g++
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Install sccache
         run: .github/scripts/setup-sccache.sh
       - name: Load cached compilation artifacts
@@ -265,7 +265,7 @@ jobs:
             ninja              \
             pkg-config
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Configure sccache
         run: .github/scripts/setup-sccache.sh
       - name: Load cached compilation artifacts
@@ -307,7 +307,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
@@ -331,7 +331,7 @@ jobs:
     if: needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Bun package manager
         uses: oven-sh/setup-bun@v2
         with:
@@ -354,8 +354,8 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: nixbuild/nix-quick-install-action@v34
+      - uses: actions/checkout@v7
+      - uses: nixbuild/nix-quick-install-action@v35
       - name: Restore and cache Nix store
         uses: nix-community/cache-nix-action@v7
         with:
@@ -431,7 +431,7 @@ jobs:
             pandoc \
             wayland-protocols
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: actions/setup-python@v6
