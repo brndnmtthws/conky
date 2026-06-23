@@ -442,41 +442,14 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END
 #endif /* !__OpenBSD__ */
       OBJ(freq, nullptr) get_cpu_count();
-  if ((arg == nullptr) || strlen(arg) >= 3 ||
-      strtol(&arg[0], nullptr, 10) == 0 ||
-      static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) >
-          info.cpu_count) {
-    obj->data.i = 1;
-    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1",
-                arg ? arg : "(null)");
-  } else {
-    obj->data.i = strtol(&arg[0], nullptr, 10);
-  }
+  obj->data.i = scan_cpu_index(arg);
   obj->callbacks.print = &print_freq;
   END OBJ(freq_g, nullptr) get_cpu_count();
-  if ((arg == nullptr) || strlen(arg) >= 3 ||
-      strtol(&arg[0], nullptr, 10) == 0 ||
-      static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) >
-          info.cpu_count) {
-    obj->data.i = 1;
-    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1",
-                arg ? arg : "(null)");
-  } else {
-    obj->data.i = strtol(&arg[0], nullptr, 10);
-  }
+  obj->data.i = scan_cpu_index(arg);
   obj->callbacks.print = &print_freq_g;
 #if defined(__linux__)
   END OBJ(cpugovernor, nullptr) get_cpu_count();
-  if ((arg == nullptr) || strlen(arg) >= 3 ||
-      strtol(&arg[0], nullptr, 10) == 0 ||
-      static_cast<unsigned int>(strtol(&arg[0], nullptr, 10)) >
-          info.cpu_count) {
-    obj->data.i = 1;
-    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1",
-                arg ? arg : "(null)");
-  } else {
-    obj->data.i = strtol(&arg[0], nullptr, 10);
-  }
+  obj->data.i = scan_cpu_index(arg);
   obj->callbacks.print = &print_cpugovernor;
 #endif /* __linux__ */
   END OBJ_ARG(read_tcp, nullptr,
@@ -496,24 +469,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &free_tcp_ping;
 #if defined(__linux__)
   END OBJ(voltage_mv, 0) get_cpu_count();
-  if (!arg || strlen(arg) >= 3 || strtol(&arg[0], nullptr, 10) == 0 ||
-      (unsigned int)strtol(&arg[0], nullptr, 10) > info.cpu_count) {
-    obj->data.i = 1;
-    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1",
-                arg ? arg : "(null)");
-  } else {
-    obj->data.i = strtol(&arg[0], nullptr, 10);
-  }
+  obj->data.i = scan_cpu_index(arg);
   obj->callbacks.print = &print_voltage_mv;
   END OBJ(voltage_v, 0) get_cpu_count();
-  if (!arg || strlen(arg) >= 3 || strtol(&arg[0], nullptr, 10) == 0 ||
-      (unsigned int)strtol(&arg[0], nullptr, 10) > info.cpu_count) {
-    obj->data.i = 1;
-    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1",
-                arg ? arg : "(null)");
-  } else {
-    obj->data.i = strtol(&arg[0], nullptr, 10);
-  }
+  obj->data.i = scan_cpu_index(arg);
   obj->callbacks.print = &print_voltage_v;
 
 #endif /* __linux__ */
