@@ -26,13 +26,10 @@
 
 #include <config.h>
 
-#include "../conky.h"
+#include "../lua/setting.hh"
 #include "display-file.hh"
 
 #include <cerrno>
-#include <iostream>
-#include <sstream>
-#include <unordered_map>
 
 /* filenames for output; external linkage so output_backend() can infer the
  * file backend from them (see output-setting.cc) */
@@ -42,6 +39,8 @@ static FILE *overwrite_fpointer = nullptr;
 conky::simple_config_setting<std::string> append_file("append_file",
                                                       std::string(), true);
 static FILE *append_fpointer = nullptr;
+
+extern std::unique_ptr<lua::state> state;
 
 namespace conky {
 namespace {

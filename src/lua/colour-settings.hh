@@ -23,8 +23,8 @@
  */
 #pragma once
 
+#include <cstddef>
 #include "../content/colours.hh"
-#include "config.h"
 #include "setting.hh"
 
 namespace priv {
@@ -51,7 +51,7 @@ class colour_setting
 };
 }  // namespace priv
 
-#define COLORS_CUSTOM 10
+const std::size_t COLORS_CUSTOM = 10;
 
 extern priv::colour_setting color[COLORS_CUSTOM];
 extern priv::colour_setting default_color;

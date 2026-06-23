@@ -118,7 +118,8 @@ conky::simple_config_setting<int> head_index("xinerama_head", 0, true);
 conky::simple_config_setting<bool> use_xft("use_xft", false, false);
 #endif
 conky::simple_config_setting<bool> forced_redraw("forced_redraw", false, false);
-conky::simple_config_setting<bool> use_double_buffer("double_buffer", false, false);
+conky::simple_config_setting<bool> use_double_buffer("double_buffer", false,
+                                                     false);
 
 /* local prototypes */
 static Window find_desktop_window(Window *p_root, Window *p_desktop);
@@ -303,10 +304,8 @@ void deinit_x11() {
 
 bool x11_set_up_double_buffer(lua::state &l) {
   // double_buffer makes no sense when not drawing to a window
-  if (!display || !window.window) {
-    return false;
-  }
-  
+  if (!display || !window.window) { return false; }
+
 #ifdef BUILD_XDBE
   int major, minor;
   if (XdbeQueryExtension(display, &major, &minor) == 0) {
@@ -1436,7 +1435,7 @@ void swap_x11_buffers() {
     swap.swap_action = XdbeBackground;
     XdbeSwapBuffers(display, &swap, 1);
   }
-#else /* BUILD_XDBE */
+#else  /* BUILD_XDBE */
   if (use_double_buffer.get(*state)) {
     XCopyArea(display, window.back_buffer, window.window, window.gc, 0, 0,
               window.geometry.width(), window.geometry.height(), 0, 0);

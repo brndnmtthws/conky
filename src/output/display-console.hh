@@ -23,11 +23,8 @@
 #ifndef DISPLAY_CONSOLE_HH
 #define DISPLAY_CONSOLE_HH
 
-#include <limits>
 #include <string>
-#include <type_traits>
 
-#include "../lua/luamm.hh"
 #include "display-output.hh"
 
 namespace conky {

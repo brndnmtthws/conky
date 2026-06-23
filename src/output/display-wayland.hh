@@ -23,14 +23,11 @@
 #ifndef DISPLAY_WAYLAND_HH
 #define DISPLAY_WAYLAND_HH
 
-#include "config.h"
-
 #include <memory>
 
 #include <wayland-client.h>
 
 #include "../content/colours.hh"
-#include "../lua/luamm.hh"
 #include "display-output.hh"
 
 namespace conky {

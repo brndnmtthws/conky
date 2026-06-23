@@ -26,15 +26,6 @@
 
 #include <config.h>
 
-#include "../conky.h"
-#include "../content/colours.hh"
-#include "display-ncurses.hh"
-#include "gui.h"
-
-#include <iostream>
-#include <sstream>
-#include <unordered_map>
-
 #include <ncurses.h>
 
 #include "../conky.h"

@@ -29,22 +29,7 @@
 #include "gui.h"
 #include "../common.h"
 #include "../conky.h"
-#include "../logging.h"
 #include "config.h"
-
-#ifdef BUILD_X11
-#include "../lua/x11-settings.h"
-#endif /* BUILD_X11 */
-
-#ifdef BUILD_WAYLAND
-#include "wl.h"
-#endif /* BUILD_WAYLAND */
-
-// #ifdef BUILD_IMLIB2
-// #include "../conky-imlib2.h"
-// #endif /* BUILD_IMLIB2 */
-#ifndef OWN_WINDOW
-#endif
 
 /* workarea where window / text is aligned (from _NET_WORKAREA on X11) */
 conky::absolute_rect<int> workarea;

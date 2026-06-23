@@ -33,6 +33,7 @@
 #include "../geometry.h"
 #include "../logging.h"
 #include "../output/display-output.hh"
+#include "../output/output-setting.hh"
 #include "build.h"
 #include "llua.h"
 
@@ -41,7 +42,6 @@
 
 #ifdef BUILD_X11
 #include "../output/x11.h"
-#include "x11-settings.h"
 #endif /* BUILD_X11 */
 
 #ifdef BUILD_MOUSE_EVENTS

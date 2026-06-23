@@ -33,7 +33,6 @@
 #include <iostream>
 #include <mutex>
 #include <sstream>
-#include <unordered_map>
 
 #include <microhttpd.h>
 

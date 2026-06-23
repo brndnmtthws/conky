@@ -421,17 +421,17 @@ bool handle_event(conky::display_output_x11 *surface, Display *display,
                   xi_pointer_enter ev, conky::x11::event *propagated) {
   if (!own_window.get(*state)) {
     if (!window.cursor_over_window) {
-      llua_mouse_hook(mouse_crossing_event(mouse_event_t::AREA_ENTER,
-                                            ev.pos_absolute - window.geometry.pos(),
-                                            ev.pos_absolute));
+      llua_mouse_hook(mouse_crossing_event(
+          mouse_event_t::AREA_ENTER, ev.pos_absolute - window.geometry.pos(),
+          ev.pos_absolute));
       window.cursor_over_window = true;
     }
-    
+
     *propagated = ev;
   } else {
-    llua_mouse_hook(mouse_crossing_event(mouse_event_t::AREA_ENTER,
-                                          ev.pos_absolute - window.geometry.pos(),
-                                          ev.pos_absolute));
+    llua_mouse_hook(mouse_crossing_event(
+        mouse_event_t::AREA_ENTER, ev.pos_absolute - window.geometry.pos(),
+        ev.pos_absolute));
   }
   return true;
 }
@@ -440,17 +440,17 @@ bool handle_event(conky::display_output_x11 *surface, Display *display,
                   xi_pointer_leave ev, conky::x11::event *propagated) {
   if (!own_window.get(*state)) {
     if (window.cursor_over_window) {
-      llua_mouse_hook(mouse_crossing_event(mouse_event_t::AREA_LEAVE,
-                                           ev.pos_absolute - window.geometry.pos(),
-                                           ev.pos_absolute));
+      llua_mouse_hook(mouse_crossing_event(
+          mouse_event_t::AREA_LEAVE, ev.pos_absolute - window.geometry.pos(),
+          ev.pos_absolute));
       window.cursor_over_window = false;
     }
-    
+
     *propagated = ev;
   } else {
-    llua_mouse_hook(mouse_crossing_event(mouse_event_t::AREA_LEAVE,
-                                         ev.pos_absolute - window.geometry.pos(),
-                                         ev.pos_absolute));
+    llua_mouse_hook(mouse_crossing_event(
+        mouse_event_t::AREA_LEAVE, ev.pos_absolute - window.geometry.pos(),
+        ev.pos_absolute));
   }
   return true;
 }
@@ -462,7 +462,7 @@ bool handle_event(conky::display_output_x11 *surface, Display *display,
 
 #ifdef BUILD_MOUSE_EVENTS
   modifier_state_t mods = x11_modifier_state(ev.mods.effective);
-  
+
   bool has_move_x = ev.test_valuator(valuator_t::MOVE_X);
   bool has_move_y = ev.test_valuator(valuator_t::MOVE_Y);
   bool has_scroll_x = ev.test_valuator(valuator_t::SCROLL_X);
@@ -488,8 +488,8 @@ bool handle_event(conky::display_output_x11 *surface, Display *display,
         window.cursor_over_window = true;
       } else if (window.cursor_over_window) {
         llua_mouse_hook(mouse_crossing_event(
-            mouse_event_t::AREA_LEAVE,
-            ev.pos_absolute - window.geometry.pos(), ev.pos_absolute));
+            mouse_event_t::AREA_LEAVE, ev.pos_absolute - window.geometry.pos(),
+            ev.pos_absolute));
         window.cursor_over_window = false;
       }
     }
@@ -498,7 +498,7 @@ bool handle_event(conky::display_output_x11 *surface, Display *display,
     // in any other case, this check does nothing.
     if (!cursor_over_conky) { return true; }
   }
-  
+
   LOG_TRACE_WITH(({"move_x", has_move_x}, {"move_y", has_move_y},
                   {"scroll_x", has_scroll_x}, {"scroll_y", has_scroll_y}),
                  "xi motion: is_move={} is_scroll={}", is_move, is_scroll);

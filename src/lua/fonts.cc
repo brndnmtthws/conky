@@ -30,7 +30,7 @@
 #include "fonts.h"
 #include "../logging.h"
 #include "../output/display-output.hh"
-#include "../output/gui.h"
+#include "../output/output-setting.hh"
 
 unsigned int selected_font = 0;
 std::vector<font_list> fonts;

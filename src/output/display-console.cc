@@ -24,15 +24,11 @@
  *
  */
 
+#include "display-console.hh"
 #include <config.h>
 #include <cstdio>
-
 #include "../conky.h"
-#include "display-console.hh"
-
-#include <iostream>
-#include <sstream>
-#include <unordered_map>
+#include "output-setting.hh"
 
 conky::simple_config_setting<bool> out_to_stderr("out_to_stderr", false, false);
 static conky::simple_config_setting<bool> extra_newline("extra_newline", false,
