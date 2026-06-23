@@ -46,18 +46,41 @@ using settings_vector = std::vector<priv::config_setting_base *>;
 settings_map *settings;
 
 /// Settings that have been removed. Maps old name to an explanation message.
-const std::unordered_map<std::string, std::string> removed_settings = {
+static const std::unordered_map<std::string, std::string> removed_settings = {
     {"own_window_argb_visual",
      "ARGB is now always enabled when available. Control opacity with "
-     "`own_window_colour` (e.g. '#8000')."},
+     "`own_window_color` (e.g. '#8000')."},
     {"store_graph_data_explicitly",
      "Graph data is now always stored directly in the node; this setting has "
      "no effect."},
 };
 
+/// A setting that was renamed: the new canonical name plus whether using the
+/// old name should emit a warning (some aliases are silent compatibility
+/// shims, others nudge the user toward the new name).
+struct setting_alias {
+  std::string target;
+  bool warn;
+};
+
+/// Settings that have been renamed. Maps an old (alias) name to its
+/// replacement. When the user assigns one of these, the value is applied to
+/// the target setting as if they had used the new name.
+static const std::unordered_map<std::string, setting_alias> aliased_settings = {
+    // `xftalpha` (X11) and `textalpha` (Wayland) controlled the same thing on
+    // different backends; both now map to the unified `text_alpha`.
+    {"xftalpha", {"text_alpha", true}},
+    {"textalpha", {"text_alpha", true}},
+
+    // old GB name, renamed for consistency
+    {"own_window_colour", {"own_window_color", true}},
+};
+
 /*
  * Returns the setting record corresponding to the value at the specified index.
  * If the value is not valid, returns nullptr and prints an error.
+ *
+ * Doesn't affect the stack.
  */
 priv::config_setting_base *get_setting(lua::state &l, int index) {
   lua::Type type = l.type(index);
@@ -68,17 +91,59 @@ priv::config_setting_base *get_setting(lua::state &l, int index) {
 
   const std::string &name = l.tostring(index);
   auto iter = settings->find(name);
-  if (iter == settings->end()) {
-    auto removed = removed_settings.find(name);
-    if (removed != removed_settings.end()) {
-      LOG_WARNING("setting '{}' has been removed: {}", name, removed->second);
-    } else {
-      LOG_ERROR("unknown setting '{}'", name);
-    }
-    return nullptr;
-  }
+  if (iter != settings->end()) { return iter->second; }
 
-  return iter->second;
+  auto removed = removed_settings.find(name);
+  if (removed != removed_settings.end()) {
+    LOG_WARNING("setting '{}' has been removed: {}", name, removed->second);
+  } else {
+    LOG_ERROR("unknown setting '{}'", name);
+  }
+  return nullptr;
+}
+
+/*
+ * Rewrites renamed (alias) settings in the user's config table to their
+ * canonical names, so all later processing - the ordered apply loop and the
+ * unknown-setting sweep - only ever sees current names. For each alias that the
+ * user set: warns (when flagged), moves its value to the canonical key unless
+ * the canonical name was also given (an explicit current name wins), and drops
+ * the alias key so it is deduped and not later flagged as unknown. Aliases
+ * whose target isn't registered (e.g. its backend wasn't built in) are left
+ * in place so the unknown-setting sweep can report them.
+ * stack on entry: | ... config_table |
+ * stack on exit:  | ... config_table |
+ */
+void normalize_aliased_settings(lua::state &l) {
+  lua::stack_sentry s(l);
+  l.checkstack(3);
+
+  for (const auto &[alias, target] : aliased_settings) {
+    l.rawgetfield(-1, alias.c_str());
+    if (l.isnil(-1) || settings->count(target.target) == 0) {
+      l.pop();
+      continue;
+    }
+
+    if (target.warn) {
+      LOG_WARNING(
+          "setting '{}' has been renamed to '{}'; update your config to use "
+          "the new name",
+          alias, target.target);
+    }
+
+    l.rawgetfield(-2, target.target.c_str());
+    bool target_set = !l.isnil(-1);
+    l.pop();
+    if (target_set) {
+      l.pop();  // explicit canonical value wins; drop the alias value
+    } else {
+      l.rawsetfield(-2, target.target.c_str());  // move value to canonical key
+    }
+
+    l.pushnil();
+    l.rawsetfield(-2, alias.c_str());  // drop the alias key
+  }
 }
 
 const std::vector<std::string> settings_ordering{
@@ -123,7 +188,7 @@ const std::vector<std::string> settings_ordering{
     "own_window_title",
     "own_window_type",
     "own_window_hints",
-    "own_window_colour",
+    "own_window_color",
     "own_window",
     "double_buffer",
     "imlib_cache_size",
@@ -205,13 +270,15 @@ void config_setting_base::lua_set(lua::state &l) {
 
 /*
  * Performs the actual assignment of settings. Calls the setting-specific setter
- * after some sanity-checking. stack on entry: | ..., new_config_table, key,
- * value, old_value | stack on exit:  | ..., new_config_table |
+ * after some sanity-checking.
+ * stack on entry: | ..., new_config_table, key, value, old_value |
+ * stack on exit:  | ..., new_config_table |
  */
-void config_setting_base::process_setting(lua::state &l, bool init) {
+void config_setting_base::process_setting(lua::state &l,
+                                          config_setting_base *init) {
   lua::stack_sentry s(l, -3);
 
-  config_setting_base *ptr = get_setting(l, -3);
+  config_setting_base *ptr = init != nullptr ? init : get_setting(l, -3);
   if (ptr == nullptr) { return; }
 
   if (init && ptr->deprecation_msg.has_value() && !l.isnil(-2)) {
@@ -221,7 +288,7 @@ void config_setting_base::process_setting(lua::state &l, bool init) {
         ptr->name, *ptr->deprecation_msg);
   }
 
-  ptr->lua_setter(l, init);
+  ptr->lua_setter(l, init != nullptr);
   l.pushvalue(-2);
   l.insert(-2);
   l.rawset(-4);
@@ -241,7 +308,7 @@ int config_setting_base::config__newindex(lua::state *l) {
 
   l->pushvalue(-2);
   l->rawget(-4);
-  process_setting(*l, false);
+  process_setting(*l);
 
   return 0;
 }
@@ -295,6 +362,11 @@ void set_config_settings(lua::state &l) {
         USER_ERR("'conky.config' must be a table in config");
       }
 
+      // Rewrite renamed settings to their canonical names up front, so the
+      // ordered apply loop and the unknown-setting sweep below only deal with
+      // current names.
+      normalize_aliased_settings(l);
+
       priv::config_setting_base::make_conky_config(l);
       l.rawsetfield(-3, "config");
 
@@ -302,13 +374,13 @@ void set_config_settings(lua::state &l) {
       l.getmetatable(-1);
       l.replace(-2);
       {
-        const settings_vector &v = make_settings_vector();
+        settings_vector all_settings = make_settings_vector();
 
-        for (auto i : v) {
-          l.pushstring(i->name);
-          l.rawgetfield(-3, i->name.c_str());
+        for (auto it : all_settings) {
+          l.pushstring(it->name);
+          l.rawgetfield(-3, it->name.c_str());
           l.pushnil();
-          priv::config_setting_base::process_setting(l, true);
+          priv::config_setting_base::process_setting(l, it);
         }
       }
       l.pop();

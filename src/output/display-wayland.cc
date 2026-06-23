@@ -193,32 +193,6 @@ struct pango_font {
 
 static std::vector<pango_font> pango_fonts; /* indexed by selected_font */
 
-namespace {
-class textalpha_setting : public conky::simple_config_setting<float> {
-  using Base = conky::simple_config_setting<float>;
-
- protected:
-  void lua_setter(lua::state &l, bool init) override {
-    lua::stack_sentry s(l, -2);
-
-    Base::lua_setter(l, init);
-
-    if (init) {
-      pango_fonts.resize(std::max(1, static_cast<int>(fonts.size())));
-      pango_fonts[0].desc = nullptr;
-      pango_fonts[0].font_alpha = do_convert(l, -1).first * 0xffff;
-    }
-
-    ++s;
-  }
-
- public:
-  textalpha_setting() : Base("textalpha", 1.0, false) {}
-};
-
-textalpha_setting textalpha;
-}  // namespace
-
 static void wayland_create_window();
 
 static void wayland_create_window() {
@@ -1104,6 +1078,10 @@ void display_output_wayland::load_fonts(bool utf8) {
 
     pango_font_entry.metrics.ascent = ascent;
     pango_font_entry.metrics.descent = descent;
+  }
+  if (!pango_fonts.empty()) {
+    pango_fonts[0].font_alpha =
+        static_cast<int>(text_alpha.get(*state) * 0xffff);
   }
 }
 

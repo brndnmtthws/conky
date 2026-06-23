@@ -141,7 +141,8 @@ struct lua_traits<T, false, false, true> {
 namespace priv {
 class config_setting_base {
  private:
-  static void process_setting(lua::state &l, bool init);
+  static void process_setting(lua::state &l,
+                              config_setting_base *init = nullptr);
   static int config__newindex(lua::state *l);
   static void make_conky_config(lua::state &l);
 

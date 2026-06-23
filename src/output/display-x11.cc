@@ -115,33 +115,6 @@ struct x_font_list {
 
 static std::vector<x_font_list> x_fonts; /* indexed by selected_font */
 
-#ifdef BUILD_XFT
-namespace {
-class xftalpha_setting : public conky::simple_config_setting<float> {
-  using Base = conky::simple_config_setting<float>;
-
- protected:
-  void lua_setter(lua::state &l, bool init) override {
-    lua::stack_sentry s(l, -2);
-
-    Base::lua_setter(l, init);
-
-    if (init && out_to_x.get(*state)) {
-      x_fonts.resize(std::max(1, static_cast<int>(fonts.size())));
-      x_fonts[0].font_alpha = do_convert(l, -1).first * 0xffff;
-    }
-
-    ++s;
-  }
-
- public:
-  xftalpha_setting() : Base("xftalpha", 1.0, false) {}
-};
-
-xftalpha_setting xftalpha;
-}  // namespace
-#endif /* BUILD_XFT */
-
 static void X11_create_window();
 
 void update_dpi() {
@@ -1167,6 +1140,11 @@ void display_output_x11::load_fonts(bool utf8) {
       }
     }
   }
+#ifdef BUILD_XFT
+  if (!x_fonts.empty()) {
+    x_fonts[0].font_alpha = static_cast<int>(text_alpha.get(*state) * 0xffff);
+  }
+#endif /* BUILD_XFT */
 }
 
 void display_output_x11::update_surface() {

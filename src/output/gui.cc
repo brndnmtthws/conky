@@ -195,15 +195,15 @@ conky::simple_config_setting<uint16_t, window_hints_traits> own_window_hints(
 #endif /* OWN_WINDOW || BUILD_WAYLAND */
 
 #if defined(OWN_WINDOW) || defined(BUILD_WAYLAND)
-priv::colour_setting background_colour("own_window_colour", 0);
+priv::colour_setting background_colour("own_window_color", 0);
 conky::simple_config_setting<bool> set_transparent = conky::deprecated(
     conky::simple_config_setting<bool>("own_window_transparent", false, false),
-    "Use own_window_colour with alpha instead (e.g. '#00000000').");
+    "Use own_window_color with alpha instead (e.g. '#00000000').");
 
 conky::range_config_setting<int> own_window_argb_value = conky::deprecated(
     conky::range_config_setting<int>("own_window_argb_value", 0, 255, 255,
                                      false),
-    "Use own_window_colour with alpha instead (e.g. '#80000000').");
+    "Use own_window_color with alpha instead (e.g. '#80000000').");
 
 Colour get_background_colour_preference(lua::state &l) {
   // TODO: anything other than background_colour is deprecated.
@@ -216,7 +216,11 @@ Colour get_background_colour_preference(lua::state &l) {
 
   return background;
 }
+
 #endif /* OWN_WINDOW || BUILD_WAYLAND */
+#if defined(BUILD_XFT) || defined(BUILD_WAYLAND)
+conky::simple_config_setting<float> text_alpha("text_alpha", 1.0, false);
+#endif /* BUILD_XFT || BUILD_WAYLAND */
 
 conky::simple_config_setting<bool> own_window("own_window", false, false);
 

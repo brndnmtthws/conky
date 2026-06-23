@@ -413,7 +413,7 @@ values:
   - name: own_window_class
     desc: Manually set the WM_CLASS name.
     default: Conky
-  - name: own_window_colour
+  - name: own_window_color
     desc: |-
       Set the background colour of the window. Takes a hex value with
       optional alpha (e.g. `'#fff'`, `'#8000'`, `'#8fff'`), or a valid
@@ -548,6 +548,16 @@ values:
       * `\\` -> backslash
       * `\\ ` -> space
       * `\\N` -> template argument N (starting from 1)
+  - name: text_alpha
+    desc: |-
+      Alpha (opacity) of rendered text on graphical outputs (X11 with Xft, and
+      Wayland). Must be a value at or between 0 and 1.
+
+      Only controls opacity of the first font (font0).
+
+      Replaces the backend-specific `xftalpha` (X11) and `textalpha` (Wayland)
+      settings, which are still accepted as deprecated aliases.
+    default: 1.0
   - name: text_buffer_size
     desc: |-
       Size of the standard text buffer in bytes.
@@ -604,7 +614,5 @@ values:
     default: none
   - name: use_xft
     desc: Use Xft (anti-aliased font and stuff).
-  - name: xftalpha
-    desc: Alpha of Xft font. Must be a value at or between 1 and 0.
   - name: xinerama_head
     desc: Specify a Xinerama head.
