@@ -194,7 +194,7 @@ file.
 {% for item in config_settings['values'] %}
 **{{ item.name }}** {% if item.args %}**{{ item.args | join(" ") }}**{% endif %}
 
-:   {{ item.desc | indent(width=4) }}
+:   {% if item.removed_since %}*(Removed in {{ item.removed_since }}.)* {% elif item.deprecated_since %}*(Deprecated since {{ item.deprecated_since }}.)* {% endif %}{{ item.desc | emoji_yesno | indent(width=4) }}
 {%- if item.default %}
 
     Default: {{ item.default }}
@@ -208,7 +208,7 @@ file.
 {% for item in variables['values'] %}
 **{{ item.name }}** {% if item.args %}**{{ item.args | join(" ") }}**{% endif %}
 
-:   {{ item.desc | indent(width=4) }}
+:   {% if item.removed_since %}*(Removed in {{ item.removed_since }}.)* {% elif item.deprecated_since %}*(Deprecated since {{ item.deprecated_since }}.)* {% endif %}{{ item.desc | emoji_yesno | indent(width=4) }}
 {%- if item.default %}
 
     Default: {{ item.default }}
@@ -222,7 +222,7 @@ file.
 {% for item in lua['values'] %}
 **{{ item.name }}** {% if item.args %}**{{ item.args | join(" ") }}**{% endif %}
 
-:   {{ item.desc | indent(width=4) }}
+:   {% if item.removed_since %}*(Removed in {{ item.removed_since }}.)* {% elif item.deprecated_since %}*(Deprecated since {{ item.deprecated_since }}.)* {% endif %}{{ item.desc | emoji_yesno | indent(width=4) }}
 {%- if item.default %}
 
     Default: {{ item.default }}

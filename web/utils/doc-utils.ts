@@ -20,6 +20,12 @@ export interface DocItem {
   desc_md: string
   default: string | undefined
   args: string[]
+  /** Version the setting was deprecated in, e.g. "1.24.3". */
+  deprecated_since?: string
+  /** Version the setting was removed in, e.g. "1.23.0". */
+  removed_since?: string
+  /** Derived lifecycle marker; computed from the `*_since` fields. */
+  status?: 'deprecated' | 'removed'
 }
 
 function getDocumentation(source: string): Documentation {
@@ -34,6 +40,13 @@ function getDocumentation(source: string): Documentation {
     values: parsed.values.map((c) => ({
       ...c,
       desc_md: processMarkdown(c.desc),
+      // `removed_since` takes precedence: a removed setting may also have been
+      // deprecated in an earlier version.
+      status: c.removed_since
+        ? ('removed' as const)
+        : c.deprecated_since
+          ? ('deprecated' as const)
+          : undefined,
     })),
   }
 

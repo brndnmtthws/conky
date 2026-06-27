@@ -1,0 +1,11 @@
+/* Hairline above each result group except the first; rows within a group are
+   flush. `.group` is the section header, and `> * + .group` matches a header
+   that has a preceding sibling (i.e. every group after the first). */
+.results > * + .group {
+  border-top: 1px solid rgb(0 0 0 / 0.1);
+  margin-top: 0.25rem;
+}
+
+:global(html.dark) .results > * + .group {
+  border-top-color: rgb(255 255 255 / 0.1);
+}

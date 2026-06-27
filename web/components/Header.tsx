@@ -49,7 +49,7 @@ export default function Header({ name, setDarkMode }: HeaderProps) {
             <NavLink href="/lua" name="Lua" />
           </div>
         )}
-        <div className="flex-grow" />
+        <div className="grow" />
         <div className="flex items-center gap-1.5">
           <Search />
           <div className="mx-1 flex h-10 items-center border-r border-zinc-900/15 px-2 dark:border-white/10">

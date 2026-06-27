@@ -62,7 +62,7 @@ export default function Index({ documents }: IndexProps) {
   return (
     <Layout>
       <SEO title="Conky" description="Conky documentation" />
-      <main className="w-full">
+      <main className="w-full px-2">
         <div className="w-full">
           {pages.map((p) => (
             <IndexItem

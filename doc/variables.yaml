@@ -1550,7 +1550,7 @@ values:
       **Possible arguments:**
 
       | Argument           | Alias       | Description                                                     | XNVCtrl | NVML |
-      |--------------------|-------------|-----------------------------------------------------------------|---------|------|
+      |--------------------|-------------|-----------------------------------------------------------------|:-------:|:----:|
       | `gputemp`          | `temp`      | GPU temperature                                                 | ✅      | ✅   |
       | `gputempthreshold` | `threshold` | Temperature threshold where the GPU will reduce its clock speed | ✅      | ✅   |
       | `ambienttemp`      | `ambient`   | Ambient temperature outside the graphics card                   | ✅      | ❌   |
