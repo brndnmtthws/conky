@@ -59,6 +59,7 @@
 #include "../lua/llua.h"
 #include "display-output.hh"
 #include "gui.h"
+#include "output-setting.hh"
 #include "wl-shell.h"
 
 #include "../lua/fonts.h"
@@ -209,22 +210,9 @@ namespace {
 conky::display_output_wayland wayland_output;
 }  // namespace
 
-template <>
-void register_output<output_t::WAYLAND>(display_outputs_t &outputs) {
-  outputs.push_back(&wayland_output);
-}
-
 display_output_wayland::display_output_wayland()
-    : display_output_base("wayland") {
+    : display_output_base("wayland", output_t::WAYLAND) {
   is_graphical = true;
-}
-
-bool display_output_wayland::detect() {
-  if (out_to_wayland.get(*state)) {
-    LOG_DEBUG("wayland display output '{}' enabled in config", name);
-    return true;
-  }
-  return false;
 }
 
 static int epoll_fd;

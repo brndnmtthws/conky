@@ -44,8 +44,6 @@ class display_output_ncurses : public display_output_console {
 
   virtual ~display_output_ncurses() {}
 
-  // check if available and enabled in settings
-  virtual bool detect();
   // connect to DISPLAY and other stuff
   virtual bool initialize();
   virtual bool shutdown();

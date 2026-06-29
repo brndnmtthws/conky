@@ -164,12 +164,8 @@ inline bool TEST_HINT(uint16_t mask, window_hints hint) {
 
 extern conky::absolute_rect<int> workarea;
 
-extern char window_created;
-
 void destroy_window(void);
 void create_gc(void);
-
-bool out_to_gui(lua::state &l);
 
 void print_monitor(struct text_object *, char *, unsigned int);
 void print_monitor_number(struct text_object *, char *, unsigned int);

@@ -28,6 +28,7 @@
 
 #include "../conky.h"
 #include "display-http.hh"
+#include "output-setting.hh"
 
 #include <iostream>
 #include <mutex>
@@ -40,10 +41,6 @@ namespace conky {
 namespace {
 conky::display_output_http http_output;
 }  // namespace
-template <>
-void register_output<output_t::HTTP>(display_outputs_t &outputs) {
-  outputs.push_back(&http_output);
-}
 
 // TODO: cleanup namespace
 // namespace priv {
@@ -86,9 +83,6 @@ MHD_Result sendanswer(void *cls, struct MHD_Connection *connection,
       con_cls) {}  // make compiler happy
   return ret;
 }
-
-static conky::simple_config_setting<bool> out_to_http("out_to_http", false,
-                                                      false);
 
 std::string string_replace_all(std::string original, const std::string &oldpart,
                                const std::string &newpart,
@@ -135,21 +129,12 @@ std::string html_escape(const std::string &input) {
 
 //}  // namespace priv
 
-display_output_http::display_output_http() : display_output_base("http") {
+display_output_http::display_output_http()
+    : display_output_base("http", output_t::HTTP) {
   httpd = NULL;
 }
 
-bool display_output_http::detect() {
-  if (out_to_http.get(*state)) {
-    LOG_DEBUG("display output '{}' enabled in config", name);
-    return true;
-  }
-  return false;
-}
-
 bool display_output_http::initialize() {
-  if (!out_to_http.get(*state)) { return false; }
-
   /* warn about old default port */
   if (http_port.get(*state) == 10080) {
     LOG_WARNING(
@@ -160,7 +145,6 @@ bool display_output_http::initialize() {
   httpd = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, http_port.get(*state),
                            nullptr, NULL, &sendanswer, nullptr, MHD_OPTION_END);
 
-  is_active = true;
   return true;
 }
 
@@ -181,17 +165,15 @@ void display_output_http::begin_draw_text() {
 #define WEBPAGE_START2 \
   "<title>Conky</title></head><body style=\"font-family: monospace\"><p>"
 #define WEBPAGE_END "</p></body></html>"
-  if (out_to_http.get(*state)) {
-    webpage = WEBPAGE_START1;
-    if (http_refresh.get(*state)) {
-      webpage.append("<meta http-equiv=\"refresh\" content=\"");
-      std::stringstream update_interval_str;
-      update_interval_str << update_interval.get(*state);
-      webpage.append(update_interval_str.str());
-      webpage.append("\" />");
-    }
-    webpage.append(WEBPAGE_START2);
+  webpage = WEBPAGE_START1;
+  if (http_refresh.get(*state)) {
+    webpage.append("<meta http-equiv=\"refresh\" content=\"");
+    std::stringstream update_interval_str;
+    update_interval_str << update_interval.get(*state);
+    webpage.append(update_interval_str.str());
+    webpage.append("\" />");
   }
+  webpage.append(WEBPAGE_START2);
 }
 
 void display_output_http::end_draw_text() {

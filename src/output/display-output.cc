@@ -26,46 +26,18 @@
 
 #include <config.h>
 
-#include "display-output.hh"
+#include <vector>
 
-#include <algorithm>
-#include <iostream>
-#include <sstream>
-#include <unordered_map>
+#include "../logging.h"
+#include "display-output.hh"
+#include "output-setting.hh"
 
 namespace conky {
-
-inline void log_missing(const char *name, const char *flag) {
-  LOG_DEBUG("{} display output disabled, recompile with '{}' to enable", name,
-            flag);
-}
-#ifndef BUILD_HTTP
-template <>
-void register_output<output_t::HTTP>(display_outputs_t &outputs) {
-  log_missing("HTTP", "BUILD_HTTP");
-}
-#endif
-#ifndef BUILD_NCURSES
-template <>
-void register_output<output_t::NCURSES>(display_outputs_t &outputs) {
-  log_missing("ncurses", "BUILD_NCURSES");
-}
-#endif
-#ifndef BUILD_WAYLAND
-template <>
-void register_output<output_t::WAYLAND>(display_outputs_t &outputs) {
-  log_missing("Wayland", "BUILD_WAYLAND");
-}
-#endif
-#ifndef BUILD_X11
-template <>
-void register_output<output_t::X11>(display_outputs_t &outputs) {
-  log_missing("X11", "BUILD_X11");
-}
-#endif
-
 /*
  * The selected and active display output.
+ *
+ * This list contains pointers to output objects that are returned by
+ * `output_backends`.
  */
 std::vector<display_output_base *> active_display_outputs;
 
@@ -75,71 +47,71 @@ std::vector<display_output_base *> active_display_outputs;
  */
 std::vector<conky::display_output_base *> current_display_outputs;
 
-bool initialize_display_outputs() {
-  std::vector<display_output_base *> outputs;
-  outputs.reserve(static_cast<size_t>(output_t::OUTPUT_COUNT));
+display_outputs_t &registered_outputs() {
+  static display_outputs_t map;
+  return map;
+}
 
-  // Order of registration is important!
-  // - Graphical outputs go before textual (e.g. X11 before NCurses).
-  // - Optional outputs go before non-optional (e.g. Wayland before X11).
-  // - Newer outputs go before older (e.g. NCurses before (hypothetical)
-  // Curses).
-  // - Fallbacks go last (in group)
-  register_output<output_t::WAYLAND>(outputs);
-  register_output<output_t::X11>(outputs);
-  register_output<output_t::HTTP>(outputs);
-  register_output<output_t::FILE>(outputs);
-  register_output<output_t::NCURSES>(outputs);
-  register_output<output_t::CONSOLE>(
-      outputs);  // global fallback - always works
+extern std::set<output_t> resolved_outputs;
+std::set<output_t> parse_output_settings();
 
-  for (auto out : outputs) {
+void initialize_display_outputs() {
+  for (auto [t, out] : registered_outputs()) {
     LOG_DEBUG("found display output '{}'", out->name);
   }
 
-  int graphical_count = 0;
+  auto selected_outputs = parse_output_settings();
+  std::set<output_t> initialized_selection;
 
-  for (auto output : outputs) {
-    LOG_DEBUG("testing display output '{}'", output->name);
-    if (output->detect()) {
-      LOG_DEBUG("detected display output '{}'", output->name);
+  for (auto output_type : selected_outputs) {
+    auto primary_it = registered_outputs().find(output_type);
+    if (primary_it == registered_outputs().end()) continue;
+    auto output = primary_it->second;
 
-      if (graphical_count && output->graphical()) continue;
-
-      // X11 init needs to draw, so we must add it to the list first.
-      active_display_outputs.push_back(output);
-
-      if (output->initialize()) {
-        LOG_DEBUG("initialized display output '{}'", output->name);
-
-        output->is_active = true;
-        if (output->graphical()) graphical_count++;
-        /*
-         * We only support a single graphical display for now.
-         * More than one text display (ncurses + http, ...) should be ok.
-         */
-        // if (graphical_count)
-        // return true;
-      } else {
-        // failed, so remove from list
-        active_display_outputs.pop_back();
-      }
+    LOG_DEBUG("initializing '{}' display output", output->name);
+    if (output->initialize()) {
+      LOG_DEBUG("initialized display output '{}'", output->name);
+      initialized_selection.insert(output_type);
     }
   }
-  if (active_display_outputs.size()) return true;
 
-  LOG_ERROR("unable to find a usable display output");
-  return true;
+  if (initialized_selection.empty()) {
+    LOG_WARNING(
+        "unable to initialize any outputs, falling back to console output");
+    initialized_selection.insert(output_t::CONSOLE);
+    registered_outputs()[output_t::CONSOLE]->initialize();
+  }
+
+  resolved_outputs = initialized_selection;
+
+  for (output_t out : resolved_outputs) {
+    active_display_outputs.push_back(registered_outputs()[out]);
+  }
+}
+
+std::optional<display_output_base *> get_registered_output(output_t output) {
+  auto located = registered_outputs().find(output);
+  if (located == registered_outputs().end()) return std::nullopt;
+  return located->second;
 }
 
 bool shutdown_display_outputs() {
   bool ret = true;
-  for (auto output : active_display_outputs) {
-    output->is_active = false;
-    ret = output->shutdown();
-  }
+  for (auto output : active_display_outputs) { ret = output->shutdown(); }
   active_display_outputs.clear();
   return ret;
 }
 
+void set_active_output(conky::output_t output);
+
 }  // namespace conky
+
+void set_display_output(conky::display_output_base *output) {
+  conky::current_display_outputs.clear();
+  if (output != nullptr) {
+    // OLD: std::vector always holding a single output
+    conky::current_display_outputs.push_back(output);
+    // NEW: thread-local single value
+    conky::set_active_output(output->type);
+  }
+}

@@ -49,21 +49,7 @@
 /* workarea where window / text is aligned (from _NET_WORKAREA on X11) */
 conky::absolute_rect<int> workarea;
 
-/* Window stuff */
-char window_created = 0;
-
 /********************* <SETTINGS> ************************/
-
-bool out_to_gui(lua::state &l) {
-  bool to_gui = false;
-#ifdef BUILD_X11
-  to_gui |= out_to_x.get(l);
-#endif /* BUILD_X11 */
-#ifdef BUILD_WAYLAND
-  to_gui |= out_to_wayland.get(l);
-#endif /* BUILD_WAYLAND */
-  return to_gui;
-}
 
 template <>
 conky::lua_traits<alignment>::Map conky::lua_traits<alignment>::map = {

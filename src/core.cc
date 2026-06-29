@@ -27,6 +27,7 @@
  *
  */
 
+#include "common.h"
 #include "config.h"
 
 /* local headers */
@@ -62,6 +63,7 @@
 #include "output/gui.h"
 #endif /* BUILD_GUI */
 #include "data/fs.h"
+#include "output/output-setting.hh"
 #ifdef BUILD_IBM
 #include "data/hardware/ibm.h"
 #include "data/hardware/smapi.h"
@@ -134,10 +136,6 @@
 
 #include <cctype>
 #include <cstring>
-
-#ifdef BUILD_NCURSES
-extern conky::simple_config_setting<bool> out_to_ncurses;
-#endif
 
 /* strip a leading /dev/ if any, following symlinks first
  *
@@ -717,14 +715,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(diskiograph_write, &update_diskio) parse_diskiograph_arg(obj, arg);
   obj->callbacks.graphval = &diskiographval_write;
 #endif /* BUILD_GUI */
-  END OBJ(color, nullptr) if (false
-#ifdef BUILD_GUI
-                              || out_to_gui(*state)
-#endif /* BUILD_GUI */
-#ifdef BUILD_NCURSES
-                              || out_to_ncurses.get(*state)
-#endif /* BUILD_NCURSES */
-  ) {
+  END OBJ(color,
+          nullptr) if (conky::output_enabled({conky::output_t::X11,
+                                              conky::output_t::WAYLAND,
+                                              conky::output_t::NCURSES})) {
     Colour c = arg != nullptr ? parse_color(arg) : default_color.get(*state);
     obj->data.l = c.to_argb32();
     set_current_text_color(c);

@@ -71,10 +71,6 @@
 #include "common.h"
 #include "content/text_object.h"
 
-#ifdef BUILD_WAYLAND
-#include "output/wl.h"
-#endif /* BUILD_WAYLAND */
-
 #ifdef BUILD_X11
 #include "lua/x11-settings.h"
 #include "output/x11.h"
@@ -202,16 +198,6 @@ static conky::simple_config_setting<bool> format_human_readable(
     "format_human_readable", true, true);
 conky::simple_config_setting<std::string> units_spacer("units_spacer", "",
                                                        false);
-
-conky::simple_config_setting<bool> out_to_stdout("out_to_console",
-// Default value is false, unless we are building without X
-#ifdef BUILD_GUI
-                                                 false,
-#else
-                                                 true,
-#endif
-                                                 false);
-conky::simple_config_setting<bool> out_to_stderr("out_to_stderr", false, false);
 
 int top_cpu, top_mem, top_time;
 #ifdef BUILD_IOSTATS
@@ -1685,7 +1671,7 @@ void draw_stuff() {
 
     selected_font = 0;
     set_foreground_color(default_color.get(*state));
-    unset_display_output();
+    set_display_output(nullptr);
   }
 
 #endif /* BUILD_GUI */
@@ -2016,20 +2002,6 @@ static void set_default_configurations() {
   info.xmms2.playlist = nullptr;
 #endif /* BUILD_XMMS2 */
 
-/* Enable a single output by default based on what was enabled at build-time */
-#ifdef BUILD_WAYLAND
-  state->pushboolean(true);
-  out_to_wayland.lua_set(*state);
-#else
-#ifdef BUILD_X11
-  state->pushboolean(true);
-  out_to_x.lua_set(*state);
-#else
-  state->pushboolean(true);
-  out_to_stdout.lua_set(*state);
-#endif
-#endif
-
   info.users.number = 1;
 }
 
@@ -2338,9 +2310,7 @@ void initialisation(int argc, char **argv) {
   // (e.g. ${color}) queries which backends are actually enabled, which is only
   // known once initialization has been attempted. Initialization runs after
   // fork() because X11/Wayland connections cannot survive crossing a fork().
-  if (!conky::initialize_display_outputs()) {
-    SYSTEM_ERR("no usable display output found");
-  }
+  conky::initialize_display_outputs();
 
   /* generate text and get initial size */
   extract_variable_text(global_text);

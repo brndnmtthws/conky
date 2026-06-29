@@ -34,13 +34,13 @@
 #include <sstream>
 #include <unordered_map>
 
-/* filenames for output */
-static conky::simple_config_setting<std::string> overwrite_file(
-    "overwrite_file", std::string(), true);
+/* filenames for output; external linkage so output_backend() can infer the
+ * file backend from them (see output-setting.cc) */
+conky::simple_config_setting<std::string> overwrite_file("overwrite_file",
+                                                         std::string(), true);
 static FILE *overwrite_fpointer = nullptr;
-static conky::simple_config_setting<std::string> append_file("append_file",
-                                                             std::string(),
-                                                             true);
+conky::simple_config_setting<std::string> append_file("append_file",
+                                                      std::string(), true);
 static FILE *append_fpointer = nullptr;
 
 namespace conky {
@@ -49,22 +49,9 @@ namespace {
 conky::display_output_file file_output("file");
 
 }  // namespace
-template <>
-void register_output<output_t::FILE>(display_outputs_t &outputs) {
-  outputs.push_back(&file_output);
-}
 
 display_output_file::display_output_file(const std::string &name_)
-    : display_output_base(name_) {}
-
-bool display_output_file::detect() {
-  if (static_cast<unsigned int>(!overwrite_file.get(*state).empty()) != 0u ||
-      static_cast<unsigned int>(!append_file.get(*state).empty()) != 0u) {
-    LOG_DEBUG("display output '{}' enabled in config", name);
-    return true;
-  }
-  return false;
-}
+    : display_output_base(name_, output_t::FILE) {}
 
 bool display_output_file::initialize() { return true; }
 

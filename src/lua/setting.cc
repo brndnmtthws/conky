@@ -268,6 +268,22 @@ void config_setting_base::lua_set(lua::state &l) {
   l.pop();
 }
 
+bool config_setting_base::is_set(lua::state &l) {
+  std::lock_guard<lua::state> guard(l);
+  lua::stack_sentry s(l);
+  l.checkstack(2);
+
+  l.getglobal("conky");
+  l.getfield(-1, "config");
+  l.replace(-2);
+
+  l.getfield(-1, name.c_str());
+  bool set = !l.isnil(-1);
+  l.pop(2);
+
+  return set;
+}
+
 /*
  * Performs the actual assignment of settings. Calls the setting-specific setter
  * after some sanity-checking.

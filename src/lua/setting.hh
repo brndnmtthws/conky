@@ -186,6 +186,14 @@ class config_setting_base {
    */
   void lua_set(lua::state &l);
 
+  /*
+   * Whether the user explicitly assigned this setting in the config, as opposed
+   * to it falling back to its default. True iff conky.config[name] is non-nil,
+   * so an explicit value equal to the default (e.g. an empty string) still
+   * counts as set.
+   */
+  bool is_set(lua::state &l);
+
   friend void conky::set_config_settings(lua::state &l);
   friend void conky::cleanup_config_settings(lua::state &l);
 };

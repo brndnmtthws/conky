@@ -30,6 +30,7 @@
 #include "config.h"
 
 #include "../lua/x11-settings.h"
+#include "output-setting.hh"
 #include "x11-event.h"
 #include "x11.h"
 
@@ -113,7 +114,6 @@ struct conky_x11_window window;
 conky::simple_config_setting<std::string> display_name("display", std::string(),
                                                        false);
 conky::simple_config_setting<int> head_index("xinerama_head", 0, true);
-conky::simple_config_setting<bool> out_to_x("out_to_x", true, false);
 #ifdef BUILD_XFT
 conky::simple_config_setting<bool> use_xft("use_xft", false, false);
 #endif
@@ -302,10 +302,12 @@ void deinit_x11() {
 }
 
 bool x11_set_up_double_buffer(lua::state &l) {
+  // double_buffer makes no sense when not drawing to a window
+  if (!display || !window.window) {
+    return false;
+  }
+  
 #ifdef BUILD_XDBE
-  // double_buffer makes no sense when not drawing to X
-  if (!out_to_x.get(l) || !display || !window.window) { return false; }
-
   int major, minor;
   if (XdbeQueryExtension(display, &major, &minor) == 0) {
     LOG_ERROR("no compatible double buffer extension found");
@@ -324,9 +326,6 @@ bool x11_set_up_double_buffer(lua::state &l) {
   XFlush(display);
   return true;
 #else
-  // double_buffer makes no sense when not drawing to X
-  if (!out_to_x.get(l)) return false;
-
   unsigned int depth = window.color_depth != 0 ? window.color_depth
                                                : DefaultDepth(display, screen);
   window.back_buffer =
@@ -945,8 +944,6 @@ void x11_init_window(lua::state &l) {
 #endif /* OWN_WINDOW */
   window.event_mask = input_mask;
   XSelectInput(display, window.window, input_mask);
-
-  window_created = 1;
 }
 
 static Window find_desktop_window_impl(Window win, int w, int h) {
@@ -1115,7 +1112,7 @@ static const char NOT_IN_X[] = "Not running in X";
 void print_monitor(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
 
-  if (!out_to_x.get(*state)) {
+  if (!conky::output_enabled(conky::output_t::X11)) {
     strncpy(p, NOT_IN_X, p_max_size);
     return;
   }
@@ -1126,7 +1123,7 @@ void print_monitor_number(struct text_object *obj, char *p,
                           unsigned int p_max_size) {
   (void)obj;
 
-  if (!out_to_x.get(*state)) {
+  if (!conky::output_enabled(conky::output_t::X11)) {
     strncpy(p, NOT_IN_X, p_max_size);
     return;
   }
@@ -1136,7 +1133,7 @@ void print_monitor_number(struct text_object *obj, char *p,
 void print_desktop(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
 
-  if (!out_to_x.get(*state)) {
+  if (!conky::output_enabled(conky::output_t::X11)) {
     strncpy(p, NOT_IN_X, p_max_size);
     return;
   }
@@ -1147,7 +1144,7 @@ void print_desktop_number(struct text_object *obj, char *p,
                           unsigned int p_max_size) {
   (void)obj;
 
-  if (!out_to_x.get(*state)) {
+  if (!conky::output_enabled(conky::output_t::X11)) {
     strncpy(p, NOT_IN_X, p_max_size);
     return;
   }
@@ -1158,7 +1155,7 @@ void print_desktop_name(struct text_object *obj, char *p,
                         unsigned int p_max_size) {
   (void)obj;
 
-  if (!out_to_x.get(*state)) {
+  if (!conky::output_enabled(conky::output_t::X11)) {
     strncpy(p, NOT_IN_X, p_max_size);
   } else {
     strncpy(p, info.x11.desktop.name.c_str(), p_max_size);

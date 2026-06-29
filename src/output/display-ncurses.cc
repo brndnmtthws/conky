@@ -37,19 +37,18 @@
 
 #include <ncurses.h>
 
-WINDOW* ncurses_window;
+#include "../conky.h"
+#include "../content/colours.hh"
+#include "../lua/colour-settings.hh"
+#include "display-ncurses.hh"
+#include "output-setting.hh"
 
-conky::simple_config_setting<bool> out_to_ncurses("out_to_ncurses", false,
-                                                  false);
+WINDOW* ncurses_window;
 
 namespace conky {
 namespace {
 conky::display_output_ncurses ncurses_output;
 }  // namespace
-template <>
-void register_output<output_t::NCURSES>(display_outputs_t& outputs) {
-  outputs.push_back(&ncurses_output);
-}
 
 // namespace priv {
 
@@ -93,15 +92,7 @@ Colour from_ncurses(int nccolor) {
 }
 
 display_output_ncurses::display_output_ncurses()
-    : display_output_console("ncurses") {}
-
-bool display_output_ncurses::detect() {
-  if (out_to_ncurses.get(*state)) {
-    LOG_DEBUG("display output '{}' enabled in config", name);
-    return true;
-  }
-  return false;
-}
+    : display_output_console("ncurses", output_t::NCURSES) {}
 
 bool display_output_ncurses::initialize() {
   ncurses_window = initscr();
@@ -114,8 +105,7 @@ bool display_output_ncurses::initialize() {
     ncurses_colors[COLORS_BUILTIN + i] = c;
   }
 
-  is_active = ncurses_window != nullptr;
-  return is_active;
+  return ncurses_window != nullptr;
 }
 
 bool display_output_ncurses::shutdown() {

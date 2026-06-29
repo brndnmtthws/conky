@@ -25,62 +25,40 @@
  */
 
 #include <config.h>
+#include <cstdio>
 
 #include "../conky.h"
 #include "display-console.hh"
-
-#ifdef BUILD_NCURSES
-extern conky::simple_config_setting<bool> out_to_ncurses;
-#endif
 
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
 
+conky::simple_config_setting<bool> out_to_stderr("out_to_stderr", false, false);
 static conky::simple_config_setting<bool> extra_newline("extra_newline", false,
                                                         false);
 
 namespace conky {
 namespace {
 
-conky::display_output_console console_output("console");
+conky::display_output_console console_output("console", output_t::CONSOLE);
 
 }  // namespace
 
-template <>
-void register_output<output_t::CONSOLE>(display_outputs_t &outputs) {
-  outputs.push_back(&console_output);
-}
-
-display_output_console::display_output_console(const std::string &name_)
-    : display_output_base(name_) {}
-
-bool display_output_console::detect() {
-  if ((out_to_stdout.get(*state) || out_to_stderr.get(*state))
-#ifdef BUILD_NCURSES
-      && !out_to_ncurses.get(*state)
-#endif
-  ) {
-    LOG_DEBUG("display output '{}' enabled in config", name);
-    return true;
-  }
-  return false;
-}
+display_output_console::display_output_console(const std::string &name_,
+                                               output_t type)
+    : display_output_base(name_, type) {}
 
 bool display_output_console::initialize() { return true; }
 
 bool display_output_console::shutdown() { return true; }
 
 void display_output_console::draw_string(const char *s, int) {
-  if (out_to_stdout.get(*state)) {
-    printf("%s\n", s);
-    if (extra_newline.get(*state)) { fputc('\n', stdout); }
-    fflush(stdout); /* output immediately, don't buffer */
-  }
-  if (out_to_stderr.get(*state)) {
-    fprintf(stderr, "%s\n", s);
-    fflush(stderr); /* output immediately, don't buffer */
-  }
+  FILE *output = stdout;
+  if (out_to_stderr.get(*state)) { output = stderr; }
+  fprintf(output, "%s\n", s);
+  if (extra_newline.get(*state)) { fputc('\n', output); }
+  fflush(output); /* output immediately, don't buffer */
 }
 
 }  // namespace conky

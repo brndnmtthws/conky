@@ -189,21 +189,9 @@ namespace {
 conky::display_output_x11 x11_output;
 }  // namespace
 
-template <>
-void register_output<output_t::X11>(display_outputs_t &outputs) {
-  outputs.push_back(&x11_output);
-}
-
-display_output_x11::display_output_x11() : display_output_base("x11") {
+display_output_x11::display_output_x11()
+    : display_output_base("x11", output_t::X11) {
   is_graphical = true;
-}
-
-bool display_output_x11::detect() {
-  if (out_to_x.get(*state)) {
-    LOG_DEBUG("display output '{}' enabled in config", name);
-    return true;
-  }
-  return false;
 }
 
 bool display_output_x11::initialize() {
@@ -849,7 +837,7 @@ void display_output_x11::sigterm_cleanup() {
 }
 
 void display_output_x11::cleanup() {
-  if (window_created == 1) {
+  if (window.window != None) {
     int border_total = get_border_total();
 
     XClearArea(display, window.window, text_start.x() - border_total,
@@ -967,9 +955,7 @@ float display_output_x11::get_dpi_scale() {
   return 1.0;
 }
 
-void display_output_x11::end_draw_stuff() {
-  swap_x11_buffers();
-}
+void display_output_x11::end_draw_stuff() { swap_x11_buffers(); }
 
 void display_output_x11::clear_text(int exposures) {
   if (use_double_buffer.get(*state)) {
@@ -979,8 +965,8 @@ void display_output_x11::clear_text(int exposures) {
 #ifndef BUILD_XDBE
   else
 #endif
-  if ((display != nullptr) &&
-      (window.window != 0u)) {  // make sure these are !null
+      if ((display != nullptr) &&
+          (window.window != 0u)) {  // make sure these are !null
     /* there is some extra space for borders and outlines */
     int border_total = get_border_total();
 
@@ -1148,12 +1134,12 @@ void display_output_x11::load_fonts(bool utf8) {
 }
 
 void display_output_x11::update_surface() {
-  #ifdef BUILD_LUA_CAIRO_XLIB
+#ifdef BUILD_LUA_CAIRO_XLIB
   current_surface.reset(cairo_xlib_surface_create(
                             display, window.drawable, window.visual,
                             window.geometry.width(), window.geometry.height()),
                         cairo_surface_destroy);
-  #endif /* BUILD_LUA_CAIRO_XLIB */
+#endif /* BUILD_LUA_CAIRO_XLIB */
 }
 
 std::weak_ptr<conky::draw_surface> display_output_x11::drawing_surface() {
