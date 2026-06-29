@@ -120,6 +120,8 @@ set(conky_sources
   conky.h
   core.cc
   core.h
+  system-details.cc
+  system-details.hh
   data/hardware/cpu.cc
   data/hardware/cpu.h
   data/hardware/diskio.cc
