@@ -6,6 +6,11 @@
   margin-top: 0.25rem;
 }
 
+.results :last-child>div {
+  border-bottom-left-radius: var(--radius-xl);
+  border-bottom-right-radius: var(--radius-xl);
+}
+
 :global(html.dark) .results > * + .group {
   border-top-color: rgb(255 255 255 / 0.1);
 }

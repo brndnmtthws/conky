@@ -54,7 +54,7 @@ const SearchResult: React.FunctionComponent<SearchResultProps> = ({
 
   return (
     <div
-      className={`mx-1 rounded flex flex-col px-4 py-2 ${selection} cursor-pointer`}
+      className={`mx-1 mb-1.25 rounded flex flex-col px-4 py-2 ${selection} cursor-pointer`}
     >
       <div className="flex items-center items-top">
         <code className="text-lg font-bold">{result.name}</code>
@@ -302,7 +302,7 @@ const Search: React.FunctionComponent = () => {
                   if (e.target === e.currentTarget) closeModal()
                 }}
               >
-                <DialogPanel className="flex flex-col max-h-full w-full max-w-2xl bg-gray-200 dark:bg-gray-800 transform rounded-xl text-left align-middle shadow transition-all border border-gray-800/10 dark:border-white/10">
+                <DialogPanel className="flex flex-col max-h-full w-full max-w-2xl bg-gray-200 dark:bg-gray-800 rounded-xl text-left align-middle shadow transition-all border border-gray-800/10 dark:border-white/10">
                   <Combobox value={null} immediate onChange={onChange}>
                     <div className="flex p-1">
                       <Label className="flex items-center ml-2">
@@ -318,11 +318,11 @@ const Search: React.FunctionComponent = () => {
                     </div>
                     <ComboboxOptions
                       static
-                      className={`${styles.results} flex flex-col h-full overflow-auto bg-gray-300 dark:bg-gray-900 rounded-b-xl ${searchResults.length && 'pb-1'}`}
+                      className={`${styles.results} flex flex-col h-full overflow-auto bg-gray-300 dark:bg-gray-900 rounded-b-xl`}
                     >
                       {searchResults.length === 0
                         ? searchText !== '' && (
-                            <div className="relative cursor-default select-none py-2 px-4 text-gray-500">
+                            <div className="relative cursor-default select-none py-4 px-4 text-gray-500">
                               {index ? 'No results.' : 'Loading…'}
                             </div>
                           )

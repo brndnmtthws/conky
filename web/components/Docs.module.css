@@ -1,0 +1,88 @@
+.doc-listing {
+  display: grid;
+  grid-template-columns: auto 1fr;
+}
+
+.doc-listing > .focus-indicator {
+  --width: 1ch;
+  --border-w: 1px;
+  --border-color: black;
+
+  display: block;
+  width: var(--width);
+  height: calc(100% - var(--border-w));
+  margin-left: calc(-1 * var(--width));
+  background: var(--doc-target-accent);
+  border-radius: calc(var(--width) / 2) 0 0 calc(var(--width) / 2);
+
+  border: var(--border-w) solid var(--border-color);
+  border-color: color-mix(in oklab, var(--doc-target-accent), var(--border-color) 20%);
+  border-inline-end: none;
+  box-sizing: content-box;
+  margin-top: calc(-1 * var(--border-w));
+
+  transform: translateX(0);
+  opacity: 0;
+}
+.doc-listing > .focus-indicator:has(+ :global([data-target])) {
+  opacity: 1;
+}
+
+:global(html.dark) .doc-listing > .focus-indicator {
+  --border-color: white;
+}
+
+@property --bg-opacity {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+.doc-entry {
+  --bg-opacity: 100%;
+  --bg-color: var(--color-slate-200);
+  background-color: color-mix(in oklab, var(--bg-color) var(--bg-opacity), transparent);
+}
+:global(html.dark) .doc-entry {
+  --bg-color: var(--color-slate-800);
+}
+.doc-entry:not([data-target]):hover {
+  --bg-opacity: 70%;
+}
+
+@property --glint-offset {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
+@property --glint-opacity {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .doc-listing > .focus-indicator {
+    transition:
+      transform 500ms cubic-bezier(0.4, 0.1, 0.15, 1.19),
+      clip-path 500ms cubic-bezier(0.4, 0.1, 0.15, 1.19);
+    transform: translateX(calc(var(--width) + var(--border-w)));
+    clip-path: rect(0 0% 100% 0);
+    opacity: 1;
+  }
+
+  .doc-listing > .focus-indicator:has(+ :global([data-target])) {
+    transform: translateX(0);
+    clip-path: rect(0 100% 100% 0);
+  }
+  
+  .doc-entry {
+    --glint-offset: -15%;
+    --glint-left: 40%;
+    --glint-right: 5%;
+    --glint-color: var(--doc-target-accent);
+    --glint-opacity: 0%;
+    background-image: linear-gradient(0.25turn, transparent 0%, transparent calc(var(--glint-offset) - var(--glint-left)), color-mix(in oklab, var(--glint-color) var(--glint-opacity), transparent) var(--glint-offset), transparent calc(var(--glint-offset) + var(--glint-right)), transparent 100%);
+    transition: --bg-opacity 400ms ease-out;
+  }
+}
