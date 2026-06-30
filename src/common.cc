@@ -1015,16 +1015,6 @@ error:
 
   if (!isdigit(static_cast<unsigned char>(*p))) { last_update = 1U; }
 }
-
-void print_stock(struct text_object *obj, char *p, unsigned int p_max_size) {
-  if (!obj->data.s) {
-    p[0] = 0;
-    return;
-  }
-  ccurl_process_info(p, p_max_size, obj->data.s, 1);
-}
-
-void free_stock(struct text_object *obj) { free(obj->data.s); }
 #endif /* BUILD_CURL */
 
 void print_to_bytes(struct text_object *obj, char *p, unsigned int p_max_size) {
