@@ -34,6 +34,20 @@ pre[class*='language-'] {
     'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace';
 }
 
+/* @tailwindcss/typography .prose normalizes Markdown table alignment too strictly */
+.prose
+  :where(th, td):not(
+    :where([class~='not-prose'], [class~='not-prose'] *)
+  )[align='center'] {
+  text-align: center;
+}
+.prose
+  :where(th, td):not(
+    :where([class~='not-prose'], [class~='not-prose'] *)
+  )[align='right'] {
+  text-align: end;
+}
+
 @layer base {
   code::before,
   code::after {

@@ -1,5 +1,4 @@
-import Fuse from 'fuse.js'
-import type { FuseResult } from 'fuse.js'
+import MiniSearch from 'minisearch'
 import React, {
   Fragment,
   useCallback,
@@ -9,7 +8,12 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import type { SearchIndex, SearchItem } from '../utils/search'
+import {
+  MINISEARCH_OPTIONS,
+  SEARCH_OPTIONS,
+  type SearchHit,
+  type SearchItem,
+} from '../utils/search-config'
 import {
   Dialog,
   Transition,
@@ -26,7 +30,7 @@ import { useRouter } from 'next/router'
 import styles from './Search.module.css'
 
 interface SearchResultProps {
-  result: FuseResult<SearchItem>
+  result: SearchHit
   active: boolean
 }
 
@@ -38,43 +42,35 @@ const KIND_LABELS: Record<string, string> = {
   lua: 'Lua API',
 }
 
-// Small ranking penalties added to a result's Fuse score (lower = better), so
-// active entries outrank equally-matching deprecated/removed ones. Applied after
-// search, so it only reorders — these items are still found, just demoted.
-const STATUS_PENALTY: Record<string, number> = {
-  deprecated: 0.1,
-  removed: 0.2,
-}
-
 const SearchResult: React.FunctionComponent<SearchResultProps> = ({
   active,
   result,
 }) => {
   const selection = active ? 'bg-slate-300 dark:bg-slate-700' : ''
   const excerpt =
-    result.item.desc.length <= 120
-      ? result.item.desc
-      : `${result.item.desc.slice(0, 120)}…`
+    result.summary.length <= 120
+      ? result.summary
+      : `${result.summary.slice(0, 120)}…`
 
   return (
     <div
       className={`mx-1 rounded flex flex-col px-4 py-2 ${selection} cursor-pointer`}
     >
       <div className="flex items-center items-top">
-        <code className="text-lg font-bold">{result.item.name}</code>
+        <code className="text-lg font-bold">{result.name}</code>
         <div className="grow shrink"></div>
-        {result.item.status === 'deprecated' && (
+        {result.status === 'deprecated' && (
           <span
             className="ml-2 align-middle rounded px-2 py-0.5 text-xs font-semibold uppercase tracking-wide bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-200"
-            title={`This setting is deprecated${result.item.deprecated_since ? ` since ${result.item.deprecated_since}` : ''} and may be removed in a future release.`}
+            title={`This setting is deprecated${result.deprecated_since ? ` since ${result.deprecated_since}` : ''} and may be removed in a future release.`}
           >
             Deprecated
           </span>
         )}
-        {result.item.status === 'removed' && (
+        {result.status === 'removed' && (
           <span
             className="ml-2 align-middle rounded px-2 py-0.5 text-xs font-semibold uppercase tracking-wide bg-red-200 text-red-900 dark:bg-red-900 dark:text-red-200"
-            title={`This setting was removed${result.item.removed_since ? ` in ${result.item.removed_since}` : ''} and no longer has any effect.`}
+            title={`This setting was removed${result.removed_since ? ` in ${result.removed_since}` : ''} and no longer has any effect.`}
           >
             Removed
           </span>
@@ -85,51 +81,65 @@ const SearchResult: React.FunctionComponent<SearchResultProps> = ({
   )
 }
 
+async function loadIndex(): Promise<MiniSearch<SearchItem>> {
+  const res = await fetch('/static/search-index.json')
+  const json = await res.text()
+  return MiniSearch.loadJSON<SearchItem>(json, MINISEARCH_OPTIONS)
+}
+
 const Search: React.FunctionComponent = () => {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [searchText, setSearchText] = useState('')
-  const [fuse, setFuse] = React.useState<Fuse<SearchItem>>()
+  const [index, setIndex] = useState<MiniSearch<SearchItem>>()
 
   // Keep typing responsive
   const deferredText = useDeferredValue(searchText)
-  const searchResults = useMemo(() => {
-    if (!fuse) return []
-    // Re-rank by Fuse score plus the status penalty so deprecated/removed
-    // entries sink below equally-matching active ones. The sort is stable, so
-    // entries with the same adjusted score keep Fuse's relevance order.
-    const adjusted = (r: FuseResult<SearchItem>) =>
-      (r.score ?? 0) + (STATUS_PENALTY[r.item.status ?? ''] ?? 0)
-    return [...fuse.search(deferredText, { limit: 30 })].sort(
-      (a, b) => adjusted(a) - adjusted(b),
+  const searchResults = useMemo<SearchHit[]>(() => {
+    if (!index || deferredText === '') return []
+    // MiniSearch returns BM25-ranked results best-first; `boostDocument` in
+    // SEARCH_OPTIONS already demotes deprecated/removed entries.
+    const results = index.search(
+      deferredText,
+      SEARCH_OPTIONS
+    ) as unknown as SearchHit[]
+    // Promote an exact name match to the top. BM25 can rank a short-desc partial
+    // match (e.g. `nvidia_display`) above the exact `nvidia`, but if the user
+    // typed the exact name that's almost certainly what they want. Stable sort,
+    // so everything else keeps its relevance order.
+    const query = deferredText.trim().toLowerCase()
+    results.sort(
+      (a, b) =>
+        Number(b.name.toLowerCase() === query) -
+        Number(a.name.toLowerCase() === query)
     )
-  }, [fuse, deferredText])
+    return results.slice(0, 30)
+  }, [index, deferredText])
 
-  const loadFuse = async () => {
-    const data = await fetch('/static/fuse-index.json')
-    const searchIndex: SearchIndex = await data.json()
-    return new Fuse(
-      searchIndex.list,
-      {
-        // Name matches matter far more than description matches, and we want a
-        // tighter threshold so unrelated fuzzy hits (e.g. "own_window" vaguely
-        // matching "mpd_random") drop out. ignoreLocation lets a match count
-        // anywhere in the string, not just near the start.
-        keys: [
-          { name: 'name', weight: 0.7 },
-          { name: 'desc', weight: 0.3 },
-        ],
-        threshold: 0.4,
-        ignoreLocation: true,
-        includeScore: true,
-      },
-      Fuse.parseIndex(searchIndex.index),
-    )
-  }
-
-  React.useEffect(() => {
-    void loadFuse().then((nextFuse) => setFuse(nextFuse))
+  // Load the index once, lazily. The ref dedupes concurrent triggers (idle
+  // preload vs. the user opening search) so we only ever fetch/parse once.
+  const indexPromise = useRef<Promise<MiniSearch<SearchItem>> | null>(null)
+  const ensureIndex = useCallback(() => {
+    if (!indexPromise.current) {
+      indexPromise.current = loadIndex()
+      void indexPromise.current.then(setIndex)
+    }
+    return indexPromise.current
   }, [])
+
+  // Preload during idle time, after the page has painted and settled, so the
+  // index is usually ready before the user opens search — without competing
+  // with initial load/hydration. `timeout` guarantees it still runs on a busy
+  // page; falls back to a timer where requestIdleCallback is unavailable.
+  useEffect(() => {
+    const ric = window.requestIdleCallback
+    if (ric) {
+      const id = ric(() => void ensureIndex(), { timeout: 1000 })
+      return () => window.cancelIdleCallback(id)
+    }
+    const t = window.setTimeout(() => void ensureIndex(), 500)
+    return () => window.clearTimeout(t)
+  }, [ensureIndex])
 
   const [isOpen, setIsOpen] = useState(false)
   const handleKeyPress = useCallback(
@@ -180,31 +190,29 @@ const Search: React.FunctionComponent = () => {
     }
   }, [isOpen])
 
-  if (!fuse) {
-    return (
-      <div className="flex h-10 w-10 items-center justify-center text-zinc-950 dark:text-white">
-        <SearchIcon size={28} strokeWidth={2} />
-      </div>
-    )
-  }
+  // Ensure loading has started by the time the dialog opens, in case the user
+  // beat the idle preload. Deduped, so it's a no-op if already loading/loaded.
+  useEffect(() => {
+    if (isOpen) void ensureIndex()
+  }, [isOpen, ensureIndex])
 
   const setSearch = (value: string) => {
     setSearchText(value)
   }
-  const onChange = (value: FuseResult<SearchItem> | null | undefined) => {
+  const onChange = (value: SearchHit | null | undefined) => {
     if (value) {
-      if (value.item.kind === 'var') {
-        void router.push(`/variables#${value.item.name}`, undefined, {
+      if (value.kind === 'var') {
+        void router.push(`/variables#${value.name}`, undefined, {
           scroll: false,
         })
       }
-      if (value.item.kind === 'config') {
-        void router.push(`/config_settings#${value.item.name}`, undefined, {
+      if (value.kind === 'config') {
+        void router.push(`/config_settings#${value.name}`, undefined, {
           scroll: false,
         })
       }
-      if (value.item.kind === 'lua') {
-        void router.push(`/lua#${value.item.name}`, undefined, {
+      if (value.kind === 'lua') {
+        void router.push(`/lua#${value.name}`, undefined, {
           scroll: false,
         })
       }
@@ -221,25 +229,25 @@ const Search: React.FunctionComponent = () => {
   }
 
   // Group results by kind, ordering both the groups and the rows within them by
-  // relevance: Fuse returns results best-first, so the kind whose best match
-  // appears earliest leads. This keeps grouping while letting a strong match
-  // (e.g. an exact "own_window" setting) surface above weaker matches of
+  // relevance: MiniSearch returns results best-first, so the kind whose best
+  // match appears earliest leads. This keeps grouping while letting a strong
+  // match (e.g. an exact "own_window" setting) surface above weaker matches of
   // another kind.
   const groups: {
     kind: string
     label: string
-    items: FuseResult<SearchItem>[]
+    items: SearchHit[]
   }[] = []
   const groupByKind = new Map<string, (typeof groups)[number]>()
   for (const result of searchResults) {
-    let group = groupByKind.get(result.item.kind)
+    let group = groupByKind.get(result.kind)
     if (!group) {
       group = {
-        kind: result.item.kind,
-        label: KIND_LABELS[result.item.kind],
+        kind: result.kind,
+        label: KIND_LABELS[result.kind],
         items: [],
       }
-      groupByKind.set(result.item.kind, group)
+      groupByKind.set(result.kind, group)
       groups.push(group)
     }
     group.items.push(result)
@@ -250,6 +258,8 @@ const Search: React.FunctionComponent = () => {
       <div className="flex items-center">
         <button
           onClick={openModal}
+          onPointerEnter={() => void ensureIndex()}
+          onFocus={() => void ensureIndex()}
           title="Search (/ or ⌘K)"
           className="inline-flex h-10 w-10 items-center justify-center text-zinc-950 transition hover:text-zinc-600 dark:text-white dark:hover:text-zinc-300"
         >
@@ -313,7 +323,7 @@ const Search: React.FunctionComponent = () => {
                       {searchResults.length === 0
                         ? searchText !== '' && (
                             <div className="relative cursor-default select-none py-2 px-4 text-gray-500">
-                              No results.
+                              {index ? 'No results.' : 'Loading…'}
                             </div>
                           )
                         : groups.map((group) => (
@@ -323,8 +333,8 @@ const Search: React.FunctionComponent = () => {
                               >
                                 {group.label}
                               </div>
-                              {group.items.map((r) => (
-                                <ComboboxOption key={r.refIndex} value={r}>
+                              {group.items.map((r: SearchHit) => (
+                                <ComboboxOption key={r.id} value={r}>
                                   {({ focus }) => (
                                     <SearchResult active={focus} result={r} />
                                   )}

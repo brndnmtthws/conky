@@ -58,7 +58,7 @@ export default function Docs({ docs, braces, assign }: DocsProps) {
 
   return (
     <>
-      <div className="px-2 lg:px-4">{parse(docs.desc_md, parseOptions)}</div>
+      <div className="px-2 lg:px-4">{parse(docs.desc_html, parseOptions)}</div>
       <div className="divide-y divide-gray-700/25 dark:divide-gray-300/25">
         {values.map((doc) => {
           return (
@@ -123,7 +123,7 @@ export default function Docs({ docs, braces, assign }: DocsProps) {
                 )}
               </div>
               <div className="prose-base lg:prose-lg lg:px-2">
-                {parse(doc.desc_md, parseOptions)}
+                {parse(doc.desc_html, parseOptions)}
                 {typeof doc.default !== 'undefined' && (
                   <div className="p-1">
                     Default:{' '}
