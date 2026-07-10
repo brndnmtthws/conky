@@ -45,8 +45,18 @@
 #cmakedefine HAVE_XCB_ERRORS 1
 
 #cmakedefine BUILD_WAYLAND 1
+#ifdef BUILD_WAYLAND
+constexpr bool BUILD_WAYLAND_V = true;
+#else
+constexpr bool BUILD_WAYLAND_V = false;
+#endif
 
 #cmakedefine BUILD_X11 1
+#ifdef BUILD_X11
+constexpr bool BUILD_X11_V = true;
+#else
+constexpr bool BUILD_X11_V = false;
+#endif
 
 #cmakedefine OWN_WINDOW 1
 
@@ -100,6 +110,11 @@
 
 #cmakedefine BUILD_NCURSES 1
 #cmakedefine LEAKFREE_NCURSES 1
+#ifdef BUILD_NCURSES
+constexpr bool BUILD_NCURSES_V = true;
+#else
+constexpr bool BUILD_NCURSES_V = false;
+#endif
 
 #cmakedefine BUILD_APCUPSD 1
 
@@ -120,6 +135,11 @@
 #cmakedefine BUILD_IPV6 1
 
 #cmakedefine BUILD_HTTP 1
+#ifdef BUILD_HTTP
+constexpr bool BUILD_HTTP_V = true;
+#else
+constexpr bool BUILD_HTTP_V = false;
+#endif
 
 #cmakedefine BUILD_GUI 1
 

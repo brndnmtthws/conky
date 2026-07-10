@@ -19,12 +19,12 @@ interface NavLinkProps {
 const NavLink: React.FunctionComponent<NavLinkProps> = (props) => {
   const router = useRouter()
   const bg = router.asPath.startsWith(props.href)
-    ? 'bg-rose-100 dark:bg-rose-900'
-    : ''
+    ? 'text-black dark:text-white bg-rose-100 dark:bg-rose-900'
+    : 'text-rose-950 dark:text-rose-50'
   return (
     <Link
       href={props.href}
-      className={`mx-0.5 inline-flex h-10 items-center rounded px-3 hover:ring-1 ring-black dark:ring-white hover:bg-rose-300 dark:hover:bg-rose-700 ${bg}`}
+      className={`mx-0.5 inline-flex h-10 items-center rounded px-3 hover:ring-1 ring-rose-950 dark:ring-white hover:bg-rose-300 dark:hover:bg-rose-700 ${bg}`}
     >
       {props.name}
     </Link>
@@ -49,7 +49,7 @@ export default function Header({ name, setDarkMode }: HeaderProps) {
             <NavLink href="/lua" name="Lua" />
           </div>
         )}
-        <div className="flex-grow" />
+        <div className="grow" />
         <div className="flex items-center gap-1.5">
           <Search />
           <div className="mx-1 flex h-10 items-center border-r border-zinc-900/15 px-2 dark:border-white/10">

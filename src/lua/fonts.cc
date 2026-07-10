@@ -30,7 +30,7 @@
 #include "fonts.h"
 #include "../logging.h"
 #include "../output/display-output.hh"
-#include "../output/gui.h"
+#include "../output/output-setting.hh"
 
 unsigned int selected_font = 0;
 std::vector<font_list> fonts;
@@ -67,7 +67,9 @@ void setup_fonts() {
 }
 
 int add_font(const char *data_in) {
-  if (!out_to_gui(*state)) { return 0; }
+  if (!conky::output_is({conky::output_t::X11, conky::output_t::WAYLAND})) {
+    return 0;
+  }
   fonts.emplace_back();
   fonts.rbegin()->name = data_in;
 

@@ -16,6 +16,14 @@ The supported documentation fields are:
 - `desc`: a markdown-formatted description of the thing
 - `args`: optional list of arguments
 - `default`: an optional default value, if applicable
+- `deprecated_since`: optional version string (e.g. `"1.24.3"`) marking the
+  release in which the entry was deprecated. When set, the entry is rendered as
+  deprecated and `desc` is treated as migration guidance (what to use instead)
+  rather than a description of the old behaviour.
+- `removed_since`: optional version string marking the release in which the
+  entry was removed. Takes precedence over `deprecated_since` (a setting may be
+  deprecated in one release and removed in a later one). Omit both for settings
+  that are in active use.
 
 ## Updating docs
 

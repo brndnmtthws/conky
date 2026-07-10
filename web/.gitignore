@@ -44,4 +44,4 @@ yarn-error.log*
 cypress/videos
 
 # Fuse.js index (we generate this on the fly)
-public/static/fuse-index.json
+public/static/search-index.json

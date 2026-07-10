@@ -45,6 +45,7 @@
 #include "common.h" /* at least for struct dns_data */
 #include "content/colours.hh"
 #include "lua/luamm.hh"
+#include "system-details.hh"
 
 #if defined(HAS_MCHECK_H)
 #include <mcheck.h>
@@ -157,52 +158,6 @@ char **get_templates(void);
 /* get_battery_stuff() item selector
  * needed by conky.c, linux.c and freebsd.c */
 enum { BATTERY_STATUS, BATTERY_TIME };
-
-namespace conky::info {
-
-// Don't guard enum values with #ifdef *_BUILD features; it will only make code
-// harder to maintain - size_t won't change in size.
-
-enum class display_session : std::size_t { unknown, x11, wayland };
-enum class window_manager : std::size_t {
-  unknown,
-
-  // X11
-  awesome,
-  bspwm,
-  compiz,
-  dde,  // Deepin
-  dwm,
-  enlightenment,
-  fluxbox,
-  herbstluftwm,
-  i3,
-  kwin,
-  marco,
-  metacity,
-  mutter,
-  openbox,
-  qtile,
-  xfwm,
-  windowmaker,
-
-  // Wayland (only)
-  hyprland,
-  river,
-  sway,
-  wayfire,
-
-  // Remember to update get_system_details when adding new ones!
-};
-
-struct system {
-  display_session session;
-
-  window_manager wm;
-  const char *wm_name;
-};
-
-}  // namespace conky::info
 
 struct information {
   unsigned int mask;

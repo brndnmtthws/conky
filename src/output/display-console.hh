@@ -23,11 +23,8 @@
 #ifndef DISPLAY_CONSOLE_HH
 #define DISPLAY_CONSOLE_HH
 
-#include <limits>
 #include <string>
-#include <type_traits>
 
-#include "../lua/luamm.hh"
 #include "display-output.hh"
 
 namespace conky {
@@ -37,12 +34,10 @@ namespace conky {
  */
 class display_output_console : public display_output_base {
  public:
-  explicit display_output_console(const std::string &name_);
+  display_output_console(const std::string &name_, output_t type);
 
   virtual ~display_output_console() {}
 
-  // check if available and enabled in settings
-  virtual bool detect();
   // connect to DISPLAY and other stuff
   virtual bool initialize();
   virtual bool shutdown();

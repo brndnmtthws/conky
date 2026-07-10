@@ -36,11 +36,21 @@ def reverse_format(param_list, format_string):
     return format_string.format(param_list)
 
 
+def emoji_yesno(text):
+    """Replace support-table emoji with plain words for the man page.
+
+    Color emoji render inconsistently in terminals/pagers and break tbl column
+    alignment, so the man output uses text while the website keeps the emoji.
+    """
+    return text.replace("✅", "Yes").replace("❌", "No")
+
+
 env = Environment(
     loader=FileSystemLoader("."),
     autoescape=select_autoescape(),
 )
 env.filters["reverse_format"] = reverse_format
+env.filters["emoji_yesno"] = emoji_yesno
 
 template = env.get_template(sys.argv[1])
 print(template.render(data))

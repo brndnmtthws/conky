@@ -141,7 +141,8 @@ struct lua_traits<T, false, false, true> {
 namespace priv {
 class config_setting_base {
  private:
-  static void process_setting(lua::state &l, bool init);
+  static void process_setting(lua::state &l,
+                              config_setting_base *init = nullptr);
   static int config__newindex(lua::state *l);
   static void make_conky_config(lua::state &l);
 
@@ -184,6 +185,14 @@ class config_setting_base {
    * stack on exit:  | ... |
    */
   void lua_set(lua::state &l);
+
+  /*
+   * Whether the user explicitly assigned this setting in the config, as opposed
+   * to it falling back to its default. True iff conky.config[name] is non-nil,
+   * so an explicit value equal to the default (e.g. an empty string) still
+   * counts as set.
+   */
+  bool is_set(lua::state &l);
 
   friend void conky::set_config_settings(lua::state &l);
   friend void conky::cleanup_config_settings(lua::state &l);

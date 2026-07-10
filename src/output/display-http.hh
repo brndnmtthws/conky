@@ -43,8 +43,6 @@ class display_output_http : public display_output_base {
 
   virtual ~display_output_http() {}
 
-  // check if available and enabled in settings
-  virtual bool detect();
   // connect to DISPLAY and other stuff
   virtual bool initialize();
   virtual bool shutdown();

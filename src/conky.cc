@@ -71,10 +71,6 @@
 #include "common.h"
 #include "content/text_object.h"
 
-#ifdef BUILD_WAYLAND
-#include "output/wl.h"
-#endif /* BUILD_WAYLAND */
-
 #ifdef BUILD_X11
 #include "lua/x11-settings.h"
 #include "output/x11.h"
@@ -202,16 +198,6 @@ static conky::simple_config_setting<bool> format_human_readable(
     "format_human_readable", true, true);
 conky::simple_config_setting<std::string> units_spacer("units_spacer", "",
                                                        false);
-
-conky::simple_config_setting<bool> out_to_stdout("out_to_console",
-// Default value is false, unless we are building without X
-#ifdef BUILD_GUI
-                                                 false,
-#else
-                                                 true,
-#endif
-                                                 false);
-conky::simple_config_setting<bool> out_to_stderr("out_to_stderr", false, false);
 
 int top_cpu, top_mem, top_time;
 #ifdef BUILD_IOSTATS
@@ -1685,7 +1671,7 @@ void draw_stuff() {
 
     selected_font = 0;
     set_foreground_color(default_color.get(*state));
-    unset_display_output();
+    set_display_output(nullptr);
   }
 
 #endif /* BUILD_GUI */
@@ -1748,177 +1734,7 @@ bool is_on_battery() {  // checks if at least one battery specified in
 
 volatile sig_atomic_t g_sigterm_pending, g_sighup_pending, g_sigusr2_pending;
 
-void get_system_details() {
-  // XDG_SESSION_TYPE is authoritative when present, but it's frequently unset
-  // or reports "tty"/"unspecified". Fall back to the protocol-specific display
-  // sockets: Wayland always exports WAYLAND_DISPLAY, and X11 virtually always
-  // exports DISPLAY. DISPLAY wins over WAYLAND_DISPLAY: when both are present
-  // an X server (Xwayland) is provably available and an X11 surface works on
-  // either session type, so it's the safe choice to commit to.
-  const char *session_ty = getenv("XDG_SESSION_TYPE");
-  if (session_ty != nullptr && std::strcmp(session_ty, "wayland") == 0) {
-    info.system.session = conky::info::display_session::wayland;
-  } else if (session_ty != nullptr && std::strcmp(session_ty, "x11") == 0) {
-    info.system.session = conky::info::display_session::x11;
-  } else if (getenv("DISPLAY") != nullptr) {
-    info.system.session = conky::info::display_session::x11;
-  } else if (getenv("WAYLAND_DISPLAY") != nullptr) {
-    info.system.session = conky::info::display_session::wayland;
-  } else {
-    info.system.session = conky::info::display_session::unknown;
-  }
-
-  info.system.wm_name = getenv("XDG_CURRENT_DESKTOP");
-  // Per spec, XDG_CURRENT_DESKTOP is a colon-separated list (e.g.
-  // "ubuntu:GNOME" on Ubuntu). The first matching token wins.
-  // Others below are non-standard:
-  if (info.system.wm_name == nullptr) {
-    info.system.wm_name = getenv("XDG_SESSION_DESKTOP");
-  }
-  if (info.system.wm_name == nullptr) {
-    info.system.wm_name = getenv("DESKTOP_SESSION");
-  }
-  if (info.system.wm_name == nullptr) {
-    info.system.wm_name = getenv("GDMSESSION");
-  }
-
-#ifdef ENABLE_RUNTIME_TWEAKS
-  std::vector<std::string_view> wm_name_tokens;
-  if (info.system.wm_name != nullptr) {
-    std::string_view rest{info.system.wm_name};
-    while (!rest.empty()) {
-      auto sep = rest.find(':');
-      wm_name_tokens.push_back(rest.substr(0, sep));
-      if (sep == std::string_view::npos) { break; }
-      rest.remove_prefix(sep + 1);
-    }
-  }
-
-  const auto is_wayland = [&]() {
-#ifndef BUILD_WAYLAND
-    return info.system.session == conky::info::display_session::wayland;
-#else
-    // ignore wayland WMs
-    return false;
-#endif
-  };
-
-  const auto is_session = [](std::string_view token, auto &&...names) {
-    return ((token == std::string_view{names}) || ...);
-  };
-
-  // Only add is_wayland guard for WM/DE that will never support another display
-  // session protocol. e.g. Budgie will (or has) switch(ed) to Wayland at some
-  // point, but older versions may use X11, so it needs to be detected for both
-  // X11 and Wayland.
-  const auto detect_session = [&](std::string_view token) {
-    if (is_session(token, "GNOME")) {
-      info.system.wm = conky::info::window_manager::mutter;
-    } else if (is_session(token, "GNOME Classic", "metacity")) {
-      info.system.wm = conky::info::window_manager::metacity;
-    } else if (is_session(token, "MATE")) {
-      info.system.wm = conky::info::window_manager::marco;
-    } else if (is_session(token, "XFCE", "XFCE4")) {
-      info.system.wm = conky::info::window_manager::xfwm;
-    } else if (is_session(token, "KDE", "Plasma", "KDE Plasma")) {
-      info.system.wm = conky::info::window_manager::kwin;
-    } else if (is_session(token, "LXDE", "LXQt")) {
-      info.system.wm = conky::info::window_manager::openbox;
-    } else if (is_session(token, "Unity")) {
-      info.system.wm = conky::info::window_manager::compiz;
-    } else if (is_session(token, "Cinnamon")) {
-      // Muffin → Mutter
-      info.system.wm = conky::info::window_manager::mutter;
-    } else if (!is_wayland() && is_session(token, "Openbox")) {
-      // Openbox doesn't set any session name env variables; must be set
-      // manually
-      info.system.wm = conky::info::window_manager::openbox;
-    } else if (!is_wayland() && is_session(token, "Fluxbox")) {
-      // Fluxbox doesn't set any session name env variables; must be set
-      // manually
-      info.system.wm = conky::info::window_manager::fluxbox;
-    } else if (!is_wayland() && (is_session(token, "i3", "i3wm"))) {
-      info.system.wm = conky::info::window_manager::i3;
-    } else if (is_wayland() && is_session(token, "Hyprland")) {
-      info.system.wm = conky::info::window_manager::hyprland;
-    } else if (is_wayland() && is_session(token, "Sway")) {
-      info.system.wm = conky::info::window_manager::sway;
-    } else if (!is_wayland() && is_session(token, "bspwm")) {
-      info.system.wm = conky::info::window_manager::bspwm;
-    } else if (is_session(token, "awesome")) {
-      // some talks about adding Wayland support
-      info.system.wm = conky::info::window_manager::awesome;
-    } else if (!is_wayland() && is_session(token, "dwm")) {
-      info.system.wm = conky::info::window_manager::dwm;
-    } else if (!is_wayland() && is_session(token, "herbstluftwm")) {
-      info.system.wm = conky::info::window_manager::herbstluftwm;
-    } else if (!is_wayland() && is_session(token, "qtile")) {
-      info.system.wm = conky::info::window_manager::qtile;
-    } else if (!is_wayland() && is_session(token, "windowmaker")) {
-      info.system.wm = conky::info::window_manager::windowmaker;
-    } else if (is_wayland() && is_session(token, "Wayfire")) {
-      info.system.wm = conky::info::window_manager::wayfire;
-    } else if (is_wayland() && is_session(token, "River")) {
-      info.system.wm = conky::info::window_manager::river;
-    } else if (is_session(token, "Budgie")) {
-      // Budgie → Mutter
-      info.system.wm = conky::info::window_manager::mutter;
-    } else if (is_session(token, "Deepin")) {
-      info.system.wm = conky::info::window_manager::dde;
-    } else if (is_session(token, "Enlightenment", "E17")) {
-      info.system.wm = conky::info::window_manager::enlightenment;
-    } else {
-      return false;
-    }
-
-    return true;
-  };
-
-  bool detected_session = false;
-  for (const auto &token : wm_name_tokens) {
-    if (detect_session(token)) {
-      detected_session = true;
-      break;
-    }
-  }
-
-  if (!detected_session) {
-    info.system.wm_name = "unknown";
-    info.system.wm = conky::info::window_manager::unknown;
-
-    // probably a misconfigured system... let's attempt a few more things
-    if (getenv("CINNAMON_VERSION") != nullptr) {
-      info.system.wm_name = "Cinnamon";
-      info.system.wm = conky::info::window_manager::mutter;
-    }
-
-    // TODO: Doesn't work yet. Process information is not yet populated.
-    if (is_process_running("openbox")) {
-      info.system.wm_name = "Openbox";
-      info.system.wm = conky::info::window_manager::openbox;
-    }
-  }
-#endif
-
-  const char *session_name = nullptr;
-  switch (info.system.session) {
-    case conky::info::display_session::x11:
-      session_name = "x11";
-      break;
-    case conky::info::display_session::wayland:
-      session_name = "wayland";
-      break;
-    case conky::info::display_session::unknown:
-      break;
-  }
-  if (session_name != nullptr) {
-    if (info.system.wm_name != nullptr) {
-      LOG_INFO("'{}' {} session running", info.system.wm_name, session_name);
-    } else {
-      LOG_INFO("unknown {} session running", session_name);
-    }
-  }
-}
+conky::info::system *user_system() { return &info.system; }
 
 void main_loop() {
   auto _scope = LOG_SCOPE("main_loop");
@@ -1942,8 +1758,6 @@ void main_loop() {
   sigaddset(&newmask, SIGTERM);
   sigaddset(&newmask, SIGUSR1);
 #endif
-
-  get_system_details();
 
   last_update_time = 0.0;
   /* Align the update grid to wall-clock (not monotonic) second boundaries so
@@ -2187,20 +2001,6 @@ static void set_default_configurations() {
   info.xmms2.status = nullptr;
   info.xmms2.playlist = nullptr;
 #endif /* BUILD_XMMS2 */
-
-/* Enable a single output by default based on what was enabled at build-time */
-#ifdef BUILD_WAYLAND
-  state->pushboolean(true);
-  out_to_wayland.lua_set(*state);
-#else
-#ifdef BUILD_X11
-  state->pushboolean(true);
-  out_to_x.lua_set(*state);
-#else
-  state->pushboolean(true);
-  out_to_stdout.lua_set(*state);
-#endif
-#endif
 
   info.users.number = 1;
 }
@@ -2483,9 +2283,6 @@ void initialisation(int argc, char **argv) {
   }
 #endif
 
-  /* generate text and get initial size */
-  extract_variable_text(global_text);
-  free_and_zero(global_text);
   /* fork */
   if (fork_to_background.get(*state) && (first_pass != 0)) {
     int pid = fork();
@@ -2509,6 +2306,16 @@ void initialisation(int argc, char **argv) {
     }
   }
 
+  // Outputs must be initialized before parsing the text: object construction
+  // (e.g. ${color}) queries which backends are actually enabled, which is only
+  // known once initialization has been attempted. Initialization runs after
+  // fork() because X11/Wayland connections cannot survive crossing a fork().
+  conky::initialize_display_outputs();
+
+  /* generate text and get initial size */
+  extract_variable_text(global_text);
+  free_and_zero(global_text);
+
   text_buffer = new char[max_user_text.get(*state)];
   memset(text_buffer, 0, max_user_text.get(*state));
   tmpstring1 = new char[text_buffer_size.get(*state)];
@@ -2516,9 +2323,9 @@ void initialisation(int argc, char **argv) {
   tmpstring2 = new char[text_buffer_size.get(*state)];
   memset(tmpstring2, 0, text_buffer_size.get(*state));
 
-  if (!conky::initialize_display_outputs()) {
-    SYSTEM_ERR("no usable display output found");
-  }
+  // NOTE: Lua globals (llua_setup_window_table, llua_setup_info) depend on
+  // `initialize_display_outputs` running first. We don't expose unpopulated X11
+  // values if X11 will never set them to something valid.
 #ifdef BUILD_GUI
   /* setup lua window globals */
   llua_setup_window_table(

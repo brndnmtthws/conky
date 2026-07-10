@@ -120,6 +120,8 @@ set(conky_sources
   conky.h
   core.cc
   core.h
+  system-details.cc
+  system-details.hh
   data/hardware/cpu.cc
   data/hardware/cpu.h
   data/hardware/diskio.cc
@@ -172,6 +174,8 @@ set(conky_sources
   data/data-source.hh
   output/display-output.cc
   output/display-output.hh
+  output/output-setting.cc
+  output/output-setting.hh
   output/display-console.cc
   output/display-console.hh
   output/display-file.cc
@@ -367,7 +371,6 @@ endif(BUILD_GUI)
 if(BUILD_WAYLAND)
   set(wl_sources
     output/wl.cc
-    output/wl.h
     output/wl-shell.cc
     output/wl-shell.h
     output/display-wayland.cc
@@ -519,7 +522,9 @@ endif(BUILD_INTEL_BACKLIGHT)
 
 if(BUILD_TESTING)
   # Create a library strictly for testing
-  add_library(conky_core ${conky_sources} ${optional_sources})
+  # It's an object library to keep global registries working; otherwise the
+  # linker will ignore unreferenced statics (e.g. outputs)
+  add_library(conky_core OBJECT ${conky_sources} ${optional_sources})
   add_dependencies(conky_core generated_hdr_files)
   target_include_directories(conky_core PUBLIC ${conky_target_includes})
   target_link_libraries(conky_core ${conky_libs})
@@ -527,10 +532,6 @@ if(BUILD_TESTING)
   add_dependencies(conky generated_hdr_files)
   target_include_directories(conky PRIVATE ${conky_target_includes})
   target_link_libraries(conky conky_core ${conky_libs})
-  install(TARGETS conky_core
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-    ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
 else()
   add_executable(conky main.cc ${conky_sources} ${optional_sources})
   add_dependencies(conky generated_hdr_files)
@@ -538,16 +539,22 @@ else()
   target_link_libraries(conky ${conky_libs})
 endif()
 
+if(BUILD_SHARED_LIBS)
+  # conky_libs install outside the default loader search path; let the binary
+  # find them.
+  set_target_properties(conky PROPERTIES INSTALL_RPATH "${LIB_INSTALL_DIR}")
+endif(BUILD_SHARED_LIBS)
+
 install(TARGETS conky
   RUNTIME DESTINATION bin
-  LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-  ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
+  LIBRARY DESTINATION ${LIB_INSTALL_DIR_REL}
+  ARCHIVE DESTINATION ${LIB_INSTALL_DIR_REL})
 
 if(BUILD_PORT_MONITORS)
   install(TARGETS tcp-portmon
     RUNTIME DESTINATION bin
-    LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-    ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
+    LIBRARY DESTINATION ${LIB_INSTALL_DIR_REL}
+    ARCHIVE DESTINATION ${LIB_INSTALL_DIR_REL})
 endif(BUILD_PORT_MONITORS)
 
 print_target_properties(conky)

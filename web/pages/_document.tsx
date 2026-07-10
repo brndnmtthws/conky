@@ -1,4 +1,3 @@
-import React from 'react'
 import Document, { Html, Head, Main, NextScript } from 'next/document'
 
 const themeScript = `
@@ -14,7 +13,7 @@ const themeScript = `
 class MyDocument extends Document {
   render() {
     return (
-      <Html lang="en" className="theme-compiled scroll-smooth" suppressHydrationWarning>
+      <Html lang="en" className="theme-compiled" suppressHydrationWarning>
         <Head>
           <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
           <script dangerouslySetInnerHTML={{ __html: themeScript }} />

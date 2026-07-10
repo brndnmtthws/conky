@@ -18,12 +18,10 @@ export default function ConfigSettings(props: ConfigSettingsProps) {
         title="Conky – Config settings"
         description="Conky configuration settings"
       />
-      <main className="w-full pt-4">
-        <div>
-          <h1 className="text-2xl px-2 lg:px-4" data-cy="page-heading">
-            Configuration settings
-          </h1>
-        </div>
+      <main className="w-full prose dark:prose-invert lg:max-w-[80ch]">
+        <h1 className="text-2xl px-2 lg:px-4" data-cy="page-heading">
+          Configuration settings
+        </h1>
         <Docs docs={props.config_settings} braces={false} assign={true} />
       </main>
     </Layout>

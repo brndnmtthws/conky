@@ -40,8 +40,6 @@ class display_output_x11 : public display_output_base {
 
   virtual ~display_output_x11() {}
 
-  // check if available and enabled in settings
-  virtual bool detect();
   // connect to DISPLAY and other stuff
   virtual bool initialize();
   virtual bool shutdown();

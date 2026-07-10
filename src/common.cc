@@ -39,9 +39,12 @@
 #include <unistd.h>
 #include <cctype>
 #include <cerrno>
+#include <charconv>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
+#include <optional>
 #include <vector>
 
 #include "config.h"
@@ -430,6 +433,33 @@ conky::simple_config_setting<std::string> bar_unfill("console_bar_unfill", ".",
                                                      false);
 conky::simple_config_setting<std::string> github_token("github_token", "",
                                                        false);
+
+std::size_t scan_cpu_index(const char *str) {
+  if (str == nullptr || *str == '\0') { return 1; }
+  const char *end = str + std::strlen(str);
+
+  while (str != end && std::isspace(static_cast<unsigned char>(*str))) {
+    ++str;
+  }
+  if (str == end) { return 1; }
+
+  std::size_t result;
+  auto [ptr, error_const] = std::from_chars(str, end, result);
+  while (ptr != end && std::isspace(static_cast<unsigned char>(*ptr))) {
+    ++ptr;
+  }
+
+  bool valid = error_const == std::errc{} &&
+               ptr == end &&  // consume entire string
+               result >= 1 && result <= info.cpu_count;
+
+  if (!valid) {
+    LOG_WARNING("invalid CPU number '{}', falling back to CPU 1", str);
+    return 1;
+  }
+
+  return result;
+}
 
 void update_stuff() {
   /* clear speeds, addresses and up status in case device was removed and
@@ -985,16 +1015,6 @@ error:
 
   if (!isdigit(static_cast<unsigned char>(*p))) { last_update = 1U; }
 }
-
-void print_stock(struct text_object *obj, char *p, unsigned int p_max_size) {
-  if (!obj->data.s) {
-    p[0] = 0;
-    return;
-  }
-  ccurl_process_info(p, p_max_size, obj->data.s, 1);
-}
-
-void free_stock(struct text_object *obj) { free(obj->data.s); }
 #endif /* BUILD_CURL */
 
 void print_to_bytes(struct text_object *obj, char *p, unsigned int p_max_size) {

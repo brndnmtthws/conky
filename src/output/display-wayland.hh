@@ -23,17 +23,12 @@
 #ifndef DISPLAY_WAYLAND_HH
 #define DISPLAY_WAYLAND_HH
 
-#include "config.h"
-
-#include <limits>
 #include <memory>
-#include <string>
-#include <type_traits>
+
+#include <wayland-client.h>
 
 #include "../content/colours.hh"
-#include "../lua/luamm.hh"
 #include "display-output.hh"
-#include "wl.h"
 
 namespace conky {
 
@@ -46,8 +41,6 @@ class display_output_wayland : public display_output_base {
 
   virtual ~display_output_wayland() {}
 
-  // check if available and enabled in settings
-  virtual bool detect();
   // connect to DISPLAY and other stuff
   virtual bool initialize();
   virtual bool shutdown();
