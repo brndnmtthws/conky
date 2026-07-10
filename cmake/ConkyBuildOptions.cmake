@@ -89,7 +89,6 @@ if(REPRODUCIBLE_BUILD)
 else()
   set(USE_CCACHE_DEFAULT ON)
 endif()
-mark_as_advanced(USE_CCACHE_DEFAULT)
 # Instead of rebuilding objects from scratch, the compiler will reuse cached
 # parts of compilation in order to speed up compilation.
 option(USE_CCACHE "Sccache/ccache will be used (if installed) to speed up compilation" ${USE_CCACHE_DEFAULT})
@@ -115,12 +114,24 @@ option(BUILD_COLOUR_NAME_MAP "Include mappings of colour name -> RGB (e.g. red -
 set(SYSTEM_CONFIG_FILE "/etc/conky/conky.conf"
   CACHE STRING "Default system-wide Conky configuration file")
 
-# use FORCE below to make sure this changes when CMAKE_INSTALL_PREFIX is
-# modified
+# LIB_INSTALL_DIR may be unset, relative to the prefix, or absolute.
 if(NOT LIB_INSTALL_DIR)
   set(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
-endif(NOT LIB_INSTALL_DIR)
+elseif(NOT IS_ABSOLUTE "${LIB_INSTALL_DIR}")
+  # LIB_INSTALL_DIR feeds config.h and RPATH (must be made absolute).
+  set(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR}")
+endif()
 
+# LIB_INSTALL_DIR_REL feeds install() (must be relative so --prefix and DESTDIR
+# relocate).
+file(RELATIVE_PATH LIB_INSTALL_DIR_REL
+  "${CMAKE_INSTALL_PREFIX}" "${LIB_INSTALL_DIR}")
+if(LIB_INSTALL_DIR_REL STREQUAL "")
+  # install() rejects an empty destination.
+  set(LIB_INSTALL_DIR_REL ".")
+endif()
+
+# FORCE so this tracks CMAKE_INSTALL_PREFIX changes across reconfigures.
 set(PACKAGE_LIBRARY_DIR "${LIB_INSTALL_DIR}/conky"
   CACHE STRING "Package library path (where Lua bindings are installed"
   FORCE)

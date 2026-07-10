@@ -539,16 +539,22 @@ else()
   target_link_libraries(conky ${conky_libs})
 endif()
 
+if(BUILD_SHARED_LIBS)
+  # conky_libs install outside the default loader search path; let the binary
+  # find them.
+  set_target_properties(conky PROPERTIES INSTALL_RPATH "${LIB_INSTALL_DIR}")
+endif(BUILD_SHARED_LIBS)
+
 install(TARGETS conky
   RUNTIME DESTINATION bin
-  LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-  ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
+  LIBRARY DESTINATION ${LIB_INSTALL_DIR_REL}
+  ARCHIVE DESTINATION ${LIB_INSTALL_DIR_REL})
 
 if(BUILD_PORT_MONITORS)
   install(TARGETS tcp-portmon
     RUNTIME DESTINATION bin
-    LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-    ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
+    LIBRARY DESTINATION ${LIB_INSTALL_DIR_REL}
+    ARCHIVE DESTINATION ${LIB_INSTALL_DIR_REL})
 endif(BUILD_PORT_MONITORS)
 
 print_target_properties(conky)
