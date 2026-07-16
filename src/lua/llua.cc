@@ -136,8 +136,13 @@ conky::simple_config_setting<std::string> lua_draw_hook_pre("lua_draw_hook_pre",
                                                             true);
 conky::simple_config_setting<std::string> lua_draw_hook_post(
     "lua_draw_hook_post", std::string(), true);
+#endif /* BUILD_GUI */
 
-#endif
+// TODO(#2395): add `lua_http_response_hook` simple_config_setting<std::string>
+// here (mirrors lua_startup_hook above), used by the HTTP display backend to
+// let users customize the HTTP response (body/status/headers) instead of the
+// hardcoded HTML in display-http.cc.
+
 }  // namespace
 
 static int llua_conky_parse(lua_State *L) {

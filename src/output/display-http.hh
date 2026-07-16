@@ -63,6 +63,11 @@ class display_output_http : public display_output_base {
 
 std::string html_escape(const std::string &input);
 
+// TODO(#2395): add an http_response struct here (body, status, headers as
+// vector<pair<string,string>>) returned by the new llua_http_response_hook()
+// so sendanswer() in display-http.cc can build a customized MHD_Response
+// instead of always serving the hardcoded HTML page.
+
 }  // namespace conky
 
 #endif /* DISPLAY_HTTP_HH */

@@ -71,6 +71,15 @@ MHD_Result sendanswer(void *cls, struct MHD_Connection *connection,
                       const char *url, const char *method, const char *version,
                       const char *upload_data, size_t *upload_data_size,
                       void **con_cls) {
+  // TODO(#2395): before falling back to `presented`, call
+  // llua_http_response_hook() (declared in llua.h). If it returns a
+  // populated http_response, build the MHD_Response from its body, add
+  // custom headers via MHD_add_response_header(), and queue with its status
+  // instead of the hardcoded MHD_HTTP_OK below. Calling into Lua here means
+  // this now runs on microhttpd's worker thread rather than the draw
+  // thread, so the Lua call needs to be guarded by a mutex too (reuse
+  // builder_mutex, since it already protects "what does this HTTP response
+  // look like").
   struct MHD_Response *response;
   {
     /* Copy the page out under the lock; MHD_RESPMEM_MUST_COPY snapshots the
