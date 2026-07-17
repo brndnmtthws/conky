@@ -52,16 +52,7 @@ void llua_init();
 void llua_startup_hook(void);
 void llua_shutdown_hook(void);
 
-// TODO(#2395): declare llua_http_response_hook() here. Should call the
-// configured `lua_http_response_hook` Lua function and read back a table
-// (body/status/headers) so display-http.cc's sendanswer() can build a
-// customized MHD_Response instead of the hardcoded HTML page. Needs a new
-// table-reading path since llua_do_call() callers so far only expect a
-// string (llua_getstring) or number (llua_getnumber) return.
-//
-// Returns false (and leaves outputs untouched) if the hook isn't configured
-// or its return value couldn't be used, so callers know to fall back to
-// their default response.
+// Calls lua_http_response_hook, returns false if unset or unusable.
 bool llua_http_response_hook(
     std::string *body, int *status,
     std::vector<std::pair<std::string, std::string>> *headers);

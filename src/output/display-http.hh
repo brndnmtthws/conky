@@ -65,21 +65,12 @@ class display_output_http : public display_output_base {
 
 std::string html_escape(const std::string &input);
 
-/*
- * Result of the user-defined `lua_http_response_hook`, used to customize the
- * response the HTTP backend serves instead of the hardcoded HTML page.
- */
+// Response built from the user's lua_http_response_hook, if configured.
 struct http_response {
   std::string body;
   int status = 200;
   std::vector<std::pair<std::string, std::string>> headers;
 };
-
-// TODO(#2395): add llua_http_response_hook() (declared in llua.h) that calls
-// the configured `lua_http_response_hook` Lua function and fills in an
-// http_response from its returned table. Then wire it into sendanswer() in
-// display-http.cc, guarded by builder_mutex since it'll run on microhttpd's
-// worker thread.
 
 }  // namespace conky
 
