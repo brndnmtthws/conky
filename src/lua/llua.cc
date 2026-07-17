@@ -142,6 +142,8 @@ conky::simple_config_setting<std::string> lua_draw_hook_post(
 // here (mirrors lua_startup_hook above), used by the HTTP display backend to
 // let users customize the HTTP response (body/status/headers) instead of the
 // hardcoded HTML in display-http.cc.
+conky::simple_config_setting<std::string> lua_http_response_hook(
+    "lua_http_response_hook", std::string(), true);
 
 }  // namespace
 
@@ -480,6 +482,83 @@ static char *llua_getstring(const char *args) {
 
   return ret;
 }
+
+// TODO(#2395): implement llua_http_response_hook() (declared in llua.h).
+// sendanswer() in display-http.cc still needs to call this (guarded by
+// builder_mutex, since this runs on microhttpd's worker thread rather than
+// the draw thread) and build its MHD_Response from the results instead of
+// always serving the hardcoded HTML page.
+//
+// bool llua_http_response_hook(body, status, headers):
+//     # 1. Bail out early if no hook is configured -- backward compatible,
+//     #    does nothing unless the user opts in, same pattern as
+//     #    llua_startup_hook().
+//     if lua_http_response_hook setting is empty string:
+//         return false
+//
+//     # 2. Call the user's Lua function by name, asking Lua to leave exactly
+//     #    1 return value on the stack. llua_do_call() handles resolving the
+//     #    "conky_" prefix and lua_pcall(); on failure it already logged the
+//     #    error and returns nullptr.
+//     func_name = llua_do_call(configured hook name, retc=1)
+//     if func_name is nullptr:
+//         return false   # Lua call itself failed; nothing left on stack
+//
+//     # 3. The one return value is now on top of the Lua stack (index -1).
+//     #    We require it to be a table: { body = ..., status = ...,
+//     #    headers = {...} }.
+//     if top-of-stack is NOT a table:
+//         log warning "did not return a table"
+//         pop 1 (discard whatever it did return)
+//         return false
+//
+//     # --- read table.body ---
+//     # 4. lua_getfield pushes table["body"] onto the stack (now at index
+//     #    -1, table dropped to -2).
+//     push table["body"]
+//     if it's a string:
+//         *body = that string
+//     else:
+//         log warning "missing 'body' field"
+//     pop 1   # remove the field value, table is back at -1
+//
+//     # --- read table.status ---
+//     # 5. Same pattern: push the field, check type, pop it back off.
+//     push table["status"]
+//     if it's a number:
+//         *status = (int) that number
+//     # (no warning if missing -- status is optional, struct default 200)
+//     pop 1
+//
+//     # --- read table.headers ---
+//     # 6. push table["headers"]; if present it should itself be a table
+//     #    mapping header-name -> header-value.
+//     push table["headers"]
+//     if it's a table:
+//         # lua_next-based table iteration: push a nil "key" first, then
+//         # each call to lua_next pops the previous key and pushes the
+//         # next key/value pair, returning 0 when there are no more
+//         # entries.
+//         push nil  # seed key for iteration
+//         while lua_next(headers_table) pops key, pushes (next_key, value):
+//             if key is string AND value is string:
+//                 headers.append( (key, value) )
+//             pop 1   # drop value, leave key on stack for next lua_next()
+//         # (lua_next itself pops the final key when iteration ends)
+//     pop 1   # remove the headers table/field, response table back at -1
+//
+//     # 7. Clean up: remove the response table itself, restoring the stack
+//     #    to how it was before this function ran (every push needs a
+//     #    matching pop, or the stack grows forever across requests).
+//     pop 1
+//
+//     return true
+//
+// NOTE: watch the lua_next() gotcha -- don't call lua_tostring() on a key
+// still needed for the next lua_next() call without care, since
+// lua_tostring() can coerce numbers to strings in place and corrupt
+// iteration. Use a duplicated stack value (lua_pushvalue) before
+// converting, or convert the value first and key last.
 
 #if 0
 /* call a function with args, and return a string from it (must be free'd) */
