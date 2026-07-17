@@ -30,6 +30,10 @@ extern "C" {
 #include <lualib.h>
 }
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <config.h>
 #include "../geometry.h"
 
@@ -54,6 +58,13 @@ void llua_shutdown_hook(void);
 // customized MHD_Response instead of the hardcoded HTML page. Needs a new
 // table-reading path since llua_do_call() callers so far only expect a
 // string (llua_getstring) or number (llua_getnumber) return.
+//
+// Returns false (and leaves outputs untouched) if the hook isn't configured
+// or its return value couldn't be used, so callers know to fall back to
+// their default response.
+bool llua_http_response_hook(
+    std::string *body, int *status,
+    std::vector<std::pair<std::string, std::string>> *headers);
 
 #ifdef BUILD_GUI
 void llua_draw_pre_hook(void);
