@@ -479,9 +479,49 @@ static char *llua_getstring(const char *args) {
   return ret;
 }
 
-// TODO: implement llua_http_response_hook, call it from sendanswer() in
-// display-http.cc under builder_mutex. Watch out for the lua_next/
-// lua_tostring ordering issue when reading the headers table.
+/* call the configured http response hook; returns true and fills body/status/headers if it returned a table */
+bool llua_http_response_hook(
+std::string *body, int *status,
+  std::vector<std::pair<std::string, std::string>> *headers) {
+    if (lua_http_response_hook.get(*state).empty()) { return false; }
+
+    char *func = llua_do_call(lua_http_response_hook.get(*state).c_str(), 1);
+    if (func == nullptr) { return false; }
+    if (lua_istable(lua_L, -1) == 0){
+      LOG_WARNING("lua function '{}' did not return a table, result discard", func);
+      lua_pop(lua_L, 1);
+      return false;
+    }
+
+    lua_getfield(lua_L, -1, "body");
+    if (lua_isstring(lua_L, -1) != 0) {
+      *body = lua_tostring(lua_L, -1);
+    } else {
+      LOG_WARNING("lua function '{}' table missing string 'body' field", func);
+    }
+    lua_pop(lua_L, 1);
+
+    lua_getfield(lua_L, -1, "status");
+    if (lua_isnumber(lua_L, -1) != 0) {
+      *status = static_cast<int>(lua_tonumber(lua_L, -1));
+    }
+    lua_pop(lua_L, 1);
+
+    lua_getfield(lua_L, -1, "headers");
+    if (lua_istable(lua_L, -1) != 0) {
+      lua_pushnil(lua_L);
+      while (lua_next(lua_L, -2) != 0) {
+        if (lua_isstring(lua_L, -2) != 0 && lua_isstring(lua_L, -1) != 0) {
+          headers->emplace_back(lua_tostring(lua_L, -2), lua_tostring(lua_L, -1));
+        }
+        lua_pop(lua_L, 1);
+      }
+    }
+    lua_pop(lua_L, 1);
+
+    lua_pop(lua_L, 1);
+    return true;
+  }
 
 #if 0
 /* call a function with args, and return a string from it (must be free'd) */
