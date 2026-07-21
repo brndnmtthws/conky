@@ -27,6 +27,7 @@
 #include <config.h>
 
 #include "../conky.h"
+#include "../lua/llua.h"
 #include "display-http.hh"
 
 #include <iostream>
@@ -71,10 +72,28 @@ MHD_Result sendanswer(void *cls, struct MHD_Connection *connection,
                       const char *url, const char *method, const char *version,
                       const char *upload_data, size_t *upload_data_size,
                       void **con_cls) {
-  // TODO: call llua_http_response_hook here before falling back to
-  // `presented`, use its status/headers if present.
-  struct MHD_Response *response;
+  std::string hook_body;
+  int hook_status = 200;
+  std::vector<std::pair<std::string, std::string>> hook_headers;
+  bool have_hook_response;
   {
+    /* llua_http_response_hook() may call into Lua from a non-draw thread. */
+    std::lock_guard<std::mutex> lock(builder_mutex);
+    have_hook_response =
+        llua_http_response_hook(&hook_body, &hook_status, &hook_headers);
+  }
+
+  struct MHD_Response *response;
+  int response_status = MHD_HTTP_OK;
+  if (have_hook_response) {
+    response = MHD_create_response_from_buffer(
+        hook_body.length(), (void *)hook_body.c_str(), MHD_RESPMEM_MUST_COPY);
+    for (const auto &header : hook_headers) {
+      MHD_add_response_header(response, header.first.c_str(),
+                              header.second.c_str());
+    }
+    response_status = hook_status;
+  } else {
     /* Copy the page out under the lock; MHD_RESPMEM_MUST_COPY snapshots the
      * bytes so we don't hand MHD a pointer into a string the draw thread may
      * reallocate. */
@@ -82,7 +101,8 @@ MHD_Result sendanswer(void *cls, struct MHD_Connection *connection,
     response = MHD_create_response_from_buffer(
         presented.length(), (void *)presented.c_str(), MHD_RESPMEM_MUST_COPY);
   }
-  MHD_Result ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
+
+  MHD_Result ret = MHD_queue_response(connection, response_status, response);
   MHD_destroy_response(response);
   if (cls || url || method || version || upload_data || upload_data_size ||
       con_cls) {}  // make compiler happy
