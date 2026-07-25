@@ -56,6 +56,15 @@ set(conky_libs ${conky_libs} Vc)
 set(conky_libs ${conky_libs} spdlog::spdlog)
 set(conky_includes ${conky_includes} "${CMAKE_SOURCE_DIR}/3rdparty/Vc")
 
+# Check for systemd to replace utmp for user tracking
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SYSTEMD libsystemd)
+if(SYSTEMD_FOUND)
+  add_definitions(-DHAVE_SYSTEMD)
+  set(conky_includes ${conky_includes} ${SYSTEMD_INCLUDE_DIRS})
+  set(conky_libs ${conky_libs} ${SYSTEMD_LIBRARIES})
+endif(SYSTEMD_FOUND)
+
 if(BUILD_NVIDIA_NVML)
   # The nvml target carries its include dir as an INTERFACE property.
   set(conky_libs ${conky_libs} nvml)
