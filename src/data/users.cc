@@ -29,15 +29,51 @@
 
 #include <time.h>
 #include <unistd.h>
-#include <utmp.h>
+#if defined(HAVE_SYSTEMD)
+#include "systemd/sd-login.h"
+#include "pwd.h"
+#include "sys/types.h"
+#endif
+#include "stdlib.h"
+#include "string.h"
+#include "utmp.h"
 #include "../conky.h"
 #include "../logging.h"
 
 #define BUFLEN 512
 
 static void user_name(char *ptr) {
-  const struct utmp *usr = 0;
+#if defined(HAVE_SYSTEMD)
+  char **sessions = nullptr;
+  int num_sessions = sd_get_sessions(&sessions);
+  bool found = false;
 
+  if (num_sessions > 0) {
+    for (int i = 0; i < num_sessions; ++i) {
+      uid_t uid;
+      if (sd_session_get_uid(sessions[i], &uid) >= 0) {
+        struct passwd *pw = getpwuid(uid);
+        if (pw && pw->pw_name) {
+          strncpy(ptr, pw->pw_name, BUFLEN - 1);
+          ptr[BUFLEN - 1] = '\0';
+          found = true;
+        }
+      }
+      free(sessions[i]);
+    }
+    free(sessions);
+  }
+  
+  // Secondary fallback if systemd isn't running (e.g., WSL, Docker)
+  if (!found) {
+    struct passwd *pw = getpwuid(geteuid());
+    if (pw && pw->pw_name) {
+      strncpy(ptr, pw->pw_name, BUFLEN - 1);
+      ptr[BUFLEN - 1] = '\0';
+    }
+  }
+#else
+  const struct utmp *usr = 0;
   setutent();
   while ((usr = getutent()) != nullptr) {
     if (usr->ut_type == USER_PROCESS) {
@@ -45,20 +81,68 @@ static void user_name(char *ptr) {
       ptr[UT_NAMESIZE] = 0;
     }
   }
+#endif
 }
 static void user_num(int *ptr) {
+#if defined(HAVE_SYSTEMD)
+  char **sessions = nullptr;
+  int num_sessions = sd_get_sessions(&sessions);
+  
+  if (num_sessions > 0) {
+    *ptr = num_sessions;
+    for (int i = 0; i < num_sessions; ++i) {
+      free(sessions[i]);
+    }
+    free(sessions);
+  } else {
+    // If systemd found nothing, assume at least 1 user (the one running Conky)
+    *ptr = 1;
+  }
+#else
   const struct utmp *usr;
   int users_num = 0;
-
   setutent();
   while ((usr = getutent()) != nullptr) {
     if (usr->ut_type == USER_PROCESS) { ++users_num; }
   }
   *ptr = users_num;
+#endif
 }
 static void user_term(char *ptr) {
-  const struct utmp *usr;
+#if defined(HAVE_SYSTEMD)
+  char **sessions = nullptr;
+  int num_sessions = sd_get_sessions(&sessions);
+  bool found = false;
 
+  if (num_sessions > 0) {
+    for (int i = 0; i < num_sessions; ++i) {
+      char *tty = nullptr;
+      if (sd_session_get_tty(sessions[i], &tty) >= 0) {
+        strncpy(ptr, tty, BUFLEN - 1);
+        ptr[BUFLEN - 1] = '\0';
+        found = true;
+        free(tty);
+      }
+      free(sessions[i]);
+    }
+    free(sessions);
+  }
+  
+  // Secondary fallback
+  if (!found) {
+    char *tty = ttyname(STDIN_FILENO);
+    if (tty) {
+      // Strip the "/dev/" prefix to match old utmp behavior
+      if (strncmp(tty, "/dev/", 5) == 0) { tty += 5; }
+      strncpy(ptr, tty, BUFLEN - 1);
+      ptr[BUFLEN - 1] = '\0';
+    } else {
+      strncpy(ptr, "tty", BUFLEN - 1);
+      ptr[BUFLEN - 1] = '\0';
+    }
+  }
+#else
+  const struct utmp *usr;
   setutent();
   while ((usr = getutent()) != nullptr) {
     if (usr->ut_type == USER_PROCESS) {
@@ -66,6 +150,7 @@ static void user_term(char *ptr) {
       ptr[UT_LINESIZE] = 0;
     }
   }
+#endif
 }
 static void user_time(char *ptr) {
   const struct utmp *usr;
