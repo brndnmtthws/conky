@@ -513,7 +513,7 @@ bool llua_http_response_hook(
   if (lua_istable(lua_L, -1) != 0) {
     lua_pushnil(lua_L);
     while (lua_next(lua_L, -2) != 0) {
-      if (lua_isstring(lua_L, -2) != 0 && lua_isstring(lua_L, -1) != 0) {
+      if (lua_type(lua_L, -2) == LUA_TSTRING && lua_isstring(lua_L, -1) != 0) {
         headers->emplace_back(lua_tostring(lua_L, -2), lua_tostring(lua_L, -1));
       }
       lua_pop(lua_L, 1);
