@@ -32,13 +32,10 @@
 #include <vector>
 
 #include <conky.h>
-#include <lua/lua-config.hh>
 #include <lua/llua.h>
+#include <lua/lua-config.hh>
 
-// lua_L is defined in llua.cc but never declared in a header; it's the
-// separate Lua VM that llua_do_call() (and therefore llua_http_response_hook)
-// actually calls into, distinct from `state`, which only parses the config
-// file itself.
+// lua_L (llua.cc) is the VM llua_do_call() uses, distinct from `state`.
 extern lua_State *lua_L;
 
 namespace {
