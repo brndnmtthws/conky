@@ -271,6 +271,18 @@ values:
     args:
       - function_name
       - [function arguments]
+  - name: lua_http_response_hook
+    desc: |-
+      This function, if defined, will be called by Conky on each request
+      when using the HTTP output ('out_to_http'). It should return a table
+      with a 'body' string, and optionally a 'status' number (defaults to
+      200) and a 'headers' table mapping header names to values. If unset,
+      or if the returned value can't be used, Conky falls back to its
+      default HTML page. Conky puts 'conky_' in front of function_name to
+      prevent accidental calls to the wrong function unless you place
+      'conky_' in front of it yourself.
+    args:
+      - function_name
   - name: lua_load
     desc: |-
       List of Lua script paths to load at startup in order to provide Lua
