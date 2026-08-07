@@ -72,27 +72,24 @@ MHD_Result sendanswer(void *cls, struct MHD_Connection *connection,
                       const char *url, const char *method, const char *version,
                       const char *upload_data, size_t *upload_data_size,
                       void **con_cls) {
-  std::string hook_body;
-  int hook_status = 200;
-  std::vector<std::pair<std::string, std::string>> hook_headers;
-  bool have_hook_response;
+  std::optional<conky::http_response> hook_response;
   {
     /* llua_http_response_hook() may call into Lua from a non-draw thread. */
     std::lock_guard<std::mutex> lock(builder_mutex);
-    have_hook_response =
-        llua_http_response_hook(&hook_body, &hook_status, &hook_headers);
+    hook_response = llua_http_response_hook();
   }
 
   struct MHD_Response *response;
   int response_status = MHD_HTTP_OK;
-  if (have_hook_response) {
+  if (hook_response) {
     response = MHD_create_response_from_buffer(
-        hook_body.length(), (void *)hook_body.c_str(), MHD_RESPMEM_MUST_COPY);
-    for (const auto &header : hook_headers) {
+        hook_response->body.length(), (void *)hook_response->body.c_str(),
+        MHD_RESPMEM_MUST_COPY);
+    for (const auto &header : hook_response->headers) {
       MHD_add_response_header(response, header.first.c_str(),
                               header.second.c_str());
     }
-    response_status = hook_status;
+    response_status = hook_response->status;
   } else {
     /* Copy the page out under the lock; MHD_RESPMEM_MUST_COPY snapshots the
      * bytes so we don't hand MHD a pointer into a string the draw thread may

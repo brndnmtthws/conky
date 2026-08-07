@@ -33,8 +33,10 @@
 #include "../geometry.h"
 #include "../logging.h"
 #include "../output/display-output.hh"
+#include "../output/display-http.hh"
 #include "build.h"
 #include "llua.h"
+
 
 #ifdef BUILD_GUI
 #include "../output/gui.h"
@@ -90,7 +92,7 @@ class lua_load_setting : public conky::simple_config_setting<std::string> {
           if (ch == ';') { ch = '\0'; }
         }
       } else {
-        // TODO: Remove space-delimited file name handling in 3 years (2028.)
+        // TODO: Remove space-delimited file name handlisng in 3 years (2028.)
         for (auto &ch : files) {
           if (ch == ' ') { ch = '\0'; }
         }
@@ -481,23 +483,22 @@ static char *llua_getstring(const char *args) {
 
 /* call the configured http response hook; returns true and fills
  * body/status/headers if it returned a table */
-bool llua_http_response_hook(
-    std::string *body, int *status,
-    std::vector<std::pair<std::string, std::string>> *headers) {
-  if (lua_http_response_hook.get(*state).empty()) { return false; }
+std::optional<conky::http_response> llua_http_response_hook() {
+  if (lua_http_response_hook.get(*state).empty()) { return std::nullopt; }
 
   char *func = llua_do_call(lua_http_response_hook.get(*state).c_str(), 1);
-  if (func == nullptr) { return false; }
+  if (func == nullptr) { return std::nullopt; }
   if (lua_istable(lua_L, -1) == 0) {
     LOG_WARNING("lua function '{}' did not return a table, result discarded",
                 func);
     lua_pop(lua_L, 1);
-    return false;
+    return std::nullopt;
   }
+  conky::http_response response;
 
   lua_getfield(lua_L, -1, "body");
   if (lua_isstring(lua_L, -1) != 0) {
-    *body = lua_tostring(lua_L, -1);
+    response.body = lua_tostring(lua_L, -1);
   } else {
     LOG_WARNING("lua function '{}' table missing string 'body' field", func);
   }
@@ -505,7 +506,7 @@ bool llua_http_response_hook(
 
   lua_getfield(lua_L, -1, "status");
   if (lua_isnumber(lua_L, -1) != 0) {
-    *status = static_cast<int>(lua_tonumber(lua_L, -1));
+    response.status = static_cast<int>(lua_tonumber(lua_L, -1));
   }
   lua_pop(lua_L, 1);
 
@@ -514,7 +515,8 @@ bool llua_http_response_hook(
     lua_pushnil(lua_L);
     while (lua_next(lua_L, -2) != 0) {
       if (lua_type(lua_L, -2) == LUA_TSTRING && lua_isstring(lua_L, -1) != 0) {
-        headers->emplace_back(lua_tostring(lua_L, -2), lua_tostring(lua_L, -1));
+        response.headers.emplace_back(lua_tostring(lua_L, -2),
+                                      lua_tostring(lua_L, -1));
       }
       lua_pop(lua_L, 1);
     }
@@ -522,7 +524,7 @@ bool llua_http_response_hook(
   lua_pop(lua_L, 1);  // pop headers field
 
   lua_pop(lua_L, 1);  // pop the response table
-  return true;
+  return response;
 }
 
 #if 0
