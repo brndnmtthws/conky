@@ -34,6 +34,7 @@
 #include <conky.h>
 #include <lua/llua.h>
 #include <lua/lua-config.hh>
+#include <output/display-http.hh>
 
 // lua_L (llua.cc) is the VM llua_do_call() uses, distinct from `state`.
 extern lua_State *lua_L;
@@ -53,19 +54,12 @@ TEST_CASE("llua_http_response_hook", "[http][lua]") {
   conky::export_symbols(*state);
   llua_init();
 
-  std::string body;
-  int status = 200;
-  std::vector<std::pair<std::string, std::string>> headers;
-
-  SECTION("returns false when hook is not configured") {
+  SECTION("returns nullopt when hook is not configured") {
     set_hook_setting("");
 
-    bool result = llua_http_response_hook(&body, &status, &headers);
+    auto result = llua_http_response_hook();
 
-    REQUIRE_FALSE(result);
-    REQUIRE(body.empty());
-    REQUIRE(status == 200);
-    REQUIRE(headers.empty());
+    REQUIRE_FALSE(result.has_value());
   }
 
   SECTION("fills body/status/headers from a full table") {
@@ -79,14 +73,14 @@ TEST_CASE("llua_http_response_hook", "[http][lua]") {
                           "  }\n"
                           "end") == 0);
 
-    bool result = llua_http_response_hook(&body, &status, &headers);
+    auto result = llua_http_response_hook();
 
-    REQUIRE(result);
-    REQUIRE(body == "hello");
-    REQUIRE(status == 201);
-    REQUIRE(headers.size() == 1);
-    REQUIRE(headers[0].first == "X-Test");
-    REQUIRE(headers[0].second == "yes");
+    REQUIRE(result.has_value());
+    REQUIRE(result->body == "hello");
+    REQUIRE(result->status == 201);
+    REQUIRE(result->headers.size() == 1);
+    REQUIRE(result->headers[0].first == "X-Test");
+    REQUIRE(result->headers[0].second == "yes");
   }
 
   SECTION("defaults status and headers when only body is returned") {
@@ -96,27 +90,24 @@ TEST_CASE("llua_http_response_hook", "[http][lua]") {
                           "  return { body = 'just the body' }\n"
                           "end") == 0);
 
-    bool result = llua_http_response_hook(&body, &status, &headers);
+    auto result = llua_http_response_hook();
 
-    REQUIRE(result);
-    REQUIRE(body == "just the body");
-    REQUIRE(status == 200);
-    REQUIRE(headers.empty());
+    REQUIRE(result.has_value());
+    REQUIRE(result->body == "just the body");
+    REQUIRE(result->status == 200);
+    REQUIRE(result->headers.empty());
   }
 
-  SECTION("returns false when hook returns a non-table value") {
+  SECTION("returns nullopt when hook returns a non-table value") {
     set_hook_setting("test_not_table");
     REQUIRE(luaL_dostring(lua_L,
                           "function conky_test_not_table()\n"
                           "  return 'not a table'\n"
                           "end") == 0);
 
-    bool result = llua_http_response_hook(&body, &status, &headers);
+    auto result = llua_http_response_hook();
 
-    REQUIRE_FALSE(result);
-    REQUIRE(body.empty());
-    REQUIRE(status == 200);
-    REQUIRE(headers.empty());
+    REQUIRE_FALSE(result.has_value());
   }
 
   SECTION("warns and continues when body field is missing") {
@@ -126,12 +117,12 @@ TEST_CASE("llua_http_response_hook", "[http][lua]") {
                           "  return { status = 204 }\n"
                           "end") == 0);
 
-    bool result = llua_http_response_hook(&body, &status, &headers);
+    auto result = llua_http_response_hook();
 
-    REQUIRE(result);
-    REQUIRE(body.empty());
-    REQUIRE(status == 204);
-    REQUIRE(headers.empty());
+    REQUIRE(result.has_value());
+    REQUIRE(result->body.empty());
+    REQUIRE(result->status == 204);
+    REQUIRE(result->headers.empty());
   }
 
   SECTION("ignores non-string entries in the headers table") {
@@ -145,11 +136,11 @@ TEST_CASE("llua_http_response_hook", "[http][lua]") {
                           "  }\n"
                           "end") == 0);
 
-    bool result = llua_http_response_hook(&body, &status, &headers);
+    auto result = llua_http_response_hook();
 
-    REQUIRE(result);
-    REQUIRE(headers.size() == 1);
-    REQUIRE(headers[0].first == "Good");
+    REQUIRE(result.has_value());
+    REQUIRE(result->headers.size() == 1);
+    REQUIRE(result->headers[0].first == "Good");
   }
 }
 #endif
