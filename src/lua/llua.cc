@@ -33,8 +33,10 @@
 #include "../geometry.h"
 #include "../logging.h"
 #include "../output/display-output.hh"
+#include "../output/display-http.hh"
 #include "build.h"
 #include "llua.h"
+
 
 #ifdef BUILD_GUI
 #include "../output/gui.h"
@@ -90,7 +92,7 @@ class lua_load_setting : public conky::simple_config_setting<std::string> {
           if (ch == ';') { ch = '\0'; }
         }
       } else {
-        // TODO: Remove space-delimited file name handling in 3 years (2028.)
+        // TODO: Remove space-delimited file name handlisng in 3 years (2028.)
         for (auto &ch : files) {
           if (ch == ' ') { ch = '\0'; }
         }
@@ -136,8 +138,11 @@ conky::simple_config_setting<std::string> lua_draw_hook_pre("lua_draw_hook_pre",
                                                             true);
 conky::simple_config_setting<std::string> lua_draw_hook_post(
     "lua_draw_hook_post", std::string(), true);
+#endif /* BUILD_GUI */
 
-#endif
+conky::simple_config_setting<std::string> lua_http_response_hook(
+    "lua_http_response_hook", std::string(), true);
+
 }  // namespace
 
 static int llua_conky_parse(lua_State *L) {
@@ -474,6 +479,52 @@ static char *llua_getstring(const char *args) {
   }
 
   return ret;
+}
+
+/* call the configured http response hook; returns true and fills
+ * body/status/headers if it returned a table */
+std::optional<conky::http_response> llua_http_response_hook() {
+  if (lua_http_response_hook.get(*state).empty()) { return std::nullopt; }
+
+  char *func = llua_do_call(lua_http_response_hook.get(*state).c_str(), 1);
+  if (func == nullptr) { return std::nullopt; }
+  if (lua_istable(lua_L, -1) == 0) {
+    LOG_WARNING("lua function '{}' did not return a table, result discarded",
+                func);
+    lua_pop(lua_L, 1);
+    return std::nullopt;
+  }
+  conky::http_response response;
+
+  lua_getfield(lua_L, -1, "body");
+  if (lua_isstring(lua_L, -1) != 0) {
+    response.body = lua_tostring(lua_L, -1);
+  } else {
+    LOG_WARNING("lua function '{}' table missing string 'body' field", func);
+  }
+  lua_pop(lua_L, 1);
+
+  lua_getfield(lua_L, -1, "status");
+  if (lua_isnumber(lua_L, -1) != 0) {
+    response.status = static_cast<int>(lua_tonumber(lua_L, -1));
+  }
+  lua_pop(lua_L, 1);
+
+  lua_getfield(lua_L, -1, "headers");
+  if (lua_istable(lua_L, -1) != 0) {
+    lua_pushnil(lua_L);
+    while (lua_next(lua_L, -2) != 0) {
+      if (lua_type(lua_L, -2) == LUA_TSTRING && lua_isstring(lua_L, -1) != 0) {
+        response.headers.emplace_back(lua_tostring(lua_L, -2),
+                                      lua_tostring(lua_L, -1));
+      }
+      lua_pop(lua_L, 1);
+    }
+  }
+  lua_pop(lua_L, 1);  // pop headers field
+
+  lua_pop(lua_L, 1);  // pop the response table
+  return response;
 }
 
 #if 0
