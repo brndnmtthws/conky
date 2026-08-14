@@ -1244,7 +1244,19 @@ static std::shared_ptr<conky::draw_surface> create_shm_surface_from_pool(
   cairo_format = CAIRO_FORMAT_ARGB32; /*or CAIRO_FORMAT_RGB16_565 who knows??*/
 
   stride = stride_for_shm_surface(rectangle, scale);
+  if (stride < 0) {
+    LOG_ERROR("invalid buffer width {} for {}x{} window", stride,
+              rectangle->width(), rectangle->height());
+    delete data;
+    return nullptr;
+  }
   length = data_length_for_shm_surface(rectangle, scale);
+  if (length <= 0) {
+    LOG_ERROR("invalid buffer size {} for {}x{} window", length,
+              rectangle->width(), rectangle->height());
+    delete data;
+    return nullptr;
+  }
   data->pool = NULL;
   map = shm_pool_allocate(pool, length, &offset);
 
@@ -1258,8 +1270,23 @@ static std::shared_ptr<conky::draw_surface> create_shm_surface_from_pool(
       static_cast<unsigned char *>(map), cairo_format, scaled.x(), scaled.y(),
       stride);
 
-  cairo_surface_set_user_data(surface, &shm_surface_data_key, data,
-                              shm_surface_data_destroy);
+  if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
+    LOG_ERROR("cairo image surface creation failed: {}",
+              cairo_status_to_string(cairo_surface_status(surface)));
+    cairo_surface_destroy(surface);
+    delete data;
+    return nullptr;
+  }
+
+  if (cairo_surface_set_user_data(surface, &shm_surface_data_key, data,
+                                  shm_surface_data_destroy) !=
+      CAIRO_STATUS_SUCCESS) {
+    LOG_ERROR("cairo_surface_set_user_data failed for {}x{} window",
+              rectangle->width(), rectangle->height());
+    cairo_surface_destroy(surface);
+    delete data;
+    return nullptr;
+  }
 
   format = WL_SHM_FORMAT_ARGB8888; /*or WL_SHM_FORMAT_RGB565*/
 
