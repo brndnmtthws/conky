@@ -30,6 +30,7 @@
 #include "config.h"
 
 #include "../lua/x11-settings.h"
+#include "output-setting.hh"
 #include "x11-event.h"
 #include "x11.h"
 
@@ -113,12 +114,12 @@ struct conky_x11_window window;
 conky::simple_config_setting<std::string> display_name("display", std::string(),
                                                        false);
 conky::simple_config_setting<int> head_index("xinerama_head", 0, true);
-conky::simple_config_setting<bool> out_to_x("out_to_x", true, false);
 #ifdef BUILD_XFT
 conky::simple_config_setting<bool> use_xft("use_xft", false, false);
 #endif
 conky::simple_config_setting<bool> forced_redraw("forced_redraw", false, false);
-conky::simple_config_setting<bool> use_double_buffer("double_buffer", false, false);
+conky::simple_config_setting<bool> use_double_buffer("double_buffer", false,
+                                                     false);
 
 /* local prototypes */
 static Window find_desktop_window(Window *p_root, Window *p_desktop);
@@ -294,7 +295,7 @@ void init_x11() {
 }
 
 void deinit_x11() {
-  if (display) {
+  if (display && !g_is_reloading) {
     auto _scope = LOG_SCOPE("deinit_x11");
     XCloseDisplay(display);
     display = nullptr;
@@ -302,10 +303,19 @@ void deinit_x11() {
 }
 
 bool x11_set_up_double_buffer(lua::state &l) {
-#ifdef BUILD_XDBE
-  // double_buffer makes no sense when not drawing to X
-  if (!out_to_x.get(l) || !display || !window.window) { return false; }
+  // double_buffer makes no sense when not drawing to a window
+  if (!display || !window.window) { return false; }
 
+  if (window.back_buffer != None) {
+#ifdef BUILD_XDBE
+    XdbeDeallocateBackBufferName(display, window.back_buffer);
+#else
+    XFreePixmap(display, window.back_buffer);
+#endif
+    window.back_buffer = None;
+  }
+
+#ifdef BUILD_XDBE
   int major, minor;
   if (XdbeQueryExtension(display, &major, &minor) == 0) {
     LOG_ERROR("no compatible double buffer extension found");
@@ -324,9 +334,6 @@ bool x11_set_up_double_buffer(lua::state &l) {
   XFlush(display);
   return true;
 #else
-  // double_buffer makes no sense when not drawing to X
-  if (!out_to_x.get(l)) return false;
-
   unsigned int depth = window.color_depth != 0 ? window.color_depth
                                                : DefaultDepth(display, screen);
   window.back_buffer =
@@ -550,12 +557,40 @@ void x11_init_window(lua::state &l) {
   }
   window.desktop = find_desktop_window(window.root);
 
+  /* Defaults — overridden below for own_window reuse (real window attrs)
+   * and for own_window create (ARGB visual if available). */
   window.visual = DefaultVisual(display, screen);
   window.opacity = 0xff;
   window.colourmap = DefaultColormap(display, screen);
 
 #ifdef OWN_WINDOW
   if (own_window.get(l)) {
+    if (window.window != None) {
+      /* Reload path: window already alive — query its real attributes
+       * instead of destroying and recreating. */
+      XWindowAttributes attr;
+      if (XGetWindowAttributes(display, window.window, &attr) != 0) {
+        window.visual = attr.visual;
+        window.colourmap = attr.colormap;
+        window.geometry.set_size(attr.width, attr.height);
+        LOG_INFO("reusing existing window {:#x} {}x{} (reload)",
+                 window.window, attr.width, attr.height);
+      } else {
+        LOG_WARNING("XGetWindowAttributes failed for {:#x}", window.window);
+        window.visual = DefaultVisual(display, screen);
+        window.colourmap = DefaultColormap(display, screen);
+      }
+      
+      uint8_t background_alpha = get_background_alpha_preference(l);
+      bool wants_alpha = background_alpha < 0xff;
+      if (wants_alpha) {
+        if (window.visual != DefaultVisual(display, screen)) {
+          window.opacity = background_alpha;
+        } else if (background_alpha == 0) {
+          window.opacity = 0;
+        }
+      }
+    } else {
     int flags = CWOverrideRedirect | CWBackingStore;
     window.color_depth = CopyFromParent;
 
@@ -844,6 +879,7 @@ void x11_init_window(lua::state &l) {
         }
       }
     }
+    } /* end of else (window.window == None) — create new window */
 
     LOG_INFO("drawing to created window {:#x}", window.window);
     XMapWindow(display, window.window);
@@ -917,8 +953,17 @@ void x11_init_window(lua::state &l) {
 
     if (own_window.get(l)) {
       selected_events.clear_all();
-      selected_events.set(XI_ButtonPress);
-      selected_events.set(XI_ButtonRelease);
+      // Desktop windows rely on an empty XShape input region for
+      // click-through; only grab buttons if a mouse hook actually wants them.
+      bool wants_button_events = own_window_type.get(l) != window_type::DESKTOP;
+#ifdef BUILD_MOUSE_EVENTS
+      wants_button_events =
+          wants_button_events || !conky::lua_mouse_hook.get(l).empty();
+#endif /* BUILD_MOUSE_EVENTS */
+      if (wants_button_events) {
+        selected_events.set(XI_ButtonPress);
+        selected_events.set(XI_ButtonRelease);
+      }
       // It's not recommended to add event masks to special windows in X; causes
       // a crash (thus own_window_type != window_type::DESKTOP)
       if (own_window_type.get(l) != window_type::DESKTOP) {
@@ -945,8 +990,6 @@ void x11_init_window(lua::state &l) {
 #endif /* OWN_WINDOW */
   window.event_mask = input_mask;
   XSelectInput(display, window.window, input_mask);
-
-  window_created = 1;
 }
 
 static Window find_desktop_window_impl(Window win, int w, int h) {
@@ -980,6 +1023,7 @@ static Window find_desktop_window_impl(Window win, int w, int h) {
 }
 
 void create_gc() {
+  if (window.gc != nullptr) { XFreeGC(display, window.gc); }
   XGCValues values;
 
   values.graphics_exposures = 0;
@@ -1115,7 +1159,7 @@ static const char NOT_IN_X[] = "Not running in X";
 void print_monitor(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
 
-  if (!out_to_x.get(*state)) {
+  if (!conky::output_enabled(conky::output_t::X11)) {
     strncpy(p, NOT_IN_X, p_max_size);
     return;
   }
@@ -1126,7 +1170,7 @@ void print_monitor_number(struct text_object *obj, char *p,
                           unsigned int p_max_size) {
   (void)obj;
 
-  if (!out_to_x.get(*state)) {
+  if (!conky::output_enabled(conky::output_t::X11)) {
     strncpy(p, NOT_IN_X, p_max_size);
     return;
   }
@@ -1136,7 +1180,7 @@ void print_monitor_number(struct text_object *obj, char *p,
 void print_desktop(struct text_object *obj, char *p, unsigned int p_max_size) {
   (void)obj;
 
-  if (!out_to_x.get(*state)) {
+  if (!conky::output_enabled(conky::output_t::X11)) {
     strncpy(p, NOT_IN_X, p_max_size);
     return;
   }
@@ -1147,7 +1191,7 @@ void print_desktop_number(struct text_object *obj, char *p,
                           unsigned int p_max_size) {
   (void)obj;
 
-  if (!out_to_x.get(*state)) {
+  if (!conky::output_enabled(conky::output_t::X11)) {
     strncpy(p, NOT_IN_X, p_max_size);
     return;
   }
@@ -1158,7 +1202,7 @@ void print_desktop_name(struct text_object *obj, char *p,
                         unsigned int p_max_size) {
   (void)obj;
 
-  if (!out_to_x.get(*state)) {
+  if (!conky::output_enabled(conky::output_t::X11)) {
     strncpy(p, NOT_IN_X, p_max_size);
   } else {
     strncpy(p, info.x11.desktop.name.c_str(), p_max_size);
@@ -1439,7 +1483,7 @@ void swap_x11_buffers() {
     swap.swap_action = XdbeBackground;
     XdbeSwapBuffers(display, &swap, 1);
   }
-#else /* BUILD_XDBE */
+#else  /* BUILD_XDBE */
   if (use_double_buffer.get(*state)) {
     XCopyArea(display, window.back_buffer, window.window, window.gc, 0, 0,
               window.geometry.width(), window.geometry.height(), 0, 0);
