@@ -451,6 +451,8 @@ void main_loop();
 extern volatile sig_atomic_t g_sigterm_pending, g_sighup_pending,
     g_sigusr2_pending;
 
+extern int g_is_reloading;
+
 extern int first_pass;
 extern int argc_copy;
 extern char **argv_copy;

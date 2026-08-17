@@ -294,7 +294,7 @@ void init_x11() {
 }
 
 void deinit_x11() {
-  if (display) {
+  if (display && !g_is_reloading) {
     auto _scope = LOG_SCOPE("deinit_x11");
     XCloseDisplay(display);
     display = nullptr;
@@ -550,12 +550,31 @@ void x11_init_window(lua::state &l) {
   }
   window.desktop = find_desktop_window(window.root);
 
+  /* Defaults — overridden below for own_window reuse (real window attrs)
+   * and for own_window create (ARGB visual if available). */
   window.visual = DefaultVisual(display, screen);
   window.opacity = 0xff;
   window.colourmap = DefaultColormap(display, screen);
 
 #ifdef OWN_WINDOW
   if (own_window.get(l)) {
+    if (window.window != None) {
+      /* Reload path: window already alive — query its real attributes
+       * instead of destroying and recreating. */
+      XWindowAttributes attr;
+      if (XGetWindowAttributes(display, window.window, &attr) != 0) {
+        window.visual = attr.visual;
+        window.colourmap = attr.colormap;
+        window.geometry.set_size(attr.width, attr.height);
+        LOG_INFO("reusing existing window {:#x} {}x{} (reload)",
+                 window.window, attr.width, attr.height);
+      } else {
+        LOG_WARNING("XGetWindowAttributes failed for {:#x}", window.window);
+        window.visual = DefaultVisual(display, screen);
+        window.colourmap = DefaultColormap(display, screen);
+      }
+      window.opacity = 0xff;
+    } else {
     int flags = CWOverrideRedirect | CWBackingStore;
     window.color_depth = CopyFromParent;
 
@@ -844,6 +863,7 @@ void x11_init_window(lua::state &l) {
         }
       }
     }
+    } /* end of else (window.window == None) — create new window */
 
     LOG_INFO("drawing to created window {:#x}", window.window);
     XMapWindow(display, window.window);
@@ -980,6 +1000,7 @@ static Window find_desktop_window_impl(Window win, int w, int h) {
 }
 
 void create_gc() {
+  if (window.gc != nullptr) { XFreeGC(display, window.gc); }
   XGCValues values;
 
   values.graphics_exposures = 0;

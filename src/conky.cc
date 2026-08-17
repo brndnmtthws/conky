@@ -263,6 +263,11 @@ extern kvm_t *kd;
 static void signal_handler(int /*sig*/);
 static void reload_config();
 
+/* Set by reload_config() so X11 cleanup/initialise can skip window+display
+ * teardown.  The window stays alive and the X connection stays open during
+ * the reload — avoids the flash-on-reload that plagues X11. */
+int g_is_reloading = 0;
+
 static const char *suffixes[] = {_nop("B"),   _nop("KiB"), _nop("MiB"),
                                  _nop("GiB"), _nop("TiB"), _nop("PiB"),
                                  ""};
@@ -2100,11 +2105,13 @@ static void reload_config() {
         current_config, getpid());
     return;
   }
+  g_is_reloading = 1;
   clean_up();
   state = std::make_unique<lua::state>();
   conky::export_symbols(*state);
   sleep(1); /* slight pause */
   initialisation(argc_copy, argv_copy);
+  g_is_reloading = 0;
 }
 
 void free_specials(special_node *&current) {
