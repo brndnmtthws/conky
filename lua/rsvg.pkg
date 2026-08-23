@@ -65,7 +65,7 @@ typedef struct _RsvgDimensionData {
     static tolua_outside void rsvg_dimension_data_destroy @ destroy(RsvgDimensionData *);
     tolua_outside void rsvg_dimension_data_get @ get(int * width, int * height,
                                                   double * em, double * ex);
-    tolua_outside void rsvg_dimension_data_set @ get(int width, int height,
+    tolua_outside void rsvg_dimension_data_set @ set(int width, int height,
                                                   double em, double ex);
 } RsvgDimensionData;
 
@@ -127,6 +127,9 @@ void g_object_unref(gpointer object);
 
 RsvgHandle * rsvg_create_handle_from_file(const char *);
 int rsvg_destroy_handle(RsvgHandle *);
+
+void rsvg_render_document_at(RsvgHandle *handle, cairo_t *cr,
+                             double x, double y, double w, double h);
 
 RsvgHandle *rsvg_handle_new_with_flags (RsvgHandleFlags flags);
 
