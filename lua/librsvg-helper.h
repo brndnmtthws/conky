@@ -57,17 +57,6 @@ void rsvg_dimension_data_set(RsvgDimensionData *dd, int width, int height,
   }
 }
 
-RsvgPositionData *rsvgPositionDataCreate(void) {
-  return (RsvgPositionData *)calloc(1, sizeof(RsvgPositionData));
-}
-
-void rsvgPositionDataGet(RsvgPositionData *pd, int *x, int *y) {
-  if (pd) {
-    *x = pd->x;
-    *y = pd->y;
-  }
-}
-
 RsvgHandle *rsvg_create_handle_from_file(const char *filename) {
   GFile *gfile = g_file_new_for_path(filename);
 
@@ -76,7 +65,7 @@ RsvgHandle *rsvg_create_handle_from_file(const char *filename) {
       gfile, RSVG_HANDLE_FLAGS_NONE, NULL, &error);
 
   if (error) {
-    g_object_unref(error);
+    g_error_free(error);
     if (handle) g_object_unref(handle);
     handle = NULL;
   }
@@ -116,6 +105,16 @@ void rsvg_rectangle_get(RsvgRectangle *rect, double *x, double *y,
     *width = rect->width;
     *height = rect->height;
   }
+}
+
+void rsvg_render_document_at(RsvgHandle *handle, cairo_t *cr,
+                             double x, double y, double w, double h) {
+  if (!handle || !cr) return;
+  cairo_save(cr);
+  cairo_translate(cr, x, y);
+  RsvgRectangle viewport = {0, 0, w, h};
+  rsvg_handle_render_document(handle, cr, &viewport, NULL);
+  cairo_restore(cr);
 }
 
 #endif /* _LIBRSVG_HELPER_H_ */
