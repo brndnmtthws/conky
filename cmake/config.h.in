@@ -86,8 +86,6 @@
 
 #cmakedefine BUILD_HDDTEMP 1
 
-#cmakedefine BUILD_LIBXML2 1
-
 #cmakedefine BUILD_CURL 1
 
 #cmakedefine BUILD_IMLIB2 1
@@ -142,8 +140,6 @@
 #cmakedefine BUILD_CMUS 1
 
 #cmakedefine BUILD_JOURNAL 1
-
-#cmakedefine BUILD_HSV_GRADIENT 1
 
 #cmakedefine BUILD_COLOUR_NAME_MAP 1
 
