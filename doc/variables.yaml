@@ -1338,7 +1338,24 @@ values:
   - name: memmax
     desc: Total amount of memory.
   - name: memperc
-    desc: Percentage of memory in use.
+    desc: |-
+      Percentage of memory in use.
+
+      Can be fine-tuned using optional arguments:
+
+      * **-b**: includes system buffers and caches.
+      * **-e**: includes memory that is very easily freed.
+      * **-l**: calculated the same way as in the `free` program.
+      * **-f**: amount of free memory.
+      * **-d**: amount of "dirty" memory. Linux only.
+      * **-a**: amount of available memory as recorded in /proc/meminfo.
+    args:
+      - (-b)
+      - (-e)
+      - (-l)
+      - (-f)
+      - (-d)
+      - (-a)
   - name: memwired
     desc: Amount of wired memory. FreeBSD only.
   - name: memwithbuffers

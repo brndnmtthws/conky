@@ -573,10 +573,34 @@ PRINT_HR_GENERATOR(swapfree)
 PRINT_HR_GENERATOR(swapmax)
 
 uint8_t mem_percentage(struct text_object *obj) {
+  auto mem = info.mem;
+  auto arg = obj != nullptr ? obj->data.s : nullptr;
+  if (arg != nullptr) {
+    if(!strcmp("-b", arg)) {
+      mem = info.memwithbuffers;
+    } else if (!strcmp("-e", arg)) {
+      mem = info.memeasyfree;
+    } else if (!strcmp("-l", arg)) {
+      mem = info.legacymem;
+    } else if (!strcmp("-f", arg)) {
+      mem = info.memfree;
+    } else if (!strcmp("-d", arg)) {
+      mem = info.memdirty;
+    } else if (!strcmp("-a", arg)) {
+      mem = info.memavail;
+    }
+  }
+
+  return (info.memmax != 0u
+              ? round_to_positive_int(mem * 100 / info.memmax)
+              : 0);
+}
+
+uint8_t mem_with_buffers_percentage(struct text_object *obj) {
   (void)obj;
 
   return (info.memmax != 0u
-              ? round_to_positive_int(info.mem * 100 / info.memmax)
+              ? round_to_positive_int(info.memwithbuffers * 100 / info.memmax)
               : 0);
 }
 
