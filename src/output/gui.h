@@ -224,6 +224,16 @@ extern conky::simple_config_setting<std::string> own_window_class;
 /// @see window_type
 extern conky::simple_config_setting<window_type> own_window_type;
 
+#ifdef BUILD_WAYLAND
+/// @brief Layer-shell namespace hint (Wayland only).
+///
+/// The namespace passed to the wlr-layer-shell protocol. KWin classifies
+/// the surface from this (see scopeToType() in layershellv1window.cpp);
+/// unlisted names like the default "conky" are treated as a normal window.
+/// Other compositors interpret the namespace per their own rules.
+extern conky::simple_config_setting<std::string> own_window_namespace;
+#endif /* BUILD_WAYLAND */
+
 extern priv::colour_setting background_colour;
 
 Colour get_background_colour_preference(lua::state &l);
