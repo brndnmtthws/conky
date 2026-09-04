@@ -505,7 +505,13 @@ values:
     args:
       - (normal|desktop|dock|panel|utility|override)
   - name: pad_percents
-    desc: Pad percentages to this many decimals (0 = no padding).
+    desc: |-
+      Minimum field width for percentage values when
+      [`use_spacer`](#use_spacer) is `left` or `right`. Values are still
+      printed as whole numbers (`%u`); there are no fractional decimals.
+      When spacer alignment is enabled, width is at least 3 so that
+      `1`/`10`/`100` align. `0` means no extra width beyond that minimum
+      (or no padding at all when `use_spacer` is `none`).
   - name: pop3
     desc: |-
       Default global POP3 server. Arguments are: `host user pass
