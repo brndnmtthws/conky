@@ -389,7 +389,7 @@ conky::range_config_setting<unsigned int> text_buffer_size(
     "text_buffer_size", DEFAULT_TEXT_BUFFER_SIZE,
     std::numeric_limits<unsigned int>::max(), DEFAULT_TEXT_BUFFER_SIZE, false);
 
-/* pad percentages to decimals? */
+/* Width for percent_print when use_spacer is enabled (see percent_print). */
 static conky::simple_config_setting<int> pad_percents("pad_percents", 0, false);
 
 static char *global_text = nullptr;
@@ -508,9 +508,15 @@ int spaced_print(char *buf, int size, const char *format, int width, ...) {
 /* print percentage values
  *
  * - i.e., unsigned values between 0 and 100
- * - respect the value of pad_percents */
+ * - when use_spacer is left/right, pad to at least 3 columns so values
+ *   align like other spaced sensors (1% / 10% / 100%)
+ * - pad_percents can widen further; it is unused when use_spacer is none */
 int percent_print(char *buf, int size, unsigned value) {
-  return spaced_print(buf, size, "%u", pad_percents.get(*state), value);
+  int width = pad_percents.get(*state);
+  if (use_spacer.get(*state) != NO_SPACER) {
+    width = std::max(width, 3);
+  }
+  return spaced_print(buf, size, "%u", width, value);
 }
 
 /* converts from bytes to human readable format (K, M, G, T)
