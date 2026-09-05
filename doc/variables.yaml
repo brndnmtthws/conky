@@ -813,12 +813,13 @@ values:
       name is `k10temp`.
       3. Omitted. Then the first hwmon device (hwmon0) will be used.
 
-      Parameter type is either `in` or `vol` meaning voltage; `fan` meaning fan;
-      `temp` meaning temperature. Parameter n is number of the sensor. See
-      `/sys/class/hwmon/` on your local computer.  The optional arguments `factor`
-      and `offset` allow precalculation of the raw input, which is being modified
-      as follows: `input = input * factor + offset`. Note that they have to be
-      given as decimal values (i.e. contain at least one decimal place).
+      Parameter type is either `in` or `vol` meaning voltage; `power` meaning
+      power; `fan` meaning fan; `temp` meaning temperature. Parameter n is
+      number of the sensor. See `/sys/class/hwmon/` on your local computer.
+      The optional arguments `factor` and `offset` allow precalculation of the
+      raw input, which is being modified as follows:
+      `input = input * factor + offset`. Note that they have to be given as
+      decimal values (i.e. contain at least one decimal place).
     args:
       - (dev)
       - type
@@ -845,12 +846,12 @@ values:
     desc: |-
       I2C sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you have
       only one I2C device. Parameter type is either `in` or `vol` meaning voltage;
-      `fan` meaning fan; `temp` meaning temperature. Parameter n is number of the
-      sensor. See `/sys/bus/i2c/devices/` on your local computer. The optional
-      arguments `factor` and `offset` allow precalculation of the raw input, which
-      is being modified as follows: `input = input * factor + offset`. Note that
-      they have to be given as decimal values (i.e. contain at least one decimal
-      place).
+      `power` meaning power; `fan` meaning fan; `temp` meaning temperature.
+      Parameter n is number of the sensor. See `/sys/bus/i2c/devices/` on your
+      local computer. The optional arguments `factor` and `offset` allow
+      precalculation of the raw input, which is being modified as follows:
+      `input = input * factor + offset`. Note that they have to be given as
+      decimal values (i.e. contain at least one decimal place).
     args:
       - (dev)
       - type
@@ -1877,12 +1878,13 @@ values:
     desc: |-
       Platform sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you
       have only one platform device. Platform type is either `in` or `vol` meaning
-      voltage; `fan` meaning fan; `temp` meaning temperature. Parameter n is
-      number of the sensor. See `/sys/bus/platform/devices/` on your local
-      computer. The optional arguments `factor` and `offset` allow precalculation
-      of the raw input, which is being modified as follows: `input = input *
-      factor + offset`. Note that they have to be given as decimal values (i.e.
-      contain at least one decimal place).
+      voltage; `power` meaning power; `fan` meaning fan; `temp` meaning
+      temperature. Parameter n is number of the sensor. See
+      `/sys/bus/platform/devices/` on your local computer. The optional
+      arguments `factor` and `offset` allow precalculation of the raw input,
+      which is being modified as follows: `input = input * factor + offset`.
+      Note that they have to be given as decimal values (i.e. contain at least
+      one decimal place).
     args:
       - (dev)
       - type
