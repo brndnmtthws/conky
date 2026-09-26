@@ -1,15 +1,11 @@
-[settings]
-experimental = true
-locked = true
-
 [tools]
 actionlint = "1.7.12"
-bun = "1.3.14"
-cmake = "4.3.3"
-lefthook = "2.1.8"
+bun = "1.4.2"
+cmake = "4.4.3"
+lefthook = "2.1.14"
 ninja = "1.13.2"
 shellcheck = "0.11.0"
-uv = "0.11.16"
+uv = "0.12.19"
 
 [hooks]
 enter = "mise i -q && lefthook install >/dev/null"

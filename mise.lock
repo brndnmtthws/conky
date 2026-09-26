@@ -60,158 +60,180 @@ url = "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_
 provenance = "github-attestations"
 
 [[tools.bun]]
-version = "1.3.14"
+version = "1.4.2"
 backend = "core:bun"
 
 [tools.bun."platforms.linux-arm64"]
-checksum = "sha256:a27ffb63a8310375836e0d6f668ae17fa8d8d18b88c37c821c65331973a19a3b"
-url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-linux-aarch64.zip"
+checksum = "sha256:54328bbc2d9c8e0c9f892c544d66c57a83b84139e34909e5ee81758f1ac8fda7"
+url = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-aarch64.zip"
 
 [tools.bun."platforms.linux-arm64-musl"]
-checksum = "sha256:b98e0ad3625c5c00d1d5b5ff55605c7adddbfae151861e68ade57b2d3b8703bb"
-url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-linux-aarch64-musl.zip"
+checksum = "sha256:71760b6c8ea30623b81a4907cb815d48e2ea266f2e73e751534a44a0607950df"
+url = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-aarch64-musl.zip"
 
 [tools.bun."platforms.linux-x64"]
-checksum = "sha256:951ee2aee855f08595aeec6225226a298d3fea83a3dcd6465c09cbccdf7e848f"
-url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-linux-x64.zip"
+checksum = "sha256:36368faef7527875d5ffa52e53cd48021741f2a83eb6208a8dd64068d422a913"
+url = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64.zip"
 
 [tools.bun."platforms.linux-x64-baseline"]
-checksum = "sha256:a063908ae08b7852ca10939bbdc6ceed3ddabce8fb9402dce83d65d73b36e6c7"
-url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-linux-x64-baseline.zip"
+checksum = "sha256:c678040f14fe0440eb839d37cbd0ce4c051a32da72806ac97de6a6aab6bf728f"
+url = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64-baseline.zip"
 
 [tools.bun."platforms.linux-x64-musl"]
-checksum = "sha256:14bd9aedeebf1dba67e8def9531c89bc989ecfdf1de42e5bfcaf1b8cd9294719"
-url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-linux-x64-musl.zip"
+checksum = "sha256:4835eca59d6da70f4674f5642f6e459dcadab773695b2ed9922d131057989742"
+url = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64-musl.zip"
 
 [tools.bun."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:56a7d6806cf155536c0178f0ea5fbd098e684fa509ebdb4fc0a7e19fb65382dc"
-url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-linux-x64-musl-baseline.zip"
+checksum = "sha256:76e1db84e98f22f78de0a87e309bfbbf297732847f9720db36750646c85c8c18"
+url = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64-musl-baseline.zip"
 
 [tools.bun."platforms.macos-arm64"]
-checksum = "sha256:d8b96221828ad6f97ac7ac0ab7e95872341af763001e8803e8267652c2652620"
-url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-darwin-aarch64.zip"
+checksum = "sha256:90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f"
+url = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-darwin-aarch64.zip"
 
 [tools.bun."platforms.macos-x64"]
-checksum = "sha256:4183df3374623e5bab315c547cfa0974533cd457d86b73b639f7a87974cd6633"
-url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-darwin-x64.zip"
+checksum = "sha256:80520d7e17526308c9185d261679ac6d27798d3803a0e9f7ff9121ab8affb012"
+url = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-darwin-x64.zip"
 
 [tools.bun."platforms.macos-x64-baseline"]
-checksum = "sha256:3e35ad6f53971a9834bf9e6786e2adf72b5f1921cc9a9c5fde073d2972944076"
-url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-darwin-x64-baseline.zip"
+checksum = "sha256:bad5bbd6cf14d0980d115f5954c9ff904df619d5e994d2da1ffccd3f316300b0"
+url = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-darwin-x64-baseline.zip"
 
 [tools.bun."platforms.windows-x64"]
-checksum = "sha256:0a0620930b6675d7ba440e81f4e0e00d3cfbe096c4b140d3fff02205e9e18922"
-url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-windows-x64.zip"
+checksum = "sha256:ce4c17497b2f29712a99d3d53f028de28cd42e3bacb8589599e7f000e49b6405"
+url = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-windows-x64.zip"
 
 [tools.bun."platforms.windows-x64-baseline"]
-checksum = "sha256:538f9c846355d9e847b2671bc00c47da4229a0befb24df3282b739770f3b475f"
-url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-windows-x64-baseline.zip"
+checksum = "sha256:78c221c2376f79731ccf4e4af0b3bb46d81fefa3296c5abee09ad8a1b21e68c6"
+url = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-windows-x64-baseline.zip"
 
 [[tools.cmake]]
-version = "4.3.3"
+version = "4.4.3"
 backend = "aqua:Kitware/CMake"
 
 [tools.cmake."platforms.linux-arm64"]
-checksum = "sha256:9ea38356dbd3e32e51029a3e09a0f2f8e117ef4fbcaad7a21ffb36409bbd5cb4"
-url = "https://github.com/Kitware/CMake/releases/download/v4.3.3/cmake-4.3.3-linux-aarch64.tar.gz"
+checksum = "sha256:2efc974dbd63b4444c0e8494b92f2e80c2d7e635b4b80eac2916985ddd8f72a6"
+url = "https://github.com/Kitware/CMake/releases/download/v4.4.3/cmake-4.4.3-linux-aarch64.tar.gz"
+url_api = "https://api.github.com/repos/Kitware/CMake/releases/assets/529577299"
 
 [tools.cmake."platforms.linux-arm64-musl"]
-checksum = "sha256:9ea38356dbd3e32e51029a3e09a0f2f8e117ef4fbcaad7a21ffb36409bbd5cb4"
-url = "https://github.com/Kitware/CMake/releases/download/v4.3.3/cmake-4.3.3-linux-aarch64.tar.gz"
+checksum = "sha256:2efc974dbd63b4444c0e8494b92f2e80c2d7e635b4b80eac2916985ddd8f72a6"
+url = "https://github.com/Kitware/CMake/releases/download/v4.4.3/cmake-4.4.3-linux-aarch64.tar.gz"
+url_api = "https://api.github.com/repos/Kitware/CMake/releases/assets/529577299"
 
 [tools.cmake."platforms.linux-x64"]
-checksum = "sha256:927b2368a946c37269c3a66225ab00544e756459cdd0b5d0da438694fb9ff802"
-url = "https://github.com/Kitware/CMake/releases/download/v4.3.3/cmake-4.3.3-linux-x86_64.tar.gz"
+checksum = "sha256:d6c83076c575bc00b823522ac974bda66d0af05d6ddc30e739c12385cf32c6cc"
+url = "https://github.com/Kitware/CMake/releases/download/v4.4.3/cmake-4.4.3-linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/Kitware/CMake/releases/assets/529577408"
 
 [tools.cmake."platforms.linux-x64-baseline"]
-checksum = "sha256:927b2368a946c37269c3a66225ab00544e756459cdd0b5d0da438694fb9ff802"
-url = "https://github.com/Kitware/CMake/releases/download/v4.3.3/cmake-4.3.3-linux-x86_64.tar.gz"
+checksum = "sha256:d6c83076c575bc00b823522ac974bda66d0af05d6ddc30e739c12385cf32c6cc"
+url = "https://github.com/Kitware/CMake/releases/download/v4.4.3/cmake-4.4.3-linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/Kitware/CMake/releases/assets/529577408"
 
 [tools.cmake."platforms.linux-x64-musl"]
-checksum = "sha256:927b2368a946c37269c3a66225ab00544e756459cdd0b5d0da438694fb9ff802"
-url = "https://github.com/Kitware/CMake/releases/download/v4.3.3/cmake-4.3.3-linux-x86_64.tar.gz"
+checksum = "sha256:d6c83076c575bc00b823522ac974bda66d0af05d6ddc30e739c12385cf32c6cc"
+url = "https://github.com/Kitware/CMake/releases/download/v4.4.3/cmake-4.4.3-linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/Kitware/CMake/releases/assets/529577408"
 
 [tools.cmake."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:927b2368a946c37269c3a66225ab00544e756459cdd0b5d0da438694fb9ff802"
-url = "https://github.com/Kitware/CMake/releases/download/v4.3.3/cmake-4.3.3-linux-x86_64.tar.gz"
+checksum = "sha256:d6c83076c575bc00b823522ac974bda66d0af05d6ddc30e739c12385cf32c6cc"
+url = "https://github.com/Kitware/CMake/releases/download/v4.4.3/cmake-4.4.3-linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/Kitware/CMake/releases/assets/529577408"
 
 [tools.cmake."platforms.macos-arm64"]
-checksum = "sha256:5221a13450c7a0219a2a0d1b6c9085eb06489721fafd8488ccebc1584175d2fb"
-url = "https://github.com/Kitware/CMake/releases/download/v4.3.3/cmake-4.3.3-macos-universal.tar.gz"
+checksum = "sha256:0c5d65251c14cc884bfa16bdbed3c263ce5bffe2e21c0d0d00962cb0610464fa"
+url = "https://github.com/Kitware/CMake/releases/download/v4.4.3/cmake-4.4.3-macos-universal.tar.gz"
+url_api = "https://api.github.com/repos/Kitware/CMake/releases/assets/529577557"
 
 [tools.cmake."platforms.macos-x64"]
-checksum = "sha256:5221a13450c7a0219a2a0d1b6c9085eb06489721fafd8488ccebc1584175d2fb"
-url = "https://github.com/Kitware/CMake/releases/download/v4.3.3/cmake-4.3.3-macos-universal.tar.gz"
+checksum = "sha256:0c5d65251c14cc884bfa16bdbed3c263ce5bffe2e21c0d0d00962cb0610464fa"
+url = "https://github.com/Kitware/CMake/releases/download/v4.4.3/cmake-4.4.3-macos-universal.tar.gz"
+url_api = "https://api.github.com/repos/Kitware/CMake/releases/assets/529577557"
 
 [tools.cmake."platforms.macos-x64-baseline"]
-checksum = "sha256:5221a13450c7a0219a2a0d1b6c9085eb06489721fafd8488ccebc1584175d2fb"
-url = "https://github.com/Kitware/CMake/releases/download/v4.3.3/cmake-4.3.3-macos-universal.tar.gz"
+checksum = "sha256:0c5d65251c14cc884bfa16bdbed3c263ce5bffe2e21c0d0d00962cb0610464fa"
+url = "https://github.com/Kitware/CMake/releases/download/v4.4.3/cmake-4.4.3-macos-universal.tar.gz"
+url_api = "https://api.github.com/repos/Kitware/CMake/releases/assets/529577557"
 
 [tools.cmake."platforms.windows-x64"]
-checksum = "sha256:935ade9e5e8723583c07f44c5592cea2a1c8f65c56ca7e07b34c025c880e0bd6"
-url = "https://github.com/Kitware/CMake/releases/download/v4.3.3/cmake-4.3.3-windows-x86_64.zip"
+checksum = "sha256:4d52ebab7193a698651639ed80d8d04fd903358843572cf44c7fd234cb7c26ab"
+url = "https://github.com/Kitware/CMake/releases/download/v4.4.3/cmake-4.4.3-windows-x86_64.zip"
+url_api = "https://api.github.com/repos/Kitware/CMake/releases/assets/529578311"
 
 [tools.cmake."platforms.windows-x64-baseline"]
-checksum = "sha256:935ade9e5e8723583c07f44c5592cea2a1c8f65c56ca7e07b34c025c880e0bd6"
-url = "https://github.com/Kitware/CMake/releases/download/v4.3.3/cmake-4.3.3-windows-x86_64.zip"
+checksum = "sha256:4d52ebab7193a698651639ed80d8d04fd903358843572cf44c7fd234cb7c26ab"
+url = "https://github.com/Kitware/CMake/releases/download/v4.4.3/cmake-4.4.3-windows-x86_64.zip"
+url_api = "https://api.github.com/repos/Kitware/CMake/releases/assets/529578311"
 
 [[tools.lefthook]]
-version = "2.1.8"
+version = "2.1.14"
 backend = "aqua:evilmartians/lefthook"
 
 [tools.lefthook."platforms.linux-arm64"]
-checksum = "sha256:2c0af40eb3209917733f72329abc2e91e51aa5fab85475ec515978c852c4d470"
-url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.8/lefthook_2.1.8_Linux_aarch64.gz"
+checksum = "sha256:2fd4b1f33aab4e4c8691a1a6a750b0638a40bdef871234cacb33781615dbf7ba"
+url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.14/lefthook_2.1.14_Linux_aarch64.gz"
+url_api = "https://api.github.com/repos/evilmartians/lefthook/releases/assets/563149908"
 provenance = "github-attestations"
 
 [tools.lefthook."platforms.linux-arm64-musl"]
-checksum = "sha256:2c0af40eb3209917733f72329abc2e91e51aa5fab85475ec515978c852c4d470"
-url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.8/lefthook_2.1.8_Linux_aarch64.gz"
+checksum = "sha256:2fd4b1f33aab4e4c8691a1a6a750b0638a40bdef871234cacb33781615dbf7ba"
+url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.14/lefthook_2.1.14_Linux_aarch64.gz"
+url_api = "https://api.github.com/repos/evilmartians/lefthook/releases/assets/563149908"
 provenance = "github-attestations"
 
 [tools.lefthook."platforms.linux-x64"]
-checksum = "sha256:15420bb2ce30ba5b71e242542b28f06447630011af924a3324ff63a0fee32f8c"
-url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.8/lefthook_2.1.8_Linux_x86_64.gz"
+checksum = "sha256:2be3187101b3a2edd5edf8b546aa2e3820531c517b4cd0216601a9c06f07c42d"
+url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.14/lefthook_2.1.14_Linux_x86_64.gz"
+url_api = "https://api.github.com/repos/evilmartians/lefthook/releases/assets/563149839"
 provenance = "github-attestations"
 
 [tools.lefthook."platforms.linux-x64-baseline"]
-checksum = "sha256:15420bb2ce30ba5b71e242542b28f06447630011af924a3324ff63a0fee32f8c"
-url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.8/lefthook_2.1.8_Linux_x86_64.gz"
+checksum = "sha256:2be3187101b3a2edd5edf8b546aa2e3820531c517b4cd0216601a9c06f07c42d"
+url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.14/lefthook_2.1.14_Linux_x86_64.gz"
+url_api = "https://api.github.com/repos/evilmartians/lefthook/releases/assets/563149839"
 provenance = "github-attestations"
 
 [tools.lefthook."platforms.linux-x64-musl"]
-checksum = "sha256:15420bb2ce30ba5b71e242542b28f06447630011af924a3324ff63a0fee32f8c"
-url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.8/lefthook_2.1.8_Linux_x86_64.gz"
+checksum = "sha256:2be3187101b3a2edd5edf8b546aa2e3820531c517b4cd0216601a9c06f07c42d"
+url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.14/lefthook_2.1.14_Linux_x86_64.gz"
+url_api = "https://api.github.com/repos/evilmartians/lefthook/releases/assets/563149839"
 provenance = "github-attestations"
 
 [tools.lefthook."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:15420bb2ce30ba5b71e242542b28f06447630011af924a3324ff63a0fee32f8c"
-url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.8/lefthook_2.1.8_Linux_x86_64.gz"
+checksum = "sha256:2be3187101b3a2edd5edf8b546aa2e3820531c517b4cd0216601a9c06f07c42d"
+url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.14/lefthook_2.1.14_Linux_x86_64.gz"
+url_api = "https://api.github.com/repos/evilmartians/lefthook/releases/assets/563149839"
 provenance = "github-attestations"
 
 [tools.lefthook."platforms.macos-arm64"]
-checksum = "sha256:911d530d68ba1495beb32009bf895e296208a556a030d254e8d5641823ba7a25"
-url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.8/lefthook_2.1.8_MacOS_arm64.gz"
+checksum = "sha256:398e6a23dfe2de3fc113e091dd4b592795cc8f1665acf5501856858b8056d686"
+url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.14/lefthook_2.1.14_MacOS_arm64.gz"
+url_api = "https://api.github.com/repos/evilmartians/lefthook/releases/assets/563149840"
 provenance = "github-attestations"
 
 [tools.lefthook."platforms.macos-x64"]
-checksum = "sha256:5d95768cf7383e21e5320dc1b351671fca009bc44800ec2366f824f5540d354f"
-url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.8/lefthook_2.1.8_MacOS_x86_64.gz"
+checksum = "sha256:9e304cad12b3785bf45ba6085fa6a91ed45f6ff6e7dabd50cb6834959caef06a"
+url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.14/lefthook_2.1.14_MacOS_x86_64.gz"
+url_api = "https://api.github.com/repos/evilmartians/lefthook/releases/assets/563149898"
 provenance = "github-attestations"
 
 [tools.lefthook."platforms.macos-x64-baseline"]
-checksum = "sha256:5d95768cf7383e21e5320dc1b351671fca009bc44800ec2366f824f5540d354f"
-url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.8/lefthook_2.1.8_MacOS_x86_64.gz"
+checksum = "sha256:9e304cad12b3785bf45ba6085fa6a91ed45f6ff6e7dabd50cb6834959caef06a"
+url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.14/lefthook_2.1.14_MacOS_x86_64.gz"
+url_api = "https://api.github.com/repos/evilmartians/lefthook/releases/assets/563149898"
 provenance = "github-attestations"
 
 [tools.lefthook."platforms.windows-x64"]
-checksum = "sha256:13cab0ebb26b89c66bbf53a658c4126bf34202a857412690bb61c14c530b1ecf"
-url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.8/lefthook_2.1.8_Windows_x86_64.gz"
+checksum = "sha256:61a0f47c75c741fa2788aff55f85dfa0a34307257b176cb6b20fd821ae030454"
+url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.14/lefthook_2.1.14_Windows_x86_64.gz"
+url_api = "https://api.github.com/repos/evilmartians/lefthook/releases/assets/563149872"
 provenance = "github-attestations"
 
 [tools.lefthook."platforms.windows-x64-baseline"]
-checksum = "sha256:13cab0ebb26b89c66bbf53a658c4126bf34202a857412690bb61c14c530b1ecf"
-url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.8/lefthook_2.1.8_Windows_x86_64.gz"
+checksum = "sha256:61a0f47c75c741fa2788aff55f85dfa0a34307257b176cb6b20fd821ae030454"
+url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.14/lefthook_2.1.14_Windows_x86_64.gz"
+url_api = "https://api.github.com/repos/evilmartians/lefthook/releases/assets/563149872"
 provenance = "github-attestations"
 
 [[tools.ninja]]
@@ -311,60 +333,71 @@ checksum = "sha256:8a4e35ab0b331c85d73567b12f2a444df187f483e5079ceffa6bda1faa2e7
 url = "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.zip"
 
 [[tools.uv]]
-version = "0.11.16"
+version = "0.12.19"
 backend = "aqua:astral-sh/uv"
 
 [tools.uv."platforms.linux-arm64"]
-checksum = "sha256:ac022d96411143b9a2dd75ea711fa8dd4cd14538bf248f2e5df3c10a80f7f6a4"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.16/uv-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:0804e9b164c64b6914182d5920c08551958a095986f10a3731056df701126436"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.19/uv-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/587158851"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-arm64-musl"]
-checksum = "sha256:ac022d96411143b9a2dd75ea711fa8dd4cd14538bf248f2e5df3c10a80f7f6a4"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.16/uv-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:ad8d8448a2ff642ba62c2f684d7dd22a03f8eb3fc9918c2c3e8ec975f4ed6710"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.19/uv-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/587158874"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64"]
-checksum = "sha256:1bc4be1be0a000f893b0d1db97906cf392b63fa22fda9a0ecf33d0d4bbb4bc9a"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.16/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:23bf5552d220e0842b65c862097b2ebaeba0064b74eda5e565e77fd25969d8c8"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.19/uv-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/587159011"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64-baseline"]
-checksum = "sha256:1bc4be1be0a000f893b0d1db97906cf392b63fa22fda9a0ecf33d0d4bbb4bc9a"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.16/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:23bf5552d220e0842b65c862097b2ebaeba0064b74eda5e565e77fd25969d8c8"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.19/uv-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/587159011"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64-musl"]
-checksum = "sha256:1bc4be1be0a000f893b0d1db97906cf392b63fa22fda9a0ecf33d0d4bbb4bc9a"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.16/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:db7278c9f57981338fddff1fb250e11964bc0a4fafcb9eed8303fdb117dc067b"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.19/uv-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/587159021"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:1bc4be1be0a000f893b0d1db97906cf392b63fa22fda9a0ecf33d0d4bbb4bc9a"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.16/uv-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:db7278c9f57981338fddff1fb250e11964bc0a4fafcb9eed8303fdb117dc067b"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.19/uv-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/587159021"
 provenance = "github-attestations"
 
 [tools.uv."platforms.macos-arm64"]
-checksum = "sha256:2b25be1af546be330b340b0a76b99f989daa6d92678fdffb87438e661e9d88fb"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.16/uv-aarch64-apple-darwin.tar.gz"
+checksum = "sha256:a9a8df1eedeb192f2e47e40e2faabfb387db4b850209118786d42f89dde3e0ba"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.19/uv-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/587158826"
 provenance = "github-attestations"
 
 [tools.uv."platforms.macos-x64"]
-checksum = "sha256:6b91ae3de155f51bd1f5b74814821c79f016a176561f252cd9ddfb976939af2e"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.16/uv-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:cb5fa57bafe68fc0fb94b17f06bee0b0b9a7feb94ccbd110445afa0696e39273"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.19/uv-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/587158992"
 provenance = "github-attestations"
 
 [tools.uv."platforms.macos-x64-baseline"]
-checksum = "sha256:6b91ae3de155f51bd1f5b74814821c79f016a176561f252cd9ddfb976939af2e"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.16/uv-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:cb5fa57bafe68fc0fb94b17f06bee0b0b9a7feb94ccbd110445afa0696e39273"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.19/uv-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/587158992"
 provenance = "github-attestations"
 
 [tools.uv."platforms.windows-x64"]
-checksum = "sha256:dd9d6d6554bfab265bfa98aa8e8a406c5c3a7b97582f93de1f4d48d9154a0395"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.16/uv-x86_64-pc-windows-msvc.zip"
+checksum = "sha256:6dbb02d79e419522f1c500f0adb1cddcff0cda7d59b0d66ea7f5e3b4a1b2f5f0"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.19/uv-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/587159002"
 provenance = "github-attestations"
 
 [tools.uv."platforms.windows-x64-baseline"]
-checksum = "sha256:dd9d6d6554bfab265bfa98aa8e8a406c5c3a7b97582f93de1f4d48d9154a0395"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.16/uv-x86_64-pc-windows-msvc.zip"
+checksum = "sha256:6dbb02d79e419522f1c500f0adb1cddcff0cda7d59b0d66ea7f5e3b4a1b2f5f0"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.19/uv-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/587159002"
 provenance = "github-attestations"
