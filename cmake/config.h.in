@@ -29,6 +29,10 @@
 #cmakedefine HAVE_SYS_INOTIFY_H 1
 #cmakedefine HAVE_DIRENT_H 1
 
+#cmakedefine HAVE_UTMP 1
+#cmakedefine HAVE_SYSTEMD 1
+#cmakedefine HAVE_SYSTEMD_LOGIN_TIME 1
+
 #cmakedefine HAVE_SOUNDCARD_H 1
 
 #cmakedefine HAVE_STRNDUP 1
