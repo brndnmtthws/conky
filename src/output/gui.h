@@ -164,12 +164,8 @@ inline bool TEST_HINT(uint16_t mask, window_hints hint) {
 
 extern conky::absolute_rect<int> workarea;
 
-extern char window_created;
-
 void destroy_window(void);
 void create_gc(void);
-
-bool out_to_gui(lua::state &l);
 
 void print_monitor(struct text_object *, char *, unsigned int);
 void print_monitor_number(struct text_object *, char *, unsigned int);
@@ -207,9 +203,7 @@ struct window_hints_traits {
 };
 extern conky::simple_config_setting<uint16_t, window_hints_traits>
     own_window_hints;
-#endif /* OWN_WINDOW || BUILD_WAYLAND */
 
-#if defined(OWN_WINDOW) || defined(BUILD_WAYLAND)
 extern conky::simple_config_setting<bool> own_window;
 /// @brief X11 window title; Wayland XDG Shell toplevel title.
 extern conky::simple_config_setting<std::string> own_window_title;
@@ -231,6 +225,10 @@ Colour get_background_colour_preference(lua::state &l);
 inline uint8_t get_background_alpha_preference(lua::state &l) {
   return get_background_colour_preference(l).alpha;
 }
+
 #endif /* OWN_WINDOW || BUILD_WAYLAND */
+#if defined(BUILD_XFT) || defined(BUILD_WAYLAND)
+extern conky::simple_config_setting<float> text_alpha;
+#endif /* BUILD_XFT || BUILD_WAYLAND */
 
 #endif /* _CONKY_GUI_H_ */

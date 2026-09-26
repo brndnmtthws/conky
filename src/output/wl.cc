@@ -31,12 +31,9 @@
 #include <cstring>
 
 #include "../conky.h"
-#include "wl.h"
+#include "output-setting.hh"
 
 #ifdef BUILD_WAYLAND
-
-conky::simple_config_setting<bool> out_to_wayland("out_to_wayland", false,
-                                                  false);
 
 static const char NOT_IN_WAYLAND[] = "Not running in Wayland";
 
@@ -44,7 +41,7 @@ __attribute__((weak)) void print_monitor(struct text_object *obj, char *p,
                                          unsigned int p_max_size) {
   (void)obj;
 
-  if (!out_to_wayland.get(*state)) {
+  if (!conky::output_enabled(conky::output_t::WAYLAND)) {
     strncpy(p, NOT_IN_WAYLAND, p_max_size);
     return;
   }
@@ -56,7 +53,7 @@ __attribute__((weak)) void print_monitor_number(struct text_object *obj,
                                                 unsigned int p_max_size) {
   (void)obj;
 
-  if (!out_to_wayland.get(*state)) {
+  if (!conky::output_enabled(conky::output_t::WAYLAND)) {
     strncpy(p, NOT_IN_WAYLAND, p_max_size);
     return;
   }
@@ -67,7 +64,7 @@ __attribute__((weak)) void print_desktop(struct text_object *obj, char *p,
                                          unsigned int p_max_size) {
   (void)obj;
 
-  if (!out_to_wayland.get(*state)) {
+  if (!conky::output_enabled(conky::output_t::WAYLAND)) {
     strncpy(p, NOT_IN_WAYLAND, p_max_size);
     return;
   }
@@ -79,7 +76,7 @@ __attribute__((weak)) void print_desktop_number(struct text_object *obj,
                                                 unsigned int p_max_size) {
   (void)obj;
 
-  if (!out_to_wayland.get(*state)) {
+  if (!conky::output_enabled(conky::output_t::WAYLAND)) {
     strncpy(p, NOT_IN_WAYLAND, p_max_size);
     return;
   }
@@ -90,7 +87,7 @@ __attribute__((weak)) void print_desktop_name(struct text_object *obj, char *p,
                                               unsigned int p_max_size) {
   (void)obj;
 
-  if (!out_to_wayland.get(*state)) {
+  if (!conky::output_enabled(conky::output_t::WAYLAND)) {
     strncpy(p, NOT_IN_WAYLAND, p_max_size);
   } else {
     strncpy(p, "NYI", p_max_size);

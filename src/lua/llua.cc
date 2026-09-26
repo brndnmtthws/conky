@@ -33,6 +33,7 @@
 #include "../geometry.h"
 #include "../logging.h"
 #include "../output/display-output.hh"
+#include "../output/output-setting.hh"
 #include "build.h"
 #include "llua.h"
 
@@ -41,7 +42,6 @@
 
 #ifdef BUILD_X11
 #include "../output/x11.h"
-#include "x11-settings.h"
 #endif /* BUILD_X11 */
 
 #ifdef BUILD_MOUSE_EVENTS
@@ -687,7 +687,7 @@ void llua_setup_window_table(conky::vec2i window_size,
   lua_newtable(lua_L);
 
 #ifdef BUILD_X11
-  if (out_to_x.get(*state)) {
+  if (conky::output_enabled(conky::output_t::X11)) {
     llua_set_userdata("drawable", "Drawable", (void *)&window.drawable);
     llua_set_userdata("visual", "Visual", window.visual);
     llua_set_userdata("display", "Display", display);
@@ -695,7 +695,7 @@ void llua_setup_window_table(conky::vec2i window_size,
 #endif /*BUILD_X11*/
 
 #ifdef BUILD_GUI
-  if (out_to_gui(*state)) {
+  if (conky::output_enabled({conky::output_t::X11, conky::output_t::WAYLAND})) {
     llua_set_number("width", window_size.x());
     llua_set_number("height", window_size.y());
 

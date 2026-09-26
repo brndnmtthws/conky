@@ -308,8 +308,9 @@ inline void reset_optind() {
 #endif
 }
 
-void clean_up(void);      // defined in conky.cc
-void handle_terminate();  // defined in conky.cc
+void clean_up(void);             // defined in conky.cc
+void handle_terminate();         // defined in conky.cc
+void populate_system_details();  // defined in system-details.cc
 
 int main(int argc, char **argv) {
   conky::log::init_logger();
@@ -320,6 +321,8 @@ int main(int argc, char **argv) {
   bindtextdomain(PACKAGE_NAME, LOCALE_DIR);
   textdomain(PACKAGE_NAME);
 #endif
+  populate_system_details();
+
   argc_copy = argc;
   argv_copy = argv;
   g_sigterm_pending = 0;

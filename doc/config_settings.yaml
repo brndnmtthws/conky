@@ -9,6 +9,9 @@
 #  * `desc`: a markdown-formatted description of the thing
 #  * `args`: optional list of arguments
 #  * `default`: an optional default value, if applicable
+#  * `status`: optional lifecycle marker, "deprecated" or "removed". When set,
+#    `desc` is treated as migration guidance and the entry is rendered
+#    accordingly. Omit for settings that are in active use.
 ---
 desc: |-
   This is a list of Conky's global configuration options. These belong in the
@@ -91,7 +94,8 @@ values:
     desc: |-
       Specify a default width for bars. If not specified, the
       default value is 0, which causes the bar to expand to fit the width of
-      your Conky window. If you set [out_to_console](#out_to_console) = true, the default value
+      your Conky window. With a text-only backend (e.g.
+      [`output_backend`](#output_backend) `= 'console'`) the default value
       will be 10 for the text version of the bar.
     default: 0
   - name: default_color
@@ -112,7 +116,8 @@ values:
     desc: |-
       Specify a default width for graphs. If not specified, the
       default value is 0, which causes the graph to expand to fit the width
-      of your Conky window. If you set out_to_console = true, the text
+      of your Conky window. With a text-only backend (e.g.
+      [`output_backend`](#output_backend) `= 'console'`) the text
       version of the graph will actually have no width and you will need to
       set a sensible default or set the height and width of each graph
       individually.
@@ -155,7 +160,8 @@ values:
     desc: Draw shades.
   - name: extra_newline
     desc: |-
-      Put an extra newline at the end when writing to [stdout](#out_to_console),
+      Put an extra newline at the end when writing to stdout
+      ([`output_backend`](#output_backend) `= 'console'`),
       useful for writing to awesome's wiboxes.
   - name: font
     desc: Font name in X, xfontsel can be used to get a nice font.
@@ -211,7 +217,8 @@ values:
     default: 10080
   - name: http_refresh
     desc: |-
-      When this is set the page generated with [out_to_http](#out_to_http) will
+      When this is set the page generated with the `http` backend
+      ([`output_backend`](#output_backend)) will
       automatically refresh each interval.
     default: no
   - name: if_up_strictness
@@ -383,37 +390,77 @@ values:
       The display that the nvidia variable will used.
     default: $DISPLAY
   - name: out_to_console
-    desc: Print text to stdout.
-  - name: out_to_http
-    desc: Let conky act as a small http-server serving its text.
-  - name: out_to_ncurses
+    deprecated_since: 1.24.3
     desc: |-
-      Print text in the console, but use ncurses so that conky can
-      print the text of a new update over the old text. (In the future this
-      will provide more useful things).
+      Replaced by [`output_backend`](#output_backend); set
+      `output_backend = 'console'` to print text to stdout.
+  - name: out_to_http
+    deprecated_since: 1.24.3
+    desc: |-
+      Replaced by [`output_backend`](#output_backend); set
+      `output_backend = 'http'` to serve text over HTTP.
+  - name: out_to_ncurses
+    deprecated_since: 1.24.3
+    desc: |-
+      Replaced by [`output_backend`](#output_backend); set
+      `output_backend = 'ncurses'` to render in the terminal with ncurses.
   - name: out_to_stderr
     desc: Print text to stderr.
   - name: out_to_wayland
+    deprecated_since: 1.24.3
     desc: |-
-      Open a Wayland window to display output.
-    default: no
+      Replaced by [`output_backend`](#output_backend); set
+      `output_backend = 'wayland'` to open a Wayland window.
   - name: out_to_x
+    deprecated_since: 1.24.3
     desc: |-
-      When set to no, there will be no output in X (useful when
-      you also use things like [out_to_console](#out_to_console)). If you set it to no, make
-      sure that it's placed before all other X-related setting (take the
-      first line of your configfile to be sure).
-    default: yes
+      Replaced by [`output_backend`](#output_backend); add or remove `'x11'`
+      from `output_backend` to control the X11 window.
+  - name: output_backend
+    desc: |-
+      Selects which display backend(s) Conky uses to present its output. Accepts
+      either a single backend name or a list of names:
+
+      ```lua
+      output_backend = 'wayland'
+      output_backend = { 'x11', 'http' }
+      ```
+
+      Valid backends are `x11`, `wayland`, `ncurses`, `http`, `console`, and
+      `file`; availability of each depends on compile-time options.
+
+      Only one *primary* backend (`x11`, `wayland`, or `ncurses`) is active at a
+      time. When several are requested, Conky keeps the one best suited to the
+      current session: `wayland` under a Wayland compositor, `x11` under X11 or
+      XWayland.
+      The non-primary backends `http`, `console` (stdout), and `file` may be
+      combined freely with a primary backend.
+
+      When unset, Conky infers a sensible backend from the session environment.
+
+      This replaces the deprecated `out_to_x`, `out_to_wayland`,
+      `out_to_ncurses`, `out_to_http`, and `out_to_console` settings, which
+      remain accepted for backwards compatibility.
   - name: override_utf8_locale
     desc: Force UTF8. Requires [XFT](#use_xft).
   - name: overwrite_file
     desc: Overwrite the file given as argument.
   - name: own_window
     desc: Boolean, draw conky in own window instead of drawing on root window.
+  - name: own_window_argb_value
+    deprecated_since: 1.23.0
+    desc: |-
+      Replaced by [`own_window_color`](#own_window_color); encode the background
+      opacity in its alpha channel instead (e.g. `'#8000'` for ~50% opacity).
+  - name: own_window_argb_visual
+    removed_since: 1.23.0
+    desc: |-
+      ARGB is now always enabled when available. Control background opacity with
+      [`own_window_color`](#own_window_color) (e.g. `'#8000'`).
   - name: own_window_class
     desc: Manually set the WM_CLASS name.
     default: Conky
-  - name: own_window_colour
+  - name: own_window_color
     desc: |-
       Set the background colour of the window. Takes a hex value with
       optional alpha (e.g. `'#fff'`, `'#8000'`, `'#8fff'`), or a valid
@@ -460,6 +507,11 @@ values:
     desc: |-
       Allows overriding conky window name.
     default: 'conky (<hostname>)'
+  - name: own_window_transparent
+    deprecated_since: 1.23.0
+    desc: |-
+      Replaced by [`own_window_color`](#own_window_color); use a fully
+      transparent value (alpha 0, e.g. `'#0000'`) for the same effect.
   - name: own_window_type
     desc: |-
       Specifies the type of window conky is displayed as. Under X11 this
@@ -532,6 +584,11 @@ values:
     desc: Shows the maximum value in scaled graphs.
   - name: stippled_borders
     desc: Border stippling (dashing) in pixels.
+  - name: store_graph_data_explicitly
+    removed_since: 1.23.0
+    desc: |-
+      Graph data is now always stored directly in the node; this setting has no
+      effect.
   - name: temperature_unit
     desc: |-
       Desired output unit of all objects displaying a temperature.
@@ -548,6 +605,16 @@ values:
       * `\\` -> backslash
       * `\\ ` -> space
       * `\\N` -> template argument N (starting from 1)
+  - name: text_alpha
+    desc: |-
+      Alpha (opacity) of rendered text on graphical outputs (X11 with Xft, and
+      Wayland). Must be a value at or between 0 and 1.
+
+      Only controls opacity of the first font (font0).
+
+      Replaces the backend-specific `xftalpha` (X11) and `textalpha` (Wayland)
+      settings, which are still accepted as deprecated aliases.
+    default: 1.0
   - name: text_buffer_size
     desc: |-
       Size of the standard text buffer in bytes.
@@ -559,6 +626,11 @@ values:
     args:
       - integer_number
     default: 256
+  - name: textalpha
+    deprecated_since: 1.24.3
+    desc: |-
+      Replaced by [`text_alpha`](#text_alpha); it unifies the old Wayland
+      `textalpha` and X11 `xftalpha` settings.
   - name: times_in_seconds
     desc: |-
       If true, variables that output times output a number that
@@ -605,6 +677,9 @@ values:
   - name: use_xft
     desc: Use Xft (anti-aliased font and stuff).
   - name: xftalpha
-    desc: Alpha of Xft font. Must be a value at or between 1 and 0.
+    deprecated_since: 1.24.3
+    desc: |-
+      Replaced by [`text_alpha`](#text_alpha); it unifies the old X11 `xftalpha`
+      and Wayland `textalpha` settings.
   - name: xinerama_head
     desc: Specify a Xinerama head.

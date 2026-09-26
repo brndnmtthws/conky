@@ -25,21 +25,20 @@
 
 #include <string.h>
 #include <cmath>
-#include <limits>
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 #include <vector>
 
 #include "../content/colours.hh"
-#include "../logging.h"
-#include "../lua/luamm.hh"
+#include "output-setting.hh"
 
 typedef struct _cairo_surface cairo_surface_t;
 
 namespace conky {
 
-bool initialize_display_outputs();
+void initialize_display_outputs();
 
 bool shutdown_display_outputs();
 
@@ -50,6 +49,13 @@ bool shutdown_display_outputs();
  * changes or support for different rasterizers.
  */
 using draw_surface = cairo_surface_t;
+
+class display_output_base;
+using display_outputs_t = std::unordered_map<output_t, display_output_base *>;
+/// A list of registered outputs, populated by their static initializers.
+///
+/// Must be a function to avoid SIOF.
+display_outputs_t &registered_outputs();
 
 /*
  * A base class for all display outputs.
@@ -70,15 +76,16 @@ class display_output_base {
 
  public:
   const std::string name;
-  bool is_active = false;
+  const output_t type;
   bool is_graphical = false;
 
-  explicit display_output_base(const std::string &name) : name(name) {};
+  explicit display_output_base(const std::string &name, output_t type)
+      : name(name), type(type) {
+    registered_outputs()[type] = this;
+  };
 
   virtual ~display_output_base() {}
 
-  // check if available and enabled in settings
-  virtual bool detect() { return false; }
   // connect to DISPLAY and other stuff
   virtual bool initialize() { return false; }
   virtual bool shutdown() { return false; }
@@ -142,26 +149,9 @@ class display_output_base {
     return std::weak_ptr<draw_surface>();
   }
 
-  friend bool conky::initialize_display_outputs();
+  friend void conky::initialize_display_outputs();
   friend bool conky::shutdown_display_outputs();
-
- protected:
-  virtual bool active() { return is_active; }
 };
-
-using display_outputs_t = std::vector<display_output_base *>;
-
-enum class output_t : uint32_t {
-  CONSOLE,
-  NCURSES,
-  FILE,
-  HTTP,
-  X11,
-  WAYLAND,
-  OUTPUT_COUNT
-};
-template <output_t Output>
-void register_output(display_outputs_t &outputs);
 
 /*
  * The selected and active display outputs.
@@ -173,6 +163,8 @@ extern std::vector<display_output_base *> active_display_outputs;
  * else we iterate over each active outputs.
  */
 extern std::vector<conky::display_output_base *> current_display_outputs;
+
+std::optional<display_output_base *> get_registered_output(output_t output);
 
 }  // namespace conky
 
@@ -207,13 +199,9 @@ inline T dpi_scale(T value) {
   return value;
 }
 
-static inline void unset_display_output() {
-  conky::current_display_outputs.clear();
-}
-
-static inline void set_display_output(conky::display_output_base *output) {
-  conky::current_display_outputs.clear();
-  conky::current_display_outputs.push_back(output);
-}
+/// Sets the current active display output.
+///
+/// Use `nullptr` to clear active display output.
+void set_display_output(conky::display_output_base *output);
 
 #endif /* DISPLAY_OUTPUT_HH */

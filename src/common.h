@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <cstddef>
 #include <filesystem>
 #include <optional>
 #include <string>
@@ -61,6 +62,8 @@ struct process *get_first_process(void);
 void get_cpu_count(void);
 double get_time(void);
 double get_realtime(void);
+
+std::size_t scan_cpu_index(const char *str);
 
 /// @brief Handles environment variable expansion in paths and canonicalization.
 ///
@@ -202,8 +205,6 @@ int updatenr_iftest(struct text_object *);
 
 #ifdef BUILD_CURL
 void print_github(struct text_object *, char *, unsigned int);
-void print_stock(struct text_object *, char *, unsigned int);
-void free_stock(struct text_object *);
 std::string github_notifications_url();
 std::string github_authorization_header(const std::string &token);
 #endif /* BUILD_CURL */

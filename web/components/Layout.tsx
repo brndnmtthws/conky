@@ -43,8 +43,8 @@ export default function Layout({ children }: LayoutProps) {
       <div className="sticky top-0 z-10">
         <Header name="Conky" setDarkMode={setDarkMode} />
       </div>
-      <div className="relative pb-6 pt-4 md:pt-6">
-        <div className="mx-auto flex w-full max-w-4xl flex-col items-center px-4">
+      <div className="relative py-4 lg:py-6">
+        <div className="mx-auto flex w-full max-w-4xl flex-col items-center px-2">
           {children}
         </div>
       </div>

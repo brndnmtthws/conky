@@ -26,28 +26,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include "../conky.h"
-#ifdef BUILD_GUI
-#include "../lua/fonts.h"
-#include "../output/gui.h"
-#endif /* BUILD_GUI */
-#include <cmath>
-#include "../logging.h"
 #include "specials.h"
+
+#include <cmath>
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif /* HAVE_SYS_PARAM_H */
 #include <algorithm>
 #include <functional>
 #include <sstream>
+
+#ifdef BUILD_GUI
+#include "../lua/fonts.h"
+#endif /* BUILD_GUI */
 #include "../common.h"
 #include "../conky.h"
+#include "../logging.h"
 #include "../output/display-output.hh"
+#include "../output/output-setting.hh"
 #include "colours.hh"
-
-#ifdef BUILD_NCURSES
-extern conky::simple_config_setting<bool> out_to_ncurses;
-#endif
 
 struct special_node *specials = nullptr;
 
@@ -742,14 +739,8 @@ void new_stippled_hr(struct text_object *obj, char *p,
 #endif /* BUILD_GUI */
 
 void new_fg(struct text_object *obj, char *p, unsigned int p_max_size) {
-  if (false
-#ifdef BUILD_GUI
-      || (display_output() && display_output()->graphical())
-#endif /* BUILD_GUI */
-#ifdef BUILD_NCURSES
-      || out_to_ncurses.get(*state)
-#endif /* BUILD_NCURSES */
-  ) {
+  if (conky::output_is({conky::output_t::X11, conky::output_t::WAYLAND,
+                        conky::output_t::NCURSES})) {
     new_special(p, text_node_t::FG)->arg = obj->data.l;
   }
   UNUSED(obj);

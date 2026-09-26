@@ -1,9 +1,11 @@
 import * as fs from 'fs/promises'
-import { createSearchIndex } from './search'
+import { buildSearchIndex } from './search'
 
 export async function writeSearchIndex() {
   await fs.mkdir('public').catch(() => {})
   await fs.mkdir('public/static').catch(() => {})
-  const index = createSearchIndex()
-  await fs.writeFile('public/static/fuse-index.json', JSON.stringify(index))
+  // MiniSearch serializes via JSON.stringify; the client restores it with
+  // MiniSearch.loadJSON using the same MINISEARCH_OPTIONS.
+  const index = buildSearchIndex()
+  await fs.writeFile('public/static/search-index.json', JSON.stringify(index))
 }

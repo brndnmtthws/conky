@@ -12,12 +12,10 @@ export default function Lua(props: LuaProps) {
   return (
     <Layout>
       <SEO title="Conky – Lua API" description="Conky Lua API documentation" />
-      <main className="w-full pt-4">
-        <div>
-          <h1 className="text-2xl px-2 lg:px-4" data-cy="page-heading">
-            Lua API
-          </h1>
-        </div>
+      <main className="w-full prose dark:prose-invert lg:max-w-[80ch]">
+        <h1 className="text-2xl px-2 lg:px-4" data-cy="page-heading">
+          Lua API
+        </h1>
         <Docs docs={props.lua} braces={false} assign={false} />
       </main>
     </Layout>

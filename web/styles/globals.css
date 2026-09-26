@@ -5,11 +5,13 @@
   html {
     background-color: rgb(250 250 250);
     color: rgb(17 24 39);
+    --doc-target-accent: var(--color-rose-300);
   }
 
   html.dark {
     background-color: rgb(10 10 10);
     color: rgb(244 244 245);
+    --doc-target-accent: var(--color-rose-900);
   }
 
   body {
@@ -34,13 +36,22 @@ pre[class*='language-'] {
     'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace';
 }
 
-@layer base {
-  code::before,
-  code::after {
-    content: "" !important;
-  }
+/* @tailwindcss/typography .prose normalizes Markdown table alignment too strictly */
+.prose
+  :where(th, td):not(
+    :where([class~='not-prose'], [class~='not-prose'] *)
+  )[align='center'] {
+  text-align: center;
+}
+.prose
+  :where(th, td):not(
+    :where([class~='not-prose'], [class~='not-prose'] *)
+  )[align='right'] {
+  text-align: end;
+}
 
-  .prose {
-    font-family: var(--font-sans);
+@media screen and (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
   }
 }

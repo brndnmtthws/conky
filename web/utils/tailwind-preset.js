@@ -54,13 +54,11 @@ module.exports = {
       typography: (theme) => ({
         DEFAULT: {
           css: {
-            code: {
-              '&::before': {
-                content: '"" !important',
-              },
-              '&::after': {
-                content: '"" !important',
-              },
+            'code::before': {
+              content: 'none',
+            },
+            'code::after': {
+              content: 'none',
             },
             fontFamily: theme('fontFamily.sans').join(', '),
           },

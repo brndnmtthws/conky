@@ -7,8 +7,6 @@
 
 extern conky::simple_config_setting<std::string> display_name;
 
-extern conky::simple_config_setting<bool> out_to_x;
-
 #ifdef BUILD_XFT
 extern conky::simple_config_setting<bool> use_xft;
 #endif

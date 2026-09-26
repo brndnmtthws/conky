@@ -15,7 +15,7 @@ export default function Variables(props: VariablesProps) {
         title="Conky – Variables"
         description="Conky object variables documentation"
       />
-      <main className="w-full pt-4">
+      <main className="w-full prose dark:prose-invert lg:max-w-[80ch]">
         <h1 className="text-2xl px-2 lg:px-4" data-cy="page-heading">
           Variables
         </h1>
