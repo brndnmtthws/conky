@@ -115,7 +115,7 @@ static void collect_logind_sessions(std::vector<user_session> &sessions) {
   char **logind_sessions = nullptr;
   const int count = sd_get_sessions(&logind_sessions);
 
-  if (count <= 0) { return; }
+  if (count < 0) { return; }
 
   for (int i = 0; i < count; ++i) {
     user_session s;
