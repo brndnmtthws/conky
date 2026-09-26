@@ -468,6 +468,9 @@ values:
 
       The alpha channel controls background opacity. For example, `'#0000'`
       is fully transparent and `'#f000'` is fully opaque black.
+      An 8-digit value uses the `#AARRGGBB` form (alpha first), e.g.
+      `'#E6000000'` for ~90% opaque black. Note this differs from the CSS
+      `#RRGGBBAA` order; writing `'#000000E6'` would set alpha to 0.
       Semi-transparent backgrounds require a compositor on X11.
     default: black
     args:
