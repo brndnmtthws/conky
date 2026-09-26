@@ -12,7 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Run labeler
-        uses: actions/labeler@v6
+        uses: actions/labeler@v7
         with:
           sync-labels: true
           repo-token: '${{ secrets.GITHUB_TOKEN }}'
