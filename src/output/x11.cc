@@ -915,8 +915,17 @@ void x11_init_window(lua::state &l) {
 
     if (own_window.get(l)) {
       selected_events.clear_all();
-      selected_events.set(XI_ButtonPress);
-      selected_events.set(XI_ButtonRelease);
+      // Desktop windows rely on an empty XShape input region for
+      // click-through; only grab buttons if a mouse hook actually wants them.
+      bool wants_button_events = own_window_type.get(l) != window_type::DESKTOP;
+#ifdef BUILD_MOUSE_EVENTS
+      wants_button_events =
+          wants_button_events || !conky::lua_mouse_hook.get(l).empty();
+#endif /* BUILD_MOUSE_EVENTS */
+      if (wants_button_events) {
+        selected_events.set(XI_ButtonPress);
+        selected_events.set(XI_ButtonRelease);
+      }
       // It's not recommended to add event masks to special windows in X; causes
       // a crash (thus own_window_type != window_type::DESKTOP)
       if (own_window_type.get(l) != window_type::DESKTOP) {
