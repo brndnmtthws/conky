@@ -226,6 +226,37 @@ if(OS_LINUX)
   check_include_files("linux/sockios.h" HAVE_LINUX_SOCKIOS_H)
 endif(OS_LINUX)
 
+# utmp-based user session tracking (see src/data/users.cc).  utmp is being
+# phased out across distributions: Ubuntu >= 25.04 ships systemd without
+# utmp support, so nothing writes /var/run/utmp anymore, and musl-based
+# systems never had the interface at all.  Probe for it instead of assuming
+# it exists; when it is missing the logind backend below is the only source.
+check_include_files("utmp.h" HAVE_UTMP)
+
+if(OS_LINUX)
+  # When libsystemd is available, additionally compile a systemd-logind
+  # backend for user session tracking.  utmp stays the preferred source;
+  # logind is only used at runtime when utmp yields nothing (see the
+  # runtime gate in src/data/users.cc).  The check is optional on purpose,
+  # so builds without pkg-config or libsystemd keep working.
+  find_package(PkgConfig QUIET)
+  if(PKG_CONFIG_FOUND)
+    pkg_check_modules(SYSTEMD_LOGIN QUIET libsystemd)
+    if(SYSTEMD_LOGIN_FOUND)
+      set(HAVE_SYSTEMD ON)
+
+      # sd_uid_get_login_time() requires systemd >= 254; without it there
+      # is no logind data source for ${user_time} and ${user_times}.
+      if(SYSTEMD_LOGIN_VERSION VERSION_GREATER_EQUAL 254)
+        set(HAVE_SYSTEMD_LOGIN_TIME ON)
+      endif()
+
+      set(conky_libs ${conky_libs} ${SYSTEMD_LOGIN_LINK_LIBRARIES})
+      conky_append_include_dirs(conky_includes ${SYSTEMD_LOGIN_INCLUDE_DIRS})
+    endif()
+  endif()
+endif(OS_LINUX)
+
 # Handle Open Sound System
 if(BUILD_OPENSOUNDSYS)
   if(OS_LINUX)
