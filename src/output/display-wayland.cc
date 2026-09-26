@@ -153,9 +153,22 @@ static int os_create_anonymous_file(off_t size) {
   if (fd < 0) return -1;
   ret = posix_fallocate(fd, 0, size);
   if (ret != 0) {
-    close(fd);
-    errno = ret;
-    return -1;
+    if (ret == EOPNOTSUPP || ret == ENOSYS || ret == ENOTSUP) {
+      /* posix_fallocate() is unsupported on this platform or filesystem (e.g.
+       * FreeBSD/ZFS). Fall back to ftruncate(), which may yield SIGBUS on
+       * mmap()'ed access if disk space is overcommitted. */
+      if (ftruncate(fd, size) != 0) {
+        int trunc_errno = errno;
+        close(fd);
+        LOG_ERROR("ftruncate failed: {}", strerror(trunc_errno));
+        errno = trunc_errno;
+        return -1;
+      }
+    } else {
+      close(fd);
+      errno = ret;
+      return -1;
+    }
   }
   return fd;
 }
