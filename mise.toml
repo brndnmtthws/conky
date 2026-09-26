@@ -1,7 +1,3 @@
-[settings]
-experimental = true
-locked = true
-
 [tools]
 actionlint = "1.7.12"
 bun = "1.3.14"
