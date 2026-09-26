@@ -1346,6 +1346,9 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
   if (strcmp(type, "in") == 0 || strcmp(type, "temp") == 0 ||
       strcmp(type, "tempf") == 0) {
     *divisor = 1;
+  } else if (strcmp(type, "power") == 0) {
+    /* power unit is microwatts */
+    *divisor = 1000000;
   } else {
     *divisor = 0;
   }
@@ -1430,7 +1433,7 @@ static double get_sysfs_info(int *fd, int divisor, char *devtype, char *type) {
     }
   } else {
     if (divisor > 1) {
-      return val / divisor;
+      return val / static_cast<double>(divisor);
     } else if (divisor) {
       return val / 1000.0;
     } else {
@@ -1492,7 +1495,8 @@ static void parse_sysfs_sensor(struct text_object *obj, const char *arg,
 static bool is_sysfs_sensor_type(const char *type) {
   return strcmp(type, "fan") == 0 || strcmp(type, "in") == 0 ||
          strcmp(type, "temp") == 0 || strcmp(type, "temp2") == 0 ||
-         strcmp(type, "tempf") == 0 || strcmp(type, "vol") == 0;
+         strcmp(type, "tempf") == 0 || strcmp(type, "vol") == 0 ||
+         strcmp(type, "power") == 0;
 }
 
 static const char *scan_sysfs_bar(struct text_object *obj, const char *arg) {
@@ -1535,6 +1539,10 @@ void print_sysfs_sensor(struct text_object *obj, char *p,
     temp_print(p, p_max_size, r, TEMP_CELSIUS, 0);
   } else if (!strncmp(sf->type, "temp", 4)) {
     temp_print(p, p_max_size, r, TEMP_CELSIUS, 1);
+  } else if (!strncmp(sf->type, "power", 5)) {
+    /* power values will always be treated as integers, since a CPU TDP, for
+     * example, can go over 100W */
+    snprintf(p, p_max_size, "%.0f", r);
   } else if (r >= 100.0 || r == 0) {
     snprintf(p, p_max_size, "%d", (int)r);
   } else {
