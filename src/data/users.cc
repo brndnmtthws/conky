@@ -10,7 +10,7 @@
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
  * Copyright (c) 2005-2024 Brenden Matthews, Philip Kovacs, et. al.
- *	(see AUTHORS)
+ *      (see AUTHORS)
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,169 +27,218 @@
  *
  */
 
-#include <time.h>
+#include "config.h"
+
+#include <sys/types.h>
+
 #include <unistd.h>
-#if defined(HAVE_SYSTEMD)
-#include "systemd/sd-login.h"
-#include "pwd.h"
-#include "sys/types.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include <pwd.h>
+
+#ifdef HAVE_UTMP
+#include <utmp.h>
 #endif
-#include "stdlib.h"
-#include "string.h"
-#include "utmp.h"
+#ifdef HAVE_SYSTEMD
+#include <systemd/sd-daemon.h>
+#include <systemd/sd-login.h>
+#endif
+
 #include "../conky.h"
 #include "../logging.h"
 
 #define BUFLEN 512
 
-static void user_name(char *ptr) {
-#if defined(HAVE_SYSTEMD)
-  char **sessions = nullptr;
-  int num_sessions = sd_get_sessions(&sessions);
-  bool found = false;
+// One logged-in user session, as reported by utmp or systemd-logind.
+struct user_session {
+  std::string name;  // login name
+  std::string term;  // terminal device without "/dev/" prefix, may be empty
+  time_t login{0};   // login time, 0 when unknown
+};
 
-  if (num_sessions > 0) {
-    for (int i = 0; i < num_sessions; ++i) {
-      uid_t uid;
-      if (sd_session_get_uid(sessions[i], &uid) >= 0) {
-        struct passwd *pw = getpwuid(uid);
-        if (pw && pw->pw_name) {
-          strncpy(ptr, pw->pw_name, BUFLEN - 1);
-          ptr[BUFLEN - 1] = '\0';
-          found = true;
-        }
-      }
-      free(sessions[i]);
-    }
-    free(sessions);
+// Append `value` to the space-separated list in `ptr`, truncated at `len`.
+static void append_field(char *ptr, size_t len, const char *value) {
+  if (value == nullptr || value[0] == '\0') { return; }
+
+  const size_t used = strnlen(ptr, len);
+  if (used == 0) {
+    snprintf(ptr, len, "%s", value);
+  } else if (used + 1 < len) {
+    snprintf(ptr + used, len - used, " %s", value);
   }
-  
-  // Secondary fallback if systemd isn't running (e.g., WSL, Docker)
-  if (!found) {
-    struct passwd *pw = getpwuid(geteuid());
-    if (pw && pw->pw_name) {
-      strncpy(ptr, pw->pw_name, BUFLEN - 1);
-      ptr[BUFLEN - 1] = '\0';
-    }
-  }
-#else
-  const struct utmp *usr = 0;
+}
+
+#ifdef HAVE_UTMP
+static void collect_utmp_sessions(std::vector<user_session> &sessions) {
+  const struct utmp *usr = nullptr;
+
   setutent();
   while ((usr = getutent()) != nullptr) {
     if (usr->ut_type == USER_PROCESS) {
-      memcpy(ptr, usr->ut_name, UT_NAMESIZE);
-      ptr[UT_NAMESIZE] = 0;
+      user_session s;
+      s.name.assign(usr->ut_name, strnlen(usr->ut_name, UT_NAMESIZE));
+      s.term.assign(usr->ut_line, strnlen(usr->ut_line, UT_LINESIZE));
+      s.login = usr->ut_time;
+      sessions.push_back(std::move(s));
     }
   }
+  endutent();
+}
+#endif /* HAVE_UTMP */
+
+#ifdef HAVE_SYSTEMD
+// Resolve a uid to a user name.  getpwuid() is not reentrant, so use
+// getpwuid_r() with a buffer sized per sysconf(_SC_GETPW_R_SIZE_MAX).
+static bool uid_to_name(uid_t uid, std::string &out) {
+  long size = sysconf(_SC_GETPW_R_SIZE_MAX);
+  if (size <= 0) { size = 4096; }
+
+  std::vector<char> buf(static_cast<size_t>(size));
+  struct passwd pw{};
+  struct passwd *result = nullptr;
+
+  if (getpwuid_r(uid, &pw, buf.data(), buf.size(), &result) != 0 ||
+      result == nullptr) {
+    return false;
+  }
+  out = pw.pw_name;
+  return true;
+}
+
+static void collect_logind_sessions(std::vector<user_session> &sessions) {
+  char **logind_sessions = nullptr;
+  const int count = sd_get_sessions(&logind_sessions);
+
+  if (count <= 0) { return; }
+
+  for (int i = 0; i < count; ++i) {
+    user_session s;
+    uid_t uid = 0;
+
+    if (sd_session_get_uid(logind_sessions[i], &uid) >= 0) {
+      std::string name;
+      if (uid_to_name(uid, name)) { s.name = std::move(name); }
+
+#ifdef HAVE_SYSTEMD_LOGIN_TIME
+      // logind reports the start of the user's continuous login (the
+      // first session of the login they stayed logged in with), not
+      // per-terminal times, so all sessions of one user share a value.
+      // This is the closest equivalent of utmp's ut_time.  Needs
+      // systemd >= 254, checked at configure time; without it the login
+      // time stays unknown and ${user_time}/${user_times} report
+      // "broken" rather than making something up.
+      uint64_t usec = 0;
+      if (sd_uid_get_login_time(uid, &usec) >= 0) {
+        s.login = static_cast<time_t>(usec / 1000000ULL);
+      }
+#endif
+    }
+
+    char *tty = nullptr;
+    if (sd_session_get_tty(logind_sessions[i], &tty) >= 0 && tty != nullptr) {
+      // utmp reports bare device names ("tty1", "pts/0"); strip the
+      // "/dev/" prefix logind may use so the formats match.
+      const std::string term = tty;
+      s.term = term.rfind("/dev/", 0) == 0 ? term.substr(5) : term;
+      free(tty);
+    }
+
+    // Sessions without a resolvable user name cannot be attributed to
+    // anyone, so skip them instead of reporting garbage.
+    if (!s.name.empty()) { sessions.push_back(std::move(s)); }
+
+    free(logind_sessions[i]);
+  }
+  free(logind_sessions);
+}
+#endif /* HAVE_SYSTEMD */
+
+// Collect the logged-in user sessions.
+//
+// utmp is the preferred source so behaviour on systems that still write
+// it is unchanged.  Distributions are phasing utmp out though (Ubuntu
+// >= 25.04 writes no utmp records, musl never had the interface), so
+// when utmp yields nothing and the system is booted with systemd, fall
+// back to systemd-logind instead.  When neither source reports anything
+// the callers above report "broken" instead of fabricating a user.
+static void collect_user_sessions(std::vector<user_session> &sessions) {
+#if defined(HAVE_UTMP) || defined(HAVE_SYSTEMD)
+#ifdef HAVE_UTMP
+  collect_utmp_sessions(sessions);
+#endif
+#ifdef HAVE_SYSTEMD
+  // sd_booted() (i.e. /run/systemd/system exists) keeps containers and
+  // other non-systemd environments from asking logind for sessions it
+  // will never know about.
+  if (sessions.empty() && sd_booted() > 0) {
+    collect_logind_sessions(sessions);
+  }
+#endif
+#else
+  (void)sessions;
 #endif
 }
+
+static void user_name(char *ptr, size_t len) {
+  std::vector<user_session> sessions;
+
+  collect_user_sessions(sessions);
+  ptr[0] = '\0';
+  for (const auto &session : sessions) {
+    append_field(ptr, len, session.name.c_str());
+  }
+}
+
 static void user_num(int *ptr) {
-#if defined(HAVE_SYSTEMD)
-  char **sessions = nullptr;
-  int num_sessions = sd_get_sessions(&sessions);
-  
-  if (num_sessions > 0) {
-    *ptr = num_sessions;
-    for (int i = 0; i < num_sessions; ++i) {
-      free(sessions[i]);
-    }
-    free(sessions);
-  } else {
-    // If systemd found nothing, assume at least 1 user (the one running Conky)
-    *ptr = 1;
-  }
-#else
-  const struct utmp *usr;
-  int users_num = 0;
-  setutent();
-  while ((usr = getutent()) != nullptr) {
-    if (usr->ut_type == USER_PROCESS) { ++users_num; }
-  }
-  *ptr = users_num;
-#endif
-}
-static void user_term(char *ptr) {
-#if defined(HAVE_SYSTEMD)
-  char **sessions = nullptr;
-  int num_sessions = sd_get_sessions(&sessions);
-  bool found = false;
+  std::vector<user_session> sessions;
 
-  if (num_sessions > 0) {
-    for (int i = 0; i < num_sessions; ++i) {
-      char *tty = nullptr;
-      if (sd_session_get_tty(sessions[i], &tty) >= 0) {
-        strncpy(ptr, tty, BUFLEN - 1);
-        ptr[BUFLEN - 1] = '\0';
-        found = true;
-        free(tty);
-      }
-      free(sessions[i]);
-    }
-    free(sessions);
-  }
-  
-  // Secondary fallback
-  if (!found) {
-    char *tty = ttyname(STDIN_FILENO);
-    if (tty) {
-      // Strip the "/dev/" prefix to match old utmp behavior
-      if (strncmp(tty, "/dev/", 5) == 0) { tty += 5; }
-      strncpy(ptr, tty, BUFLEN - 1);
-      ptr[BUFLEN - 1] = '\0';
-    } else {
-      strncpy(ptr, "tty", BUFLEN - 1);
-      ptr[BUFLEN - 1] = '\0';
-    }
-  }
-#else
-  const struct utmp *usr;
-  setutent();
-  while ((usr = getutent()) != nullptr) {
-    if (usr->ut_type == USER_PROCESS) {
-      memcpy(ptr, usr->ut_line, UT_LINESIZE);
-      ptr[UT_LINESIZE] = 0;
-    }
-  }
-#endif
+  collect_user_sessions(sessions);
+  *ptr = static_cast<int>(sessions.size());
 }
-static void user_time(char *ptr) {
-  const struct utmp *usr;
-  time_t log_in, real, diff;
-  char buf[BUFLEN] = "";
 
-  setutent();
-  while ((usr = getutent()) != nullptr) {
-    if (usr->ut_type == USER_PROCESS) {
-      log_in = usr->ut_time;
-      time(&real);
-      diff = difftime(real, log_in);
-      format_seconds(buf, BUFLEN, diff);
-      if (strlen(ptr) + strlen(buf) + 1 <= BUFLEN) {
-        strncat(ptr, buf, BUFLEN - strlen(ptr) - 1);
-      }
-    }
+static void user_term(char *ptr, size_t len) {
+  std::vector<user_session> sessions;
+
+  collect_user_sessions(sessions);
+  ptr[0] = '\0';
+  for (const auto &session : sessions) {
+    append_field(ptr, len, session.term.c_str());
   }
 }
-static void tty_user_time(char *ptr, char *tty) {
-  time_t real, diff, log_in;
-  char buf[BUFLEN] = "";
 
-  struct utmp *usr, line;
+static void user_time(char *ptr, size_t len) {
+  std::vector<user_session> sessions;
+  const time_t real = time(nullptr);
 
-  setutent();
-  strncpy(line.ut_line, tty, UT_LINESIZE);
-  usr = getutline(&line);
-  if (usr == nullptr) {
-    LOG_DEBUG("no utmp entry found for tty '{}'", tty);
-    return;
+  collect_user_sessions(sessions);
+  ptr[0] = '\0';
+  for (const auto &session : sessions) {
+    if (session.login == 0) { continue; }  // login time unknown
+    char buf[BUFLEN] = "";
+    format_seconds(buf, BUFLEN, difftime(real, session.login));
+    append_field(ptr, len, buf);
   }
+}
 
-  log_in = usr->ut_time;
+static void tty_user_time(char *ptr, size_t len, const char *tty) {
+  std::vector<user_session> sessions;
 
-  time(&real);
-  diff = difftime(real, log_in);
-  format_seconds(buf, BUFLEN, diff);
-  strncpy(ptr, buf, BUFLEN - 1);
+  collect_user_sessions(sessions);
+  for (const auto &session : sessions) {
+    if (session.login != 0 && session.term == tty) {
+      char buf[BUFLEN] = "";
+      format_seconds(buf, BUFLEN, difftime(time(nullptr), session.login));
+      snprintf(ptr, len, "%s", buf);
+      return;
+    }
+  }
+  LOG_DEBUG("no session found for tty '{}'", tty);
 }
 
 static void users_alloc(struct information *ptr) {
@@ -221,7 +270,7 @@ static void update_user_time(char *tty) {
     current_info->users.ctime = (char *)malloc(text_buffer_size.get(*state));
   }
 
-  tty_user_time(temp, tty);
+  tty_user_time(temp, BUFLEN, tty);
 
   if (*temp != 0) {
     free_and_zero(current_info->users.ctime);
@@ -240,13 +289,13 @@ int update_users(void) {
   char temp[BUFLEN] = "";
   int t;
   users_alloc(current_info);
-  user_name(temp);
+  user_name(temp, BUFLEN);
   if (*temp != 0) {
     free_and_zero(current_info->users.names);
     current_info->users.names = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.names, temp, text_buffer_size.get(*state));
   } else {
-    LOG_WARNING("no user names found in utmp, using fallback");
+    LOG_WARNING("no logged-in users found, using fallback");
     free_and_zero(current_info->users.names);
     current_info->users.names = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.names, "broken", text_buffer_size.get(*state));
@@ -259,24 +308,25 @@ int update_users(void) {
     current_info->users.number = 0;
   }
   temp[0] = 0;
-  user_term(temp);
+  user_term(temp, BUFLEN);
   if (*temp != 0) {
     free_and_zero(current_info->users.terms);
     current_info->users.terms = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.terms, temp, text_buffer_size.get(*state));
   } else {
-    LOG_WARNING("no user terms found in utmp, using fallback");
+    LOG_WARNING("no user terminals found, using fallback");
     free_and_zero(current_info->users.terms);
     current_info->users.terms = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.terms, "broken", text_buffer_size.get(*state));
   }
-  user_time(temp);
+  temp[0] = 0;
+  user_time(temp, BUFLEN);
   if (*temp != 0) {
     free_and_zero(current_info->users.times);
     current_info->users.times = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.times, temp, text_buffer_size.get(*state));
   } else {
-    LOG_WARNING("no user times found in utmp, using fallback");
+    LOG_WARNING("no user login times found, using fallback");
     free_and_zero(current_info->users.times);
     current_info->users.times = (char *)malloc(text_buffer_size.get(*state));
     strncpy(current_info->users.times, "broken", text_buffer_size.get(*state));
