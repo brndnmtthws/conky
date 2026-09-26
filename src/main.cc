@@ -146,9 +146,6 @@ static void print_version() {
 #ifdef HAVE_SOUNDCARD_H
             << _("  * OSS mixer support\n")
 #endif /* HAVE_SOUNDCARD_H */
-#ifdef BUILD_MIXER_ALSA
-            << _("  * ALSA mixer support\n")
-#endif /* BUILD_MIXER_ALSA */
 #ifdef BUILD_APCUPSD
             << _("  * apcupsd\n")
 #endif /* BUILD_APCUPSD */
