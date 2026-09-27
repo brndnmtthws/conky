@@ -1,10 +1,31 @@
 #include "system-details.hh"
 
+#include <cstddef>
 #include <cstdlib>
 #include <cstring>
+#include <string_view>
+#include <vector>
 
 #include "data/top.h"
 #include "logging.h"
+
+namespace {
+// XDG_CURRENT_DESKTOP has no case convention: desktop environments tend to
+// use uppercase ("GNOME") while window managers tend to use lowercase
+// ("sway", "i3"). Match ASCII case-insensitively so e.g. "sway" and "Sway"
+// both resolve.
+constexpr char to_lower(char c) {
+  return (c >= 'A' && c <= 'Z') ? static_cast<char>(c - 'A' + 'a') : c;
+}
+
+constexpr bool iequals(std::string_view a, std::string_view b) {
+  if (a.size() != b.size()) { return false; }
+  for (std::size_t i = 0; i < a.size(); ++i) {
+    if (to_lower(a[i]) != to_lower(b[i])) { return false; }
+  }
+  return true;
+}
+}  // namespace
 
 void populate_system_details() {
   static bool once = false;
@@ -59,7 +80,7 @@ void populate_system_details() {
   };
 
   constexpr auto is_session = [](std::string_view token, auto &&...names) {
-    return ((token == std::string_view{names}) || ...);
+    return ((iequals(token, std::string_view{names})) || ...);
   };
 
   // Only add is_wayland guard for WM/DE that will never support another display

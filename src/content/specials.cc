@@ -739,8 +739,10 @@ void new_stippled_hr(struct text_object *obj, char *p,
 #endif /* BUILD_GUI */
 
 void new_fg(struct text_object *obj, char *p, unsigned int p_max_size) {
-  if (conky::output_is({conky::output_t::X11, conky::output_t::WAYLAND,
-                        conky::output_t::NCURSES})) {
+  // Text is generated in update_text(), before draw_stuff() selects an active
+  // output — so query the resolved set, not the thread-local active output.
+  if (conky::output_enabled({conky::output_t::X11, conky::output_t::WAYLAND,
+                             conky::output_t::NCURSES})) {
     new_special(p, text_node_t::FG)->arg = obj->data.l;
   }
   UNUSED(obj);

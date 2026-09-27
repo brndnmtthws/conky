@@ -67,7 +67,10 @@ void setup_fonts() {
 }
 
 int add_font(const char *data_in) {
-  if (!conky::output_is({conky::output_t::X11, conky::output_t::WAYLAND})) {
+  // Like new_fg: fonts are registered while generating text, before
+  // draw_stuff() selects an active output — so query the resolved set.
+  if (!conky::output_enabled(
+          {conky::output_t::X11, conky::output_t::WAYLAND})) {
     return 0;
   }
   fonts.emplace_back();
