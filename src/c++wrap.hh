@@ -23,9 +23,11 @@
 #ifndef CPPWRAP_HH
 #define CPPWRAP_HH
 
-#ifdef HAVE_O_CLOEXEC
 #include <fcntl.h>
-#else
+
+#ifndef O_CLOEXEC
+// Fallback for libc/feature-level combinations that don't expose O_CLOEXEC
+// via <fcntl.h>. The value matches Linux.
 enum { O_CLOEXEC = 02000000 };
 #endif
 
