@@ -82,10 +82,19 @@ MHD_Result sendanswer(void *cls, struct MHD_Connection *connection,
         hook_response->body.length(), (void *)hook_response->body.c_str(),
         MHD_RESPMEM_MUST_COPY);
     for (const auto &header : hook_response->headers) {
-      MHD_add_response_header(response, header.first.c_str(),
-                              header.second.c_str());
+      if (MHD_add_response_header(response, header.first.c_str(),
+                                  header.second.c_str()) == MHD_NO) {
+        LOG_WARNING("failed to add HTTP header '{}' from lua_http_response_hook",
+                    header.first);
+      }
     }
-    response_status = hook_response->status;
+    if (hook_response->status >= 100 && hook_response->status <= 599) {
+      response_status = hook_response->status;
+    } else {
+      LOG_WARNING(
+          "lua_http_response_hook returned invalid status {}, using 200",
+          hook_response->status);
+    }
   } else {
     /* Copy the page out under the lock; MHD_RESPMEM_MUST_COPY snapshots the
      * bytes so we don't hand MHD a pointer into a string the draw thread may
