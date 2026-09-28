@@ -481,8 +481,8 @@ static char *llua_getstring(const char *args) {
   return ret;
 }
 
-/* call the configured http response hook; returns true and fills
- * body/status/headers if it returned a table */
+/* call the configured http response hook; returns the response table's
+ * contents if it returned one, nullopt otherwise */
 std::optional<conky::http_response> llua_http_response_hook() {
   if (lua_http_response_hook.get(*state).empty()) { return std::nullopt; }
 
