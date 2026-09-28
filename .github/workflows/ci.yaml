@@ -105,6 +105,7 @@ jobs:
         os:
           - ubuntu-22.04
           - ubuntu-24.04
+          - ubuntu-26.04
         x11: [ON, OFF]
         wayland: [ON, OFF]
         compiler:
@@ -380,6 +381,7 @@ jobs:
         os:
           - ubuntu-22.04
           - ubuntu-24.04
+          - ubuntu-26.04
         arch:
           - x86_64
         mode:
@@ -390,7 +392,12 @@ jobs:
     steps:
       - run: sudo apt-get -qq update
       - name: Install dependencies
+        env:
+          MATRIX_OS: ${{ matrix.os }}
         run: |
+          # 26.04 renamed the package to libfuse2t64; older releases use libfuse2.
+          FUSE_PKG=libfuse2
+          if [ "$MATRIX_OS" = "ubuntu-26.04" ]; then FUSE_PKG=libfuse2t64; fi
           sudo apt-get install -yqq --no-install-recommends \
             audacious-dev \
             cmake \
@@ -404,7 +411,7 @@ jobs:
             libfreetype-dev \
             libfreetype6-dev \
             libstdc++6 \
-            libfuse2 \
+            $FUSE_PKG \
             libglib2.0-dev \
             libical-dev \
             libimlib2-dev \
@@ -453,6 +460,10 @@ jobs:
         if: matrix.os == 'ubuntu-24.04'
         run: |
           echo "CLANG_VERSION=18" | tee -a "${GITHUB_ENV}"
+      - name: Set clang version to 21 for ubuntu-26.04
+        if: matrix.os == 'ubuntu-26.04'
+        run: |
+          echo "CLANG_VERSION=21" | tee -a "${GITHUB_ENV}"
       - name: Install libc++, set CC and CXX env vars
         run: |
           sudo apt-get install -yqq --no-install-recommends \
@@ -485,19 +496,31 @@ jobs:
       - run: ./conky-x86_64.AppImage --version
       - name: Set CONKY_VERSION
         run: echo "CONKY_VERSION=$(./conky-x86_64.AppImage --short-version)" | tee -a "${GITHUB_ENV}"
-      - run: mv conky-x86_64.AppImage conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage
-      - run: mv conky-x86_64.AppImage.sha256 conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage.sha256
+      # The ubuntu-22.04 release AppImage is the canonical download: it links
+      # the oldest glibc, so it runs everywhere, and its bare name (stem
+      # "conky") makes the AppImage catalog bot select it deterministically
+      # instead of racing the newer per-OS release assets.
+      - name: Rename AppImage
+        run: |
+          if [ "${{ matrix.os }}" = "ubuntu-22.04" ] && [ "${{ matrix.mode }}" = "release" ]; then
+            ASSET="conky-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}.AppImage"
+          else
+            ASSET="conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage"
+          fi
+          mv conky-x86_64.AppImage "$ASSET"
+          mv conky-x86_64.AppImage.sha256 "$ASSET.sha256"
+          echo "ASSET_NAME=$ASSET" | tee -a "${GITHUB_ENV}"
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v7
         with:
-          path: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage'
-          name: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage'
+          path: '${{ env.ASSET_NAME }}'
+          name: '${{ env.ASSET_NAME }}'
           if-no-files-found: error
       - name: Upload AppImage checksum artifact
         uses: actions/upload-artifact@v7
         with:
-          path: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage.sha256'
-          name: 'conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage.sha256'
+          path: '${{ env.ASSET_NAME }}.sha256'
+          name: '${{ env.ASSET_NAME }}.sha256'
           if-no-files-found: error
       - name: Upload man page artifact
         uses: actions/upload-artifact@v7
