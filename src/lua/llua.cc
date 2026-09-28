@@ -92,7 +92,7 @@ class lua_load_setting : public conky::simple_config_setting<std::string> {
           if (ch == ';') { ch = '\0'; }
         }
       } else {
-        // TODO: Remove space-delimited file name handlisng in 3 years (2028.)
+        // TODO: Remove space-delimited file name handling in 3 years (2028.)
         for (auto &ch : files) {
           if (ch == ' ') { ch = '\0'; }
         }
