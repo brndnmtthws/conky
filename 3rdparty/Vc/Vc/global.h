@@ -597,25 +597,25 @@ using CurrentImplementation = ImplementationT<
     SSE2Impl
 #endif
 #ifdef Vc_IMPL_SSE4a
-    + Vc::Sse4aInstructions
+    + static_cast<unsigned int>(Vc::Sse4aInstructions)
 #ifdef Vc_IMPL_XOP
-    + Vc::XopInstructions
+    + static_cast<unsigned int>(Vc::XopInstructions)
 #ifdef Vc_IMPL_FMA4
-    + Vc::Fma4Instructions
+    + static_cast<unsigned int>(Vc::Fma4Instructions)
 #endif
 #endif
 #endif
 #ifdef Vc_IMPL_POPCNT
-    + Vc::PopcntInstructions
+    + static_cast<unsigned int>(Vc::PopcntInstructions)
 #endif
 #ifdef Vc_IMPL_FMA
-    + Vc::FmaInstructions
+    + static_cast<unsigned int>(Vc::FmaInstructions)
 #endif
 #ifdef Vc_IMPL_BMI2
-    + Vc::Bmi2Instructions
+    + static_cast<unsigned int>(Vc::Bmi2Instructions)
 #endif
 #ifdef Vc_USE_VEX_CODING
-    + Vc::VexInstructions
+    + static_cast<unsigned int>(Vc::VexInstructions)
 #endif
     >;
 
