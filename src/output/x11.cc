@@ -249,7 +249,7 @@ inline Window DefaultVRootWindow(Display *display) {
 }
 
 /* X11 initializer */
-void init_x11() {
+bool init_x11() {
   auto _scope = LOG_SCOPE("init_x11");
   if (display == nullptr) {
     const std::string &dispstr = display_name.get(*state);
@@ -258,12 +258,8 @@ void init_x11() {
                            ? dispstr.c_str()
                            : nullptr;
     if ((display = XOpenDisplay(disp)) == nullptr) {
-#ifdef BUILD_WAYLAND
       LOG_ERROR("can't open display: {}", XDisplayName(disp));
-      return;
-#else  /* BUILD_WAYLAND */
-      SYSTEM_ERR("can't open display: {}", XDisplayName(disp));
-#endif /* BUILD_WAYLAND */
+      return false;
     }
   }
 
@@ -292,6 +288,7 @@ void init_x11() {
     }
   }
 #endif /* HAVE_XCB_ERRORS */
+  return true;
 }
 
 void deinit_x11() {
@@ -544,6 +541,19 @@ void destroy_window() {
   if (window.xftdraw != nullptr) { XftDrawDestroy(window.xftdraw); }
 #endif /* BUILD_XFT */
   if (window.gc != nullptr) { XFreeGC(display, window.gc); }
+  if (window.back_buffer != None) {
+#ifdef BUILD_XDBE
+    XdbeDeallocateBackBufferName(display, window.back_buffer);
+#else
+    XFreePixmap(display, window.back_buffer);
+#endif
+  }
+  if (window.owned) {
+    XDestroyWindow(display, window.window);
+    if (window.colourmap != DefaultColormap(display, screen)) {
+      XFreeColormap(display, window.colourmap);
+    }
+  }
   window = conky_x11_window{};
 }
 
@@ -565,8 +575,7 @@ void x11_init_window(lua::state &l) {
 
 #ifdef OWN_WINDOW
   if (own_window.get(l)) {
-    if (window.window != None && window.window != window.desktop &&
-        window.window != window.root) {
+    if (window.owned) {
       /* Reload path: window already alive — query its real attributes
        * instead of destroying and recreating. */
       XWindowAttributes attr;
@@ -886,7 +895,8 @@ void x11_init_window(lua::state &l) {
           }
         }
       }
-    } /* end of else (window.window == None) — create new window */
+      window.owned = true;
+    } /* end of else — create new window */
 
     LOG_INFO("drawing to created window {:#x}", window.window);
     XMapWindow(display, window.window);
