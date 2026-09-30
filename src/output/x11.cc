@@ -573,8 +573,8 @@ void x11_init_window(lua::state &l) {
         window.visual = attr.visual;
         window.colourmap = attr.colormap;
         window.geometry.set_size(attr.width, attr.height);
-        LOG_INFO("reusing existing window {:#x} {}x{} (reload)",
-                 window.window, attr.width, attr.height);
+        LOG_INFO("reusing existing window {:#x} {}x{} (reload)", window.window,
+                 attr.width, attr.height);
       } else {
         LOG_WARNING("XGetWindowAttributes failed for {:#x}", window.window);
         window.visual = DefaultVisual(display, screen);
@@ -593,294 +593,298 @@ void x11_init_window(lua::state &l) {
         window.opacity = 0xff;
       }
     } else {
-    int flags = CWOverrideRedirect | CWBackingStore;
-    window.color_depth = CopyFromParent;
+      int flags = CWOverrideRedirect | CWBackingStore;
+      window.color_depth = CopyFromParent;
 
-    uint8_t background_alpha = get_background_alpha_preference(l);
-    bool wants_alpha = background_alpha < 0xff;
-    LOG_DEBUG("background alpha={:#x} wants_alpha={}", background_alpha,
-              wants_alpha);
+      uint8_t background_alpha = get_background_alpha_preference(l);
+      bool wants_alpha = background_alpha < 0xff;
+      LOG_DEBUG("background alpha={:#x} wants_alpha={}", background_alpha,
+                wants_alpha);
 
-    if (wants_alpha && try_set_argb_visual(&window)) {
-      window.opacity = background_alpha;
-    } else if (wants_alpha) {
-      if (background_alpha != 0) {
-        LOG_WARNING(
-            "ARGB visual not available (no compositor?), window will be "
-            "opaque");
-      } else {
-        window.opacity = 0;
-        LOG_WARNING(
-            "ARGB visual not available (no compositor?), using "
-            "pseudo-transparency fallback");
-      }
-    }
-
-    int b = border_inner_margin.get(l) + border_width.get(l) +
-            border_outer_margin.get(l);
-
-    /* Sanity check to avoid making an invalid 0x0 window */
-    if (b == 0) { b = 1; }
-
-    XClassHint classHint;
-
-    // class_name must be a named local variable, so that c_str() remains
-    // valid until we call XmbSetWMProperties() or XSetClassHint. We use
-    // const_cast because, for whatever reason, res_name is not declared as
-    // const char *. XmbSetWMProperties hopefully doesn't modify the value
-    // (hell, even their own example app assigns a literal string constant to
-    // the field)
-    const std::string &class_name = own_window_class.get(l);
-
-    classHint.res_name = const_cast<char *>(class_name.c_str());
-    classHint.res_class = classHint.res_name;
-
-    if (own_window_type.get(l) == window_type::OVERRIDE) {
-      /* An override_redirect True window.
-       * No WM hints or button processing needed. */
-      XSetWindowAttributes attrs = {
-          .background_pixmap = ParentRelative,
-          .backing_store = Always,
-          .event_mask = StructureNotifyMask | ExposureMask,
-          .override_redirect = True,
-      };
-      flags |= CWBackPixel;
-      if (window.opacity < 0xff) {
-        attrs.colormap = window.colourmap;
-        flags &= ~CWBackPixel;
-        flags |= CWBorderPixel | CWColormap;
+      if (wants_alpha && try_set_argb_visual(&window)) {
+        window.opacity = background_alpha;
+      } else if (wants_alpha) {
+        if (background_alpha != 0) {
+          LOG_WARNING(
+              "ARGB visual not available (no compositor?), window will be "
+              "opaque");
+        } else {
+          window.opacity = 0;
+          LOG_WARNING(
+              "ARGB visual not available (no compositor?), using "
+              "pseudo-transparency fallback");
+        }
       }
 
-      /* Parent is desktop window (which might be a child of root) */
-      window.window = XCreateWindow(
-          display, window.desktop, window.geometry.x(), window.geometry.y(), b,
-          b, 0, window.color_depth, InputOutput, window.visual, flags, &attrs);
+      int b = border_inner_margin.get(l) + border_width.get(l) +
+              border_outer_margin.get(l);
 
-      XLowerWindow(display, window.window);
-      XSetClassHint(display, window.window, &classHint);
+      /* Sanity check to avoid making an invalid 0x0 window */
+      if (b == 0) { b = 1; }
 
-      LOG_INFO("window type - override");
-    } else { /* own_window_type.get(l) != TYPE_OVERRIDE */
+      XClassHint classHint;
 
-      /* A window managed by the window manager.
-       * Process hints and buttons. */
-      XSetWindowAttributes attrs = {
-          .background_pixmap = ParentRelative,
-          .backing_store = Always,
-          .event_mask = StructureNotifyMask | ExposureMask | ButtonPressMask |
-                        ButtonReleaseMask,
-          .override_redirect =
-              own_window_type.get(l) == window_type::UTILITY ? True : False,
-      };
+      // class_name must be a named local variable, so that c_str() remains
+      // valid until we call XmbSetWMProperties() or XSetClassHint. We use
+      // const_cast because, for whatever reason, res_name is not declared as
+      // const char *. XmbSetWMProperties hopefully doesn't modify the value
+      // (hell, even their own example app assigns a literal string constant to
+      // the field)
+      const std::string &class_name = own_window_class.get(l);
 
-      XWMHints wmHint;
-      Atom xa;
+      classHint.res_name = const_cast<char *>(class_name.c_str());
+      classHint.res_class = classHint.res_name;
 
-      flags |= CWBackPixel;
-      if (window.opacity < 0xff) {
-        attrs.colormap = window.colourmap;
-        flags &= ~CWBackPixel;
-        flags |= CWBorderPixel | CWColormap;
-      }
+      if (own_window_type.get(l) == window_type::OVERRIDE) {
+        /* An override_redirect True window.
+         * No WM hints or button processing needed. */
+        XSetWindowAttributes attrs = {
+            .background_pixmap = ParentRelative,
+            .backing_store = Always,
+            .event_mask = StructureNotifyMask | ExposureMask,
+            .override_redirect = True,
+        };
+        flags |= CWBackPixel;
+        if (window.opacity < 0xff) {
+          attrs.colormap = window.colourmap;
+          flags &= ~CWBackPixel;
+          flags |= CWBorderPixel | CWColormap;
+        }
 
-      if (own_window_type.get(l) == window_type::DOCK) {
-        window.geometry.set_pos(conky::vec2i::Zero());
-      }
-      /* Parent is root window so WM can take control */
-      window.window = XCreateWindow(
-          display, window.root, window.geometry.x(), window.geometry.y(), b, b,
-          0, window.color_depth, InputOutput, window.visual, flags, &attrs);
+        /* Parent is desktop window (which might be a child of root) */
+        window.window =
+            XCreateWindow(display, window.desktop, window.geometry.x(),
+                          window.geometry.y(), b, b, 0, window.color_depth,
+                          InputOutput, window.visual, flags, &attrs);
 
-      uint16_t hints = own_window_hints.get(l);
+        XLowerWindow(display, window.window);
+        XSetClassHint(display, window.window, &classHint);
 
-      wmHint.flags = InputHint | StateHint;
-      /* allow decorated windows to be given input focus by WM */
-      wmHint.input = TEST_HINT(hints, window_hints::UNDECORATED) ? False : True;
+        LOG_INFO("window type - override");
+      } else { /* own_window_type.get(l) != TYPE_OVERRIDE */
+
+        /* A window managed by the window manager.
+         * Process hints and buttons. */
+        XSetWindowAttributes attrs = {
+            .background_pixmap = ParentRelative,
+            .backing_store = Always,
+            .event_mask = StructureNotifyMask | ExposureMask | ButtonPressMask |
+                          ButtonReleaseMask,
+            .override_redirect =
+                own_window_type.get(l) == window_type::UTILITY ? True : False,
+        };
+
+        XWMHints wmHint;
+        Atom xa;
+
+        flags |= CWBackPixel;
+        if (window.opacity < 0xff) {
+          attrs.colormap = window.colourmap;
+          flags &= ~CWBackPixel;
+          flags |= CWBorderPixel | CWColormap;
+        }
+
+        if (own_window_type.get(l) == window_type::DOCK) {
+          window.geometry.set_pos(conky::vec2i::Zero());
+        }
+        /* Parent is root window so WM can take control */
+        window.window =
+            XCreateWindow(display, window.root, window.geometry.x(),
+                          window.geometry.y(), b, b, 0, window.color_depth,
+                          InputOutput, window.visual, flags, &attrs);
+
+        uint16_t hints = own_window_hints.get(l);
+
+        wmHint.flags = InputHint | StateHint;
+        /* allow decorated windows to be given input focus by WM */
+        wmHint.input =
+            TEST_HINT(hints, window_hints::UNDECORATED) ? False : True;
 #ifdef BUILD_XSHAPE
 #ifdef BUILD_XFIXES
-      if (own_window_type.get(l) == window_type::UTILITY) {
-        XRectangle rect;
-        XserverRegion region = XFixesCreateRegion(display, &rect, 1);
-        XFixesSetWindowShapeRegion(display, window.window, ShapeInput, 0, 0,
-                                   region);
-        XFixesDestroyRegion(display, region);
-      }
+        if (own_window_type.get(l) == window_type::UTILITY) {
+          XRectangle rect;
+          XserverRegion region = XFixesCreateRegion(display, &rect, 1);
+          XFixesSetWindowShapeRegion(display, window.window, ShapeInput, 0, 0,
+                                     region);
+          XFixesDestroyRegion(display, region);
+        }
 #endif /* BUILD_XFIXES */
-      if (!wmHint.input) {
-        /* allow only decorated windows to be given mouse input */
-        int major_version;
-        int minor_version;
-        if (XShapeQueryVersion(display, &major_version, &minor_version) == 0) {
-          LOG_WARNING("input shapes are not supported");
-        } else {
-          if (own_window.get(*state) &&
-              (own_window_type.get(*state) != window_type::NORMAL ||
-               ((TEST_HINT(own_window_hints.get(*state),
-                           window_hints::UNDECORATED)) != 0))) {
-            XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0,
-                                    nullptr, 0, ShapeSet, Unsorted);
+        if (!wmHint.input) {
+          /* allow only decorated windows to be given mouse input */
+          int major_version;
+          int minor_version;
+          if (XShapeQueryVersion(display, &major_version, &minor_version) ==
+              0) {
+            LOG_WARNING("input shapes are not supported");
+          } else {
+            if (own_window.get(*state) &&
+                (own_window_type.get(*state) != window_type::NORMAL ||
+                 ((TEST_HINT(own_window_hints.get(*state),
+                             window_hints::UNDECORATED)) != 0))) {
+              XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0,
+                                      nullptr, 0, ShapeSet, Unsorted);
+            }
+          }
+        }
+#endif /* BUILD_XSHAPE */
+        wmHint.initial_state = NormalState;
+        if (own_window_type.get(l) == window_type::DOCK ||
+            own_window_type.get(l) == window_type::PANEL) {
+          // Docks and panels MUST have WithdrawnState initially for Fluxbox to
+          // move the window into the slit area.
+          // See: https://github.com/brndnmtthws/conky/issues/2046
+          // But most other WMs will explicitly ignore windows in WithdrawnState
+          // See: https://github.com/brndnmtthws/conky/issues/2112
+          // So we must resort to checking for WM at runtime
+          if (info.system.wm == conky::info::window_manager::fluxbox) {
+            wmHint.initial_state = WithdrawnState;
+          }
+        }
+
+        XmbSetWMProperties(display, window.window, nullptr, nullptr, argv_copy,
+                           argc_copy, nullptr, &wmHint, &classHint);
+        XStoreName(display, window.window, own_window_title.get(l).c_str());
+
+        /* Sets an empty WM_PROTOCOLS property */
+        XSetWMProtocols(display, window.window, nullptr, 0);
+
+        /* Set window type */
+        if ((xa = ATOM(_NET_WM_WINDOW_TYPE)) != None) {
+          Atom prop;
+
+          switch (own_window_type.get(l)) {
+            case window_type::DESKTOP:
+              prop = ATOM(_NET_WM_WINDOW_TYPE_DESKTOP);
+              LOG_INFO("window type - desktop");
+              break;
+            case window_type::DOCK:
+              prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
+              LOG_INFO("window type - dock");
+              break;
+            case window_type::PANEL:
+              prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
+              LOG_INFO("window type - panel");
+              break;
+            case window_type::UTILITY:
+              prop = ATOM(_NET_WM_WINDOW_TYPE_UTILITY);
+              LOG_INFO("window type - utility");
+              break;
+            case window_type::NORMAL:
+            default:
+              prop = ATOM(_NET_WM_WINDOW_TYPE_NORMAL);
+              LOG_INFO("window type - normal");
+              break;
+          }
+          XChangeProperty(display, window.window, xa, XA_ATOM, 32,
+                          PropModeReplace,
+                          reinterpret_cast<unsigned char *>(&prop), 1);
+        }
+
+        /* Set desired hints */
+
+        /* Window decorations */
+        if (TEST_HINT(hints, window_hints::UNDECORATED)) {
+          LOG_DEBUG("hint - undecorated");
+          xa = ATOM(_MOTIF_WM_HINTS);
+          if (xa != None) {
+            long prop[5] = {2, 0, 0, 0, 0};
+            XChangeProperty(display, window.window, xa, xa, 32, PropModeReplace,
+                            reinterpret_cast<unsigned char *>(prop), 5);
+          }
+        }
+
+        /* Below other windows */
+        if (TEST_HINT(hints, window_hints::BELOW)) {
+          LOG_DEBUG("hint - below");
+          xa = ATOM(_WIN_LAYER);
+          if (xa != None) {
+            long prop = 0;
+
+            XChangeProperty(display, window.window, xa, XA_CARDINAL, 32,
+                            PropModeAppend,
+                            reinterpret_cast<unsigned char *>(&prop), 1);
+          }
+
+          xa = ATOM(_NET_WM_STATE);
+          if (xa != None) {
+            Atom xa_prop = ATOM(_NET_WM_STATE_BELOW);
+
+            XChangeProperty(display, window.window, xa, XA_ATOM, 32,
+                            PropModeAppend,
+                            reinterpret_cast<unsigned char *>(&xa_prop), 1);
+          }
+        }
+
+        /* Above other windows */
+        if (TEST_HINT(hints, window_hints::ABOVE)) {
+          LOG_DEBUG("hint - above");
+          xa = ATOM(_WIN_LAYER);
+          if (xa != None) {
+            long prop = 6;
+
+            XChangeProperty(display, window.window, xa, XA_CARDINAL, 32,
+                            PropModeAppend,
+                            reinterpret_cast<unsigned char *>(&prop), 1);
+          }
+
+          xa = ATOM(_NET_WM_STATE);
+          if (xa != None) {
+            Atom xa_prop = ATOM(_NET_WM_STATE_ABOVE);
+
+            XChangeProperty(display, window.window, xa, XA_ATOM, 32,
+                            PropModeAppend,
+                            reinterpret_cast<unsigned char *>(&xa_prop), 1);
+          }
+        }
+
+        /* Sticky */
+        if (TEST_HINT(hints, window_hints::STICKY)) {
+          LOG_DEBUG("hint - sticky");
+          xa = ATOM(_NET_WM_DESKTOP);
+          if (xa != None) {
+            CARD32 xa_prop = 0xFFFFFFFF;
+
+            XChangeProperty(display, window.window, xa, XA_CARDINAL, 32,
+                            PropModeAppend,
+                            reinterpret_cast<unsigned char *>(&xa_prop), 1);
+          }
+
+          xa = ATOM(_NET_WM_STATE);
+          if (xa != None) {
+            Atom xa_prop = ATOM(_NET_WM_STATE_STICKY);
+
+            XChangeProperty(display, window.window, xa, XA_ATOM, 32,
+                            PropModeAppend,
+                            reinterpret_cast<unsigned char *>(&xa_prop), 1);
+          }
+        }
+
+        /* Skip taskbar */
+        if (TEST_HINT(hints, window_hints::SKIP_TASKBAR)) {
+          LOG_DEBUG("hint - skip taskbar");
+          xa = ATOM(_NET_WM_STATE);
+          if (xa != None) {
+            Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_TASKBAR);
+
+            XChangeProperty(display, window.window, xa, XA_ATOM, 32,
+                            PropModeAppend,
+                            reinterpret_cast<unsigned char *>(&xa_prop), 1);
+          }
+        }
+
+        /* Skip pager */
+        if (TEST_HINT(hints, window_hints::SKIP_PAGER)) {
+          LOG_DEBUG("hint - skip pager");
+          xa = ATOM(_NET_WM_STATE);
+          if (xa != None) {
+            Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_PAGER);
+
+            XChangeProperty(display, window.window, xa, XA_ATOM, 32,
+                            PropModeAppend,
+                            reinterpret_cast<unsigned char *>(&xa_prop), 1);
           }
         }
       }
-#endif /* BUILD_XSHAPE */
-      wmHint.initial_state = NormalState;
-      if (own_window_type.get(l) == window_type::DOCK ||
-          own_window_type.get(l) == window_type::PANEL) {
-        // Docks and panels MUST have WithdrawnState initially for Fluxbox to
-        // move the window into the slit area.
-        // See: https://github.com/brndnmtthws/conky/issues/2046
-        // But most other WMs will explicitly ignore windows in WithdrawnState
-        // See: https://github.com/brndnmtthws/conky/issues/2112
-        // So we must resort to checking for WM at runtime
-        if (info.system.wm == conky::info::window_manager::fluxbox) {
-          wmHint.initial_state = WithdrawnState;
-        }
-      }
-
-      XmbSetWMProperties(display, window.window, nullptr, nullptr, argv_copy,
-                         argc_copy, nullptr, &wmHint, &classHint);
-      XStoreName(display, window.window, own_window_title.get(l).c_str());
-
-      /* Sets an empty WM_PROTOCOLS property */
-      XSetWMProtocols(display, window.window, nullptr, 0);
-
-      /* Set window type */
-      if ((xa = ATOM(_NET_WM_WINDOW_TYPE)) != None) {
-        Atom prop;
-
-        switch (own_window_type.get(l)) {
-          case window_type::DESKTOP:
-            prop = ATOM(_NET_WM_WINDOW_TYPE_DESKTOP);
-            LOG_INFO("window type - desktop");
-            break;
-          case window_type::DOCK:
-            prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
-            LOG_INFO("window type - dock");
-            break;
-          case window_type::PANEL:
-            prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
-            LOG_INFO("window type - panel");
-            break;
-          case window_type::UTILITY:
-            prop = ATOM(_NET_WM_WINDOW_TYPE_UTILITY);
-            LOG_INFO("window type - utility");
-            break;
-          case window_type::NORMAL:
-          default:
-            prop = ATOM(_NET_WM_WINDOW_TYPE_NORMAL);
-            LOG_INFO("window type - normal");
-            break;
-        }
-        XChangeProperty(display, window.window, xa, XA_ATOM, 32,
-                        PropModeReplace,
-                        reinterpret_cast<unsigned char *>(&prop), 1);
-      }
-
-      /* Set desired hints */
-
-      /* Window decorations */
-      if (TEST_HINT(hints, window_hints::UNDECORATED)) {
-        LOG_DEBUG("hint - undecorated");
-        xa = ATOM(_MOTIF_WM_HINTS);
-        if (xa != None) {
-          long prop[5] = {2, 0, 0, 0, 0};
-          XChangeProperty(display, window.window, xa, xa, 32, PropModeReplace,
-                          reinterpret_cast<unsigned char *>(prop), 5);
-        }
-      }
-
-      /* Below other windows */
-      if (TEST_HINT(hints, window_hints::BELOW)) {
-        LOG_DEBUG("hint - below");
-        xa = ATOM(_WIN_LAYER);
-        if (xa != None) {
-          long prop = 0;
-
-          XChangeProperty(display, window.window, xa, XA_CARDINAL, 32,
-                          PropModeAppend,
-                          reinterpret_cast<unsigned char *>(&prop), 1);
-        }
-
-        xa = ATOM(_NET_WM_STATE);
-        if (xa != None) {
-          Atom xa_prop = ATOM(_NET_WM_STATE_BELOW);
-
-          XChangeProperty(display, window.window, xa, XA_ATOM, 32,
-                          PropModeAppend,
-                          reinterpret_cast<unsigned char *>(&xa_prop), 1);
-        }
-      }
-
-      /* Above other windows */
-      if (TEST_HINT(hints, window_hints::ABOVE)) {
-        LOG_DEBUG("hint - above");
-        xa = ATOM(_WIN_LAYER);
-        if (xa != None) {
-          long prop = 6;
-
-          XChangeProperty(display, window.window, xa, XA_CARDINAL, 32,
-                          PropModeAppend,
-                          reinterpret_cast<unsigned char *>(&prop), 1);
-        }
-
-        xa = ATOM(_NET_WM_STATE);
-        if (xa != None) {
-          Atom xa_prop = ATOM(_NET_WM_STATE_ABOVE);
-
-          XChangeProperty(display, window.window, xa, XA_ATOM, 32,
-                          PropModeAppend,
-                          reinterpret_cast<unsigned char *>(&xa_prop), 1);
-        }
-      }
-
-      /* Sticky */
-      if (TEST_HINT(hints, window_hints::STICKY)) {
-        LOG_DEBUG("hint - sticky");
-        xa = ATOM(_NET_WM_DESKTOP);
-        if (xa != None) {
-          CARD32 xa_prop = 0xFFFFFFFF;
-
-          XChangeProperty(display, window.window, xa, XA_CARDINAL, 32,
-                          PropModeAppend,
-                          reinterpret_cast<unsigned char *>(&xa_prop), 1);
-        }
-
-        xa = ATOM(_NET_WM_STATE);
-        if (xa != None) {
-          Atom xa_prop = ATOM(_NET_WM_STATE_STICKY);
-
-          XChangeProperty(display, window.window, xa, XA_ATOM, 32,
-                          PropModeAppend,
-                          reinterpret_cast<unsigned char *>(&xa_prop), 1);
-        }
-      }
-
-      /* Skip taskbar */
-      if (TEST_HINT(hints, window_hints::SKIP_TASKBAR)) {
-        LOG_DEBUG("hint - skip taskbar");
-        xa = ATOM(_NET_WM_STATE);
-        if (xa != None) {
-          Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_TASKBAR);
-
-          XChangeProperty(display, window.window, xa, XA_ATOM, 32,
-                          PropModeAppend,
-                          reinterpret_cast<unsigned char *>(&xa_prop), 1);
-        }
-      }
-
-      /* Skip pager */
-      if (TEST_HINT(hints, window_hints::SKIP_PAGER)) {
-        LOG_DEBUG("hint - skip pager");
-        xa = ATOM(_NET_WM_STATE);
-        if (xa != None) {
-          Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_PAGER);
-
-          XChangeProperty(display, window.window, xa, XA_ATOM, 32,
-                          PropModeAppend,
-                          reinterpret_cast<unsigned char *>(&xa_prop), 1);
-        }
-      }
-    }
     } /* end of else (window.window == None) — create new window */
 
     LOG_INFO("drawing to created window {:#x}", window.window);
