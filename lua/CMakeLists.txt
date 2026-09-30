@@ -106,6 +106,9 @@ if(BUILD_LUA_RSVG)
 
   add_library(conky-rsvg MODULE ${luarsvg_src})
   set_target_properties(conky-rsvg PROPERTIES OUTPUT_NAME "rsvg")
+  if(NOT APPLE)
+    target_link_options(conky-rsvg PRIVATE "LINKER:-z,nodelete")
+  endif()
 
   target_link_libraries(conky-rsvg ${luarsvg_libs} toluapp_lib_static)
   set(lua_libs ${lua_libs} conky-rsvg)
