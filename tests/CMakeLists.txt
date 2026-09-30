@@ -26,6 +26,40 @@ target_link_libraries(test-conky
 )
 catch_discover_tests(test-conky)
 
+if(BUILD_X11)
+  find_package(Python3 COMPONENTS Interpreter QUIET)
+  if(Python3_Interpreter_FOUND)
+    add_dependencies(test-conky conky)
+    add_test(NAME x11_startup_fallback
+      COMMAND ${Python3_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/test-x11-startup.py $<TARGET_FILE:conky>)
+    set_tests_properties(x11_startup_fallback PROPERTIES
+      TIMEOUT 45 LABELS "integration;x11")
+
+    if(OWN_WINDOW)
+      add_executable(x11-test-probe x11-test-probe.cc)
+      target_link_libraries(x11-test-probe PRIVATE ${X11_LIBRARIES})
+      add_dependencies(test-conky x11-test-probe)
+      add_test(NAME x11_reload
+        COMMAND ${Python3_EXECUTABLE}
+          ${CMAKE_CURRENT_SOURCE_DIR}/test-x11-reload.py
+          $<TARGET_FILE:conky> $<TARGET_FILE:x11-test-probe>)
+      set_tests_properties(x11_reload PROPERTIES
+        TIMEOUT 90 SKIP_RETURN_CODE 77 LABELS "integration;x11"
+        RESOURCE_LOCK x11_test_display)
+      if(BUILD_XFT)
+        add_test(NAME x11_reload_xft
+          COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/test-x11-reload.py
+            $<TARGET_FILE:conky> $<TARGET_FILE:x11-test-probe>)
+        set_tests_properties(x11_reload_xft PROPERTIES
+          TIMEOUT 90 SKIP_RETURN_CODE 77 LABELS "integration;x11"
+          RESOURCE_LOCK x11_test_display ENVIRONMENT "CONKY_TEST_X11_XFT=1")
+      endif()
+    endif()
+  endif()
+endif()
+
 if(RUN_TESTS)
   add_custom_command(TARGET test-conky
     POST_BUILD

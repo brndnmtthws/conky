@@ -198,7 +198,15 @@ bool display_output_x11::initialize() {
   // X global state is set up here rather than in lua config setters, so the
   // settings stay side-effect-free. Order mirrors the settings: open the
   // display, create the window, set up double buffering, then imlib.
-  init_x11();
+  if (!init_x11()) { return false; }
+#ifdef OWN_WINDOW
+  if (window.window == None || window.owned != own_window.get(*state)) {
+    // The retained drawable belongs to the old mode. Do not adopt an owned
+    // window as the desktop, or carry the desktop's geometry into a new one.
+    destroy_window();
+    fixed_size = fixed_pos = 0;
+  }
+#endif
   x11_init_window(*state);
 
   if (use_double_buffer.get(*state)) {
@@ -838,14 +846,13 @@ void display_output_x11::sigterm_cleanup() {
 }
 
 void display_output_x11::cleanup() {
-  if (window.window != None) {
+  if (window.window != None && (!g_is_reloading || !window.owned)) {
     int border_total = get_border_total();
 
     XClearArea(display, window.window, text_start.x() - border_total,
                text_start.y() - border_total, text_size.x() + 2 * border_total,
                text_size.y() + 2 * border_total, 0);
   }
-  if (!g_is_reloading) { destroy_window(); }
   free_fonts(utf8_mode.get(*state));
   if (window.repaint_region != nullptr) {
     XDestroyRegion(window.repaint_region);
@@ -859,6 +866,7 @@ void display_output_x11::cleanup() {
     window.window_damage = 0;
   }
 #endif /* BUILD_XDAMAGE */
+  if (!g_is_reloading) { destroy_window(); }
 }
 
 void display_output_x11::set_foreground_color(Colour c) {

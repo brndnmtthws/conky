@@ -90,6 +90,8 @@ struct conky_x11_window {
   Window root;
   /// XID of Conky window
   Window window;
+  /// Whether Conky created this window (never true for the desktop/root).
+  bool owned = false;
   /// XID of DE desktop window (or root if none)
   Window desktop;
   Drawable drawable;
@@ -149,7 +151,7 @@ extern struct conky_x11_window window;
 
 void update_x11_resource_db(bool first_run = false);
 void update_x11_workarea();
-void init_x11();
+bool init_x11();
 void destroy_window(void);
 void create_gc(void);
 void set_transparent_background(conky_x11_window *win);

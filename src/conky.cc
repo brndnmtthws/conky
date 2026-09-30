@@ -1933,12 +1933,23 @@ static void reload_config() {
         current_config, getpid());
     return;
   }
-  reload_guard rg;
-  clean_up();
-  state = std::make_unique<lua::state>();
-  conky::export_symbols(*state);
-  sleep(1); /* slight pause */
-  initialisation(argc_copy, argv_copy);
+  {
+    reload_guard rg;
+    clean_up();
+    state = std::make_unique<lua::state>();
+    conky::export_symbols(*state);
+    sleep(1); /* slight pause */
+    initialisation(argc_copy, argv_copy);
+  }
+#ifdef BUILD_X11
+  // Cleanup retained the X11 connection until the new configuration was
+  // known. A different backend must not leave that window visible, and a
+  // later switch back to X11 needs fresh drawable/geometry state.
+  if (!conky::output_enabled(conky::output_t::X11)) {
+    destroy_window();
+    deinit_x11();
+  }
+#endif
 }
 
 void free_specials(special_node *&current) {

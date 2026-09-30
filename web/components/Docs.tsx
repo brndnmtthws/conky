@@ -56,14 +56,15 @@ export default function Docs({ docs, braces, assign }: DocsProps) {
 
   const focusEntry = useCallback((el: Element) => {
     const prev: HTMLElement | null = document.querySelector('[data-target]')
-    if (prev === el) {
-      return
+    if (prev !== el) {
+      if (prev) {
+        prev.removeAttribute('data-target')
+      }
+      el.setAttribute('data-target', '')
     }
-    if (prev) {
-      prev.removeAttribute('data-target')
-    }
-    el.setAttribute('data-target', '')
 
+    // Always bring the entry back into view, even when search selects the
+    // current hash again after the reader has scrolled away.
     requestAnimationFrame(() => {
       const bounds = el.getBoundingClientRect()
       // Element.scrollIntoView({block: "center"}) was VERY inconsistent; here goes a manual implementation:
@@ -77,7 +78,11 @@ export default function Docs({ docs, braces, assign }: DocsProps) {
       }
     })
 
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    // A repeated selection keeps the existing highlight without replaying it.
+    if (
+      prev === el ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) return
 
     let prev_scroll = window.scrollY
     let still = 0
