@@ -7,7 +7,8 @@ describe('documentation search navigation', () => {
   }
 
   function assertTargetInViewport(name) {
-    cy.get(`#${name}`).should('have.attr', 'data-target').should(($entry) => {
+    cy.get(`#${name}`).should(($entry) => {
+      expect($entry).to.have.attr('data-target')
       const { top, bottom } = $entry[0].getBoundingClientRect()
       const viewportHeight = $entry[0].ownerDocument.defaultView.innerHeight
       expect(top).to.be.at.least(0)
