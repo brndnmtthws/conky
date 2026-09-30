@@ -295,7 +295,7 @@ void init_x11() {
 }
 
 void deinit_x11() {
-  if (display) {
+  if (display && !g_is_reloading) {
     auto _scope = LOG_SCOPE("deinit_x11");
     XCloseDisplay(display);
     display = nullptr;
@@ -305,6 +305,15 @@ void deinit_x11() {
 bool x11_set_up_double_buffer(lua::state &l) {
   // double_buffer makes no sense when not drawing to a window
   if (!display || !window.window) { return false; }
+
+  if (window.back_buffer != None) {
+#ifdef BUILD_XDBE
+    XdbeDeallocateBackBufferName(display, window.back_buffer);
+#else
+    XFreePixmap(display, window.back_buffer);
+#endif
+    window.back_buffer = None;
+  }
 
 #ifdef BUILD_XDBE
   int major, minor;
@@ -548,12 +557,42 @@ void x11_init_window(lua::state &l) {
   }
   window.desktop = find_desktop_window(window.root);
 
+  /* Defaults — overridden below for own_window reuse (real window attrs)
+   * and for own_window create (ARGB visual if available). */
   window.visual = DefaultVisual(display, screen);
   window.opacity = 0xff;
   window.colourmap = DefaultColormap(display, screen);
 
 #ifdef OWN_WINDOW
   if (own_window.get(l)) {
+    if (window.window != None) {
+      /* Reload path: window already alive — query its real attributes
+       * instead of destroying and recreating. */
+      XWindowAttributes attr;
+      if (XGetWindowAttributes(display, window.window, &attr) != 0) {
+        window.visual = attr.visual;
+        window.colourmap = attr.colormap;
+        window.geometry.set_size(attr.width, attr.height);
+        LOG_INFO("reusing existing window {:#x} {}x{} (reload)",
+                 window.window, attr.width, attr.height);
+      } else {
+        LOG_WARNING("XGetWindowAttributes failed for {:#x}", window.window);
+        window.visual = DefaultVisual(display, screen);
+        window.colourmap = DefaultColormap(display, screen);
+      }
+      uint8_t background_alpha = get_background_alpha_preference(l);
+      if (background_alpha < 0xff) {
+        if (window.visual != DefaultVisual(display, screen)) {
+          window.opacity = background_alpha;
+        } else if (background_alpha == 0) {
+          window.opacity = 0;
+        } else {
+          window.opacity = 0xff;
+        }
+      } else {
+        window.opacity = 0xff;
+      }
+    } else {
     int flags = CWOverrideRedirect | CWBackingStore;
     window.color_depth = CopyFromParent;
 
@@ -842,6 +881,7 @@ void x11_init_window(lua::state &l) {
         }
       }
     }
+    } /* end of else (window.window == None) — create new window */
 
     LOG_INFO("drawing to created window {:#x}", window.window);
     XMapWindow(display, window.window);
@@ -985,6 +1025,10 @@ static Window find_desktop_window_impl(Window win, int w, int h) {
 }
 
 void create_gc() {
+  if (window.gc != nullptr) {
+    XFreeGC(display, window.gc);
+    window.gc = nullptr;
+  }
   XGCValues values;
 
   values.graphics_exposures = 0;

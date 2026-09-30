@@ -249,6 +249,19 @@ extern kvm_t *kd;
 static void signal_handler(int /*sig*/);
 static void reload_config();
 
+/* Set while reload_config() tears down and rebuilds the config so X11
+ * cleanup/initialise can skip window+display teardown and reuse the live
+ * window. Set here rather than in the X11 layer so the flag's lifetime is
+ * tied to the reload cycle by reload_guard below. */
+std::atomic<bool> g_is_reloading{false};
+
+struct reload_guard {
+  reload_guard() { g_is_reloading.store(true, std::memory_order_relaxed); }
+  ~reload_guard() { g_is_reloading.store(false, std::memory_order_relaxed); }
+  reload_guard(const reload_guard &) = delete;
+  reload_guard &operator=(const reload_guard &) = delete;
+};
+
 static const char *suffixes[] = {_nop("B"),   _nop("KiB"), _nop("MiB"),
                                  _nop("GiB"), _nop("TiB"), _nop("PiB"),
                                  ""};
@@ -1920,6 +1933,7 @@ static void reload_config() {
         current_config, getpid());
     return;
   }
+  reload_guard rg;
   clean_up();
   state = std::make_unique<lua::state>();
   conky::export_symbols(*state);

@@ -38,6 +38,7 @@
 #include <arpa/inet.h>
 #include <config.h>      /* defines */
 #include <sys/utsname.h> /* struct uname_s */
+#include <atomic>
 #include <csignal>
 #include <filesystem>
 #include <memory>
@@ -405,6 +406,8 @@ void main_loop();
 
 extern volatile sig_atomic_t g_sigterm_pending, g_sighup_pending,
     g_sigusr2_pending;
+
+extern std::atomic<bool> g_is_reloading;
 
 extern int first_pass;
 extern int argc_copy;

@@ -832,6 +832,7 @@ void display_output_x11::sigterm_cleanup() {
     XDamageDestroy(display, window.window_damage);
     XFixesDestroyRegion(display, window.damage_region);
     XFixesDestroyRegion(display, window.damage_scratch);
+    window.window_damage = 0;
   }
 #endif /* BUILD_XDAMAGE */
 }
@@ -844,12 +845,20 @@ void display_output_x11::cleanup() {
                text_start.y() - border_total, text_size.x() + 2 * border_total,
                text_size.y() + 2 * border_total, 0);
   }
-  destroy_window();
+  if (!g_is_reloading) { destroy_window(); }
   free_fonts(utf8_mode.get(*state));
   if (window.repaint_region != nullptr) {
     XDestroyRegion(window.repaint_region);
     window.repaint_region = nullptr;
   }
+#ifdef BUILD_XDAMAGE
+  if (window.window_damage) {
+    XDamageDestroy(display, window.window_damage);
+    XFixesDestroyRegion(display, window.damage_region);
+    XFixesDestroyRegion(display, window.damage_scratch);
+    window.window_damage = 0;
+  }
+#endif /* BUILD_XDAMAGE */
 }
 
 void display_output_x11::set_foreground_color(Colour c) {
