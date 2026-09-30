@@ -565,7 +565,8 @@ void x11_init_window(lua::state &l) {
 
 #ifdef OWN_WINDOW
   if (own_window.get(l)) {
-    if (window.window != None) {
+    if (window.window != None && window.window != window.desktop &&
+        window.window != window.root) {
       /* Reload path: window already alive — query its real attributes
        * instead of destroying and recreating. */
       XWindowAttributes attr;
