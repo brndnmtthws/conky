@@ -68,8 +68,15 @@ void initialize_display_outputs() {
     if (primary_it == registered_outputs().end()) continue;
     auto output = primary_it->second;
 
-    LOG_DEBUG("initializing '{}' display output", output->name);
-    if (output->initialize()) {
+    // Expose the output under initialization so global helpers called
+    // from initialize() (e.g. setup_fonts()/load_fonts() via
+    // X11_create_window()) resolve through display_outputs() instead of
+    // running against an empty active list. active_display_outputs is
+    // only populated at the end of this function.
+    conky::current_display_outputs.push_back(output);
+    bool initialized = output->initialize();
+    conky::current_display_outputs.clear();
+    if (initialized) {
       LOG_DEBUG("initialized display output '{}'", output->name);
       initialized_selection.insert(output_type);
     }
