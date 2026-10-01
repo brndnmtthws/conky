@@ -2,7 +2,7 @@
 
 set(VERSION_MAJOR "1")
 set(VERSION_MINOR "25")
-set(VERSION_PATCH "2")
+set(VERSION_PATCH "3")
 
 execute_process(COMMAND ${APP_UNAME} -sm
   RESULT_VARIABLE RETVAL
