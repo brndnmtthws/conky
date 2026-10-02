@@ -68,12 +68,7 @@ MHD_Result sendanswer(void *cls, struct MHD_Connection *connection,
                       const char *url, const char *method, const char *version,
                       const char *upload_data, size_t *upload_data_size,
                       void **con_cls) {
-  std::optional<conky::http_response> hook_response;
-  {
-    /* llua_http_response_hook() may call into Lua from a non-draw thread. */
-    std::lock_guard<std::mutex> lock(builder_mutex);
-    hook_response = llua_http_response_hook();
-  }
+  std::optional<conky::http_response> hook_response = llua_http_response_hook();
 
   struct MHD_Response *response;
   int response_status = MHD_HTTP_OK;
