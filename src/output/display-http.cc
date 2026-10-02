@@ -76,6 +76,10 @@ MHD_Result sendanswer(void *cls, struct MHD_Connection *connection,
     response = MHD_create_response_from_buffer(
         hook_response->body.length(), (void *)hook_response->body.c_str(),
         MHD_RESPMEM_MUST_COPY);
+    if (response == nullptr) {
+      LOG_ERROR("failed to allocate HTTP response for lua_http_response_hook");
+      return MHD_NO;
+    }
     for (const auto &header : hook_response->headers) {
       if (MHD_add_response_header(response, header.first.c_str(),
                                   header.second.c_str()) == MHD_NO) {
@@ -97,6 +101,10 @@ MHD_Result sendanswer(void *cls, struct MHD_Connection *connection,
     std::lock_guard<std::mutex> lock(builder_mutex);
     response = MHD_create_response_from_buffer(
         presented.length(), (void *)presented.c_str(), MHD_RESPMEM_MUST_COPY);
+    if (response == nullptr) {
+      LOG_ERROR("failed to allocate HTTP response for presented page");
+      return MHD_NO;
+    }
   }
 
   MHD_Result ret = MHD_queue_response(connection, response_status, response);

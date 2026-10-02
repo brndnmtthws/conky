@@ -115,6 +115,7 @@ class lua_load_setting : public conky::simple_config_setting<std::string> {
 
   void cleanup(lua::state &l) override {
     lua::stack_sentry s(l, -1);
+    std::lock_guard<std::recursive_mutex> lock(lua_call_mutex);
 
 #ifdef HAVE_SYS_INOTIFY_H
     llua_rm_notifies();
