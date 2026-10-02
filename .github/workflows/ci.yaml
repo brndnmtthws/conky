@@ -508,19 +508,12 @@ jobs:
             ASSET="conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage"
           fi
           mv conky-x86_64.AppImage "$ASSET"
-          mv conky-x86_64.AppImage.sha256 "$ASSET.sha256"
           echo "ASSET_NAME=$ASSET" | tee -a "${GITHUB_ENV}"
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v7
         with:
           path: '${{ env.ASSET_NAME }}'
           name: '${{ env.ASSET_NAME }}'
-          if-no-files-found: error
-      - name: Upload AppImage checksum artifact
-        uses: actions/upload-artifact@v7
-        with:
-          path: '${{ env.ASSET_NAME }}.sha256'
-          name: '${{ env.ASSET_NAME }}.sha256'
           if-no-files-found: error
       - name: Upload man page artifact
         uses: actions/upload-artifact@v7
