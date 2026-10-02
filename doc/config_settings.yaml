@@ -281,7 +281,8 @@ values:
   - name: lua_http_response_hook
     desc: |-
       This function, if defined, will be called by Conky on each request
-      when using the HTTP output ('out_to_http'). It should return a table
+      when using the HTTP output (`output_backend = 'http'`). It should
+      return a table
       with a 'body' string, and optionally a 'status' number (defaults to
       200) and a 'headers' table mapping header names to values. If unset,
       or if the returned value can't be used, Conky falls back to its
