@@ -125,6 +125,34 @@ TEST_CASE("llua_http_response_hook", "[http][lua]") {
     REQUIRE(result->headers.empty());
   }
 
+  SECTION("falls back to 200 for non-finite status") {
+    set_hook_setting("test_nan_status");
+    REQUIRE(luaL_dostring(lua_L,
+                          "function conky_test_nan_status()\n"
+                          "  return { body = 'ok', status = 0/0 }\n"
+                          "end") == 0);
+
+    auto result = llua_http_response_hook();
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->body == "ok");
+    REQUIRE(result->status == 200);
+  }
+
+  SECTION("falls back to 200 for out-of-range status") {
+    set_hook_setting("test_range_status");
+    REQUIRE(luaL_dostring(lua_L,
+                          "function conky_test_range_status()\n"
+                          "  return { body = 'ok', status = 999 }\n"
+                          "end") == 0);
+
+    auto result = llua_http_response_hook();
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->body == "ok");
+    REQUIRE(result->status == 200);
+  }
+
   SECTION("ignores non-string entries in the headers table") {
     set_hook_setting("test_mixed_headers");
     REQUIRE(luaL_dostring(lua_L,
