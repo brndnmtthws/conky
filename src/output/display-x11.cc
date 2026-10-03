@@ -144,8 +144,10 @@ void update_dpi() {
 
 static void X11_create_window() {
   if (!window.window) { return; }
-  setup_fonts();
+  // Load before setup: setup_fonts() forwards set_font(0), which warns when
+  // the backend cache is still empty.
   load_fonts(utf8_mode.get(*state));
+  setup_fonts();
   update_dpi();
   update_text_area(); /* to position text/window on screen */
 

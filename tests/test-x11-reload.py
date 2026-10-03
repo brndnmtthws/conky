@@ -110,6 +110,9 @@ class X11Reload(unittest.TestCase):
         self.assertEqual(status, 0, log)
         for error in ("BadWindow", "BadDrawable", "BadPixmap", "BadGC", "BadDamage"):
             self.assertNotIn(error, log)
+        # Startup must not log a spurious font-index warning: fonts are loaded
+        # before setup forwards set_font(0) to the backend.
+        self.assertNotIn("font index", log)
         self.assertFalse(self.probe()["windows"], "owned XID leaked after exit")
 
     def is_rendered(self, sample):
