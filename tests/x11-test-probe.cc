@@ -36,6 +36,10 @@ int main() {
   auto display = XOpenDisplay(nullptr);
   if (!display) { return 2; }
   XSetErrorHandler(on_error);
+  // Keep the snapshot consistent while Conky reloads: an enumerated window may
+  // otherwise be destroyed, unmapped, or resized before its later queries.
+  // This observer is only used on an isolated test server.
+  XGrabServer(display);
   auto root = DefaultRootWindow(display);
   XWindowAttributes attrs{};
   XGetWindowAttributes(display, root, &attrs);
@@ -59,6 +63,7 @@ int main() {
     first = false;
   }
   if (children) { XFree(children); }
+  XUngrabServer(display);
   XSync(display, False);
   std::printf("],\"errors\":%d}\n", errors);
   XCloseDisplay(display);
