@@ -210,8 +210,10 @@ static std::vector<pango_font> pango_fonts; /* indexed by selected_font */
 static void wayland_create_window();
 
 static void wayland_create_window() {
-  setup_fonts();
+  // Load before setup: setup_fonts() forwards set_font(0), which warns (or
+  // asserts in debug) when the backend cache is still empty.
   load_fonts(utf8_mode.get(*state));
+  setup_fonts();
   update_text_area(); /* to position text/window on screen */
 
   selected_font = 0;
