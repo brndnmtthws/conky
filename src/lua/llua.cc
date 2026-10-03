@@ -24,6 +24,7 @@
 
 #include <cstring>
 #include <filesystem>
+#include <mutex>
 #include <sstream>
 #if defined(BUILD_LUA_CAIRO) || defined(BUILD_WAYLAND)
 #include <cairo.h>
@@ -34,8 +35,10 @@
 #include "../logging.h"
 #include "../output/display-output.hh"
 #include "../output/output-setting.hh"
+#include "../output/display-http.hh"
 #include "build.h"
 #include "llua.h"
+
 
 #ifdef BUILD_GUI
 #include "../output/gui.h"
@@ -70,6 +73,7 @@ static int llua_block_notify = 0;
 static void llua_load(const char *script);
 
 lua_State *lua_L = nullptr;
+static std::recursive_mutex lua_call_mutex;
 
 namespace {
 class lua_load_setting : public conky::simple_config_setting<std::string> {
@@ -111,6 +115,7 @@ class lua_load_setting : public conky::simple_config_setting<std::string> {
 
   void cleanup(lua::state &l) override {
     lua::stack_sentry s(l, -1);
+    std::lock_guard<std::recursive_mutex> lock(lua_call_mutex);
 
 #ifdef HAVE_SYS_INOTIFY_H
     llua_rm_notifies();
@@ -136,8 +141,11 @@ conky::simple_config_setting<std::string> lua_draw_hook_pre("lua_draw_hook_pre",
                                                             true);
 conky::simple_config_setting<std::string> lua_draw_hook_post(
     "lua_draw_hook_post", std::string(), true);
+#endif /* BUILD_GUI */
 
-#endif
+conky::simple_config_setting<std::string> lua_http_response_hook(
+    "lua_http_response_hook", std::string(), true);
+
 }  // namespace
 
 static int llua_conky_parse(lua_State *L) {
@@ -195,6 +203,7 @@ static int llua_conky_surface(lua_State *L) {
 }
 
 void llua_init() {
+  std::lock_guard<std::recursive_mutex> lock(lua_call_mutex);
   std::string libs(PACKAGE_LIBDIR "/lib?.so;");
   std::string old_path, new_path;
   if (lua_L != nullptr) { return; }
@@ -284,6 +293,7 @@ inline bool file_exists(const char *path) {
 }
 
 void llua_load(const char *script) {
+  std::lock_guard<std::recursive_mutex> lock(lua_call_mutex);
   int error;
 
   std::filesystem::path path;
@@ -459,6 +469,7 @@ static char *llua_do_read_call(const char *function, const char *arg, int retc)
 
 /* call a function with args, and return a string from it (must be free'd) */
 static char *llua_getstring(const char *args) {
+  std::lock_guard<std::recursive_mutex> lock(lua_call_mutex);
   char *func;
   char *ret = nullptr;
 
@@ -474,6 +485,53 @@ static char *llua_getstring(const char *args) {
   }
 
   return ret;
+}
+
+/* call the configured http response hook; returns the response table's
+ * contents if it returned one, nullopt otherwise */
+std::optional<conky::http_response> llua_http_response_hook() {
+  std::lock_guard<std::recursive_mutex> lock(lua_call_mutex);
+  if (lua_http_response_hook.get(*state).empty()) { return std::nullopt; }
+
+  char *func = llua_do_call(lua_http_response_hook.get(*state).c_str(), 1);
+  if (func == nullptr) { return std::nullopt; }
+  if (lua_istable(lua_L, -1) == 0) {
+    LOG_WARNING("lua function '{}' did not return a table, result discarded",
+                func);
+    lua_pop(lua_L, 1);
+    return std::nullopt;
+  }
+  conky::http_response response;
+
+  lua_getfield(lua_L, -1, "body");
+  if (lua_isstring(lua_L, -1) != 0) {
+    response.body = lua_tostring(lua_L, -1);
+  } else {
+    LOG_WARNING("lua function '{}' table missing string 'body' field", func);
+  }
+  lua_pop(lua_L, 1);
+
+  lua_getfield(lua_L, -1, "status");
+  if (lua_isnumber(lua_L, -1) != 0) {
+    response.status = static_cast<int>(lua_tonumber(lua_L, -1));
+  }
+  lua_pop(lua_L, 1);
+
+  lua_getfield(lua_L, -1, "headers");
+  if (lua_istable(lua_L, -1) != 0) {
+    lua_pushnil(lua_L);
+    while (lua_next(lua_L, -2) != 0) {
+      if (lua_type(lua_L, -2) == LUA_TSTRING && lua_isstring(lua_L, -1) != 0) {
+        response.headers.emplace_back(lua_tostring(lua_L, -2),
+                                      lua_tostring(lua_L, -1));
+      }
+      lua_pop(lua_L, 1);
+    }
+  }
+  lua_pop(lua_L, 1);  // pop headers field
+
+  lua_pop(lua_L, 1);  // pop the response table
+  return response;
 }
 
 #if 0
@@ -501,6 +559,7 @@ static char *llua_getstring_read(const char *function, const char *arg)
 
 /* call a function with args, and put the result in ret */
 static int llua_getnumber(const char *args, double *ret) {
+  std::lock_guard<std::recursive_mutex> lock(lua_call_mutex);
   char *func;
 
   func = llua_do_call(args, 1);
@@ -596,22 +655,26 @@ void llua_set_number(const char *key, double value) {
 }
 
 void llua_startup_hook() {
+  std::lock_guard<std::recursive_mutex> lock(lua_call_mutex);
   if (lua_startup_hook.get(*state).empty()) { return; }
   llua_do_call(lua_startup_hook.get(*state).c_str(), 0);
 }
 
 void llua_shutdown_hook() {
+  std::lock_guard<std::recursive_mutex> lock(lua_call_mutex);
   if (lua_shutdown_hook.get(*state).empty()) { return; }
   llua_do_call(lua_shutdown_hook.get(*state).c_str(), 0);
 }
 
 #ifdef BUILD_GUI
 void llua_draw_pre_hook() {
+  std::lock_guard<std::recursive_mutex> lock(lua_call_mutex);
   if (lua_draw_hook_pre.get(*state).empty()) { return; }
   llua_do_call(lua_draw_hook_pre.get(*state).c_str(), 0);
 }
 
 void llua_draw_post_hook() {
+  std::lock_guard<std::recursive_mutex> lock(lua_call_mutex);
   if (lua_draw_hook_post.get(*state).empty()) { return; }
   llua_do_call(lua_draw_hook_post.get(*state).c_str(), 0);
 }
@@ -619,6 +682,7 @@ void llua_draw_post_hook() {
 #ifdef BUILD_MOUSE_EVENTS
 template <typename EventT>
 bool llua_mouse_hook(const EventT &ev) {
+  std::lock_guard<std::recursive_mutex> lock(lua_call_mutex);
   if (conky::lua_mouse_hook.get(*state).empty()) { return false; }
   const std::string raw_hook_name = conky::lua_mouse_hook.get(*state);
   std::string hook_name;
@@ -684,6 +748,7 @@ void llua_set_userdata(const char *key, const char *type, void *value) {
 
 void llua_setup_window_table(conky::vec2i window_size,
                              conky::rect<int> text_rect) {
+  std::lock_guard<std::recursive_mutex> lock(lua_call_mutex);
   lua_newtable(lua_L);
 
 #ifdef BUILD_X11
@@ -716,6 +781,7 @@ void llua_setup_window_table(conky::vec2i window_size,
 
 void llua_update_window_table(conky::vec2i window_size,
                               conky::rect<int> text_rect) {
+  std::lock_guard<std::recursive_mutex> lock(lua_call_mutex);
   lua_getglobal(lua_L, "conky_window");
   if (lua_isnil(lua_L, -1)) {
     /* window table isn't populated yet */
@@ -756,6 +822,7 @@ void llua_update_window_table(conky::vec2i window_size,
 #endif /* BUILD_GUI */
 
 void llua_setup_info(struct information *i, double u_interval) {
+  std::lock_guard<std::recursive_mutex> lock(lua_call_mutex);
   lua_newtable(lua_L);
 
   llua_set_number("update_interval", u_interval);
@@ -765,6 +832,7 @@ void llua_setup_info(struct information *i, double u_interval) {
 }
 
 void llua_update_info(struct information *i, double u_interval) {
+  std::lock_guard<std::recursive_mutex> lock(lua_call_mutex);
   lua_getglobal(lua_L, "conky_info");
   if (lua_isnil(lua_L, -1)) {
     /* window table isn't populated yet */

@@ -30,6 +30,8 @@ extern "C" {
 #include <lualib.h>
 }
 
+#include <optional>
+
 #include <config.h>
 #include "../geometry.h"
 
@@ -47,6 +49,15 @@ void llua_inotify_query(int wd, int mask);
 void llua_init();
 void llua_startup_hook(void);
 void llua_shutdown_hook(void);
+
+// Defined in display-http.hh; kept opaque here so this header doesn't need
+// to change if its fields do.
+namespace conky {
+struct http_response;
+}  // namespace conky
+
+// Calls lua_http_response_hook, returns nullopt if unset or unusable.
+std::optional<conky::http_response> llua_http_response_hook();
 
 #ifdef BUILD_GUI
 void llua_draw_pre_hook(void);

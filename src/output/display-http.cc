@@ -27,6 +27,7 @@
 #include <config.h>
 
 #include "../conky.h"
+#include "../lua/llua.h"
 #include "display-http.hh"
 #include "output-setting.hh"
 
@@ -67,16 +68,46 @@ MHD_Result sendanswer(void *cls, struct MHD_Connection *connection,
                       const char *url, const char *method, const char *version,
                       const char *upload_data, size_t *upload_data_size,
                       void **con_cls) {
+  std::optional<conky::http_response> hook_response = llua_http_response_hook();
+
   struct MHD_Response *response;
-  {
+  int response_status = MHD_HTTP_OK;
+  if (hook_response) {
+    response = MHD_create_response_from_buffer(
+        hook_response->body.length(), (void *)hook_response->body.c_str(),
+        MHD_RESPMEM_MUST_COPY);
+    if (response == nullptr) {
+      LOG_ERROR("failed to allocate HTTP response for lua_http_response_hook");
+      return MHD_NO;
+    }
+    for (const auto &header : hook_response->headers) {
+      if (MHD_add_response_header(response, header.first.c_str(),
+                                  header.second.c_str()) == MHD_NO) {
+        LOG_WARNING("failed to add HTTP header '{}' from lua_http_response_hook",
+                    header.first);
+      }
+    }
+    if (hook_response->status >= 100 && hook_response->status <= 599) {
+      response_status = hook_response->status;
+    } else {
+      LOG_WARNING(
+          "lua_http_response_hook returned invalid status {}, using 200",
+          hook_response->status);
+    }
+  } else {
     /* Copy the page out under the lock; MHD_RESPMEM_MUST_COPY snapshots the
      * bytes so we don't hand MHD a pointer into a string the draw thread may
      * reallocate. */
     std::lock_guard<std::mutex> lock(builder_mutex);
     response = MHD_create_response_from_buffer(
         presented.length(), (void *)presented.c_str(), MHD_RESPMEM_MUST_COPY);
+    if (response == nullptr) {
+      LOG_ERROR("failed to allocate HTTP response for presented page");
+      return MHD_NO;
+    }
   }
-  MHD_Result ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
+
+  MHD_Result ret = MHD_queue_response(connection, response_status, response);
   MHD_destroy_response(response);
   if (cls || url || method || version || upload_data || upload_data_size ||
       con_cls) {}  // make compiler happy
