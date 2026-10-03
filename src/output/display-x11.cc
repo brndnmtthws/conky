@@ -245,7 +245,7 @@ bool display_output_x11::main_loop_wait(double t) {
 
   if (XPending(display) == 0) {
     fd_set fdsr;
-    struct timeval tv{};
+    struct timeval tv {};
     int s;
     // t = next_update_time - get_time();
 

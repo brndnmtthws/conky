@@ -585,7 +585,8 @@ unsigned int Device::get_video_dec_util() const {
   if (ret != NVML_SUCCESS) {
     static bool did_warn = false;
     if (!did_warn) {
-      LOG_WARNING("Unable to get video decoder utilization: {}", nvml_error_string(ret));
+      LOG_WARNING("Unable to get video decoder utilization: {}",
+                  nvml_error_string(ret));
       did_warn = true;
     }
     return 0;
@@ -600,7 +601,8 @@ unsigned int Device::get_video_enc_util() const {
   if (ret != NVML_SUCCESS) {
     static bool did_warn = false;
     if (!did_warn) {
-      LOG_WARNING("Unable to get video encoder utilization: {}", nvml_error_string(ret));
+      LOG_WARNING("Unable to get video encoder utilization: {}",
+                  nvml_error_string(ret));
       did_warn = true;
     }
     return 0;
@@ -610,11 +612,13 @@ unsigned int Device::get_video_enc_util() const {
 
 unsigned int Device::get_pcie_throughput_tx() const {
   unsigned int tx;
-  auto ret = nvmlDeviceGetPcieThroughput(this->device, NVML_PCIE_UTIL_TX_BYTES, &tx);
+  auto ret =
+      nvmlDeviceGetPcieThroughput(this->device, NVML_PCIE_UTIL_TX_BYTES, &tx);
   if (ret != NVML_SUCCESS) {
     static bool did_warn = false;
     if (!did_warn) {
-      LOG_WARNING("Unable to get PCIe throughput (tx): {}", nvml_error_string(ret));
+      LOG_WARNING("Unable to get PCIe throughput (tx): {}",
+                  nvml_error_string(ret));
       did_warn = true;
     }
     return 0;
@@ -624,11 +628,13 @@ unsigned int Device::get_pcie_throughput_tx() const {
 
 unsigned int Device::get_pcie_throughput_rx() const {
   unsigned int rx;
-  auto ret = nvmlDeviceGetPcieThroughput(this->device, NVML_PCIE_UTIL_RX_BYTES, &rx);
+  auto ret =
+      nvmlDeviceGetPcieThroughput(this->device, NVML_PCIE_UTIL_RX_BYTES, &rx);
   if (ret != NVML_SUCCESS) {
     static bool did_warn = false;
     if (!did_warn) {
-      LOG_WARNING("Unable to get PCIe throughput (rx): {}", nvml_error_string(ret));
+      LOG_WARNING("Unable to get PCIe throughput (rx): {}",
+                  nvml_error_string(ret));
       did_warn = true;
     }
     return 0;

@@ -144,7 +144,7 @@ static void update_fs_stat(struct fs_stat *fs) {
     fs->free = (long long)s.f_bfree * s.f_frsize;
     (void)strncpy(fs->type, s.f_basetype, sizeof(fs->type));
 #else
-  struct statfs_struct s{};
+  struct statfs_struct s {};
 
   if (statfs_func(fs->path, &s) == 0) {
     fs->size = static_cast<long long>(s.f_blocks) * s.f_bsize;
@@ -171,7 +171,7 @@ void get_fs_type(const char *path, char *result) {
     defined(__OpenBSD__) || defined(__DragonFly__) || defined(__HAIKU__) || \
     (defined(__APPLE__) && defined(__MACH__)) || defined(__NetBSD__)
 
-  struct statfs_struct s{};
+  struct statfs_struct s {};
   if (statfs_func(path, &s) == 0) {
     strncpy(result, s.f_fstypename, DEFAULT_TEXT_BUFFER_SIZE);
   } else {

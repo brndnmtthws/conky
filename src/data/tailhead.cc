@@ -112,7 +112,7 @@ static void print_tailhead(const char *type, struct text_object *obj, char *p,
                            unsigned int p_max_size) {
   int fd, i, endofstring = 0, linescounted = 0;
   FILE *fp;
-  struct stat st{};
+  struct stat st {};
   auto *ht = static_cast<struct headtail *>(obj->data.opaque);
 
   if (ht == nullptr) { return; }

@@ -49,7 +49,7 @@ struct bar {
 };
 
 std::pair<int, int> parse_bar_dimensions(const char *args) {
-  struct text_object obj{};
+  struct text_object obj {};
   parse_net_stat_bar_arg(&obj, args, nullptr);
   auto *b = static_cast<struct bar *>(obj.special_data);
   std::pair<int, int> dims{b->height, b->width};

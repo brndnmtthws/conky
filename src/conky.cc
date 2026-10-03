@@ -512,9 +512,7 @@ int spaced_print(char *buf, int size, const char *format, int width, ...) {
  * - pad_percents can widen further; it is unused when use_spacer is none */
 int percent_print(char *buf, int size, unsigned value) {
   int width = pad_percents.get(*state);
-  if (use_spacer.get(*state) != NO_SPACER) {
-    width = std::max(width, 3);
-  }
+  if (use_spacer.get(*state) != NO_SPACER) { width = std::max(width, 3); }
   return spaced_print(buf, size, "%u", width, value);
 }
 
@@ -681,7 +679,7 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root) {
 }
 
 void evaluate(const char *text, char *p, int p_max_size) {
-  struct text_object subroot{};
+  struct text_object subroot {};
 
   /**
    * Consider expressions like: ${execp echo '${execp echo hi}'}
@@ -1924,7 +1922,7 @@ void main_loop() {
 /* reload the config file */
 static void reload_config() {
   auto _scope = LOG_SCOPE("reload_config");
-  struct stat sb{};
+  struct stat sb {};
   if ((stat(current_config.c_str(), &sb) != 0) ||
       (!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
     LOG_WARNING(
@@ -2095,7 +2093,7 @@ inline void reset_optind() {
 
 void set_current_config() {
   /* load current_config, CONFIG_FILE or SYSTEM_CONFIG_FILE */
-  struct stat s{};
+  struct stat s {};
 
   if (current_config.empty()) {
     /* Try to use personal config file first */
@@ -2194,7 +2192,8 @@ void setup_inotify() {
 }
 void initialisation(int argc, char **argv) {
   auto _scope = LOG_SCOPE("init");
-  struct sigaction act{}, oact{};
+  struct sigaction act {
+  }, oact{};
 
   clear_net_stats();
   set_default_configurations();

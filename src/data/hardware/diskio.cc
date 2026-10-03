@@ -54,7 +54,7 @@ void clear_diskio_stats() {
 }
 
 struct diskio_stat *prepare_diskio_stat(const char *s) {
-  struct stat sb{};
+  struct stat sb {};
   std::vector<char> stat_name(text_buffer_size.get(*state)),
       device_name(text_buffer_size.get(*state)),
       device_s(text_buffer_size.get(*state));

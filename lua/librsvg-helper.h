@@ -107,8 +107,8 @@ void rsvg_rectangle_get(RsvgRectangle *rect, double *x, double *y,
   }
 }
 
-void rsvg_render_document_at(RsvgHandle *handle, cairo_t *cr,
-                             double x, double y, double w, double h) {
+void rsvg_render_document_at(RsvgHandle *handle, cairo_t *cr, double x,
+                             double y, double w, double h) {
   if (!handle || !cr) return;
   cairo_save(cr);
   cairo_translate(cr, x, y);

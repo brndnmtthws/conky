@@ -83,8 +83,9 @@ MHD_Result sendanswer(void *cls, struct MHD_Connection *connection,
     for (const auto &header : hook_response->headers) {
       if (MHD_add_response_header(response, header.first.c_str(),
                                   header.second.c_str()) == MHD_NO) {
-        LOG_WARNING("failed to add HTTP header '{}' from lua_http_response_hook",
-                    header.first);
+        LOG_WARNING(
+            "failed to add HTTP header '{}' from lua_http_response_hook",
+            header.first);
       }
     }
     if (hook_response->status >= 100 && hook_response->status <= 599) {
