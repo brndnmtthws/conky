@@ -135,7 +135,7 @@ int update_uname() {
 }
 
 double get_time() {
-  struct timespec tv{};
+  struct timespec tv {};
 #ifdef _POSIX_MONOTONIC_CLOCK
   clock_gettime(CLOCK_MONOTONIC, &tv);
 #else
@@ -150,7 +150,7 @@ double get_time() {
  * align the update schedule to real-second boundaries so that displayed clocks
  * (e.g. ${time}) tick on the wall second instead of lagging by that offset. */
 double get_realtime() {
-  struct timespec tv{};
+  struct timespec tv {};
   clock_gettime(CLOCK_REALTIME, &tv);
   return tv.tv_sec + (tv.tv_nsec * 1e-9);
 }

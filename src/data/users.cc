@@ -100,7 +100,7 @@ static bool uid_to_name(uid_t uid, std::string &out) {
   if (size <= 0) { size = 4096; }
 
   std::vector<char> buf(static_cast<size_t>(size));
-  struct passwd pw{};
+  struct passwd pw {};
   struct passwd *result = nullptr;
 
   if (getpwuid_r(uid, &pw, buf.data(), buf.size(), &result) != 0 ||

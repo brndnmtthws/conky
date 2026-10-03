@@ -166,6 +166,13 @@ checksum = "sha256:4d52ebab7193a698651639ed80d8d04fd903358843572cf44c7fd234cb7c2
 url = "https://github.com/Kitware/CMake/releases/download/v4.4.3/cmake-4.4.3-windows-x86_64.zip"
 url_api = "https://api.github.com/repos/Kitware/CMake/releases/assets/529578311"
 
+[[tools."conda:clang-format"]]
+version = "18.1.3"
+backend = "conda:clang-format"
+
+[tools."conda:clang-format".options]
+channel = "conda-forge"
+
 [[tools.lefthook]]
 version = "2.1.14"
 backend = "aqua:evilmartians/lefthook"

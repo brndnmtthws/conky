@@ -202,7 +202,7 @@ struct mail_param_ex *global_mail;
 }  // namespace
 
 static void update_mail_count(struct local_mail_s *mail) {
-  struct stat st{};
+  struct stat st {};
 
   if (mail == nullptr) { return; }
 
@@ -486,7 +486,7 @@ std::unique_ptr<mail_param_ex> parse_mail_args(mail_type type,
   // see if password needs prompting
   if (pass[0] == '*' && pass[1] == '\0') {
     int fp = fileno(stdin);
-    struct termios term{};
+    struct termios term {};
 
     tcgetattr(fp, &term);
     term.c_lflag &= ~ECHO;
@@ -651,7 +651,7 @@ void free_mail_obj(struct text_object *obj) {
 
 static void command(int sockfd, const std::string &cmd, char *response,
                     const char *verify) {
-  struct timeval fetchtimeout{};
+  struct timeval fetchtimeout {};
   fd_set fdset;
   ssize_t total = 0;
   int numbytes = 0;
@@ -721,7 +721,7 @@ void imap_cb::work() {
   bool has_idle = false;
 
   while (fail < retries) {
-    struct timeval fetchtimeout{};
+    struct timeval fetchtimeout {};
     int res;
     fd_set fdset;
 

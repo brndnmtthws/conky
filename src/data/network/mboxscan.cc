@@ -65,7 +65,7 @@ static void mbox_scan(char *args, char *output, size_t max_len) {
   int force_rescan = 0;
   std::unique_ptr<char[]> buf_(new char[text_buffer_size.get(*state)]);
   char *buf = buf_.get();
-  struct stat statbuf{};
+  struct stat statbuf {};
   struct ring_list *curr = nullptr, *prev = nullptr, *startlist = nullptr;
   FILE *fp;
 

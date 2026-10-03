@@ -111,7 +111,8 @@ void parse_tcp_ping_arg(struct text_object *obj, const char *arg,
 }
 
 void print_tcp_ping(struct text_object *obj, char *p, unsigned int p_max_size) {
-  struct timeval tv1{}, tv2{}, timeout{};
+  struct timeval tv1 {
+  }, tv2{}, timeout{};
   auto *addr = static_cast<struct sockaddr_in *>(obj->data.opaque);
   int addrlen = sizeof(struct sockaddr);
   int sock = socket(addr->sin_family, SOCK_STREAM | SOCK_CLOEXEC, IPPROTO_TCP);
@@ -159,7 +160,7 @@ void print_read_tcpip(struct text_object *obj, char *p, int p_max_size,
                       int protocol) {
   int sock, received;
   fd_set readfds;
-  struct timeval tv{};
+  struct timeval tv {};
   auto *rtd = static_cast<struct read_tcpip_data *>(obj->data.opaque);
   struct addrinfo hints = {
       .ai_family = AF_UNSPEC,

@@ -15,7 +15,6 @@ extern "C" {
 
 namespace conky::x11 {
 event::event(Display* display, XEvent ev) {
-
 #define BIND(type_value, field) \
   if (ev.type == type_value) {  \
     inner = ev.field;           \
@@ -111,14 +110,14 @@ int event::raw_x11_type() const {
     std::array<int, std::variant_size_v<event::variant>> result = {0};
 
     result[event_variant_index_of_v<event_error>] = 0;
-    
+
     result[event_variant_index_of_v<XKeyEvent>] = ResolveDynamically;
     result[event_variant_index_of_v<XButtonEvent>] = ResolveDynamically;
     result[event_variant_index_of_v<XMotionEvent>] = MotionNotify;
     result[event_variant_index_of_v<XCrossingEvent>] = ResolveDynamically;
     result[event_variant_index_of_v<XFocusChangeEvent>] = ResolveDynamically;
     result[event_variant_index_of_v<XKeymapEvent>] = KeymapNotify;
-    
+
     result[event_variant_index_of_v<XExposeEvent>] = Expose;
     result[event_variant_index_of_v<XGraphicsExposeEvent>] = GraphicsExpose;
     result[event_variant_index_of_v<XNoExposeEvent>] = NoExpose;

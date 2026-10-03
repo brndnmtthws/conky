@@ -2,6 +2,7 @@
 actionlint = "1.7.12"
 bun = "1.4.2"
 cmake = "4.4.3"
+"conda:clang-format" = "18.1.3"
 lefthook = "2.1.14"
 ninja = "1.13.2"
 shellcheck = "0.11.0"
