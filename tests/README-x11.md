@@ -12,9 +12,13 @@ an **isolated test X server**, Python 3 and fonts (`xfonts-base`, and
 `CONKY_TEST_X11_DISPLAY` is set. Do not point them at a real desktop: the tests
 deliberately draw on the root window.
 
-`x11_foreground_alpha` is registered whenever X11 support is enabled. It
-requires `CONKY_TEST_X11_DISPLAY`, a standard 24-bit RGB root visual and a
-32-bit ARGB visual; unsupported servers skip with status 77. It draws directly
+`x11_foreground_alpha` is a discovered Catch2 case in
+`test-x11-foreground.cc`, with separate `rgb_drawable` and `argb_drawable`
+sections. It is registered whenever X11 support is enabled and shares the
+`x11_test_display` resource lock with the reload tests. It requires
+`CONKY_TEST_X11_DISPLAY`, a standard 24-bit RGB root visual and a 32-bit ARGB
+visual. Missing display opt-in and unsupported servers use Catch2 `SKIP`, which
+CTest reports as skipped (Catch2 exit status 4). It draws directly
 into 24- and 32-bit pixmaps, so no compositor, window manager, Python or fonts
 are needed. It checks exact border, horizontal-rule and filled-rectangle pixels
 for every combination of background and foreground alpha 0, 128 and 255,
