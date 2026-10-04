@@ -27,6 +27,14 @@ target_link_libraries(test-conky
 catch_discover_tests(test-conky)
 
 if(BUILD_X11)
+  add_executable(x11-foreground-test x11-foreground-test.cc)
+  target_link_libraries(x11-foreground-test PRIVATE conky_core)
+  add_dependencies(test-conky x11-foreground-test)
+  add_test(NAME x11_foreground_alpha COMMAND x11-foreground-test)
+  set_tests_properties(x11_foreground_alpha PROPERTIES
+    TIMEOUT 15 SKIP_RETURN_CODE 77 LABELS "integration;x11"
+    RESOURCE_LOCK x11_test_display)
+
   find_package(Python3 COMPONENTS Interpreter QUIET)
   if(Python3_Interpreter_FOUND)
     add_dependencies(test-conky conky)

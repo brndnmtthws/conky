@@ -873,10 +873,12 @@ void display_output_x11::cleanup() {
 
 void display_output_x11::set_foreground_color(Colour c) {
   current_color = c;
-  current_color.alpha = window.opacity;
+  // Foreground alpha is independent of the window background. GC drawing
+  // writes pixels directly, so ARGB drawables need premultiplied colors.
   XSetForeground(
       display, window.gc,
-      current_color.to_x11_color(display, screen, window.opacity < 0xff));
+      current_color.to_x11_color(
+          display, screen, window.color_depth == argb8888_color_depth, true));
 }
 
 int display_output_x11::calc_text_width(const char *s) {
