@@ -27,6 +27,19 @@ target_link_libraries(test-conky
 catch_discover_tests(test-conky)
 
 if(BUILD_X11)
+  # Catch2 discovers tests after configuration. Apply the display lock once
+  # those tests exist, without serializing the rest of the Catch2 suite.
+  file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/x11-test-properties.cmake"
+    CONTENT [=[
+list(FIND test-conky_TESTS x11_foreground_alpha x11_foreground_index)
+if(NOT x11_foreground_index EQUAL -1)
+  set_tests_properties(x11_foreground_alpha PROPERTIES
+    TIMEOUT 15 LABELS "integration;x11" RESOURCE_LOCK x11_test_display)
+endif()
+]=])
+  set_property(DIRECTORY APPEND PROPERTY TEST_INCLUDE_FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/x11-test-properties.cmake")
+
   find_package(Python3 COMPONENTS Interpreter QUIET)
   if(Python3_Interpreter_FOUND)
     add_dependencies(test-conky conky)
