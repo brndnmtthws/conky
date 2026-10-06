@@ -530,7 +530,46 @@ void print_loadavg(struct text_object *obj, char *p, unsigned int p_max_size) {
 
 void scan_no_update(struct text_object *obj, const char *arg) {
   obj->data.s = static_cast<char *>(malloc(text_buffer_size.get(*state)));
-  evaluate(arg, obj->data.s, text_buffer_size.get(*state));
+  {
+    temporary_specials guard;
+    evaluate(arg, obj->data.s, text_buffer_size.get(*state));
+  }
+
+  /* Specials evaluated at scan time cannot work: their special nodes are
+   * reused/overwritten by the first generate_text() pass, while the cached
+   * SPECIAL_CHAR markers keep desyncing the specials list. Strip them. */
+  char *src = obj->data.s;
+  char *dst = obj->data.s;
+  bool stripped = false;
+  while (*src != 0) {
+    if (*src == SPECIAL_CHAR) {
+      stripped = true;
+    } else {
+      *dst++ = *src;
+    }
+    src++;
+  }
+  *dst = 0;
+  if (stripped) {
+    // eval/execp can scan this every update. Keep one warning per
+    // configuration, including nested evaluations, and allow it again after a
+    // config reload.
+    static char warning_key;
+    lua::stack_sentry restore_stack(*state);
+    state->checkstack(2);
+    state->pushlightuserdata(&warning_key);
+    state->rawget(lua::REGISTRYINDEX);
+    if (!state->toboolean(-1)) {
+      state->pop();
+      state->pushlightuserdata(&warning_key);
+      state->pushboolean(true);
+      state->rawset(lua::REGISTRYINDEX);
+      LOG_WARNING(
+          "$no_update does not support special objects (e.g. ${color}); "
+          "they are ignored");
+    }
+  }
+
   obj->data.s =
       static_cast<char *>(realloc(obj->data.s, strlen(obj->data.s) + 1));
 }

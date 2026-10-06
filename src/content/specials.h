@@ -100,6 +100,23 @@ struct special_node {
 extern struct special_node *specials;
 extern int special_count;
 
+// Isolate registrations while evaluating text whose special markers will be
+// discarded. Preserve both the current frame and slots retained across frames.
+class temporary_specials {
+ public:
+  temporary_specials();
+  ~temporary_specials();
+  temporary_specials(const temporary_specials &) = delete;
+  temporary_specials &operator=(const temporary_specials &) = delete;
+
+ private:
+  special_node *saved_specials;
+  int saved_count;
+  double saved_maxspeedval;
+  Colour saved_color;
+  bool saved_temporary;
+};
+
 /* forward declare to avoid mutual inclusion between specials.h and
  * text_object.h */
 struct text_object;

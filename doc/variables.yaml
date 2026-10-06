@@ -1532,7 +1532,8 @@ values:
       Shows text and parses the vars in it, but doesn't update
       them. Use this for things that do not change while conky is running,
       like $machine, $conky_version,... By not updating this you can save
-      some resources.
+      some resources. Special objects (e.g. ${color}, $hr, bars or graphs)
+      are not supported inside and are ignored with a warning.
     args:
       - text
   - name: nodename
