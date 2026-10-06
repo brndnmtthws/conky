@@ -551,9 +551,23 @@ void scan_no_update(struct text_object *obj, const char *arg) {
   }
   *dst = 0;
   if (stripped) {
-    LOG_WARNING(
-        "$no_update does not support special objects (e.g. ${color}); "
-        "they are ignored");
+    // eval/execp can scan this every update. Keep one warning per
+    // configuration, including nested evaluations, and allow it again after a
+    // config reload.
+    static char warning_key;
+    lua::stack_sentry restore_stack(*state);
+    state->checkstack(2);
+    state->pushlightuserdata(&warning_key);
+    state->rawget(lua::REGISTRYINDEX);
+    if (!state->toboolean(-1)) {
+      state->pop();
+      state->pushlightuserdata(&warning_key);
+      state->pushboolean(true);
+      state->rawset(lua::REGISTRYINDEX);
+      LOG_WARNING(
+          "$no_update does not support special objects (e.g. ${color}); "
+          "they are ignored");
+    }
   }
 
   obj->data.s =

@@ -26,9 +26,12 @@
  *
  */
 
+#include "logging.h"
+
 #include <cstdlib>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -36,6 +39,7 @@
 
 #include "catch2/catch.hpp"
 
+#include <spdlog/sinks/ostream_sink.h>
 #include "common.h"
 #include "conky.h"
 #include "content/specials.h"
@@ -185,7 +189,94 @@ void check_color(const special_node *node, const char *color) {
 }
 
 const std::string marker(1, SPECIAL_CHAR);
+
+struct warning_capture {
+  std::ostringstream messages;
+  std::shared_ptr<spdlog::logger> saved_logger = spdlog::default_logger();
+
+  warning_capture() {
+    auto sink = std::make_shared<spdlog::sinks::ostream_sink_st>(messages);
+    auto logger = std::make_shared<spdlog::logger>("no_update_test", sink);
+    logger->set_level(spdlog::level::warn);
+    spdlog::set_default_logger(logger);
+  }
+  ~warning_capture() { spdlog::set_default_logger(saved_logger); }
+
+  size_t count() const {
+    const auto text = messages.str();
+    const std::string warning = "$no_update does not support special objects";
+    size_t result = 0;
+    size_t position = 0;
+    while ((position = text.find(warning, position)) != std::string::npos) {
+      ++result;
+      position += warning.size();
+    }
+    return result;
+  }
+};
 }  // namespace
+
+TEST_CASE("no_update restores the parser color", "[no_update][color]") {
+  no_update_context context;
+  const auto blue = parse_color("blue");
+  set_current_text_color(blue);
+
+  SECTION("cached_color") {
+    cached_text text("${color red}X");
+    CHECK(text.print() == "X");
+    CHECK(get_current_text_color() == blue);
+  }
+  SECTION("nested_runtime_color") {
+    for (int frame = 0; frame < 3; ++frame) {
+      CHECK(evaluate_text("${eval ${no_update ${color red}X"
+                          "${no_update ${color green}Y}}}") == "XY");
+      CHECK(get_current_text_color() == blue);
+    }
+  }
+}
+
+TEST_CASE("no_update warns once per configuration", "[no_update][logging]") {
+  warning_capture warnings;
+  for (size_t configuration = 0; configuration < 2; ++configuration) {
+    // A reload creates a new Lua state, so a new configuration can warn again.
+    no_update_context context;
+    const int stack_size = state->gettop();
+    CHECK(evaluate_text("${no_update plain}") == "plain");
+    CHECK(warnings.count() == configuration);
+
+    for (int frame = 0; frame < 10; ++frame) {
+      CHECK(evaluate_text("${eval ${no_update ${color red}X}}") == "X");
+      CHECK(warnings.count() == configuration + 1);
+      CHECK(state->gettop() == stack_size);
+    }
+    CHECK(evaluate_text("${no_update ${color blue}"
+                        "${no_update ${color red}nested}}") == "nested");
+    parsed_exec_output output;
+    CHECK(output.print("${no_update ${color red}first}") == "first");
+    CHECK(output.print("${no_update ${color green}changed}") == "changed");
+    CHECK(warnings.count() == configuration + 1);
+    CHECK(state->gettop() == stack_size);
+  }
+}
+
+#ifdef BUILD_GUI
+TEST_CASE("no_update leaves following scroll reset color unchanged",
+          "[no_update][scroll]") {
+  no_update_context context;
+  parsed_text text("${color blue}${no_update ${color red}X}${scroll 1 ab}Y");
+  CHECK(get_current_text_color() == parse_color("blue"));
+  for (int frame = 0; frame < 3; ++frame) {
+    special_count = 0;
+    const auto generated = text.generate();
+    CHECK(generated.starts_with(marker + "X"));
+    CHECK(generated.ends_with(marker + "Y"));
+    REQUIRE(special_count == 2);
+    check_color(specials, "blue");
+    check_color(specials->next, "blue");
+    CHECK(specials->next->next == nullptr);
+  }
+}
+#endif
 
 TEST_CASE("no_update caches evaluated plain text", "[no_update]") {
   no_update_context context;
@@ -321,6 +412,7 @@ TEST_CASE("temporary specials restore nested state after exceptions",
     special_node *temporary = new_special(buffer, text_node_t::GRAPH);
     temporary->graph_data = {1.0, 2.0};
     maxspeedval = 32.0;
+    set_current_text_color(parse_color("red"));
 
     auto inner_failure = [&] {
       temporary_specials inner;
@@ -328,6 +420,7 @@ TEST_CASE("temporary specials restore nested state after exceptions",
       REQUIRE(special_count == 0);
       new_special(buffer, text_node_t::GRAPH)->graph_data = {3.0, 4.0};
       maxspeedval = 64.0;
+      set_current_text_color(parse_color("green"));
       throw std::runtime_error("inner evaluation failed");
     };
     REQUIRE_THROWS_AS(inner_failure(), std::runtime_error);
@@ -336,6 +429,7 @@ TEST_CASE("temporary specials restore nested state after exceptions",
     CHECK(temporary->graph_data == std::vector<double>{1.0, 2.0});
     CHECK(temporary->next == nullptr);
     CHECK(maxspeedval == 32.0);
+    CHECK(get_current_text_color() == parse_color("red"));
 #ifdef BUILD_GUI
     // Unwinding the inner guard must keep the outer guard's suppression on.
     CHECK(evaluate_text("${font discarded}") == marker);
@@ -350,6 +444,7 @@ TEST_CASE("temporary specials restore nested state after exceptions",
   check_color(specials, "blue");
   CHECK(specials->next == nullptr);
   CHECK(maxspeedval == 16.0);
+  CHECK(get_current_text_color() == parse_color("blue"));
 #ifdef BUILD_GUI
   // Unwinding the outer guard must enable ordinary font registration again.
   CHECK(evaluate_text("${font serif}") == marker);

@@ -436,6 +436,7 @@ temporary_specials::temporary_specials()
     : saved_specials(specials),
       saved_count(special_count),
       saved_maxspeedval(maxspeedval),
+      saved_color(get_current_text_color()),
       saved_temporary(specials_are_temporary) {
   specials = nullptr;
   special_count = 0;
@@ -451,6 +452,7 @@ temporary_specials::~temporary_specials() {
   specials = saved_specials;
   special_count = saved_count;
   maxspeedval = saved_maxspeedval;
+  set_current_text_color(saved_color);
   specials_are_temporary = saved_temporary;
 }
 

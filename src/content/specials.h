@@ -113,6 +113,7 @@ class temporary_specials {
   special_node *saved_specials;
   int saved_count;
   double saved_maxspeedval;
+  Colour saved_color;
   bool saved_temporary;
 };
 
