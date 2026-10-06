@@ -530,7 +530,10 @@ void print_loadavg(struct text_object *obj, char *p, unsigned int p_max_size) {
 
 void scan_no_update(struct text_object *obj, const char *arg) {
   obj->data.s = static_cast<char *>(malloc(text_buffer_size.get(*state)));
-  evaluate(arg, obj->data.s, text_buffer_size.get(*state));
+  {
+    temporary_specials guard;
+    evaluate(arg, obj->data.s, text_buffer_size.get(*state));
+  }
 
   /* Specials evaluated at scan time cannot work: their special nodes are
    * reused/overwritten by the first generate_text() pass, while the cached

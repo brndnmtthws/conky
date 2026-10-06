@@ -52,6 +52,8 @@ int special_count;
 double maxspeedval = 1e-47; /* The maximum value among the speed graphs */
 
 namespace {
+bool specials_are_temporary = false;
+
 conky::range_config_setting<int> default_bar_width(
     "default_bar_width", 0, std::numeric_limits<int>::max(), 0, false);
 conky::range_config_setting<int> default_bar_height(
@@ -430,6 +432,28 @@ done:
  * Printing various special text objects
  */
 
+temporary_specials::temporary_specials()
+    : saved_specials(specials),
+      saved_count(special_count),
+      saved_maxspeedval(maxspeedval),
+      saved_temporary(specials_are_temporary) {
+  specials = nullptr;
+  special_count = 0;
+  specials_are_temporary = true;
+}
+
+temporary_specials::~temporary_specials() {
+  while (specials != nullptr) {
+    auto *next = specials->next;
+    delete specials;
+    specials = next;
+  }
+  specials = saved_specials;
+  special_count = saved_count;
+  maxspeedval = saved_maxspeedval;
+  specials_are_temporary = saved_temporary;
+}
+
 struct special_node *new_special_t_node() { return new special_node{}; }
 
 /**
@@ -518,6 +542,10 @@ void new_font(struct text_object *obj, char *p, unsigned int p_max_size) {
   if (p_max_size == 0) { return; }
 
   s = new_special(p, text_node_t::FONT);
+
+  // The marker is still needed so no_update can strip it and warn, but a
+  // discarded font must not allocate a new backend font on every evaluation.
+  if (specials_are_temporary) { return; }
 
   if (obj->data.s != nullptr) {
     if (s->font_added >= static_cast<int>(fonts.size()) ||
