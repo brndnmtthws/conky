@@ -797,7 +797,9 @@ static int get_string_width_special(char *s, int special_index) {
   p = strndup(s, text_buffer_size.get(*state));
   final = p;
 
-  for (i = 0; i <= special_index; i++) { current = current->next; }
+  for (i = 0; i <= special_index && current != nullptr; i++) {
+    current = current->next;
+  }
 
   while (*p != 0) {
     if (*p == SPECIAL_CHAR) {
@@ -807,49 +809,55 @@ static int get_string_width_special(char *s, int special_index) {
       /*for (i = 0; i < static_cast<long>(strlen(p)); i++) {
         *(p + i) = *(p + i + 1);
       }*/
-      if (current->type == text_node_t::GRAPH ||
-          current->type == text_node_t::GAUGE ||
-          current->type == text_node_t::BAR) {
-        width += current->width;
-      }
-      if (current->type == text_node_t::FONT) {
-        // put all following text until the next fontchange/stringend in
-        // influenced_by_font but do not include specials
-        char *influenced_by_font = strdup(p);
-        special_node *current_after_font = current;
-        // influenced_by_font gets special chars removed, so after this loop i
-        // counts the number of letters (not special chars) influenced by font
-        for (i = 0; influenced_by_font[i] != 0; i++) {
-          if (influenced_by_font[i] == SPECIAL_CHAR) {
-            // remove specials and stop at fontchange
-            current_after_font = current_after_font->next;
-            if (current_after_font->type == text_node_t::FONT) {
-              influenced_by_font[i] = 0;
-              break;
+      /* guard against more SPECIAL_CHARs than special nodes */
+      if (current != nullptr) {
+        if (current->type == text_node_t::GRAPH ||
+            current->type == text_node_t::GAUGE ||
+            current->type == text_node_t::BAR) {
+          width += current->width;
+        }
+        if (current->type == text_node_t::FONT) {
+          // put all following text until the next fontchange/stringend in
+          // influenced_by_font but do not include specials
+          char *influenced_by_font = strdup(p);
+          special_node *current_after_font = current;
+          // influenced_by_font gets special chars removed, so after this loop
+          // i counts the number of letters (not special chars) influenced by
+          // font
+          for (i = 0; influenced_by_font[i] != 0; i++) {
+            if (influenced_by_font[i] == SPECIAL_CHAR) {
+              // remove specials and stop at fontchange
+              current_after_font = current_after_font->next;
+              if (current_after_font == nullptr ||
+                  current_after_font->type == text_node_t::FONT) {
+                influenced_by_font[i] = 0;
+                break;
+              }
+              remove_first_char(&influenced_by_font[i]);
             }
-            remove_first_char(&influenced_by_font[i]);
+          }
+          // add the length of influenced_by_font in the new font to width
+          int orig_font = selected_font;
+          selected_font = current->font_added;
+          width += calc_text_width(influenced_by_font);
+          selected_font = orig_font;
+          free(influenced_by_font);
+          // make sure the chars counted in the new font are not again counted
+          // in the old font
+          int specials_skipped = 0;
+          while (i > 0) {
+            if (p[specials_skipped] != SPECIAL_CHAR) {
+              remove_first_char(&p[specials_skipped]);
+              // i only counts non-special chars, so only decrement it for
+              // those
+              i--;
+            } else {
+              specials_skipped++;
+            }
           }
         }
-        // add the length of influenced_by_font in the new font to width
-        int orig_font = selected_font;
-        selected_font = current->font_added;
-        width += calc_text_width(influenced_by_font);
-        selected_font = orig_font;
-        free(influenced_by_font);
-        // make sure the chars counted in the new font are not again counted
-        // in the old font
-        int specials_skipped = 0;
-        while (i > 0) {
-          if (p[specials_skipped] != SPECIAL_CHAR) {
-            remove_first_char(&p[specials_skipped]);
-            // i only counts non-special chars, so only decrement it for those
-            i--;
-          } else {
-            specials_skipped++;
-          }
-        }
+        current = current->next;
       }
-      current = current->next;
     } else {
       p++;
     }
@@ -967,7 +975,9 @@ static int text_size_updater(char *s, int special_index) {
   char *p;
   special_node *current = specials;
 
-  for (int i = 0; i < special_index; i++) { current = current->next; }
+  for (int i = 0; i < special_index && current != nullptr; i++) {
+    current = current->next;
+  }
 
   if (display_output() == nullptr || !display_output()->graphical()) {
     return 0;
@@ -980,34 +990,37 @@ static int text_size_updater(char *s, int special_index) {
       w += get_string_width(s);
       *p = SPECIAL_CHAR;
 
-      if (current->type == text_node_t::BAR ||
-          current->type == text_node_t::GAUGE ||
-          current->type == text_node_t::GRAPH) {
-        w += current->width;
-        if (current->height > cur_y_add && current->height > font_height()) {
-          cur_y_add = current->height;
-        }
-      } else if (current->type == text_node_t::OFFSET) {
-        if (current->arg > 0) { w += current->arg; }
-      } else if (current->type == text_node_t::VOFFSET) {
-        last_font_height += current->arg;
-      } else if (current->type == text_node_t::GOTO) {
-        if (current->arg > cur_x) { w = static_cast<int>(current->arg); }
-      } else if (current->type == text_node_t::TAB) {
-        int start = current->arg;
-        int step = current->width;
+      /* guard against more SPECIAL_CHARs than special nodes */
+      if (current != nullptr) {
+        if (current->type == text_node_t::BAR ||
+            current->type == text_node_t::GAUGE ||
+            current->type == text_node_t::GRAPH) {
+          w += current->width;
+          if (current->height > cur_y_add && current->height > font_height()) {
+            cur_y_add = current->height;
+          }
+        } else if (current->type == text_node_t::OFFSET) {
+          if (current->arg > 0) { w += current->arg; }
+        } else if (current->type == text_node_t::VOFFSET) {
+          last_font_height += current->arg;
+        } else if (current->type == text_node_t::GOTO) {
+          if (current->arg > cur_x) { w = static_cast<int>(current->arg); }
+        } else if (current->type == text_node_t::TAB) {
+          int start = current->arg;
+          int step = current->width;
 
-        if ((step == 0) || step < 0) { step = 10; }
-        w += step - (cur_x - text_start.x() - start) % step;
-      } else if (current->type == text_node_t::FONT) {
-        selected_font = current->font_added;
-        if (font_height() > last_font_height) {
-          last_font_height = font_height();
+          if ((step == 0) || step < 0) { step = 10; }
+          w += step - (cur_x - text_start.x() - start) % step;
+        } else if (current->type == text_node_t::FONT) {
+          selected_font = current->font_added;
+          if (font_height() > last_font_height) {
+            last_font_height = font_height();
+          }
         }
+        current = current->next;
       }
 
       special_index++;
-      current = current->next;
       s = p + 1;
     }
     p++;
@@ -1207,7 +1220,14 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
       }
       /* draw special */
       special_node *current = specials;
-      for (int i = 0; i < special_index; i++) { current = current->next; }
+      for (int i = 0; i < special_index && current != nullptr; i++) {
+        current = current->next;
+      }
+      /* guard against more SPECIAL_CHARs than special nodes: fall back to a
+       * dummy NONSPECIAL node so drawing degrades gracefully instead of
+       * dereferencing past the end of the list */
+      static special_node null_special{};
+      if (current == nullptr) { current = &null_special; }
       switch (current->type) {
 #ifdef BUILD_GUI
         case text_node_t::HORIZONTAL_LINE:

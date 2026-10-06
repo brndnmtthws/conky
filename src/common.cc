@@ -531,6 +531,28 @@ void print_loadavg(struct text_object *obj, char *p, unsigned int p_max_size) {
 void scan_no_update(struct text_object *obj, const char *arg) {
   obj->data.s = static_cast<char *>(malloc(text_buffer_size.get(*state)));
   evaluate(arg, obj->data.s, text_buffer_size.get(*state));
+
+  /* Specials evaluated at scan time cannot work: their special nodes are
+   * reused/overwritten by the first generate_text() pass, while the cached
+   * SPECIAL_CHAR markers keep desyncing the specials list. Strip them. */
+  char *src = obj->data.s;
+  char *dst = obj->data.s;
+  bool stripped = false;
+  while (*src != 0) {
+    if (*src == SPECIAL_CHAR) {
+      stripped = true;
+    } else {
+      *dst++ = *src;
+    }
+    src++;
+  }
+  *dst = 0;
+  if (stripped) {
+    LOG_WARNING(
+        "$no_update does not support special objects (e.g. ${color}); "
+        "they are ignored");
+  }
+
   obj->data.s =
       static_cast<char *>(realloc(obj->data.s, strlen(obj->data.s) + 1));
 }
