@@ -120,6 +120,12 @@ conky::simple_config_setting<bool> use_xft("use_xft", false, false);
 conky::simple_config_setting<bool> forced_redraw("forced_redraw", false, false);
 conky::simple_config_setting<bool> use_double_buffer("double_buffer", false,
                                                      false);
+#ifdef BUILD_XSHAPE
+/* Click-through on transparent pixels: the window's input region is rebuilt
+ * from the alpha channel of every rendered frame. */
+conky::simple_config_setting<bool> own_window_input_from_alpha(
+    "own_window_input_from_alpha", false, false);
+#endif /* BUILD_XSHAPE */
 
 /* local prototypes */
 static Window find_desktop_window(Window *p_root, Window *p_desktop);
@@ -711,7 +717,8 @@ void x11_init_window(lua::state &l) {
             TEST_HINT(hints, window_hints::UNDECORATED) ? False : True;
 #ifdef BUILD_XSHAPE
 #ifdef BUILD_XFIXES
-        if (own_window_type.get(l) == window_type::UTILITY) {
+        if (own_window_type.get(l) == window_type::UTILITY &&
+            !own_window_input_from_alpha.get(l)) {
           XRectangle rect;
           XserverRegion region = XFixesCreateRegion(display, &rect, 1);
           XFixesSetWindowShapeRegion(display, window.window, ShapeInput, 0, 0,
@@ -719,7 +726,7 @@ void x11_init_window(lua::state &l) {
           XFixesDestroyRegion(display, region);
         }
 #endif /* BUILD_XFIXES */
-        if (!wmHint.input) {
+        if (!wmHint.input && !own_window_input_from_alpha.get(l)) {
           /* allow only decorated windows to be given mouse input */
           int major_version;
           int minor_version;
@@ -1494,7 +1501,106 @@ void set_struts() {
 }
 #endif /* OWN_WINDOW */
 
+#ifdef BUILD_XSHAPE
+/* Rebuild the window's input region from the alpha channel of the frame that
+ * is about to be shown, so clicks on (nearly) transparent pixels fall through
+ * to whatever is below, while text/graphics still receive clicks.
+ * Works on cells of CELL x CELL pixels so gaps between glyphs stay clickable. */
+static void update_input_shape_from_alpha() {
+  constexpr int CELL = 4;
+  static std::vector<unsigned char> last_mask;
+  static int last_w = -1, last_h = -1;
+  static bool warned = false;
+
+  if (!own_window.get(*state) || !own_window_input_from_alpha.get(*state)) {
+    return;
+  }
+  if (!use_double_buffer.get(*state) ||
+      window.color_depth != argb8888_color_depth) {
+    if (!warned) {
+      LOG_WARNING(
+          "own_window_input_from_alpha needs double_buffer = true and an ARGB "
+          "visual; ignoring");
+      warned = true;
+    }
+    return;
+  }
+
+  const int w = window.geometry.width();
+  const int h = window.geometry.height();
+  if (w <= 0 || h <= 0) return;
+
+  XImage *img = XGetImage(display, window.drawable, 0, 0, w, h, AllPlanes,
+                          ZPixmap);
+  if (img == nullptr) return;
+
+  const int cols = (w + CELL - 1) / CELL;
+  const int rows = (h + CELL - 1) / CELL;
+  std::vector<unsigned char> mask(static_cast<size_t>(cols) * rows, 0);
+  const unsigned long alpha_mask =
+      ~(img->red_mask | img->green_mask | img->blue_mask) & 0xffffffffUL;
+  if (alpha_mask != 0) {
+    int shift = 0;
+    while (((alpha_mask >> shift) & 1UL) == 0) ++shift;
+    for (int y = 0; y < h; ++y) {
+      for (int x = 0; x < w; ++x) {
+        if (((XGetPixel(img, x, y) & alpha_mask) >> shift) != 0) {
+          mask[static_cast<size_t>(y / CELL) * cols + (x / CELL)] = 1;
+        }
+      }
+    }
+  }
+  XDestroyImage(img);
+
+  if (w == last_w && h == last_h && mask == last_mask) return;
+  last_w = w;
+  last_h = h;
+  last_mask = mask;
+
+  /* run-length per row, merging identical runs of consecutive rows */
+  std::vector<XRectangle> rects;
+  std::vector<size_t> prev_open;  // indices into rects, still extendable
+  for (int r = 0; r < rows; ++r) {
+    std::vector<size_t> cur_open;
+    int c = 0;
+    while (c < cols) {
+      if (!mask[static_cast<size_t>(r) * cols + c]) {
+        ++c;
+        continue;
+      }
+      int start = c;
+      while (c < cols && mask[static_cast<size_t>(r) * cols + c]) ++c;
+      const short rx = static_cast<short>(start * CELL);
+      const unsigned short rw = static_cast<unsigned short>((c - start) * CELL);
+      bool merged = false;
+      for (size_t idx : prev_open) {
+        if (rects[idx].x == rx && rects[idx].width == rw) {
+          rects[idx].height += CELL;
+          cur_open.push_back(idx);
+          merged = true;
+          break;
+        }
+      }
+      if (!merged) {
+        rects.push_back(XRectangle{rx, static_cast<short>(r * CELL), rw,
+                                   static_cast<unsigned short>(CELL)});
+        cur_open.push_back(rects.size() - 1);
+      }
+    }
+    prev_open.swap(cur_open);
+  }
+
+  /* an empty list gives an empty region: everything is click-through */
+  XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0,
+                          rects.empty() ? nullptr : rects.data(),
+                          static_cast<int>(rects.size()), ShapeSet, Unsorted);
+}
+#endif /* BUILD_XSHAPE */
+
 void swap_x11_buffers() {
+#ifdef BUILD_XSHAPE
+  update_input_shape_from_alpha();
+#endif /* BUILD_XSHAPE */
 #ifdef BUILD_XDBE
   if (use_double_buffer.get(*state)) {
     XdbeSwapInfo swap;
