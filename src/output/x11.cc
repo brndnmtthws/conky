@@ -542,7 +542,49 @@ static bool try_set_argb_visual(conky_x11_window *window) {
   return false;
 }
 
+#ifdef BUILD_XSHAPE
+/* State of own_window_input_from_alpha. The shaped window is remembered by its
+ * XID so the cache can never be applied to a different (e.g. re-created)
+ * window, and so the default input region can be restored if the feature is
+ * switched off while the window is kept (config reload). */
+static Window alpha_shaped_window = None;
+static std::vector<unsigned char> alpha_last_mask;
+static int alpha_last_w = -1;
+static int alpha_last_h = -1;
+
+static void reset_alpha_input_state() {
+  alpha_shaped_window = None;
+  alpha_last_mask.clear();
+  alpha_last_w = -1;
+  alpha_last_h = -1;
+}
+
+/* Undo the shape installed by update_input_shape_from_alpha(), giving the
+ * window the input region it would have had at creation time. */
+static void restore_default_input_shape() {
+  if (alpha_shaped_window == None || alpha_shaped_window != window.window) {
+    reset_alpha_input_state();
+    return;
+  }
+  const bool click_through =
+      TEST_HINT(own_window_hints.get(*state), window_hints::UNDECORATED) ||
+      own_window_type.get(*state) == window_type::UTILITY;
+  if (click_through) {
+    /* same as at creation: empty region, everything falls through */
+    XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0, nullptr,
+                            0, ShapeSet, Unsorted);
+  } else {
+    /* no pixmap = default region, the whole window */
+    XShapeCombineMask(display, window.window, ShapeInput, 0, 0, None, ShapeSet);
+  }
+  reset_alpha_input_state();
+}
+#endif /* BUILD_XSHAPE */
+
 void destroy_window() {
+#ifdef BUILD_XSHAPE
+  reset_alpha_input_state();
+#endif /* BUILD_XSHAPE */
 #ifdef BUILD_XFT
   if (window.xftdraw != nullptr) { XftDrawDestroy(window.xftdraw); }
 #endif /* BUILD_XFT */
@@ -1505,19 +1547,20 @@ void set_struts() {
 /* Rebuild the window's input region from the alpha channel of the frame that
  * is about to be shown, so clicks on (nearly) transparent pixels fall through
  * to whatever is below, while text/graphics still receive clicks.
- * Works on cells of CELL x CELL pixels so gaps between glyphs stay clickable. */
+ * Works on cells of CELL x CELL pixels so gaps between glyphs stay clickable.
+ */
 static void update_input_shape_from_alpha() {
   constexpr int CELL = 4;
-  static std::vector<unsigned char> last_mask;
-  static int last_w = -1, last_h = -1;
   static bool warned = false;
 
-  if (!own_window.get(*state) || !own_window_input_from_alpha.get(*state)) {
-    return;
-  }
-  if (!use_double_buffer.get(*state) ||
-      window.color_depth != argb8888_color_depth) {
-    if (!warned) {
+  const bool wanted =
+      own_window.get(*state) && own_window_input_from_alpha.get(*state);
+  const bool supported = use_double_buffer.get(*state) &&
+                         window.color_depth == argb8888_color_depth;
+  if (!wanted || !supported) {
+    /* leaving the enabled state: don't leave a stale region on the window */
+    restore_default_input_shape();
+    if (wanted && !warned) {
       LOG_WARNING(
           "own_window_input_from_alpha needs double_buffer = true and an ARGB "
           "visual; ignoring");
@@ -1526,12 +1569,19 @@ static void update_input_shape_from_alpha() {
     return;
   }
 
+  /* a different window than the one we shaped: its cache doesn't apply */
+  if (window.window != alpha_shaped_window) {
+    alpha_last_mask.clear();
+    alpha_last_w = -1;
+    alpha_last_h = -1;
+  }
+
   const int w = window.geometry.width();
   const int h = window.geometry.height();
   if (w <= 0 || h <= 0) return;
 
-  XImage *img = XGetImage(display, window.drawable, 0, 0, w, h, AllPlanes,
-                          ZPixmap);
+  XImage *img =
+      XGetImage(display, window.drawable, 0, 0, w, h, AllPlanes, ZPixmap);
   if (img == nullptr) return;
 
   const int cols = (w + CELL - 1) / CELL;
@@ -1552,10 +1602,13 @@ static void update_input_shape_from_alpha() {
   }
   XDestroyImage(img);
 
-  if (w == last_w && h == last_h && mask == last_mask) return;
-  last_w = w;
-  last_h = h;
-  last_mask = mask;
+  if (window.window == alpha_shaped_window && w == alpha_last_w &&
+      h == alpha_last_h && mask == alpha_last_mask) {
+    return;
+  }
+  alpha_last_w = w;
+  alpha_last_h = h;
+  alpha_last_mask = mask;
 
   /* run-length per row, merging identical runs of consecutive rows */
   std::vector<XRectangle> rects;
@@ -1594,6 +1647,7 @@ static void update_input_shape_from_alpha() {
   XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0,
                           rects.empty() ? nullptr : rects.data(),
                           static_cast<int>(rects.size()), ShapeSet, Unsorted);
+  alpha_shaped_window = window.window;
 }
 #endif /* BUILD_XSHAPE */
 
