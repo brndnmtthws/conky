@@ -71,7 +71,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Install mise tools
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@v5
       - name: Lint workflows
         run: mise run actionlint
       - name: Check Python CI scripts
