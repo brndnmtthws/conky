@@ -1643,10 +1643,24 @@ static void update_input_shape_from_alpha() {
     prev_open.swap(cur_open);
   }
 
-  /* an empty list gives an empty region: everything is click-through */
-  XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0,
-                          rects.empty() ? nullptr : rects.data(),
-                          static_cast<int>(rects.size()), ShapeSet, Unsorted);
+  /* An empty list gives an empty region: everything is click-through.
+   * A single ShapeRectangles request has a 16-bit length field, so a highly
+   * fragmented mask must be sent in bounded chunks: the first replaces the
+   * region (ShapeSet), the rest are added to it (ShapeUnion). */
+  constexpr size_t MAX_RECTS_PER_REQUEST = 8192;
+  if (rects.empty()) {
+    XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0, nullptr,
+                            0, ShapeSet, Unsorted);
+  } else {
+    for (size_t offset = 0; offset < rects.size();
+         offset += MAX_RECTS_PER_REQUEST) {
+      const size_t count =
+          std::min(MAX_RECTS_PER_REQUEST, rects.size() - offset);
+      XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0,
+                              rects.data() + offset, static_cast<int>(count),
+                              offset == 0 ? ShapeSet : ShapeUnion, Unsorted);
+    }
+  }
   alpha_shaped_window = window.window;
 }
 #endif /* BUILD_XSHAPE */
