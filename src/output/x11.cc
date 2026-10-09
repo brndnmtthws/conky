@@ -1644,18 +1644,28 @@ static void update_input_shape_from_alpha() {
   }
 
   /* An empty list gives an empty region: everything is click-through.
-   * A single ShapeRectangles request has a 16-bit length field, so a highly
-   * fragmented mask must be sent in bounded chunks: the first replaces the
-   * region (ShapeSet), the rest are added to it (ShapeUnion). */
+   * XShapeCombineRectangles does not split its payload, and a single request
+   * must fit the server's maximum request size (at least 16 KiB by protocol,
+   * and smaller for some proxies). So a fragmented mask is sent in chunks sized
+   * from XMaxRequestSize(): the first replaces the region (ShapeSet), the rest
+   * are added to it (ShapeUnion). */
   constexpr size_t MAX_RECTS_PER_REQUEST = 8192;
+  /* ShapeRectangles header is 16 bytes; keep a little extra headroom */
+  constexpr size_t REQUEST_HEADER_BYTES = 32;
+  const size_t max_request_bytes =
+      static_cast<size_t>(XMaxRequestSize(display)) * 4;
+  const size_t rects_per_request = std::clamp<size_t>(
+      max_request_bytes > REQUEST_HEADER_BYTES
+          ? (max_request_bytes - REQUEST_HEADER_BYTES) / sizeof(XRectangle)
+          : 1,
+      1, MAX_RECTS_PER_REQUEST);
   if (rects.empty()) {
     XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0, nullptr,
                             0, ShapeSet, Unsorted);
   } else {
     for (size_t offset = 0; offset < rects.size();
-         offset += MAX_RECTS_PER_REQUEST) {
-      const size_t count =
-          std::min(MAX_RECTS_PER_REQUEST, rects.size() - offset);
+         offset += rects_per_request) {
+      const size_t count = std::min(rects_per_request, rects.size() - offset);
       XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0,
                               rects.data() + offset, static_cast<int>(count),
                               offset == 0 ? ShapeSet : ShapeUnion, Unsorted);
