@@ -25,6 +25,22 @@ for every combination of background and foreground alpha 0, 128 and 255,
 including premultiplied foreground colors and the non-ARGB fallback. This tests
 GC rendering, not compositor blending or window-background changes on reload.
 
+`x11_input_alpha` is a discovered Catch2 case in `test-x11-input-alpha.cc`,
+registered with X11, SHAPE and own-window support. It uses the same opt-in,
+skip behavior and display lock. It requires SHAPE 1.1, a 24-bit root and a
+32-bit ARGB visual; XDBE builds additionally require double-buffer support for
+both visuals. It calls the real window creation and buffer-swap paths, then
+queries the server's input region. Coverage includes transparent/nonzero-alpha
+pixels, partial 4x4 cells, unchanged frames, resize/new-window cache
+invalidation, a fragmented checkerboard spanning multiple SHAPE requests,
+initial unsupported configurations, and restoring normal, undecorated,
+utility and override-window behavior when alpha input or buffering is disabled.
+It also checks opaque-to-ARGB recreation, retained ARGB depth on reload, and
+retaining an opaque window when no compositor is available.
+The test temporarily owns an otherwise unowned compositor selection to enable
+ARGB visual selection; it does not require or test compositor blending, fonts
+or a window manager. Both pixmap and XDBE back-buffer builds are supported.
+
 For example, after building all targets:
 
 ```sh
