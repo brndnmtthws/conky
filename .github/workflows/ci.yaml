@@ -241,6 +241,8 @@ jobs:
           MATRIX_X11: ${{ matrix.x11 }}
         run: |
           if [ "$MATRIX_X11" = ON ]; then
+            # DISPLAY must expand in the child shell after xvfb-run sets it.
+            # shellcheck disable=SC2016
             xvfb-run -a -s '-screen 0 800x600x24' sh -c \
               'CONKY_TEST_X11_DISPLAY="$DISPLAY" ctest --output-on-failure'
           else
