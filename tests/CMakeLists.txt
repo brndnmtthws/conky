@@ -31,11 +31,13 @@ if(BUILD_X11)
   # those tests exist, without serializing the rest of the Catch2 suite.
   file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/x11-test-properties.cmake"
     CONTENT [=[
-list(FIND test-conky_TESTS x11_foreground_alpha x11_foreground_index)
-if(NOT x11_foreground_index EQUAL -1)
-  set_tests_properties(x11_foreground_alpha PROPERTIES
-    TIMEOUT 15 LABELS "integration;x11" RESOURCE_LOCK x11_test_display)
-endif()
+foreach(x11_case x11_foreground_alpha x11_input_alpha)
+  list(FIND test-conky_TESTS ${x11_case} x11_case_index)
+  if(NOT x11_case_index EQUAL -1)
+    set_tests_properties(${x11_case} PROPERTIES
+      TIMEOUT 30 LABELS "integration;x11" RESOURCE_LOCK x11_test_display)
+  endif()
+endforeach()
 ]=])
   set_property(DIRECTORY APPEND PROPERTY TEST_INCLUDE_FILES
     "${CMAKE_CURRENT_BINARY_DIR}/x11-test-properties.cmake")

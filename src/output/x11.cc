@@ -120,6 +120,29 @@ conky::simple_config_setting<bool> use_xft("use_xft", false, false);
 conky::simple_config_setting<bool> forced_redraw("forced_redraw", false, false);
 conky::simple_config_setting<bool> use_double_buffer("double_buffer", false,
                                                      false);
+#if defined(BUILD_XSHAPE) && defined(OWN_WINDOW)
+/* Click-through on transparent pixels: the window's input region is rebuilt
+ * from the alpha channel of every rendered frame. */
+conky::simple_config_setting<bool> own_window_input_from_alpha(
+    "own_window_input_from_alpha", false, false);
+#endif /* BUILD_XSHAPE */
+
+#if defined(BUILD_XSHAPE) && defined(OWN_WINDOW)
+// SHAPE 1.0 has no ShapeInput. Cache per connection, not per frame/window.
+static int input_shape_supported = -1;
+extern int fixed_size, fixed_pos;
+
+static bool has_input_shape() {
+  if (input_shape_supported < 0) {
+    int event_base, error_base, major = 0, minor = 0;
+    input_shape_supported =
+        XShapeQueryExtension(display, &event_base, &error_base) &&
+        XShapeQueryVersion(display, &major, &minor) &&
+        (major > 1 || (major == 1 && minor >= 1));
+  }
+  return input_shape_supported != 0;
+}
+#endif
 
 /* local prototypes */
 static Window find_desktop_window(Window *p_root, Window *p_desktop);
@@ -294,6 +317,9 @@ bool init_x11() {
 void deinit_x11() {
   if (display && !g_is_reloading) {
     auto _scope = LOG_SCOPE("deinit_x11");
+#if defined(BUILD_XSHAPE) && defined(OWN_WINDOW)
+    input_shape_supported = -1;
+#endif
     XCloseDisplay(display);
     display = nullptr;
   }
@@ -536,7 +562,57 @@ static bool try_set_argb_visual(conky_x11_window *window) {
   return false;
 }
 
+#if defined(BUILD_XSHAPE) && defined(OWN_WINDOW)
+/* State of own_window_input_from_alpha. The shaped window is remembered by its
+ * XID so the cache can never be applied to a different (e.g. re-created)
+ * window, and so the default input region can be restored if the feature is
+ * switched off while the window is kept (config reload). */
+static Window alpha_shaped_window = None;
+static std::vector<unsigned char> alpha_last_mask;
+static int alpha_last_w = -1;
+static int alpha_last_h = -1;
+
+static void reset_alpha_input_state() {
+  alpha_shaped_window = None;
+  alpha_last_mask.clear();
+  alpha_last_w = -1;
+  alpha_last_h = -1;
+}
+
+// Keep creation and reload fallback identical, including override windows,
+// whose hints are ignored. Never send ShapeInput requests to older servers.
+static void set_default_input_shape(lua::state &l) {
+  if (!has_input_shape()) return;
+  const auto type = own_window_type.get(l);
+  bool click_through =
+      type != window_type::OVERRIDE &&
+      TEST_HINT(own_window_hints.get(l), window_hints::UNDECORATED);
+#ifdef BUILD_XFIXES
+  click_through = click_through || type == window_type::UTILITY;
+#endif
+  if (click_through) {
+    XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0, nullptr,
+                            0, ShapeSet, Unsorted);
+  } else {
+    XShapeCombineMask(display, window.window, ShapeInput, 0, 0, None, ShapeSet);
+  }
+}
+
+/* Undo the shape installed by update_input_shape_from_alpha(). Creation
+ * already installs this fallback, even before the first successful frame. */
+static void restore_default_input_shape() {
+  if (alpha_shaped_window != None && alpha_shaped_window == window.window &&
+      window.owned) {
+    set_default_input_shape(*state);
+  }
+  reset_alpha_input_state();
+}
+#endif /* BUILD_XSHAPE */
+
 void destroy_window() {
+#if defined(BUILD_XSHAPE) && defined(OWN_WINDOW)
+  reset_alpha_input_state();
+#endif /* BUILD_XSHAPE */
 #ifdef BUILD_XFT
   if (window.xftdraw != nullptr) { XftDrawDestroy(window.xftdraw); }
 #endif /* BUILD_XFT */
@@ -560,6 +636,21 @@ void destroy_window() {
 void x11_init_window(lua::state &l) {
   auto _scope = LOG_SCOPE("x11_init_window");
 
+#if defined(BUILD_XSHAPE) && defined(OWN_WINDOW)
+  // A retained opaque visual cannot acquire an alpha channel. Recreate only
+  // when ARGB is actually available, avoiding churn on unsupported servers.
+  if (window.owned && own_window.get(l) && own_window_input_from_alpha.get(l) &&
+      get_background_alpha_preference(l) < 0xff &&
+      window.color_depth != argb8888_color_depth) {
+    conky_x11_window candidate{};
+    if (try_set_argb_visual(&candidate)) {
+      XFreeColormap(display, candidate.colourmap);
+      destroy_window();
+      fixed_size = fixed_pos = 0;
+    }
+  }
+#endif
+
   window.root = VRootWindow(display, screen);
   if (window.root == None) {
     LOG_DEBUG("no desktop window found");
@@ -581,6 +672,7 @@ void x11_init_window(lua::state &l) {
       XWindowAttributes attr;
       if (XGetWindowAttributes(display, window.window, &attr) != 0) {
         window.visual = attr.visual;
+        window.color_depth = attr.depth;
         window.colourmap = attr.colormap;
         window.geometry.set_size(attr.width, attr.height);
         LOG_INFO("reusing existing window {:#x} {}x{} (reload)", window.window,
@@ -710,32 +802,9 @@ void x11_init_window(lua::state &l) {
         wmHint.input =
             TEST_HINT(hints, window_hints::UNDECORATED) ? False : True;
 #ifdef BUILD_XSHAPE
-#ifdef BUILD_XFIXES
-        if (own_window_type.get(l) == window_type::UTILITY) {
-          XRectangle rect;
-          XserverRegion region = XFixesCreateRegion(display, &rect, 1);
-          XFixesSetWindowShapeRegion(display, window.window, ShapeInput, 0, 0,
-                                     region);
-          XFixesDestroyRegion(display, region);
-        }
-#endif /* BUILD_XFIXES */
-        if (!wmHint.input) {
-          /* allow only decorated windows to be given mouse input */
-          int major_version;
-          int minor_version;
-          if (XShapeQueryVersion(display, &major_version, &minor_version) ==
-              0) {
-            LOG_WARNING("input shapes are not supported");
-          } else {
-            if (own_window.get(*state) &&
-                (own_window_type.get(*state) != window_type::NORMAL ||
-                 ((TEST_HINT(own_window_hints.get(*state),
-                             window_hints::UNDECORATED)) != 0))) {
-              XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0,
-                                      nullptr, 0, ShapeSet, Unsorted);
-            }
-          }
-        }
+        // Start with the normal input policy. Alpha shaping replaces it only
+        // after all prerequisites and a frame readback succeed.
+        set_default_input_shape(l);
 #endif /* BUILD_XSHAPE */
         wmHint.initial_state = NormalState;
         if (own_window_type.get(l) == window_type::DOCK ||
@@ -1494,7 +1563,160 @@ void set_struts() {
 }
 #endif /* OWN_WINDOW */
 
+#if defined(BUILD_XSHAPE) && defined(OWN_WINDOW)
+/* Rebuild the window's input region from the alpha channel of the frame that
+ * is about to be shown, so clicks on (nearly) transparent pixels fall through
+ * to whatever is below, while text/graphics still receive clicks.
+ * Works on cells of CELL x CELL pixels so gaps between glyphs stay clickable.
+ */
+static void update_input_shape_from_alpha() {
+  constexpr int CELL = 4;
+  static bool warned = false;
+
+  const bool wanted = window.owned && own_window.get(*state) &&
+                      own_window_input_from_alpha.get(*state);
+  const bool supported = has_input_shape() && use_double_buffer.get(*state) &&
+                         window.color_depth == argb8888_color_depth;
+  if (!wanted || !supported) {
+    /* leaving the enabled state: don't leave a stale region on the window */
+    restore_default_input_shape();
+    if (wanted && !warned) {
+      LOG_WARNING(
+          "own_window_input_from_alpha needs SHAPE 1.1, double_buffer = true "
+          "and an ARGB visual; ignoring");
+      warned = true;
+    }
+    return;
+  }
+
+  /* a different window than the one we shaped: its cache doesn't apply */
+  if (window.window != alpha_shaped_window) {
+    alpha_last_mask.clear();
+    alpha_last_w = -1;
+    alpha_last_h = -1;
+  }
+
+  // During auto-sizing, draw_stuff() can run after the logical geometry
+  // grows but before XResizeWindow updates the XDBE drawable (or before the
+  // pixmap is replaced). Reading the requested size then causes BadMatch.
+  // Shape only the frame that actually exists; use its size in the cache so
+  // the first frame after the real resize cannot reuse the old input mask.
+  Window root;
+  int x, y;
+  unsigned int drawable_w, drawable_h, border, depth;
+  if (!XGetGeometry(display, window.drawable, &root, &x, &y, &drawable_w,
+                    &drawable_h, &border, &depth)) {
+    return;
+  }
+  const int w = std::min(window.geometry.width(), static_cast<int>(drawable_w));
+  const int h =
+      std::min(window.geometry.height(), static_cast<int>(drawable_h));
+  if (w <= 0 || h <= 0) return;
+
+  XImage *img =
+      XGetImage(display, window.drawable, 0, 0, w, h, AllPlanes, ZPixmap);
+  if (img == nullptr) return;
+
+  const int cols = (w + CELL - 1) / CELL;
+  const int rows = (h + CELL - 1) / CELL;
+  std::vector<unsigned char> mask(static_cast<size_t>(cols) * rows, 0);
+  // Pixmap XGetImage results have no associated visual and may report zero
+  // RGB masks. Use the window visual, or colored transparent pixels would be
+  // mistaken for opaque pixels in the pixmap back buffer.
+  const unsigned long alpha_mask =
+      ~(window.visual->red_mask | window.visual->green_mask |
+        window.visual->blue_mask) &
+      0xffffffffUL;
+  if (alpha_mask != 0) {
+    int shift = 0;
+    while (((alpha_mask >> shift) & 1UL) == 0) ++shift;
+    for (int y = 0; y < h; ++y) {
+      for (int x = 0; x < w; ++x) {
+        if (((XGetPixel(img, x, y) & alpha_mask) >> shift) != 0) {
+          mask[static_cast<size_t>(y / CELL) * cols + (x / CELL)] = 1;
+        }
+      }
+    }
+  }
+  XDestroyImage(img);
+
+  if (window.window == alpha_shaped_window && w == alpha_last_w &&
+      h == alpha_last_h && mask == alpha_last_mask) {
+    return;
+  }
+  alpha_last_w = w;
+  alpha_last_h = h;
+  alpha_last_mask = mask;
+
+  /* run-length per row, merging identical runs of consecutive rows */
+  std::vector<XRectangle> rects;
+  std::vector<size_t> prev_open;  // indices into rects, still extendable
+  for (int r = 0; r < rows; ++r) {
+    std::vector<size_t> cur_open;
+    int c = 0;
+    while (c < cols) {
+      if (!mask[static_cast<size_t>(r) * cols + c]) {
+        ++c;
+        continue;
+      }
+      int start = c;
+      while (c < cols && mask[static_cast<size_t>(r) * cols + c]) ++c;
+      const short rx = static_cast<short>(start * CELL);
+      const unsigned short rw = static_cast<unsigned short>((c - start) * CELL);
+      bool merged = false;
+      for (size_t idx : prev_open) {
+        if (rects[idx].x == rx && rects[idx].width == rw) {
+          rects[idx].height += CELL;
+          cur_open.push_back(idx);
+          merged = true;
+          break;
+        }
+      }
+      if (!merged) {
+        rects.push_back(XRectangle{rx, static_cast<short>(r * CELL), rw,
+                                   static_cast<unsigned short>(CELL)});
+        cur_open.push_back(rects.size() - 1);
+      }
+    }
+    prev_open.swap(cur_open);
+  }
+
+  /* An empty list gives an empty region: everything is click-through.
+   * XShapeCombineRectangles does not split its payload, and a single request
+   * must fit the server's maximum request size (at least 16 KiB by protocol,
+   * and smaller for some proxies). So a fragmented mask is sent in chunks sized
+   * from XMaxRequestSize(): the first replaces the region (ShapeSet), the rest
+   * are added to it (ShapeUnion). */
+  constexpr size_t MAX_RECTS_PER_REQUEST = 8192;
+  /* ShapeRectangles header is 16 bytes; keep a little extra headroom */
+  constexpr size_t REQUEST_HEADER_BYTES = 32;
+  const size_t max_request_bytes =
+      static_cast<size_t>(XMaxRequestSize(display)) * 4;
+  const size_t rects_per_request = std::clamp<size_t>(
+      max_request_bytes > REQUEST_HEADER_BYTES
+          ? (max_request_bytes - REQUEST_HEADER_BYTES) / sizeof(XRectangle)
+          : 1,
+      1, MAX_RECTS_PER_REQUEST);
+  if (rects.empty()) {
+    XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0, nullptr,
+                            0, ShapeSet, Unsorted);
+  } else {
+    for (size_t offset = 0; offset < rects.size();
+         offset += rects_per_request) {
+      const size_t count = std::min(rects_per_request, rects.size() - offset);
+      XShapeCombineRectangles(display, window.window, ShapeInput, 0, 0,
+                              rects.data() + offset, static_cast<int>(count),
+                              offset == 0 ? ShapeSet : ShapeUnion, Unsorted);
+    }
+  }
+  alpha_shaped_window = window.window;
+}
+#endif /* BUILD_XSHAPE */
+
 void swap_x11_buffers() {
+#if defined(BUILD_XSHAPE) && defined(OWN_WINDOW)
+  update_input_shape_from_alpha();
+#endif /* BUILD_XSHAPE */
 #ifdef BUILD_XDBE
   if (use_double_buffer.get(*state)) {
     XdbeSwapInfo swap;
