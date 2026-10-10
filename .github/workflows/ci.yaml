@@ -154,6 +154,11 @@ jobs:
             ncurses-dev \
             ninja-build \
             wayland-protocols
+      - name: Install isolated X11 test server
+        if: matrix.x11 == 'ON'
+        run: |
+          sudo apt-get install -yqq --no-install-recommends \
+            xvfb xauth xfonts-base fonts-dejavu-core
       - name: Install clang and libc++
         if: matrix.compiler == 'clang'
         run: |
@@ -232,7 +237,15 @@ jobs:
         run: sccache --show-stats
       - name: Test
         working-directory: build
-        run: ctest --output-on-failure
+        env:
+          MATRIX_X11: ${{ matrix.x11 }}
+        run: |
+          if [ "$MATRIX_X11" = ON ]; then
+            xvfb-run -a -s '-screen 0 800x600x24' sh -c \
+              'CONKY_TEST_X11_DISPLAY="$DISPLAY" ctest --output-on-failure'
+          else
+            ctest --output-on-failure
+          fi
 
   macos:
     name: macOS build and test
