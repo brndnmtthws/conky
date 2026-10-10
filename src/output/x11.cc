@@ -1596,8 +1596,21 @@ static void update_input_shape_from_alpha() {
     alpha_last_h = -1;
   }
 
-  const int w = window.geometry.width();
-  const int h = window.geometry.height();
+  // During auto-sizing, draw_stuff() can run after the logical geometry
+  // grows but before XResizeWindow updates the XDBE drawable (or before the
+  // pixmap is replaced). Reading the requested size then causes BadMatch.
+  // Shape only the frame that actually exists; use its size in the cache so
+  // the first frame after the real resize cannot reuse the old input mask.
+  Window root;
+  int x, y;
+  unsigned int drawable_w, drawable_h, border, depth;
+  if (!XGetGeometry(display, window.drawable, &root, &x, &y, &drawable_w,
+                    &drawable_h, &border, &depth)) {
+    return;
+  }
+  const int w = std::min(window.geometry.width(), static_cast<int>(drawable_w));
+  const int h =
+      std::min(window.geometry.height(), static_cast<int>(drawable_h));
   if (w <= 0 || h <= 0) return;
 
   XImage *img =

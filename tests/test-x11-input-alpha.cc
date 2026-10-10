@@ -190,7 +190,7 @@ struct alpha_test_context {
 };
 
 template <typename Predicate>
-void check_input_region(Predicate expected) {
+void check_input_region(Predicate expected, int width = -1, int height = -1) {
   int count = 0, ordering = 0;
   auto *rectangles = XShapeGetRectangles(display, window.window, ShapeInput,
                                          &count, &ordering);
@@ -205,10 +205,13 @@ void check_input_region(Predicate expected) {
   for (int i = 0; i < count; ++i) {
     XUnionRectWithRegion(&rectangles[i], region.get(), region.get());
   }
-  // Check the entire effective window area, independent of the server's
-  // rectangle ordering/coalescing. Fail at the first incorrect pixel.
-  for (int y = 0; y < window.geometry.height(); ++y) {
-    for (int x = 0; x < window.geometry.width(); ++x) {
+  // Check the entire requested area, independent of the server's rectangle
+  // ordering/coalescing. An explicit size also checks the old window area
+  // while logical geometry changes before the actual window is resized.
+  if (width < 0) { width = window.geometry.width(); }
+  if (height < 0) { height = window.geometry.height(); }
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
       bool actual = XPointInRegion(region.get(), x, y);
       if (actual != expected(x, y)) {
         CAPTURE(x, y, count);
@@ -348,6 +351,55 @@ TEST_CASE("x11_input_alpha", "[x11][integration][x11_input]") {
     context.create(12, 12);
     REQUIRE(window.window != first);
     draw_edge();
+  }
+
+  SECTION("logical_geometry_changes_before_drawable_resize") {
+    context.create(8, 8);
+    draw_corner(context);
+    context.swap();
+    check_input_region([](int x, int y) { return x < 4 && y < 4; });
+
+    // main_loop_wait updates logical geometry and draws a frame before
+    // resizing the actual window/back buffer. Drawing clips automatically;
+    // XGetImage must also stay within the old drawable's dimensions.
+    window.geometry.set_size(16, 12);
+    context.clear();  // Also initializes the pixmap back buffer's padding.
+    context.pixel(5, 5, 0xff000000);
+    context.pixel(12, 9, 0xff000000);  // Clipped by the old drawable.
+    context.swap();
+    check_input_region(
+        [](int x, int y) { return x >= 4 && x < 8 && y >= 4 && y < 8; });
+    XWindowAttributes attributes{};
+    REQUIRE(XGetWindowAttributes(display, window.window, &attributes));
+    REQUIRE(attributes.width == 8);
+    REQUIRE(attributes.height == 8);
+
+    // Logical dimensions have not changed, but the drawable now has. The
+    // cached mask must be replaced and include the newly drawable cell.
+    context.resize(16, 12);
+    context.clear();
+    context.pixel(5, 5, 0xff000000);
+    context.pixel(12, 9, 0xff000000);
+    context.swap();
+    check_input_region([](int x, int y) {
+      return (x >= 4 && x < 8 && y >= 4 && y < 8) || (x >= 12 && y >= 8);
+    });
+
+    // Shrinking logical geometry must ignore old alpha outside the new
+    // bounds, even while the actual drawable still has the larger size.
+    window.geometry.set_size(4, 4);
+    context.clear();
+    context.pixel(1, 1, 0xff000000);
+    context.pixel(12, 9, 0xff000000);
+    context.swap();
+    check_input_region([](int x, int y) { return x < 4 && y < 4; }, 16, 12);
+    REQUIRE(XGetWindowAttributes(display, window.window, &attributes));
+    REQUIRE(attributes.width == 16);
+    REQUIRE(attributes.height == 12);
+    context.resize(4, 4);
+    draw_corner(context);
+    context.swap();
+    check_uniform_region(true);
   }
 
   SECTION("fragmented_mask_spans_multiple_shape_requests") {
