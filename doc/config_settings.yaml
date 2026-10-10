@@ -528,12 +528,16 @@ values:
       4x4 pixel cells, so gaps between glyphs stay clickable.
 
       Requires [`own_window`](#own_window), [`double_buffer`](#double_buffer),
-      an ARGB visual (a compositing window manager) and Xshape support.
+      an ARGB visual (a compositing window manager), a build with Xshape
+      support and server SHAPE version 1.1 or newer. If a requirement is
+      unavailable, the normal window input policy is preserved and a warning
+      is logged once.
       Use a fully transparent [`own_window_color`](#own_window_color)
       (e.g. `'#0000'`), otherwise the whole window counts as opaque.
-      Unlike `own_window_hints = 'undecorated'` and non-`normal` window types,
-      which make the whole window click-through, this keeps the window
-      interactive, e.g. for `lua_mouse_hook` or dragging with the window manager.
+      This makes otherwise click-through undecorated windows interactive,
+      e.g. for `lua_mouse_hook` or dragging with the window manager.
+      Disabling this option restores the normal input policy. A reload that
+      newly needs an available ARGB visual recreates an existing opaque window.
     default: false
   - name: own_window_namespace
     desc: |-
