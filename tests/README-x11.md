@@ -43,12 +43,14 @@ ARGB visual selection; it does not require or test compositor blending, fonts
 or a window manager. Both pixmap and XDBE back-buffer builds are supported.
 
 Linux CI jobs with X11 enabled run the full CTest suite under an isolated
-Xvfb with the required fonts. Non-X11 jobs keep their ordinary CTest path.
+Xvfb with the required fonts. `-noreset` prevents a server reset while the
+reload tests deliberately disconnect the last client and reconnect. Non-X11
+jobs keep their ordinary CTest path.
 
 For example, after building all targets:
 
 ```sh
-xvfb-run -a -s '-screen 0 800x600x24' sh -c \
+xvfb-run -a -s '-screen 0 800x600x24 -noreset' sh -c \
   'CONKY_TEST_X11_DISPLAY=$DISPLAY ctest --test-dir build -R x11_ --output-on-failure'
 ```
 
