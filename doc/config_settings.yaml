@@ -519,6 +519,26 @@ values:
         decorated.
     args:
       - hint(,hint)*
+  - name: own_window_input_from_alpha
+    desc: |-
+      Boolean, X11 only. If set, the window's input region is rebuilt after
+      every frame from the alpha channel of what was drawn, so clicks on
+      fully transparent pixels fall through to the window underneath, while
+      text and graphics still receive clicks. The region is built from
+      4x4 pixel cells, so gaps between glyphs stay clickable.
+
+      Requires [`own_window`](#own_window), [`double_buffer`](#double_buffer),
+      an ARGB visual (a compositing window manager), a build with Xshape
+      support and server SHAPE version 1.1 or newer. If a requirement is
+      unavailable, the normal window input policy is preserved and a warning
+      is logged once.
+      Use a fully transparent [`own_window_color`](#own_window_color)
+      (e.g. `'#0000'`), otherwise the whole window counts as opaque.
+      This makes otherwise click-through undecorated windows interactive,
+      e.g. for `lua_mouse_hook` or dragging with the window manager.
+      Disabling this option restores the normal input policy. A reload that
+      newly needs an available ARGB visual recreates an existing opaque window.
+    default: false
   - name: own_window_namespace
     desc: |-
       Set the wlr-layer-shell namespace of the Wayland window. Compositors
