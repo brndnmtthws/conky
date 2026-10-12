@@ -907,8 +907,9 @@ void display_output_x11::draw_string_at(int x, int y, const char *s, int w) {
     XColor c{};
     XftColor c2{};
 
-    c.pixel =
-        current_color.to_x11_color(display, screen, window.opacity < 0xff);
+    // Pseudo-transparency still uses an RGB colormap: never pack alpha there.
+    c.pixel = current_color.to_x11_color(
+        display, screen, window.color_depth == argb8888_color_depth);
     // query color on custom colormap
     XQueryColor(display, window.colourmap, &c);
 

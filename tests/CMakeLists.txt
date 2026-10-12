@@ -24,6 +24,10 @@ target_link_libraries(test-conky
   PRIVATE Catch2
   PUBLIC conky_core
 )
+if(BUILD_X11 AND BUILD_XFT)
+  # The Xft raster test queries the drawable's Render format directly.
+  target_link_libraries(test-conky PRIVATE ${X11_Xrender_LIB})
+endif()
 catch_discover_tests(test-conky)
 
 if(BUILD_X11)
@@ -31,7 +35,7 @@ if(BUILD_X11)
   # those tests exist, without serializing the rest of the Catch2 suite.
   file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/x11-test-properties.cmake"
     CONTENT [=[
-foreach(x11_case x11_foreground_alpha x11_input_alpha)
+foreach(x11_case x11_foreground_alpha x11_input_alpha x11_xft_color)
   list(FIND test-conky_TESTS ${x11_case} x11_case_index)
   if(NOT x11_case_index EQUAL -1)
     set_tests_properties(${x11_case} PROPERTIES
