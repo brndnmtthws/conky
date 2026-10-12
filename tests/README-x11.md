@@ -25,6 +25,16 @@ for every combination of background and foreground alpha 0, 128 and 255,
 including premultiplied foreground colors and the non-ARGB fallback. This tests
 GC rendering, not compositor blending or window-background changes on reload.
 
+`x11_xft_color` is a discovered Catch2 case in `test-x11-xft-color.cc`,
+registered with X11 and Xft support. It uses the same opt-in, skip behavior and
+display lock, and requires the RGB/ARGB visuals, Render and an installed Xft
+font. It draws white, grey and black glyphs through the real Xft text path
+into 24- and 32-bit pixmaps at background opacity 0, 128 and 255, in both
+UTF-8 and 8-bit modes. Exact pixels and the absence of X errors verify that
+pseudo-transparency never passes an alpha-packed pixel to an RGB colormap.
+Opaque RGB and retained ARGB drawables are controls. This tests glyph
+rasterization, not compositor blending.
+
 `x11_input_alpha` is a discovered Catch2 case in `test-x11-input-alpha.cc`,
 registered with X11, SHAPE and own-window support. It uses the same opt-in,
 skip behavior and display lock. It requires SHAPE 1.1, a 24-bit root and a
