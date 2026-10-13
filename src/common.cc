@@ -838,20 +838,16 @@ void free_acpitemp(struct text_object *obj) { close(obj->data.i); }
 #endif /* !__OpenBSD__ */
 
 void print_freq(struct text_object *obj, char *p, unsigned int p_max_size) {
-  static int ok = 1;
-  if (ok != 0) { ok = get_freq(p, p_max_size, "%.0f", 1, obj->data.i); }
+  get_freq(p, p_max_size, "%.0f", 1, obj->data.i);
 }
 
 void print_freq_g(struct text_object *obj, char *p, unsigned int p_max_size) {
-  static int ok = 1;
-  if (ok != 0) {
 #ifndef __OpenBSD__
-    ok = get_freq(p, p_max_size, "%'.2f", 1000, obj->data.i);
+  get_freq(p, p_max_size, "%'.2f", 1000, obj->data.i);
 #else
-    /* OpenBSD has no such flag (SUSv2) */
-    ok = get_freq(p, p_max_size, "%.2f", 1000, obj->data.i);
+  /* OpenBSD has no such flag (SUSv2) */
+  get_freq(p, p_max_size, "%.2f", 1000, obj->data.i);
 #endif /* __OpenBSD */
-  }
 }
 
 #ifndef __OpenBSD__
