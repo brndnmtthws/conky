@@ -73,26 +73,31 @@ cmake -G Ninja                         \
 cmake --build .
 cmake --install .
 
-wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+# linuxdeploy/appimagetool publish per-arch AppImages; the tool names follow
+# uname -m (x86_64/aarch64), matching the runner architecture.
+TOOL_ARCH=$(uname -m)
+LINUXDEPLOY="linuxdeploy-${TOOL_ARCH}.AppImage"
+wget "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/${LINUXDEPLOY}"
 
 # make them executable
-chmod +x linuxdeploy-x86_64.AppImage
+chmod +x "${LINUXDEPLOY}"
 
-./linuxdeploy-x86_64.AppImage \
+./"${LINUXDEPLOY}" \
   --appdir AppDir \
   -e AppDir/usr/bin/conky \
   -i AppDir/usr/share/icons/hicolor/scalable/apps/conky-logomark-violet.svg \
   -d AppDir/usr/share/applications/conky.desktop
 
-wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+APPIMAGETOOL="appimagetool-${TOOL_ARCH}.AppImage"
+wget "https://github.com/AppImage/appimagetool/releases/download/continuous/${APPIMAGETOOL}"
 
-chmod +x appimagetool-x86_64.AppImage
+chmod +x "${APPIMAGETOOL}"
 
 GPG_KEY=C793F1BA
 if gpg --list-keys ${GPG_KEY}; then
-  ./appimagetool-x86_64.AppImage AppDir --sign --sign-key ${GPG_KEY}
+  ./"${APPIMAGETOOL}" AppDir --sign --sign-key ${GPG_KEY}
 else
-  ./appimagetool-x86_64.AppImage AppDir
+  ./"${APPIMAGETOOL}" AppDir
 fi
 
 mv conky*.AppImage "$OLD_CWD"
