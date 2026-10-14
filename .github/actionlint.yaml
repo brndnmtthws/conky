@@ -1,6 +1,9 @@
 self-hosted-runner:
-  # ubuntu-26.04 is GitHub-hosted and GA since Sep 2026, but actionlint
-  # 1.7.12 predates it and reports it as unknown. Scoped ignore until the
-  # pinned actionlint learns the new label.
+  # ubuntu-26.04 and the -arm labels are GitHub-hosted, but actionlint
+  # 1.7.12 predates them and reports them as unknown. Scoped ignore until
+  # the pinned actionlint learns the new labels.
   labels:
     - ubuntu-26.04
+    - ubuntu-22.04-arm
+    - ubuntu-24.04-arm
+    - ubuntu-26.04-arm

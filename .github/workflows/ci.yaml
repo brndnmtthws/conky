@@ -390,7 +390,7 @@ jobs:
     name: Build AppImage
     needs: changes
     if: needs.changes.outputs.appimage == 'true'
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.arch == 'aarch64' && format('{0}-arm', matrix.os) || matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -400,6 +400,7 @@ jobs:
           - ubuntu-26.04
         arch:
           - x86_64
+          - aarch64
         mode:
           - debug
           - release
@@ -509,9 +510,9 @@ jobs:
       - name: Show sccache stats
         if: startsWith(github.ref, 'refs/tags/') != true
         run: sccache --show-stats
-      - run: ./conky-x86_64.AppImage --version
+      - run: ./conky-${{ matrix.arch }}.AppImage --version
       - name: Set CONKY_VERSION
-        run: echo "CONKY_VERSION=$(./conky-x86_64.AppImage --short-version)" | tee -a "${GITHUB_ENV}"
+        run: echo "CONKY_VERSION=$(./conky-${{ matrix.arch }}.AppImage --short-version)" | tee -a "${GITHUB_ENV}"
       # The ubuntu-22.04 release AppImage is the canonical download: it links
       # the oldest glibc, so it runs everywhere, and its bare name (stem
       # "conky") makes the AppImage catalog bot select it deterministically
@@ -523,7 +524,7 @@ jobs:
           else
             ASSET="conky-${{ matrix.os }}-${{ matrix.arch }}-v${{ env.CONKY_VERSION }}-${{ matrix.mode }}.AppImage"
           fi
-          mv conky-x86_64.AppImage "$ASSET"
+          mv conky-${{ matrix.arch }}.AppImage "$ASSET"
           echo "ASSET_NAME=$ASSET" | tee -a "${GITHUB_ENV}"
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v7
