@@ -8,6 +8,7 @@
 #include <X11/extensions/shape.h>
 
 #include <algorithm>
+#include <cstdio>
 #include <cstdlib>
 #include <memory>
 #include <string>
@@ -16,6 +17,12 @@
 #include <vector>
 
 #include "conky.h"
+#ifdef BUILD_IMLIB2
+#include <Imlib2.h>
+#include <unistd.h>
+
+#include "conky-imlib2.h"
+#endif
 #include "lua/lua-config.hh"
 #include "output/gui.h"
 #include "output/x11.h"
@@ -473,4 +480,123 @@ TEST_CASE("x11_input_alpha", "[x11][integration][x11_input]") {
   destroy_window();
   context.check_errors();
 }
+#ifdef BUILD_IMLIB2
+namespace {
+// imlib2 renders only RGB onto the window, so ${image} pixels have zero alpha
+// in the frame. These tests drive cimlib_render() the way draw_stuff() does.
+struct imlib_test_image {
+  std::string path;
+
+  // 16x16, one row of 16 pixels per y:
+  //   x 0-7   opaque red                 -> input
+  //   x 8-11  y 0-3: half-transparent    -> input
+  //   x 12-15 y 0-7: opaque black        -> no input (renders as 0x00000000,
+  //                                         like transparent/cleared pixels)
+  //   rest    fully transparent          -> no input
+  imlib_test_image()
+      : path("/tmp/conky-x11-input-alpha-" + std::to_string(getpid()) +
+             ".png") {
+    Imlib_Image image = imlib_create_image(16, 16);
+    REQUIRE(image != nullptr);
+    imlib_context_set_image(image);
+    imlib_image_set_has_alpha(1);
+    DATA32 *data = imlib_image_get_data();
+    for (int y = 0; y < 16; ++y) {
+      for (int x = 0; x < 16; ++x) {
+        DATA32 value = 0x00000000;
+        if (x < 8) {
+          value = 0xffff0000;
+        } else if (x < 12 && y < 4) {
+          value = 0x8000ff00;
+        } else if (x >= 12 && y < 8) {
+          value = 0xff000000;
+        }
+        data[y * 16 + x] = value;
+      }
+    }
+    imlib_image_put_back_data(data);
+    imlib_image_set_format("png");
+    imlib_save_image(path.c_str());
+    imlib_free_image();
+  }
+  ~imlib_test_image() { std::remove(path.c_str()); }
+  std::string args() const { return path + " -p 0,0 -s 16x16 -n"; }
+};
+
+struct imlib_session {
+  imlib_session() { cimlib_init(); }
+  ~imlib_session() { cimlib_deinit(); }
+};
+
+void render_images(int width, int height) {
+  cimlib_render(0, 0, width, height, 0, true);
+}
+
+bool image_input(int x, int y) { return x < 8 || (x < 12 && y < 4); }
+}  // namespace
+
+TEST_CASE("x11_input_alpha_images", "[x11][integration][x11_input]") {
+  const char *test_display = std::getenv("CONKY_TEST_X11_DISPLAY");
+  if (!test_display || !*test_display) {
+    SKIP("set CONKY_TEST_X11_DISPLAY to an isolated test X server");
+  }
+  alpha_test_context context(test_display);
+  context.require_support();
+  context.create(16, 16);
+  imlib_test_image image;
+  imlib_session session;
+  cimlib_add_image(image.args().c_str());
+
+  SECTION("image_alpha_takes_input") {
+    context.clear();
+    render_images(16, 16);
+    context.swap();
+    check_input_region(image_input);
+  }
+
+  SECTION("image_cleared_later_in_frame_takes_no_input") {
+    // A lua_draw_hook_post can clear what cimlib_render() drew with
+    // CAIRO_OPERATOR_CLEAR. The frame is then all zero again.
+    context.clear();
+    render_images(16, 16);
+    context.clear();
+    context.swap();
+    check_uniform_region(false);
+  }
+
+  SECTION("image_partially_cleared_later_in_frame") {
+    context.clear();
+    render_images(16, 16);
+    XSetForeground(display, window.gc, 0);
+    XFillRectangle(display, window.drawable, window.gc, 0, 0, 4, 16);
+    context.swap();
+    check_input_region(
+        [](int x, int y) { return x >= 4 && image_input(x, y); });
+  }
+
+  SECTION("image_alpha_is_per_frame") {
+    context.clear();
+    render_images(16, 16);
+    context.swap();
+    check_input_region(image_input);
+    // A frame without images must not keep the previous image's input.
+    cimlib_cleanup();
+    context.clear();
+    render_images(16, 16);
+    context.swap();
+    check_uniform_region(false);
+  }
+
+  SECTION("frame_alpha_and_image_alpha_combine") {
+    context.clear();
+    render_images(16, 16);
+    context.pixel(13, 12, 0xff123456);  // Opaque non-image pixel.
+    context.swap();
+    check_input_region([](int x, int y) {
+      return image_input(x, y) || (x >= 12 && y >= 12);
+    });
+  }
+  context.check_errors();
+}
+#endif  // BUILD_IMLIB2
 #endif  // BUILD_X11 && BUILD_XSHAPE && OWN_WINDOW

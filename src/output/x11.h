@@ -241,4 +241,18 @@ std::vector<Window> query_x11_windows_at_pos(
 
 void swap_x11_buffers();
 
+/* Alpha of images drawn through imlib2, for own_window_input_from_alpha.
+ * imlib2 renders only RGB onto the window, so the frame's alpha channel does
+ * not know about ${image} pixels. cimlib_render() reports the alpha of its
+ * buffer here instead; the input shape update merges it with the alpha read
+ * back from the frame. Both are no-ops unless the feature is enabled. */
+#if defined(BUILD_XSHAPE) && defined(OWN_WINDOW)
+void x11_image_alpha_reset();
+void x11_image_alpha_add(int dst_x, int dst_y, int w, int h, int stride,
+                         const uint32_t *argb);
+#else
+inline void x11_image_alpha_reset() {}
+inline void x11_image_alpha_add(int, int, int, int, int, const uint32_t *) {}
+#endif
+
 #endif /* CONKY_X11_H */
