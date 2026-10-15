@@ -35,6 +35,7 @@
 #include "output-setting.hh"
 
 typedef struct _cairo_surface cairo_surface_t;
+typedef struct _cairo cairo_t;
 
 namespace conky {
 
@@ -148,6 +149,13 @@ class display_output_base {
     // Non-graphical outputs always return null.
     return std::weak_ptr<draw_surface>();
   }
+
+  /// @brief Cairo context of the surface this output draws into, or null.
+  ///
+  /// Outputs that composite through cairo (e.g. Wayland) have no X11 drawable,
+  /// so anything that can only render to a drawable -- imlib2 images -- is
+  /// handed this context instead and drawn with cairo.
+  virtual cairo_t *drawing_context() { return nullptr; }
 
   friend void conky::initialize_display_outputs();
   friend bool conky::shutdown_display_outputs();

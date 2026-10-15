@@ -1671,10 +1671,19 @@ void draw_stuff() {
 
 #ifdef BUILD_IMLIB2
   text_offset = conky::vec2i::Zero();
-  cimlib_render(text_start.x(), text_start.y(), window.geometry.width(),
-                window.geometry.height(),
-                imlib_cache_flush_interval.get(*state),
-                imlib_draw_blended.get(*state));
+  auto *image_output = display_output();
+  if (cairo_t *cr =
+          image_output != nullptr ? image_output->drawing_context() : nullptr) {
+    /* this output composites through cairo and has no drawable for imlib2 */
+    cimlib_render_cairo(cr, text_start.x(), text_start.y(),
+                        imlib_cache_flush_interval.get(*state),
+                        imlib_draw_blended.get(*state));
+  } else {
+    cimlib_render(text_start.x(), text_start.y(), window.geometry.width(),
+                  window.geometry.height(),
+                  imlib_cache_flush_interval.get(*state),
+                  imlib_draw_blended.get(*state));
+  }
 #endif /* BUILD_IMLIB2 */
 
   for (auto output : display_outputs()) {
