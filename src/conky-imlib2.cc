@@ -30,11 +30,13 @@
 #include "output/display-output.hh"
 
 #include <Imlib2.h>
+#include <cairo.h>
 #include <climits>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <vector>
 
 #include "lua/x11-settings.h"
 #include "output/x11.h"
@@ -72,11 +74,11 @@ namespace {
 Imlib_Context context;
 
 unsigned int cimlib_cache_flush_last = 0;
-}  // namespace
 
-void cimlib_init() {
-  if (display == nullptr || window.visual == nullptr) { return; }
-
+/// Creates and pushes the imlib context shared by all backends.  Binding it to
+/// an X11 drawable is left to the caller, since only backends rendering
+/// through an X11 drawable have one.
+void cimlib_create_context() {
   image_list_start = image_list_end = nullptr;
   context = imlib_context_new();
   imlib_context_push(context);
@@ -85,11 +87,24 @@ void cimlib_init() {
   imlib_set_color_usage(256);
   /* dither for depths < 24bpp */
   imlib_context_set_dither(1);
+}
+}  // namespace
+
+void cimlib_init() {
+  if (display == nullptr || window.visual == nullptr) { return; }
+
+  cimlib_create_context();
   /* set the display , visual, colormap and drawable we are using */
   imlib_context_set_display(display);
   imlib_context_set_visual(window.visual);
   imlib_context_set_colormap(window.colourmap);
   imlib_context_set_drawable(window.drawable);
+}
+
+void cimlib_init_cpu() {
+  if (context != nullptr) { return; }
+
+  cimlib_create_context();
 }
 
 void cimlib_deinit() {
@@ -230,6 +245,125 @@ static void cimlib_draw_all(int *clip_x, int *clip_y, int *clip_x2,
   struct image_list_s *cur = image_list_start;
   while (cur != nullptr) {
     cimlib_draw_image(cur, clip_x, clip_y, clip_x2, clip_y2);
+    cur = cur->next;
+  }
+}
+
+namespace {
+/// Loads @a cur and composites it onto @a cr, offset by (@a x, @a y) and scaled
+/// to the size requested through `${image <file> -WxH}'.
+///
+/// This is the cairo counterpart of cimlib_draw_image(): imlib2 cannot render
+/// to anything but an X11 drawable, so the pixels are handed over to cairo
+/// instead.  imlib2 stores them unpremultiplied while cairo's ARGB32 requires
+/// premultiplied alpha, hence the conversion buffer.
+void cimlib_draw_image_cairo(cairo_t *cr, struct image_list_s *cur, int x,
+                             int y, bool draw_blended) {
+  static int rep = 0;
+  time_t now = time(nullptr);
+
+  Imlib_Image img = imlib_load_image(cur->name);
+  if (img == nullptr) {
+    if (rep == 0) { LOG_ERROR("unable to load image '{}'", cur->name); }
+    rep = 1;
+    return;
+  }
+  rep = 0; /* reset so disappearing images are reported */
+
+  imlib_context_set_image(img);
+  /* turn alpha channel on */
+  imlib_image_set_has_alpha(1);
+  const int w = imlib_image_get_width();
+  const int h = imlib_image_get_height();
+  if (cur->wh_set == 0) {
+    cur->w = dpi_scale(w);
+    cur->h = dpi_scale(h);
+  }
+
+  LOG_DEBUG(
+      "drawing image '{}' via cairo at ({},{}) scaled to {}x{}, cache interval "
+      "{} (no_cache {})",
+      cur->name, cur->x, cur->y, cur->w, cur->h, cur->flush_interval,
+      cur->no_cache);
+
+  if (w > 0 && h > 0 && cur->w > 0 && cur->h > 0) {
+    const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, w);
+    std::vector<unsigned char> premultiplied(static_cast<size_t>(stride) * h);
+    const DATA32 *data = imlib_image_get_data();
+    for (int row = 0; row < h; row++) {
+      auto *dst = reinterpret_cast<DATA32 *>(premultiplied.data() +
+                                             static_cast<size_t>(row) * stride);
+      const DATA32 *src = data + static_cast<size_t>(row) * w;
+      for (int col = 0; col < w; col++) {
+        const DATA32 pixel = src[col];
+        /* imlib2 keeps alpha in the most significant byte */
+        const uint32_t alpha = draw_blended ? (pixel >> 24) : 0xffU;
+        const auto red =
+            static_cast<DATA32>(((pixel >> 16) & 0xffU) * alpha / 0xffU);
+        const auto green =
+            static_cast<DATA32>(((pixel >> 8) & 0xffU) * alpha / 0xffU);
+        const auto blue = static_cast<DATA32>((pixel & 0xffU) * alpha / 0xffU);
+        dst[col] = (static_cast<DATA32>(alpha) << 24) | (red << 16) |
+                   (green << 8) | blue;
+      }
+    }
+
+    cairo_surface_t *surface = cairo_image_surface_create_for_data(
+        premultiplied.data(), CAIRO_FORMAT_ARGB32, w, h, stride);
+    if (cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS) {
+      cairo_pattern_t *pattern = cairo_pattern_create_for_surface(surface);
+      cairo_pattern_set_filter(pattern, CAIRO_FILTER_GOOD);
+
+      cairo_save(cr);
+      cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+      cairo_translate(cr, x + cur->x, y + cur->y);
+      cairo_scale(cr, static_cast<double>(cur->w) / w,
+                  static_cast<double>(cur->h) / h);
+      cairo_set_source(cr, pattern);
+      cairo_paint(cr);
+      cairo_restore(cr);
+
+      cairo_pattern_destroy(pattern);
+    } else {
+      LOG_ERROR("unable to create cairo surface for image '{}': {}", cur->name,
+                cairo_status_to_string(cairo_surface_status(surface)));
+    }
+    cairo_surface_destroy(surface);
+  }
+
+  if ((cur->no_cache != 0) ||
+      ((cur->flush_interval != 0) && now % cur->flush_interval == 0)) {
+    imlib_free_image_and_decache();
+  } else {
+    imlib_free_image();
+  }
+}
+}  // namespace
+
+void cimlib_render_cairo(cairo_t *cr, int x, int y, uint32_t flush_interval,
+                         bool draw_blended) {
+  if (cr == nullptr) { return; }
+
+  if (image_list_start == nullptr) {
+    return; /* are we actually drawing anything? */
+  }
+
+  /* cheque if it's time to flush our cache */
+  time_t now = time(nullptr);
+  if ((flush_interval != 0u) &&
+      now - flush_interval > cimlib_cache_flush_last) {
+    int size = imlib_get_cache_size();
+    imlib_set_cache_size(0);
+    imlib_set_cache_size(size);
+    cimlib_cache_flush_last = now;
+    LOG_DEBUG("flushing imlib2 cache ({})", now);
+  }
+
+  /* Unlike cimlib_render() there is no damage rectangle to compute here:
+   * cairo clips every operation to the extents of the target surface. */
+  struct image_list_s *cur = image_list_start;
+  while (cur != nullptr) {
+    cimlib_draw_image_cairo(cr, cur, x, y, draw_blended);
     cur = cur->next;
   }
 }
