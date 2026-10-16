@@ -67,9 +67,7 @@ class DiagnosticReload(namespace["X11Reload"]):
             pids.extend(result.stdout.split())
             for pid in pids:
                 print(f"\nSTACKS FOR PID {pid}", flush=True)
-                commands = ["set pagination off", "set debuginfod enabled on",
-                            "set debuginfod urls https://debuginfod.ubuntu.com",
-                            "thread apply all bt"]
+                commands = ["set pagination off", "thread apply all bt"]
                 if self.process is not None and pid == str(self.process.pid):
                     commands += ["p *display", "p display->request",
                                  "p display->last_request_read"]
@@ -87,6 +85,8 @@ class DiagnosticReload(namespace["X11Reload"]):
                 try:
                     subprocess.run(
                         ["sudo", "-n", "gdb", "-batch",
+                         "-iex", "set debuginfod enabled on",
+                         "-iex", "set debuginfod urls https://debuginfod.ubuntu.com",
                          *[arg for cmd in commands for arg in ("-ex", cmd)],
                          "-p", pid], timeout=90, check=False,
                     )
