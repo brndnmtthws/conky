@@ -568,6 +568,52 @@ static bool try_set_argb_visual(conky_x11_window *window) {
  * window, and so the default input region can be restored if the feature is
  * switched off while the window is kept (config reload). */
 static Window alpha_shaped_window = None;
+
+/* Granularity of the input region, in pixels. */
+static constexpr int ALPHA_CELL = 4;
+
+/* Pixels covered by non-transparent imlib2 image pixels in the current frame
+ * (see x11_image_alpha_add), one byte per window pixel. */
+static std::vector<unsigned char> image_alpha_pixels;
+static int image_alpha_w = 0;
+static int image_alpha_h = 0;
+
+void x11_image_alpha_reset() {
+  image_alpha_pixels.clear();
+  image_alpha_w = 0;
+  image_alpha_h = 0;
+}
+
+/* argb points at the top-left pixel of a w x h region (rows are stride pixels
+ * apart) that was rendered with its top-left corner at (dst_x, dst_y) of the
+ * window. Alpha is the top byte, as in imlib2's DATA32. */
+void x11_image_alpha_add(int dst_x, int dst_y, int w, int h, int stride,
+                         const uint32_t *argb) {
+  if (argb == nullptr || w <= 0 || h <= 0 ||
+      !own_window_input_from_alpha.get(*state)) {
+    return;
+  }
+  const int ww = window.geometry.width();
+  const int wh = window.geometry.height();
+  if (ww <= 0 || wh <= 0) return;
+  if (ww != image_alpha_w || wh != image_alpha_h) {
+    image_alpha_pixels.assign(static_cast<size_t>(ww) * wh, 0);
+    image_alpha_w = ww;
+    image_alpha_h = wh;
+  }
+  for (int y = 0; y < h; ++y) {
+    const int wy = dst_y + y;
+    if (wy < 0 || wy >= wh) continue;
+    const uint32_t *row = argb + static_cast<size_t>(y) * stride;
+    unsigned char *out =
+        image_alpha_pixels.data() + static_cast<size_t>(wy) * ww;
+    for (int x = 0; x < w; ++x) {
+      const int wx = dst_x + x;
+      if (wx < 0 || wx >= ww) continue;
+      if ((row[x] >> 24) != 0) out[wx] = 1;
+    }
+  }
+}
 static std::vector<unsigned char> alpha_last_mask;
 static int alpha_last_w = -1;
 static int alpha_last_h = -1;
@@ -1570,7 +1616,7 @@ void set_struts() {
  * Works on cells of CELL x CELL pixels so gaps between glyphs stay clickable.
  */
 static void update_input_shape_from_alpha() {
-  constexpr int CELL = 4;
+  constexpr int CELL = ALPHA_CELL;
   static bool warned = false;
 
   const bool wanted = window.owned && own_window.get(*state) &&
@@ -1630,9 +1676,21 @@ static void update_input_shape_from_alpha() {
   if (alpha_mask != 0) {
     int shift = 0;
     while (((alpha_mask >> shift) & 1UL) == 0) ++shift;
+    const unsigned long rgb_mask = ~alpha_mask & 0xffffffffUL;
     for (int y = 0; y < h; ++y) {
       for (int x = 0; x < w; ++x) {
-        if (((XGetPixel(img, x, y) & alpha_mask) >> shift) != 0) {
+        const unsigned long pixel = XGetPixel(img, x, y);
+        bool opaque = ((pixel & alpha_mask) >> shift) != 0;
+        /* imlib2 writes only RGB, so a non-transparent image pixel has zero
+         * alpha in the frame. Count it, but only while it still has color:
+         * drawing that cleared it later in the frame (e.g. from a lua draw
+         * hook) leaves an all-zero pixel, which must not take input. */
+        if (!opaque && (pixel & rgb_mask) != 0 && x < image_alpha_w &&
+            y < image_alpha_h) {
+          opaque = image_alpha_pixels[static_cast<size_t>(y) * image_alpha_w +
+                                      x] != 0;
+        }
+        if (opaque) {
           mask[static_cast<size_t>(y / CELL) * cols + (x / CELL)] = 1;
         }
       }

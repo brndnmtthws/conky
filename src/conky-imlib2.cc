@@ -30,6 +30,7 @@
 #include "output/display-output.hh"
 
 #include <Imlib2.h>
+#include <algorithm>
 #include <climits>
 #include <cstdio>
 #include <cstdlib>
@@ -240,6 +241,9 @@ void cimlib_render(int x, int y, int width, int height, uint32_t flush_interval,
   int clip_x2 = 0, clip_y2 = 0;
   time_t now;
 
+  /* the input shape only counts images drawn in this frame */
+  x11_image_alpha_reset();
+
   if (image_list_start == nullptr) {
     return; /* are we actually drawing anything? */
   }
@@ -281,6 +285,21 @@ void cimlib_render(int x, int y, int width, int height, uint32_t flush_interval,
   /* setup our clip rect */
   if (clip_x == INT_MAX) { clip_x = 0; }
   if (clip_y == INT_MAX) { clip_y = 0; }
+
+  /* imlib2 writes only RGB to the drawable, so tell the input shaping code
+   * which pixels of this buffer are not transparent */
+  {
+    const int bw = imlib_image_get_width();
+    const int bh = imlib_image_get_height();
+    const int sx0 = std::max(clip_x, 0), sy0 = std::max(clip_y, 0);
+    const int sx1 = std::min(clip_x2, bw), sy1 = std::min(clip_y2, bh);
+    const DATA32 *data = imlib_image_get_data_for_reading_only();
+    if (data != nullptr && sx1 > sx0 && sy1 > sy0) {
+      x11_image_alpha_add(x + sx0, y + sy0, sx1 - sx0, sy1 - sy0, bw,
+                          reinterpret_cast<const uint32_t *>(data) +
+                              static_cast<size_t>(sy0) * bw + sx0);
+    }
+  }
 
   /* render the image at 0, 0 */
   imlib_render_image_part_on_drawable_at_size(
