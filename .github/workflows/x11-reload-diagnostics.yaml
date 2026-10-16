@@ -1,0 +1,161 @@
+# Temporary investigation workflow: remove before this PR is ready to merge.
+name: X11 reload diagnostics
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/x11-reload-diagnostics.yaml'
+      - '.github/scripts/x11-reload-diagnostics.py'
+permissions:
+  contents: read
+concurrency:
+  group: x11-reload-diagnostics-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  SCCACHE_VERSION: '0.15.0'
+jobs:
+  linux:
+    name: Linux build and test
+    strategy:
+      matrix:
+        os:
+          - ubuntu-22.04
+        x11: [ON]
+        wayland: [OFF]
+        compiler:
+          - clang
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - run: sudo apt-get -qq update
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -yqq --no-install-recommends \
+            audacious-dev \
+            cmake \
+            gawk \
+            gperf \
+            lcov \
+            libaudclient-dev \
+            libcairo2-dev \
+            libpango1.0-dev \
+            libcurl4-gnutls-dev \
+            libdbus-glib-1-dev \
+            libfreetype-dev \
+            libfreetype6-dev \
+            libstdc++6 \
+            libglib2.0-dev \
+            libical-dev \
+            libimlib2-dev \
+            libircclient-dev \
+            libiw-dev \
+            liblua5.3-dev \
+            libmicrohttpd-dev \
+            libmysqlclient-dev \
+            libpulse-dev \
+            librsvg2-dev \
+            libsystemd-dev \
+            libwayland-bin \
+            libwayland-dev \
+            libx11-dev \
+            libxdamage-dev \
+            libxext-dev \
+            libxft-dev \
+            libxinerama-dev \
+            libxml2-dev \
+            libxmmsclient-dev \
+            libxnvctrl-dev \
+            ncurses-dev \
+            ninja-build \
+            wayland-protocols
+      - name: Install isolated X11 test server
+        if: matrix.x11 == 'ON'
+        run: |
+          sudo apt-get install -yqq --no-install-recommends \
+            xvfb xauth xfonts-base fonts-dejavu-core
+      - name: Install clang and libc++
+        if: matrix.compiler == 'clang'
+        run: |
+          sudo apt-get install -yqq --no-install-recommends \
+            clang \
+            libc++-dev \
+            libc++abi-dev
+      - name: Install gcc
+        if: matrix.compiler == 'gcc'
+        run: |
+          sudo apt-get install -yqq --no-install-recommends \
+            gcc \
+            g++
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Install sccache
+        run: .github/scripts/setup-sccache.sh
+      - name: Load cached compilation artifacts
+        id: compiler-cache
+        uses: actions/cache@v6
+        with:
+          path: '${{ env.SCCACHE_DIR }}'
+          key: sccache-${{ matrix.os }}-${{ matrix.x11 }}-${{ matrix.wayland }}-${{ matrix.compiler }}
+          restore-keys: |
+            sccache-${{ matrix.os }}-${{ matrix.x11 }}-${{ matrix.wayland }}-${{ matrix.compiler }}
+            sccache-${{ matrix.os }}-${{ matrix.x11 }}-${{ matrix.wayland }}
+            sccache-${{ matrix.os }}-${{ matrix.x11 }}
+            sccache-${{ matrix.os }}
+      - name: Configure with CMake
+        env:
+          MATRIX_COMPILER: ${{ matrix.compiler }}
+          MATRIX_OS: ${{ matrix.os }}
+        run: |
+          set -x # show the commands we're running
+          [[ "${MATRIX_COMPILER}" == clang* ]] && CC=clang
+          [[ "${MATRIX_COMPILER}" == clang* ]] && CXX=clang++
+
+          [[ "${MATRIX_COMPILER}" == gcc* ]] && CC=gcc
+          [[ "${MATRIX_COMPILER}" == gcc* ]] && CXX=g++
+
+          # Enable librsvg by default, disable for older versions of Ubuntu
+          # because we need librsvg>=2.52
+          RSVG_ENABLED=ON
+          [[ "${MATRIX_OS}" == ubuntu-20.04* ]] && RSVG_ENABLED=OFF
+
+          # Reset sccache statistics
+          sccache --zero-stats
+
+          cmake . -B build -G Ninja              \
+            -DBUILD_AUDACIOUS=ON                 \
+            -DBUILD_HTTP=ON                      \
+            -DBUILD_ICAL=ON                      \
+            -DBUILD_ICONV=ON                     \
+            -DBUILD_IRC=ON                       \
+            -DBUILD_JOURNAL=ON                   \
+            -DBUILD_LUA_CAIRO=ON                 \
+            -DBUILD_LUA_CAIRO_XLIB=ON            \
+            -DBUILD_LUA_IMLIB2=ON                \
+            -DBUILD_LUA_RSVG=${RSVG_ENABLED}     \
+            -DBUILD_LUA_TEXT=ON                  \
+            -DBUILD_MYSQL=ON                     \
+            -DBUILD_NVIDIA=ON                    \
+            -DBUILD_PULSEAUDIO=ON                \
+            -DBUILD_CURL=ON                      \
+            -DBUILD_RSS=ON                       \
+            -DBUILD_WLAN=ON                      \
+            -DBUILD_WAYLAND=${{ matrix.wayland }}\
+            -DBUILD_X11=${{ matrix.x11 }}        \
+            -DBUILD_XMMS2=ON                     \
+            -DCMAKE_C_COMPILER="${CC}"           \
+            -DCMAKE_CXX_COMPILER="${CXX}"        \
+            -DMAINTAINER_MODE=ON
+      - name: Compile
+        run: cmake --build build
+      - name: Show sccache stats
+        run: sccache --show-stats
+      - name: Install debugger
+        run: sudo apt-get install -yqq --no-install-recommends gdb
+      - name: Stress reloads with diagnostic stacks
+        run: |
+          # Each observer gets its own isolated server; no desktop is touched.
+          # shellcheck disable=SC2016
+          xvfb-run -a -s '-screen 0 800x600x24 -noreset' sh -c \
+            'CONKY_TEST_X11_DISPLAY="$DISPLAY" python3 .github/scripts/x11-reload-diagnostics.py grabbed'
+          # shellcheck disable=SC2016
+          xvfb-run -a -s '-screen 0 800x600x24 -noreset' sh -c \
+            'CONKY_TEST_X11_DISPLAY="$DISPLAY" python3 .github/scripts/x11-reload-diagnostics.py ungrabbed'
