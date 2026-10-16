@@ -149,24 +149,23 @@ jobs:
       - name: Show sccache stats
         run: sccache --show-stats
       - name: Install debugger
-        run: sudo apt-get install -yqq --no-install-recommends gdb
+        run: sudo apt-get install -yqq --no-install-recommends gdb valgrind
       - name: Record X11 library and server versions
         run: |
           dpkg-query -W xvfb libx11-6 libxcb1 libxrender1 libxft2 libxext6
           uname -a
       - name: Stress reloads with diagnostic stacks
         run: |
-          display=100
-          for mode in grabbed ungrabbed; do
-            for args in '--iterations 10000 --hold-us 2000' \
-                        '--iterations 10000 --hold-us 2000 --signal-us 500' \
-                        '--iterations 10000 --hold-us 2000 --retain 3 --signal-us 500'; do
-              display=$((display + 1))
-              echo "===== $mode $args ====="
-              export CONKY_DIAG_MODE="minimal-$mode"
-              export CONKY_DIAG_MINIMAL_ARGS="$args"
-              # shellcheck disable=SC2016
-              xvfb-run -n "$display" -s '-screen 0 800x600x24 -noreset' sh -c \
-                'CONKY_TEST_X11_DISPLAY="$DISPLAY" python3 .github/scripts/x11-reload-diagnostics.py "$CONKY_DIAG_MODE"'
-            done
+          pids=()
+          for worker in $(seq 1 6); do
+            display=$((100 + worker))
+            mode=grabbed
+            if (( worker > 4 )); then mode=valgrind-grabbed; fi
+            export CONKY_DIAG_MODE="$mode"
+            # shellcheck disable=SC2016
+            xvfb-run -n "$display" -s '-screen 0 800x600x24 -noreset' sh -c \
+              'CONKY_TEST_X11_DISPLAY="$DISPLAY" python3 .github/scripts/x11-reload-diagnostics.py "$CONKY_DIAG_MODE"' > "diagnostic-$worker.log" 2>&1 &
+            pids+=("$!")
           done
+          for pid in "${pids[@]}"; do wait "$pid"; done
+          for log in diagnostic-*.log; do echo "===== $log ====="; cat "$log"; done

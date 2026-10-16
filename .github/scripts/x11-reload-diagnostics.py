@@ -13,6 +13,8 @@ import unittest
 
 
 mode = sys.argv[1]
+valgrind = mode.startswith("valgrind-")
+mode = mode.removeprefix("valgrind-")
 minimal = mode.startswith("minimal-")
 mode = mode.removeprefix("minimal-")
 if minimal:
@@ -43,6 +45,14 @@ elif mode != "grabbed":
 os.environ["CONKY_TEST_X11_XFT"] = "1"
 sys.argv = ["tests/test-x11-reload.py", "build/src/conky", str(probe)]
 namespace = runpy.run_path(sys.argv[0])
+if valgrind:
+    wrapper = Path(f"build/conky-valgrind-{os.getpid()}").resolve()
+    wrapper.write_text("#!/bin/sh\nexec valgrind --error-exitcode=99 "
+                       "--exit-on-first-error=yes --leak-check=no "
+                       "--track-origins=yes --num-callers=30 "
+                       + shlex.quote(namespace["BINARY"]) + ' "$@"\n')
+    wrapper.chmod(0o755)
+    namespace["X11Reload"].start.__globals__["BINARY"] = str(wrapper)
 
 
 class DiagnosticReload(namespace["X11Reload"]):
@@ -112,7 +122,9 @@ class DiagnosticReload(namespace["X11Reload"]):
                 if self.process is not None and pid == str(self.process.pid):
                     commands += ["p *display", "p display->request",
                                  "p display->last_request_read", "p *display->xcb",
-                                 "p *display->xcb->connection", "bt full"]
+                                 "p *display->xcb->connection", "bt full",
+                                 "set $ext=display->ext_procs",
+                                 "while $ext\np *$ext\nset $ext=$ext->next\nend"]
                 else:
                     commands += ["p GrabInProgress", "p grabState",
                                  "p currentMaxClients", "p ready_clients",
@@ -146,7 +158,7 @@ class DiagnosticReload(namespace["X11Reload"]):
 suite = unittest.TestSuite(
     DiagnosticReload("test_minimal_reconnect" if minimal else
                      "test_console_retires_window_and_x11_can_restart")
-    for _ in range(1 if minimal else 100)
+    for _ in range(1 if minimal else (25 if valgrind else 100))
 )
 result = unittest.TextTestRunner(verbosity=2, failfast=True).run(suite)
 print(f"DIAGNOSTIC RESULT {mode}: success={result.wasSuccessful()}", flush=True)
