@@ -35,6 +35,7 @@
 #include <pango/pangofc-fontmap.h>
 
 #include <fcntl.h>
+#include <poll.h>
 #include <sys/epoll.h>
 #include <sys/mman.h>
 #include <sys/timerfd.h>
@@ -51,6 +52,7 @@
 #include <csignal>
 #include <cstdint>
 #include <cstring>
+#include <ctime>
 #include <memory>
 
 #include "../conky.h"
@@ -260,6 +262,12 @@ struct window {
   /// when the window is reallocated (see window_resize).
   float pending_scale = 1.0f;
   int current_buffer;
+  /// @brief Consecutive frames dropped because the compositor held both
+  /// buffers (see window_commit_buffer).
+  int skipped_frames = 0;
+  /// @brief Consecutive commits where the other buffer's release never came
+  /// (see window_commit_buffer).
+  int missed_releases = 0;
   std::shared_ptr<cairo_surface_t> shm_surface[2];
   std::unique_ptr<uint8_t[]> private_buffer;
   std::shared_ptr<cairo_surface_t> cairo_surface;
@@ -1139,6 +1147,57 @@ static void shm_surface_data_destroy(void *p) {
   delete data;
 }
 
+static shm_surface_data *get_shm_surface_data(cairo_surface_t *surface) {
+  if (surface == nullptr) return nullptr;
+  return static_cast<shm_surface_data *>(
+      cairo_surface_get_user_data(surface, &shm_surface_data_key));
+}
+
+static bool shm_surface_busy(const std::shared_ptr<cairo_surface_t> &surface) {
+  auto *data = get_shm_surface_data(surface.get());
+  return data != nullptr && data->busy;
+}
+
+// Wait up to timeout_ms for wl_buffer.release. Returns true if it came.
+// Don't loop on wl_display_dispatch() here: if the compositor sits on the
+// buffer (KWin does this now and then) conky hangs forever.
+static bool wait_for_buffer_release(shm_surface_data *data, int timeout_ms) {
+  if (data == nullptr || !data->busy) return true;
+  struct timespec start;
+  clock_gettime(CLOCK_MONOTONIC, &start);
+  while (data->busy) {
+    while (wl_display_prepare_read(global_display) != 0) {
+      if (wl_display_dispatch_pending(global_display) == -1) return false;
+    }
+    if (!data->busy) {
+      wl_display_cancel_read(global_display);
+      break;
+    }
+    wl_display_flush(global_display);
+
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    long elapsed = (now.tv_sec - start.tv_sec) * 1000 +
+                   (now.tv_nsec - start.tv_nsec) / 1000000;
+    int remaining = timeout_ms - static_cast<int>(elapsed);
+    if (remaining <= 0) {
+      wl_display_cancel_read(global_display);
+      return false;
+    }
+
+    pollfd pfd = {wl_display_get_fd(global_display), POLLIN, 0};
+    int ready = poll(&pfd, 1, remaining);
+    if (ready > 0) {
+      if (wl_display_read_events(global_display) == -1) return false;
+    } else {
+      wl_display_cancel_read(global_display);
+      if (ready < 0 && errno != EINTR) return false;
+    }
+    if (wl_display_dispatch_pending(global_display) == -1) return false;
+  }
+  return true;
+}
+
 static wl_shm_pool *make_shm_pool(wl_shm *shm, int size, void **data) {
   wl_shm_pool *pool;
   int fd;
@@ -1286,9 +1345,9 @@ static std::shared_ptr<conky::draw_surface> create_shm_surface_from_pool(
   });
 }
 
-void window_allocate_buffer(window *window) {
-  assert(window->shm != nullptr);
-
+// Creates the two wl_shm buffers that frames are copied into before commit.
+// On failure the window keeps whatever buffers it had.
+static bool window_allocate_shm_buffers(window *window) {
   float scale = window->scale;
   shm_pool *pool;
   pool = shm_pool_create(
@@ -1296,19 +1355,20 @@ void window_allocate_buffer(window *window) {
   if (!pool) {
     LOG_ERROR("could not allocate shm pool for {}x{} window",
               window->rectangle.width(), window->rectangle.height());
-    return;
+    return false;
   }
+  std::shared_ptr<cairo_surface_t> fresh[2];
   for (int i = 0; i < 2; ++i) {
-    window->shm_surface[i] = create_shm_surface_from_pool(
-        window->shm, &window->rectangle, pool, scale);
+    fresh[i] = create_shm_surface_from_pool(window->shm, &window->rectangle,
+                                            pool, scale);
 
-    if (!window->shm_surface[i]) {
-      if (i == 1) { window->shm_surface[0] = nullptr; }
+    if (!fresh[i]) {
+      fresh[0] = nullptr;
       shm_pool_destroy(pool);
-      return;
+      return false;
     }
 
-    auto cs = window->shm_surface[i].get();
+    auto cs = fresh[i].get();
     cairo_surface_set_device_scale(cs, scale, scale);
 
     /* make sure we destroy the pool when the surface is destroyed */
@@ -1316,7 +1376,19 @@ void window_allocate_buffer(window *window) {
         cairo_surface_get_user_data(cs, &shm_surface_data_key));
     data->pool = (i == 1) ? pool : nullptr;
   }
+  window->shm_surface[0] = std::move(fresh[0]);
+  window->shm_surface[1] = std::move(fresh[1]);
   window->current_buffer = 0;
+  window->skipped_frames = 0;
+  window->missed_releases = 0;
+  return true;
+}
+
+void window_allocate_buffer(window *window) {
+  assert(window->shm != nullptr);
+
+  float scale = window->scale;
+  if (!window_allocate_shm_buffers(window)) return;
 
   int stride = stride_for_shm_surface(&window->rectangle, scale);
   int length = data_length_for_shm_surface(&window->rectangle, scale);
@@ -1412,6 +1484,40 @@ void window_resize(window *window, int width, int height) {
 void window_commit_buffer(window *window) {
   assert(window->shm_surface[window->current_buffer] != nullptr);
 
+  // Don't wait on the compositor forever. Use whichever buffer is free. If
+  // both are held, skip this frame, and after a few skips just make new
+  // buffers. Same if one buffer keeps missing its release while the other
+  // one works, otherwise every frame eats the full wait below.
+  constexpr int kMaxSkippedFrames = 3;
+  if (window->missed_releases > kMaxSkippedFrames) {
+    LOG_WARNING("compositor keeps holding a buffer, reallocating them");
+    if (!window_allocate_shm_buffers(window)) window->missed_releases = 0;
+  }
+  if (shm_surface_busy(window->shm_surface[window->current_buffer])) {
+    wait_for_buffer_release(
+        get_shm_surface_data(window->shm_surface[window->current_buffer].get()),
+        50);
+  }
+  if (shm_surface_busy(window->shm_surface[window->current_buffer]) &&
+      !shm_surface_busy(window->shm_surface[1 - window->current_buffer])) {
+    window->current_buffer = 1 - window->current_buffer;
+  }
+  if (shm_surface_busy(window->shm_surface[window->current_buffer])) {
+    if (++window->skipped_frames <= kMaxSkippedFrames) {
+      LOG_WARNING("compositor holds both buffers, skipping frame ({}/{})",
+                  window->skipped_frames, kMaxSkippedFrames);
+      wl_display_flush(global_display);
+      return;
+    }
+    LOG_WARNING("compositor never released buffers, reallocating them");
+    if (!window_allocate_shm_buffers(window)) {
+      // Keep the old buffers and try again in a few frames.
+      window->skipped_frames = 0;
+      return;
+    }
+  }
+  window->skipped_frames = 0;
+
   cairo_surface_flush(window->cairo_surface.get());
 
   float scale = window->scale;
@@ -1445,10 +1551,17 @@ void window_commit_buffer(window *window) {
       cairo_surface_get_user_data(shm_surf, &shm_surface_data_key));
   data->busy = true;
   window->current_buffer = 1 - window->current_buffer;
-  auto next_surf = window->shm_surface[window->current_buffer].get();
-  shm_surface_data *next_data = static_cast<shm_surface_data *>(
-      cairo_surface_get_user_data(next_surf, &shm_surface_data_key));
-  while (next_data->busy) { wl_display_dispatch(global_display); }
+  // Still eat the release here (with a timeout). If it's left for
+  // main_loop_wait() it wakes epoll every frame, update_text() never runs, and
+  // the text goes stale.
+  if (wait_for_buffer_release(
+          get_shm_surface_data(
+              window->shm_surface[window->current_buffer].get()),
+          200)) {
+    window->missed_releases = 0;
+  } else {
+    ++window->missed_releases;
+  }
 }
 
 void window_get_width_height(window *window, int *w, int *h) {
