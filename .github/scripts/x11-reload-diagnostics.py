@@ -12,6 +12,17 @@ import unittest
 
 
 mode = sys.argv[1]
+minimal = mode.startswith("minimal-")
+mode = mode.removeprefix("minimal-")
+if minimal:
+    flags = subprocess.check_output(
+        ["pkg-config", "--cflags", "--libs", "xft", "x11"], text=True
+    ).split()
+    subprocess.run(
+        ["clang++", "-std=c++17", "-g", "-O0", "-Wall", "-Wextra", "-Werror",
+         ".github/scripts/x11-reconnect-reproducer.cc", *flags,
+         "-o", "build/x11-reconnect-reproducer"], check=True,
+    )
 probe = Path("build/tests/x11-test-probe").resolve()
 if mode == "ungrabbed":
     # A diagnostic control only: dropping the grab restores snapshot races,
@@ -35,6 +46,25 @@ namespace = runpy.run_path(sys.argv[0])
 
 class DiagnosticReload(namespace["X11Reload"]):
     diagnosed = False
+
+    def test_minimal_reconnect(self):
+        self.process = subprocess.Popen(
+            ["build/x11-reconnect-reproducer", "1000"],
+            env=namespace["ENVIRONMENT"], stdin=subprocess.DEVNULL,
+            stdout=self.log, stderr=subprocess.STDOUT,
+        )
+        self.addCleanup(self.stop)
+        deadline = time.monotonic() + 90
+        count = 0
+        while self.process.poll() is None and time.monotonic() < deadline:
+            self.probe()
+            count += 1
+            time.sleep(0.025)
+        print(f"Minimal reproducer: {count} observer snapshots", flush=True)
+        if self.process.poll() is None:
+            self.fail("Minimal reconnect hung: " + self.log_path.read_text()[-4000:])
+        self.assertEqual(self.process.returncode, 0, self.log_path.read_text()[-4000:])
+        print(self.log_path.read_text()[-1000:], flush=True)
 
     def probe(self):
         if mode == "grabbed":
@@ -106,8 +136,9 @@ class DiagnosticReload(namespace["X11Reload"]):
 
 
 suite = unittest.TestSuite(
-    DiagnosticReload("test_console_retires_window_and_x11_can_restart")
-    for _ in range(50)
+    DiagnosticReload("test_minimal_reconnect" if minimal else
+                     "test_console_retires_window_and_x11_can_restart")
+    for _ in range(1 if minimal else 50)
 )
 result = unittest.TextTestRunner(verbosity=2, failfast=True).run(suite)
 print(f"DIAGNOSTIC RESULT {mode}: success={result.wasSuccessful()}", flush=True)
