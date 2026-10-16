@@ -75,12 +75,16 @@ class DiagnosticReload(namespace["X11Reload"]):
                     commands += ["p GrabInProgress", "p grabState",
                                  "p currentMaxClients", "p ready_clients",
                                  "p saved_ready_clients",
-                                 "p output_pending_clients",
+                                 "p output_pending_clients", "p NewOutputPending",
+                                 "p CriticalOutputPending", "p *server_poll",
                                  "set $i=1",
                                  "while $i<currentMaxClients\n"
                                  "if clients[$i]\n"
                                  "p *clients[$i]\n"
                                  "p *(OsCommPtr)clients[$i]->osPrivate\n"
+                                 "if ((OsCommPtr)clients[$i]->osPrivate)->output\n"
+                                 "p *((OsCommPtr)clients[$i]->osPrivate)->output\n"
+                                 "end\n"
                                  "end\nset $i=$i+1\nend"]
                 try:
                     subprocess.run(
