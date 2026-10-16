@@ -64,7 +64,13 @@ class DiagnosticReload(namespace["X11Reload"]):
             result = subprocess.run(
                 ["pgrep", "-x", "Xvfb"], text=True, capture_output=True, check=False
             )
-            pids.extend(result.stdout.split())
+            for server_pid in result.stdout.split():
+                try:
+                    argv = Path(f"/proc/{server_pid}/cmdline").read_bytes().split(b"\0")
+                except FileNotFoundError:
+                    continue
+                if len(argv) > 1 and argv[1].decode() == os.environ["CONKY_TEST_X11_DISPLAY"]:
+                    pids.append(server_pid)
             for pid in pids:
                 print(f"\nSTACKS FOR PID {pid}", flush=True)
                 commands = ["set pagination off", "thread apply all bt"]

@@ -152,10 +152,21 @@ jobs:
         run: sudo apt-get install -yqq --no-install-recommends gdb
       - name: Stress reloads with diagnostic stacks
         run: |
-          # Each observer gets its own isolated server; no desktop is touched.
-          # shellcheck disable=SC2016
-          xvfb-run -a -s '-screen 0 800x600x24 -noreset' sh -c \
-            'CONKY_TEST_X11_DISPLAY="$DISPLAY" python3 .github/scripts/x11-reload-diagnostics.py grabbed'
-          # shellcheck disable=SC2016
-          xvfb-run -a -s '-screen 0 800x600x24 -noreset' sh -c \
-            'CONKY_TEST_X11_DISPLAY="$DISPLAY" python3 .github/scripts/x11-reload-diagnostics.py ungrabbed'
+          # Independent servers exercise scheduling overlap without sharing XIDs.
+          pids=()
+          for display in 100 101 102 103; do
+            # shellcheck disable=SC2016
+            xvfb-run -n "$display" -s '-screen 0 800x600x24 -noreset' sh -c \
+              'CONKY_TEST_X11_DISPLAY="$DISPLAY" python3 .github/scripts/x11-reload-diagnostics.py grabbed' \
+              > "build/reload-$display.log" 2>&1 &
+            pids+=("$!")
+          done
+          status=0
+          for pid in "${pids[@]}"; do
+            wait "$pid" || status=1
+          done
+          for display in 100 101 102 103; do
+            echo "=== Isolated display $display ==="
+            cat "build/reload-$display.log"
+          done
+          exit "$status"
