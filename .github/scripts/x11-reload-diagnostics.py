@@ -2,10 +2,12 @@
 """Temporary CI investigation of the intermittent X11 reload hang."""
 
 import os
+import json
 from pathlib import Path
 import runpy
 import subprocess
 import sys
+import time
 import unittest
 
 
@@ -34,6 +36,24 @@ namespace = runpy.run_path(sys.argv[0])
 class DiagnosticReload(namespace["X11Reload"]):
     diagnosed = False
 
+    def probe(self):
+        if mode == "grabbed":
+            return super().probe()
+        # Diagnostic only: skip inconsistent snapshots, retaining the original
+        # deadline and all application/log assertions. Never use this control
+        # as a replacement regression test without classifying X errors.
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline:
+            result = subprocess.run(
+                [str(probe)], env=namespace["ENVIRONMENT"], text=True,
+                capture_output=True, timeout=5, check=False,
+            )
+            if result.returncode == 0:
+                return json.loads(result.stdout)
+            print(f"Discarding raced control snapshot: {result.stdout}", flush=True)
+            time.sleep(0.025)
+        self.fail("No valid ungrabbed snapshot within five seconds")
+
     def fail(self, msg=None):
         if not self.diagnosed:
             self.diagnosed = True
@@ -47,11 +67,28 @@ class DiagnosticReload(namespace["X11Reload"]):
             pids.extend(result.stdout.split())
             for pid in pids:
                 print(f"\nSTACKS FOR PID {pid}", flush=True)
+                commands = ["set pagination off", "set debuginfod enabled on",
+                            "set debuginfod urls https://debuginfod.ubuntu.com",
+                            "thread apply all bt"]
+                if self.process is not None and pid == str(self.process.pid):
+                    commands += ["p *display", "p display->request",
+                                 "p display->last_request_read"]
+                else:
+                    commands += ["p GrabInProgress", "p grabState",
+                                 "p currentMaxClients", "p ready_clients",
+                                 "p saved_ready_clients",
+                                 "p output_pending_clients",
+                                 "set $i=1",
+                                 "while $i<currentMaxClients\n"
+                                 "if clients[$i]\n"
+                                 "p *clients[$i]\n"
+                                 "p *(OsCommPtr)clients[$i]->osPrivate\n"
+                                 "end\nset $i=$i+1\nend"]
                 try:
                     subprocess.run(
-                        ["sudo", "-n", "gdb", "-batch", "-ex", "set pagination off",
-                         "-ex", "thread apply all bt", "-p", pid],
-                        timeout=20, check=False,
+                        ["sudo", "-n", "gdb", "-batch",
+                         *[arg for cmd in commands for arg in ("-ex", cmd)],
+                         "-p", pid], timeout=90, check=False,
                     )
                 except subprocess.TimeoutExpired:
                     print("Debugger timed out", flush=True)
