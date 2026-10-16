@@ -2,6 +2,7 @@
 """Temporary CI investigation of the intermittent X11 reload hang."""
 
 import os
+import shlex
 import json
 from pathlib import Path
 import runpy
@@ -16,7 +17,7 @@ minimal = mode.startswith("minimal-")
 mode = mode.removeprefix("minimal-")
 if minimal:
     flags = subprocess.check_output(
-        ["pkg-config", "--cflags", "--libs", "xft", "x11"], text=True
+        ["pkg-config", "--cflags", "--libs", "xft", "x11", "xext"], text=True
     ).split()
     subprocess.run(
         ["clang++", "-std=c++17", "-g", "-O0", "-Wall", "-Wextra", "-Werror",
@@ -49,7 +50,7 @@ class DiagnosticReload(namespace["X11Reload"]):
 
     def test_minimal_reconnect(self):
         self.process = subprocess.Popen(
-            ["build/x11-reconnect-reproducer", "1000"],
+            ["build/x11-reconnect-reproducer", *shlex.split(os.environ.get("CONKY_DIAG_MINIMAL_ARGS", "--iterations 1000"))],
             env=namespace["ENVIRONMENT"], stdin=subprocess.DEVNULL,
             stdout=self.log, stderr=subprocess.STDOUT,
         )
@@ -105,10 +106,13 @@ class DiagnosticReload(namespace["X11Reload"]):
                 print(f"\nSTACKS FOR PID {pid}", flush=True)
                 subprocess.run(["sudo", "-n", "ls", "-l", f"/proc/{pid}/fd"], check=False)
                 subprocess.run(["sudo", "-n", "cat", f"/proc/{pid}/net/unix"], check=False)
+                for info in Path(f"/proc/{pid}/fdinfo").glob("*"):
+                    subprocess.run(["sudo", "-n", "cat", str(info)], check=False)
                 commands = ["set pagination off", "thread apply all bt"]
                 if self.process is not None and pid == str(self.process.pid):
                     commands += ["p *display", "p display->request",
-                                 "p display->last_request_read"]
+                                 "p display->last_request_read", "p *display->xcb",
+                                 "p *display->xcb->connection", "bt full"]
                 else:
                     commands += ["p GrabInProgress", "p grabState",
                                  "p currentMaxClients", "p ready_clients",
@@ -120,6 +124,9 @@ class DiagnosticReload(namespace["X11Reload"]):
                                  "if clients[$i]\n"
                                  "p *clients[$i]\n"
                                  "p *(OsCommPtr)clients[$i]->osPrivate\n"
+                                 "if ((OsCommPtr)clients[$i]->osPrivate)->input\n"
+                                 "p *((OsCommPtr)clients[$i]->osPrivate)->input\n"
+                                 "end\n"
                                  "if ((OsCommPtr)clients[$i]->osPrivate)->output\n"
                                  "p *((OsCommPtr)clients[$i]->osPrivate)->output\n"
                                  "end\n"
@@ -127,8 +134,7 @@ class DiagnosticReload(namespace["X11Reload"]):
                 try:
                     subprocess.run(
                         ["sudo", "-n", "gdb", "-batch",
-                         "-iex", "set debuginfod enabled on",
-                         "-iex", "set debuginfod urls https://debuginfod.ubuntu.com",
+                         "-iex", "set debuginfod enabled off",
                          *[arg for cmd in commands for arg in ("-ex", cmd)],
                          "-p", pid], timeout=90, check=False,
                     )
