@@ -14,6 +14,23 @@
 #include <cstdlib>
 #include <cstring>
 
+// Diagnostic-only inspection of libXrender 0.9.10's exported cache. The
+// production fix uses only XRenderQueryExtension, never these internals.
+extern "C" {
+struct render_display_info {
+  render_display_info* next;
+  Display* display;
+  XExtCodes* codes;
+  void* info;
+};
+struct render_extension_info {
+  render_display_info* head;
+  render_display_info* cur;
+  int ndisplays;
+};
+extern render_extension_info XRenderExtensionInfo;
+}
+
 namespace {
 long iteration = 0;
 volatile sig_atomic_t signal_seen = 0;
@@ -60,10 +77,11 @@ void usage(const char* program) {
 
 int main(int argc, char** argv) {
   long iterations = 1000, retain = 1, delay = 0, hold = 20000, signal_us = 0;
-  bool sync = false, restart = true, draw = true;
+  bool sync = false, restart = true, draw = true, prepare_render = false;
   for (int i = 1; i < argc; ++i) {
     const char* arg = argv[i];
-    if (!std::strcmp(arg, "--sync-before-font")) sync = true;
+    if (!std::strcmp(arg, "--prepare-render")) prepare_render = true;
+    else if (!std::strcmp(arg, "--sync-before-font")) sync = true;
     else if (!std::strcmp(arg, "--no-restart")) restart = false;
     else if (!std::strcmp(arg, "--no-xft-draw")) draw = false;
     else if (!std::strcmp(arg, "--help")) { usage(argv[0]); return 0; }
@@ -105,6 +123,10 @@ int main(int argc, char** argv) {
       stage("XOpenDisplay begin");
       display = XOpenDisplay(display_name);
       if (!display) fail("XOpenDisplay failed");
+      if (prepare_render) {
+        int event_base = 0, error_base = 0;
+        XRenderQueryExtension(display, &event_base, &error_base);
+      }
       int screen = DefaultScreen(display);
       XSetWindowAttributes attrs {};
       attrs.background_pixel = BlackPixel(display, screen);
@@ -146,6 +168,15 @@ int main(int argc, char** argv) {
       xft_draw = XftDrawCreate(display, back, DefaultVisual(display, screen),
                                DefaultColormap(display, screen));
       if (!xft_draw) fail("XftDrawCreate failed");
+      XftColor color{};
+      XRenderColor value{65535, 65535, 65535, 65535};
+      if (!XftColorAllocValue(display, DefaultVisual(display, screen),
+                             DefaultColormap(display, screen), &value, &color))
+        fail("XftColorAllocValue failed");
+      const FcChar8 text[] = "Conky reload glyphs";
+      XftDrawStringUtf8(xft_draw, &color, font, 0, 20, text, sizeof(text) - 1);
+      XftColorFree(display, DefaultVisual(display, screen),
+                   DefaultColormap(display, screen), &color);
     }
     if (hold) usleep(static_cast<useconds_t>(hold));
     stage("XftFontClose begin");
@@ -159,6 +190,11 @@ int main(int argc, char** argv) {
       window = None;
       stage("XCloseDisplay begin");
       XCloseDisplay(display);
+      for (auto* entry = XRenderExtensionInfo.head; entry; entry = entry->next) {
+        if (entry->display == display) {
+          fail("Render cache still references closed Display after glyph cleanup");
+        }
+      }
       display = nullptr;
       stage("XCloseDisplay done");
     }

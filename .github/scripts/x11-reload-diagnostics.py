@@ -19,10 +19,10 @@ minimal = mode.startswith("minimal-")
 mode = mode.removeprefix("minimal-")
 if minimal:
     flags = subprocess.check_output(
-        ["pkg-config", "--cflags", "--libs", "xft", "x11", "xext"], text=True
+        ["pkg-config", "--cflags", "--libs", "xft", "x11", "xext", "xrender"], text=True
     ).split()
     subprocess.run(
-        ["clang++", "-std=c++17", "-g", "-O0", "-Wall", "-Wextra", "-Werror",
+        ["clang++", "-std=c++17", "-g", "-gdwarf-4", "-O0", "-Wall", "-Wextra", "-Werror",
          ".github/scripts/x11-reconnect-reproducer.cc", *flags,
          "-o", "build/x11-reconnect-reproducer"], check=True,
     )
@@ -47,10 +47,12 @@ sys.argv = ["tests/test-x11-reload.py", "build/src/conky", str(probe)]
 namespace = runpy.run_path(sys.argv[0])
 if valgrind:
     wrapper = Path(f"build/conky-valgrind-{os.getpid()}").resolve()
+    checked_binary = Path(f"build/conky-memcheck-{os.getpid()}").resolve()
+    subprocess.run(["objcopy", "--strip-debug", namespace["BINARY"], str(checked_binary)], check=True)
     wrapper.write_text("#!/bin/sh\nexec valgrind --error-exitcode=99 "
                        "--exit-on-first-error=yes --leak-check=no "
                        "--track-origins=yes --num-callers=30 "
-                       + shlex.quote(namespace["BINARY"]) + ' "$@"\n')
+                       + shlex.quote(str(checked_binary)) + ' "$@"\n')
     wrapper.chmod(0o755)
     namespace["X11Reload"].start.__globals__["BINARY"] = str(wrapper)
 
@@ -59,8 +61,10 @@ class DiagnosticReload(namespace["X11Reload"]):
     diagnosed = False
 
     def test_minimal_reconnect(self):
+        prefix = (["valgrind", "--error-exitcode=99", "--exit-on-first-error=yes",
+                   "--leak-check=no", "--num-callers=30"] if valgrind else [])
         self.process = subprocess.Popen(
-            ["build/x11-reconnect-reproducer", *shlex.split(os.environ.get("CONKY_DIAG_MINIMAL_ARGS", "--iterations 1000"))],
+            [*prefix, "build/x11-reconnect-reproducer", *shlex.split(os.environ.get("CONKY_DIAG_MINIMAL_ARGS", "--iterations 1000"))],
             env=namespace["ENVIRONMENT"], stdin=subprocess.DEVNULL,
             stdout=self.log, stderr=subprocess.STDOUT,
         )
@@ -124,7 +128,13 @@ class DiagnosticReload(namespace["X11Reload"]):
                                  "p display->last_request_read", "p *display->xcb",
                                  "p *display->xcb->connection", "bt full",
                                  "set $ext=display->ext_procs",
-                                 "while $ext\np *$ext\nset $ext=$ext->next\nend"]
+                                 "while $ext\np *$ext\nset $ext=$ext->next\nend",
+                                 "set $ri=(char*)&XRenderExtensionInfo", "x/3gx $ri",
+                                 "set $node=*(char**)$ri", "set $n=0",
+                                 "while $node && $n<20\nx/4gx $node\n"
+                                 "set $codes=*(char**)($node+16)\n"
+                                 "if $codes\nx/4dw $codes\nend\n"
+                                 "set $node=*(char**)$node\nset $n=$n+1\nend"]
                 else:
                     commands += ["p GrabInProgress", "p grabState",
                                  "p currentMaxClients", "p ready_clients",

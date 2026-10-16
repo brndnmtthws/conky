@@ -156,9 +156,22 @@ jobs:
           uname -a
       - name: Stress reloads with diagnostic stacks
         run: |
+          # Baseline must demonstrate the closed-display cache defect.
+          # shellcheck disable=SC2016
+          CONKY_DIAG_MINIMAL_ARGS='--iterations 20 --hold-us 2000' \
+            xvfb-run -n 100 -s '-screen 0 800x600x24 -noreset' sh -c \
+            'CONKY_TEST_X11_DISPLAY="$DISPLAY" python3 .github/scripts/x11-reload-diagnostics.py minimal-grabbed'
+          # The same drawing sequence with corrected dependency ordering.
+          # shellcheck disable=SC2016
+          CONKY_DIAG_MINIMAL_ARGS='--iterations 1000 --hold-us 2000 --prepare-render' \
+            xvfb-run -n 101 -s '-screen 0 800x600x24 -noreset' sh -c \
+            'CONKY_TEST_X11_DISPLAY="$DISPLAY" python3 .github/scripts/x11-reload-diagnostics.py valgrind-minimal-grabbed'
+          # shellcheck disable=SC2016
+          xvfb-run -n 102 -s '-screen 0 800x600x24 -noreset' sh -c \
+            'CONKY_TEST_X11_DISPLAY="$DISPLAY" ctest --test-dir build --output-on-failure'
           pids=()
           for worker in $(seq 1 6); do
-            display=$((100 + worker))
+            display=$((110 + worker))
             mode=grabbed
             if (( worker > 4 )); then mode=valgrind-grabbed; fi
             export CONKY_DIAG_MODE="$mode"
