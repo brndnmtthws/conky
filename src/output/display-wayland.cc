@@ -265,6 +265,9 @@ struct window {
   /// @brief Consecutive frames dropped because the compositor held both
   /// buffers (see window_commit_buffer).
   int skipped_frames = 0;
+  /// @brief Consecutive commits where the other buffer's release never came
+  /// (see window_commit_buffer).
+  int missed_releases = 0;
   std::shared_ptr<cairo_surface_t> shm_surface[2];
   std::unique_ptr<uint8_t[]> private_buffer;
   std::shared_ptr<cairo_surface_t> cairo_surface;
@@ -1343,6 +1346,7 @@ static std::shared_ptr<conky::draw_surface> create_shm_surface_from_pool(
 }
 
 // Creates the two wl_shm buffers that frames are copied into before commit.
+// On failure the window keeps whatever buffers it had.
 static bool window_allocate_shm_buffers(window *window) {
   float scale = window->scale;
   shm_pool *pool;
@@ -1353,17 +1357,18 @@ static bool window_allocate_shm_buffers(window *window) {
               window->rectangle.width(), window->rectangle.height());
     return false;
   }
+  std::shared_ptr<cairo_surface_t> fresh[2];
   for (int i = 0; i < 2; ++i) {
-    window->shm_surface[i] = create_shm_surface_from_pool(
-        window->shm, &window->rectangle, pool, scale);
+    fresh[i] = create_shm_surface_from_pool(window->shm, &window->rectangle,
+                                            pool, scale);
 
-    if (!window->shm_surface[i]) {
-      if (i == 1) { window->shm_surface[0] = nullptr; }
+    if (!fresh[i]) {
+      fresh[0] = nullptr;
       shm_pool_destroy(pool);
       return false;
     }
 
-    auto cs = window->shm_surface[i].get();
+    auto cs = fresh[i].get();
     cairo_surface_set_device_scale(cs, scale, scale);
 
     /* make sure we destroy the pool when the surface is destroyed */
@@ -1371,8 +1376,11 @@ static bool window_allocate_shm_buffers(window *window) {
         cairo_surface_get_user_data(cs, &shm_surface_data_key));
     data->pool = (i == 1) ? pool : nullptr;
   }
+  window->shm_surface[0] = std::move(fresh[0]);
+  window->shm_surface[1] = std::move(fresh[1]);
   window->current_buffer = 0;
   window->skipped_frames = 0;
+  window->missed_releases = 0;
   return true;
 }
 
@@ -1478,8 +1486,13 @@ void window_commit_buffer(window *window) {
 
   // Don't wait on the compositor forever. Use whichever buffer is free. If
   // both are held, skip this frame, and after a few skips just make new
-  // buffers.
+  // buffers. Same if one buffer keeps missing its release while the other
+  // one works, otherwise every frame eats the full wait below.
   constexpr int kMaxSkippedFrames = 3;
+  if (window->missed_releases > kMaxSkippedFrames) {
+    LOG_WARNING("compositor keeps holding a buffer, reallocating them");
+    if (!window_allocate_shm_buffers(window)) window->missed_releases = 0;
+  }
   if (shm_surface_busy(window->shm_surface[window->current_buffer])) {
     wait_for_buffer_release(
         get_shm_surface_data(window->shm_surface[window->current_buffer].get()),
@@ -1497,8 +1510,11 @@ void window_commit_buffer(window *window) {
       return;
     }
     LOG_WARNING("compositor never released buffers, reallocating them");
-    for (auto &surface : window->shm_surface) { surface = nullptr; }
-    if (!window_allocate_shm_buffers(window)) return;
+    if (!window_allocate_shm_buffers(window)) {
+      // Keep the old buffers and try again in a few frames.
+      window->skipped_frames = 0;
+      return;
+    }
   }
   window->skipped_frames = 0;
 
@@ -1538,9 +1554,14 @@ void window_commit_buffer(window *window) {
   // Still eat the release here (with a timeout). If it's left for
   // main_loop_wait() it wakes epoll every frame, update_text() never runs, and
   // the text goes stale.
-  wait_for_buffer_release(
-      get_shm_surface_data(window->shm_surface[window->current_buffer].get()),
-      200);
+  if (wait_for_buffer_release(
+          get_shm_surface_data(
+              window->shm_surface[window->current_buffer].get()),
+          200)) {
+    window->missed_releases = 0;
+  } else {
+    ++window->missed_releases;
+  }
 }
 
 void window_get_width_height(window *window, int *w, int *h) {
