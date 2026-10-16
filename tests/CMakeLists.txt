@@ -35,7 +35,7 @@ if(BUILD_X11)
   # those tests exist, without serializing the rest of the Catch2 suite.
   file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/x11-test-properties.cmake"
     CONTENT [=[
-foreach(x11_case x11_foreground_alpha x11_input_alpha x11_xft_color)
+foreach(x11_case x11_foreground_alpha x11_input_alpha x11_input_alpha_images x11_xft_color)
   list(FIND test-conky_TESTS ${x11_case} x11_case_index)
   if(NOT x11_case_index EQUAL -1)
     set_tests_properties(${x11_case} PROPERTIES
