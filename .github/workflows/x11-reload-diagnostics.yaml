@@ -152,10 +152,14 @@ jobs:
         run: sudo apt-get install -yqq --no-install-recommends gdb
       - name: Stress reloads with diagnostic stacks
         run: |
-          # A standalone Xlib/Xft program rules out Conky and Cairo lifetimes.
-          # shellcheck disable=SC2016
-          xvfb-run -n 100 -s '-screen 0 800x600x24 -noreset' sh -c \
-            'CONKY_TEST_X11_DISPLAY="$DISPLAY" python3 .github/scripts/x11-reload-diagnostics.py minimal-grabbed'
-          # shellcheck disable=SC2016
-          xvfb-run -n 101 -s '-screen 0 800x600x24 -noreset' sh -c \
-            'CONKY_TEST_X11_DISPLAY="$DISPLAY" python3 .github/scripts/x11-reload-diagnostics.py minimal-ungrabbed'
+          # Independent displays exercise reconnect timing without shared state.
+          pids=()
+          for worker in $(seq 1 8); do
+            display=$((100 + worker))
+            # shellcheck disable=SC2016
+            xvfb-run -n "$display" -s '-screen 0 800x600x24 -noreset' sh -c \
+              'CONKY_TEST_X11_DISPLAY="$DISPLAY" python3 .github/scripts/x11-reload-diagnostics.py grabbed' > "diagnostic-$worker.log" 2>&1 &
+            pids+=("$!")
+          done
+          for pid in "${pids[@]}"; do wait "$pid"; done
+          for log in diagnostic-*.log; do echo "===== $log ====="; cat "$log"; done

@@ -103,6 +103,8 @@ class DiagnosticReload(namespace["X11Reload"]):
                     pids.append(server_pid)
             for pid in pids:
                 print(f"\nSTACKS FOR PID {pid}", flush=True)
+                subprocess.run(["sudo", "-n", "ls", "-l", f"/proc/{pid}/fd"], check=False)
+                subprocess.run(["sudo", "-n", "cat", f"/proc/{pid}/net/unix"], check=False)
                 commands = ["set pagination off", "thread apply all bt"]
                 if self.process is not None and pid == str(self.process.pid):
                     commands += ["p *display", "p display->request",
@@ -138,7 +140,7 @@ class DiagnosticReload(namespace["X11Reload"]):
 suite = unittest.TestSuite(
     DiagnosticReload("test_minimal_reconnect" if minimal else
                      "test_console_retires_window_and_x11_can_restart")
-    for _ in range(1 if minimal else 50)
+    for _ in range(1 if minimal else 100)
 )
 result = unittest.TextTestRunner(verbosity=2, failfast=True).run(suite)
 print(f"DIAGNOSTIC RESULT {mode}: success={result.wasSuccessful()}", flush=True)
