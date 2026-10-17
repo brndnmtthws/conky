@@ -643,7 +643,10 @@ if(BUILD_X11)
 
       find_package(Fontconfig REQUIRED)
 
-      set(conky_libs ${conky_libs} ${X11_Xft_LIB} ${Fontconfig_LIBRARIES})
+      if(NOT X11_Xrender_FOUND)
+        message(FATAL_ERROR "Unable to find Xrender library (needed for Xft)")
+      endif()
+      set(conky_libs ${conky_libs} ${X11_Xft_LIB} ${X11_Xrender_LIB} ${Fontconfig_LIBRARIES})
       set(conky_includes ${conky_includes} ${FREETYPE_INCLUDE_DIR_freetype2} ${Fontconfig_INCLUDE_DIRS})
     endif(BUILD_XFT)
 

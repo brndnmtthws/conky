@@ -223,4 +223,34 @@ TEST_CASE("x11_xft_color", "[x11][integration][x11_xft]") {
     }
   }
 }
+TEST_CASE("x11_xft_reload", "[x11][integration][x11_xft_reload]") {
+  const char *test_display = std::getenv("CONKY_TEST_X11_DISPLAY");
+  if (!test_display || !*test_display) {
+    SKIP("set CONKY_TEST_X11_DISPLAY to an isolated test X server");
+  }
+  SECTION("reconnect_after_drawing_cached_glyphs") {
+    for (int cycle = 0; cycle < 8; ++cycle) {
+      CAPTURE(cycle);
+      {
+        xft_test_context context(test_display);
+        REQUIRE(display != nullptr);
+        int opcode, event_base, error_base;
+        // Query through core Xlib: calling XRenderQueryExtension here would
+        // initialize Render before the backend and hide the lifecycle bug.
+        if (!XQueryExtension(display, "RENDER", &opcode, &event_base,
+                             &error_base)) {
+          SKIP("test requires the X Render extension");
+        }
+        if (DefaultDepth(display, screen) != 24) {
+          SKIP("test requires a 24-bit root visual");
+        }
+        context.create(24, true);
+        // Opening a font is insufficient: draw to populate Xft's glyph cache,
+        // whose cleanup calls Render from the display-close hook.
+        context.check_glyph(255, 255);
+      }
+      CHECK(x11_errors.empty());
+    }
+  }
+}
 #endif  // BUILD_X11 && BUILD_XFT

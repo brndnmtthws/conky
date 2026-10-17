@@ -1099,6 +1099,16 @@ void display_output_x11::free_fonts(bool utf8) {
 #endif /* BUILD_XFT */
 }
 void display_output_x11::load_fonts(bool utf8) {
+#ifdef BUILD_XFT
+  if (x_fonts.empty() && !fonts.empty() && use_xft.get(*state)) {
+    // Xft 2.3.4 registers its close hook before initializing Render, but its
+    // cached glyph cleanup still needs Render at XCloseDisplay(). Initialize
+    // Render first so its hook runs after Xft's, without recreating a Render
+    // cache whose extension codes are freed when the display closes.
+    int event_base, error_base;
+    XRenderQueryExtension(display, &event_base, &error_base);
+  }
+#endif
   x_fonts.resize(fonts.size());
   for (unsigned int i = 0; i < fonts.size(); i++) {
     auto &font = fonts[i];
