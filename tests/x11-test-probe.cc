@@ -3,6 +3,7 @@
 #include <X11/Xutil.h>
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 namespace {
@@ -32,10 +33,40 @@ bool has_text(Display* display, Window window, const XWindowAttributes& attrs) {
 }
 }  // namespace
 
-int main() {
+int main(int argc, char** argv) {
   auto display = XOpenDisplay(nullptr);
   if (!display) { return 2; }
   XSetErrorHandler(on_error);
+  // The resize tests use an independent client for real external resizes and
+  // for notifications with obsolete dimensions. XSendEvent assigns the
+  // receiving client's current serial; old serials are covered separately by
+  // the ConfigureNotify handler tests.
+  if (argc == 5) {
+    Window target = std::strtoul(argv[2], nullptr, 10);
+    int width = std::atoi(argv[3]), height = std::atoi(argv[4]);
+    if (std::strcmp(argv[1], "--resize") == 0) {
+      XResizeWindow(display, target, width, height);
+    } else if (std::strcmp(argv[1], "--notify") == 0) {
+      XEvent event{};
+      event.xconfigure.type = ConfigureNotify;
+      event.xconfigure.display = display;
+      event.xconfigure.event = target;
+      event.xconfigure.window = target;
+      event.xconfigure.width = width;
+      event.xconfigure.height = height;
+      XSendEvent(display, target, False, StructureNotifyMask, &event);
+    } else {
+      XCloseDisplay(display);
+      return 2;
+    }
+    XSync(display, False);
+    XCloseDisplay(display);
+    return errors ? 1 : 0;
+  }
+  if (argc != 1) {
+    XCloseDisplay(display);
+    return 2;
+  }
   // Keep the snapshot consistent while Conky reloads: an enumerated window may
   // otherwise be destroyed, unmapped, or resized before its later queries.
   // This observer is only used on an isolated test server.

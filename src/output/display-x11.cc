@@ -58,6 +58,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <sstream>
 #include <unordered_map>
@@ -287,6 +288,7 @@ bool display_output_x11::main_loop_wait(double t) {
           (text_size + border_size != window.geometry.size())) {
         window.geometry.set_size(text_size + border_size);
         draw_stuff(); /* redraw everything in our newly sized window */
+        window.pending_resize_request = NextRequest(display);
         XResizeWindow(display, window.window, window.geometry.width(),
                       window.geometry.height()); /* resize window */
         set_transparent_background(&window);
@@ -651,22 +653,28 @@ bool handle_event(conky::display_output_x11 *surface, Display *display,
                   XConfigureEvent ev, conky::x11::event *propagated) {
   if (ev.type != ConfigureNotify) return false;
 
-  if (own_window.get(*state)) {
-    auto configure_size = vec2i(ev.width, ev.height);
-    /* if window size isn't what's expected, set fixed size */
-    if (configure_size != window.geometry.size()) {
+  if (own_window.get(*state) && ev.window == window.window) {
+    // Geometry already contains our latest requested size. An older event
+    // cannot establish that the WM/user resized it, even if the WM has not
+    // applied our request yet. Subtract unsigned serials to handle wraparound
+    // while the resize is pending (less than half the sequence space apart).
+    bool stale = window.pending_resize_request &&
+                 ev.serial - *window.pending_resize_request >
+                     std::numeric_limits<unsigned long>::max() / 2;
+    XWindowAttributes attrs;
+    // Event dimensions can also be outdated after the request was processed.
+    // Only a real, current size difference should disable content sizing.
+    bool configured =
+        !stale && XGetWindowAttributes(display, window.window, &attrs) != 0;
+    if (configured &&
+        vec2i(attrs.width, attrs.height) != window.geometry.size()) {
       if (window.geometry.size().surface() != 0) { fixed_size = 1; }
 
       /* clear old stuff before screwing up
        * size and pos */
       surface->clear_text(1);
 
-      {
-        XWindowAttributes attrs;
-        if (XGetWindowAttributes(display, window.window, &attrs) != 0) {
-          window.geometry.set_size(attrs.width, attrs.height);
-        }
-      }
+      window.geometry.set_size(attrs.width, attrs.height);
 
       auto border_total = vec2i::uniform(get_border_total() * 2);
       text_size = window.geometry.size() - border_total;
@@ -674,6 +682,12 @@ bool handle_event(conky::display_output_x11 *surface, Display *display,
       // don't apply dpi scaling to max pixel size
       int mw = dpi_scale(maximum_width.get(*state));
       if (mw > 0) { text_size.set_x(std::min(mw, text_size.x())); }
+    }
+    if (configured) {
+      // We observed the requested size or accepted an external resize.
+      // Current attributes protect us from later obsolete payloads; do not
+      // let the watermark age indefinitely on a long-running client.
+      window.pending_resize_request.reset();
     }
 
     // Keep window.geometry.pos() in sync with the actual screen position.

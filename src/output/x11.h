@@ -56,6 +56,7 @@ extern "C" {
 
 #include <cstdint>
 #include <functional>
+#include <optional>
 #include <vector>
 
 #include "../geometry.h"
@@ -143,6 +144,9 @@ struct conky_x11_window {
 
   /// @brief Window geometry in screen coordinate space
   conky::rect<int> geometry;
+
+  /// Pending content-size request, used to ignore older ConfigureNotify events.
+  std::optional<unsigned long> pending_resize_request;
 
   bool cursor_over_window = false;
 };
