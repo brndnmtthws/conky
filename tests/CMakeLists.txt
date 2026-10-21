@@ -35,7 +35,7 @@ if(BUILD_X11)
   # those tests exist, without serializing the rest of the Catch2 suite.
   file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/x11-test-properties.cmake"
     CONTENT [=[
-foreach(x11_case x11_foreground_alpha x11_input_alpha x11_input_alpha_images x11_xft_color x11_xft_reload)
+foreach(x11_case x11_foreground_alpha x11_input_alpha x11_input_alpha_images x11_xft_color x11_xft_reload x11_configure_size)
   list(FIND test-conky_TESTS ${x11_case} x11_case_index)
   if(NOT x11_case_index EQUAL -1)
     set_tests_properties(${x11_case} PROPERTIES
@@ -66,6 +66,13 @@ endforeach()
       set_tests_properties(x11_reload PROPERTIES
         TIMEOUT 90 SKIP_RETURN_CODE 77 LABELS "integration;x11"
         RESOURCE_LOCK x11_test_display)
+      add_test(NAME x11_resize
+        COMMAND ${Python3_EXECUTABLE}
+          ${CMAKE_CURRENT_SOURCE_DIR}/test-x11-resize.py
+          $<TARGET_FILE:conky> $<TARGET_FILE:x11-test-probe>)
+      set_tests_properties(x11_resize PROPERTIES
+        TIMEOUT 45 SKIP_RETURN_CODE 77 LABELS "integration;x11"
+        RESOURCE_LOCK x11_test_display)
       if(BUILD_XFT)
         add_test(NAME x11_reload_xft
           COMMAND ${Python3_EXECUTABLE}
@@ -73,6 +80,13 @@ endforeach()
             $<TARGET_FILE:conky> $<TARGET_FILE:x11-test-probe>)
         set_tests_properties(x11_reload_xft PROPERTIES
           TIMEOUT 90 SKIP_RETURN_CODE 77 LABELS "integration;x11"
+          RESOURCE_LOCK x11_test_display ENVIRONMENT "CONKY_TEST_X11_XFT=1")
+        add_test(NAME x11_resize_xft
+          COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/test-x11-resize.py
+            $<TARGET_FILE:conky> $<TARGET_FILE:x11-test-probe>)
+        set_tests_properties(x11_resize_xft PROPERTIES
+          TIMEOUT 45 SKIP_RETURN_CODE 77 LABELS "integration;x11"
           RESOURCE_LOCK x11_test_display ENVIRONMENT "CONKY_TEST_X11_XFT=1")
       endif()
     endif()

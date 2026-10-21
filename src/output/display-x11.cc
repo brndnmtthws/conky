@@ -58,6 +58,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <sstream>
 #include <unordered_map>
@@ -152,14 +153,7 @@ static void X11_create_window() {
   update_text_area(); /* to position text/window on screen */
 
 #ifdef OWN_WINDOW
-  if (own_window.get(*state)) {
-    if (fixed_pos == 0) {
-      XMoveWindow(display, window.window, window.geometry.x(),
-                  window.geometry.y());
-    }
-
-    set_transparent_background(&window);
-  }
+  if (own_window.get(*state)) { set_transparent_background(&window); }
 #endif
 
   create_gc();
@@ -184,6 +178,19 @@ static void X11_create_window() {
 
   selected_font = 0;
   update_text_area(); /* to get initial size of the window */
+#ifdef OWN_WINDOW
+  if (own_window.get(*state) && fixed_pos == 0) {
+    // Let the main loop combine initial/reloaded positioning with its resize.
+    // An eager move could be acknowledged after that resize starts, reporting
+    // the old size with a new serial and looking like an external resize.
+    int x, y;
+    Window child;
+    if (XTranslateCoordinates(display, window.window, window.root, 0, 0, &x, &y,
+                              &child)) {
+      window.geometry.set_pos(x, y);
+    }
+  }
+#endif
 }
 
 namespace conky {
@@ -283,12 +290,31 @@ bool display_output_x11::main_loop_wait(double t) {
 
       /* resize window if it isn't right size */
       vec2<long> border_size = border_total * 2;
-      if ((fixed_size == 0) &&
+      // The server may process a later request before the WM applies an earlier
+      // resize, giving the earlier response the later request's serial. Keep
+      // one resize in flight so its response cannot be mistaken for an external
+      // resize. Text is still measured each update, coalescing deferred sizes.
+      if ((fixed_size == 0) && !window.pending_configure_request &&
           (text_size + border_size != window.geometry.size())) {
         window.geometry.set_size(text_size + border_size);
         draw_stuff(); /* redraw everything in our newly sized window */
-        XResizeWindow(display, window.window, window.geometry.width(),
-                      window.geometry.height()); /* resize window */
+        XWindowAttributes attrs;
+        // Another client may already have applied this size. A no-op resize
+        // need not generate ConfigureNotify, so do not wait for one.
+        if (!XGetWindowAttributes(display, window.window, &attrs) ||
+            vec2i(attrs.width, attrs.height) != window.geometry.size()) {
+          window.pending_configure_request = NextRequest(display);
+          window.pending_configure_changes_size = true;
+          if (fixed_pos == 0) {
+            // Keep bottom/center alignment in the same WM request as the size.
+            XMoveResizeWindow(display, window.window, window.geometry.x(),
+                              window.geometry.y(), window.geometry.width(),
+                              window.geometry.height());
+          } else {
+            XResizeWindow(display, window.window, window.geometry.width(),
+                          window.geometry.height());
+          }
+        }
         set_transparent_background(&window);
 #ifdef BUILD_XDBE
         /* swap buffers */
@@ -327,10 +353,22 @@ bool display_output_x11::main_loop_wait(double t) {
       }
 
       /* move window if it isn't in right position */
-      if ((fixed_pos == 0) && old_pos != window.geometry.pos()) {
-        XMoveWindow(display, window.window, window.geometry.x(),
-                    window.geometry.y());
-        changed++;
+      if ((fixed_pos == 0) && !window.pending_configure_request &&
+          old_pos != window.geometry.pos()) {
+        int x, y;
+        Window child;
+        if (!XTranslateCoordinates(display, window.window, window.root, 0, 0,
+                                   &x, &y, &child) ||
+            vec2i(x, y) != window.geometry.pos()) {
+          // A delayed move response also carries the old size. Serialize it
+          // with resizes, but do not wait for an unchanged-position no-op.
+          window.pending_configure_request = NextRequest(display);
+          window.pending_configure_changes_size = false;
+          window.pending_configure_position = window.geometry.pos();
+          XMoveWindow(display, window.window, window.geometry.x(),
+                      window.geometry.y());
+          changed++;
+        }
       }
 
       /* update struts */
@@ -651,22 +689,31 @@ bool handle_event(conky::display_output_x11 *surface, Display *display,
                   XConfigureEvent ev, conky::x11::event *propagated) {
   if (ev.type != ConfigureNotify) return false;
 
-  if (own_window.get(*state)) {
-    auto configure_size = vec2i(ev.width, ev.height);
-    /* if window size isn't what's expected, set fixed size */
-    if (configure_size != window.geometry.size()) {
+  if (own_window.get(*state) && ev.window == window.window) {
+    // Geometry already contains our latest requested size. An older event
+    // cannot establish that the WM/user resized it, even if the WM has not
+    // applied our request yet. Subtract unsigned serials to handle wraparound
+    // while the resize is pending (less than half the sequence space apart).
+    bool stale = window.pending_configure_request &&
+                 ev.serial - *window.pending_configure_request >
+                     std::numeric_limits<unsigned long>::max() / 2;
+    XWindowAttributes attrs;
+    // Event dimensions can also be outdated after the request was processed.
+    // Only a real, current size difference should disable content sizing.
+    bool configured = XGetWindowAttributes(display, window.window, &attrs) != 0;
+    int root_x, root_y;
+    Window child;
+    bool positioned = XTranslateCoordinates(display, window.window, window.root,
+                                            0, 0, &root_x, &root_y, &child);
+    if (configured && !stale &&
+        vec2i(attrs.width, attrs.height) != window.geometry.size()) {
       if (window.geometry.size().surface() != 0) { fixed_size = 1; }
 
       /* clear old stuff before screwing up
        * size and pos */
       surface->clear_text(1);
 
-      {
-        XWindowAttributes attrs;
-        if (XGetWindowAttributes(display, window.window, &attrs) != 0) {
-          window.geometry.set_size(attrs.width, attrs.height);
-        }
-      }
+      window.geometry.set_size(attrs.width, attrs.height);
 
       auto border_total = vec2i::uniform(get_border_total() * 2);
       text_size = window.geometry.size() - border_total;
@@ -675,17 +722,25 @@ bool handle_event(conky::display_output_x11 *surface, Display *display,
       int mw = dpi_scale(maximum_width.get(*state));
       if (mw > 0) { text_size.set_x(std::min(mw, text_size.x())); }
     }
+    bool observed =
+        configured &&
+        vec2i(attrs.width, attrs.height) == window.geometry.size() &&
+        (window.pending_configure_changes_size ||
+         (positioned &&
+          vec2i(root_x, root_y) == window.pending_configure_position));
+    if (configured && (!stale || observed)) {
+      // We observed the requested size or accepted an external resize.
+      // Even an old event can confirm that a no-op resize needs no further
+      // acknowledgement, but cannot establish an external size mismatch.
+      // Current attributes protect us from later obsolete payloads; do not
+      // let the watermark age indefinitely on a long-running client.
+      window.pending_configure_request.reset();
+    }
 
     // Keep window.geometry.pos() in sync with the actual screen position.
     // ev.xconfigure.x/y can't be used directly because for reparented windows
     // they're relative to the WM's decoration frame, not the root.
-    {
-      int root_x, root_y;
-      Window child_return;
-      XTranslateCoordinates(display, window.window, window.root, 0, 0, &root_x,
-                            &root_y, &child_return);
-      window.geometry.set_pos(root_x, root_y);
-    }
+    if (positioned) { window.geometry.set_pos(root_x, root_y); }
   }
 
   return true;
