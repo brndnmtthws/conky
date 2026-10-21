@@ -145,8 +145,10 @@ struct conky_x11_window {
   /// @brief Window geometry in screen coordinate space
   conky::rect<int> geometry;
 
-  /// Pending content-size request, used to ignore older ConfigureNotify events.
-  std::optional<unsigned long> pending_resize_request;
+  /// Single pending move/resize; geometry holds its size until it is resolved.
+  std::optional<unsigned long> pending_configure_request;
+  bool pending_configure_changes_size = true;
+  conky::vec2i pending_configure_position;
 
   bool cursor_over_window = false;
 };

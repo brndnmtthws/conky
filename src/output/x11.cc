@@ -720,7 +720,11 @@ void x11_init_window(lua::state &l) {
         window.visual = attr.visual;
         window.color_depth = attr.depth;
         window.colourmap = attr.colormap;
-        window.geometry.set_size(attr.width, attr.height);
+        // Keep the outstanding target through reload until its notification
+        // arrives; the WM may not have applied the resize yet.
+        if (!window.pending_configure_request) {
+          window.geometry.set_size(attr.width, attr.height);
+        }
         LOG_INFO("reusing existing window {:#x} {}x{} (reload)", window.window,
                  attr.width, attr.height);
       } else {

@@ -97,7 +97,7 @@ struct configure_test_context {
     window.owned = true;
     window.geometry.set_size(210, 75);
     window.geometry.set_pos(99, 99);
-    window.pending_resize_request = 100;
+    window.pending_configure_request = 100;
     XSync(display, False);
   }
 
@@ -130,7 +130,7 @@ struct configure_test_context {
 
   void check_external_resize() {
     CHECK(fixed_size == 1);
-    CHECK_FALSE(window.pending_resize_request.has_value());
+    CHECK_FALSE(window.pending_configure_request.has_value());
     CHECK(window.geometry.size() == conky::vec2i(260, 90));
     // Both borders are removed and maximum_width still caps text width.
     CHECK(text_size == conky::vec2i(200, 80));
@@ -150,6 +150,7 @@ TEST_CASE("x11_configure_size", "[x11][integration][x11_configure]") {
   SECTION("stale_notification_after_requested_resize_completed") {
     context.notify(99, 5, 5);
     context.check_automatic();
+    CHECK_FALSE(window.pending_configure_request.has_value());
     CHECK(window.geometry.pos() == conky::vec2i(17, 23));
   }
 
@@ -157,18 +158,36 @@ TEST_CASE("x11_configure_size", "[x11][integration][x11_configure]") {
     context.resize_server(210, 23);
     context.notify(99, 210, 23);
     context.check_automatic();
-    CHECK(window.pending_resize_request == 100);
+    CHECK(window.pending_configure_request == 100);
     CHECK(window.geometry.pos() == conky::vec2i(17, 23));
 
     context.resize_server(210, 75);
     context.notify(100, 210, 75);
     context.check_automatic();
-    CHECK_FALSE(window.pending_resize_request.has_value());
+    CHECK_FALSE(window.pending_configure_request.has_value());
+  }
+
+  SECTION("stale_equal_size_does_not_acknowledge_pending_move") {
+    window.pending_configure_changes_size = false;
+    window.pending_configure_position = conky::vec2i(40, 50);
+    context.notify(99, 210, 75);
+    context.check_automatic();
+    CHECK(window.pending_configure_request == 100);
+    context.notify(100, 210, 75);  // The WM may refuse a requested move.
+    CHECK_FALSE(window.pending_configure_request.has_value());
+  }
+
+  SECTION("stale_event_can_acknowledge_an_already_applied_move") {
+    window.pending_configure_changes_size = false;
+    window.pending_configure_position = conky::vec2i(17, 23);
+    context.notify(99, 210, 75);
+    context.check_automatic();
+    CHECK_FALSE(window.pending_configure_request.has_value());
   }
 
   SECTION("acknowledgement_then_old_payload_then_external_resize") {
     context.notify(100, 210, 75);
-    CHECK_FALSE(window.pending_resize_request.has_value());
+    CHECK_FALSE(window.pending_configure_request.has_value());
     context.notify(99, 5, 5);
     context.check_automatic();
     context.resize_server(260, 90);
@@ -205,7 +224,7 @@ TEST_CASE("x11_configure_size", "[x11][integration][x11_configure]") {
   }
 
   SECTION("external_resize_before_any_content_resize") {
-    window.pending_resize_request.reset();
+    window.pending_configure_request.reset();
     context.resize_server(260, 90);
     context.notify(0, 260, 90);
     context.check_external_resize();
@@ -230,21 +249,22 @@ TEST_CASE("x11_configure_size", "[x11][integration][x11_configure]") {
   }
 
   SECTION("older_serial_across_wraparound_is_ignored") {
-    window.pending_resize_request = 1;
+    window.pending_configure_request = 1;
     context.resize_server(210, 23);
     context.notify(std::numeric_limits<unsigned long>::max(), 210, 23);
     context.check_automatic();
   }
 
   SECTION("newer_serial_across_wraparound_is_accepted") {
-    window.pending_resize_request = std::numeric_limits<unsigned long>::max();
+    window.pending_configure_request =
+        std::numeric_limits<unsigned long>::max();
     context.resize_server(260, 90);
     context.notify(1, 260, 90);
     context.check_external_resize();
   }
 
   SECTION("zero_is_a_valid_resize_request_serial") {
-    window.pending_resize_request = 0;
+    window.pending_configure_request = 0;
     context.resize_server(210, 23);
     context.notify(std::numeric_limits<unsigned long>::max(), 210, 23);
     context.check_automatic();
