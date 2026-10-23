@@ -183,6 +183,15 @@ TEST_CASE("imlib_cairo_geometry", "[imlib][cairo]") {
     CHECK(context.pixel(12, 12) == 0);
   }
 
+  SECTION("pending_cairo_path_is_preserved_without_expanding_clip") {
+    cairo_rectangle(context.cr.get(), 12, 12, 2, 2);
+    image.queue(" -p 2,2 -s 8x8");
+    context.render();
+    CHECK(context.pixel(12, 12) == 0);
+    CHECK(cairo_in_fill(context.cr.get(), 12.5, 12.5));
+    CHECK_FALSE(cairo_in_fill(context.cr.get(), 3, 3));
+  }
+
   SECTION("negative_position_is_clipped") {
     image.queue(" -p -2,-1");
     context.render();

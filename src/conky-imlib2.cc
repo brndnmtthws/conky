@@ -335,6 +335,9 @@ void cimlib_draw_image_cairo(cairo_t *cr, struct image_list_s *cur, int x,
       cairo_pattern_set_filter(pattern, CAIRO_FILTER_GOOD);
       cairo_pattern_set_extend(pattern, CAIRO_EXTEND_PAD);
 
+      // The current path is not part of the state saved by cairo_save().
+      cairo_path_t *saved_path = cairo_copy_path(cr);
+      cairo_new_path(cr);
       cairo_save(cr);
       cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
       cairo_translate(cr, x + cur->x, y + cur->y);
@@ -345,6 +348,8 @@ void cimlib_draw_image_cairo(cairo_t *cr, struct image_list_s *cur, int x,
       cairo_set_source(cr, pattern);
       cairo_paint(cr);
       cairo_restore(cr);
+      cairo_append_path(cr, saved_path);
+      cairo_path_destroy(saved_path);
 
       cairo_pattern_destroy(pattern);
     } else {
