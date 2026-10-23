@@ -29,10 +29,9 @@
 
 #include <array>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wvariadic-macros"
-#include <X11/Xlib.h>
-#pragma GCC diagnostic pop
+/* Forward declaration: cairo is only needed by cimlib_render_cairo(), and we
+ * do not want to drag its header into every consumer of this one. */
+typedef struct _cairo cairo_t;
 
 using saved_coordinates_t = std::array<std::array<int, 2>, 100>;
 extern saved_coordinates_t saved_coordinates;
@@ -40,13 +39,29 @@ extern saved_coordinates_t saved_coordinates;
 void cimlib_add_image(const char *args);
 void cimlib_set_cache_size(long size);
 void cimlib_set_cache_flush_interval(long interval);
+#ifdef BUILD_X11
 void cimlib_render(int x, int y, int width, int height, uint32_t flush_interval,
                    bool draw_blended);
+#endif
+#ifdef BUILD_WAYLAND
+/// cairo-backed counterpart of cimlib_render(): composites the queued images
+/// onto the given surface instead of rendering them to an X11 drawable.
+/// Requires a context created by cimlib_init_cpu().
+void cimlib_render_cairo(cairo_t *cr, int x, int y, uint32_t flush_interval,
+                         bool draw_blended);
+#endif
 void cimlib_cleanup(void);
 
 /// Creates the imlib context and binds it to the X display/visual/colormap/
 /// drawable. Call once, after the X window exists.
+#ifdef BUILD_X11
 void cimlib_init();
+#endif
+/// Creates the imlib context without binding it to an X11 drawable, for
+/// backends that composite through cairo (see cimlib_render_cairo()). Call
+/// once, before any image is queued. Does nothing once a context exists, so
+/// cimlib_init() keeps priority when both backends are active.
+void cimlib_init_cpu();
 /// Tears down the imlib context and cached images.
 void cimlib_deinit();
 

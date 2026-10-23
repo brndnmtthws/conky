@@ -78,6 +78,7 @@ class display_output_x11 : public display_output_base {
   virtual void load_fonts(bool);
 
   virtual std::weak_ptr<conky::draw_surface> drawing_surface();
+  void draw_images() override;
 
   /// (Re)create the cairo xlib surface for the current drawable/geometry if
   /// `BUILD_LUA_CAIRO_XLIB` is enabled, no-op otherwise.

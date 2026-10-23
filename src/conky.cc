@@ -82,10 +82,10 @@
 #ifdef BUILD_XDAMAGE
 #include <X11/extensions/Xdamage.h>
 #endif
+#endif /* BUILD_X11 */
 #ifdef BUILD_IMLIB2
 #include "conky-imlib2.h"
 #endif /* BUILD_IMLIB2 */
-#endif /* BUILD_X11 */
 
 #ifdef BUILD_NCURSES
 #include <ncurses.h>
@@ -1669,18 +1669,13 @@ void draw_stuff() {
 #ifdef BUILD_GUI
   llua_draw_pre_hook();
 
-#ifdef BUILD_IMLIB2
-  text_offset = conky::vec2i::Zero();
-  cimlib_render(text_start.x(), text_start.y(), window.geometry.width(),
-                window.geometry.height(),
-                imlib_cache_flush_interval.get(*state),
-                imlib_draw_blended.get(*state));
-#endif /* BUILD_IMLIB2 */
-
   for (auto output : display_outputs()) {
     if (!output->graphical()) continue;
     // XXX: we assume a single graphical display
     set_display_output(output);
+
+    text_offset = conky::vec2i::Zero();
+    output->draw_images();
 
     selected_font = 0;
     if (draw_shades.get(*state) && !draw_outline.get(*state)) {
