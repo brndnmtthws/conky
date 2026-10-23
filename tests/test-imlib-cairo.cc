@@ -76,7 +76,8 @@ struct cairo_image_context {
 
 // Generate tiny fixtures at runtime rather than committing binary assets.
 struct test_png {
-  char directory[32] = "/tmp/conky-imlib-cairo-XXXXXX";
+  // Avoid "-n" in the filename: the image option parser scans the whole args.
+  char directory[32] = "/tmp/conky_imlib_cairo_XXXXXX";
   std::string path;
 
   explicit test_png(const std::vector<uint32_t> &pixels,
@@ -234,9 +235,9 @@ TEST_CASE("imlib_cairo_cache", "[imlib][cairo]") {
   SECTION("no_cache_evicts_decode") { image.queue(" -n"); }
   SECTION("per_image_flush_evicts_decode") { image.queue(" -f 1"); }
 
+  CAPTURE(image.path, cached);
   // Hold a reference so an evicted cache entry cannot be destroyed and have
-  // its address reused. Older Imlib2 releases stat files before cache lookup,
-  // so deleting the file is not a portable way to test cache retention.
+  // its address reused before we check whether loading reuses the cache.
   retained_image original(image.path);
   REQUIRE(original.image != nullptr);
   imlib_context_set_image(original.image);
