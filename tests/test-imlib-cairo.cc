@@ -107,6 +107,19 @@ struct test_png {
     cimlib_add_image((path + options).c_str());
   }
 };
+struct retained_image {
+  Imlib_Image image;
+
+  explicit retained_image(const std::string &path)
+      : image(imlib_load_image(path.c_str())) {}
+
+  ~retained_image() {
+    if (image != nullptr) {
+      imlib_context_set_image(image);
+      imlib_free_image_and_decache();
+    }
+  }
+};
 }  // namespace
 
 TEST_CASE("imlib_cairo_pixels", "[imlib][cairo]") {
@@ -221,14 +234,23 @@ TEST_CASE("imlib_cairo_cache", "[imlib][cairo]") {
   SECTION("no_cache_evicts_decode") { image.queue(" -n"); }
   SECTION("per_image_flush_evicts_decode") { image.queue(" -f 1"); }
 
+  // Hold a reference so an evicted cache entry cannot be destroyed and have
+  // its address reused. Older Imlib2 releases stat files before cache lookup,
+  // so deleting the file is not a portable way to test cache retention.
+  retained_image original(image.path);
+  REQUIRE(original.image != nullptr);
+  imlib_context_set_image(original.image);
+  REQUIRE(imlib_image_get_data_for_reading_only() != nullptr);
+
   context.render();
   REQUIRE(context.pixel(1, 1) == 0xffff0000);
-  REQUIRE(std::remove(image.path.c_str()) == 0);
+  retained_image reloaded(image.path);
+  REQUIRE(reloaded.image != nullptr);
+  CHECK((reloaded.image == original.image) == cached);
+
   context.clear();
-  // A read-only pixel accessor keeps the decoded image available after its
-  // file disappears; requesting writable data incorrectly invalidates it.
   context.render();
-  CHECK(context.pixel(1, 1) == (cached ? 0xffff0000U : 0U));
+  CHECK(context.pixel(1, 1) == 0xffff0000);
 }
 
 TEST_CASE("imlib_cairo_lifecycle", "[imlib][cairo]") {
