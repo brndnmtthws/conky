@@ -333,6 +333,7 @@ void cimlib_draw_image_cairo(cairo_t *cr, struct image_list_s *cur, int x,
     if (cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS) {
       cairo_pattern_t *pattern = cairo_pattern_create_for_surface(surface);
       cairo_pattern_set_filter(pattern, CAIRO_FILTER_GOOD);
+      cairo_pattern_set_extend(pattern, CAIRO_EXTEND_PAD);
 
       cairo_save(cr);
       cairo_set_operator(cr, CAIRO_OPERATOR_OVER);

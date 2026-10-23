@@ -171,7 +171,13 @@ TEST_CASE("imlib_cairo_geometry", "[imlib][cairo]") {
   SECTION("scaled_size") {
     image.queue(" -p 2,2 -s 8x8");
     context.render();
-    CHECK(context.pixel(4, 4) == 0xffff0000);
+    for (int y = 2; y < 10; ++y) {
+      for (int x = 2; x < 10; ++x) { CHECK(context.pixel(x, y) == 0xffff0000); }
+    }
+    CHECK(context.pixel(1, 2) == 0);
+    CHECK(context.pixel(10, 9) == 0);
+    CHECK(context.pixel(2, 1) == 0);
+    CHECK(context.pixel(9, 10) == 0);
     CHECK(context.pixel(7, 7) == 0xffff0000);
     CHECK(context.pixel(0, 0) == 0);
     CHECK(context.pixel(12, 12) == 0);
