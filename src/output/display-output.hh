@@ -149,6 +149,9 @@ class display_output_base {
     return std::weak_ptr<draw_surface>();
   }
 
+  /// Composite queued images behind text using this output's coordinates.
+  virtual void draw_images() {}
+
   friend void conky::initialize_display_outputs();
   friend bool conky::shutdown_display_outputs();
 };

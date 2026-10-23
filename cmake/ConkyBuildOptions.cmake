@@ -239,8 +239,8 @@ dependent_option(BUILD_XFT "Build Xft (freetype fonts) support" true
   "BUILD_X11" false
   "Xft (freetype font) support requires X11")
 dependent_option(BUILD_IMLIB2 "Enable Imlib2 support" true
-  "BUILD_X11" false
-  "Imlib2 support requires X11")
+  "BUILD_X11 OR BUILD_WAYLAND" false
+  "Imlib2 support requires X11 or Wayland")
 dependent_option(BUILD_XSHAPE "Enable Xshape support" true
   "BUILD_X11" false
   "Xshape support requires X11")

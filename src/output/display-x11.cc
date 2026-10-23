@@ -1229,6 +1229,15 @@ void display_output_x11::update_surface() {
 #endif /* BUILD_LUA_CAIRO_XLIB */
 }
 
+void display_output_x11::draw_images() {
+#ifdef BUILD_IMLIB2
+  cimlib_render(text_start.x(), text_start.y(), window.geometry.width(),
+                window.geometry.height(),
+                imlib_cache_flush_interval.get(*state),
+                imlib_draw_blended.get(*state));
+#endif
+}
+
 std::weak_ptr<conky::draw_surface> display_output_x11::drawing_surface() {
 #ifdef BUILD_LUA_CAIRO_XLIB
   if (!current_surface && display && window.drawable) { update_surface(); }

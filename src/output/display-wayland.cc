@@ -59,6 +59,9 @@
 #include "../geometry.h"
 #include "../logging.h"
 #include "../lua/llua.h"
+#ifdef BUILD_IMLIB2
+#include "../conky-imlib2.h"
+#endif /* BUILD_IMLIB2 */
 #include "display-output.hh"
 #include "gui.h"
 #include "output-setting.hh"
@@ -721,6 +724,12 @@ bool display_output_wayland::initialize() {
   wl_seat_add_listener(wl_globals.seat, &seat_listener, global_window);
 #endif /* BUILD_MOUSE_EVENTS */
 
+#ifdef BUILD_IMLIB2
+  /* There is no X11 drawable to hand imlib2, so images are composited onto the
+   * cairo surface of this output (see cimlib_render_cairo). */
+  cimlib_init_cpu();
+#endif /* BUILD_IMLIB2 */
+
   wl_surface_commit(global_window->surface);
   wl_display_roundtrip(global_display);
 
@@ -860,6 +869,9 @@ void display_output_wayland::cleanup() {
     window_destroy(global_window);
     global_window = nullptr;
   }
+#ifdef BUILD_IMLIB2
+  cimlib_deinit();
+#endif /* BUILD_IMLIB2 */
   free_fonts(utf8_mode.get(*state));
 }
 
@@ -946,6 +958,17 @@ void display_output_wayland::draw_line(int x1, int y1, int x2, int y2) {
 std::weak_ptr<conky::draw_surface> display_output_wayland::drawing_surface() {
   if (!global_window) { return {}; }
   return global_window->cairo_surface;
+}
+
+void display_output_wayland::draw_images() {
+#ifdef BUILD_IMLIB2
+  if (!global_window || !global_window->cr) { return; }
+  int x = text_start.x(), y = text_start.y();
+  adjust_coords(x, y);
+  cimlib_render_cairo(global_window->cr.get(), x, y,
+                      imlib_cache_flush_interval.get(*state),
+                      imlib_draw_blended.get(*state));
+#endif
 }
 
 template <bool Fill>
