@@ -78,7 +78,7 @@ class display_output_wayland : public display_output_base {
   virtual void load_fonts(bool);
 
   virtual std::weak_ptr<conky::draw_surface> drawing_surface();
-  void draw_images() override;
+  virtual void draw_images();
 
   // Wayland-specific
 };
