@@ -33,6 +33,8 @@
 #include <unistd.h>
 #include <cctype>
 #include <cerrno>
+#include <limits>
+#include <optional>
 #include "../conky.h"
 #include "../content/specials.h"
 #include "../content/text_object.h"
@@ -73,15 +75,20 @@
 static struct fs_stat fs_stats_[MAX_FS_STATS];
 struct fs_stat *fs_stats = fs_stats_;
 
+static conky::range_config_setting<double> fs_update_interval(
+    "fs_update_interval", 0.0, std::numeric_limits<double>::max(), 13.0, false);
+static std::optional<double> last_fs_update;
+
 static void update_fs_stat(struct fs_stat *fs);
 
 void get_fs_type(const char *path, char *result);
 
 int update_fs_stats() {
   unsigned i;
-  static double last_fs_update = 0.0;
-
-  if (current_update_time - last_fs_update < 13) { return 0; }
+  if (last_fs_update &&
+      current_update_time - *last_fs_update < fs_update_interval.get(*state)) {
+    return 0;
+  }
 
   for (i = 0; i < MAX_FS_STATS; ++i) {
     if (fs_stats[i].set != 0) { update_fs_stat(&fs_stats[i]); }
@@ -91,6 +98,7 @@ int update_fs_stats() {
 }
 
 void clear_fs_stats() {
+  last_fs_update.reset();
   unsigned i;
   for (i = 0; i < MAX_FS_STATS; ++i) {
     memset(&fs_stats[i], 0, sizeof(struct fs_stat));
@@ -144,7 +152,7 @@ static void update_fs_stat(struct fs_stat *fs) {
     fs->free = (long long)s.f_bfree * s.f_frsize;
     (void)strncpy(fs->type, s.f_basetype, sizeof(fs->type));
 #else
-  struct statfs_struct s {};
+  struct statfs_struct s{};
 
   if (statfs_func(fs->path, &s) == 0) {
     fs->size = static_cast<long long>(s.f_blocks) * s.f_bsize;
@@ -171,7 +179,7 @@ void get_fs_type(const char *path, char *result) {
     defined(__OpenBSD__) || defined(__DragonFly__) || defined(__HAIKU__) || \
     (defined(__APPLE__) && defined(__MACH__)) || defined(__NetBSD__)
 
-  struct statfs_struct s {};
+  struct statfs_struct s{};
   if (statfs_func(path, &s) == 0) {
     strncpy(result, s.f_fstypename, DEFAULT_TEXT_BUFFER_SIZE);
   } else {

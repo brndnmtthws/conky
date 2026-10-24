@@ -726,6 +726,8 @@ values:
     desc: |-
       Bar that shows how much space is used on a file system.
       height is the height in pixels. fs is any file on that file system.
+      Refresh timing is controlled by the
+      [`fs_update_interval`](./config_settings#fs_update_interval) setting.
     args:
       - (height),(width)
       - fs
@@ -733,33 +735,52 @@ values:
     desc: |-
       Bar that shows how much space is free on a file system.
       height is the height in pixels. fs is any file on that file system.
+      Refresh timing is controlled by the
+      [`fs_update_interval`](./config_settings#fs_update_interval) setting.
     args:
       - (height),(width)
       - fs
   - name: fs_free
-    desc: Free space on a file system available for users.
+    desc: |-
+      Free space on a file system available for users.
+      Refresh timing is controlled by the
+      [`fs_update_interval`](./config_settings#fs_update_interval) setting.
     args:
       - (fs)
   - name: fs_free_perc
     desc: |-
       Free percentage of space on a file system available for
       users.
+      Refresh timing is controlled by the
+      [`fs_update_interval`](./config_settings#fs_update_interval) setting.
     args:
       - (fs)
   - name: fs_size
-    desc: File system size.
+    desc: |-
+      File system size.
+      Refresh timing is controlled by the
+      [`fs_update_interval`](./config_settings#fs_update_interval) setting.
     args:
       - (fs)
   - name: fs_type
-    desc: File system type.
+    desc: |-
+      File system type.
+      Refresh timing is controlled by the
+      [`fs_update_interval`](./config_settings#fs_update_interval) setting.
     args:
       - (fs)
   - name: fs_used
-    desc: File system used space.
+    desc: |-
+      File system used space.
+      Refresh timing is controlled by the
+      [`fs_update_interval`](./config_settings#fs_update_interval) setting.
     args:
       - (fs)
   - name: fs_used_perc
-    desc: Percent of file system used space.
+    desc: |-
+      Percent of file system used space.
+      Refresh timing is controlled by the
+      [`fs_update_interval`](./config_settings#fs_update_interval) setting.
     args:
       - (fs)
   - name: gid_name

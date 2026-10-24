@@ -179,6 +179,21 @@ values:
       If enabled, values which are in bytes will be printed in
       human readable format (i.e., KiB, MiB, etc). If disabled, the number
       of bytes is printed instead.
+  - name: fs_update_interval
+    desc: |-
+      Minimum interval in seconds between shared file system statistics updates
+      for the fs_* variables. Accepts finite, nonnegative numbers, including
+      fractional seconds. Set to 0 to refresh on every Conky update.
+
+      Refreshes happen on the first Conky update at or after the interval has
+      elapsed, so they cannot run faster than [`update_interval`](#update_interval)
+      (or [`update_interval_on_battery`](#update_interval_on_battery) when active).
+      For example, an interval of 5 with an update_interval of 3 normally refreshes
+      every 6 seconds. Newly referenced paths are read immediately.
+
+      Lower values increase file system polling and may delay updates on slow
+      or network file systems. The default preserves the 13-second interval.
+    default: 13
   - name: gap_x
     desc: |-
       Gap, in pixels, between right or left border of screen, same
