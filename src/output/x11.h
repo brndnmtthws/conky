@@ -57,6 +57,7 @@ extern "C" {
 #include <cstdint>
 #include <functional>
 #include <optional>
+#include <string>
 #include <vector>
 
 #include "../geometry.h"
@@ -162,6 +163,8 @@ void destroy_window(void);
 void create_gc(void);
 void set_transparent_background(conky_x11_window *win);
 void get_x11_desktop_info(Display *current_display, Atom atom);
+// Update the current name from a bounded, NUL-separated desktop-name list.
+void get_x11_desktop_current_name(const std::string &names);
 /// @brief Sets reserved area atoms for the conky window to avoid other windows
 /// covering it.
 ///
