@@ -23,6 +23,7 @@
 #include "config.h"
 
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <filesystem>
 #include <mutex>
@@ -205,6 +206,11 @@ static int llua_conky_surface(lua_State *L) {
 void llua_init() {
   std::lock_guard<std::recursive_mutex> lock(lua_call_mutex);
   std::string libs(PACKAGE_LIBDIR "/lib?.so;");
+  // AppImages mount at a different path from the build-time install prefix.
+  if (const char *appdir = std::getenv("APPDIR");
+      appdir != nullptr && *appdir != '\0') {
+    libs = std::string(appdir) + "/usr/lib/conky/lib?.so;" + libs;
+  }
   std::string old_path, new_path;
   if (lua_L != nullptr) { return; }
   lua_L = luaL_newstate();
