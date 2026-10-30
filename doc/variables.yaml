@@ -47,6 +47,12 @@ values:
     desc: |-
       IP address for an interface, or "No Address" if no address
       is assigned.
+
+      On Linux, use `${addr $gw_iface}` or `${addr ${gw_iface}}` to select the
+      default route's interface. The `$` is required: `${addr gw_iface}` looks
+      for an interface literally named `gw_iface`. This selects the interface
+      when the text is parsed; reload the configuration if the default
+      interface changes.
     args:
       - (interface)
   - name: addrs
@@ -797,6 +803,10 @@ values:
     desc: |-
       Displays the default route's interface or "multiple"/"none"
       accordingly.
+
+      This is an interface name, not an IP address. On Linux,
+      `${addr $gw_iface}` displays that interface's address; `$gw_ip` displays
+      the gateway's address instead.
   - name: gw_ip
     desc: |-
       Displays the default gateway's IP or "multiple"/"none"
