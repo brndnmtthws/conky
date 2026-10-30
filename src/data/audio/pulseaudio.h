@@ -37,6 +37,8 @@
 void init_pulseaudio(struct text_object *obj);
 void free_pulseaudio(struct text_object *obj);
 uint8_t puau_vol(struct text_object *);  // preserve pa_* for libpulse
+void print_puau_source_volume(struct text_object *obj, char *p,
+                              unsigned int p_max_size);
 void print_puau_sink_description(struct text_object *obj, char *p,
                                  unsigned int p_max_size);
 void print_puau_sink_active_port_name(struct text_object *obj, char *p,
@@ -67,6 +69,10 @@ struct pulseaudio_default_results {
   std::string source_name;
   pa_source_state source_state;
   int source_mute;
+  unsigned int source_volume;  // percentage, independent of mute
+
+  void set_default_source(const char *name);
+  void update_source_info(const pa_source_info &info);
 
   // default card
   std::string card_active_profile_description;
@@ -95,8 +101,8 @@ class pulseaudio_c {
         cstate(PULSE_CONTEXT_INITIALIZING),
         ninits(0),
         result({std::string(), std::string(), std::string(), std::string(), 0,
-                0, 0, 0, std::string(), PA_SOURCE_SUSPENDED, 0, std::string(),
-                std::string(), 0}) {};
+                0, 0, 0, std::string(), PA_SOURCE_SUSPENDED, 0, 0,
+                std::string(), std::string(), 0}){};
 };
 
 #endif /* _PULSEAUDIO_H */
