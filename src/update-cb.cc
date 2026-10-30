@@ -65,6 +65,9 @@ inline size_t callback_base::get_hash(const handle &h) { return h->hash; }
 
 inline bool callback_base::is_equal(const handle &a, const handle &b) {
   if (a->hash != b->hash) { return false; }
+  // Threaded and blocking users must not share a callback: the wait policy is
+  // immutable and determines whether run_all_callbacks waits for its result.
+  if (a->wait != b->wait) { return false; }
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpotentially-evaluated-expression"
