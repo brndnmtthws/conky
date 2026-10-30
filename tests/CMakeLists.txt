@@ -93,6 +93,18 @@ endforeach()
   endif()
 endif()
 
+if(BUILD_PULSEAUDIO)
+  find_package(Python3 COMPONENTS Interpreter QUIET)
+  if(Python3_Interpreter_FOUND)
+    add_dependencies(test-conky conky)
+    add_test(NAME pulseaudio_source_volume
+      COMMAND ${Python3_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/test-pulseaudio-source.py $<TARGET_FILE:conky>)
+    set_tests_properties(pulseaudio_source_volume PROPERTIES
+      TIMEOUT 45 SKIP_RETURN_CODE 77 LABELS "integration;pulseaudio")
+  endif()
+endif()
+
 if(RUN_TESTS)
   add_custom_command(TARGET test-conky
     POST_BUILD

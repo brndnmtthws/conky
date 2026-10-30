@@ -52,10 +52,45 @@ const struct pulseaudio_default_results pulseaudio_result0 = {
     std::string(),
     PA_SOURCE_SUSPENDED,
     0,
+    0,
     std::string(),
     std::string(),
     0};
 pulseaudio_c *pulseaudio = nullptr;
+
+namespace {
+class scoped_pulseaudio_lock {
+ public:
+  explicit scoped_pulseaudio_lock(pa_threaded_mainloop *loop) : loop_(loop) {
+    if (loop_) pa_threaded_mainloop_lock(loop_);
+  }
+  ~scoped_pulseaudio_lock() {
+    if (loop_) pa_threaded_mainloop_unlock(loop_);
+  }
+
+ private:
+  pa_threaded_mainloop *loop_;
+};
+}  // namespace
+
+void pulseaudio_default_results::set_default_source(const char *name) {
+  const std::string next_name = name != nullptr ? name : "";
+  if (source_name == next_name) return;
+  source_name = next_name;
+  source_state = PA_SOURCE_SUSPENDED;
+  source_mute = 0;
+  source_volume = 0;
+}
+
+void pulseaudio_default_results::update_source_info(
+    const pa_source_info &info) {
+  // A pending reply for the old default must not replace the new source's data.
+  if (info.name == nullptr || source_name != info.name) return;
+  source_state = info.state;
+  source_mute = info.mute;
+  source_volume = round_to_positive_int(
+      100.0f * (float)pa_cvolume_avg(&info.volume) / (float)PA_VOLUME_NORM);
+}
 
 void pa_sink_info_callback(pa_context *c, const pa_sink_info *i, int eol,
                            void *data) {
@@ -86,8 +121,7 @@ void pa_source_info_callback(pa_context *c, const pa_source_info *i, int eol,
   if (i != nullptr && data) {
     struct pulseaudio_default_results *pdr =
         (struct pulseaudio_default_results *)data;
-    pdr->source_state = i->state;
-    pdr->source_mute = i->mute;
+    pdr->update_source_info(*i);
     pa_threaded_mainloop_signal(pulseaudio->mainloop, 0);
   }
   (void)c;
@@ -99,27 +133,38 @@ void pa_server_info_callback(pa_context *c, const pa_server_info *i,
   if (i != nullptr) {
     struct pulseaudio_default_results *pdr =
         (struct pulseaudio_default_results *)userdata;
-    pdr->sink_name.assign(i->default_sink_name);
-    pdr->source_name.assign(i->default_source_name);
+    pdr->sink_name.assign(i->default_sink_name ? i->default_sink_name : "");
+    pdr->set_default_source(i->default_source_name);
     pa_threaded_mainloop_signal(pulseaudio->mainloop, 0);
   }
   (void)c;
 }
 
-void pa_server_sink_info_callback(pa_context *c, const pa_server_info *i,
-                                  void *userdata) {
+void pa_server_defaults_callback(pa_context *c, const pa_server_info *i,
+                                 void *userdata) {
   if (i != nullptr) {
     struct pulseaudio_default_results *pdr =
         (struct pulseaudio_default_results *)userdata;
-    pdr->sink_name.assign(i->default_sink_name);
-    if (pdr->sink_name.empty()) return;
-    pa_operation *op;
-    if (!(op = pa_context_get_sink_info_by_name(c, pdr->sink_name.c_str(),
-                                                pa_sink_info_callback, pdr))) {
-      LOG_ERROR("failed to query pulseaudio sink info");
-      return;
+    pdr->sink_name.assign(i->default_sink_name ? i->default_sink_name : "");
+    pdr->set_default_source(i->default_source_name);
+    if (!pdr->sink_name.empty()) {
+      pa_operation *op = pa_context_get_sink_info_by_name(
+          c, pdr->sink_name.c_str(), pa_sink_info_callback, pdr);
+      if (op != nullptr) {
+        pa_operation_unref(op);
+      } else {
+        LOG_ERROR("failed to query pulseaudio sink info");
+      }
     }
-    pa_operation_unref(op);
+    if (!pdr->source_name.empty()) {
+      pa_operation *op = pa_context_get_source_info_by_name(
+          c, pdr->source_name.c_str(), pa_source_info_callback, pdr);
+      if (op != nullptr) {
+        pa_operation_unref(op);
+      } else {
+        LOG_ERROR("failed to query pulseaudio source info");
+      }
+    }
   }
   (void)c;
 }
@@ -204,7 +249,7 @@ void subscribe_cb(pa_context *c, pa_subscription_event_type_t t, uint32_t index,
     case PA_SUBSCRIPTION_EVENT_SERVER: {
       pa_operation *op;
       PULSEAUDIO_OP(
-          pa_context_get_server_info(c, pa_server_sink_info_callback, res),
+          pa_context_get_server_info(c, pa_server_defaults_callback, res),
           "failed to query pulseaudio server info");
     } break;
   }
@@ -264,32 +309,24 @@ void init_pulseaudio(struct text_object *obj) {
 
   // Initial parameters update
 
+  scoped_pulseaudio_lock lock(pulseaudio->mainloop);
   pa_operation *op;
   PULSEAUDIO_WAIT(pa_context_get_server_info(
       pulseaudio->context, pa_server_info_callback, &pulseaudio->result));
 
-  if (pulseaudio->result.sink_name.empty()) return;
-
-  PULSEAUDIO_WAIT(pa_context_get_sink_info_by_name(
-      pulseaudio->context, pulseaudio->result.sink_name.c_str(),
-      pa_sink_info_callback, &pulseaudio->result));
-
-  if (pulseaudio->result.sink_name.empty()) {
-    LOG_ERROR("incorrect pulseaudio sink information");
-    return;
+  if (!pulseaudio->result.sink_name.empty()) {
+    PULSEAUDIO_WAIT(pa_context_get_sink_info_by_name(
+        pulseaudio->context, pulseaudio->result.sink_name.c_str(),
+        pa_sink_info_callback, &pulseaudio->result));
   }
 
-  if (pulseaudio->result.source_name.empty()) return;
-
-  PULSEAUDIO_WAIT(pa_context_get_source_info_by_name(
-      pulseaudio->context, pulseaudio->result.source_name.c_str(),
-      pa_source_info_callback, &pulseaudio->result));
-
-  if (pulseaudio->result.source_name.empty()) {
-    LOG_ERROR("incorrect pulseaudio source information");
-    return;
+  if (!pulseaudio->result.source_name.empty()) {
+    PULSEAUDIO_WAIT(pa_context_get_source_info_by_name(
+        pulseaudio->context, pulseaudio->result.source_name.c_str(),
+        pa_source_info_callback, &pulseaudio->result));
   }
-  if (pulseaudio->result.sink_card != (uint32_t)-1)
+  if (!pulseaudio->result.sink_name.empty() &&
+      pulseaudio->result.sink_card != (uint32_t)-1)
     PULSEAUDIO_WAIT(pa_context_get_card_info_by_index(
         pulseaudio->context, pulseaudio->result.sink_card,
         pa_card_info_callback, &pulseaudio->result));
@@ -338,13 +375,21 @@ void free_pulseaudio(struct text_object *obj) {
 
 struct pulseaudio_default_results get_pulseaudio(struct text_object *obj) {
   pulseaudio_c *puau_int = static_cast<pulseaudio_c *>(obj->data.opaque);
-  if (puau_int && puau_int->cstate == PULSE_CONTEXT_READY)
+  if (puau_int && puau_int->cstate == PULSE_CONTEXT_READY) {
+    scoped_pulseaudio_lock lock(puau_int->mainloop);
     return puau_int->result;
+  }
   return pulseaudio_result0;
 }
 
 uint8_t puau_vol(struct text_object *obj) {
   return get_pulseaudio(obj).sink_volume;
+}
+
+void print_puau_source_volume(struct text_object *obj, char *p,
+                              unsigned int p_max_size) {
+  // PulseAudio permits amplification above 100%; do not narrow to uint8_t.
+  percent_print(p, p_max_size, get_pulseaudio(obj).source_volume);
 }
 
 int puau_muted(struct text_object *obj) {

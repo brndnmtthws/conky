@@ -1706,6 +1706,13 @@ values:
     desc: Pulseaudio's default sink volume percentage.
   - name: pa_sink_volumebar
     desc: Pulseaudio's default sink volume bar.
+  - name: pa_source_volume
+    desc: |-
+      PulseAudio's default source volume percentage, averaged across channels.
+      This is the configured recording volume, not the microphone's signal
+      level. Muting does not change it; use `$if_pa_source_muted` to check mute
+      status. Values can exceed 100 when amplification is enabled. Requires
+      PulseAudio support at build time.
   - name: password
     desc: Generate random passwords.
     args:

@@ -139,6 +139,8 @@ jobs:
             libmicrohttpd-dev \
             libmysqlclient-dev \
             libpulse-dev \
+            pulseaudio \
+            pulseaudio-utils \
             librsvg2-dev \
             libsystemd-dev \
             libwayland-bin \
