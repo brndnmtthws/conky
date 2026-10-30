@@ -88,6 +88,9 @@ chmod +x "${LINUXDEPLOY}"
   -i AppDir/usr/share/icons/hicolor/scalable/apps/conky-logomark-violet.svg \
   -d AppDir/usr/share/applications/conky.desktop
 
+# appimagetool requires a PNG or XPM for .DirIcon, rather than an SVG.
+cp "$REPO_ROOT/data/logo/conky-logomark-violet.png" AppDir/conky-logomark-violet.png
+
 APPIMAGETOOL="appimagetool-${TOOL_ARCH}.AppImage"
 wget "https://github.com/AppImage/appimagetool/releases/download/continuous/${APPIMAGETOOL}"
 
