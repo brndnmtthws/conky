@@ -16,6 +16,19 @@ desc: |-
   listing of the available variables. Some of them may require build options to
   be enabled at compile time for them to work.
 
+  Environment variables inherited by Conky can also be referenced directly in
+  `conky.text`, for example `$XDG_SESSION_DESKTOP` or
+  `${XDG_SESSION_DESKTOP}`. There is no need to run a shell command such as
+  `${exec echo $XDG_SESSION_DESKTOP}` just to display their values.
+
+  Environment variable names are case-sensitive and are checked before Conky
+  variables, so an environment variable can take precedence over a Conky
+  variable with the same name. An empty environment value produces empty text;
+  an unset name falls through to the normal Conky variable lookup. Values are
+  inserted as plain text, without shell evaluation or recursive interpretation
+  as Conky variables. They are read when the text is parsed (normally at startup
+  or configuration reload), not on every update.
+
   Colors are parsed using `XParseColor()`. A list of named colors may be
   available in `/usr/share/X11/rgb.txt`. Colors may also be specified in
   `#rrggbb` hexadecimal format.
