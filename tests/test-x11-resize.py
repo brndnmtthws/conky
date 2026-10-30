@@ -7,7 +7,6 @@ Usage: test-x11-resize.py /path/to/conky /path/to/x11-test-probe
 
 import json
 import os
-from pathlib import Path
 import re
 import select
 import signal
@@ -16,6 +15,8 @@ import sys
 import tempfile
 import time
 import unittest
+from pathlib import Path
+from unittest import mock
 
 if not os.environ.get("CONKY_TEST_X11_DISPLAY"):
     print("SKIP: set CONKY_TEST_X11_DISPLAY to an isolated test X server")
@@ -36,13 +37,30 @@ class X11Resize(unittest.TestCase):
         self.addCleanup(self.directory.cleanup)
         self.path = Path(self.directory.name)
         self.content = self.path / "content.txt"
-        self.content.write_text("HEADER")
+        self.write_content("HEADER")
         self.log_path = self.path / "conky.log"
         self.log = self.log_path.open("w", encoding="utf-8")
         self.addCleanup(self.log.close)
         self.process = None
         self.wm = None
         self.wm_buffer = b""
+
+    def write_content(self, content):
+        # Conky reads this file concurrently: never expose the empty interval
+        # between truncation and writing the replacement content.
+        temporary = self.content.with_suffix(".tmp")
+        temporary.write_text(content)
+        temporary.replace(self.content)
+
+    def test_content_updates_are_atomic(self):
+        def write_while_reading(path, content):
+            with path.open("w") as stream:
+                self.assertEqual(self.content.read_text(), "HEADER")
+                return stream.write(content)
+
+        with mock.patch.object(Path, "write_text", write_while_reading):
+            self.write_content("UPDATED")
+        self.assertEqual(self.content.read_text(), "UPDATED")
 
     def probe(self, *args):
         result = subprocess.run(
@@ -178,11 +196,11 @@ class X11Resize(unittest.TestCase):
         self.probe("--notify", initial["id"], 5, 5)
         # File contents change, not the config: exercise normal text updates,
         # not a reload that might reset the fixed-size latch.
-        self.content.write_text("HEADER\nNETWORK\nDownload\nUpload\nTotal")
+        self.write_content("HEADER\nNETWORK\nDownload\nUpload\nTotal")
         grown = self.wait_for(lambda w: w["height"] > initial["height"])
         self.assertEqual(grown["width"], initial["width"])
         self.probe("--notify", grown["id"], initial["width"], initial["height"])
-        self.content.write_text("HEADER")
+        self.write_content("HEADER")
         shrunk = self.wait_for(lambda w: w["height"] == initial["height"])
         self.assertEqual(shrunk["id"], initial["id"])
 
@@ -196,7 +214,7 @@ class X11Resize(unittest.TestCase):
         initial = self.start("normal", alignment)
         self.probe("--resize", initial["id"], 170, 50)
         self.wait_for(lambda w: (w["width"], w["height"]) == (170, 50))
-        self.content.write_text("HEADER\n" + "CONTENT\n" * 10)
+        self.write_content("HEADER\n" + "CONTENT\n" * 10)
         # Observe several normal update intervals; a wrongly cleared latch
         # would return to the content width and grow vertically.
         deadline = time.monotonic() + 0.5
@@ -214,7 +232,7 @@ class X11Resize(unittest.TestCase):
         self.check_external_size_stays_fixed("none")
 
     def test_initial_noop_resize_does_not_block_growth(self):
-        self.content.write_text("")
+        self.write_content("")
         initial = self.start(
             "utility", wait=False,
             settings="minimum_width=0, minimum_height=1, gap_x=0, gap_y=0, "
@@ -233,7 +251,7 @@ class X11Resize(unittest.TestCase):
         else:
             self.fail("initial no-op was not measured\n"
                       + self.log_path.read_text())
-        self.content.write_text("HEADER\nNETWORK\nDownload\nUpload\nTotal")
+        self.write_content("HEADER\nNETWORK\nDownload\nUpload\nTotal")
         grown = self.wait_for(lambda w: w["width"] > 1 and w["height"] > 1)
         self.assertEqual(grown["id"], initial["id"])
 
@@ -243,7 +261,7 @@ class X11Resize(unittest.TestCase):
         initial = self.start("normal", alignment, wait=False)
         first = self.wm_request()
         self.assertEqual(first["id"], initial["id"])
-        self.content.write_text("HEADER\nNETWORK\nDownload\nUpload\nTotal")
+        self.write_content("HEADER\nNETWORK\nDownload\nUpload\nTotal")
         self.wait_for_measured_growth(first["height"])
         if reload_pending:
             marker = "initialized display output"
@@ -267,7 +285,7 @@ class X11Resize(unittest.TestCase):
         self.wm_apply()
         grown = self.wait_for(lambda w: w["height"] == second["height"])
 
-        self.content.write_text("HEADER")
+        self.write_content("HEADER")
         shrinking = self.wm_request()
         self.assertEqual(shrinking["height"], first["height"])
         self.wm_apply()
@@ -280,7 +298,7 @@ class X11Resize(unittest.TestCase):
         # An actual user/WM resize is still authoritative after auto-sizing.
         self.wm_apply(f"resize {initial['id']} 170 50")
         self.wait_for(lambda w: (w["width"], w["height"]) == (170, 50))
-        self.content.write_text("HEADER\n" + "CONTENT\n" * 10)
+        self.write_content("HEADER\n" + "CONTENT\n" * 10)
         self.check_no_wm_resize("external geometry was overridden")
         self.wait_for(lambda w: (w["width"], w["height"]) == (170, 50))
 
@@ -310,7 +328,7 @@ class X11Resize(unittest.TestCase):
         moving = self.wm_request()
         self.assertEqual(moving["id"], initial["id"])
         self.assertFalse(moving["resizes"])
-        self.content.write_text("HEADER\nNETWORK\nDownload\nUpload\nTotal")
+        self.write_content("HEADER\nNETWORK\nDownload\nUpload\nTotal")
         self.wait_for_measured_growth(first["height"])
         self.assertIsNone(self.wm_event(0.2), "a resize overlapped the move")
 
@@ -332,7 +350,7 @@ class X11Resize(unittest.TestCase):
         self.assertEqual(request["id"], initial["id"])
         self.wm_apply("constrain 170 50")
         self.wait_for(lambda w: (w["width"], w["height"]) == (170, 50))
-        self.content.write_text("HEADER\n" + "CONTENT\n" * 10)
+        self.write_content("HEADER\n" + "CONTENT\n" * 10)
         self.check_no_wm_resize("WM constraint was overridden")
         self.wait_for(lambda w: (w["width"], w["height"]) == (170, 50))
 
@@ -342,7 +360,7 @@ class X11Resize(unittest.TestCase):
         request = self.wm_request()
         self.assertEqual(request["id"], initial["id"])
         self.wm_apply("reject")
-        self.content.write_text("HEADER\n" + "CONTENT\n" * 10)
+        self.write_content("HEADER\n" + "CONTENT\n" * 10)
         self.check_no_wm_resize("WM refusal was overridden")
         self.wait_for(
             lambda w: (w["width"], w["height"]) ==
