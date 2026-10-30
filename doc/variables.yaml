@@ -899,50 +899,88 @@ values:
       If running the i8k kernel driver for Inspiron laptops, displays whether ac
       power is on, as listed in `/proc/i8k` (translated to human-readable). Beware
       that this is by default not enabled by i8k itself.
+
+      Uses the deprecated `/proc/i8k` interface. See `$i8k_cpu_temp` for the
+      latency warning and alternatives that apply to all `i8k_*` variables.
   - name: i8k_bios
     desc: |-
       If running the i8k kernel driver for Inspiron laptops,
       displays the bios version as listed in /proc/i8k.
+
+      Uses the deprecated `/proc/i8k` interface. See `$i8k_cpu_temp` for the
+      latency warning and alternatives that apply to all `i8k_*` variables.
   - name: i8k_buttons_status
     desc: |-
       If running the i8k kernel driver for Inspiron laptops,
       displays the volume buttons status as listed in /proc/i8k.
+
+      Uses the deprecated `/proc/i8k` interface. See `$i8k_cpu_temp` for the
+      latency warning and alternatives that apply to all `i8k_*` variables.
   - name: i8k_cpu_temp
     desc: |-
       If running the i8k kernel driver for Inspiron laptops,
       displays the cpu temperature in Celsius, as reported by /proc/i8k.
+
+      **Warning for all `i8k_*` variables:** these read the deprecated
+      `/proc/i8k` interface. The driver's System Management Mode (SMM) calls
+      can cause brief system stalls or audio glitches on some machines, even
+      when only a temperature reading is requested. See the
+      [kernel driver's documentation](https://docs.kernel.org/hwmon/dell-smm-hwmon.html#limitations).
+
+      Prefer `$hwmon` with a suitable non-SMM sensor, where available, for
+      latency-sensitive use. Switching to the `dell_smm` hwmon device alone
+      does not avoid SMM calls. The `i8k_*` variables remain supported for
+      compatibility.
   - name: i8k_left_fan_rpm
     desc: |-
       If running the i8k kernel driver for Inspiron laptops,
       displays the left fan's rate of rotation, in revolutions per minute as
       listed in /proc/i8k. Beware, some laptops i8k reports these fans in
       reverse order.
+
+      Uses the deprecated `/proc/i8k` interface. See `$i8k_cpu_temp` for the
+      latency warning and alternatives that apply to all `i8k_*` variables.
   - name: i8k_left_fan_status
     desc: |-
       If running the i8k kernel driver for Inspiron laptops,
       displays the left fan status as listed in /proc/i8k (translated to
       human-readable). Beware, some laptops i8k reports these fans in
       reverse order.
+
+      Uses the deprecated `/proc/i8k` interface. See `$i8k_cpu_temp` for the
+      latency warning and alternatives that apply to all `i8k_*` variables.
   - name: i8k_right_fan_rpm
     desc: |-
       If running the i8k kernel driver for Inspiron laptops,
       displays the right fan's rate of rotation, in revolutions per minute
       as listed in /proc/i8k. Beware, some laptops i8k reports these fans in
       reverse order.
+
+      Uses the deprecated `/proc/i8k` interface. See `$i8k_cpu_temp` for the
+      latency warning and alternatives that apply to all `i8k_*` variables.
   - name: i8k_right_fan_status
     desc: |-
       If running the i8k kernel driver for Inspiron laptops,
       displays the right fan status as listed in /proc/i8k (translated to
       human-readable). Beware, some laptops i8k reports these fans in
       reverse order.
+
+      Uses the deprecated `/proc/i8k` interface. See `$i8k_cpu_temp` for the
+      latency warning and alternatives that apply to all `i8k_*` variables.
   - name: i8k_serial
     desc: |-
       If running the i8k kernel driver for Inspiron laptops,
       displays your laptop serial number as listed in /proc/i8k.
+
+      Uses the deprecated `/proc/i8k` interface. See `$i8k_cpu_temp` for the
+      latency warning and alternatives that apply to all `i8k_*` variables.
   - name: i8k_version
     desc: |-
       If running the i8k kernel driver for Inspiron laptops,
       displays the version formatting of /proc/i8k.
+
+      Uses the deprecated `/proc/i8k` interface. See `$i8k_cpu_temp` for the
+      latency warning and alternatives that apply to all `i8k_*` variables.
   - name: ibm_brightness
     desc: |-
       If running the IBM ACPI, displays the brigtness of the
