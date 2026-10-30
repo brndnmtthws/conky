@@ -51,34 +51,15 @@ struct exec_data {
   exec_data() = default;
 };
 
-static const int cmd_len = 256;
-static char cmd[cmd_len];
-
-static char *remove_excess_quotes(const char *);
-static char *remove_excess_quotes(const char *command) {
-  char *cmd_ptr = cmd;
-  const char *command_ptr = command;
-  int skip = 0;
-
-  if ((cmd_len - 1) < (strlen(command) - 1)) {
-    snprintf(cmd, cmd_len - 1, "%s", command);
-    return cmd;
-  }
-
-  if (*command_ptr == '"' || *command_ptr == '\'') {
-    skip = 1;
-    command_ptr++;
-  }
-
-  for (; *command_ptr; command_ptr++) {
-    if ('\0' == *(command_ptr + 1) && 1 == skip &&
-        (*command_ptr == '"' || *command_ptr == '\'')) {
-      continue;
+static std::string remove_excess_quotes(const char *command) {
+  std::string result(command);
+  if (!result.empty() && (result.front() == '"' || result.front() == '\'')) {
+    result.erase(0, 1);
+    if (!result.empty() && (result.back() == '"' || result.back() == '\'')) {
+      result.pop_back();
     }
-    *cmd_ptr++ = *command_ptr;
   }
-  *cmd_ptr = '\0';
-  return cmd;
+  return result;
 }
 
 // our own implementation of popen, the difference : the value of 'childpid'
@@ -86,6 +67,9 @@ static char *remove_excess_quotes(const char *command) {
 // to kill it when it hangs while reading or writing to it. We have to kill it
 // because pclose will wait until the process dies by itself
 static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
+  // Prepare owned storage before fork: command length is not limited to 256
+  // bytes, and the child of this multithreaded process must not allocate it.
+  const std::string shell_command = remove_excess_quotes(command);
   int ends[2];
   int parentend, childend;
 
@@ -137,8 +121,7 @@ static FILE *pid_popen(const char *command, const char *mode, pid_t *child) {
       if (devnull != STDERR_FILENO) { close(devnull); }
     }
 
-    execl("/bin/sh", "sh", "-c", remove_excess_quotes(command),
-          (char *)nullptr);
+    execl("/bin/sh", "sh", "-c", shell_command.c_str(), (char *)nullptr);
     _exit(EXIT_FAILURE);  // child should die here, (normally execl will take
                           // care of this but it can fail)
   }
