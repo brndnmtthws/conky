@@ -35,9 +35,9 @@
 /**
  * A callback that executes a command and stores the output as a std::string.
  *
- * Important note: if more than one exec callback uses the same command,
- * then only ONE callback is actually stored. This saves space. However,
- * suppose we have the following ${exec} objects in our conky.text:
+ * Important note: if more than one exec callback uses the same command and
+ * wait mode, then only ONE callback is actually stored. This saves space.
+ * However, suppose we have the following ${exec} objects in our conky.text:
  *
  * ${exec ~/bin/foo.sh}
  * ${execi 10 ~/bin/foo.sh}
