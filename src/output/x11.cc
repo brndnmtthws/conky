@@ -1237,19 +1237,23 @@ static inline void get_x11_desktop_names(Display *current_display, Window root,
 }
 
 // Get current desktop name
-static inline void get_x11_desktop_current_name(const std::string &names) {
-  struct information *current_info = &info;
-  unsigned int i = 0, j = 0;
-  int k = 0;
+void get_x11_desktop_current_name(const std::string &names) {
+  auto &desktop = info.x11.desktop;
+  desktop.name.clear();
+  if (desktop.current < 1) { return; }
 
-  while (i < names.size()) {
-    if (names[i++] == '\0') {
-      if (++k == current_info->x11.desktop.current) {
-        current_info->x11.desktop.name.assign(names.c_str() + j);
-        break;
-      }
-      j = i;
+  size_t start = 0;
+  for (int index = 1; start < names.size(); ++index) {
+    // Names are NUL-separated, but some WMs (e.g. bspwm) omit the final NUL.
+    const size_t separator = names.find('\0', start);
+    const size_t end =
+        separator == std::string::npos ? names.size() : separator;
+    if (index == desktop.current) {
+      desktop.name.assign(names, start, end - start);
+      return;
     }
+    if (separator == std::string::npos) { return; }
+    start = separator + 1;
   }
 }
 
