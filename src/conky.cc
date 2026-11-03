@@ -1012,10 +1012,15 @@ static int text_size_updater(char *s, int special_index) {
           if ((step == 0) || step < 0) { step = 10; }
           w += step - (cur_x - text_start.x() - start) % step;
         } else if (current->type == text_node_t::FONT) {
+          /* mirror draw_each_line_inner(): a font change moves the baseline
+           * down by the rise in ascent (never up), and the line ends with
+           * the descent of its last font. Adding the difference keeps the
+           * voffsets already counted on this line. */
+          int old_ascent = font_ascent();
+          int old_descent = font_descent();
           selected_font = current->font_added;
-          if (font_height() > last_font_height) {
-            last_font_height = font_height();
-          }
+          last_font_height += std::max(0, font_ascent() - old_ascent) +
+                              font_descent() - old_descent;
         }
         current = current->next;
       }
