@@ -250,14 +250,22 @@ class X11Resize(unittest.TestCase):
         self.fail("text was not measured\n" + self.log_path.read_text())
 
     def test_voffset_before_font_change_is_measured(self):
-        # Raising the larger line by 10 pixels must make the text 10 pixels
-        # shorter: switching to its larger font must not drop the voffset.
+        # Raising a line must shorten the text as much when the line then
+        # switches to a larger font as when it does not. Comparing the two
+        # keeps the test independent of the display's DPI, which scales the
+        # voffset.
         use_xft = os.environ.get("CONKY_TEST_X11_XFT") == "1"
         font = "DejaVu Sans Mono:size=16" if use_xft else "10x20"
-        line = f"${{font {font}}}LARGE${{font}}"
-        plain = self.measured_height(f"HEADER\n{line}\nFOOTER")
-        raised = self.measured_height(f"HEADER\n${{voffset -10}}{line}\nFOOTER")
-        self.assertEqual(raised, plain - 10)
+
+        def rise(line):
+            plain = self.measured_height(f"HEADER\n{line}\nFOOTER")
+            raised = self.measured_height(
+                f"HEADER\n${{voffset -10}}{line}\nFOOTER")
+            return plain - raised
+
+        expected = rise("PLAIN")
+        self.assertGreater(expected, 0)
+        self.assertEqual(rise(f"${{font {font}}}LARGE${{font}}"), expected)
 
     def test_initial_noop_resize_does_not_block_growth(self):
         self.write_content("")
