@@ -74,9 +74,11 @@ class X11Resize(unittest.TestCase):
             return sample["windows"]
 
     def start(self, window_type="desktop", alignment="top_left", wait=True,
-              settings=""):
+              settings="", text=None):
         use_xft = os.environ.get("CONKY_TEST_X11_XFT") == "1"
         font = "DejaVu Sans Mono:size=8" if use_xft else "fixed"
+        if text is None:
+            text = f"${{cat {self.content}}}"
         config = self.path / "conky.lua"
         config.write_text(
             "conky.config = {background=false, output_backend='x11', "
@@ -87,7 +89,7 @@ class X11Resize(unittest.TestCase):
             "disable_auto_reload=true, minimum_width=200, maximum_width=200, "
             "gap_x=30, gap_y=30, draw_shades=false, "
             f"{settings}}};\n"
-            f"conky.text = [[${{cat {self.content}}}]];\n"
+            f"conky.text = [[{text}]];\n"
         )
         self.process = subprocess.Popen(
             [BINARY, "-DD", "-c", str(config)], env=ENVIRONMENT,
@@ -230,6 +232,32 @@ class X11Resize(unittest.TestCase):
 
     def test_alignment_none_remains_fixed(self):
         self.check_external_size_stays_fixed("none")
+
+    def measured_height(self, text):
+        # The measurement itself, not the window: the window adds borders.
+        # Static text is measured on every update; wait for a few of them.
+        logged = len(self.log_path.read_text())
+        self.start(text=text)
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline:
+            self.assertIsNone(self.process.poll(), self.log_path.read_text())
+            heights = re.findall(r"computed text size: \(\d+, (\d+)\)",
+                                 self.log_path.read_text()[logged:])
+            if len(heights) >= 3:
+                self.stop()
+                return int(heights[-1])
+            time.sleep(0.025)
+        self.fail("text was not measured\n" + self.log_path.read_text())
+
+    def test_voffset_before_font_change_is_measured(self):
+        # Raising the larger line by 10 pixels must make the text 10 pixels
+        # shorter: switching to its larger font must not drop the voffset.
+        use_xft = os.environ.get("CONKY_TEST_X11_XFT") == "1"
+        font = "DejaVu Sans Mono:size=16" if use_xft else "10x20"
+        line = f"${{font {font}}}LARGE${{font}}"
+        plain = self.measured_height(f"HEADER\n{line}\nFOOTER")
+        raised = self.measured_height(f"HEADER\n${{voffset -10}}{line}\nFOOTER")
+        self.assertEqual(raised, plain - 10)
 
     def test_initial_noop_resize_does_not_block_growth(self):
         self.write_content("")
