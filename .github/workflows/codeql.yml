@@ -34,8 +34,8 @@ jobs:
             gperf \
             lcov \
             libaudclient-dev \
-            libc++-14-dev \
-            libc++abi-14-dev \
+            libc++-dev \
+            libc++abi-dev \
             libcairo2-dev \
             libcurl4-gnutls-dev \
             libdbus-glib-1-dev \
