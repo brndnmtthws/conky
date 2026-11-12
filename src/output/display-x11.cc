@@ -233,6 +233,17 @@ bool display_output_x11::initialize() {
 #endif /* BUILD_IMLIB2 */
 
   X11_create_window();
+#ifdef OWN_WINDOW
+  if (window.owned) {
+    // Reloads may retain the window without moving or resizing it. Refresh
+    // panel hints, or remove all reservations when switching away from panel.
+    if (own_window_type.get(*state) == window_type::PANEL) {
+      set_struts();
+    } else {
+      clear_struts();
+    }
+  }
+#endif
   update_surface();
   return true;
 }

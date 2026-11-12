@@ -601,7 +601,13 @@ values:
         position and size, and workarea dimensions, to ensure normal windows
         have most free space available. For WMs that "cut out" entirely covered
         screens from reserved area, the edge will be chosen based on `alignment`
-        setting. Under Wayland the reserved edge is always derived from
+        setting. On X11, window managers supporting `_GNOME_WM_STRUT_AREA`
+        (such as recent Marco and Metacity) can reserve an internal monitor
+        edge without blocking adjacent monitors. The panel must fit within
+        one monitor; small gaps to the nearest edge are included. Other
+        window managers retain the EWMH strut behavior, which may reserve
+        additional space at internal edges.
+        Under Wayland the reserved edge is always derived from
         `alignment`; a fully centered (`mm`) alignment has no edge to reserve
         against, so use an edge-aligned value (e.g. `tm`, `bm`, `ml`, `mr`).
       - `utility` windows are persistent utility windows (e.g. a palette or
