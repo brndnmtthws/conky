@@ -1353,6 +1353,46 @@ void print_desktop_name(struct text_object *obj, char *p,
 }
 
 #ifdef OWN_WINDOW
+std::optional<std::array<long, 4>> x11_monitor_strut_area(
+    const conky::rect<int> &panel, const conky::rect<int> &monitor) {
+  // Use wide intermediates before adding coordinates and sizes. The property
+  // is CARDINAL, so negative coordinates and empty rectangles are not valid.
+  int64_t x = panel.x(), y = panel.y();
+  int64_t width = panel.width(), height = panel.height();
+  const int64_t left = monitor.x(), top = monitor.y();
+  const int64_t right = left + monitor.width();
+  const int64_t bottom = top + monitor.height();
+  if (left < 0 || top < 0 || width <= 0 || height <= 0 || x < left || y < top ||
+      x + width > right || y + height > bottom) {
+    return std::nullopt;
+  }
+
+  // Marco/Metacity infer the edge from the rectangle's aspect ratio. Prefer
+  // the nearest edge of this monitor, not the edge of the whole X screen.
+  const bool vertical = height > width;
+  if (vertical) {
+    if (x + width - left < right - x) {
+      width += x - left;
+      x = left;
+    } else {
+      width = right - x;
+    }
+  } else {
+    if (y + height - top < bottom - y) {
+      height += y - top;
+      y = top;
+    } else {
+      height = bottom - y;
+    }
+  }
+  // A very large gap can change the inferred orientation. Do not publish an
+  // area that the WM would interpret as a reservation on a different edge.
+  if ((height > width) != vertical) { return std::nullopt; }
+  return std::array<long, 4>{static_cast<long>(x), static_cast<long>(y),
+                             static_cast<long>(width),
+                             static_cast<long>(height)};
+}
+
 namespace x11_strut {
 enum value : size_t {
   LEFT,
@@ -1375,7 +1415,39 @@ inline std::array<long, x11_strut::COUNT> array() {
   std::memset(sizes.data(), 0, sizeof(long) * COUNT);
   return sizes;
 }
+
+static std::optional<std::array<long, 4>> monitor_area() {
+#ifdef BUILD_XINERAMA
+  if (XineramaIsActive(display)) {
+    int count = 0;
+    XineramaScreenInfo *monitors = XineramaQueryScreens(display, &count);
+    std::optional<std::array<long, 4>> area;
+    if (monitors != nullptr) {
+      for (int i = 0; i < count && !area; ++i) {
+        const auto &monitor = monitors[i];
+        area = x11_monitor_strut_area(
+            window.geometry, conky::rect<int>({monitor.x_org, monitor.y_org},
+                                              {monitor.width, monitor.height}));
+      }
+      XFree(monitors);
+    }
+    // A panel spanning monitors cannot be represented by this extension.
+    return area;
+  }
+#endif
+  return x11_monitor_strut_area(
+      window.geometry,
+      conky::rect<int>({0, 0}, {DisplayWidth(display, screen),
+                                DisplayHeight(display, screen)}));
+}
 }  // namespace x11_strut
+
+void clear_struts() {
+  for (const char *name :
+       {"_NET_WM_STRUT", "_NET_WM_STRUT_PARTIAL", "_GNOME_WM_STRUT_AREA"}) {
+    XDeleteProperty(display, window.window, XInternAtom(display, name, False));
+  }
+}
 
 void set_struts() {
   /* clang-format on */
@@ -1420,9 +1492,9 @@ void set_struts() {
   // xfwm:
   // https://github.com/xfce-mirror/xfwm4/blob/37636f55bcbca064e62489d7fe183ef7b9371b4c/src/placement.c#L220
   //
-  // The EWMH spec doesn't handle placement of panels/docks in middle of the
-  // screen (e.g. left side of the right monitor with Xinerama). Submissions are
-  // closed and it won't be fixed.
+  // EWMH cannot represent an internal monitor edge without covering other
+  // monitors. Marco/Metacity support _GNOME_WM_STRUT_AREA for that case; keep
+  // the standard properties as a fallback for WMs without that extension.
   // See: https://gitlab.freedesktop.org/xdg/xdg-specs/-/merge_requests/22
 
   Atom atom = ATOM(_NET_WM_STRUT);
@@ -1448,7 +1520,10 @@ void set_struts() {
     alignment align = text_alignment.get(*state);
     // Middle and none align don't have least significant bit set.
     // Ensures either vertical or horizontal axis are start/end
-    if ((*align & 0b0101) == 0) return;
+    if ((*align & 0b0101) == 0) {
+      clear_struts();
+      return;
+    }
 
     // Compute larger dimension only once; so we don't jump between axes for
     // corner alignments.
@@ -1592,6 +1667,18 @@ void set_struts() {
             std::clamp(window.geometry.end_x(), 0, display_width);
       }
     }
+  }
+
+  // Like MATE Panel, publish this alongside EWMH. Marco prefers a valid area
+  // but does not advertise the extension in _NET_SUPPORTED. Other WMs can
+  // ignore it. Recompute on moves/resizes and remove an invalid old area.
+  const Atom area_atom = ATOM(_GNOME_WM_STRUT_AREA);
+  if (auto area = x11_strut::monitor_area()) {
+    XChangeProperty(display, window.window, area_atom, XA_CARDINAL, 32,
+                    PropModeReplace,
+                    reinterpret_cast<unsigned char *>(area->data()), 4);
+  } else {
+    XDeleteProperty(display, window.window, area_atom);
   }
 
   LOG_DEBUG("reserved space: left={}, right={}, top={}, bottom={}", sizes[0],

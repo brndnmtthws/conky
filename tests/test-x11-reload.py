@@ -167,6 +167,40 @@ class X11Reload(unittest.TestCase):
         sample = self.reload(own_window=True)
         self.assertNotEqual(sample["windows"][0]["id"], self.root)
 
+    def test_panel_reservations_follow_retained_window_reload(self):
+        window = self.start(
+            own_window_type="panel", border_width=0,
+            border_inner_margin=0, border_outer_margin=0,
+        )["windows"][0]
+        xid = window["id"]
+
+        def check_panel(sample):
+            current = sample["windows"][0]
+            self.assertEqual(len(current["strut"]), 4)
+            self.assertEqual(len(current["strut_partial"]), 12)
+            self.assertEqual(current["strut_area"], [
+                current["root_x"], 0, current["width"],
+                current["root_y"] + current["height"],
+            ])
+
+        check_panel({"windows": [window]})
+        for kind in ("dock", "normal", "desktop"):
+            sample = self.reload(preserved_id=xid, own_window_type=kind)
+            current = sample["windows"][0]
+            for property_name in ("strut", "strut_partial", "strut_area"):
+                self.assertEqual(current[property_name], [], property_name)
+            sample = self.reload(preserved_id=xid, own_window_type="panel")
+            check_panel(sample)
+        self.reload(preserved_id=xid, gap_x=45, gap_y=40)
+        # Gaps are DPI-scaled. Wait for both coordinates to increase rather
+        # than assuming that a configured gap equals the server pixel offset.
+        sample = self.wait_for(lambda value: (
+            self.is_rendered(value)
+            and value["windows"][0]["root_x"] > window["root_x"]
+            and value["windows"][0]["root_y"] > window["root_y"]
+        ))
+        check_panel(sample)
+
     def test_own_to_root_removes_owned_window(self):
         self.start()
         self.reload(own_window=False)

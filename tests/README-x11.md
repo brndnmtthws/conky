@@ -12,6 +12,23 @@ an **isolated test X server**, Python 3 and fonts (`xfonts-base`, and
 `CONKY_TEST_X11_DISPLAY` is set. Do not point them at a real desktop: the tests
 deliberately draw on the root window.
 
+`x11_monitor_strut_area` checks monitor-local panel geometry without an X
+server, including internal edges, gaps, stacked/offset monitors and invalid
+rectangles. `x11_strut_properties` uses the isolated single-monitor X server
+to check `_GNOME_WM_STRUT_AREA` publication, replacement and removal alongside
+the unchanged EWMH fallback. The reload tests also check that switching a
+retained window from panel to dock/normal/desktop clears all three properties,
+and switching back to panel restores them without requiring a resize.
+These automated tests inspect client hints, not window-manager policy.
+
+For manual multi-monitor validation, run Marco with two side-by-side Xinerama
+monitors and place a tall panel at the left edge of the right monitor. A
+maximized ordinary window on that monitor should stop at the panel's right
+edge, while the left monitor remains unaffected. Inspect both
+`_GNOME_WM_STRUT_AREA` and `_NET_WM_STRUT_PARTIAL` with `xprop`, and repeat with
+a nonzero `gap_x` and panel/dock reloads. Marco must support the area extension;
+window managers without the extension use the EWMH fallback.
+
 `x11_foreground_alpha` is a discovered Catch2 case in
 `test-x11-foreground.cc`, with separate `rgb_drawable` and `argb_drawable`
 sections. It is registered whenever X11 support is enabled and shares the

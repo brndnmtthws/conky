@@ -54,6 +54,7 @@ extern "C" {
 #endif
 }
 
+#include <array>
 #include <cstdint>
 #include <functional>
 #include <optional>
@@ -171,6 +172,13 @@ void get_x11_desktop_current_name(const std::string &names);
 /// Prints out a warning if user is using one of sessions that are known not to
 /// work.
 void set_struts();
+#ifdef OWN_WINDOW
+// Monitor-local rectangle for _GNOME_WM_STRUT_AREA, including the edge gap.
+// Returns no area when the panel is not contained by this monitor.
+std::optional<std::array<long, 4>> x11_monitor_strut_area(
+    const conky::rect<int> &panel, const conky::rect<int> &monitor);
+void clear_struts();
+#endif
 void x11_init_window(lua::state &l);
 /// Allocates the double-buffer back buffer (XDBE, or pixmap fallback); call
 /// once the X window exists. Returns false when double buffering is

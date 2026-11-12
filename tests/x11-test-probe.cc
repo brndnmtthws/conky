@@ -1,4 +1,5 @@
 /* X11 integration-test observer; run only against an isolated test server. */
+#include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <sys/select.h>
@@ -16,6 +17,25 @@ int errors = 0;
 int on_error(Display*, XErrorEvent*) {
   ++errors;
   return 0;
+}
+
+void print_cardinals(Display* display, Window window, const char* name) {
+  Atom actual_type = None;
+  int format = 0;
+  unsigned long count = 0, remaining = 0;
+  unsigned char* bytes = nullptr;
+  XGetWindowProperty(display, window, XInternAtom(display, name, False), 0, 12,
+                     False, XA_CARDINAL, &actual_type, &format, &count,
+                     &remaining, &bytes);
+  std::printf("[");
+  if (actual_type == XA_CARDINAL && format == 32) {
+    auto values = reinterpret_cast<unsigned long*>(bytes);
+    for (unsigned long i = 0; i < count; ++i) {
+      std::printf("%s%lu", i ? "," : "", values[i]);
+    }
+  }
+  std::printf("]");
+  if (bytes) { XFree(bytes); }
 }
 
 bool has_text(Display* display, Window window, const XWindowAttributes& attrs) {
@@ -214,9 +234,15 @@ int main(int argc, char** argv) {
                           &child);
     std::printf(
         "%s{\"id\":%lu,\"width\":%d,\"height\":%d,"
-        "\"root_x\":%d,\"root_y\":%d,\"text\":%s}",
+        "\"root_x\":%d,\"root_y\":%d,\"text\":%s,\"strut\":",
         first ? "" : ",", children[i], attrs.width, attrs.height, root_x,
         root_y, has_text(display, children[i], attrs) ? "true" : "false");
+    print_cardinals(display, children[i], "_NET_WM_STRUT");
+    std::printf(",\"strut_partial\":");
+    print_cardinals(display, children[i], "_NET_WM_STRUT_PARTIAL");
+    std::printf(",\"strut_area\":");
+    print_cardinals(display, children[i], "_GNOME_WM_STRUT_AREA");
+    std::printf("}");
     first = false;
   }
   if (children) { XFree(children); }
