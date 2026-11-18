@@ -122,7 +122,8 @@ class temporary_specials {
 struct text_object;
 
 /* scanning special arguments */
-const char *scan_bar(struct text_object *, const char *, double);
+const char *scan_bar(struct text_object *, const char *, double,
+                     bool reverse = false);
 const char *scan_gauge(struct text_object *, const char *, double);
 std::pair<char *, size_t> scan_command(const char *);
 #ifdef BUILD_GUI

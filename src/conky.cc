@@ -1298,9 +1298,11 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
 
               display_output()->draw_rect(text_offset.x() + cur_x,
                                           text_offset.y() + by, w, h);
-              display_output()->fill_rect(text_offset.x() + cur_x,
-                                          text_offset.y() + by,
-                                          w * bar_usage / scale, h);
+              const int filled_width = w * bar_usage / scale;
+              const int fill_x = current->invertx ? w - filled_width : 0;
+              display_output()->fill_rect(text_offset.x() + cur_x + fill_x,
+                                          text_offset.y() + by, filled_width,
+                                          h);
             }
             if (h > cur_y_add && h > font_h) { cur_y_add = h; }
           }

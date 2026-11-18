@@ -559,8 +559,12 @@ values:
       between 0-100, it will use that number to draw a horizontal bar. The
       height and width parameters are optional, and default to the
       default_bar_height and default_bar_width config settings,
-      respectively.
+      respectively. Add -x before the dimensions (or command if dimensions
+      are omitted) to fill from right to left, for example
+      `${execbar -x 6,100 echo 25}`. Values must still be between 0 and 100;
+      negative values do not reverse the bar.
     args:
+      - (-x)
       - (height),(width)
       - command
   - name: execgauge
@@ -626,9 +630,10 @@ values:
       - interval
       - command
   - name: execibar
-    desc: Same as execbar, but with an interval.
+    desc: Same as execbar, but with an interval. Place -x after the interval.
     args:
       - interval
+      - (-x)
       - (height),(width)
       - command
   - name: execigauge
