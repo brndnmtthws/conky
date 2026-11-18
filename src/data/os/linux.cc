@@ -1213,7 +1213,7 @@ static int get_first_file_in_a_directory(const char *dir, char *s,
 /*
  * Convert @dev "0" (hwmon number) or "k10temp" (hwmon name) to "hwmon2/device"
  */
-static void get_dev_path(const char *dir, const char *dev, char *out_buf) {
+void get_hwmon_dev_path(const char *dir, const char *dev, char *out_buf) {
   struct dirent **namelist;
   char path[512] = {'\0'};
   char name[512] = {'\0'};
@@ -1223,6 +1223,46 @@ static void get_dev_path(const char *dir, const char *dev, char *out_buf) {
   int i;
   int n;
   int ret;
+
+  // A qualified name selects a particular block device, not the first module.
+  const std::string selector(dev);
+  const auto separator = selector.find('@');
+  if (separator != std::string::npos) {
+    out_buf[0] = '\0';
+    const auto module = selector.substr(0, separator);
+    const auto block = selector.substr(separator + 1);
+    if (module.empty() || block.empty() || block == "." || block == ".." ||
+        block.find_first_of("/@") != std::string::npos) {
+      return;
+    }
+    n = scandir(dir, &namelist, no_dots, alphasort);
+    if (n < 0) { return; }
+    std::string match;
+    bool ambiguous = false;
+    for (i = 0; i < n; ++i) {
+      const std::string entry = namelist[i]->d_name;
+      const std::string base = std::string(dir) + entry;
+      std::ifstream name_file(base + "/name");
+      if (!name_file) { name_file.open(base + "/device/name"); }
+      std::string actual_name;
+      std::getline(name_file, actual_name);
+      struct stat block_stat {};
+      if (actual_name == module &&
+          stat((base + "/device/block/" + block).c_str(), &block_stat) == 0 &&
+          S_ISDIR(block_stat.st_mode)) {
+        if (!match.empty()) { ambiguous = true; }
+        match = entry + "/device";
+      }
+      free(namelist[i]);
+    }
+    free(namelist);
+    // Never silently fall back to a different drive on a missing/ambiguous
+    // match.
+    if (!ambiguous && match.size() < 512) {
+      memcpy(out_buf, match.c_str(), match.size() + 1);
+    }
+    return;
+  }
 
   /* "0" numbered case */
   ret = sscanf(dev, "%d", &n);
@@ -1302,7 +1342,7 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
        * "0" -> "hwmon0/device"
        * "k10temp" -> "hwmon2/device", where hwmon2/name is "k10temp"
        */
-      get_dev_path(dir, dev, buf);
+      get_hwmon_dev_path(dir, dev, buf);
       /* Not found */
       if (buf[0] == '\0') {
         LOG_ERROR("can't parse device \"{}\"", dev);
