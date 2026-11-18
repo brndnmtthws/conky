@@ -1273,7 +1273,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied) {
               display_output()->draw_line(text_offset.x() + cur_x,
                                           text_offset.y() + cur_y - mid / 2,
                                           text_offset.x() + cur_x + w,
-                                          text_offset.x() + cur_y - mid / 2);
+                                          text_offset.y() + cur_y - mid / 2);
             }
           }
           break;
