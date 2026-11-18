@@ -855,7 +855,18 @@ values:
       1. Number. e.g `1` means hwmon1.
       2. Module name. e.g. `k10temp` means the first hwmon device whose module
       name is `k10temp`.
-      3. Omitted. Then the first hwmon device (hwmon0) will be used.
+      3. Module name qualified by a block device, e.g. `drivetemp@sda`.
+      This selects the module whose `device/block/` directory contains `sda`,
+      independently of its hwmon number. Use whole-disk names, not partitions:
+      `${hwmon drivetemp@sda temp 1}` and `${hwmon drivetemp@sdb temp 1}`
+      distinguish two drives even when their hwmon numbers change on reboot.
+      The module name must match exactly and the match must be unique; a missing
+      or ambiguous match reports an error instead of selecting another drive.
+      This requires the driver's sysfs block-device association (as provided by
+      `drivetemp`). It does not make `sda`/`sdb` persistent disk identities: if
+      Linux renames the disks, update the selectors. Selection occurs when the
+      configuration is loaded; reload it after hotplug or driver reloading.
+      4. Omitted. Then the first hwmon device (hwmon0) will be used.
 
       Parameter type is either `in` or `vol` meaning voltage; `power` meaning
       power; `fan` meaning fan; `temp` meaning temperature. Parameter n is

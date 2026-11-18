@@ -52,6 +52,10 @@ enum { PB_BATT_STATUS, PB_BATT_PERCENT, PB_BATT_TIME };
 void get_powerbook_batt_info(struct text_object *, char *, unsigned int);
 
 void parse_i2c_sensor(struct text_object *, const char *);
+// Resolve a hwmon selector relative to dir (including its trailing slash).
+// out_buf must hold 512 bytes; an empty result means no unique qualified match.
+void get_hwmon_dev_path(const char *dir, const char *dev, char *out_buf);
+
 void parse_hwmon_sensor(struct text_object *, const char *);
 void parse_platform_sensor(struct text_object *, const char *);
 
