@@ -18,6 +18,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+include(GNUInstallDirs)
+
+# Keep the existing runtime layout unless a packager selects another one.
+set(VIM_RUNTIME_DIR "${CMAKE_INSTALL_DATAROOTDIR}/vim" CACHE STRING
+    "Vim runtime install directory (relative to prefix or absolute; empty disables installation)")
+
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/nano)
 add_custom_target(conky.nanorc
     ALL
@@ -29,7 +35,7 @@ add_custom_target(conky.nanorc
     ${CMAKE_SOURCE_DIR}/doc/lua.yaml
     ${CMAKE_CURRENT_SOURCE_DIR}/nano/conky.nanorc.j2
 )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/nano/conky.nanorc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/nano)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/nano/conky.nanorc DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/nano")
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/vim/syntax)
 add_custom_target(conkyrc.vim
     ALL
@@ -41,4 +47,9 @@ add_custom_target(conkyrc.vim
     ${CMAKE_SOURCE_DIR}/doc/lua.yaml
     ${CMAKE_CURRENT_SOURCE_DIR}/vim/syntax/conkyrc.vim.j2
 )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/vim/syntax/conkyrc.vim DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/vim/syntax)
+if(NOT VIM_RUNTIME_DIR STREQUAL "")
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/vim/syntax/conkyrc.vim
+      DESTINATION "${VIM_RUNTIME_DIR}/syntax")
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/vim/ftdetect/conkyrc.vim
+      DESTINATION "${VIM_RUNTIME_DIR}/ftdetect")
+endif()
