@@ -65,6 +65,7 @@
 #include "display-output.hh"
 #include "gui.h"
 #include "output-setting.hh"
+#include "wayland-dashes.hh"
 #include "wl-shell.h"
 
 #include "../lua/fonts.h"
@@ -936,11 +937,7 @@ void display_output_wayland::set_line_style(int w, bool solid) {
 void display_output_wayland::set_dashes(char *s) {
   window *window = global_window;
   auto cr = window->cr.get();
-  size_t len = strlen(s);
-  double *dashes = new double[len];
-  for (size_t i = 0; i < len; i++) { dashes[i] = s[i]; }
-  cairo_set_dash(cr, dashes, len, 0);
-  delete[] dashes;
+  set_cairo_dashes(cr, s);
 }
 
 void display_output_wayland::draw_line(int x1, int y1, int x2, int y2) {

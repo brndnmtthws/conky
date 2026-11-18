@@ -113,6 +113,7 @@ class display_output_base {
                               int /*w*/) {}
   // X11 lookalikes
   virtual void set_line_style(int /*w*/, bool /*solid*/) {}
+  // Two unsigned byte lengths (dash, gap), not a null-terminated string.
   virtual void set_dashes(char * /*s*/) {}
   virtual void draw_line(int /*x1*/, int /*y1*/, int /*x2*/, int /*y2*/) {}
   virtual void draw_rect(int /*x*/, int /*y*/, int /*w*/, int /*h*/) {}
