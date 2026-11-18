@@ -1,5 +1,13 @@
 include(CTest)
 
+find_package(Python3 COMPONENTS Interpreter QUIET)
+if(BUILD_EXTRAS AND Python3_Interpreter_FOUND AND UNIX)
+  add_test(NAME extras_install
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test-extras-install.py
+      ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR})
+  set_tests_properties(extras_install PROPERTIES LABELS "integration;packaging")
+endif()
+
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${conky_includes})

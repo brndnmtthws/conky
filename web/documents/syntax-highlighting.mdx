@@ -4,6 +4,24 @@ description: Enabling conkyrc syntax highlighting
 indexWeight: 0
 ---
 
+## Vim
+
+With `BUILD_EXTRAS=ON`, installation includes both the generated syntax file and
+filetype detector. By default these are installed under
+`${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/vim` (normally
+`/usr/local/share/vim`), preserving the existing installation layout.
+
+Set `-DVIM_RUNTIME_DIR=share/vim/vimfiles` for distributions whose Vim runtime
+uses that directory. The directory must be on Vim's `runtimepath`; check
+`:set runtimepath?` in Vim. Relative paths follow `CMAKE_INSTALL_PREFIX` (and
+`cmake --install --prefix`); absolute paths are also supported. Both respect
+`DESTDIR` for staged package installs. Set `-DVIM_RUNTIME_DIR=` to skip installing
+Vim files. `BUILD_EXTRAS=OFF` continues to disable all editor extras.
+
+Enable `filetype on` and `syntax on` in Vim to detect and highlight `*conkyrc`
+and `conky.conf` files. These bundled rules describe the legacy Conky syntax;
+Lua configurations can instead use Vim's Lua filetype.
+
 ## Gedit
 
 Note: this highlights syntax only and does **NOT** attempt to validate
