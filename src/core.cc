@@ -708,13 +708,14 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.print = &print_exec;
   obj->callbacks.free = &free_exec;
   END OBJ_ARG(execbar, nullptr,
-              "execbar needs arguments: [height],[width] <command>")
+              "execbar needs arguments: [-x] [height],[width] <command>")
       scan_exec_arg(obj, arg, exec_flag::bar);
   register_exec(obj);
   obj->callbacks.barval = &execbarval;
   obj->callbacks.free = &free_exec;
-  END OBJ_ARG(execibar, nullptr,
-              "execibar needs arguments: <interval> [height],[width] <command>")
+  END OBJ_ARG(
+      execibar, nullptr,
+      "execibar needs arguments: <interval> [-x] [height],[width] <command>")
       scan_exec_arg(obj, arg, exec_flag::interval | exec_flag::bar);
   register_exec(obj);
   obj->callbacks.barval = &execbarval;

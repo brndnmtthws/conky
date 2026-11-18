@@ -289,7 +289,16 @@ void scan_exec_arg(struct text_object *obj, const char *arg, exec_flag flags) {
 
   /* parse any special options for the graphical exec types */
   if (flags & exec_flag::bar) {
-    cmd = scan_bar(obj, cmd, 100);
+    // Only consume a leading option: shell command arguments remain untouched.
+    bool reverse = false;
+    const char *option = cmd != nullptr ? cmd + strspn(cmd, " \t\n\r\f\v") : "";
+    if (strncmp(option, "-x", 2) == 0 &&
+        (option[2] == '\0' || strchr(" \t\n\r\f\v", option[2]))) {
+      reverse = true;
+      cmd = option + 2;
+      cmd += strspn(cmd, " \t\n\r\f\v");
+    }
+    cmd = scan_bar(obj, cmd, 100, reverse);
 #ifdef BUILD_GUI
   } else if (flags & exec_flag::gauge) {
     cmd = scan_gauge(obj, cmd, 100);

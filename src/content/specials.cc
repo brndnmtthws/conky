@@ -79,6 +79,7 @@ conky::simple_config_setting<std::string> console_graph_ticks(
 /* special data types flags */
 #define SF_SCALED (1 << 0)
 #define SF_SHOWLOG (1 << 1)
+#define SF_REVERSE (1 << 2)
 
 /* special flag for inverting axis */
 #define SF_INVERTX (1 << 0)
@@ -161,11 +162,13 @@ const char *scan_gauge(struct text_object *obj, const char *args,
 }
 #endif
 
-const char *scan_bar(struct text_object *obj, const char *args, double scale) {
+const char *scan_bar(struct text_object *obj, const char *args, double scale,
+                     bool reverse) {
   struct bar *b;
 
   b = static_cast<struct bar *>(malloc(sizeof(struct bar)));
   memset(b, 0, sizeof(struct bar));
+  if (reverse) { b->flags |= SF_REVERSE; }
 
   /* zero width means all space that is available */
   b->width = default_bar_width.get(*state);
@@ -811,6 +814,7 @@ static void new_bar_in_shell(struct text_object *obj, char *buffer,
   for (; i < width; i++) { buffer[i] = *(bar_unfill.get(*state).c_str()); }
 
   buffer[i] = 0;
+  if ((b->flags & SF_REVERSE) != 0) { std::reverse(buffer, buffer + width); }
 }
 
 #ifdef BUILD_GUI
@@ -828,6 +832,7 @@ static void new_bar_in_gui(struct text_object *obj, char *buf, double usage) {
   s->width = dpi_scale(b->width);
   s->height = dpi_scale(b->height);
   s->scale = b->scale;
+  s->invertx = (b->flags & SF_REVERSE) != 0;
 }
 #endif /* BUILD_GUI */
 
