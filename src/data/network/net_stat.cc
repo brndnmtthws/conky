@@ -121,6 +121,7 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
 #ifdef BUILD_IPV6
   bool shownetmask = false;
   bool showscope = false;
+  char scope_filter = 'A';
 #endif               /* BUILD_IPV6 */
   char nextarg[21];  // longest arg possible is a devname (max 20 chars)
   int i = 0;
@@ -162,6 +163,10 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
       shownetmask = true;
     } else if (strcmp(nextarg, "-s") == 0 || strcmp(nextarg, "--scope") == 0) {
       showscope = true;
+    } else if (strcmp(nextarg, "global") == 0) {
+      scope_filter = 'G';
+    } else if (strcmp(nextarg, "link") == 0) {
+      scope_filter = 'L';
     } else if (nextarg[0] == '-') {  // multiple flags in 1 arg
       for (int j = 1; nextarg[j] != 0; j++) {
         if (nextarg[j] == 'n') { shownetmask = true; }
@@ -186,6 +191,7 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
 #ifdef BUILD_IPV6
   netstat->v6show_nm = shownetmask;
   netstat->v6show_sc = showscope;
+  netstat->v6scope_filter = scope_filter;
 #endif /* BUILD_IPV6 */
   obj->data.opaque = netstat;
 }
@@ -314,6 +320,14 @@ void print_v6addrs(struct text_object *obj, char *p, unsigned int p_max_size) {
   }
   *p = 0;
   while (current_v6) {
+    // scope filter
+    while (current_v6 && ns->v6scope_filter != 'A' &&
+           current_v6->scope != ns->v6scope_filter) {
+      current_v6 = current_v6->next;
+    }
+    if (!current_v6) break;
+    if (*p != 0) { strncat(p, ", ", p_max_size); }
+
     inet_ntop(AF_INET6, &(current_v6->addr), tempaddress, INET6_ADDRSTRLEN);
     strncat(p, tempaddress, p_max_size);
     // netmask
@@ -330,8 +344,9 @@ void print_v6addrs(struct text_object *obj, char *p, unsigned int p_max_size) {
     }
     // next (or last) address
     current_v6 = current_v6->next;
-    if (current_v6) strncat(p, ", ", p_max_size);
   }
+  // no matching address
+  if (*p == 0) { snprintf(p, p_max_size, "%s", "No Address"); }
 }
 #endif /* BUILD_IPV6 */
 

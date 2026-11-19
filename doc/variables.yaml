@@ -2533,12 +2533,14 @@ values:
     desc: |-
       IPv6 addresses for an interface, followed by netmask if -n
       is specified and scope with -s. Scopes are Global(G), Host-local(H),
-      Link-local(L), Site-local(S), Compat(C) and Unspecified(/). Linux
-      only.
+      Link-local(L), Site-local(S), Compat(C) and Unspecified(/). The optional
+      "global" argument displays only global addresses; the optional
+      "link" argument displays only link-local addresses. Linux only.
     args:
       - (-n)
       - (-s)
       - (interface)
+      - (global|link)
   - name: version
     desc: Git version number. DragonFly only.
   - name: voffset
