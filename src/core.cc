@@ -846,9 +846,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
       OBJ(addrs, &update_net_stats) parse_net_stat_arg(obj, arg, free_at_crash);
   obj->callbacks.print = &print_addrs;
 #ifdef BUILD_IPV6
-  END OBJ(v6addrs, &update_net_stats)
-      parse_net_stat_arg(obj, arg, free_at_crash);
-  obj->callbacks.print = &print_v6addrs;
+  END OBJ(v6addrs, &update_net_stats) obj->callbacks.print = &print_v6addrs;
+  parse_net_stat_arg(obj, arg, free_at_crash);
 #endif /* BUILD_IPV6 */
   END
 #endif /* __linux__ */
