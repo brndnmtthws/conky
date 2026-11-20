@@ -340,47 +340,36 @@ void print_addrs(struct text_object *obj, char *p, unsigned int p_max_size) {
 
 #ifdef BUILD_IPV6
 void print_v6addrs(struct text_object *obj, char *p, unsigned int p_max_size) {
-  auto *data = static_cast<struct v6addrs_data *>(obj->data.opaque);
-  if (data == nullptr) { return; }
-  struct net_stat *ns = data->ns;
-  if (ns == nullptr) { return; }
-  char tempaddress[INET6_ADDRSTRLEN];
-  struct v6addr *current_v6 = ns->v6addrs;
+  if (p_max_size == 0) { return; }
+  const auto *data = static_cast<const v6addrs_data *>(obj->data.opaque);
+  *p = '\0';
+  if (data == nullptr || data->ns == nullptr) { return; }
 
-  if (p_max_size == 0) return;
-  if (!ns->v6addrs) {
-    snprintf(p, p_max_size, "%s", "No Address");
-    return;
-  }
-  *p = 0;
-  while (current_v6) {
-    // scope filter
-    while (current_v6 && data->scope_filter != 'A' &&
-           current_v6->scope != data->scope_filter) {
-      current_v6 = current_v6->next;
+  size_t used = 0;
+  for (const auto *address = data->ns->v6addrs; address != nullptr;
+       address = address->next) {
+    if (data->scope_filter != 'A' && address->scope != data->scope_filter) {
+      continue;
     }
-    if (!current_v6) break;
-    if (*p != 0) { strncat(p, ", ", p_max_size); }
-
-    inet_ntop(AF_INET6, &(current_v6->addr), tempaddress, INET6_ADDRSTRLEN);
-    strncat(p, tempaddress, p_max_size);
-    // netmask
+    char text[INET6_ADDRSTRLEN];
+    if (inet_ntop(AF_INET6, &address->addr, text, sizeof(text)) == nullptr) {
+      continue;
+    }
+    char netmask[5]{};  // /128 plus terminator
     if (data->shownetmask) {
-      char netmaskstr[5];  // max 5 chars (/128 + null-terminator)
-      snprintf(netmaskstr, sizeof(netmaskstr), "/%u", current_v6->netmask);
-      strncat(p, netmaskstr, p_max_size);
+      snprintf(netmask, sizeof(netmask), "/%u", address->netmask);
     }
-    // scope
+    char scope[4]{};
     if (data->showscope) {
-      char scopestr[4];
-      snprintf(scopestr, sizeof(scopestr), "(%c)", current_v6->scope);
-      strncat(p, scopestr, p_max_size);
+      snprintf(scope, sizeof(scope), "(%c)", address->scope);
     }
-    // next (or last) address
-    current_v6 = current_v6->next;
+    const auto remaining = p_max_size - used;
+    const auto written = snprintf(p + used, remaining, "%s%s%s%s",
+                                  used == 0 ? "" : ", ", text, netmask, scope);
+    if (written < 0 || static_cast<size_t>(written) >= remaining) { return; }
+    used += static_cast<size_t>(written);
   }
-  // no matching address
-  if (*p == 0) { snprintf(p, p_max_size, "%s", "No Address"); }
+  if (used == 0) { snprintf(p, p_max_size, "%s", "No Address"); }
 }
 #endif /* BUILD_IPV6 */
 

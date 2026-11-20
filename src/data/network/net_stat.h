@@ -62,10 +62,7 @@ struct net_stat {
   struct sockaddr addr;
 #ifdef BUILD_IPV6
   struct v6addr *v6addrs;
-  bool v6show_nm;
-  bool v6show_sc;
-  char v6scope_filter; /* 'A' = All, 'G' = Global, 'L' = Link */
-#endif                 /* BUILD_IPV6 */
+#endif /* BUILD_IPV6 */
 #if defined(__linux__)
   char addrs[17 * MAX_NET_INTERFACES + 1];
 #endif /* __linux__ */
