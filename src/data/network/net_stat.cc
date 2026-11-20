@@ -68,6 +68,20 @@ conky::lua_traits<if_up_strictness_>::Map
 
 static conky::simple_config_setting<if_up_strictness_> if_up_strictness(
     "if_up_strictness", IFUP_UP, true);
+
+#ifdef BUILD_IPV6
+struct v6addrs_data {
+  struct net_stat *ns;
+  char scope_filter;
+  bool shownetmask;
+  bool showscope;
+};
+
+static void free_v6addrs(struct text_object *obj) {
+  free_and_zero(obj->data.opaque);
+}
+#endif /* BUILD_IPV6 */
+
 /**
  * global array of structs containing network statistics for each interface
  **/
@@ -121,6 +135,8 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
 #ifdef BUILD_IPV6
   bool shownetmask = false;
   bool showscope = false;
+  char scope_filter = 'A';
+  bool is_v6addrs = obj->callbacks.print == &print_v6addrs;
 #endif               /* BUILD_IPV6 */
   char nextarg[21];  // longest arg possible is a devname (max 20 chars)
   int i = 0;
@@ -158,11 +174,17 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
 
   while (sscanf(arg + i, " %20s", nextarg) == 1) {
 #ifdef BUILD_IPV6
-    if (strcmp(nextarg, "-n") == 0 || strcmp(nextarg, "--netmask") == 0) {
+    if (is_v6addrs &&
+        (strcmp(nextarg, "-n") == 0 || strcmp(nextarg, "--netmask") == 0)) {
       shownetmask = true;
-    } else if (strcmp(nextarg, "-s") == 0 || strcmp(nextarg, "--scope") == 0) {
+    } else if (is_v6addrs && (strcmp(nextarg, "-s") == 0 ||
+                              strcmp(nextarg, "--scope") == 0)) {
       showscope = true;
-    } else if (nextarg[0] == '-') {  // multiple flags in 1 arg
+    } else if (is_v6addrs && strcmp(nextarg, "global") == 0) {
+      scope_filter = 'G';
+    } else if (is_v6addrs && strcmp(nextarg, "link") == 0) {
+      scope_filter = 'L';
+    } else if (is_v6addrs && nextarg[0] == '-') {  // multiple flags in 1 arg
       for (int j = 1; nextarg[j] != 0; j++) {
         if (nextarg[j] == 'n') { shownetmask = true; }
         if (nextarg[j] == 's') { showscope = true; }
@@ -184,10 +206,25 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg,
   }
 
 #ifdef BUILD_IPV6
-  netstat->v6show_nm = shownetmask;
-  netstat->v6show_sc = showscope;
-#endif /* BUILD_IPV6 */
+  if (is_v6addrs) {
+    auto *data =
+        static_cast<struct v6addrs_data *>(malloc(sizeof(struct v6addrs_data)));
+    if (data == nullptr) {
+      obj->data.opaque = nullptr;
+      return;
+    }
+    data->ns = netstat;
+    data->scope_filter = scope_filter;
+    data->shownetmask = shownetmask;
+    data->showscope = showscope;
+    obj->data.opaque = data;
+    obj->callbacks.free = &free_v6addrs;
+  } else {
+    obj->data.opaque = netstat;
+  }
+#else
   obj->data.opaque = netstat;
+#endif /* BUILD_IPV6 */
 }
 
 void parse_net_stat_bar_arg(struct text_object *obj, const char *arg,
@@ -303,35 +340,36 @@ void print_addrs(struct text_object *obj, char *p, unsigned int p_max_size) {
 
 #ifdef BUILD_IPV6
 void print_v6addrs(struct text_object *obj, char *p, unsigned int p_max_size) {
-  struct net_stat *ns = (struct net_stat *)obj->data.opaque;
-  char tempaddress[INET6_ADDRSTRLEN];
-  struct v6addr *current_v6 = ns->v6addrs;
+  if (p_max_size == 0) { return; }
+  const auto *data = static_cast<const v6addrs_data *>(obj->data.opaque);
+  *p = '\0';
+  if (data == nullptr || data->ns == nullptr) { return; }
 
-  if (p_max_size == 0) return;
-  if (!ns->v6addrs) {
-    snprintf(p, p_max_size, "%s", "No Address");
-    return;
-  }
-  *p = 0;
-  while (current_v6) {
-    inet_ntop(AF_INET6, &(current_v6->addr), tempaddress, INET6_ADDRSTRLEN);
-    strncat(p, tempaddress, p_max_size);
-    // netmask
-    if (ns->v6show_nm) {
-      char netmaskstr[5];  // max 5 chars (/128 + null-terminator)
-      snprintf(netmaskstr, sizeof(netmaskstr), "/%u", current_v6->netmask);
-      strncat(p, netmaskstr, p_max_size);
+  size_t used = 0;
+  for (const auto *address = data->ns->v6addrs; address != nullptr;
+       address = address->next) {
+    if (data->scope_filter != 'A' && address->scope != data->scope_filter) {
+      continue;
     }
-    // scope
-    if (ns->v6show_sc) {
-      char scopestr[4];
-      snprintf(scopestr, sizeof(scopestr), "(%c)", current_v6->scope);
-      strncat(p, scopestr, p_max_size);
+    char text[INET6_ADDRSTRLEN];
+    if (inet_ntop(AF_INET6, &address->addr, text, sizeof(text)) == nullptr) {
+      continue;
     }
-    // next (or last) address
-    current_v6 = current_v6->next;
-    if (current_v6) strncat(p, ", ", p_max_size);
+    char netmask[5]{};  // /128 plus terminator
+    if (data->shownetmask) {
+      snprintf(netmask, sizeof(netmask), "/%u", address->netmask);
+    }
+    char scope[4]{};
+    if (data->showscope) {
+      snprintf(scope, sizeof(scope), "(%c)", address->scope);
+    }
+    const auto remaining = p_max_size - used;
+    const auto written = snprintf(p + used, remaining, "%s%s%s%s",
+                                  used == 0 ? "" : ", ", text, netmask, scope);
+    if (written < 0 || static_cast<size_t>(written) >= remaining) { return; }
+    used += static_cast<size_t>(written);
   }
+  if (used == 0) { snprintf(p, p_max_size, "%s", "No Address"); }
 }
 #endif /* BUILD_IPV6 */
 

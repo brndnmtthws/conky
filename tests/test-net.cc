@@ -27,13 +27,21 @@
  */
 
 #include "catch2/catch.hpp"
+#include "config.h"
+
+#if defined(__linux__) && defined(BUILD_IPV6)
+#include <arpa/inet.h>
+#endif
 
 #include <cstdlib>
+#include <memory>
+#include <string>
 #include <utility>
 
 #include <conky.h>
 #include <content/specials.h>
 #include <content/text_object.h>
+#include <core.h>
 #include <data/exec.h>
 #include <data/network/net_stat.h>
 #include <lua/lua-config.hh>
@@ -82,6 +90,58 @@ TEST_CASE("parse_net_stat_bar_arg parses dimensions regardless of arg order",
     REQUIRE(width == 0);   // default_bar_width
   }
 }
+
+#if defined(__linux__) && defined(BUILD_IPV6)
+TEST_CASE("v6addrs filters and formats each object independently",
+          "[net][ipv6]") {
+  struct network_sample {
+    std::unique_ptr<lua::state> saved_state = std::move(state);
+    net_stat saved_netstat = netstats[0];
+    char device[16] = "v6addrs_test";
+    v6addr link{{}, 64, 'L', nullptr};
+    v6addr global{{}, 64, 'G', &link};
+
+    network_sample() {
+      state = std::make_unique<lua::state>();
+      conky::export_symbols(*state);
+      netstats[0] = net_stat{};
+      netstats[0].dev = device;
+      netstats[0].v6addrs = &global;
+    }
+
+    ~network_sample() {
+      netstats[0] = saved_netstat;
+      state = std::move(saved_state);
+    }
+  } sample;
+
+  REQUIRE(inet_pton(AF_INET6, "2001:db8::1", &sample.global.addr) == 1);
+  REQUIRE(inet_pton(AF_INET6, "fe80::1", &sample.link.addr) == 1);
+
+  struct parsed_text {
+    text_object root{};
+
+    explicit parsed_text(const char *text) {
+      extract_variable_text_internal(&root, text);
+    }
+
+    ~parsed_text() { free_text_objects(&root); }
+
+    std::string render() const {
+      char output[256]{};
+      generate_text_internal(output, sizeof(output), root);
+      return output;
+    }
+  } text(
+      "${v6addrs -n v6addrs_test global}|"
+      "${v6addrs link -s v6addrs_test}|"
+      "${v6addrs v6addrs_test}");
+
+  CHECK(text.render() == "2001:db8::1/64|fe80::1(L)|2001:db8::1, fe80::1");
+  netstats[0].v6addrs = &sample.link;
+  CHECK(text.render() == "No Address|fe80::1(L)|fe80::1");
+}
+#endif  // defined(__linux__) && defined(BUILD_IPV6)
 
 TEST_CASE("get_barnum returns 0.0 silently for empty or null input", "[exec]") {
   SECTION("empty string returns 0.0") { REQUIRE(get_barnum("") == 0.0); }
