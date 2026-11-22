@@ -125,7 +125,18 @@ double loadgraphval(struct text_object *);
 uint8_t cpu_percentage(struct text_object *);
 double cpu_barval(struct text_object *);
 
+enum class memory_metric {
+  used,
+  buffered,
+  easyfree,
+  legacy,
+  free,
+  dirty,
+  available,
+};
+
 void print_mem(struct text_object *, char *, unsigned int);
+void print_mem_si(struct text_object *, char *, unsigned int);
 void print_memwithbuffers(struct text_object *, char *, unsigned int);
 void print_memeasyfree(struct text_object *, char *, unsigned int);
 void print_legacymem(struct text_object *, char *, unsigned int);
