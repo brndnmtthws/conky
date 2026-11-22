@@ -86,6 +86,7 @@
 #endif /* BUILD_NVIDIA_NVML */
 
 #include <inttypes.h>
+#include <string_view>
 #include "content/scroll.h"
 #include "content/specials.h"
 #include "content/temphelper.h"
@@ -178,6 +179,67 @@ legacy_cb_handle *create_cb_handle(int (*fn)()) {
     return new legacy_cb_handle(conky::register_cb<legacy_cb>(1, fn));
   }
   { return nullptr; }
+}
+
+// Parse only a leading selector, leaving the object's normal options alone.
+static std::string_view take_memory_arg(const char *&arg) {
+  const std::string_view input(arg ? arg : "");
+  const auto end = input.find_first_of(" \t\r\n");
+  const auto next = input.find_first_not_of(" \t\r\n", end);
+  arg = next == std::string_view::npos ? nullptr : arg + next;
+  return input.substr(0, end);
+}
+
+static const char *scan_memory_metric(struct text_object *obj, const char *&arg,
+                                      const char *name,
+                                      bool accepts_other_args = true) {
+  obj->data.i = static_cast<int>(memory_metric::used);
+  auto rest = arg;
+  const auto option = take_memory_arg(rest);
+  if (option != "-b" && option != "--metric") {
+    if (!accepts_other_args && !option.empty()) {
+      LOG_WARNING("{}: unexpected argument '{}'; using 'used'", name, arg);
+    }
+    return "mem";
+  }
+
+  const auto metric = option == "-b" ? "buffered" : take_memory_arg(rest);
+  arg = rest;
+
+  // Preserve the graph history keys used by the existing memory objects.
+  static constexpr struct {
+    std::string_view name;
+    memory_metric metric;
+    const char *key;
+  } metrics[] = {
+      {"used", memory_metric::used, "mem"},
+      {"buffered", memory_metric::buffered, "memwithbuffers"},
+      {"easyfree", memory_metric::easyfree, "mem:easyfree"},
+      {"free", memory_metric::free, "mem:free"},
+#ifdef __linux__
+      {"legacy", memory_metric::legacy, "mem:legacy"},
+      {"dirty", memory_metric::dirty, "mem:dirty"},
+      {"available", memory_metric::available, "mem:available"},
+#endif
+  };
+
+  for (const auto &entry : metrics) {
+    if (metric != entry.name) { continue; }
+    if (!accepts_other_args && arg != nullptr) {
+      LOG_WARNING("{}: unexpected argument '{}'; using 'used'", name, arg);
+      return "mem";
+    }
+    obj->data.i = static_cast<int>(entry.metric);
+    return entry.key;
+  }
+
+  if (metric.empty()) {
+    LOG_WARNING("{}: --metric requires a name; using 'used'", name);
+  } else {
+    LOG_WARNING("{}: unknown or unsupported memory metric '{}'; using 'used'",
+                name, metric);
+  }
+  return "mem";
 }
 
 /* construct_text_object() creates a new text_object */
@@ -953,9 +1015,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(mboxscan, nullptr) parse_mboxscan_arg(obj, arg);
   obj->callbacks.print = &print_mboxscan;
   obj->callbacks.free = &free_mboxscan;
-  END OBJ(mem, &update_meminfo) obj->data.s = STRNDUP_ARG;
-  obj->callbacks.print = &print_mem;
-  obj->callbacks.free = &gen_free_opaque;
+  END OBJ(mem, &update_meminfo) scan_memory_metric(obj, arg, "mem");
+  obj->callbacks.print =
+      arg && strcmp(arg, "si") == 0 ? &print_mem_si : &print_mem;
   END OBJ(legacymem, &update_meminfo) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_legacymem;
   obj->callbacks.free = &gen_free_opaque;
@@ -971,7 +1033,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   END OBJ(memmax, &update_meminfo) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_memmax;
   obj->callbacks.free = &gen_free_opaque;
-  END OBJ(memperc, &update_meminfo) obj->callbacks.percentage = &mem_percentage;
+  END OBJ(memperc, &update_meminfo)
+      scan_memory_metric(obj, arg, "memperc", false);
+  obj->callbacks.percentage = &mem_percentage;
 #ifdef __linux__
   END OBJ(memdirty, &update_meminfo) obj->data.s = STRNDUP_ARG;
   obj->callbacks.print = &print_memdirty;
@@ -1004,18 +1068,24 @@ struct text_object *construct_text_object(char *s, const char *arg, long line,
   obj->callbacks.free = &gen_free_opaque;
 #endif /* __FreeBSD__ */
 #ifdef BUILD_GUI
-  END OBJ(memgauge, &update_meminfo) scan_gauge(obj, arg, 1);
+  END OBJ(memgauge, &update_meminfo) scan_memory_metric(obj, arg, "memgauge");
+  scan_gauge(obj, arg, 1);
   obj->callbacks.gaugeval = &mem_barval;
 #endif /* BUILD_GUI */
-  END OBJ(membar, &update_meminfo) scan_bar(obj, arg, 1);
+  END OBJ(membar, &update_meminfo) scan_memory_metric(obj, arg, "membar");
+  scan_bar(obj, arg, 1);
   obj->callbacks.barval = &mem_barval;
   END OBJ(memwithbuffersbar, &update_meminfo) scan_bar(obj, arg, 1);
   obj->callbacks.barval = &mem_with_buffers_barval;
 #ifdef BUILD_GUI
-  END OBJ(memgraph, &update_meminfo) scan_graph(obj, arg, 1, FALSE, "mem");
+  END OBJ(memgraph, &update_meminfo) {
+    auto *key = scan_memory_metric(obj, arg, "memgraph");
+    // A non-null argument makes scan_graph initialize the history key.
+    scan_graph(obj, arg ? arg : "", 1, FALSE, key);
+  }
   obj->callbacks.graphval = &mem_barval;
   END OBJ(memwithbuffersgraph, &update_meminfo)
-      scan_graph(obj, arg, 1, FALSE, "memwithbuffers");
+      scan_graph(obj, arg ? arg : "", 1, FALSE, "memwithbuffers");
   obj->callbacks.graphval = &mem_with_buffers_barval;
 #endif /* BUILD_GUI*/
 #ifdef HAVE_SOUNDCARD_H

@@ -37,6 +37,7 @@
 #include <semaphore.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <algorithm>
 #include <cctype>
 #include <cerrno>
 #include <charconv>
@@ -624,7 +625,6 @@ double cpu_barval(struct text_object *obj) {
                    p_max_size);                                      \
   }
 
-PRINT_HR_GENERATOR(mem)
 PRINT_HR_GENERATOR(memwithbuffers)
 PRINT_HR_GENERATOR(memeasyfree)
 PRINT_HR_GENERATOR(legacymem)
@@ -641,26 +641,58 @@ PRINT_HR_GENERATOR(swap)
 PRINT_HR_GENERATOR(swapfree)
 PRINT_HR_GENERATOR(swapmax)
 
-uint8_t mem_percentage(struct text_object *obj) {
-  (void)obj;
+static unsigned long long memory_value(const struct text_object *obj) {
+  switch (obj == nullptr ? memory_metric::used
+                         : static_cast<memory_metric>(obj->data.i)) {
+    case memory_metric::buffered:
+      return info.memwithbuffers;
+    case memory_metric::easyfree:
+      return info.memeasyfree;
+    case memory_metric::legacy:
+      return info.legacymem;
+    case memory_metric::free:
+      return info.memfree;
+    case memory_metric::dirty:
+      return info.memdirty;
+    case memory_metric::available:
+      return info.memavail;
+    case memory_metric::used:
+      return info.mem;
+  }
+  return info.mem;
+}
 
-  return (info.memmax != 0u
-              ? round_to_positive_int(info.mem * 100 / info.memmax)
-              : 0);
+void print_mem(struct text_object *obj, char *p, unsigned int p_max_size) {
+  human_readable(apply_base_multiplier("", memory_value(obj)), p, p_max_size);
+}
+
+void print_mem_si(struct text_object *obj, char *p, unsigned int p_max_size) {
+  human_readable(apply_base_multiplier("si", memory_value(obj)), p, p_max_size);
+}
+
+uint8_t mem_percentage(struct text_object *obj) {
+  const auto mem = memory_value(obj);
+  if (info.memmax == 0) { return 0; }
+  if (mem >= info.memmax) { return 100; }
+  // Keep truncating fractional percentages, without multiplying a potentially
+  // very large counter in integer arithmetic.
+  return static_cast<uint8_t>(static_cast<long double>(mem) * 100 /
+                              info.memmax);
+}
+
+static double memory_fraction(unsigned long long mem) {
+  return info.memmax != 0u
+             ? static_cast<double>(std::min(mem, info.memmax)) / info.memmax
+             : 0;
 }
 
 double mem_barval(struct text_object *obj) {
-  (void)obj;
-
-  return info.memmax != 0u ? (static_cast<double>(info.mem) / info.memmax) : 0;
+  return memory_fraction(memory_value(obj));
 }
 
 double mem_with_buffers_barval(struct text_object *obj) {
   (void)obj;
-
-  return info.memmax != 0u
-             ? (static_cast<double>(info.memwithbuffers) / info.memmax)
-             : 0;
+  return memory_fraction(info.memwithbuffers);
 }
 
 uint8_t swap_percentage(struct text_object *obj) {

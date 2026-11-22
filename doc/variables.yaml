@@ -1390,14 +1390,25 @@ values:
       - (-sw subject width)
       - mbox
   - name: mem
-    desc: Amount of memory in use.
+    desc: |-
+      Amount of memory in use by default. Use a leading `--metric name`
+      (see `memperc`) to display a different memory amount, or `-b` as
+      shorthand for `--metric buffered`. The optional `si` unit argument
+      follows the selector, for example `${mem -b si}`.
+    args:
+      - (--metric name | -b)
+      - (si)
   - name: memactive
     desc: Amount of active memory. FreeBSD only.
   - name: memavail
     desc: Amount of available memory as recorded in /proc/meminfo. Linux 3.14+ only.
   - name: membar
-    desc: Bar that shows amount of memory in use.
+    desc: |-
+      Bar that shows the selected memory amount as a fraction of total
+      memory. Put `--metric name` (see `memperc`) or `-b` before the
+      dimensions, for example `${membar -b 8,100}`.
     args:
+      - (--metric name | -b)
       - (height),(width)
   - name: memdirty
     desc: Amount of "dirty" memory. Linux only.
@@ -1408,12 +1419,19 @@ values:
   - name: memfree
     desc: Amount of free memory.
   - name: memgauge
-    desc: Gauge that shows amount of memory in use (see cpugauge).
+    desc: |-
+      Gauge that shows the selected memory amount as a fraction of total
+      memory. Put `--metric name` (see `memperc`) or `-b` before the
+      dimensions.
     args:
+      - (--metric name | -b)
       - (height),(width)
   - name: memgraph
     desc: |-
-      Memory usage graph. Uses a logarithmic scale (to see small
+      Graph of the selected memory amount as a fraction of total memory.
+      Put `--metric name` (see `memperc`) or `-b` before other arguments,
+      for example `${memgraph --metric buffered 25,100 -l}`.
+      Uses a logarithmic scale (to see small
       numbers) when you use the -l switch. Takes the switch '-t' to use a
       temperature gradient, which makes the gradient values change depending
       on the amplitude of a particular graph value (try it and see). The flag
@@ -1421,6 +1439,7 @@ values:
       '-m' sets a nonzero minimum/lowerbound, ensuring that all values are at 
       least the specified minimum (excluding zero).
     args:
+      - (--metric name | -b)
       - (height),(width)
       - (gradient colour 1)
       - (gradient colour 2)
@@ -1437,7 +1456,25 @@ values:
   - name: memmax
     desc: Total amount of memory.
   - name: memperc
-    desc: Percentage of memory in use.
+    desc: |-
+      Percentage of total memory represented by the selected metric.
+      Without an argument it shows memory in use, as before. Use a single
+      leading `--metric name` or `-b` (short for `--metric buffered`):
+
+      * `used`: memory in use, as reported by `mem` (the default).
+      * `buffered`: memory in use including buffers and caches, as in `memwithbuffers`.
+      * `easyfree`: free and easily reclaimable memory, as in `memeasyfree`.
+      * `free`: free memory, as in `memfree`.
+      * `legacy`: used memory excluding free memory and buffer/cache, as in `legacymem` (Linux).
+      * `dirty`: dirty memory, as in `memdirty` (Linux).
+      * `available`: available memory, as in `memavail` (Linux 3.14+).
+
+      For example, `${memperc -b}` shows the fraction used including
+      buffers and caches. Unknown or unsupported metrics warn and use `used`.
+      Existing `memwithbuffers`, `memwithbuffersbar`, and
+      `memwithbuffersgraph` configurations remain supported.
+    args:
+      - (--metric name | -b)
   - name: memwired
     desc: Amount of wired memory. FreeBSD only.
   - name: memwithbuffers
