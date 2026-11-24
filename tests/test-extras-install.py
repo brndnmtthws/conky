@@ -19,7 +19,8 @@ def run(*args, **kwargs):
     subprocess.run(args, check=True, **kwargs)
 
 
-def check_install(root, name, options, data_dir, vim_dir, install_prefix=None):
+def check_install(root, name, options, data_dir, vim_dir, install_prefix=None,
+                  *, gedit_dir=None):
     build = root / name
     stage = root / (name + "-stage")
     run(cmake, "-S", str(root / "fixture"), "-B", str(build),
@@ -37,6 +38,10 @@ def check_install(root, name, options, data_dir, vim_dir, install_prefix=None):
     if vim_dir:
         expected[vim_dir + "/syntax/conkyrc.vim"] = build / "extras/vim/syntax/conkyrc.vim"
         expected[vim_dir + "/ftdetect/conkyrc.vim"] = source / "extras/vim/ftdetect/conkyrc.vim"
+    if gedit_dir is None and data_dir:
+        gedit_dir = data_dir + "/libgedit-gtksourceview-300/language-specs"
+    if gedit_dir:
+        expected[gedit_dir + "/conky.lang"] = source / "extras/gedit/conky.lang"
     actual = {"/" + str(p.relative_to(stage)) for p in stage.rglob("*") if p.is_file()}
     assert actual == set(expected), (name, actual, set(expected))
     for path, original in expected.items():
@@ -71,4 +76,14 @@ endif()
                   "/opt/data", "/opt/data/vim")
     check_install(root, "disabled-vim", ["-DVIM_RUNTIME_DIR="],
                   "/usr/local/share", None)
+    check_install(root, "relative-gedit",
+                  ["-DGEDIT_LANGUAGE_SPECS_DIR=share/gtksourceview-4/language-specs"],
+                  "/opt/conky/share", "/opt/conky/share/vim", "/opt/conky",
+                  gedit_dir="/opt/conky/share/gtksourceview-4/language-specs")
+    check_install(root, "absolute-gedit",
+                  ["-DGEDIT_LANGUAGE_SPECS_DIR=/opt/gedit specs"],
+                  "/usr/local/share", "/usr/local/share/vim",
+                  gedit_dir="/opt/gedit specs")
+    check_install(root, "disabled-gedit", ["-DGEDIT_LANGUAGE_SPECS_DIR="],
+                  "/usr/local/share", "/usr/local/share/vim", gedit_dir="")
     check_install(root, "disabled-extras", ["-DBUILD_EXTRAS=OFF"], None, None)
