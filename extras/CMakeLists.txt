@@ -53,3 +53,10 @@ if(NOT VIM_RUNTIME_DIR STREQUAL "")
   install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/vim/ftdetect/conkyrc.vim
       DESTINATION "${VIM_RUNTIME_DIR}/ftdetect")
 endif()
+
+set(GEDIT_LANGUAGE_SPECS_DIR "${CMAKE_INSTALL_DATAROOTDIR}/libgedit-gtksourceview-300/language-specs" CACHE STRING
+    "Gedit language specs install directory (relative to prefix or absolute; empty disables installation)")
+if(NOT GEDIT_LANGUAGE_SPECS_DIR STREQUAL "")
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/gedit/conky.lang
+      DESTINATION "${GEDIT_LANGUAGE_SPECS_DIR}")
+endif()

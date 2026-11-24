@@ -24,6 +24,17 @@ Lua configurations can instead use Vim's Lua filetype.
 
 ## Gedit
 
+With `BUILD_EXTRAS=ON`, installation includes `conky.lang` under
+`${CMAKE_INSTALL_DATAROOTDIR}/libgedit-gtksourceview-300/language-specs`.
+For gedit builds that use GtkSourceView 4, set
+`-DGEDIT_LANGUAGE_SPECS_DIR=share/gtksourceview-4/language-specs`. Relative paths
+follow the install prefix. Absolute paths are also supported. Set
+`-DGEDIT_LANGUAGE_SPECS_DIR=` to skip installing the gedit file.
+
+Choose a destination in gedit's language search path. For a custom system install
+such as `/opt/conky/share`, add the data directory to `XDG_DATA_DIRS` if gedit
+does not already search it.
+
 Note: this highlights syntax only and does **NOT** attempt to validate
 arguments or keywords. It is unlikely to be 100% accurate, and improvements are
 welcome.
@@ -32,7 +43,7 @@ Syntax highlighting is automatically applied to files with `conky` in their
 name, for example `my_config.conky`. Unfortunately, it also matches the
 `conky.lang` file itself, which you should set to XML manually.
 
-- [`gtksourceview` Syntax Highlight documentation][1]
+- [Language Definition v2.0 Reference][1]
 - [Regex Tutorial](http://www.rexegg.com/)
 - [Regex Testing](https://regex101.com/)
 
@@ -40,7 +51,7 @@ Developers: the main context (`id="conkyrc"`) is where gedit starts. That
 context then references other subcontexts. Each context can apply styles to
 itself, to substrings matched by its regular expressions, or to its contents in
 the case of `<start><end>` container contexts. If anything is unclear, search
-the [`gtksourceview` docs][1] for the relevant XML attributes. If you run into
+the [language definition reference][1] for the relevant XML attributes. If you run into
 a particularly complex regex, try the Regex Tester linked above, and keep in
 mind that `gtksourceview` adds some extra regex syntax, such as `\%[ ... ]`
 and `\%{ ... }`.
@@ -53,14 +64,24 @@ For medit v1.1.1:
 For older versions of medit:
 `/usr/share/medit-1/language-specs/conky.lang`
 
-For gedit v2.x:
+For GtkSourceView 2:
 `/usr/share/gtksourceview-2.0/language-specs/conky.lang`
 or, for a single user:
 `~/.local/share/gtksourceview-2.0/language-specs/conky.lang`
 
-For gedit v3.x:
+For GtkSourceView 3:
 `/usr/share/gtksourceview-3.0/language-specs/conky.lang`
 or, for a single user:
 `~/.local/share/gtksourceview-3.0/language-specs/conky.lang`
 
-[1]: https://developer.gnome.org/gtksourceview/stable/lang-reference.html
+For GtkSourceView 4:
+`/usr/share/gtksourceview-4/language-specs/conky.lang`
+or, for a single user:
+`~/.local/share/gtksourceview-4/language-specs/conky.lang`
+
+For libgedit-gtksourceview:
+`/usr/share/libgedit-gtksourceview-300/language-specs/conky.lang`
+or, for a single user:
+`~/.local/share/libgedit-gtksourceview-300/language-specs/conky.lang`
+
+[1]: https://gedit-text-editor.org/developer-docs/libgedit-gtksourceview-300/lang-reference.html
