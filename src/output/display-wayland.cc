@@ -240,7 +240,8 @@ display_output_wayland::display_output_wayland()
   is_graphical = true;
 }
 
-static int epoll_fd;
+static int epoll_fd = -1;
+static bool configured_epoll = false;
 static epoll_event ep[1];
 
 struct window;
@@ -269,6 +270,10 @@ struct window {
   /// Updated asynchronously by the scale listeners and copied into @ref scale
   /// when the window is reallocated (see window_resize).
   float pending_scale = 1.0f;
+  /// @brief Outputs the surface is currently mapped onto (from
+  /// wl_surface.enter/leave), used for integer scaling when
+  /// wp_fractional_scale_v1 is unavailable.
+  std::vector<wl_output *> entered_outputs;
   int current_buffer;
   /// @brief Consecutive frames dropped because the compositor held both
   /// buffers (see window_commit_buffer).
@@ -352,22 +357,73 @@ static void output_mode(void *data, wl_output *wl_output, uint32_t flags,
 static void output_done(void *data, wl_output *wl_output) {}
 #endif
 
+static wayland_output_info *find_output_info(wl_output *output) {
+  for (auto &info : wl_globals.outputs) {
+    if (info && info->output == output) { return info.get(); }
+  }
+  return nullptr;
+}
+
+static void update_window_output_scale(window *win) {
+  // wl_output.scale only carries integer scales. When the compositor supports
+  // wp_fractional_scale_v1 we get a more precise value from that instead, so
+  // ignore legacy integer scales to avoid clobbering the fractional scale.
+  if (wl_globals.fractional_scale_manager != nullptr || win == nullptr) {
+    return;
+  }
+
+  int32_t max_scale = 0;
+  for (wl_output *out : win->entered_outputs) {
+    if (auto *info = find_output_info(out)) {
+      max_scale = std::max(max_scale, info->scale);
+    }
+  }
+  if (max_scale <= 0 && wl_globals.selected_output != nullptr) {
+    max_scale = wl_globals.selected_output->scale;
+  }
+  if (max_scale > 0) {
+    win->pending_scale = static_cast<float>(max_scale);
+    LOG_TRACE_WITH(({"window->scale", win->scale}),
+                   "updated output scale from mapped output(s): {}", max_scale);
+  }
+}
+
+static void surface_enter(void *data, wl_surface *surface, wl_output *output) {
+  auto *win = static_cast<window *>(data);
+  if (win == nullptr || output == nullptr) { return; }
+  if (std::find(win->entered_outputs.begin(), win->entered_outputs.end(),
+                output) == win->entered_outputs.end()) {
+    win->entered_outputs.push_back(output);
+  }
+  if (wl_globals.selected_output == nullptr) {
+    if (auto *info = find_output_info(output)) {
+      workarea = absolute_rect<int>(vec2i(info->x, info->y),
+                                    vec2i(info->x + info->physical_width,
+                                          info->y + info->physical_height));
+    }
+  }
+  update_window_output_scale(win);
+}
+
+static void surface_leave(void *data, wl_surface *surface, wl_output *output) {
+  auto *win = static_cast<window *>(data);
+  if (win == nullptr || output == nullptr) { return; }
+  auto &entered = win->entered_outputs;
+  entered.erase(std::remove(entered.begin(), entered.end(), output),
+                entered.end());
+  update_window_output_scale(win);
+}
+
+static const wl_surface_listener surface_listener = {
+    /*.enter =*/&surface_enter,
+    /*.leave =*/&surface_leave,
+};
+
 #ifdef WL_OUTPUT_SCALE_SINCE_VERSION
 void output_scale(void *data, wl_output *wl_output, int32_t factor) {
   auto *info = static_cast<wayland_output_info *>(data);
   if (info != nullptr) { info->scale = factor; }
-  // wl_output.scale only carries integer scales. When the compositor supports
-  // wp_fractional_scale_v1 we get a more precise value from that instead, so
-  // ignore the legacy event to avoid clobbering the fractional scale.
-  if (wl_globals.fractional_scale_manager != nullptr) { return; }
-  if (global_window == nullptr) { return; }
-  if (wl_globals.selected_output != nullptr &&
-      wl_globals.selected_output != info) {
-    return;
-  }
-  global_window->pending_scale = factor;
-  LOG_TRACE_WITH(({"window->scale", global_window->scale}),
-                 "received output scale event: {}", factor);
+  update_window_output_scale(global_window);
 }
 #endif
 
@@ -480,11 +536,18 @@ void registry_handle_global_remove(void *data, wl_registry *registry,
   auto &outputs = wl_globals.outputs;
   for (auto it = outputs.begin(); it != outputs.end(); ++it) {
     if ((*it)->registry_name == name) {
+      wl_output *removed = (*it)->output;
       if (wl_globals.selected_output == it->get()) {
         wl_globals.selected_output = nullptr;
       }
-      destroy_wayland_output((*it)->output);
+      if (global_window != nullptr && removed != nullptr) {
+        auto &entered = global_window->entered_outputs;
+        entered.erase(std::remove(entered.begin(), entered.end(), removed),
+                      entered.end());
+      }
+      destroy_wayland_output(removed);
       outputs.erase(it);
+      update_window_output_scale(global_window);
       break;
     }
   }
@@ -497,6 +560,8 @@ static void clear_wayland_outputs() {
   wl_globals.outputs.clear();
   wl_globals.selected_output = nullptr;
 }
+
+static void reset_wayland_connection();
 
 static const wl_registry_listener registry_listener = {
     registry_handle_global, registry_handle_global_remove};
@@ -737,8 +802,66 @@ static const wl_seat_listener seat_listener = {
 };
 #endif /* BUILD_MOUSE_EVENTS */
 
-bool display_output_wayland::initialize() {
+static void reset_wayland_connection() {
   clear_wayland_outputs();
+#ifdef BUILD_MOUSE_EVENTS
+  if (wl_globals.pointer != nullptr) {
+    wl_pointer_destroy(wl_globals.pointer);
+    wl_globals.pointer = nullptr;
+  }
+  last_known_positions.clear();
+#endif
+  if (wl_globals.seat != nullptr) {
+    wl_seat_destroy(wl_globals.seat);
+    wl_globals.seat = nullptr;
+  }
+  if (wl_globals.fractional_scale_manager != nullptr) {
+    wp_fractional_scale_manager_v1_destroy(wl_globals.fractional_scale_manager);
+    wl_globals.fractional_scale_manager = nullptr;
+  }
+  if (wl_globals.viewporter != nullptr) {
+    wp_viewporter_destroy(wl_globals.viewporter);
+    wl_globals.viewporter = nullptr;
+  }
+  if (wl_globals.layer_shell != nullptr) {
+    zwlr_layer_shell_v1_destroy(wl_globals.layer_shell);
+    wl_globals.layer_shell = nullptr;
+  }
+  if (wl_globals.shell != nullptr) {
+    xdg_wm_base_destroy(wl_globals.shell);
+    wl_globals.shell = nullptr;
+  }
+  if (wl_globals.shm != nullptr) {
+    wl_shm_destroy(wl_globals.shm);
+    wl_globals.shm = nullptr;
+  }
+  if (wl_globals.compositor != nullptr) {
+    wl_compositor_destroy(wl_globals.compositor);
+    wl_globals.compositor = nullptr;
+  }
+  if (wl_globals.registry != nullptr) {
+    wl_registry_destroy(wl_globals.registry);
+    wl_globals.registry = nullptr;
+  }
+  wl_globals.surface = nullptr;
+  if (global_display != nullptr) {
+    wl_display_disconnect(global_display);
+    global_display = nullptr;
+  }
+  if (epoll_fd >= 0) {
+    close(epoll_fd);
+    epoll_fd = -1;
+  }
+  configured_epoll = false;
+}
+
+bool display_output_wayland::initialize() {
+  if (global_window != nullptr) {
+    window_destroy(global_window);
+    global_window = nullptr;
+    wl_globals.shm = nullptr;
+  }
+  reset_wayland_connection();
   epoll_fd = epoll_create1(0);
   if (epoll_fd < 0) {
     LOG_ERROR("epoll_create failed: {}", strerror(errno));
@@ -754,6 +877,7 @@ bool display_output_wayland::initialize() {
     } else {
       LOG_ERROR("wl_display_connect failed: {}", strerror(errno));
     }
+    reset_wayland_connection();
     return false;
   }
 
@@ -818,15 +942,7 @@ bool display_output_wayland::initialize() {
 
   wl_surface *surface = wl_compositor_create_surface(wl_globals.compositor);
   global_window = window_create(surface, wl_globals.shm, 1, 1);
-  if (wl_globals.fractional_scale_manager == nullptr) {
-    if (wl_globals.selected_output != nullptr) {
-      global_window->pending_scale =
-          static_cast<float>(wl_globals.selected_output->scale);
-    } else if (!wl_globals.outputs.empty()) {
-      global_window->pending_scale =
-          static_cast<float>(wl_globals.outputs.back()->scale);
-    }
-  }
+  update_window_output_scale(global_window);
   window_allocate_buffer(global_window);
 
   auto on_close = []() { g_sigterm_pending = 1; };
@@ -853,7 +969,10 @@ bool display_output_wayland::initialize() {
           "toplevel (desktop/dock/panel space reservation unavailable)");
     }
     if (wl_globals.shell == nullptr) {
-      clear_wayland_outputs();
+      window_destroy(global_window);
+      global_window = nullptr;
+      wl_globals.shm = nullptr;
+      reset_wayland_connection();
       SYSTEM_ERR("compositor supports neither wlr-layer-shell nor xdg-shell");
       return false;
     }
@@ -913,7 +1032,6 @@ bool display_output_wayland::main_loop_wait(double t) {
   int ms = t * 1000;
 
   /* add fd to epoll set the first time around */
-  static bool configured_epoll = false;
   if (!configured_epoll) {
     ep[0].events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
     ep[0].data.ptr = nullptr;
@@ -1017,8 +1135,9 @@ void display_output_wayland::cleanup() {
   if (global_window != nullptr) {
     window_destroy(global_window);
     global_window = nullptr;
+    wl_globals.shm = nullptr;
   }
-  clear_wayland_outputs();
+  reset_wayland_connection();
 #ifdef BUILD_IMLIB2
   cimlib_deinit();
 #endif /* BUILD_IMLIB2 */
@@ -1594,6 +1713,7 @@ window *window_create(wl_surface *surface, wl_shm *shm, int width, int height) {
 
   result->surface = surface;
   result->shm = shm;
+  wl_surface_add_listener(surface, &surface_listener, result);
 
   // When the compositor supports viewporter we scale via a wp_viewport
   // destination rather than wl_surface.set_buffer_scale, which lets us honour
