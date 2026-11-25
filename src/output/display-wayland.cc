@@ -473,6 +473,10 @@ static void fractional_scale_preferred(void *data,
 static const wp_fractional_scale_v1_listener fractional_scale_listener = {
     /*.preferred_scale =*/&fractional_scale_preferred};
 
+#ifdef BUILD_MOUSE_EVENTS
+extern const wl_seat_listener seat_listener;
+#endif /* BUILD_MOUSE_EVENTS */
+
 void registry_handle_global(void *data, wl_registry *registry, uint32_t name,
                             const char *interface, uint32_t version) {
   if (strcmp(interface, "wl_compositor") == 0) {
@@ -484,6 +488,9 @@ void registry_handle_global(void *data, wl_registry *registry, uint32_t name,
   } else if (strcmp(interface, "wl_seat") == 0) {
     wl_globals.seat = static_cast<wl_seat *>(
         wl_registry_bind(registry, name, &wl_seat_interface, 1));
+#ifdef BUILD_MOUSE_EVENTS
+    wl_seat_add_listener(wl_globals.seat, &seat_listener, nullptr);
+#endif /* BUILD_MOUSE_EVENTS */
   } else if (strcmp(interface, "wl_output") == 0) {
     constexpr uint32_t max_output_version =
 #ifdef WL_OUTPUT_DESCRIPTION_SINCE_VERSION
@@ -679,7 +686,8 @@ static std::map<wl_pointer *, vec2<size_t>> last_known_positions{};
 static void on_pointer_enter(void *data, wl_pointer *pointer,
                              std::uint32_t serial, wl_surface *surface,
                              wl_fixed_t surface_x, wl_fixed_t surface_y) {
-  auto w = reinterpret_cast<window *>(data);
+  auto *w = global_window;
+  if (w == nullptr) { return; }
 
   auto pos =
       vec2d(wl_fixed_to_double(surface_x), wl_fixed_to_double(surface_y));
@@ -692,7 +700,8 @@ static void on_pointer_enter(void *data, wl_pointer *pointer,
 
 static void on_pointer_leave(void *data, wl_pointer *pointer,
                              std::uint32_t serial, wl_surface *surface) {
-  auto w = reinterpret_cast<window *>(data);
+  auto *w = global_window;
+  if (w == nullptr) { return; }
 
   auto pos = last_known_positions[pointer];
   auto pos_abs = w->rectangle.pos() + pos;
@@ -704,7 +713,8 @@ static void on_pointer_leave(void *data, wl_pointer *pointer,
 static void on_pointer_motion(void *data, wl_pointer *pointer,
                               std::uint32_t _time, wl_fixed_t surface_x,
                               wl_fixed_t surface_y) {
-  auto w = reinterpret_cast<window *>(data);
+  auto *w = global_window;
+  if (w == nullptr) { return; }
 
   auto pos =
       vec2d(wl_fixed_to_double(surface_x), wl_fixed_to_double(surface_y));
@@ -718,7 +728,8 @@ static void on_pointer_motion(void *data, wl_pointer *pointer,
 static void on_pointer_button(void *data, wl_pointer *pointer,
                               std::uint32_t serial, std::uint32_t time,
                               std::uint32_t button, std::uint32_t state) {
-  auto w = reinterpret_cast<window *>(data);
+  auto *w = global_window;
+  if (w == nullptr) { return; }
 
   auto pos = last_known_positions[pointer];
   auto pos_abs = w->rectangle.pos() + pos;
@@ -747,7 +758,8 @@ void on_pointer_axis(void *data, wl_pointer *pointer, std::uint32_t time,
                      std::uint32_t axis, wl_fixed_t value) {
   if (value == 0) return;
 
-  auto w = reinterpret_cast<window *>(data);
+  auto *w = global_window;
+  if (w == nullptr) { return; }
 
   auto pos = last_known_positions[pointer];
   auto pos_abs = w->rectangle.pos() + pos;
@@ -786,17 +798,18 @@ static void seat_capability_listener(void *data, wl_seat *seat,
   wl_seat_capability capabilities =
       static_cast<wl_seat_capability>(capability_int);
   if (wl_globals.seat == seat) {
-    if ((capabilities & WL_SEAT_CAPABILITY_POINTER) > 0) {
+    if ((capabilities & WL_SEAT_CAPABILITY_POINTER) > 0 &&
+        wl_globals.pointer == nullptr) {
       wl_globals.pointer = wl_seat_get_pointer(seat);
 
-      wl_pointer_add_listener(wl_globals.pointer, &pointer_listener, data);
+      wl_pointer_add_listener(wl_globals.pointer, &pointer_listener, nullptr);
     }
   }
 }
 static void seat_name_listener(void *data, wl_seat *wl_seat, const char *name) {
 }
 
-static const wl_seat_listener seat_listener = {
+const wl_seat_listener seat_listener = {
     .capabilities = seat_capability_listener,
     .name = seat_name_listener,
 };
@@ -987,10 +1000,6 @@ bool display_output_wayland::initialize() {
   }
   global_window->shell->set_size(global_window->rectangle.width(),
                                  global_window->rectangle.height());
-
-#ifdef BUILD_MOUSE_EVENTS
-  wl_seat_add_listener(wl_globals.seat, &seat_listener, global_window);
-#endif /* BUILD_MOUSE_EVENTS */
 
 #ifdef BUILD_IMLIB2
   /* There is no X11 drawable to hand imlib2, so images are composited onto the
