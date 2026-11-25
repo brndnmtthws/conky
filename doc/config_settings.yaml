@@ -138,7 +138,13 @@ values:
   - name: diskio_avg_samples
     desc: The number of samples to average for disk I/O monitoring.
   - name: display
-    desc: Specify an X display to connect to.
+    desc: |-
+      Specify a display to connect to. On X11, this is an X display string
+      (e.g. ":0"). On Wayland, this can be a wl_output name (e.g. "DP-2"),
+      output description, 0-based output index, an absolute socket path, or
+      "wayland-N"/":N" with an optional ".output" selector (e.g.
+      "wayland-0.DP-2" or ":0.1"); custom relative socket names can be set via
+      WAYLAND_DISPLAY. Output placement on Wayland requires wlr-layer-shell.
   - name: double_buffer
     desc: |-
       Use the Xdbe extension? (eliminates flicker) It is highly

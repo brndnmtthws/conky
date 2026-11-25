@@ -135,6 +135,11 @@ conky::simple_config_setting<alignment> text_alignment("alignment",
                                                        alignment::BOTTOM_LEFT,
                                                        false);
 
+#if defined(BUILD_X11) || defined(BUILD_WAYLAND)
+conky::simple_config_setting<std::string> display_name("display", std::string(),
+                                                       false);
+#endif /* BUILD_X11 || BUILD_WAYLAND */
+
 priv::colour_setting default_shade_color("default_shade_color", black_argb32);
 priv::colour_setting default_outline_color("default_outline_color",
                                            black_argb32);

@@ -111,8 +111,6 @@ xcb_errors_context_t *xcb_errors_ctx;
 struct conky_x11_window window;
 
 /* Config settings (declared in x11-settings.h / gui.h) */
-conky::simple_config_setting<std::string> display_name("display", std::string(),
-                                                       false);
 conky::simple_config_setting<int> head_index("xinerama_head", 0, true);
 #ifdef BUILD_XFT
 conky::simple_config_setting<bool> use_xft("use_xft", false, false);

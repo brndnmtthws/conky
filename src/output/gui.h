@@ -184,6 +184,10 @@ void print_mouse_speed(struct text_object *, char *, unsigned int);
 
 extern conky::simple_config_setting<alignment> text_alignment;
 
+#if defined(BUILD_X11) || defined(BUILD_WAYLAND)
+extern conky::simple_config_setting<std::string> display_name;
+#endif /* BUILD_X11 || BUILD_WAYLAND */
+
 extern conky::simple_config_setting<int> head_index;
 extern priv::colour_setting default_shade_color;
 extern priv::colour_setting default_outline_color;

@@ -47,6 +47,7 @@
 #include <wlr-layer-shell-client-protocol.h>
 #include <xdg-shell-client-protocol.h>
 
+#include <algorithm>
 #include <cerrno>
 #include <cmath>
 #include <csignal>
@@ -54,6 +55,8 @@
 #include <cstring>
 #include <ctime>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "../conky.h"
 #include "../geometry.h"
@@ -66,6 +69,7 @@
 #include "gui.h"
 #include "output-setting.hh"
 #include "wayland-dashes.hh"
+#include "wayland-display.hh"
 #include "wl-shell.h"
 
 #include "../lua/fonts.h"
@@ -236,7 +240,8 @@ display_output_wayland::display_output_wayland()
   is_graphical = true;
 }
 
-static int epoll_fd;
+static int epoll_fd = -1;
+static bool configured_epoll = false;
 static epoll_event ep[1];
 
 struct window;
@@ -265,6 +270,10 @@ struct window {
   /// Updated asynchronously by the scale listeners and copied into @ref scale
   /// when the window is reallocated (see window_resize).
   float pending_scale = 1.0f;
+  /// @brief Outputs the surface is currently mapped onto (from
+  /// wl_surface.enter/leave), used for integer scaling when
+  /// wp_fractional_scale_v1 is unavailable.
+  std::vector<wl_output *> entered_outputs;
   int current_buffer;
   /// @brief Consecutive frames dropped because the compositor held both
   /// buffers (see window_commit_buffer).
@@ -280,6 +289,18 @@ struct window {
   PangoContext *pango_context;
 };
 
+struct wayland_output_info {
+  uint32_t registry_name = 0;
+  wl_output *output = nullptr;
+  std::string name;
+  std::string description;
+  int32_t x = 0;
+  int32_t y = 0;
+  int32_t physical_width = 0;
+  int32_t physical_height = 0;
+  int32_t scale = 1;
+};
+
 struct {
   wl_registry *registry;
   wl_compositor *compositor;
@@ -287,7 +308,8 @@ struct {
   wl_surface *surface;
   wl_seat *seat;
   wl_pointer *pointer;
-  wl_output *output;
+  std::vector<std::unique_ptr<wayland_output_info>> outputs;
+  wayland_output_info *selected_output = nullptr;
   xdg_wm_base *shell;
   zwlr_layer_shell_v1 *layer_shell;
   wp_viewporter *viewporter;
@@ -307,15 +329,25 @@ static void output_geometry(void *data, wl_output *wl_output, int32_t x,
                             int32_t physical_height, int32_t subpixel,
                             const char *make, const char *model,
                             int32_t transform) {
-  // TODO: Add support for proper output management through:
-  // - xdg-output-unstable-v1
-  // Maybe also support (if XDG protocol not reported):
-  // - kde-output-management(-v2)
-  // - wlr-output-management-unstable-v1
-  workarea = absolute_rect<int>(
-      vec2i(x, y),
-      vec2i(x + physical_width,
-            y + physical_height));  // TODO: use xdg_output.logical_position
+  auto *info = static_cast<wayland_output_info *>(data);
+  if (info != nullptr) {
+    info->x = x;
+    info->y = y;
+    info->physical_width = physical_width;
+    info->physical_height = physical_height;
+  }
+  if (wl_globals.selected_output == nullptr ||
+      wl_globals.selected_output == info) {
+    // TODO: Add support for proper output management through:
+    // - xdg-output-unstable-v1
+    // Maybe also support (if XDG protocol not reported):
+    // - kde-output-management(-v2)
+    // - wlr-output-management-unstable-v1
+    workarea = absolute_rect<int>(
+        vec2i(x, y),
+        vec2i(x + physical_width,
+              y + physical_height));  // TODO: use xdg_output.logical_position
+  }
 }
 
 static void output_mode(void *data, wl_output *wl_output, uint32_t flags,
@@ -325,27 +357,91 @@ static void output_mode(void *data, wl_output *wl_output, uint32_t flags,
 static void output_done(void *data, wl_output *wl_output) {}
 #endif
 
-#ifdef WL_OUTPUT_SCALE_SINCE_VERSION
-void output_scale(void *data, wl_output *wl_output, int32_t factor) {
-  /* For now, assume we have one output and adopt its scale unconditionally. */
-  /* We should also re-render immediately when scale changes. */
+static wayland_output_info *find_output_info(wl_output *output) {
+  for (auto &info : wl_globals.outputs) {
+    if (info && info->output == output) { return info.get(); }
+  }
+  return nullptr;
+}
+
+static void update_window_output_scale(window *win) {
   // wl_output.scale only carries integer scales. When the compositor supports
   // wp_fractional_scale_v1 we get a more precise value from that instead, so
-  // ignore the legacy event to avoid clobbering the fractional scale.
-  if (wl_globals.fractional_scale_manager != nullptr) { return; }
-  global_window->pending_scale = factor;
-  LOG_TRACE_WITH(({"window->scale", global_window->scale}),
-                 "received output scale event: {}", factor);
+  // ignore legacy integer scales to avoid clobbering the fractional scale.
+  if (wl_globals.fractional_scale_manager != nullptr || win == nullptr) {
+    return;
+  }
+
+  int32_t max_scale = 0;
+  for (wl_output *out : win->entered_outputs) {
+    if (auto *info = find_output_info(out)) {
+      max_scale = std::max(max_scale, info->scale);
+    }
+  }
+  if (max_scale <= 0 && wl_globals.selected_output != nullptr) {
+    max_scale = wl_globals.selected_output->scale;
+  }
+  if (max_scale > 0) {
+    win->pending_scale = static_cast<float>(max_scale);
+    LOG_TRACE_WITH(({"window->scale", win->scale}),
+                   "updated output scale from mapped output(s): {}", max_scale);
+  }
+}
+
+static void surface_enter(void *data, wl_surface *surface, wl_output *output) {
+  auto *win = static_cast<window *>(data);
+  if (win == nullptr || output == nullptr) { return; }
+  if (std::find(win->entered_outputs.begin(), win->entered_outputs.end(),
+                output) == win->entered_outputs.end()) {
+    win->entered_outputs.push_back(output);
+  }
+  if (wl_globals.selected_output == nullptr) {
+    if (auto *info = find_output_info(output)) {
+      workarea = absolute_rect<int>(vec2i(info->x, info->y),
+                                    vec2i(info->x + info->physical_width,
+                                          info->y + info->physical_height));
+    }
+  }
+  update_window_output_scale(win);
+}
+
+static void surface_leave(void *data, wl_surface *surface, wl_output *output) {
+  auto *win = static_cast<window *>(data);
+  if (win == nullptr || output == nullptr) { return; }
+  auto &entered = win->entered_outputs;
+  entered.erase(std::remove(entered.begin(), entered.end(), output),
+                entered.end());
+  update_window_output_scale(win);
+}
+
+static const wl_surface_listener surface_listener = {
+    /*.enter =*/&surface_enter,
+    /*.leave =*/&surface_leave,
+};
+
+#ifdef WL_OUTPUT_SCALE_SINCE_VERSION
+void output_scale(void *data, wl_output *wl_output, int32_t factor) {
+  auto *info = static_cast<wayland_output_info *>(data);
+  if (info != nullptr) { info->scale = factor; }
+  update_window_output_scale(global_window);
 }
 #endif
 
 #ifdef WL_OUTPUT_NAME_SINCE_VERSION
-static void output_name(void *data, wl_output *wl_output, const char *name) {}
+static void output_name(void *data, wl_output *wl_output, const char *name) {
+  auto *info = static_cast<wayland_output_info *>(data);
+  if (info != nullptr) { info->name = name != nullptr ? name : ""; }
+}
 #endif
 
 #ifdef WL_OUTPUT_DESCRIPTION_SINCE_VERSION
 static void output_description(void *data, wl_output *wl_output,
-                               const char *description) {}
+                               const char *description) {
+  auto *info = static_cast<wayland_output_info *>(data);
+  if (info != nullptr) {
+    info->description = description != nullptr ? description : "";
+  }
+}
 #endif
 
 static const wl_output_listener output_listener = {
@@ -377,6 +473,10 @@ static void fractional_scale_preferred(void *data,
 static const wp_fractional_scale_v1_listener fractional_scale_listener = {
     /*.preferred_scale =*/&fractional_scale_preferred};
 
+#ifdef BUILD_MOUSE_EVENTS
+extern const wl_seat_listener seat_listener;
+#endif /* BUILD_MOUSE_EVENTS */
+
 void registry_handle_global(void *data, wl_registry *registry, uint32_t name,
                             const char *interface, uint32_t version) {
   if (strcmp(interface, "wl_compositor") == 0) {
@@ -388,10 +488,27 @@ void registry_handle_global(void *data, wl_registry *registry, uint32_t name,
   } else if (strcmp(interface, "wl_seat") == 0) {
     wl_globals.seat = static_cast<wl_seat *>(
         wl_registry_bind(registry, name, &wl_seat_interface, 1));
+#ifdef BUILD_MOUSE_EVENTS
+    wl_seat_add_listener(wl_globals.seat, &seat_listener, nullptr);
+#endif /* BUILD_MOUSE_EVENTS */
   } else if (strcmp(interface, "wl_output") == 0) {
-    wl_globals.output = static_cast<wl_output *>(
-        wl_registry_bind(registry, name, &wl_output_interface, 2));
-    wl_output_add_listener(wl_globals.output, &output_listener, nullptr);
+    constexpr uint32_t max_output_version =
+#ifdef WL_OUTPUT_DESCRIPTION_SINCE_VERSION
+        WL_OUTPUT_DESCRIPTION_SINCE_VERSION;
+#elif defined(WL_OUTPUT_NAME_SINCE_VERSION)
+        WL_OUTPUT_NAME_SINCE_VERSION;
+#elif defined(WL_OUTPUT_SCALE_SINCE_VERSION)
+        WL_OUTPUT_SCALE_SINCE_VERSION;
+#else
+        1;
+#endif
+    uint32_t bind_version = std::min(version, max_output_version);
+    auto info = std::make_unique<wayland_output_info>();
+    info->registry_name = name;
+    info->output = static_cast<wl_output *>(
+        wl_registry_bind(registry, name, &wl_output_interface, bind_version));
+    wl_output_add_listener(info->output, &output_listener, info.get());
+    wl_globals.outputs.push_back(std::move(info));
   } else if (strcmp(interface, "xdg_wm_base") == 0) {
     wl_globals.shell = static_cast<xdg_wm_base *>(
         wl_registry_bind(registry, name, &xdg_wm_base_interface, 1));
@@ -410,8 +527,48 @@ void registry_handle_global(void *data, wl_registry *registry, uint32_t name,
   }
 }
 
+static void destroy_wayland_output(wl_output *output) {
+  if (output == nullptr) { return; }
+#ifdef WL_OUTPUT_RELEASE_SINCE_VERSION
+  if (wl_output_get_version(output) >= WL_OUTPUT_RELEASE_SINCE_VERSION) {
+    wl_output_release(output);
+    return;
+  }
+#endif
+  wl_output_destroy(output);
+}
+
 void registry_handle_global_remove(void *data, wl_registry *registry,
-                                   uint32_t name) {}
+                                   uint32_t name) {
+  auto &outputs = wl_globals.outputs;
+  for (auto it = outputs.begin(); it != outputs.end(); ++it) {
+    if ((*it)->registry_name == name) {
+      wl_output *removed = (*it)->output;
+      if (wl_globals.selected_output == it->get()) {
+        wl_globals.selected_output = nullptr;
+      }
+      if (global_window != nullptr && removed != nullptr) {
+        auto &entered = global_window->entered_outputs;
+        entered.erase(std::remove(entered.begin(), entered.end(), removed),
+                      entered.end());
+      }
+      destroy_wayland_output(removed);
+      outputs.erase(it);
+      update_window_output_scale(global_window);
+      break;
+    }
+  }
+}
+
+static void clear_wayland_outputs() {
+  for (auto &info : wl_globals.outputs) {
+    if (info) { destroy_wayland_output(info->output); }
+  }
+  wl_globals.outputs.clear();
+  wl_globals.selected_output = nullptr;
+}
+
+static void reset_wayland_connection();
 
 static const wl_registry_listener registry_listener = {
     registry_handle_global, registry_handle_global_remove};
@@ -529,7 +686,8 @@ static std::map<wl_pointer *, vec2<size_t>> last_known_positions{};
 static void on_pointer_enter(void *data, wl_pointer *pointer,
                              std::uint32_t serial, wl_surface *surface,
                              wl_fixed_t surface_x, wl_fixed_t surface_y) {
-  auto w = reinterpret_cast<window *>(data);
+  auto *w = global_window;
+  if (w == nullptr) { return; }
 
   auto pos =
       vec2d(wl_fixed_to_double(surface_x), wl_fixed_to_double(surface_y));
@@ -542,7 +700,8 @@ static void on_pointer_enter(void *data, wl_pointer *pointer,
 
 static void on_pointer_leave(void *data, wl_pointer *pointer,
                              std::uint32_t serial, wl_surface *surface) {
-  auto w = reinterpret_cast<window *>(data);
+  auto *w = global_window;
+  if (w == nullptr) { return; }
 
   auto pos = last_known_positions[pointer];
   auto pos_abs = w->rectangle.pos() + pos;
@@ -554,7 +713,8 @@ static void on_pointer_leave(void *data, wl_pointer *pointer,
 static void on_pointer_motion(void *data, wl_pointer *pointer,
                               std::uint32_t _time, wl_fixed_t surface_x,
                               wl_fixed_t surface_y) {
-  auto w = reinterpret_cast<window *>(data);
+  auto *w = global_window;
+  if (w == nullptr) { return; }
 
   auto pos =
       vec2d(wl_fixed_to_double(surface_x), wl_fixed_to_double(surface_y));
@@ -568,7 +728,8 @@ static void on_pointer_motion(void *data, wl_pointer *pointer,
 static void on_pointer_button(void *data, wl_pointer *pointer,
                               std::uint32_t serial, std::uint32_t time,
                               std::uint32_t button, std::uint32_t state) {
-  auto w = reinterpret_cast<window *>(data);
+  auto *w = global_window;
+  if (w == nullptr) { return; }
 
   auto pos = last_known_positions[pointer];
   auto pos_abs = w->rectangle.pos() + pos;
@@ -597,7 +758,8 @@ void on_pointer_axis(void *data, wl_pointer *pointer, std::uint32_t time,
                      std::uint32_t axis, wl_fixed_t value) {
   if (value == 0) return;
 
-  auto w = reinterpret_cast<window *>(data);
+  auto *w = global_window;
+  if (w == nullptr) { return; }
 
   auto pos = last_known_positions[pointer];
   auto pos_abs = w->rectangle.pos() + pos;
@@ -636,42 +798,113 @@ static void seat_capability_listener(void *data, wl_seat *seat,
   wl_seat_capability capabilities =
       static_cast<wl_seat_capability>(capability_int);
   if (wl_globals.seat == seat) {
-    if ((capabilities & WL_SEAT_CAPABILITY_POINTER) > 0) {
+    bool has_pointer = (capabilities & WL_SEAT_CAPABILITY_POINTER) > 0;
+    if (has_pointer && wl_globals.pointer == nullptr) {
       wl_globals.pointer = wl_seat_get_pointer(seat);
 
-      wl_pointer_add_listener(wl_globals.pointer, &pointer_listener, data);
+      wl_pointer_add_listener(wl_globals.pointer, &pointer_listener, nullptr);
+    } else if (!has_pointer && wl_globals.pointer != nullptr) {
+      last_known_positions.erase(wl_globals.pointer);
+      wl_pointer_destroy(wl_globals.pointer);
+      wl_globals.pointer = nullptr;
     }
   }
 }
 static void seat_name_listener(void *data, wl_seat *wl_seat, const char *name) {
 }
 
-static const wl_seat_listener seat_listener = {
+const wl_seat_listener seat_listener = {
     .capabilities = seat_capability_listener,
     .name = seat_name_listener,
 };
 #endif /* BUILD_MOUSE_EVENTS */
 
+static void reset_wayland_connection() {
+  clear_wayland_outputs();
+#ifdef BUILD_MOUSE_EVENTS
+  if (wl_globals.pointer != nullptr) {
+    wl_pointer_destroy(wl_globals.pointer);
+    wl_globals.pointer = nullptr;
+  }
+  last_known_positions.clear();
+#endif
+  if (wl_globals.seat != nullptr) {
+    wl_seat_destroy(wl_globals.seat);
+    wl_globals.seat = nullptr;
+  }
+  if (wl_globals.fractional_scale_manager != nullptr) {
+    wp_fractional_scale_manager_v1_destroy(wl_globals.fractional_scale_manager);
+    wl_globals.fractional_scale_manager = nullptr;
+  }
+  if (wl_globals.viewporter != nullptr) {
+    wp_viewporter_destroy(wl_globals.viewporter);
+    wl_globals.viewporter = nullptr;
+  }
+  if (wl_globals.layer_shell != nullptr) {
+    zwlr_layer_shell_v1_destroy(wl_globals.layer_shell);
+    wl_globals.layer_shell = nullptr;
+  }
+  if (wl_globals.shell != nullptr) {
+    xdg_wm_base_destroy(wl_globals.shell);
+    wl_globals.shell = nullptr;
+  }
+  if (wl_globals.shm != nullptr) {
+    wl_shm_destroy(wl_globals.shm);
+    wl_globals.shm = nullptr;
+  }
+  if (wl_globals.compositor != nullptr) {
+    wl_compositor_destroy(wl_globals.compositor);
+    wl_globals.compositor = nullptr;
+  }
+  if (wl_globals.registry != nullptr) {
+    wl_registry_destroy(wl_globals.registry);
+    wl_globals.registry = nullptr;
+  }
+  wl_globals.surface = nullptr;
+  if (global_display != nullptr) {
+    wl_display_disconnect(global_display);
+    global_display = nullptr;
+  }
+  if (epoll_fd >= 0) {
+    close(epoll_fd);
+    epoll_fd = -1;
+  }
+  configured_epoll = false;
+}
+
 bool display_output_wayland::initialize() {
+  if (global_window != nullptr) {
+    window_destroy(global_window);
+    global_window = nullptr;
+    wl_globals.shm = nullptr;
+  }
+  reset_wayland_connection();
   epoll_fd = epoll_create1(0);
   if (epoll_fd < 0) {
     LOG_ERROR("epoll_create failed: {}", strerror(errno));
     return false;
   }
-  global_display = wl_display_connect(NULL);
+  auto disp_spec = parse_wayland_display(display_name.get(*state));
+  const char *socket =
+      disp_spec.socket_name.empty() ? nullptr : disp_spec.socket_name.c_str();
+  global_display = wl_display_connect(socket);
   if (!global_display) {
-    LOG_ERROR("wl_display_connect failed: {}", strerror(errno));
+    if (socket != nullptr) {
+      LOG_ERROR("wl_display_connect('{}') failed: {}", socket, strerror(errno));
+    } else {
+      LOG_ERROR("wl_display_connect failed: {}", strerror(errno));
+    }
+    reset_wayland_connection();
     return false;
   }
 
   wl_globals.registry = wl_display_get_registry(global_display);
   wl_registry_add_listener(wl_globals.registry, &registry_listener, NULL);
 
+  // First roundtrip binds globals (including all wl_outputs). Second roundtrip
+  // receives wl_output metadata events (name, description, geometry, scale).
   wl_display_roundtrip(global_display);
-
-  wl_surface *surface = wl_compositor_create_surface(wl_globals.compositor);
-  global_window = window_create(surface, wl_globals.shm, 1, 1);
-  window_allocate_buffer(global_window);
+  wl_display_roundtrip(global_display);
 
   // An own_window of normal/utility type becomes a regular compositor-managed
   // toplevel; everything else (desktop/dock/panel, or no own_window) mounts as
@@ -683,6 +916,52 @@ bool display_output_wayland::initialize() {
       own_window.get(*state) &&
       (type == window_type::NORMAL || type == window_type::UTILITY) &&
       !hints_require_layer_shell();
+  bool use_layer_shell =
+      !hints_layer_shell && wl_globals.layer_shell != nullptr;
+
+  wl_output *target_output = nullptr;
+  wl_globals.selected_output = nullptr;
+  if (!disp_spec.output_selector.empty()) {
+    if (!use_layer_shell) {
+      LOG_WARNING(
+          "Wayland: display output '{}' ignored because xdg-shell toplevels "
+          "cannot target a specific output (requires wlr-layer-shell)",
+          disp_spec.output_selector);
+    } else if (auto idx = select_wayland_output(wl_globals.outputs,
+                                                disp_spec.output_selector)) {
+      wl_globals.selected_output = wl_globals.outputs[*idx].get();
+      target_output = wl_globals.selected_output->output;
+      workarea = absolute_rect<int>(
+          vec2i(wl_globals.selected_output->x, wl_globals.selected_output->y),
+          vec2i(wl_globals.selected_output->x +
+                    wl_globals.selected_output->physical_width,
+                wl_globals.selected_output->y +
+                    wl_globals.selected_output->physical_height));
+      LOG_DEBUG("Wayland: selected output '{}' ({})",
+                wl_globals.selected_output->name,
+                wl_globals.selected_output->description);
+    } else {
+      std::string available;
+      for (size_t i = 0; i < wl_globals.outputs.size(); ++i) {
+        if (i > 0) { available += ", "; }
+        available +=
+            std::to_string(i) + ": '" + wl_globals.outputs[i]->name + "'";
+        if (!wl_globals.outputs[i]->description.empty()) {
+          available += " (" + wl_globals.outputs[i]->description + ")";
+        }
+      }
+      LOG_WARNING(
+          "Wayland: display '{}' did not match any output (available: {}); "
+          "falling back to compositor default",
+          disp_spec.output_selector, available);
+    }
+  }
+
+  wl_surface *surface = wl_compositor_create_surface(wl_globals.compositor);
+  global_window = window_create(surface, wl_globals.shm, 1, 1);
+  update_window_output_scale(global_window);
+  window_allocate_buffer(global_window);
+
   auto on_close = []() { g_sigterm_pending = 1; };
 
   // KWin classifies the layer-shell surface from its namespace. Keep the
@@ -690,12 +969,13 @@ bool display_output_wayland::initialize() {
   // own_window_namespace, so existing configs are unaffected.
   std::string namespace_str = own_window_namespace.get(*state);
 
-  if (!hints_layer_shell && wl_globals.layer_shell != nullptr) {
+  if (use_layer_shell) {
     global_window->shell =
         conky::create_shell_surface<conky::layer_shell_surface>({
             on_close,
             global_window->surface,
             wl_globals.layer_shell,
+            target_output,
             static_cast<uint32_t>(layer_for_window()),
             namespace_str.c_str(),
         });
@@ -706,6 +986,10 @@ bool display_output_wayland::initialize() {
           "toplevel (desktop/dock/panel space reservation unavailable)");
     }
     if (wl_globals.shell == nullptr) {
+      window_destroy(global_window);
+      global_window = nullptr;
+      wl_globals.shm = nullptr;
+      reset_wayland_connection();
       SYSTEM_ERR("compositor supports neither wlr-layer-shell nor xdg-shell");
       return false;
     }
@@ -720,10 +1004,6 @@ bool display_output_wayland::initialize() {
   }
   global_window->shell->set_size(global_window->rectangle.width(),
                                  global_window->rectangle.height());
-
-#ifdef BUILD_MOUSE_EVENTS
-  wl_seat_add_listener(wl_globals.seat, &seat_listener, global_window);
-#endif /* BUILD_MOUSE_EVENTS */
 
 #ifdef BUILD_IMLIB2
   /* There is no X11 drawable to hand imlib2, so images are composited onto the
@@ -765,7 +1045,6 @@ bool display_output_wayland::main_loop_wait(double t) {
   int ms = t * 1000;
 
   /* add fd to epoll set the first time around */
-  static bool configured_epoll = false;
   if (!configured_epoll) {
     ep[0].events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
     ep[0].data.ptr = nullptr;
@@ -869,7 +1148,9 @@ void display_output_wayland::cleanup() {
   if (global_window != nullptr) {
     window_destroy(global_window);
     global_window = nullptr;
+    wl_globals.shm = nullptr;
   }
+  reset_wayland_connection();
 #ifdef BUILD_IMLIB2
   cimlib_deinit();
 #endif /* BUILD_IMLIB2 */
@@ -1445,6 +1726,7 @@ window *window_create(wl_surface *surface, wl_shm *shm, int width, int height) {
 
   result->surface = surface;
   result->shm = shm;
+  wl_surface_add_listener(surface, &surface_listener, result);
 
   // When the compositor supports viewporter we scale via a wp_viewport
   // destination rather than wl_surface.set_buffer_scale, which lets us honour

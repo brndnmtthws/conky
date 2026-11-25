@@ -266,10 +266,13 @@ static void print_help(const char *prog_name) {
 #endif
          "   -d, --daemonize           daemonize, fork to background\n"
          "   -h, --help                help\n"
+#if defined(BUILD_X11) || defined(BUILD_WAYLAND)
+         "   -X, --display=DISPLAY     display to use (X11 display or Wayland "
+         "output)\n"
+#endif /* BUILD_X11 || BUILD_WAYLAND */
 #ifdef BUILD_X11
          "   -a, --alignment=ALIGNMENT text alignment on screen, "
          "{top,bottom,middle}_{left,right,middle}\n"
-         "   -X, --display=DISPLAY     X11 display to use\n"
          "   -m, --xinerama-head=N     Xinerama monitor index (0=first)\n"
          "   -f, --font=FONT           font to use\n"
 #ifdef OWN_WINDOW

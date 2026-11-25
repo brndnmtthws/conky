@@ -2157,8 +2157,11 @@ const char *getopt_string =
     defined(__NetBSD__) || defined(__OpenBSD__)
     "U"
 #endif /* Linux || FreeBSD || Haiku || NetBSD || OpenBSD */
+#if defined(BUILD_X11) || defined(BUILD_WAYLAND)
+    "X:"
+#endif /* BUILD_X11 || BUILD_WAYLAND */
 #ifdef BUILD_X11
-    "x:y:w:a:X:m:f:"
+    "x:y:w:a:m:f:"
 #ifdef OWN_WINDOW
     "o"
 #endif
@@ -2180,9 +2183,11 @@ const struct option longopts[] = {{"help", 0, nullptr, 'h'},
                                   {"print-config", 0, nullptr, 'C'},
 #endif
                                   {"daemonize", 0, nullptr, 'd'},
+#if defined(BUILD_X11) || defined(BUILD_WAYLAND)
+                                  {"display", 1, nullptr, 'X'},
+#endif /* BUILD_X11 || BUILD_WAYLAND */
 #ifdef BUILD_X11
                                   {"alignment", 1, nullptr, 'a'},
-                                  {"display", 1, nullptr, 'X'},
                                   {"xinerama-head", 1, nullptr, 'm'},
                                   {"font", 1, nullptr, 'f'},
 #ifdef OWN_WINDOW
@@ -2247,6 +2252,12 @@ void initialisation(int argc, char **argv) {
         state->pushboolean(true);
         fork_to_background.lua_set(*state);
         break;
+#if defined(BUILD_X11) || defined(BUILD_WAYLAND)
+      case 'X':
+        state->pushstring(optarg);
+        display_name.lua_set(*state);
+        break;
+#endif /* BUILD_X11 || BUILD_WAYLAND */
 #ifdef BUILD_X11
       case 'f':
         state->pushstring(optarg);
@@ -2262,10 +2273,6 @@ void initialisation(int argc, char **argv) {
           USER_ERR("'{}' is not a valid xinerama-head index", optarg);
         }
         head_index.lua_set(*state);
-        break;
-      case 'X':
-        state->pushstring(optarg);
-        display_name.lua_set(*state);
         break;
 
 #ifdef OWN_WINDOW
