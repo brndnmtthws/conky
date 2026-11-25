@@ -74,6 +74,16 @@ TEST_CASE("wayland_display_parse", "[wayland][display]") {
     CHECK(with_name.output_selector == "DP-2");
   }
 
+  SECTION("absolute socket path is preserved as socket_name") {
+    auto abs = conky::parse_wayland_display("/run/user/1000/wayland-0");
+    CHECK(abs.socket_name == "/run/user/1000/wayland-0");
+    CHECK(abs.output_selector.empty());
+
+    auto abs_dot = conky::parse_wayland_display("/tmp/custom.sock");
+    CHECK(abs_dot.socket_name == "/tmp/custom.sock");
+    CHECK(abs_dot.output_selector.empty());
+  }
+
   SECTION("non-numeric suffixes after wayland- or : fall back to selector") {
     auto custom = conky::parse_wayland_display("wayland-custom");
     CHECK(custom.socket_name.empty());

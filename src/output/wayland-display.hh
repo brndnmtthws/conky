@@ -77,9 +77,15 @@ inline std::optional<size_t> parse_nonneg_index(std::string_view s) {
 /// - "wayland-0.DP-2"  -> socket "wayland-0", output selector "DP-2"
 /// - ":0"              -> socket "wayland-0", compositor-chosen output
 /// - ":0.1"            -> socket "wayland-0", output selector "1"
+/// - "/path/to/socket" -> absolute socket path, compositor-chosen output
 inline wayland_display_spec parse_wayland_display(std::string_view spec) {
   wayland_display_spec result;
   if (spec.empty()) { return result; }
+
+  if (spec[0] == '/') {
+    result.socket_name = std::string(spec);
+    return result;
+  }
 
   constexpr std::string_view kWaylandPrefix = "wayland-";
   if (spec.size() > kWaylandPrefix.size() &&
