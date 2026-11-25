@@ -5,8 +5,6 @@
 
 // defined in x11.cc
 
-extern conky::simple_config_setting<std::string> display_name;
-
 #ifdef BUILD_XFT
 extern conky::simple_config_setting<bool> use_xft;
 #endif

@@ -47,6 +47,7 @@
 #include <wlr-layer-shell-client-protocol.h>
 #include <xdg-shell-client-protocol.h>
 
+#include <algorithm>
 #include <cerrno>
 #include <cmath>
 #include <csignal>
@@ -54,6 +55,8 @@
 #include <cstring>
 #include <ctime>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "../conky.h"
 #include "../geometry.h"
@@ -66,6 +69,7 @@
 #include "gui.h"
 #include "output-setting.hh"
 #include "wayland-dashes.hh"
+#include "wayland-display.hh"
 #include "wl-shell.h"
 
 #include "../lua/fonts.h"
@@ -280,6 +284,18 @@ struct window {
   PangoContext *pango_context;
 };
 
+struct wayland_output_info {
+  uint32_t registry_name = 0;
+  wl_output *output = nullptr;
+  std::string name;
+  std::string description;
+  int32_t x = 0;
+  int32_t y = 0;
+  int32_t physical_width = 0;
+  int32_t physical_height = 0;
+  int32_t scale = 1;
+};
+
 struct {
   wl_registry *registry;
   wl_compositor *compositor;
@@ -287,7 +303,8 @@ struct {
   wl_surface *surface;
   wl_seat *seat;
   wl_pointer *pointer;
-  wl_output *output;
+  std::vector<std::unique_ptr<wayland_output_info>> outputs;
+  wayland_output_info *selected_output = nullptr;
   xdg_wm_base *shell;
   zwlr_layer_shell_v1 *layer_shell;
   wp_viewporter *viewporter;
@@ -307,15 +324,25 @@ static void output_geometry(void *data, wl_output *wl_output, int32_t x,
                             int32_t physical_height, int32_t subpixel,
                             const char *make, const char *model,
                             int32_t transform) {
-  // TODO: Add support for proper output management through:
-  // - xdg-output-unstable-v1
-  // Maybe also support (if XDG protocol not reported):
-  // - kde-output-management(-v2)
-  // - wlr-output-management-unstable-v1
-  workarea = absolute_rect<int>(
-      vec2i(x, y),
-      vec2i(x + physical_width,
-            y + physical_height));  // TODO: use xdg_output.logical_position
+  auto *info = static_cast<wayland_output_info *>(data);
+  if (info != nullptr) {
+    info->x = x;
+    info->y = y;
+    info->physical_width = physical_width;
+    info->physical_height = physical_height;
+  }
+  if (wl_globals.selected_output == nullptr ||
+      wl_globals.selected_output == info) {
+    // TODO: Add support for proper output management through:
+    // - xdg-output-unstable-v1
+    // Maybe also support (if XDG protocol not reported):
+    // - kde-output-management(-v2)
+    // - wlr-output-management-unstable-v1
+    workarea = absolute_rect<int>(
+        vec2i(x, y),
+        vec2i(x + physical_width,
+              y + physical_height));  // TODO: use xdg_output.logical_position
+  }
 }
 
 static void output_mode(void *data, wl_output *wl_output, uint32_t flags,
@@ -327,12 +354,17 @@ static void output_done(void *data, wl_output *wl_output) {}
 
 #ifdef WL_OUTPUT_SCALE_SINCE_VERSION
 void output_scale(void *data, wl_output *wl_output, int32_t factor) {
-  /* For now, assume we have one output and adopt its scale unconditionally. */
-  /* We should also re-render immediately when scale changes. */
+  auto *info = static_cast<wayland_output_info *>(data);
+  if (info != nullptr) { info->scale = factor; }
   // wl_output.scale only carries integer scales. When the compositor supports
   // wp_fractional_scale_v1 we get a more precise value from that instead, so
   // ignore the legacy event to avoid clobbering the fractional scale.
   if (wl_globals.fractional_scale_manager != nullptr) { return; }
+  if (global_window == nullptr) { return; }
+  if (wl_globals.selected_output != nullptr &&
+      wl_globals.selected_output != info) {
+    return;
+  }
   global_window->pending_scale = factor;
   LOG_TRACE_WITH(({"window->scale", global_window->scale}),
                  "received output scale event: {}", factor);
@@ -340,12 +372,20 @@ void output_scale(void *data, wl_output *wl_output, int32_t factor) {
 #endif
 
 #ifdef WL_OUTPUT_NAME_SINCE_VERSION
-static void output_name(void *data, wl_output *wl_output, const char *name) {}
+static void output_name(void *data, wl_output *wl_output, const char *name) {
+  auto *info = static_cast<wayland_output_info *>(data);
+  if (info != nullptr) { info->name = name != nullptr ? name : ""; }
+}
 #endif
 
 #ifdef WL_OUTPUT_DESCRIPTION_SINCE_VERSION
 static void output_description(void *data, wl_output *wl_output,
-                               const char *description) {}
+                               const char *description) {
+  auto *info = static_cast<wayland_output_info *>(data);
+  if (info != nullptr) {
+    info->description = description != nullptr ? description : "";
+  }
+}
 #endif
 
 static const wl_output_listener output_listener = {
@@ -389,9 +429,23 @@ void registry_handle_global(void *data, wl_registry *registry, uint32_t name,
     wl_globals.seat = static_cast<wl_seat *>(
         wl_registry_bind(registry, name, &wl_seat_interface, 1));
   } else if (strcmp(interface, "wl_output") == 0) {
-    wl_globals.output = static_cast<wl_output *>(
-        wl_registry_bind(registry, name, &wl_output_interface, 2));
-    wl_output_add_listener(wl_globals.output, &output_listener, nullptr);
+    constexpr uint32_t max_output_version =
+#ifdef WL_OUTPUT_DESCRIPTION_SINCE_VERSION
+        WL_OUTPUT_DESCRIPTION_SINCE_VERSION;
+#elif defined(WL_OUTPUT_NAME_SINCE_VERSION)
+        WL_OUTPUT_NAME_SINCE_VERSION;
+#elif defined(WL_OUTPUT_SCALE_SINCE_VERSION)
+        WL_OUTPUT_SCALE_SINCE_VERSION;
+#else
+        1;
+#endif
+    uint32_t bind_version = std::min(version, max_output_version);
+    auto info = std::make_unique<wayland_output_info>();
+    info->registry_name = name;
+    info->output = static_cast<wl_output *>(
+        wl_registry_bind(registry, name, &wl_output_interface, bind_version));
+    wl_output_add_listener(info->output, &output_listener, info.get());
+    wl_globals.outputs.push_back(std::move(info));
   } else if (strcmp(interface, "xdg_wm_base") == 0) {
     wl_globals.shell = static_cast<xdg_wm_base *>(
         wl_registry_bind(registry, name, &xdg_wm_base_interface, 1));
@@ -410,8 +464,39 @@ void registry_handle_global(void *data, wl_registry *registry, uint32_t name,
   }
 }
 
+static void destroy_wayland_output(wl_output *output) {
+  if (output == nullptr) { return; }
+#ifdef WL_OUTPUT_RELEASE_SINCE_VERSION
+  if (wl_output_get_version(output) >= WL_OUTPUT_RELEASE_SINCE_VERSION) {
+    wl_output_release(output);
+    return;
+  }
+#endif
+  wl_output_destroy(output);
+}
+
 void registry_handle_global_remove(void *data, wl_registry *registry,
-                                   uint32_t name) {}
+                                   uint32_t name) {
+  auto &outputs = wl_globals.outputs;
+  for (auto it = outputs.begin(); it != outputs.end(); ++it) {
+    if ((*it)->registry_name == name) {
+      if (wl_globals.selected_output == it->get()) {
+        wl_globals.selected_output = nullptr;
+      }
+      destroy_wayland_output((*it)->output);
+      outputs.erase(it);
+      break;
+    }
+  }
+}
+
+static void clear_wayland_outputs() {
+  for (auto &info : wl_globals.outputs) {
+    if (info) { destroy_wayland_output(info->output); }
+  }
+  wl_globals.outputs.clear();
+  wl_globals.selected_output = nullptr;
+}
 
 static const wl_registry_listener registry_listener = {
     registry_handle_global, registry_handle_global_remove};
@@ -653,25 +738,32 @@ static const wl_seat_listener seat_listener = {
 #endif /* BUILD_MOUSE_EVENTS */
 
 bool display_output_wayland::initialize() {
+  clear_wayland_outputs();
   epoll_fd = epoll_create1(0);
   if (epoll_fd < 0) {
     LOG_ERROR("epoll_create failed: {}", strerror(errno));
     return false;
   }
-  global_display = wl_display_connect(NULL);
+  auto disp_spec = parse_wayland_display(display_name.get(*state));
+  const char *socket =
+      disp_spec.socket_name.empty() ? nullptr : disp_spec.socket_name.c_str();
+  global_display = wl_display_connect(socket);
   if (!global_display) {
-    LOG_ERROR("wl_display_connect failed: {}", strerror(errno));
+    if (socket != nullptr) {
+      LOG_ERROR("wl_display_connect('{}') failed: {}", socket, strerror(errno));
+    } else {
+      LOG_ERROR("wl_display_connect failed: {}", strerror(errno));
+    }
     return false;
   }
 
   wl_globals.registry = wl_display_get_registry(global_display);
   wl_registry_add_listener(wl_globals.registry, &registry_listener, NULL);
 
+  // First roundtrip binds globals (including all wl_outputs). Second roundtrip
+  // receives wl_output metadata events (name, description, geometry, scale).
   wl_display_roundtrip(global_display);
-
-  wl_surface *surface = wl_compositor_create_surface(wl_globals.compositor);
-  global_window = window_create(surface, wl_globals.shm, 1, 1);
-  window_allocate_buffer(global_window);
+  wl_display_roundtrip(global_display);
 
   // An own_window of normal/utility type becomes a regular compositor-managed
   // toplevel; everything else (desktop/dock/panel, or no own_window) mounts as
@@ -683,6 +775,60 @@ bool display_output_wayland::initialize() {
       own_window.get(*state) &&
       (type == window_type::NORMAL || type == window_type::UTILITY) &&
       !hints_require_layer_shell();
+  bool use_layer_shell =
+      !hints_layer_shell && wl_globals.layer_shell != nullptr;
+
+  wl_output *target_output = nullptr;
+  wl_globals.selected_output = nullptr;
+  if (!disp_spec.output_selector.empty()) {
+    if (!use_layer_shell) {
+      LOG_WARNING(
+          "Wayland: display output '{}' ignored because xdg-shell toplevels "
+          "cannot target a specific output (requires wlr-layer-shell)",
+          disp_spec.output_selector);
+    } else if (auto idx = select_wayland_output(wl_globals.outputs,
+                                                disp_spec.output_selector)) {
+      wl_globals.selected_output = wl_globals.outputs[*idx].get();
+      target_output = wl_globals.selected_output->output;
+      workarea = absolute_rect<int>(
+          vec2i(wl_globals.selected_output->x, wl_globals.selected_output->y),
+          vec2i(wl_globals.selected_output->x +
+                    wl_globals.selected_output->physical_width,
+                wl_globals.selected_output->y +
+                    wl_globals.selected_output->physical_height));
+      LOG_DEBUG("Wayland: selected output '{}' ({})",
+                wl_globals.selected_output->name,
+                wl_globals.selected_output->description);
+    } else {
+      std::string available;
+      for (size_t i = 0; i < wl_globals.outputs.size(); ++i) {
+        if (i > 0) { available += ", "; }
+        available +=
+            std::to_string(i) + ": '" + wl_globals.outputs[i]->name + "'";
+        if (!wl_globals.outputs[i]->description.empty()) {
+          available += " (" + wl_globals.outputs[i]->description + ")";
+        }
+      }
+      LOG_WARNING(
+          "Wayland: display '{}' did not match any output (available: {}); "
+          "falling back to compositor default",
+          disp_spec.output_selector, available);
+    }
+  }
+
+  wl_surface *surface = wl_compositor_create_surface(wl_globals.compositor);
+  global_window = window_create(surface, wl_globals.shm, 1, 1);
+  if (wl_globals.fractional_scale_manager == nullptr) {
+    if (wl_globals.selected_output != nullptr) {
+      global_window->pending_scale =
+          static_cast<float>(wl_globals.selected_output->scale);
+    } else if (!wl_globals.outputs.empty()) {
+      global_window->pending_scale =
+          static_cast<float>(wl_globals.outputs.back()->scale);
+    }
+  }
+  window_allocate_buffer(global_window);
+
   auto on_close = []() { g_sigterm_pending = 1; };
 
   // KWin classifies the layer-shell surface from its namespace. Keep the
@@ -690,12 +836,13 @@ bool display_output_wayland::initialize() {
   // own_window_namespace, so existing configs are unaffected.
   std::string namespace_str = own_window_namespace.get(*state);
 
-  if (!hints_layer_shell && wl_globals.layer_shell != nullptr) {
+  if (use_layer_shell) {
     global_window->shell =
         conky::create_shell_surface<conky::layer_shell_surface>({
             on_close,
             global_window->surface,
             wl_globals.layer_shell,
+            target_output,
             static_cast<uint32_t>(layer_for_window()),
             namespace_str.c_str(),
         });
@@ -706,6 +853,7 @@ bool display_output_wayland::initialize() {
           "toplevel (desktop/dock/panel space reservation unavailable)");
     }
     if (wl_globals.shell == nullptr) {
+      clear_wayland_outputs();
       SYSTEM_ERR("compositor supports neither wlr-layer-shell nor xdg-shell");
       return false;
     }
@@ -870,6 +1018,7 @@ void display_output_wayland::cleanup() {
     window_destroy(global_window);
     global_window = nullptr;
   }
+  clear_wayland_outputs();
 #ifdef BUILD_IMLIB2
   cimlib_deinit();
 #endif /* BUILD_IMLIB2 */

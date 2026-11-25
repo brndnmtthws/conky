@@ -70,7 +70,7 @@ const zwlr_layer_surface_v1_listener layer_shell_surface::listener = {
 layer_shell_surface::layer_shell_surface(const params &p)
     : m_on_close(p.on_close) {
   m_layer_surface = zwlr_layer_shell_v1_get_layer_surface(
-      p.layer_shell, p.surface, nullptr, p.layer, p.m_namespace);
+      p.layer_shell, p.surface, p.output, p.layer, p.m_namespace);
   zwlr_layer_surface_v1_add_listener(m_layer_surface, &listener, this);
 }
 

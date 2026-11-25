@@ -39,6 +39,7 @@
 #include "gui.h"
 
 struct wl_array;
+struct wl_output;
 struct wl_surface;
 struct zwlr_layer_shell_v1;
 struct zwlr_layer_surface_v1;
@@ -110,6 +111,7 @@ class layer_shell_surface final : public shell_surface {
   struct params : public shell_params {
     wl_surface *surface = nullptr;
     zwlr_layer_shell_v1 *layer_shell = nullptr;
+    wl_output *output = nullptr;
     uint32_t layer = 0;  ///< ZWLR_LAYER_SHELL_V1_LAYER_* value
     const char *m_namespace = "conky";
   };
