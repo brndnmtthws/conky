@@ -798,11 +798,15 @@ static void seat_capability_listener(void *data, wl_seat *seat,
   wl_seat_capability capabilities =
       static_cast<wl_seat_capability>(capability_int);
   if (wl_globals.seat == seat) {
-    if ((capabilities & WL_SEAT_CAPABILITY_POINTER) > 0 &&
-        wl_globals.pointer == nullptr) {
+    bool has_pointer = (capabilities & WL_SEAT_CAPABILITY_POINTER) > 0;
+    if (has_pointer && wl_globals.pointer == nullptr) {
       wl_globals.pointer = wl_seat_get_pointer(seat);
 
       wl_pointer_add_listener(wl_globals.pointer, &pointer_listener, nullptr);
+    } else if (!has_pointer && wl_globals.pointer != nullptr) {
+      last_known_positions.erase(wl_globals.pointer);
+      wl_pointer_destroy(wl_globals.pointer);
+      wl_globals.pointer = nullptr;
     }
   }
 }
